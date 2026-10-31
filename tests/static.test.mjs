@@ -71,16 +71,17 @@ test('prices: rupees for India, euros for Europe, US dollars for other countries
   for (const v of html.values()) assert.doesNotMatch(v, /89 euros|3,000 rupees|Outside India/);
 });
 
-test('sitemap lists every indexable page; the live screen pages are gone and /mockups/ redirects to the tutorials', { skip: SKIP }, () => {
+test('sitemap lists every indexable page and no app screen page; /mockups/ is disallowed and may be framed by this site only', { skip: SKIP }, () => {
   const sm = read(path.join(DIST, 'sitemap.xml'));
   for (const [f, s] of html) if (!/noindex/.test(s) && !f.endsWith('404.html')) assert.ok(sm.includes(`${pagePath(f)}</loc>`), pagePath(f));
   assert.doesNotMatch(sm, /mockups/);
-  assert.ok(!existsSync(path.join(DIST, 'mockups')));
-  assert.doesNotMatch(read(path.join(DIST, 'robots.txt')), /mockups/);
+  assert.ok(existsSync(path.join(DIST, 'mockups', 'win', 'light')) && existsSync(path.join(DIST, 'mockups', 'mac', 'dark')));
+  assert.match(read(path.join(DIST, 'robots.txt')), /^Disallow: \/mockups\/$/m);
   const h = read(path.join(DIST, '_headers'));
-  assert.doesNotMatch(h, /mockups/);
-  assert.match(h, /frame-ancestors 'none'/);
-  assert.match(read(path.join(DIST, '_redirects')), /^\/mockups\/\* \/tutorials\/ 301$/m);
+  assert.match(h, /\/mockups\/\*\n  ! Content-Security-Policy\n  ! X-Frame-Options/);
+  assert.match(h, /frame-ancestors 'self'/);
+  assert.match(h, /frame-src 'self'/);
+  assert.doesNotMatch(read(path.join(DIST, '_redirects')), /mockups/);
 });
 
 test('public pages reveal nothing about how the product is built', { skip: SKIP }, () => {

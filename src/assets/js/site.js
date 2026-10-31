@@ -16,10 +16,10 @@
   function osLinks(os) {
     document.querySelectorAll('[data-os-href-' + os + ']').forEach(function (a) { a.setAttribute('href', a.getAttribute('data-os-href-' + os)); });
   }
-  // The app screen theme: every screen picture, its srcset and the link that opens it point at /light/ or /dark/.
+  // The app screen theme: every screen frame and the link that opens it point at /light/ or /dark/.
   function mockTheme(m) {
-    document.querySelectorAll('a[data-mock],img[data-mock]').forEach(function (el) {
-      ['src', 'srcset', 'href'].forEach(function (at) {
+    document.querySelectorAll('a[data-mock],iframe[data-mock]').forEach(function (el) {
+      ['src', 'href'].forEach(function (at) {
         var v = el.getAttribute(at);
         if (v === null) return;
         var nv = v.replace(/\/(light|dark)\//g, '/' + m + '/');
@@ -190,18 +190,32 @@
     setTimeout(lift, 4000);
     addEventListener('pageshow', function (e) { if (e.persisted) lift(); });
   }
-  /* each app screen picture waits behind the same icon until it has loaded (or failed) */
-  function shotLoads() {
-    function done(img) { var b = img.closest('.shot-open'); if (b) b.classList.add('loaded'); }
+  /* app screens are live pages in frames. A card shows one rectangle of its page: the page is laid out at its own
+     size and scaled and moved so that the rectangle fills the card (a thumbnail card covers its box, top edge first). */
+  function fitView(v) {
+    var f = v.firstElementChild, pg = v.getAttribute('data-page').split(' '), r = v.getAttribute('data-rect').split(' ').map(Number);
+    var w = v.clientWidth, h = v.clientHeight;
+    if (!f || !w || !h || !r[2] || !r[3]) return;
+    var cover = v.classList.contains('cover'), k = cover ? Math.max(w / r[2], h / r[3]) : w / r[2];
+    f.style.width = pg[0] + 'px'; f.style.height = pg[1] + 'px';
+    f.style.transform = 'translate(' + ((cover ? (w - r[2] * k) / 2 : 0) - r[0] * k) + 'px,' + (-r[1] * k) + 'px) scale(' + k + ')';
+  }
+  function shotViews() {
+    var ro = 'ResizeObserver' in window ? new ResizeObserver(function (es) { es.forEach(function (en) { fitView(en.target); }); }) : null;
+    document.querySelectorAll('.shot-view').forEach(function (v) { fitView(v); if (ro) ro.observe(v); });
+    // a card waits behind the OpenFrame icon (or its soft box) until its page has loaded
+    function done(f) { var b = f.closest('.shot-open,.thumb'); if (b) b.classList.add('loaded'); }
     ['load', 'error'].forEach(function (t) {
-      document.addEventListener(t, function (e) { if (e.target && e.target.tagName === 'IMG') done(e.target); }, true);
+      document.addEventListener(t, function (e) { if (e.target && e.target.tagName === 'IFRAME' && e.target.closest('.shot-view')) done(e.target); }, true);
     });
-    document.querySelectorAll('.shot-open img').forEach(function (img) { if (img.complete) done(img); });
+    document.querySelectorAll('.shot-view iframe').forEach(function (f) {
+      try { if (f.contentDocument.readyState === 'complete' && f.contentWindow.location.href !== 'about:blank') done(f); } catch (e) {}
+    });
   }
   /* error pages: Try again */
   function reloads() { document.addEventListener('click', function (e) { if (e.target.closest('[data-reload]')) location.reload(); }); }
 
-  function init() { splash(); shotLoads(); reloads(); controls(); menus(); storeMsg(); stages(); pricing(); reveal(); headerState(); }
+  function init() { splash(); shotViews(); reloads(); controls(); menus(); storeMsg(); stages(); pricing(); reveal(); headerState(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   addEventListener('pageshow', function () { mark(); });
 })();

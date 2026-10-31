@@ -25,7 +25,7 @@ async function withPage(fn, opts = {}) {
   assert.deepEqual(errors, []);
 }
 const attr = (page, a) => page.evaluate((x) => document.documentElement.getAttribute(x), a);
-const frameSrc = (page) => page.$$eval('img[data-mock]', (is) => is.map((i) => i.getAttribute('src')));
+const frameSrc = (page) => page.$$eval('iframe[data-mock]', (fs) => fs.map((f) => f.getAttribute('src')));
 
 test('website theme and app screen theme are independent and remembered', { skip: SKIP }, () => withPage(async (page) => {
   await page.goto(base + '/');
@@ -62,14 +62,14 @@ test('on a platform page the platform control goes to the other platform', { ski
   await page.goto(base + '/windows/tutorials/');
   await Promise.all([page.waitForURL('**/mac/tutorials/'), page.click('.nav-ctls [data-set="os"][data-val="mac"]')]);
   assert.equal(await attr(page, 'data-os'), 'mac');
-  assert.ok((await frameSrc(page)).every((s) => s.startsWith('/shots/mac/')));
+  assert.ok((await frameSrc(page)).every((s) => s.startsWith('/mockups/mac/')));
 }));
 
-test('app screens are pictures that fill one frame and keep their shape', { skip: SKIP }, () => withPage(async (page) => {
+test('app screens are live pages that fill one frame and keep their shape', { skip: SKIP }, () => withPage(async (page) => {
   await page.goto(base + '/windows/');
-  assert.equal(await page.locator('iframe').count(), 0);
-  const box = await page.$eval('.tour-real .shot-open', (b) => { const i = b.querySelector('img'), r = b.getBoundingClientRect(); return { w: r.width, h: r.height, ar: i.width / i.height }; });
+  const box = await page.$eval('.tour-real .shot-open', (b) => { const i = b.querySelector('.shot-ratio'), r = b.getBoundingClientRect(); return { w: r.width, h: r.height, ar: i.getAttribute('width') / i.getAttribute('height') }; });
   assert.ok(Math.abs(box.w / box.h - box.ar) < 0.05, JSON.stringify(box));
+  assert.match(await page.getAttribute('.tour-real iframe', 'style'), /scale\(/);
 }));
 
 test('price follows the region: India shows rupees, elsewhere dollars, and the choice can be changed', { skip: SKIP }, async () => {
@@ -133,7 +133,7 @@ test('the loading icon lifts after the first load and stays away for the rest of
   assert.ok(await page.evaluate(() => document.documentElement.classList.contains('ready')), 'no splash on later pages');
 }, { reducedMotion: 'no-preference' }));
 
-test('each app screen shows the icon until its picture has loaded', { skip: SKIP }, () => withPage(async (page) => {
+test('each app screen shows the icon until its page has loaded', { skip: SKIP }, () => withPage(async (page) => {
   await page.goto(base + '/windows/');
   await page.waitForSelector('.tour-real .shot-open.loaded', { timeout: 8000 });
   assert.ok(!(await page.isVisible('.tour-real .mock-load')));

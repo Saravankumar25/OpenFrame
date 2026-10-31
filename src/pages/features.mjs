@@ -24,13 +24,14 @@ export function learnFor(ctx, slug, plat, max = 9) {
     .filter((w) => area.test(w.area.slug) || (words && words.test(w.title))).slice(0, max);
 }
 
-function screenPair(ctx, shots, caption) {
-  const win = shots.win && ctx.mock('win', nameOf(shots.win), { caption });
-  const mac = shots.mac && ctx.mock('mac', nameOf(shots.mac), { caption });
+// seen: screens already shown as a card on this page, per platform; a screen is a card only once per page (owner, 2026-11-01).
+function screenPair(ctx, shots, caption, seen) {
+  const one = (plat) => { const n = nameOf(shots[plat]); if (!n) return ''; seen[plat].add(n); return ctx.mock(plat, n, { caption }); };
+  const win = one('win'), mac = one('mac');
   return ctx.html`${win ? ctx.html`<div data-os-show="win">${win}</div>` : ''}${mac ? ctx.html`<div data-os-show="mac">${mac}</div>` : ''}`;
 }
 
-function catalogSection(ctx, slug, title) {
+function catalogSection(ctx, slug, title, seen) {
   const { html } = ctx;
   const items = CATALOG[slug] || [];
   if (!items.length) return '';
@@ -39,7 +40,12 @@ function catalogSection(ctx, slug, title) {
     const list = f[plat] || [];
     if (!list.length && plat === 'mac' && f.onMac) return html`<p class="more-shots">Available in the Mac app. This page shows no Mac screen for it.</p>`;
     if (!list.length) return html`<p class="more-shots">This capability is not part of the ${plat === 'win' ? 'Windows' : 'Mac'} app.</p>`;
-    return html`${ctx.mock(plat, list[0], { caption: f.name })}${list.length > 1 ? html`<p class="more-shots">More screens: ${list.slice(1).map((n, i) => html`${i ? ', ' : ''}${ctx.shotLink(plat, n, ctx.cat[plat].get(n)?.title || n)}`)}</p>` : ''}`;
+    // the first screen not already shown on this page is the card; when all are shown, a link opens the one above
+    const card = list.find((n) => !seen[plat].has(n));
+    const rest = list.filter((n) => n !== card);
+    if (card) seen[plat].add(card);
+    const title = (n) => ctx.cat[plat].get(n)?.title || n;
+    return html`${card ? ctx.mock(plat, card, { caption: f.name }) : html`<p class="more-shots">Shown in a screen above: ${ctx.shotLink(plat, list[0], title(list[0]))}</p>`}${card && rest.length ? html`<p class="more-shots">More screens: ${rest.map((n, i) => html`${i ? ', ' : ''}${ctx.shotLink(plat, n, title(n))}`)}</p>` : ''}`;
   };
   return html`<section class="sec-s" id="catalog"><div class="wrap"><div class="sec-head"><span class="eyebrow">Complete list</span><h2>Everything in ${title}.</h2>
 <p class="lead">Each one with what it does, what it is for, and where it is available.</p></div>
@@ -64,14 +70,15 @@ function featurePage(ctx, f, slug) {
   const { html } = ctx;
   const meta = ctx.FEATURES.find((x) => x.slug === slug);
   const page = FEATURE_PAGES[slug];
+  const seen = { win: new Set(), mac: new Set() };
   const body = html`
 <section class="phero"><div class="wrap"><span class="eyebrow">${meta.group}</span><h1>${page.h1}</h1><p class="lead">${page.lead}</p>
 <div class="hero-cta">${ctx.storeRow()}</div>
-<div class="tour-real">${screenPair(ctx, page.hero, page.title)}</div></div></section>
+<div class="tour-real">${screenPair(ctx, page.hero, page.title, seen)}</div></div></section>
 ${page.rows.map((r, n) => html`<section class="sec-s${n % 2 ? ' tint' : ''}"><div class="wrap"><div class="frow${n % 2 ? ' rev' : ''}">
 <div class="ftxt rv"><h2>${r.heading}</h2><p>${r.text}</p>${r.bullets.length ? html`<ul class="ticks">${r.bullets.map((b) => html`<li><span>${b}</span></li>`)}</ul>` : ''}</div>
-<div class="rv d2">${screenPair(ctx, r.shots, `${page.title}: ${r.heading}`)}</div></div></div></section>`)}
-${catalogSection(ctx, slug, page.title)}
+<div class="rv d2">${screenPair(ctx, r.shots, `${page.title}: ${r.heading}`, seen)}</div></div></div></section>`)}
+${catalogSection(ctx, slug, page.title, seen)}
 <section class="sec-s"><div class="wrap"><div class="facts"><h3>Good to know</h3><ul class="ticks">${page.good.map((g) => html`<li><span>${g}</span></li>`)}</ul>
 ${page.platform.length ? html`<h3 class="mt26">Windows and Mac</h3><ul class="ticks">${page.platform.map((g) => html`<li><span>${g}</span></li>`)}</ul>` : ''}
 <p class="mt18 muted">${page.flow}</p></div></div></section>

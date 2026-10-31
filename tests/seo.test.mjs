@@ -132,7 +132,8 @@ test('structured data matches the page: FAQ answers, prices, founders and the si
   assert.deepEqual(about.founder.map((x) => x.name), ['Saravan Kumar M K', 'Badrinath Reddy A']);
   for (const p of pages) for (const app of ldOf(p.s).filter((o) => o['@type'] === 'SoftwareApplication')) {
     assert.ok(app.operatingSystem && app.applicationCategory, p.path);
-    const shown = /₹2,999/.test(p.s) && /US\$89/.test(p.s);
+    const body = p.s.replace(/<dialog class="gp-dlg"[\s\S]*?<\/dialog>/, ''); // the get-the-app pop-up is on every page and is not the page's price
+    const shown = /₹2,999/.test(body) && /US\$89/.test(body);
     assert.equal(!!app.offers, shown, `offers only where the price is shown (${p.path})`);
     if (!app.offers) continue;
     const [inr, eur, usd] = app.offers;
@@ -176,7 +177,7 @@ test('security headers: HSTS without preload, strict CSP with the boot hash and 
   assert.ok(dir('script-src').includes(`'sha256-${boot}'`), 'boot script hash');
   assert.equal(dir('script-src'), `script-src 'self' 'sha256-${boot}' https://static.cloudflareinsights.com`);
   assert.equal(dir('connect-src'), "connect-src 'self' https://cloudflareinsights.com");
-  for (const d of ["default-src 'self'", "style-src 'self'", "frame-src 'none'", "frame-ancestors 'none'", "object-src 'none'", "base-uri 'self'", "form-action 'none'", 'upgrade-insecure-requests']) assert.ok(csp.split('; ').includes(d), d);
+  for (const d of ["default-src 'self'", "style-src 'self'", "frame-src 'self'", "frame-ancestors 'none'", "object-src 'none'", "base-uri 'self'", "form-action 'none'", 'upgrade-insecure-requests']) assert.ok(csp.split('; ').includes(d), d);
   assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval|\*|http:/);
   assert.equal(get('X-Content-Type-Options'), 'nosniff');
   assert.equal(get('X-Frame-Options'), 'DENY');

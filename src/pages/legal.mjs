@@ -201,6 +201,7 @@ ${ph('discontinuation', 'What happens if the product is withdrawn, counsel to wo
     ['of_mock', 'localStorage', 'Light or dark for the app screens shown on the site.', 'Until you clear it'],
     ['of_region', 'localStorage', 'India, Europe or other countries, so the price shows in the right currency.', 'Until you clear it'],
     ['of_recent_search', 'localStorage', 'Your last searches on this site, to show them again.', 'Until you clear it'],
+    ['of_getapp_seen', 'sessionStorage', 'That the Get OpenFrame window has already opened by itself in this tab, so it does not open again.', 'Until you close the tab'],
     ['of_seen', 'sessionStorage', 'That the opening animation has already played in this tab.', 'Until you close the tab'],
   ];
   const cookies = page({

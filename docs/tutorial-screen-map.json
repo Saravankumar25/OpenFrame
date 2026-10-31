@@ -6669,7 +6669,6 @@
    "screens": [
     "plan-catalog-row-menu",
     "plan-catalog-item-open",
-    "plan-catalog-item-status-menu",
     "plan-catalog-item-notes"
    ]
   },
@@ -8116,7 +8115,6 @@
     "tasks-new-task",
     "pages-tasks-titled",
     "pages-tasks-due",
-    "pages-tasks-owner-menu",
     "pages-tasks-related-search",
     "pages-tasks-titled",
     "notes-and-tasks"
@@ -12780,9 +12778,6 @@
    "production-plan-edit-catalog-item",
    "production-plan-archive-catalog-item"
   ],
-  "mac/plan-catalog-item-status-menu": [
-   "production-plan-edit-catalog-item"
-  ],
   "mac/plan-catalog-item-notes": [
    "production-plan-edit-catalog-item"
   ],
@@ -13623,9 +13618,6 @@
    "notes-and-tasks-new-task"
   ],
   "mac/pages-tasks-due": [
-   "notes-and-tasks-new-task"
-  ],
-  "mac/pages-tasks-owner-menu": [
    "notes-and-tasks-new-task"
   ],
   "mac/pages-tasks-related-search": [

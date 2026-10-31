@@ -29,8 +29,9 @@ export function writeSitemapAndRobots(DIST, pages) {
   const indexable = pages.filter((p) => !p.noindex);
   const lm = lastmods(indexable);
   write(DIST, 'sitemap.xml', sitemapXml(indexable.map((p) => ({ loc: SITE_URL + p.path, lastmod: lm[p.path].d, images: bodyImages(p.body) }))));
-  // Files that are for the site's own scripts, not for search results, stay out of crawls.
-  const hidden = ['/search-index.json'].filter((f) => fs.existsSync(path.join(DIST, f)));
+  // Files that are for the site's own scripts, not for search results, stay out of crawls; so do the app screen pages
+  // (they are shown in frames on the site's pages, and no page of their own is meant to rank).
+  const hidden = ['/search-index.json', '/mockups/'].filter((f) => fs.existsSync(path.join(DIST, f)));
   write(DIST, 'robots.txt', `User-agent: *\nAllow: /\n${hidden.map((f) => `Disallow: ${f}\n`).join('')}\nSitemap: ${SITE_URL}/sitemap.xml\n`);
 }
 
@@ -73,7 +74,9 @@ export function headersFile(BOOT) {
   const bootHash = crypto.createHash('sha256').update(BOOT).digest('base64');
   // Cloudflare Web Analytics is off until the owner switches it on in the dashboard; its script and beacon hosts are allowed now.
   const CSP = ["default-src 'self'", `script-src 'self' 'sha256-${bootHash}' https://static.cloudflareinsights.com`, "style-src 'self'", "img-src 'self' data:", "font-src 'self'",
-    "connect-src 'self' https://cloudflareinsights.com", "manifest-src 'self'", "frame-src 'none'", "object-src 'none'", "worker-src 'none'", "base-uri 'self'", "form-action 'none'", "frame-ancestors 'none'", 'upgrade-insecure-requests'].join('; ');
+    "connect-src 'self' https://cloudflareinsights.com", "manifest-src 'self'", "frame-src 'self'", "object-src 'none'", "worker-src 'none'", "base-uri 'self'", "form-action 'none'", "frame-ancestors 'none'", 'upgrade-insecure-requests'].join('; ');
+  // The app screens are static pages with their own inline styles and no script. Only this site may frame them.
+  const MOCK_CSP = ["default-src 'none'", "style-src 'self' 'unsafe-inline'", "img-src 'self' data:", "font-src 'self' data:", "base-uri 'none'", "form-action 'none'", "frame-ancestors 'self'"].join('; ');
   const PERMISSIONS = ['accelerometer', 'bluetooth', 'browsing-topics', 'camera', 'clipboard-read', 'display-capture', 'geolocation', 'gyroscope', 'hid', 'idle-detection', 'magnetometer', 'microphone', 'midi', 'payment', 'screen-wake-lock', 'serial', 'usb'].map((f) => `${f}=()`).join(', ');
   return `/*
   Content-Security-Policy: ${CSP}
@@ -85,7 +88,12 @@ export function headersFile(BOOT) {
   Cross-Origin-Resource-Policy: same-origin
   X-Permitted-Cross-Domain-Policies: none
   Strict-Transport-Security: max-age=31536000
-/shots/*
+/mockups/*
+  ! Content-Security-Policy
+  ! X-Frame-Options
+  Content-Security-Policy: ${MOCK_CSP}
+  X-Frame-Options: SAMEORIGIN
+  X-Robots-Tag: noindex
   Cache-Control: public, max-age=604800
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

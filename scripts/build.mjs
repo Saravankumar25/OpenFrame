@@ -1,6 +1,7 @@
 // Static build: src/ -> dist/. Run: npm run build. Pages come from src/pages/*.mjs (see docs/CONTRACT.md).
-// The real app screens are pictures made by scripts/shots.mjs (.cache/shots, listed in manifest.json) and copied to
-// /shots/<win|mac>/<light|dark>/; the screen catalogs research/screens-<plat>.json name every one of them.
+// The real app screens are interactive pages made by scripts/shots.mjs (.cache/shots/pages, sizes and crops listed in
+// manifest.json) and copied to /mockups/<win|mac>/<light|dark>/ (shared assets in /mockups/<plat>/assets/); the pages
+// show them in frames and in the viewer. The screen catalogs research/screens-<plat>.json name every one of them.
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -32,10 +33,10 @@ const manual = { win: await loadManual('win'), mac: await loadManual('mac') };
 
 // ---------- assets (content-hashed names)
 const hash = (buf) => crypto.createHash('sha256').update(buf).digest('hex').slice(0, 10);
-const cssFiles = ['site.css', 'pages-base.css', 'theme.css', 'shots.css', 'search.css', 'legal.css'].map((f) => path.join(SRC, 'assets', 'css', f));
+const cssFiles = ['site.css', 'pages-base.css', 'theme.css', 'shots.css', 'search.css', 'legal.css', 'getapp.css'].map((f) => path.join(SRC, 'assets', 'css', f));
 const cssOut = (await esbuild.transform(cssFiles.map((f) => fs.readFileSync(f, 'utf8')).join('\n'), { loader: 'css', minify: true })).code;
 // Each script is its own scope, so the files cannot clash on names.
-const jsSrc = ['site.js', 'lightbox.js', 'search.js'].map((f) => `;(function(){\n${fs.readFileSync(path.join(SRC, 'assets', 'js', f), 'utf8')}\n})();`).join('\n');
+const jsSrc = ['getapp.js', 'site.js', 'lightbox.js', 'search.js'].map((f) => `;(function(){\n${fs.readFileSync(path.join(SRC, 'assets', 'js', f), 'utf8')}\n})();`).join('\n');
 const jsOut = (await esbuild.transform(jsSrc, { loader: 'js', minify: true, target: 'es2019' })).code;
 fs.mkdirSync(path.join(DIST, 'assets', 'fonts'), { recursive: true });
 const cssName = `/assets/site.${hash(cssOut)}.css`, jsName = `/assets/site.${hash(jsOut)}.js`;
@@ -45,20 +46,18 @@ for (const f of fs.readdirSync(path.join(SRC, 'assets', 'fonts'))) fs.copyFileSy
 fs.cpSync(path.join(SRC, 'static'), DIST, { recursive: true });
 
 
-// ---------- app screen pictures
-// manifest.json: { win|mac: { <screen name>: { card: [w, h], full: [w, h], ... } } }. A screen the pages show but the
-// manifest lacks stops the build further down, with its name.
+// ---------- app screen pages
+// manifest.json: { win|mac: { <screen name>: { page: [w, h], card: [x, y, w, h], full: [x, y, w, h], ... } } }. A screen
+// the pages show but the manifest or the pages folder lacks stops the build further down, with its name.
 const manifestFile = path.join(SHOTS, 'manifest.json');
-if (!fs.existsSync(manifestFile) && !process.env.OF_ALLOW_MISSING) throw new Error(`screen pictures missing: ${manifestFile} (run node scripts/shots.mjs)`);
+if (!fs.existsSync(manifestFile) && !process.env.OF_ALLOW_MISSING) throw new Error(`screen manifest missing: ${manifestFile} (run node scripts/shots.mjs)`);
 const shots = fs.existsSync(manifestFile) ? JSON.parse(fs.readFileSync(manifestFile, 'utf8')) : { win: {}, mac: {} };
-for (const plat of ['win', 'mac']) for (const t of ['light', 'dark']) {
-  const from = path.join(SHOTS, plat, t);
-  if (fs.existsSync(from)) fs.cpSync(from, path.join(DIST, 'shots', plat, t), { recursive: true, filter: (p) => !fs.statSync(p).isFile() || p.endsWith('.webp') });
-}
+if (fs.existsSync(path.join(SHOTS, 'pages'))) fs.cpSync(path.join(SHOTS, 'pages'), path.join(DIST, 'mockups'), { recursive: true });
+const hasPage = (plat, file) => ['light', 'dark'].every((t) => fs.existsSync(path.join(SHOTS, 'pages', plat, t, file)));
 
 // ---------- pages
 const missing = new Set(), noShot = new Set();
-const ctx = { html, raw, esc, md, ICON, MARK, FEATURES, FEATURE_GROUPS, PARTS, OS, COMPANY, facts, cat, manual, SITE_URL, ...makeHelpers(cat, missing, shots, noShot) };
+const ctx = { html, raw, esc, md, ICON, MARK, FEATURES, FEATURE_GROUPS, PARTS, OS, COMPANY, facts, cat, manual, SITE_URL, ...makeHelpers(cat, missing, shots, noShot, hasPage) };
 const pages = [];
 for (const f of fs.readdirSync(path.join(SRC, 'pages')).filter((f) => f.endsWith('.mjs') && !f.startsWith('_')).sort()) {
   const mod = await import(pathToFileURL(path.join(SRC, 'pages', f)).href);
@@ -100,8 +99,8 @@ if (missing.size) {
 }
 if (noShot.size) {
   const list = [...noShot].sort().join(', ');
-  if (process.env.OF_ALLOW_MISSING) console.warn(`WARNING ${noShot.size} screens have no picture in ${manifestFile}: ${list}`);
-  else throw new Error(`${noShot.size} screens have no picture in ${manifestFile}: ${list}`);
+  if (process.env.OF_ALLOW_MISSING) console.warn(`WARNING ${noShot.size} screens have no page or crop in ${manifestFile}: ${list}`);
+  else throw new Error(`${noShot.size} screens have no page or crop in ${manifestFile}: ${list}`);
 }
 
 await (await import('./search-index.mjs')).writeSearchIndex(DIST, manual); // search index
@@ -159,8 +158,6 @@ for (const plat of ['win', 'mac']) for (const id of OLD_TUTORIALS) {
 }
 // The per-platform screen lists were folded into the tutorials (owner, 2026-10-31).
 redirects.push('/windows/screens/ /windows/tutorials/ 301', '/mac/screens/ /mac/tutorials/ 301');
-// The live screen pages were replaced by pictures (owner, 2026-10-31).
-redirects.push('/mockups/* /tutorials/ 301');
 fs.writeFileSync(path.join(DIST, '_redirects'), redirects.join('\n') + '\n');
 
 const files = fs.readdirSync(DIST, { recursive: true }).length;

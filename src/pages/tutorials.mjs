@@ -4,11 +4,8 @@ import { trimWords, fitTitle } from '../lib/seo.mjs';
 const SLUG = { win: 'windows', mac: 'mac' };
 const NAME = { win: 'Windows', mac: 'Mac' };
 
-function thumb(ctx, plat, name) {
-  const p = ctx.cat[plat].get(name) && ctx.pic(plat, name);
-  if (!p) return '';
-  return ctx.html`<img data-mock src="${p.c720}" alt="" loading="lazy" decoding="async" width="720" height="${Math.round(720 * p.h / p.w)}">`;
-}
+// A small live preview of the first screen (a lazy iframe, scaled by site.js).
+const thumb = (ctx, plat, name) => ctx.thumbView(plat, name);
 
 // The content is written once for the internal manuals; on the website a "chapter" is the area's tutorials.
 const web = (t) => String(t ?? '').replace(/\bthis chapter\b/gi, 'these tutorials').replace(/\bthe ([A-Z][\w ,&]*?) chapter\b/g, 'the $1 tutorials').replace(/\bchapters?\b/gi, 'tutorials').replace(/\b(this|the) manual\b/gi, 'the tutorials');

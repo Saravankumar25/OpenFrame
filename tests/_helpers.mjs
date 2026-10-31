@@ -23,8 +23,9 @@ export function pagePath(file) {
   return '/' + rel;
 }
 
+/** The site's own pages. The app screen pages under /mockups/ are separate documents, shown in frames, and are left out. */
 export function htmlFiles() {
-  return HAS_DIST ? walk(DIST).filter((f) => f.endsWith('.html')) : [];
+  return HAS_DIST ? walk(path.join(DIST)).filter((f) => f.endsWith('.html') && !path.relative(DIST, f).startsWith('mockups' + path.sep)) : [];
 }
 
 export const read = (f) => readFileSync(f, 'utf8');

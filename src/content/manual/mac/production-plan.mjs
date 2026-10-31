@@ -197,12 +197,7 @@ export default {
         {
           screen: `plan-catalog-item-open`,
           do: `Choose Open, or just click the row.`,
-          explain: `The inspector opens, headed CATALOG ITEM with the item's name. It has Name, Category, Status, Description, Notes and Contact / reference. A note under Contact / reference says it is private: visible to Owners and Editors only, never shared with OpenFrame AI or put in exports. At the bottom are Delete, Archive and Open Scenes.`,
-        },
-        {
-          screen: `plan-catalog-item-status-menu`,
-          do: `Click the Status pop-up and choose a status.`,
-          explain: `The choices are Required, Searching, Shortlisted, Confirmed and Not Required. Use them to follow an item from needed to found.`,
+          explain: `The inspector opens, headed CATALOG ITEM with the item's name. It has Name, Category, Status, Description, Notes and Contact / reference. A note under Contact / reference says it is private: visible to Owners and Editors only, never shared with OpenFrame AI or put in exports. At the bottom are Delete, Archive and Open Scenes. Click the Status pop-up to choose Required, Searching, Shortlisted, Confirmed or Not Required, and follow the item from needed to found.`,
         },
         {
           screen: `plan-catalog-item-notes`,
@@ -1209,10 +1204,10 @@ export default {
     'plan-catalog-filter-locations': `The Catalog filtered to Locations. Variant, part of production-plan-browse-catalog.`,
     'plan-catalog-more-menu': `The More menu of the category filter: Extras / Background, Hair / Makeup, Special Effects, VFX and Animals. Used in production-plan-browse-catalog.`,
     'plan-catalog-search-none': `The Catalog after a search that matches nothing. It says No catalog items match. Used in production-plan-browse-catalog.`,
-    'plan-catalog-row-menu': `The menu opened by Control-clicking a catalog item: Open, Open Scenes, Archive… and Delete…. Used in production-plan-edit-catalog-item.`,
+    'plan-catalog-row-menu': `The menu opened by Control-clicking a catalog item: Open, Open Scenes, Archive… and Delete…. The capture of this pop-up is damaged, so the production-plan-edit-catalog-item workflow describes it in text instead.`,
     'plan-catalog-item-open': `A catalog item open in the inspector, with Name, Category, Status, Description, Notes, Contact / reference and Delete, Archive and Open Scenes. Used in production-plan-edit-catalog-item and production-plan-archive-catalog-item.`,
-    'plan-catalog-item-status-menu': `The Status pop-up of a catalog item: Required, Searching, Shortlisted, Confirmed and Not Required. Used in production-plan-edit-catalog-item.`,
-    'plan-catalog-item-notes': `A catalog item with a note typed in Notes, and the Image section with Add Image. Used in production-plan-edit-catalog-item.`,
+    'plan-catalog-item-status-menu': `The Status pop-up of a catalog item: Required, Searching, Shortlisted, Confirmed and Not Required. The capture of this pop-up is damaged, so the production-plan-edit-catalog-item workflow describes it in text instead.`,
+    'plan-catalog-item-notes': `A catalog item with a note typed in Notes, and the Image section with Add Image. The capture of this pop-up is damaged, so the production-plan-edit-catalog-item workflow describes it in text instead.`,
     'plan-catalog-archive-sheet': `The Archive sheet for an item still used in a scene. It explains the effect, offers Replace in Scenes…, and has Cancel and Archive Item. Used in production-plan-archive-catalog-item.`,
     'plan-catalog-delete-sheet': `The Delete sheet for a catalog item. It says the item moves to Recently Deleted for 30 days, lists Used in scenes and recommends archiving. It has Cancel and Delete. Used in production-plan-delete-catalog-item.`,
     'plan-catalog-add-duplicate': `The Add Item sheet when the name already exists. A note says the catalog already has that item and that adding creates a separate one. Used in production-plan-add-catalog-item.`,

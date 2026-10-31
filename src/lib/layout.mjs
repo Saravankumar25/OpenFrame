@@ -15,33 +15,42 @@ const MSICON = raw('<svg class="i logo" viewBox="0 0 24 24" aria-hidden="true" f
 const STUDIO = raw('<small aria-hidden="true"><i>S</i><i>T</i><i>U</i><i>D</i><i>I</i><i>O</i></small>');
 export const WORDMARK = html`<span class="wm"><b><i>Open</i>Frame</b>${STUDIO}</span>`;
 
-export function makeHelpers(cat, missing, shots = { win: {}, mac: {} }, noShot = new Set()) {
-  // The picture set of one screen (made by scripts/shots.mjs into .cache/shots, copied to /shots/). Links name the
-  // light folder; the screen theme control swaps /light/ and /dark/ in every [data-mock] attribute.
+export function makeHelpers(cat, missing, shots = { win: {}, mac: {} }, noShot = new Set(), hasPage = () => true) {
+  // One screen = one interactive page, /mockups/<plat>/<theme>/<file>.html (made by scripts/shots.mjs). The manifest
+  // gives its size (page), the rectangle a card shows (card) and the rectangle the viewer shows (full), in CSS px.
+  // Links name the light folder; the screen theme control swaps /light/ and /dark/ in every [data-mock] attribute.
   const pic = (plat, name) => {
-    const m = shots[plat]?.[name];
-    if (!m) { noShot.add(`${plat}/${name}`); return null; }
-    const b = `/shots/${plat}/light/${name}`;
-    return { c720: `${b}.card-720.webp`, c1280: `${b}.card-1280.webp`, full: `${b}.full.webp`, w: m.card[0], h: m.card[1] };
+    const m = shots[plat]?.[name], s = cat[plat]?.get(name);
+    const rect = (r, n) => Array.isArray(r) && r.length === n && r.every((v) => Number.isFinite(v) && v >= 0);
+    if (!s || !m || !rect(m.page, 2) || !rect(m.card, 4) || !rect(m.full, 4) || !m.card[2] || !m.card[3]) { noShot.add(`${plat}/${name}`); return null; }
+    if (!hasPage(plat, s.file)) { noShot.add(`${plat}/${name} (no page ${s.file})`); return null; }
+    return { url: `/mockups/${plat}/light/${s.file}`, page: m.page, card: m.card, full: m.full };
   };
-  // A real captured app screen as a picture. Clicking it opens the lightbox (lightbox.js); without script the link
-  // opens the full picture. link:false makes it a plain picture.
-  const mock = (plat, name, { caption = '', alt = '', link = true, eager = false, wide = false } = {}) => {
+  const data = (p) => html`data-page="${p.page.join(' ')}" data-full="${p.full.join(' ')}"`;
+  // The live, scaled page inside a card. site.js sizes and offsets the iframe from data-page and data-rect so that
+  // the card rectangle fills the frame; the card is not interactive (the frame around it is the link).
+  const view = (p, label, { eager = false, cover = false } = {}) => html`<span class="shot-view${cover ? ' cover' : ''}" data-page="${p.page.join(' ')}" data-rect="${p.card.join(' ')}"><iframe data-mock src="${p.url}" title="${label}" tabindex="-1" aria-hidden="true" scrolling="no"${raw(eager ? '' : ' loading="lazy"')}></iframe></span>`;
+  // A real captured app screen as a live page. Clicking it opens the viewer (lightbox.js) with the full interactive
+  // page; without script the link opens the page itself. link:false makes it a plain, non-clickable frame.
+  const mock = (plat, name, { caption = '', alt = '', link = true, eager = false } = {}) => {
     const s = cat[plat]?.get(name);
     if (!s) { missing.add(`${plat}/${name}`); return html`<span class="shot-missing">${plat}/${name}</span>`; }
     const p = pic(plat, name);
     if (!p) return html`<span class="shot-missing">${plat}/${name}</span>`;
     const label = alt || `${OS[plat].name} screen: ${s.title}`;
-    const sizes = eager ? '(min-width: 1200px) 1120px, 100vw' : wide ? '(min-width: 1100px) 1040px, 100vw' : '(min-width: 900px) 640px, 100vw';
-    const img = html`<img data-mock src="${p.c720}" srcset="${p.c720} 720w, ${p.c1280} 1280w" sizes="${sizes}" width="${p.w}" height="${p.h}" alt="${label}" ${raw(eager ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"')} decoding="async">`;
-    const inner = html`<span class="mock-load" aria-hidden="true">${MARK}</span>${img}`;
-    const frame = link ? html`<a class="shot-open" href="${p.full}" data-mock>${inner}</a>` : html`<span class="shot-open shot-static">${inner}</span>`;
+    const inner = html`<span class="mock-load" aria-hidden="true">${MARK}</span><svg class="shot-ratio" viewBox="0 0 ${p.card[2]} ${p.card[3]}" width="${p.card[2]}" height="${p.card[3]}" aria-hidden="true" focusable="false"></svg>${view(p, label, { eager })}`;
+    const frame = link ? html`<a class="shot-open" href="${p.url}" data-mock ${data(p)}>${inner}<span class="sr">${label}</span></a>` : html`<span class="shot-open shot-static" role="img" aria-label="${label}">${inner}</span>`;
     return html`<figure class="shot ${plat}">${frame}${caption ? html`<figcaption>${caption}</figcaption>` : ''}</figure>`;
   };
-  // A text link that opens one screen in the lightbox (the "More screens" lists).
+  // A small live preview for a tutorial card: the card rectangle covers the box, top edge first.
+  const thumbView = (plat, name) => {
+    const p = cat[plat]?.get(name) && pic(plat, name);
+    return p ? view(p, '', { cover: true }) : '';
+  };
+  // A text link that opens one screen in the viewer (the "More screens" lists).
   const shotLink = (plat, name, text) => {
     const p = pic(plat, name);
-    return p ? html`<a class="shot-open shot-link" href="${p.full}" data-mock data-caption="${text}">${text}</a>` : html`<span class="shot-missing">${plat}/${name}</span>`;
+    return p ? html`<a class="shot-open shot-link" href="${p.url}" data-mock ${data(p)} data-caption="${text}">${text}</a>` : html`<span class="shot-missing">${plat}/${name}</span>`;
   };
   const osBlocks = ({ win, mac }) => html`<div data-os-show="win">${win}</div><div data-os-show="mac">${mac}</div>`;
   const osText = (win, mac) => html`<span data-os-show="win">${win}</span><span data-os-show="mac">${mac}</span>`;
@@ -64,7 +73,7 @@ export function makeHelpers(cat, missing, shots = { win: {}, mac: {} }, noShot =
 <div class="hero-cta">${storeRow()}</div>
 <div class="hero-cta"><a class="btn btn-ghost" href="/tutorials/" data-os-href-win="/windows/tutorials/" data-os-href-mac="/mac/tutorials/">Read the tutorials</a></div>
 </div></section>`;
-  return { mock, shotLink, pic, osBlocks, osText, storeBtn, storeRow, price, cta };
+  return { mock, shotLink, thumbView, pic, osBlocks, osText, storeBtn, storeRow, price, cta };
 }
 
 // The three controls are icon buttons; each has a spoken name and a tooltip, and its group has a small icon label.
@@ -115,6 +124,16 @@ const LEGAL_LINKS = [['Privacy', '/legal/privacy/'], ['Terms', '/legal/terms/'],
 function footer() {
   const col = (t, items) => html`<div><p class="f-h">${t}</p><ul>${items.map(([a, h]) => html`<li><a href="${h}">${a}</a></li>`)}</ul></div>`;
   const all = FEATURE_GROUPS.flatMap(([, items]) => items);
+  // The Get OpenFrame dialog and pill (src/assets/js/getapp.js clones this). Same store buttons and price as everywhere else.
+  const { storeBtn, price } = makeHelpers();
+  const getapp = html`<template id="getapp-tpl"><dialog class="gp-dlg" aria-labelledby="gp-title"><div class="gp-box">
+<button type="button" class="gp-x" data-gp-close aria-label="Close">${ICON.cross}</button>
+<div class="gp-top"><h2 id="gp-title">Try OpenFrame Studio free for 7 days</h2><p class="gp-lead">Pay once. Own forever. No subscription.</p><p class="gp-price">Keep it for ${price()}, paid once.</p></div>
+<div class="gp-body">
+<section class="gp-sec" data-gp-os="win" aria-labelledby="gp-win"><h3 id="gp-win">Windows</h3><p>Get it from the Microsoft Store.</p>${storeBtn('win', 'btn-lg')}</section>
+<section class="gp-sec" data-gp-os="mac" aria-labelledby="gp-mac"><h3 id="gp-mac">Mac</h3><p>Get it from the Mac App Store.</p>${storeBtn('mac', 'btn-lg')}</section>
+<p class="gp-links"><a href="/pricing/">See pricing</a><a href="/tutorials/" data-os-href-win="/windows/tutorials/" data-os-href-mac="/mac/tutorials/">Explore the tutorials</a></p>
+</div></div></dialog><button type="button" class="gp-pill" hidden>Get OpenFrame</button></template>`;
   return html`<footer class="site-f"><div class="wrap"><div class="f-grid">
 <div><a class="brand" href="/" >${MARK}${WORDMARK}<span class="sr"> Studio, home</span></a>
 <p class="about">A film production software for all your needs. From film lovers, to film lovers across the world.</p>
@@ -124,7 +143,7 @@ ${col('Plan & Shoot', all.slice(7).map(([s, t]) => [t, `/features/${s}/`]).conca
 ${col('Why OpenFrame', WHY.map(([h, t]) => [t, h]).concat([['Windows', '/windows/'], ['Mac', '/mac/']]))}
 ${col('Support', [['Windows tutorials', '/windows/tutorials/'], ['Mac tutorials', '/mac/tutorials/'], ['FAQ', '/faq/'], ['Contact us', '/contact/'], ['Download', '/download/'], ['About us', '/about/']])}
 </div><nav class="f-legal" aria-label="Legal">${LEGAL_LINKS.map(([a, h]) => html`<a href="${h}">${a}</a>`)}</nav><div class="f-bot"><span>&copy; ${new Date().getFullYear()} ${COMPANY}. <b>Your privacy stays on your computer.</b></span>
-<span>Microsoft and Microsoft Store are trademarks of the Microsoft group of companies. Apple, Mac, macOS and Mac App Store are trademarks of Apple Inc.</span></div></div></footer>`;
+<span>Microsoft and Microsoft Store are trademarks of the Microsoft group of companies. Apple, Mac, macOS and Mac App Store are trademarks of Apple Inc.</span></div></div></footer>${getapp}`;
 }
 
 export function renderPage(page, { css, js, switchHref }) {
