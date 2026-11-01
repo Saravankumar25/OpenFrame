@@ -33,7 +33,7 @@ const manual = { win: await loadManual('win'), mac: await loadManual('mac') };
 
 // ---------- assets (content-hashed names)
 const hash = (buf) => crypto.createHash('sha256').update(buf).digest('hex').slice(0, 10);
-const cssFiles = ['site.css', 'pages-base.css', 'theme.css', 'shots.css', 'search.css', 'legal.css', 'getapp.css'].map((f) => path.join(SRC, 'assets', 'css', f));
+const cssFiles = ['site.css', 'pages-base.css', 'theme.css', 'home.css', 'shots.css', 'search.css', 'legal.css', 'getapp.css'].map((f) => path.join(SRC, 'assets', 'css', f));
 const cssOut = (await esbuild.transform(cssFiles.map((f) => fs.readFileSync(f, 'utf8')).join('\n'), { loader: 'css', minify: true })).code;
 // Each script is its own scope, so the files cannot clash on names.
 const jsSrc = ['getapp.js', 'site.js', 'lightbox.js', 'search.js'].map((f) => `;(function(){\n${fs.readFileSync(path.join(SRC, 'assets', 'js', f), 'utf8')}\n})();`).join('\n');
