@@ -471,3 +471,30 @@ html.menu-lock{overflow:hidden}
   .pcard{padding:30px 22px}
   .panel{padding:26px 22px}
 }
+
+/* home page layout: text beside the app, left-aligned section heads, alternating text and screen rows */
+.hero-split{text-align:left}
+.hero-grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:56px;align-items:center}
+.hero-split h1{font-size:clamp(36px,4.4vw,62px);margin:0}
+.hero-split .chip{margin-bottom:22px}
+.hero-split .lead{margin-top:20px}
+.hero-split .hero-cta,.hero-split .store-row,.hero-split .micro,.hero-split .stages{justify-content:flex-start}
+.hero-split .hero-cta{margin-top:28px}
+.hero-split .tour,.hero-split .tour-real{width:100%;margin:0}
+.hero-split .stages{margin-top:0}
+.hero-split .tour-note{text-align:left}
+.sec-head.left{margin-left:0;text-align:left;max-width:820px}
+.langs.left{justify-content:flex-start}
+.merge.static.side{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center;max-width:none;margin:0}
+.merge.static.side .apps{grid-template-columns:1fr;gap:12px}
+.merge.static.side .app{display:flex;align-items:center;gap:14px;text-align:left;padding:14px 18px}
+.merge.static.side .app svg{margin:0;flex:none}
+.merge.static.side .one{margin-top:0}
+.merge-stats{max-width:none}
+.stat{text-align:left}
+.split.flip>:first-child{order:2}
+@media (max-width:1020px){
+  .hero-grid,.merge.static.side{grid-template-columns:minmax(0,1fr)}
+  .hero-grid{gap:36px}
+  .split.flip>:first-child{order:0}
+}
