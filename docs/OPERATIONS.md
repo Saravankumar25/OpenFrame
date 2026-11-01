@@ -113,7 +113,7 @@ a fast site that costs nothing to run, sets no cookies of its own, and has one c
 
 ### 4.1 Pages (live now)
 
-- Project `openframe-studio`, address https://openframe-studio.pages.dev, direct upload from this folder.
+- Project `openframe-studio`, custom domains openframestudio.app and www.openframestudio.app (added 2026-11-01, waiting for the two CNAME records), direct upload from this folder.
 - Static assets are free and unlimited, on Free and paid plans. Cost appears only if a Pages Function runs; there are
   none, and the site has no `functions/` folder. Keep it that way until a feature needs one.
 - Pages caches by itself. For cacheable requests it sends `public, max-age=0, must-revalidate` with an ETag, so
@@ -306,7 +306,7 @@ Before the domain:
 
 When the domain is bought:
 
-- [ ] Registrar: domain bought, auto-renew on, WHOIS redaction on.
+- [x] Registrar: openframestudio.app bought on Cloudflare Registrar (2026-11-01). Auto-renew and WHOIS redaction: not checked.
 - [ ] DNS: DNSSEC on.
 - [ ] Pages custom domains: apex added, then `www` added, both show Active.
 - [ ] Redirect Rule: `www` to apex, 301, query string kept. Tested with the simulator.
@@ -315,7 +315,7 @@ When the domain is bought:
 - [ ] HSTS: decision made (the site already sends it); Preload still off.
 - [ ] Security: Free Managed Ruleset deployed; Bot Fight Mode on only after the privacy page covers its cookies.
 - [ ] Speed, Observatory: first test of three pages saved.
-- [ ] Site rebuilt with `OF_SITE_URL`, tested and deployed; `site.config.mjs` default changed.
+- [x] Site rebuilt for https://openframestudio.app, tested (131/131), deployed; `site.config.mjs` default changed.
 - [ ] Search setup (section 5) started.
 
 ## 5. Search engine setup, once the custom domain is live

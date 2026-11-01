@@ -5,7 +5,7 @@ design package (`research/package-src`, the Website Share Package) and shows the
 Mac screen is embedded as its captured HTML page, in light or dark. Static HTML, CSS and JavaScript, generated at build
 time and hosted on Cloudflare Pages.
 
-Live: https://openframe-studio.pages.dev
+Live: https://openframestudio.app
 
 ## Three independent controls
 
