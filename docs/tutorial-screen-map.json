@@ -7895,6 +7895,73 @@
    ]
   },
   {
+   "id": "openframe-ai-ask",
+   "platform": "mac",
+   "area": "OpenFrame AI",
+   "title": "Ask OpenFrame AI about your project",
+   "url": "/mac/tutorials/openframe-ai-ask/",
+   "screens": [
+    "ai-sim-ready",
+    "ai-sim-question-typed",
+    "ai-sim-working",
+    "ai-sim-answer-characters",
+    "ai-sim-answer-scene-count",
+    "ai-sim-answer-sources-open"
+   ]
+  },
+  {
+   "id": "openframe-ai-scope",
+   "platform": "mac",
+   "area": "OpenFrame AI",
+   "title": "Choose what OpenFrame AI looks at",
+   "url": "/mac/tutorials/openframe-ai-scope/",
+   "screens": [
+    "ai-sim-scope-menu"
+   ]
+  },
+  {
+   "id": "openframe-ai-proposals",
+   "platform": "mac",
+   "area": "OpenFrame AI",
+   "title": "Review, apply or reject a change OpenFrame AI proposes",
+   "url": "/mac/tutorials/openframe-ai-proposals/",
+   "screens": [
+    "ai-sim-proposed-changes",
+    "ai-sim-proposal-applied",
+    "ai-sim-proposal-rejected",
+    "ai-sim-answer-delete-request"
+   ]
+  },
+  {
+   "id": "openframe-ai-offline-details",
+   "platform": "mac",
+   "area": "OpenFrame AI",
+   "title": "Manage Offline AI in Settings",
+   "url": "/mac/tutorials/openframe-ai-offline-details/",
+   "screens": [
+    "ai-sim-offline-ai-download",
+    "ai-sim-offline-ai-ready",
+    "ai-sim-offline-ai-technical-details",
+    "ai-sim-offline-ai-graphics-off",
+    "ai-sim-offline-ai-health",
+    "ai-sim-offline-ai-remove-confirm"
+   ]
+  },
+  {
+   "id": "openframe-ai-ready-beside-workspaces",
+   "platform": "mac",
+   "area": "OpenFrame AI",
+   "title": "See OpenFrame AI beside each workspace",
+   "url": "/mac/tutorials/openframe-ai-ready-beside-workspaces/",
+   "screens": [
+    "ai-sim-beside-vault",
+    "ai-sim-beside-story",
+    "ai-sim-beside-screenplay",
+    "ai-sim-beside-breakdown",
+    "ai-sim-beside-production"
+   ]
+  },
+  {
    "id": "files-start",
    "platform": "mac",
    "area": "Files",
@@ -13492,6 +13559,72 @@
   ],
   "mac/ai-search-palette": [
    "openframe-ai-find-via-search"
+  ],
+  "mac/ai-sim-ready": [
+   "openframe-ai-ask"
+  ],
+  "mac/ai-sim-question-typed": [
+   "openframe-ai-ask"
+  ],
+  "mac/ai-sim-working": [
+   "openframe-ai-ask"
+  ],
+  "mac/ai-sim-answer-characters": [
+   "openframe-ai-ask"
+  ],
+  "mac/ai-sim-answer-scene-count": [
+   "openframe-ai-ask"
+  ],
+  "mac/ai-sim-answer-sources-open": [
+   "openframe-ai-ask"
+  ],
+  "mac/ai-sim-scope-menu": [
+   "openframe-ai-scope"
+  ],
+  "mac/ai-sim-proposed-changes": [
+   "openframe-ai-proposals"
+  ],
+  "mac/ai-sim-proposal-applied": [
+   "openframe-ai-proposals"
+  ],
+  "mac/ai-sim-proposal-rejected": [
+   "openframe-ai-proposals"
+  ],
+  "mac/ai-sim-answer-delete-request": [
+   "openframe-ai-proposals"
+  ],
+  "mac/ai-sim-offline-ai-download": [
+   "openframe-ai-offline-details"
+  ],
+  "mac/ai-sim-offline-ai-ready": [
+   "openframe-ai-offline-details"
+  ],
+  "mac/ai-sim-offline-ai-technical-details": [
+   "openframe-ai-offline-details"
+  ],
+  "mac/ai-sim-offline-ai-graphics-off": [
+   "openframe-ai-offline-details"
+  ],
+  "mac/ai-sim-offline-ai-health": [
+   "openframe-ai-offline-details"
+  ],
+  "mac/ai-sim-offline-ai-remove-confirm": [
+   "openframe-ai-offline-details"
+  ],
+  "mac/ai-sim-beside-vault": [
+   "openframe-ai-ready-beside-workspaces"
+  ],
+  "mac/ai-sim-beside-story": [
+   "openframe-ai-ready-beside-workspaces"
+  ],
+  "mac/ai-sim-beside-screenplay": [
+   "openframe-ai-ready-beside-workspaces"
+  ],
+  "mac/ai-sim-beside-breakdown": [
+   "openframe-ai-ready-beside-workspaces"
+  ],
+  "mac/ai-sim-beside-production": [
+   "openframe-ai-ready-beside-workspaces"
   ],
   "mac/files-empty": [
    "files-start",

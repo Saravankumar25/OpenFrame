@@ -47,7 +47,7 @@ export function makeHelpers(cat, missing, shots = { win: {}, mac: {} }, noShot =
     const p = cat[plat]?.get(name) && pic(plat, name);
     return p ? view(p, '', { cover: true }) : '';
   };
-  // A text link that opens one screen in the viewer (the "More screens" lists).
+  // A text link that opens one screen in the viewer (the "Shown in a screen above" lines).
   const shotLink = (plat, name, text) => {
     const p = pic(plat, name);
     return p ? html`<a class="shot-open shot-link" href="${p.url}" data-mock ${data(p)} data-caption="${text}">${text}</a>` : html`<span class="shot-missing">${plat}/${name}</span>`;

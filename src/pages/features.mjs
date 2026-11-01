@@ -38,14 +38,12 @@ function catalogSection(ctx, slug, title, seen) {
   const avail = (f) => html`<div class="avail">${f.win?.length ? html`<span class="yes">Windows</span>` : html`<span>Not on Windows</span>`}${f.mac?.length || f.onMac ? html`<span class="yes">Mac</span>` : html`<span>Not on Mac</span>`}</div>`;
   const shots = (f, plat) => {
     const list = f[plat] || [];
-    if (!list.length && plat === 'mac' && f.onMac) return html`<p class="more-shots">Available in the Mac app. This page shows no Mac screen for it.</p>`;
     if (!list.length) return html`<p class="more-shots">This capability is not part of the ${plat === 'win' ? 'Windows' : 'Mac'} app.</p>`;
     // the first screen not already shown on this page is the card; when all are shown, a link opens the one above
     const card = list.find((n) => !seen[plat].has(n));
-    const rest = list.filter((n) => n !== card);
     if (card) seen[plat].add(card);
     const title = (n) => ctx.cat[plat].get(n)?.title || n;
-    return html`${card ? ctx.mock(plat, card, { caption: f.name }) : html`<p class="more-shots">Shown in a screen above: ${ctx.shotLink(plat, list[0], title(list[0]))}</p>`}${card && rest.length ? html`<p class="more-shots">More screens: ${rest.map((n, i) => html`${i ? ', ' : ''}${ctx.shotLink(plat, n, title(n))}`)}</p>` : ''}`;
+    return html`${card ? ctx.mock(plat, card, { caption: f.name }) : html`<p class="more-shots">Shown in a screen above: ${ctx.shotLink(plat, list[0], title(list[0]))}</p>`}`;
   };
   return html`<section class="sec-s" id="catalog"><div class="wrap"><div class="sec-head"><span class="eyebrow">Complete list</span><h2>Everything in ${title}.</h2>
 <p class="lead">Each one with what it does, what it is for, and where it is available.</p></div>

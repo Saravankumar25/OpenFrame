@@ -28,6 +28,14 @@ test('cards are inert lazy frames of /mockups/ pages: no pictures, no "Open this
   assert.ok(cards > 500, `only ${cards} cards found`);
 });
 
+test('no feature page lists "More screens" or leaves a Mac screen as a placeholder (owner decision 2026-11-01)', { skip: SKIP }, () => {
+  for (const f of htmlFiles()) {
+    const s = read(f);
+    assert.doesNotMatch(s, /More screens:/, pagePath(f));
+    assert.doesNotMatch(s, /shows no Mac screen/, pagePath(f));
+  }
+});
+
 test('every card shows the whole window (owner decision 2026-11-01): no crops, Windows at its captured size', { skip: SKIP }, () => {
   for (const f of htmlFiles()) for (const m of read(f).matchAll(/data-page="(\d+) (\d+)" data-rect="(\d+) (\d+) (\d+) (\d+)"><iframe [^>]*src="\/mockups\/(win|mac)\//g)) {
     const [, w, h, x, y, cw, ch, plat] = m;
@@ -196,7 +204,7 @@ test('the screen theme control swaps every frame and link, and the viewer opens 
   assert.match(await f.getAttribute('src'), /\/light\//);
 }));
 
-test('a card shows the icon until its page has loaded; link:false is not clickable; "More screens" opens the viewer', { skip: SKIP }, () => withPage(async (page) => {
+test('a card shows the icon until its page has loaded; link:false is not clickable; a screen link opens the viewer', { skip: SKIP }, () => withPage(async (page) => {
   await page.goto(base + '/windows/');
   await page.waitForSelector('.tour-real .shot-open.loaded', { timeout: 8000 });
   assert.ok(!(await page.isVisible('.tour-real .mock-load')));

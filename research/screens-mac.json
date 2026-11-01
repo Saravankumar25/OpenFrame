@@ -54198,5 +54198,434 @@
    "Global Idea Vault",
    "Settings"
   ]
+ },
+ {
+  "n": "901",
+  "name": "ai-sim-beside-vault",
+  "file": "sim-ai-sim-beside-vault.html",
+  "title": "OpenFrame AI open beside Idea Vault",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-beside-vault.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "AI Ready",
+   "Scope",
+   "Whole Project",
+   "New",
+   "Send"
+  ],
+  "sim": true
+ },
+ {
+  "n": "902",
+  "name": "ai-sim-beside-story",
+  "file": "sim-ai-sim-beside-story.html",
+  "title": "OpenFrame AI open beside Story",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-beside-story.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "AI Ready",
+   "Scope",
+   "Whole Project",
+   "New",
+   "Send"
+  ],
+  "sim": true
+ },
+ {
+  "n": "903",
+  "name": "ai-sim-beside-screenplay",
+  "file": "sim-ai-sim-beside-screenplay.html",
+  "title": "OpenFrame AI open beside Screenplay",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-beside-screenplay.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "AI Ready",
+   "Scope",
+   "Whole Project",
+   "New",
+   "Send"
+  ],
+  "sim": true
+ },
+ {
+  "n": "904",
+  "name": "ai-sim-beside-breakdown",
+  "file": "sim-ai-sim-beside-breakdown.html",
+  "title": "OpenFrame AI open beside Breakdown",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-beside-breakdown.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "AI Ready",
+   "Scope",
+   "Whole Project",
+   "New",
+   "Send"
+  ],
+  "sim": true
+ },
+ {
+  "n": "905",
+  "name": "ai-sim-beside-production",
+  "file": "sim-ai-sim-beside-production.html",
+  "title": "OpenFrame AI open beside Production",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-beside-production.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "AI Ready",
+   "Scope",
+   "Whole Project",
+   "New",
+   "Send"
+  ],
+  "sim": true
+ },
+ {
+  "n": "906",
+  "name": "ai-sim-answer-delete-request",
+  "file": "sim-ai-sim-answer-delete-request.html",
+  "title": "OpenFrame AI asked to delete, waiting for Apply",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-answer-delete-request.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "Delete all the scenes in the screenplay.",
+   "I prepared this change. Nothing has been changed yet.",
+   "Proposed scene deletion",
+   "Affected areas",
+   "Screenplay",
+   "Its text",
+   "Other drafts",
+   "Not changed",
+   "Reject",
+   "Apply Changes"
+  ],
+  "sim": true
+ },
+ {
+  "n": "907",
+  "name": "ai-sim-offline-ai-download",
+  "file": "sim-ai-sim-offline-ai-download.html",
+  "title": "Settings, Offline AI, one-time download",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-offline-ai-download.png",
+  "width": 760,
+  "height": 548,
+  "texts": [
+   "Offline AI",
+   "Downloading",
+   "Downloading the language model: 436 MB of 1020 MB",
+   "Cancel download",
+   "Import model files…"
+  ],
+  "sim": true
+ },
+ {
+  "n": "908",
+  "name": "ai-sim-offline-ai-health",
+  "file": "sim-ai-sim-offline-ai-health.html",
+  "title": "Settings, Offline AI, AI health",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-offline-ai-health.png",
+  "width": 760,
+  "height": 548,
+  "texts": [
+   "AI health",
+   "No requests yet. The figures appear after you use the AI Assistant.",
+   "Export AI report…",
+   "Assistant memory"
+  ],
+  "sim": true
+ },
+ {
+  "n": "909",
+  "name": "ai-sim-ready",
+  "file": "sim-ai-sim-ready.html",
+  "title": "OpenFrame AI, ready to ask",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-ready.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "AI Ready",
+   "Scope",
+   "Whole Project",
+   "New",
+   "Ask about your project",
+   "Send"
+  ],
+  "sim": true
+ },
+ {
+  "n": "910",
+  "name": "ai-sim-question-typed",
+  "file": "sim-ai-sim-question-typed.html",
+  "title": "OpenFrame AI, a question typed",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-question-typed.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "AI Ready",
+   "How many scenes are in the script?",
+   "Send"
+  ],
+  "sim": true
+ },
+ {
+  "n": "911",
+  "name": "ai-sim-working",
+  "file": "sim-ai-sim-working.html",
+  "title": "OpenFrame AI working on an answer",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-working.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "List the characters.",
+   "Writing the answer",
+   "Cancel"
+  ],
+  "sim": true
+ },
+ {
+  "n": "912",
+  "name": "ai-sim-answer-characters",
+  "file": "sim-ai-sim-answer-characters.html",
+  "title": "OpenFrame AI answers with its sources",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-answer-characters.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "List the characters.",
+   "Devi is the Lead character. Kiran is a Supporting character.",
+   "See sources",
+   "Inferred · written by Offline AI",
+   "Based on:",
+   "Character: DEVI",
+   "Character: KIRAN"
+  ],
+  "sim": true
+ },
+ {
+  "n": "913",
+  "name": "ai-sim-answer-scene-count",
+  "file": "sim-ai-sim-answer-scene-count.html",
+  "title": "OpenFrame AI counts the scenes",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-answer-scene-count.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "How many scenes are in the script?",
+   "LOST PROPERTY has 10 scenes.",
+   "Based on:",
+   "Screenplay: LOST PROPERTY"
+  ],
+  "sim": true
+ },
+ {
+  "n": "914",
+  "name": "ai-sim-answer-sources-open",
+  "file": "sim-ai-sim-answer-sources-open.html",
+  "title": "OpenFrame AI answer with its sources open",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-answer-sources-open.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "Which locations are used in the screenplay?",
+   "See sources",
+   "Inferred · written by Offline AI",
+   "Based on:",
+   "Scene locations: LOST PROPERTY",
+   "Location: Kesarganj Junction",
+   "Location: Night Train"
+  ],
+  "sim": true
+ },
+ {
+  "n": "915",
+  "name": "ai-sim-scope-menu",
+  "file": "sim-ai-sim-scope-menu.html",
+  "title": "OpenFrame AI, choosing what it looks at",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-scope-menu.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "Scope",
+   "Current Screenplay",
+   "Beat Board",
+   "Production Workspace",
+   "Whole Project",
+   "Using: Current Screenplay"
+  ],
+  "sim": true
+ },
+ {
+  "n": "916",
+  "name": "ai-sim-proposed-changes",
+  "file": "sim-ai-sim-proposed-changes.html",
+  "title": "OpenFrame AI proposes a change",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-proposed-changes.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "Create a task to scout the footbridge.",
+   "I prepared a task. Nothing has been added yet.",
+   "Proposed Changes",
+   "Proposed task",
+   "Affected areas",
+   "Notes & Tasks",
+   "Task",
+   "Scout the footbridge",
+   "Impact",
+   "1 new object",
+   "Reject",
+   "Apply Changes"
+  ],
+  "sim": true
+ },
+ {
+  "n": "917",
+  "name": "ai-sim-proposal-applied",
+  "file": "sim-ai-sim-proposal-applied.html",
+  "title": "OpenFrame AI change applied",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-proposal-applied.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "Proposed Changes",
+   "Notes & Tasks",
+   "Ask the station for a footbridge permit",
+   "Applied 1 change. Use Undo to reverse it."
+  ],
+  "sim": true
+ },
+ {
+  "n": "918",
+  "name": "ai-sim-proposal-rejected",
+  "file": "sim-ai-sim-proposal-rejected.html",
+  "title": "OpenFrame AI change rejected",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-proposal-rejected.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "AI Assistant",
+   "Proposed Changes",
+   "Notes & Tasks",
+   "Scout the footbridge",
+   "Rejected. Nothing was changed."
+  ],
+  "sim": true
+ },
+ {
+  "n": "919",
+  "name": "ai-sim-offline-ai-ready",
+  "file": "sim-ai-sim-offline-ai-ready.html",
+  "title": "Settings, Offline AI, running",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-offline-ai-ready.png",
+  "width": 760,
+  "height": 548,
+  "texts": [
+   "Offline AI",
+   "AI Ready",
+   "Stop Offline AI (free memory)",
+   "Remove OpenFrame AI…",
+   "Graphics",
+   "Automatic",
+   "Off",
+   "AI health",
+   "Assistant memory"
+  ],
+  "sim": true
+ },
+ {
+  "n": "920",
+  "name": "ai-sim-offline-ai-technical-details",
+  "file": "sim-ai-sim-offline-ai-technical-details.html",
+  "title": "Settings, Offline AI, technical details",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-offline-ai-technical-details.png",
+  "width": 760,
+  "height": 548,
+  "texts": [
+   "Offline AI",
+   "Technical details",
+   "Component",
+   "Licence",
+   "Size",
+   "AI engine: llama.cpp server (Metal)",
+   "Language model: Gemma 3 1B Instruct (Q8_0)",
+   "Search model: BGE small English v1.5 (Q8_0)",
+   "Search model: Multilingual E5 small (Q8_0)"
+  ],
+  "sim": true
+ },
+ {
+  "n": "921",
+  "name": "ai-sim-offline-ai-graphics-off",
+  "file": "sim-ai-sim-offline-ai-graphics-off.html",
+  "title": "Settings, Offline AI, graphics set to Off",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-offline-ai-graphics-off.png",
+  "width": 760,
+  "height": 548,
+  "texts": [
+   "Offline AI",
+   "AI Ready",
+   "Graphics",
+   "Automatic",
+   "Off",
+   "Decided before the first answer."
+  ],
+  "sim": true
+ },
+ {
+  "n": "922",
+  "name": "ai-sim-offline-ai-remove-confirm",
+  "file": "sim-ai-sim-offline-ai-remove-confirm.html",
+  "title": "Settings, Offline AI, remove confirmation",
+  "area": "OpenFrame AI",
+  "picture": "assets/sim-ai-sim-offline-ai-remove-confirm.png",
+  "width": 760,
+  "height": 548,
+  "texts": [
+   "Remove OpenFrame AI?",
+   "Cancel",
+   "Remove"
+  ],
+  "sim": true
  }
 ]

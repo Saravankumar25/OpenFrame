@@ -195,7 +195,7 @@ async function fillSidebar(rec, theme, raw, sideW, overlays, dims) {
   const w = Math.round(sideW * raw.W / rec.width);
   const idx = MAC_ALL.findIndex((r) => r.name === rec.name);
   const near = MAC_ALL.map((r, i) => ({ r, d: Math.abs(i - idx) + (r.area === rec.area ? 0 : 10000) + (i > idx ? 0.5 : 0) }))
-    .filter(({ r }) => r !== rec && r.width === rec.width && r.height === rec.height && r.texts?.includes('Sidebar')).sort((a, b) => a.d - b.d);
+    .filter(({ r }) => r !== rec && r.width === rec.width && r.height === rec.height && (w === 0 ? r.area === rec.area && !r.texts?.includes('Sidebar') : r.texts?.includes('Sidebar'))).sort((a, b) => a.d - b.d);
   const s = raw.W / rec.width, TB = Math.round(50 * s); // the first toolbar row ends about 50 CSS px down
   const over = overlays.map((o) => [(o.x - 30) * s, (o.y - 30) * s, (o.x + o.w + 30) * s, (o.y + o.h + 30) * s]); // a sheet or menu, with its shadow
   const isOver = (x, y) => over.some((o) => x >= o[0] && x < o[2] && y >= o[1] && y < o[3]);
@@ -205,7 +205,7 @@ async function fillSidebar(rec, theme, raw, sideW, overlays, dims) {
   const toolbar = (p) => detail(p, w + 2, raw.W - 60, 4, TB, inSheet);
   for (const { r } of near) {
     const d = await loadRaw(path.join(MAC_SRC, theme, r.picture));
-    if (d.W !== raw.W || d.H !== raw.H || sideDetail(d, w) < 0.015 || toolbar(d) < 0.035) continue; // the donor must be a clean capture
+    if (d.W !== raw.W || d.H !== raw.H || (w > 0 && sideDetail(d, w) < 0.015) || toolbar(d) < (w === 0 ? 0.012 : 0.035)) continue; // the donor must be a clean capture
     // shade: a sheet dims the window, so scale the donor by the ratio of the two windows' main colours (sheet excluded)
     const box = [w + 40, raw.W - 40, Math.round(120 * s), raw.H - Math.round(60 * s)];
     const m1 = mode(raw, ...box, true), m0 = mode(d, ...box, true), sum = (v) => v[0] + v[1] + v[2];
@@ -216,8 +216,8 @@ async function fillSidebar(rec, theme, raw, sideW, overlays, dims) {
     // sidebar column: replaced whole, except under a sheet or menu drawn over it
     for (let y = 0; y < raw.H; y++) for (let x = 0; x < w; x++) if (!inSheet(x, y)) put(x, y);
     // toolbar: some captures also drew its buttons without labels; then the whole first toolbar row comes from the donor
-    if (toolbar(raw) < 0.025) for (let y = 0; y < TB; y++) for (let x = w; x < raw.W - 30 * s; x++) if (!inSheet(x, y)) put(x, y);
-    return { png: await sharp(out, { raw: { width: raw.W, height: raw.H, channels: 4 } }).png({ compressionLevel: 9 }).toBuffer(), donor: r.name };
+    if (toolbar(raw) < (w === 0 ? 0.006 : 0.025)) for (let y = 0; y < TB; y++) for (let x = w; x < raw.W - (w === 0 ? 4 : 30) * s; x++) if (!inSheet(x, y)) put(x, y);
+    return { png: await sharp(out, { raw: { width: raw.W, height: raw.H, channels: 4 } }).png({ compressionLevel: 9 }).toBuffer(), donor: r.name, changed: w > 0 || toolbar(raw) < 0.006 };
   }
   return null;
 }
@@ -244,6 +244,13 @@ async function macOne(page, rec) {
       if (!f) throw new Error(`blank sidebar and no donor screen: ${p.t}/${name}`);
       patched[p.t] = f.png; p.raw = await loadRaw(f.png); sidebar = `filled from ${f.donor}`;
     }
+  }
+  // a window without a sidebar (Application Home and its sheets) can also have a toolbar the capture drew as empty pills
+  const tbd = (p) => detail(p, Math.round(300 * s), p.W - Math.round(60 * s), Math.round(10 * s), Math.round(46 * s));
+  if (!hasSide && g.W >= 1200) for (const p of pics) {
+    if (tbd(p.raw) >= 0.005 || Math.max(...pics.map((q) => tbd(q.raw))) < 0.012) continue; // empty in this theme only: a screen with no toolbar by design is left alone
+    const f = await fillSidebar(rec, p.t, p.raw, 0, Object.values(g.regs).flat(), !!g.regs.sheet?.length);
+    if (f && f.changed) { patched[p.t] = f.png; p.raw = await loadRaw(f.png); sidebar = `collapsed, toolbar filled from ${f.donor}`; }
   }
   // 2. clean inner rectangle: a few px inside the window, past any capture strip
   const e = { l: 6, t: 6, r: 6, b: 6 };
@@ -371,7 +378,7 @@ async function pool(items, n, fn) {
 const browser = await chromium.launch();
 try {
   if (ONLY !== 'win') {
-    const all = readJson(path.join(RES, 'screens-mac.json'), []);
+    const all = readJson(path.join(RES, 'screens-mac.json'), []).filter((r) => !r.sim); // simulated screens come from sim-mac.mjs
     MAC_ALL = all;
     const cat = all.filter((r) => !MATCH || MATCH.test(r.name));
     console.log(`mac: ${cat.length} screens`);

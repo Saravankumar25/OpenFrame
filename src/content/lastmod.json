@@ -4,64 +4,64 @@
   "d": "2026-10-31"
  },
  "/features/idea-vault/": {
-  "h": "d2b9150787da",
-  "d": "2026-10-31"
+  "h": "99359a0b0e51",
+  "d": "2026-11-01"
  },
  "/features/story-board/": {
-  "h": "d66c13c5560d",
-  "d": "2026-10-31"
+  "h": "5b5f11d65024",
+  "d": "2026-11-01"
  },
  "/features/moodboards/": {
-  "h": "d52979b9460d",
-  "d": "2026-10-31"
+  "h": "13334f2fec02",
+  "d": "2026-11-01"
  },
  "/features/screenplay/": {
-  "h": "e1efe4a189d2",
-  "d": "2026-10-31"
+  "h": "74db481c5db6",
+  "d": "2026-11-01"
  },
  "/features/drafts-revisions/": {
-  "h": "54cf67c9fe29",
-  "d": "2026-10-31"
+  "h": "b1340afbaac9",
+  "d": "2026-11-01"
  },
  "/features/import-export/": {
-  "h": "b616bdfde913",
-  "d": "2026-10-31"
+  "h": "a953d46f8118",
+  "d": "2026-11-01"
  },
  "/features/openframe-ai/": {
-  "h": "f37b9866f770",
-  "d": "2026-10-31"
+  "h": "9f9528d34d2e",
+  "d": "2026-11-01"
  },
  "/features/breakdown/": {
-  "h": "843d8cb2b31a",
-  "d": "2026-10-31"
+  "h": "6e52ddb21eda",
+  "d": "2026-11-01"
  },
  "/features/cast-crew-locations/": {
-  "h": "f1cb52999f0b",
-  "d": "2026-10-31"
+  "h": "e35586cbb4ec",
+  "d": "2026-11-01"
  },
  "/features/shot-lists-storyboards/": {
-  "h": "3662f18a38c9",
-  "d": "2026-10-31"
+  "h": "0a864266aaa9",
+  "d": "2026-11-01"
  },
  "/features/scheduling/": {
-  "h": "9493380011c5",
-  "d": "2026-10-31"
+  "h": "8229f711a61e",
+  "d": "2026-11-01"
  },
  "/features/call-sheets/": {
-  "h": "d8da5dfab077",
-  "d": "2026-10-31"
+  "h": "84f1626524f0",
+  "d": "2026-11-01"
  },
  "/features/sides-daily-view/": {
-  "h": "07466bbdbb7c",
-  "d": "2026-10-31"
+  "h": "247ba9652fb7",
+  "d": "2026-11-01"
  },
  "/features/reports-budget/": {
-  "h": "c35841592263",
-  "d": "2026-10-31"
+  "h": "1929a34b0610",
+  "d": "2026-11-01"
  },
  "/features/backups-recovery/": {
-  "h": "cefd1461ecec",
-  "d": "2026-10-31"
+  "h": "0c6683e1c232",
+  "d": "2026-11-01"
  },
  "/": {
   "h": "f596ced8049b",
@@ -1704,8 +1704,8 @@
   "d": "2026-10-31"
  },
  "/mac/tutorials/": {
-  "h": "617447a6c8ac",
-  "d": "2026-10-31"
+  "h": "f9f42f1c39f0",
+  "d": "2026-11-01"
  },
  "/mac/tutorials/library-setup-default/": {
   "h": "e84ce44b20dc",
@@ -2652,12 +2652,32 @@
   "d": "2026-10-31"
  },
  "/mac/tutorials/openframe-ai-find-via-search/": {
-  "h": "07a8441ecf71",
-  "d": "2026-10-31"
+  "h": "e926be32ad39",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/openframe-ai-ask/": {
+  "h": "849ce3230167",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/openframe-ai-scope/": {
+  "h": "25e533b40269",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/openframe-ai-proposals/": {
+  "h": "0e0d4fcf4f03",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/openframe-ai-offline-details/": {
+  "h": "82a50dc9c2ec",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/openframe-ai-ready-beside-workspaces/": {
+  "h": "6dc7bc7ece57",
+  "d": "2026-11-01"
  },
  "/mac/tutorials/files-start/": {
-  "h": "106ef83c4ba1",
-  "d": "2026-10-31"
+  "h": "13ffd105e506",
+  "d": "2026-11-01"
  },
  "/mac/tutorials/files-add-copy/": {
   "h": "fda1b028ddcf",
