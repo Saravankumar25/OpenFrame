@@ -54627,5 +54627,194 @@
    "Remove"
   ],
   "sim": true
+ },
+ {
+  "n": "923",
+  "name": "ai-sim-vault-sketch",
+  "file": "sim-ai-sim-vault-sketch.html",
+  "title": "Idea Vault, drawing a new sketch",
+  "area": "Idea Vault",
+  "picture": "assets/sim-ai-sim-vault-sketch.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "New Sketch",
+   "Name (optional)",
+   "Black ink",
+   "Red ink",
+   "Blue ink",
+   "Fine",
+   "Medium",
+   "Bold",
+   "Eraser",
+   "Clear",
+   "Cancel",
+   "Save Sketch"
+  ],
+  "sim": true
+ },
+ {
+  "n": "924",
+  "name": "ai-sim-vault-file-moved",
+  "file": "sim-ai-sim-vault-file-moved.html",
+  "title": "Idea Vault, a linked file that moved",
+  "area": "Idea Vault",
+  "picture": "assets/sim-ai-sim-vault-file-moved.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "Harbour notes.txt",
+   "File unavailable",
+   "The original file could not be found",
+   "OpenFrame keeps this item and its notes. Nothing has been deleted.",
+   "Relink…",
+   "Open Location",
+   "Title",
+   "Caption",
+   "Source link",
+   "Research flag",
+   "No flag"
+  ],
+  "sim": true
+ },
+ {
+  "n": "925",
+  "name": "ai-sim-scene-number",
+  "file": "sim-ai-sim-scene-number.html",
+  "title": "Screenplay, changing a scene number used in production",
+  "area": "Screenplay",
+  "picture": "assets/sim-ai-sim-scene-number.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "Scene number",
+   "Number",
+   "1A",
+   "This scene is already used in production planning (Breakdown, 3 shots and the shooting schedule).",
+   "Its new number will show everywhere; the production items stay linked to the scene.",
+   "Cancel",
+   "Change the number"
+  ],
+  "sim": true
+ },
+ {
+  "n": "926",
+  "name": "ai-sim-import-failed",
+  "file": "sim-ai-sim-import-failed.html",
+  "title": "Screenplay, an import that failed",
+  "area": "Screenplay",
+  "picture": "assets/sim-ai-sim-import-failed.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "Import failed. Your current project was not changed.",
+   "Older and other formats such as .doc, .rtf and .pages are not supported.",
+   "Close",
+   "Paste Text Instead"
+  ],
+  "sim": true
+ },
+ {
+  "n": "927",
+  "name": "ai-sim-breakdown-needs-review",
+  "file": "sim-ai-sim-breakdown-needs-review.html",
+  "title": "Breakdown, a scene changed in the script",
+  "area": "Breakdown",
+  "picture": "assets/sim-ai-sim-breakdown-needs-review.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "Scene 4 changed. Review breakdown differences.",
+   "Needs Review",
+   "Review Manually",
+   "Keep Production Data",
+   "Apply Suggested Update"
+  ],
+  "sim": true
+ },
+ {
+  "n": "928",
+  "name": "ai-sim-breakdown-removed-scenes",
+  "file": "sim-ai-sim-breakdown-removed-scenes.html",
+  "title": "Breakdown, a removed scene kept for reference",
+  "area": "Breakdown",
+  "picture": "assets/sim-ai-sim-breakdown-removed-scenes.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "Removed scenes",
+   "Scene removed from current source. Its breakdown is kept for reference.",
+   "Close"
+  ],
+  "sim": true
+ },
+ {
+  "n": "929",
+  "name": "ai-sim-catalog-export",
+  "file": "sim-ai-sim-catalog-export.html",
+  "title": "Breakdown catalog, exporting it",
+  "area": "Breakdown",
+  "picture": "assets/sim-ai-sim-catalog-export.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "Export Catalog",
+   "PDF",
+   "CSV file",
+   "Excel workbook",
+   "Private notes excluded. Export creates a snapshot and does not change your project.",
+   "Cancel",
+   "Export…"
+  ],
+  "sim": true
+ },
+ {
+  "n": "930",
+  "name": "ai-sim-callsheet-schedule-changed",
+  "file": "sim-ai-sim-callsheet-schedule-changed.html",
+  "title": "Call sheet, the schedule changed after final",
+  "area": "Call Sheets",
+  "picture": "assets/sim-ai-sim-callsheet-schedule-changed.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "The schedule changed after this call sheet was finalized (Times).",
+   "The final version never changes; start a new revision to update it.",
+   "Start New Revision"
+  ],
+  "sim": true
+ },
+ {
+  "n": "931",
+  "name": "ai-sim-callsheet-day-deleted",
+  "file": "sim-ai-sim-callsheet-day-deleted.html",
+  "title": "Call sheet, its shooting day was deleted",
+  "area": "Call Sheets",
+  "picture": "assets/sim-ai-sim-callsheet-day-deleted.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "The shooting day of this call sheet was deleted.",
+   "The call sheet stays readable and unchanged."
+  ],
+  "sim": true
+ },
+ {
+  "n": "932",
+  "name": "ai-sim-trial-reminder",
+  "file": "sim-ai-sim-trial-reminder.html",
+  "title": "The 7-day free trial reminder",
+  "area": "Project Home",
+  "picture": "assets/sim-ai-sim-trial-reminder.png",
+  "width": 1280,
+  "height": 630,
+  "texts": [
+   "Trial reminder",
+   "Your free trial ends in 3 days",
+   "Your projects stay on your computer either way. Nothing is deleted when the trial ends.",
+   "Continue trial",
+   "Buy full version"
+  ],
+  "sim": true
  }
 ]

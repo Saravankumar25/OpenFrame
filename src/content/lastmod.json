@@ -1,10 +1,10 @@
 {
  "/features/": {
-  "h": "3e0ba31d3382",
-  "d": "2026-10-31"
+  "h": "7d71a3ce3a6b",
+  "d": "2026-11-01"
  },
  "/features/idea-vault/": {
-  "h": "99359a0b0e51",
+  "h": "d37c382fbc1a",
   "d": "2026-11-01"
  },
  "/features/story-board/": {
@@ -16,7 +16,7 @@
   "d": "2026-11-01"
  },
  "/features/screenplay/": {
-  "h": "74db481c5db6",
+  "h": "f1bbfc78863b",
   "d": "2026-11-01"
  },
  "/features/drafts-revisions/": {
@@ -24,7 +24,7 @@
   "d": "2026-11-01"
  },
  "/features/import-export/": {
-  "h": "a953d46f8118",
+  "h": "0a67f84f94db",
   "d": "2026-11-01"
  },
  "/features/openframe-ai/": {
@@ -32,7 +32,7 @@
   "d": "2026-11-01"
  },
  "/features/breakdown/": {
-  "h": "6e52ddb21eda",
+  "h": "66582fd4db80",
   "d": "2026-11-01"
  },
  "/features/cast-crew-locations/": {
@@ -48,7 +48,7 @@
   "d": "2026-11-01"
  },
  "/features/call-sheets/": {
-  "h": "84f1626524f0",
+  "h": "6c484d08562c",
   "d": "2026-11-01"
  },
  "/features/sides-daily-view/": {
@@ -60,7 +60,7 @@
   "d": "2026-11-01"
  },
  "/features/backups-recovery/": {
-  "h": "0c6683e1c232",
+  "h": "776261df40fc",
   "d": "2026-11-01"
  },
  "/": {
@@ -1704,7 +1704,7 @@
   "d": "2026-10-31"
  },
  "/mac/tutorials/": {
-  "h": "f9f42f1c39f0",
+  "h": "159d4111c5b9",
   "d": "2026-11-01"
  },
  "/mac/tutorials/library-setup-default/": {
@@ -1844,12 +1844,16 @@
   "d": "2026-10-31"
  },
  "/mac/tutorials/project-home-undo-after-import/": {
-  "h": "df1f1afe896e",
-  "d": "2026-10-31"
+  "h": "63d31e343824",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/project-home-trial-reminder/": {
+  "h": "7d2f7ec419e7",
+  "d": "2026-11-01"
  },
  "/mac/tutorials/idea-vault-tour/": {
-  "h": "55ab68c67cec",
-  "d": "2026-10-31"
+  "h": "d5cc4c63c53b",
+  "d": "2026-11-01"
  },
  "/mac/tutorials/idea-vault-quick-capture/": {
   "h": "864b4c4bc439",
@@ -1928,12 +1932,20 @@
   "d": "2026-10-31"
  },
  "/mac/tutorials/idea-vault-copy-to-global/": {
-  "h": "f60ca9c35a5f",
-  "d": "2026-10-31"
+  "h": "5108a7a500d1",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/idea-vault-sketch/": {
+  "h": "5dfbe8db3604",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/idea-vault-file-moved/": {
+  "h": "97c94e9c8661",
+  "d": "2026-11-01"
  },
  "/mac/tutorials/story-write-page/": {
-  "h": "cdc53429d7fc",
-  "d": "2026-10-31"
+  "h": "52f69bef49b5",
+  "d": "2026-11-01"
  },
  "/mac/tutorials/story-format-page/": {
   "h": "4779429a67c9",
@@ -2176,12 +2188,20 @@
   "d": "2026-10-31"
  },
  "/mac/tutorials/screenplay-print-preview/": {
-  "h": "fd7c90dd30a9",
-  "d": "2026-10-31"
+  "h": "9767c73d12c4",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/screenplay-scene-number/": {
+  "h": "90cb6ec9c47f",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/screenplay-import-failed/": {
+  "h": "004badc31f50",
+  "d": "2026-11-01"
  },
  "/mac/tutorials/breakdown-choose-source/": {
-  "h": "d9ab6569cc53",
-  "d": "2026-10-31"
+  "h": "4370ff936662",
+  "d": "2026-11-01"
  },
  "/mac/tutorials/breakdown-empty-project/": {
   "h": "e92c62796b65",
@@ -2240,12 +2260,24 @@
   "d": "2026-10-31"
  },
  "/mac/tutorials/breakdown-export/": {
-  "h": "61aa0902d5b2",
-  "d": "2026-10-31"
+  "h": "b88ab43e7687",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/breakdown-needs-review/": {
+  "h": "d955772e9282",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/breakdown-removed-scenes/": {
+  "h": "5bb250a266df",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/breakdown-export-catalog/": {
+  "h": "6e4881e868cf",
+  "d": "2026-11-01"
  },
  "/mac/tutorials/production-plan-open-production/": {
-  "h": "cce83dd7fa73",
-  "d": "2026-10-31"
+  "h": "f07e324be7f9",
+  "d": "2026-11-01"
  },
  "/mac/tutorials/production-plan-read-overview/": {
   "h": "c44d8116b944",
@@ -2568,12 +2600,20 @@
   "d": "2026-10-31"
  },
  "/mac/tutorials/call-sheets-delete/": {
-  "h": "7502f1a1edcf",
-  "d": "2026-10-31"
+  "h": "73216cfb9f15",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/call-sheets-schedule-changed/": {
+  "h": "bc6b6e67d53f",
+  "d": "2026-11-01"
+ },
+ "/mac/tutorials/call-sheets-day-deleted/": {
+  "h": "4d893af51907",
+  "d": "2026-11-01"
  },
  "/mac/tutorials/reports-open-and-switch/": {
-  "h": "a7248120cf02",
-  "d": "2026-10-31"
+  "h": "3bbe222b84bd",
+  "d": "2026-11-01"
  },
  "/mac/tutorials/reports-filter-rows/": {
   "h": "b74899c71c6a",

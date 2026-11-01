@@ -6,6 +6,7 @@
 import fs from 'node:fs'; import path from 'node:path'; import sharp from 'sharp';
 import { chromium } from 'playwright'; import { pathToFileURL } from 'node:url';
 import { SIMS, SIM_AREA, panelCss, settingsCss, TOKENS } from './sim-mac-screens.mjs';
+import { FREE_SIMS, freeCss, ACCENT } from './sim-mac-free.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const SHOTS = path.join(ROOT, '.cache', 'shots'), PAGES = path.join(SHOTS, 'pages', 'mac'), MANIFEST = path.join(SHOTS, 'manifest.json');
@@ -69,6 +70,11 @@ async function build(page, sim, theme) {
     body = `<div class="sim-panel" style="left:${left}px;top:${top}px;width:${right - left}px;height:${bottom - top}px">${sim.panel(tk)}</div>${chip}${sim.over ? sim.over(tk, { left, top, right, bottom }) : ''}`;
     css = panelCss(tk, bg, hdr, acc);
     html = dropUnavailable(html);
+  } else if (sim.kind === 'free') {
+    // a dialog over the dimmed window, or a notice painted into a flat area of the capture
+    for (const [rect, [sx, sy]] of sim.paint || []) png = await paint(png, s, [rect], rgba(hex(await pixel(png, sx, sy, s))));
+    body = sim.html();
+    css = freeCss(tk, ACCENT[theme]);
   } else {
     const [W, H] = g.win;
     const bg = hex(await pixel(png, 6, 130, s));
@@ -89,12 +95,12 @@ const browser = await chromium.launch();
 const page = await (await browser.newContext({ viewport: { width: 1500, height: 900 } })).newPage();
 const records = [];
 let n = 900;
-for (const sim of SIMS) {
+for (const sim of [...SIMS, ...FREE_SIMS.map((f) => ({ ...f, kind: 'free' }))]) {
   for (const theme of ['light', 'dark']) await build(page, sim, theme);
   const base = byName.get(sim.base), mf = manifest.mac[sim.base];
   if (!mf) throw new Error(`no manifest entry for ${sim.base}`);
   manifest.mac[sim.name] = { ...mf, file: `sim-${sim.name}.html`, focus: 'panel', sidebar: 'kept', sim: true };
-  records.push({ n: String(++n), name: sim.name, file: `sim-${sim.name}.html`, title: sim.title, area: SIM_AREA, picture: `assets/sim-${sim.name}.png`, width: base.width, height: base.height, texts: sim.texts, sim: true });
+  records.push({ n: String(++n), name: sim.name, file: `sim-${sim.name}.html`, title: sim.title, area: sim.kind === 'free' ? base.area : SIM_AREA, picture: `assets/sim-${sim.name}.png`, width: base.width, height: base.height, texts: sim.texts, sim: true });
 }
 await browser.close();
 fs.writeFileSync(MANIFEST + '.tmp', JSON.stringify(manifest, null, 1)); fs.renameSync(MANIFEST + '.tmp', MANIFEST);

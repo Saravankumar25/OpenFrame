@@ -58,7 +58,7 @@ ${link('/features/', 'Features', 'every capability, marked for Windows and Mac.'
   const full = [`# ${SITE_NAME}: complete feature catalog and tutorials`, '', `Platforms: Windows 11 and macOS 14 or later on Apple silicon. Price: one-time purchase, ₹2,999 in India, €89 in Europe and US$89 in other countries, after a 7-day free trial.`, ''];
   for (const [, items] of FEATURE_GROUPS) for (const [slug, title] of items) {
     full.push(`## ${title} (${SITE_URL}/features/${slug}/)`, '');
-    for (const f of CATALOG[slug] || []) full.push(`- ${f.name} [${[f.win?.length && 'Windows', (f.mac?.length || f.onMac) && 'Mac'].filter(Boolean).join(', ')}]: ${f.does} ${f.purpose}`);
+    for (const f of CATALOG[slug] || []) full.push(`- ${f.name} [${[f.win?.length && 'Windows', f.mac?.length && 'Mac'].filter(Boolean).join(', ')}]: ${f.does} ${f.purpose}`);
     full.push('');
   }
   for (const plat of ['win', 'mac']) {

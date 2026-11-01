@@ -35,10 +35,10 @@ function catalogSection(ctx, slug, title, seen) {
   const { html } = ctx;
   const items = CATALOG[slug] || [];
   if (!items.length) return '';
-  const avail = (f) => html`<div class="avail">${f.win?.length ? html`<span class="yes">Windows</span>` : html`<span>Not on Windows</span>`}${f.mac?.length || f.onMac ? html`<span class="yes">Mac</span>` : html`<span>Not on Mac</span>`}</div>`;
+  const avail = (f) => html`<div class="avail">${f.win?.length ? html`<span class="yes">Windows</span>` : ''}${f.mac?.length ? html`<span class="yes">Mac</span>` : ''}</div>`;
   const shots = (f, plat) => {
     const list = f[plat] || [];
-    if (!list.length) return html`<p class="more-shots">This capability is not part of the ${plat === 'win' ? 'Windows' : 'Mac'} app.</p>`;
+    if (!list.length) return '';
     // the first screen not already shown on this page is the card; when all are shown, a link opens the one above
     const card = list.find((n) => !seen[plat].has(n));
     if (card) seen[plat].add(card);
@@ -105,7 +105,7 @@ ${items.map(([slug, title]) => html`<a class="card linkcard" href="/features/${s
 </div></section>
 ${count ? html`<section class="tint sec-s"><div class="wrap"><div class="sec-head"><span class="eyebrow">Complete catalog</span><h2>Every capability at a glance.</h2></div>
 ${ctx.FEATURE_GROUPS.flatMap(([, items]) => items).map(([slug, title]) => (CATALOG[slug] || []).length ? html`<div class="lib-area"><h2><a href="/features/${slug}/#catalog">${title}</a></h2><ul class="lib">
-${CATALOG[slug].map((f) => html`<li><b><a href="/features/${slug}/#${f.id}">${f.name}</a></b>${f.summary} <span class="small-print">${[f.win?.length && 'Windows', (f.mac?.length || f.onMac) && 'Mac'].filter(Boolean).join(' and ')}</span></li>`)}</ul></div>` : '')}
+${CATALOG[slug].map((f) => html`<li><b><a href="/features/${slug}/#${f.id}">${f.name}</a></b>${f.summary} <span class="small-print">${[f.win?.length && 'Windows', f.mac?.length && 'Mac'].filter(Boolean).join(' and ')}</span></li>`)}</ul></div>` : '')}
 </div></section>` : ''}
 ${ctx.cta()}`;
   return {

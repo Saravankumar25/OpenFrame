@@ -5325,6 +5325,16 @@
    ]
   },
   {
+   "id": "project-home-trial-reminder",
+   "platform": "mac",
+   "area": "Project Home",
+   "title": "Read the free trial reminder",
+   "url": "/mac/tutorials/project-home-trial-reminder/",
+   "screens": [
+    "ai-sim-trial-reminder"
+   ]
+  },
+  {
    "id": "idea-vault-tour",
    "platform": "mac",
    "area": "Idea Vault",
@@ -5594,6 +5604,26 @@
     "vault-item-selected",
     "vault-copy-to-global-sheet",
     "vault-copy-to-global-sheet"
+   ]
+  },
+  {
+   "id": "idea-vault-sketch",
+   "platform": "mac",
+   "area": "Idea Vault",
+   "title": "Draw a sketch in the Idea Vault",
+   "url": "/mac/tutorials/idea-vault-sketch/",
+   "screens": [
+    "ai-sim-vault-sketch"
+   ]
+  },
+  {
+   "id": "idea-vault-file-moved",
+   "platform": "mac",
+   "area": "Idea Vault",
+   "title": "Find out what happened to a file that moved",
+   "url": "/mac/tutorials/idea-vault-file-moved/",
+   "screens": [
+    "ai-sim-vault-file-moved"
    ]
   },
   {
@@ -6408,6 +6438,26 @@
    ]
   },
   {
+   "id": "screenplay-scene-number",
+   "platform": "mac",
+   "area": "Screenplay",
+   "title": "Set a scene number yourself",
+   "url": "/mac/tutorials/screenplay-scene-number/",
+   "screens": [
+    "ai-sim-scene-number"
+   ]
+  },
+  {
+   "id": "screenplay-import-failed",
+   "platform": "mac",
+   "area": "Screenplay",
+   "title": "Read the message when an import fails",
+   "url": "/mac/tutorials/screenplay-import-failed/",
+   "screens": [
+    "ai-sim-import-failed"
+   ]
+  },
+  {
    "id": "breakdown-choose-source",
    "platform": "mac",
    "area": "Breakdown",
@@ -6601,6 +6651,36 @@
     "breakdown-export-xlsx",
     "breakdown-export-options",
     "breakdown-export-sheet"
+   ]
+  },
+  {
+   "id": "breakdown-needs-review",
+   "platform": "mac",
+   "area": "Breakdown",
+   "title": "Review a scene that changed in the script",
+   "url": "/mac/tutorials/breakdown-needs-review/",
+   "screens": [
+    "ai-sim-breakdown-needs-review"
+   ]
+  },
+  {
+   "id": "breakdown-removed-scenes",
+   "platform": "mac",
+   "area": "Breakdown",
+   "title": "Look at scenes removed from the script",
+   "url": "/mac/tutorials/breakdown-removed-scenes/",
+   "screens": [
+    "ai-sim-breakdown-removed-scenes"
+   ]
+  },
+  {
+   "id": "breakdown-export-catalog",
+   "platform": "mac",
+   "area": "Breakdown",
+   "title": "Export the catalog",
+   "url": "/mac/tutorials/breakdown-export-catalog/",
+   "screens": [
+    "ai-sim-catalog-export"
    ]
   },
   {
@@ -7630,6 +7710,26 @@
    "screens": [
     "callsheet-editor",
     "callsheet-delete-confirm"
+   ]
+  },
+  {
+   "id": "call-sheets-schedule-changed",
+   "platform": "mac",
+   "area": "Call Sheets",
+   "title": "Read the notice when the schedule changed after final",
+   "url": "/mac/tutorials/call-sheets-schedule-changed/",
+   "screens": [
+    "ai-sim-callsheet-schedule-changed"
+   ]
+  },
+  {
+   "id": "call-sheets-day-deleted",
+   "platform": "mac",
+   "area": "Call Sheets",
+   "title": "Open a call sheet whose shooting day was deleted",
+   "url": "/mac/tutorials/call-sheets-day-deleted/",
+   "screens": [
+    "ai-sim-callsheet-day-deleted"
    ]
   },
   {
@@ -11792,6 +11892,9 @@
   "mac/home-import-toast": [
    "project-home-undo-after-import"
   ],
+  "mac/ai-sim-trial-reminder": [
+   "project-home-trial-reminder"
+  ],
   "mac/vault-empty": [
    "idea-vault-tour"
   ],
@@ -11985,6 +12088,12 @@
   ],
   "mac/vault-copy-to-global-sheet": [
    "idea-vault-copy-to-global"
+  ],
+  "mac/ai-sim-vault-sketch": [
+   "idea-vault-sketch"
+  ],
+  "mac/ai-sim-vault-file-moved": [
+   "idea-vault-file-moved"
   ],
   "mac/story-page-empty": [
    "story-write-page"
@@ -12645,6 +12754,12 @@
   "mac/screenplay-print-preview-no-title": [
    "screenplay-print-preview"
   ],
+  "mac/ai-sim-scene-number": [
+   "screenplay-scene-number"
+  ],
+  "mac/ai-sim-import-failed": [
+   "screenplay-import-failed"
+  ],
   "mac/breakdown-no-source": [
    "breakdown-choose-source"
   ],
@@ -12789,6 +12904,15 @@
   ],
   "mac/breakdown-export-options": [
    "breakdown-export"
+  ],
+  "mac/ai-sim-breakdown-needs-review": [
+   "breakdown-needs-review"
+  ],
+  "mac/ai-sim-breakdown-removed-scenes": [
+   "breakdown-removed-scenes"
+  ],
+  "mac/ai-sim-catalog-export": [
+   "breakdown-export-catalog"
   ],
   "mac/plan-overview-empty": [
    "production-plan-open-production"
@@ -13415,6 +13539,12 @@
   ],
   "mac/callsheet-delete-confirm": [
    "call-sheets-delete"
+  ],
+  "mac/ai-sim-callsheet-schedule-changed": [
+   "call-sheets-schedule-changed"
+  ],
+  "mac/ai-sim-callsheet-day-deleted": [
+   "call-sheets-day-deleted"
   ],
   "mac/schedule-reports-scene": [
    "reports-open-and-switch",

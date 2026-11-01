@@ -31,7 +31,7 @@ test('feature catalog: every group, unique ids, real screens, availability by pl
     assert.ok(!ids.has(it.id), `duplicate ${it.id}`); ids.add(it.id);
     for (const k of ['name', 'summary', 'does', 'purpose']) assert.ok(it[k], `${it.id}.${k}`);
     for (const plat of ['win', 'mac']) for (const n of it[plat] || []) assert.ok(names[plat].has(n), `${it.id}: ${plat}/${n}`);
-    assert.ok((it.win?.length || 0) + (it.mac?.length || 0) > 0 || it.onMac, `${it.id} has no screen`);
+    assert.ok((it.win?.length || 0) + (it.mac?.length || 0) > 0, `${it.id} has no screen`);
   }
 });
 

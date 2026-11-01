@@ -228,8 +228,26 @@ export default {
       ],
       related: [`project-home-tour`],
     },
+    {
+      id: `project-home-trial-reminder`,
+      title: `Read the free trial reminder`,
+      purpose: `Know how the 7-day free trial ends.`,
+      level: `Beginner`,
+      prerequisites: [`The free trial is running.`],
+      steps: [
+        {
+          screen: `ai-sim-trial-reminder`,
+          do: `Read the reminder. Click Continue trial or Buy full version.`,
+          explain: `Every new install starts a 7-day free trial with the whole app. The reminder says how many days are left. Your projects stay on your computer either way, and nothing is deleted when the trial ends.`,
+        },
+      ],
+      result: `You decided whether to buy now or keep trying.`,
+      cautions: [],
+      related: [],
+    },
   ],
   screens: {
+    'ai-sim-trial-reminder': `The Trial reminder dialog: Your free trial ends in 3 days, with Continue trial and Buy full version. Used in project-home-trial-reminder.`,
     'project-home': `Project Home of Night Bus. The sidebar lists Home to Files, the toolbar has Hide Sidebar, All Projects, Back, Forward, Project, Search, New, Assistant and Settings, and the page shows Status: Idea, Project settings, QUICK ACCESS, Project Files and RECENT. Used in project-home-tour, project-home-set-status and project-home-back-forward.`,
     'project-home-empty': `Project Home of a new, empty project. It says Start with your ideas, build your story, or open a screenplay and offers three cards: Open Idea Vault, Build Story and Write/Import Screenplay. Used in project-home-tour.`,
     'project-menu': `The Project menu from the toolbar: Status, Project Settings…, Settings…, Rename…, Duplicate Project, Show in Finder, Notes and Tasks, Activity, Recently Deleted, Archive Project, Search and Commands… and All Projects. Used in project-home-project-menu and project-home-rename.`,

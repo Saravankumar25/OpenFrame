@@ -8,7 +8,7 @@ in the git-ignored `.cache/shots/`), framed in its card and opened full size in 
 screen of the same area, and a dark Application Home toolbar the capture drew as empty pills is filled the same way); only the Windows screenplay writing screens hide the Scenes list so the script is the centre.
 A screen is a card only once per feature page. Feature pages show no "More screens" lists.
 The Mac captures never ran the AI assistant (no Offline AI in that build), so the Mac AI chat, proposals and Offline AI
-details are simulated screens (22, `scripts/sim-mac.mjs` with `scripts/sim-mac-screens.mjs`, run after `shots.mjs`): a real Mac
+details are simulated screens (32, `scripts/sim-mac.mjs` with `scripts/sim-mac-screens.mjs`, run after `shots.mjs`): a real Mac
 capture whose AI panel or Offline AI pane is redrawn as live HTML with the Windows wording, listed in
 `research/screens-mac.json` with `sim: true` (`extract-screens.mjs` drops them, so re-run `sim-mac.mjs` after it).
 
@@ -27,5 +27,6 @@ Next:
 1. Owner review of the live site and the tutorial wording.
 2. Store listing links when they exist (`OF_STORE_WIN`, `OF_STORE_MAC`).
 3. Recapture the Mac assistant screens with the AI engine installed, then replace the simulated ones.
-4. Ten capabilities show "Not on Mac" only because no Mac screen was captured; the Mac source has most of them
-   (sketches, scene numbers, Needs Review, removed scenes, relink, trial). Owner to confirm, then capture or simulate them.
+4. Ten capabilities with no Mac capture (sketches, files that moved, scene numbers, import errors, Needs Review, removed
+   scenes, export catalog, changed after final, deleted day, trial) have simulated Mac dialogs and notices
+   (`scripts/sim-mac-free.mjs`). Check their wording against the Mac app, then capture them for real. No page says "Not on Mac".

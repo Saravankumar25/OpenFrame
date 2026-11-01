@@ -32,7 +32,7 @@ test('no feature page lists "More screens" or leaves a Mac screen as a placehold
   for (const f of htmlFiles()) {
     const s = read(f);
     assert.doesNotMatch(s, /More screens:/, pagePath(f));
-    assert.doesNotMatch(s, /shows no Mac screen/, pagePath(f));
+    assert.doesNotMatch(s, /shows no Mac screen|not part of the (Windows|Mac) app|Not on (Windows|Mac)/, pagePath(f));
   }
 });
 
