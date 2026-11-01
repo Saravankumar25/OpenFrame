@@ -13,6 +13,8 @@
     "serve": "node scripts/serve.mjs",
     "test": "node --test \"tests/*.test.mjs\"",
     "deploy": "node scripts/deploy.mjs",
+    "domain:ensure": "node scripts/cloudflare-ops.mjs ensure",
+    "domain:verify": "node scripts/cloudflare-ops.mjs verify",
     "shots": "node scripts/shots.mjs"
   },
   "keywords": [],

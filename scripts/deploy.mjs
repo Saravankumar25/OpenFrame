@@ -20,3 +20,5 @@ const g = inspectDist(dist, { secrets: [env.CLOUDFLARE_API_TOKEN] });
 if (g.problems.length) throw new Error(`dist/ is not safe to deploy:\n  ${g.problems.slice(0, 20).join('\n  ')}`);
 if (g.warn) console.warn(`WARNING ${g.warn}`);
 execFileSync('npx', ['-y', 'wrangler@4.151.3', 'pages', 'deploy', 'dist', '--project-name', PAGES_PROJECT, '--branch', branch, '--commit-dirty=true'], { stdio: 'inherit', env, shell: true });
+// Public checks on the live domain (HTTPS, redirects, canonical, sitemap, robots). A failure here fails the deploy command.
+execFileSync(process.execPath, [path.join(import.meta.dirname, 'cloudflare-ops.mjs'), 'verify'], { stdio: 'inherit' });

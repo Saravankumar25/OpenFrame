@@ -113,7 +113,7 @@ a fast site that costs nothing to run, sets no cookies of its own, and has one c
 
 ### 4.1 Pages (live now)
 
-- Project `openframe-studio`, custom domains openframestudio.app and www.openframestudio.app (added 2026-11-01, waiting for the two CNAME records), direct upload from this folder.
+- Project `openframe-studio`, live at https://openframestudio.app (apex and `www` active), direct upload from this folder.
 - Static assets are free and unlimited, on Free and paid plans. Cost appears only if a Pages Function runs; there are
   none, and the site has no `functions/` folder. Keep it that way until a feature needs one.
 - Pages caches by itself. For cacheable requests it sends `public, max-age=0, must-revalidate` with an ETag, so
@@ -318,6 +318,50 @@ When the domain is bought:
 - [x] Site rebuilt for https://openframestudio.app, tested (131/131), deployed; `site.config.mjs` default changed.
 - [ ] Search setup (section 5) started.
 
+### 4.11 Domain automation and token permissions (live since 2026-11-01)
+
+`npm run domain:ensure` makes the Cloudflare side match this document. It only looks, then changes what differs, so it is
+safe to run again. `npm run domain:verify` needs no credentials and checks the public site. `npm run deploy` runs the
+verify step after every deploy.
+
+What `ensure` keeps in place for `openframestudio.app`:
+
+| Item | Setting |
+|---|---|
+| DNS | `@` and `www`, CNAME to `openframe-studio.pages.dev`, proxied |
+| Pages custom domains | apex and `www` on project `openframe-studio`, both Active |
+| `www` redirect | Single Redirect rule `www_to_apex`, 301, path kept, query string kept |
+| SSL/TLS | mode Full (strict), Always Use HTTPS on, minimum TLS 1.2, TLS 1.3 on; DNSSEC on |
+| Old address | account Bulk Redirect list `pages_dev_to_domain`: `openframe-studio.pages.dev` to the apex, 301, path and query kept (official method, Pages docs "Disable access to `*.pages.dev` subdomain"). Preview addresses (`*.openframe-studio.pages.dev`) are not touched |
+
+Token permissions (token `openframe-website`, kept in the user variables `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`,
+never in the repository):
+
+| Scope | Permission | Used for |
+|---|---|---|
+| Account | Cloudflare Pages: Edit | deploy, custom domains |
+| Zone | Zone: Read, DNS: Edit | find the zone, CNAME records |
+| Zone | Single Redirect: Edit | `www` redirect |
+| Zone | Zone Settings: Edit | SSL/TLS settings |
+| Account | Account Filter Lists: Edit | the `pages_dev_to_domain` list |
+| Account | Mass URL Redirects: Edit | the Bulk Redirect rule |
+
+Limit the zone permissions to the one zone `openframestudio.app` and the account permissions to this account. The other
+permissions on the token (analytics, cache, WAF, email routing and so on) are not used by these scripts.
+
+Why there is no GitHub Actions deploy: the site build needs the screen pictures in `.cache/shots`, which are generated on
+this machine and are not in Git, and GitHub holds only `mac/`, `windows/` and `website/`. The one pipeline is
+`npm run build`, `npm test`, `npm run deploy` on this machine. A failed deploy or a failed live check ends with a
+non-zero exit code and a FAIL line.
+
+Troubleshooting:
+
+- A name shows `ENOTFOUND` right after DNS records were created: the resolver cached the empty answer. Wait about five
+  minutes, or test with `curl --resolve <host>:443:<cloudflare ip>`.
+- Pages domain stays Pending: check the CNAME is proxied and points to `openframe-studio.pages.dev`; run `domain:ensure`.
+- Error 522 on a custom hostname: the hostname is not added in Pages, or its record was changed away from Pages.
+- Redirect loop on `www`: the rule must match only `www`; it must never redirect the apex.
+- Recovery after a bad change: rerun `npm run domain:ensure`. A bad deploy: section 2.
 ## 5. Search engine setup, once the custom domain is live
 
 Do these in order. Nothing here works well on the `pages.dev` address, because the canonical host is meant to be the
