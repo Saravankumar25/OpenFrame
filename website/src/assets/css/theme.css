@@ -1,0 +1,473 @@
+/* Dark theme tokens, the three site controls (platform, website theme, screen theme), app screen frames, and the
+   components added for the feature catalog, tutorials, manuals and pricing. Loaded after site.css and pages-base.css. */
+@font-face{font-family:Inter;font-style:normal;font-weight:100 900;font-display:swap;src:url(/assets/fonts/inter-latin-wght-normal.woff2) format("woff2")}
+@font-face{font-family:Newsreader;font-style:normal;font-weight:200 800;font-display:swap;src:url(/assets/fonts/newsreader-latin-wght-normal.woff2) format("woff2")}
+@font-face{font-family:Sora;font-style:normal;font-weight:100 800;font-display:swap;src:url(/assets/fonts/sora-latin-wght-normal.woff2) format("woff2")}
+
+:root[data-theme=dark]{
+  color-scheme:dark;
+  /* deep ink near-black with a trace of the brand navy, not pure black; each layer one step lighter */
+  --bg:#0e0d15; --surface:#171521; --cream:#12101a; --cream2:#1a1825; --tint:#211e2d; --frame:#1b1926;
+  --line:#2a2737; --line2:#3d394c; --ink:#f4f2f8; --ink2:#cdc8da; --muted:#a29cb3;
+  --accent:#d2441c; --accent-d:#e2532a; --accent-soft:#2b140c; --accent-ink:#ff8a62; --ok:#2fb489;
+  --dark:#14121e; --dark2:#1f1c2c; --solid:#f4f2f8; --on-solid:#0e0d15; --solid-h:#fff;
+  --header-bg:rgba(14,13,21,.86);
+  --shadow:0 30px 60px -24px rgba(0,0,0,.8),0 8px 20px -10px rgba(0,0,0,.6);
+}
+:root[data-theme=dark] body{background:var(--bg)}
+:root[data-theme=dark] .dark,:root[data-theme=dark] .cta-band,:root[data-theme=dark] footer.site-f{border-block:1px solid var(--line)}
+:root[data-theme=dark] .btn-primary{color:#fff}
+:root[data-theme=dark] .final{background:linear-gradient(180deg,var(--bg),var(--cream))}
+:root[data-theme=dark] .one-card,:root[data-theme=dark] .step .n{border:1px solid var(--line2)}
+
+/* the three independent controls (platform, website theme, app screen theme) */
+.ctls{display:flex;gap:8px 16px;flex-wrap:wrap;align-items:center;justify-content:center}
+.ctl{display:inline-flex;align-items:center;gap:8px;font-size:13px}
+.ctl>span{color:#cfc9e2;font-weight:600}
+.seg{display:inline-flex;border:1px solid #ffffff33;border-radius:999px;padding:2px;background:#ffffff0d}
+.seg button{background:none;border:0;color:#e9e6f4;font:inherit;font-size:13px;font-weight:600;padding:4px 11px;border-radius:999px;cursor:pointer;display:inline-flex;gap:6px;align-items:center;line-height:1.2}
+.seg button[aria-pressed=true]{background:#fff;color:#1d1a2e}
+.seg button:focus-visible{outline:2px solid #ff9d7d;outline-offset:1px}
+
+/* platform-specific blocks */
+[data-os-show]{display:none}
+:root[data-os=win] [data-os-show=win],:root[data-os=mac] [data-os-show=mac]{display:revert}
+:root[data-os=win] span[data-os-show=win],:root[data-os=mac] span[data-os-show=mac]{display:inline}
+
+
+/* hero screen switcher (real screens, no animation) */
+.stages button[aria-selected=true]::after{transition:none}
+.tour-real{margin:46px auto 0;width:min(1120px,100% - 24px)}
+
+/* store buttons: visible, disabled until a store listing link exists */
+.btn[disabled]{cursor:not-allowed;opacity:.55;box-shadow:none}
+.btn[disabled]:hover{transform:none}
+.store-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn svg.apple{fill:currentColor;stroke:none}
+
+/* pricing */
+.price-one{max-width:640px;margin:0 auto}
+.price small{color:var(--ink2);font-size:16px}
+.price-note{color:var(--muted);font-size:14px;margin-top:14px}
+
+/* feature catalog */
+.cat-nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:26px}
+.cat-nav a{text-decoration:none}
+.cat-group{padding:56px 0 8px}
+.cat-group>h2{font-size:clamp(26px,3vw,36px)}
+.cat-group>p{color:var(--ink2);margin-top:8px;max-width:760px}
+.feat-list{display:grid;gap:18px;margin-top:28px}
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px;display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.feat h3{font-size:22px}
+.feat .what{color:var(--ink2);margin-top:8px}
+.feat dl{margin:14px 0 0;display:grid;gap:10px}
+.feat dt{font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink)}
+.feat dd{margin:2px 0 0;color:var(--ink2);font-size:16px}
+.avail{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.avail span{font-size:13.5px;font-weight:700;border-radius:999px;padding:4px 11px;border:1px solid var(--line2);color:var(--ink2)}
+.avail span.yes{background:var(--accent-soft);border-color:transparent;color:var(--accent-link)}
+.feat .shots{display:grid;gap:10px}
+.feat .more-shots{font-size:14px;color:var(--muted)}
+.feat .more-shots a{color:var(--accent-ink);display:inline-block;padding-block:4px}
+@media (max-width:1020px){.feat{grid-template-columns:1fr}}
+
+/* tutorials */
+.tut-part{margin-top:46px}
+.tut-part>h2{font-size:28px}
+.tut-part>p{color:var(--ink2);margin-top:6px}
+a.tut{text-decoration:none}
+.tsteps{list-style:none;margin:40px 0 0;padding:0;display:grid;gap:44px;counter-reset:s}
+.tstep{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
+.tstep .tx{max-width:760px}
+.tstep .shot{max-width:1040px}
+.tstep .tx .do{font:560 21px/1.25 var(--font-head);letter-spacing:-.015em;display:flex;gap:12px;align-items:flex-start;margin:0}
+.tstep .tx .do::before{counter-increment:s;content:counter(s);flex:none;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:800;margin-top:-3px}
+.tstep .tx p:not(.do){color:var(--ink2);margin-top:10px}
+.tbox{background:var(--cream);border:1px solid var(--line);border-radius:18px;padding:24px 28px;margin-top:28px}
+.tbox h2,.tbox h3{font-size:20px;margin-bottom:8px}
+.tbox ul{margin:8px 0 0;padding-left:20px;color:var(--ink2);display:grid;gap:6px}
+.tbox.warn{border-color:#e9c27a}
+.tmeta{display:flex;gap:8px 18px;flex-wrap:wrap;justify-content:center;margin-top:18px;color:var(--muted);font-size:15px}
+.crumbs{font-size:14px;color:var(--muted);margin-bottom:14px}
+.crumbs a{color:inherit}
+@media (max-width:1020px){.tstep{grid-template-columns:1fr;gap:16px}}
+
+/* manuals */
+.man-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:1000px;margin:0 auto}
+.man{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:32px}
+.man h3{font-size:24px}
+.man p{color:var(--ink2);margin-top:8px}
+.man .btn{margin-top:20px}
+.man ul{color:var(--ink2);padding-left:20px;margin:14px 0 0;display:grid;gap:4px;font-size:15.5px}
+@media (max-width:1020px){.man-grid{grid-template-columns:1fr}}
+
+/* screen library */
+.lib-area{margin-top:40px}
+.lib-area h2{font-size:24px}
+.lib{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.lib li{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;color:var(--ink2)}
+.lib li b{color:var(--ink);display:block;font-size:15.5px}
+.lib li a{color:var(--accent-ink);font-weight:700;font-size:14px;margin-right:12px}
+@media (max-width:760px){.lib{grid-template-columns:1fr}}
+
+/* founders and company */
+.founders{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:34px}
+.founder{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px}
+.founder .role{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink)}
+.founder h3{font-size:24px;margin-top:6px}
+.founder p{color:var(--ink2);margin-top:10px}
+.f-company{display:flex;align-items:center;gap:12px;margin-top:18px}
+.f-company img{width:96px;height:auto;background:#fff;border-radius:8px;padding:5px}
+.f-company span{font-size:13.5px;line-height:1.4}
+@media (max-width:760px){.founders{grid-template-columns:1fr}}
+
+.skip{position:absolute;left:-999px;top:8px;z-index:200;background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:10px}
+.skip:focus{left:8px}
+.prose p+p{margin-top:14px}
+.prose p{color:var(--ink2)}
+.small-print{color:var(--muted);font-size:14px;margin-top:16px}
+@media (max-width:640px){
+  .ctl{font-size:12px;gap:5px}
+  .seg button{padding:4px 8px;font-size:12px}
+}
+
+/* utilities that replace the design package's inline styles (the CSP allows no inline style) */
+.mt18{margin-top:18px}.mt26{margin-top:26px}.mt84{margin-top:84px}
+.lead-mid{max-width:720px;margin:22px auto 0}
+.ac{color:var(--accent-ink)}
+.d1{--rd:.08s}.d2{--rd:.15s}.d3{--rd:.21s}
+section.bt{border-top:1px solid var(--line)}
+.merge.static .one{position:static;opacity:1;transform:none;pointer-events:auto;margin-top:22px}
+.hero{padding-bottom:40px}
+.dg-card{fill:var(--surface);stroke:var(--line2)}
+.dg-stand{fill:var(--line2)}
+.dg-cloud{fill:var(--tint);stroke:var(--line2)}
+.dg-ink{fill:var(--ink)}
+.dg-mut{fill:var(--muted)}
+.stage-panel[hidden]{display:none}
+.card.big .shot{margin-bottom:24px}
+.chart text{fill:#cfc9e2}
+/* header fixes: the menu stays on one line; the chevron is the design's small one; the gradient defs take no space */
+svg.defs{position:absolute;width:0;height:0;overflow:hidden}
+.menu>li>a,.menu>li>button{white-space:nowrap;padding:10px 12px}
+.menu .i{width:12px;height:12px;transition:transform .2s}
+.menu li.open>button .i{transform:rotate(180deg)}
+@media (max-width:1180px) and (min-width:1021px){.nav{gap:14px}.menu>li>a,.menu>li>button{padding:10px 8px;font-size:15px}.nav-cta .btn-ghost{display:none}}
+/* long button labels (the store buttons) wrap inside their card instead of pushing the page wider */
+.pcard .btn,.panel .btn,.store-row .btn,.store-col .btn{white-space:normal;text-align:center;line-height:1.25}
+@media (max-width:640px){
+  .hero-cta .btn,.cta-band .btn,.pcard .btn,.panel .btn,.store-row .btn,.store-col .btn{white-space:normal;width:100%;text-align:center;line-height:1.25}
+  .store-row{flex-direction:column}
+}
+.store-col{display:grid;gap:12px}.store-col .btn{width:100%;margin-top:0}
+.app small{color:#b53713}
+:root[data-theme=dark] .app small{color:var(--accent-ink)}
+:root{--accent-link:#b53713}
+:root[data-theme=dark]{--accent-link:var(--accent-ink)}
+.more,.feat .more-shots a,.lib li a,.mega-foot a{color:var(--accent-link)}
+.one-card{background:#1d1a2e;color:#fff}
+:root[data-theme=dark] .one-card{background:#1c1928}
+/* "5 apps to 1" block: stats stay a row of cards down to phone width; dark theme gets lifted cards */
+@media (max-width:1020px) and (min-width:641px){.merge-stats{grid-template-columns:repeat(3,1fr)}}
+.stat{border-radius:18px}
+:root[data-theme=dark] .stat{background:linear-gradient(180deg,#1d1a29,#15131e);border-color:var(--line2);box-shadow:0 18px 40px -28px rgba(0,0,0,.9)}
+:root[data-theme=dark] .stat b{color:#fff}
+:root[data-theme=dark] .one-card{background:linear-gradient(180deg,#221f31,#16141f);border:1px solid #ffffff1f;box-shadow:0 30px 70px -30px rgba(210,68,28,.45)}
+:root[data-theme=dark] .one-card .wm{color:#fff}
+:root[data-theme=dark] .one-card p{color:#cfc9e2}
+:root[data-theme=dark] .app{background:var(--surface);border-color:var(--line2)}
+:root[data-theme=dark] .app small{background:#2b140c}
+@media (max-width:1020px) and (min-width:761px){.apps{grid-template-columns:repeat(5,1fr);gap:10px}.app{padding:16px 10px}}
+@media (max-width:760px){.apps .app:last-child{grid-column:1/-1}}
+/* icon controls */
+.ctl{gap:6px}
+.ctl-ic{display:inline-grid;place-items:center;color:#a39dbb}
+.ctl-ic svg{width:16px;height:16px}
+.seg button{padding:5px 10px}
+.seg button svg{width:15px;height:15px;display:block}
+.ctls{gap:8px 18px;flex-wrap:nowrap}
+@media (max-width:640px){.ctls{gap:10px}.seg button{padding:5px 8px}}
+/* breathing room between a list and the store buttons that follow it */
+.store-col{margin-top:30px}
+.pcard .ticks+.btn,.panel p+.btn{margin-top:26px}
+.price-note{margin-top:18px}
+/* breathing room between a list and the store buttons that follow it */
+.store-col{margin-top:30px}
+.pcard .ticks+.btn,.panel p+.btn{margin-top:26px}
+.price-note{margin-top:18px}
+
+/* ===== glass header: one floating bar with the site sections and the three controls (owner request 2026-10-31) */
+.site-h{position:sticky;top:12px;z-index:50;margin:12px auto 0;width:min(1280px,100% - 24px);border-radius:20px;
+  background:rgba(255,255,255,.58);-webkit-backdrop-filter:blur(20px) saturate(1.7);backdrop-filter:blur(20px) saturate(1.7);
+  border:1px solid rgba(255,255,255,.75);box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 18px 44px -24px rgba(29,26,46,.38),0 0 0 1px rgba(29,26,46,.06)}
+:root[data-theme=dark] .site-h{background:rgba(20,18,28,.55);border-color:rgba(255,255,255,.09);box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 18px 44px -20px rgba(0,0,0,.85)}
+.site-h .wrap.nav{width:100%;padding:0 14px 0 20px;height:66px;gap:16px}
+.hero,.phero{margin-top:-78px;padding-top:150px}
+.mega{padding-top:16px}
+.mega-in{background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+:root[data-theme=dark] .mega-in{background:rgba(20,18,28,.94)}
+.menu>li>a,.menu>li>button{font-size:15px}
+/* controls inside the glass bar */
+.ctls.nav-ctls{display:flex;gap:6px;flex:none}
+.ctl{gap:4px}
+.ctl-ic{color:var(--muted)}
+.ctl-ic svg{width:14px;height:14px}
+.seg{border:1px solid var(--line2);background:rgba(127,120,150,.08);padding:2px}
+.seg button{color:var(--ink2);padding:5px 8px}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed=true]{background:var(--solid);color:var(--on-solid)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.menu-ctls{display:none}
+@media (max-width:1240px){.nav-cta .btn-ghost{display:none}.ctl-ic{display:none}}
+@media (max-width:1020px){
+  .ctls.nav-ctls{display:none}
+  .menu.open-m{top:calc(100% + 8px);left:0;right:0;border-radius:18px;height:auto;max-height:calc(100dvh - 110px);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+  .menu.open-m .menu-ctls{display:flex;flex-wrap:wrap;gap:10px;padding:16px 8px 6px}
+  .menu-ctls .ctl-ic{display:inline-grid}
+}
+@media (max-width:640px){.site-h{top:8px;margin-top:8px;width:calc(100% - 16px);border-radius:16px}.site-h .wrap.nav{height:60px;padding:0 10px 0 14px}.hero,.phero{margin-top:-68px;padding-top:120px}}
+@media (max-width:1020px){.menu.open-m{padding:8px 20px 16px}}
+/* glass header polish: a little more body so text behind it never competes; clearer group icons; tidy phone menu */
+.site-h{background:rgba(255,255,255,.82)}
+:root[data-theme=dark] .site-h{background:rgba(23,21,33,.84)}
+.ctl-ic{color:var(--ink2);opacity:.75}
+.ctl-name{display:none}
+@media (max-width:1020px){
+  .menu.open-m{padding:10px 18px 18px}
+  .menu.open-m .menu-ctls{flex-direction:column;align-items:stretch;gap:12px;padding:16px 4px 4px}
+  .menu-ctls .ctl{justify-content:space-between}
+  .menu-ctls .ctl-name{display:block;flex:1;font-size:15px;font-weight:600;color:var(--ink);margin-left:8px}
+  .menu-ctls .seg button{padding:7px 14px}
+}
+/* nav: sections on the left, the three toggles on the right (owner spec 2026-10-31: no buttons in the bar) */
+.site-h .menu{flex:1}
+.ctls.nav-ctls{margin-left:auto;gap:12px}
+@media (max-width:1240px){.ctl-ic{display:inline-grid}}
+@media (max-width:1120px) and (min-width:1021px){.ctl-ic{display:none}.ctls.nav-ctls{gap:6px}}
+@media (max-width:1020px){.menu-tg{margin-left:auto}}
+/* nav: one primary action, current section marked, bar tightens on scroll */
+.nav-get{flex:none;margin-left:4px}
+.menu>li>button.is-current,.menu>li>a[aria-current]{background:var(--tint);color:var(--ink)}
+.site-h,.site-h .wrap.nav{transition:height .25s var(--ease),box-shadow .25s,background .25s,top .25s}
+.site-h.scrolled{top:8px;box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 22px 50px -26px rgba(29,26,46,.5),0 0 0 1px rgba(29,26,46,.07)}
+@media (max-width:1180px){.nav-get{padding:10px 14px}}
+@media (max-width:640px){.nav-get{display:none}}
+@media (prefers-reduced-motion:reduce){.site-h,.site-h .wrap.nav{transition:none}}
+/* store buttons: both marks the same size and colour as the label */
+.btn svg.logo{width:20px;height:20px;flex:none;fill:currentColor}
+.btn-sm svg.logo{width:17px;height:17px}
+@media (max-width:1020px){.nav-get{margin-left:auto}.menu-tg{margin-left:8px}}
+/* founder profiles */
+.founders{align-items:stretch}
+.founder{padding:32px}
+.founder>p{font-size:17px;line-height:1.6}
+.founder h4{margin:22px 0 4px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.founder .ticks{margin-top:12px;gap:12px}
+.founder .ticks li{font-size:15.5px;line-height:1.5}
+@media (max-width:640px){.menu-tg{margin-left:auto}}
+/* ticks: one outlined check everywhere (a thin ring with a drawn check in the brand colour), never a filled badge */
+:root{--tick:#b53713;--tick-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b53713' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6.5 12.5l3.6 3.6L17.5 8.6'/%3E%3C/svg%3E")}
+:root[data-theme=dark]{--tick:#ff8a62;--tick-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff8a62' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6.5 12.5l3.6 3.6L17.5 8.6'/%3E%3C/svg%3E")}
+.ticks li::before,.micro li::before{content:"";flex:none;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--tick);background:var(--tick-img) center/78% no-repeat;color:transparent}
+.ticks li::before{width:22px;height:22px;margin-top:3px}
+.micro li{display:inline-flex;align-items:center}
+.micro li::before{width:17px;height:17px;margin-right:8px;display:inline-block}
+/* founder profiles read as prose */
+.founder p{font-size:16.5px;line-height:1.7;color:var(--ink2);margin-top:14px}
+/* logo: the frame draws itself on every page load, stroke by stroke, as in the design package (delays by position,
+   because the CSP allows no inline style); no motion for people who ask for less */
+.brand.draw .mk .s:nth-child(1){--d:.1s}.brand.draw .mk .s:nth-child(2){--d:.4s}.brand.draw .mk .s:nth-child(3){--d:.5s}
+.brand.draw .mk .s:nth-child(4){--d:.6s}.brand.draw .mk .s:nth-child(5){--d:.75s}.brand.draw .mk .s:nth-child(6){--d:.8s}
+.brand.draw .mk .s:nth-child(7){--d:.85s}.brand.draw .mk .s:nth-child(8){--d:.9s}
+@media (prefers-reduced-motion:reduce){.brand.draw .s{animation:none;stroke-dasharray:none;stroke-dashoffset:0}}
+
+/* type, three families (owner direction 2026-10-31), all self-hosted:
+   Newsreader (editorial serif) for h1 page titles and the large editorial lines,
+   Sora (geometric sans) for h2 and h3 and the big figures,
+   Inter for body text, buttons, navigation and labels. The wordmark keeps the brand's own lettering (Inter). */
+:root{--font:Inter,"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  --font-title:Newsreader,"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --font-head:Sora,Inter,"Segoe UI",system-ui,sans-serif}
+body{font-feature-settings:"kern","calt";text-rendering:optimizeLegibility}
+h1,.stages button,.quote,.big-line,.notfound .big{font-family:var(--font-title)}
+h2,h3,.stat b,.price b,.nos li,.founder h3{font-family:var(--font-head)}
+h1{font-weight:500;letter-spacing:-.022em;line-height:1.05}
+h2{font-weight:540;letter-spacing:-.028em;line-height:1.14}
+h3{font-weight:560;letter-spacing:-.018em}
+.eyebrow{font-family:var(--font);font-weight:700;letter-spacing:.08em}
+.big-line{font-weight:500}
+.quote{font-weight:300}.quote b{font-weight:500}
+.notfound .big{font-weight:600}
+.stat b{font-weight:560}
+.nos li{font-weight:520}
+.stages button{font-weight:380}.stages button b{font-weight:560}
+.price b{font-weight:560}
+.tut h3,.faq-item summary,.btn,.menu,.founder .role{font-family:var(--font)}
+.tut h3{font-weight:600}
+.tut h3,.founder h3{letter-spacing:-.012em}
+.brand .wm,.brand .wm b{font-family:Inter}.brand .wm b{font-weight:680}
+/* Ideate, Write, Plan, Shoot: labels, no full stops; room between the active underline and the screen */
+.stages{margin:26px 0 30px}
+.stages button::after{bottom:-6px}
+
+/* ===== loading: always the OpenFrame icon drawing itself, never a generic spinner ===== */
+.loader{position:fixed;inset:0;z-index:300;display:grid;place-items:center;background:var(--bg);transition:opacity .5s var(--ease),visibility .5s}
+:root:not(.js) .loader{display:none}
+:root.ready .loader{opacity:0;visibility:hidden;pointer-events:none}
+:is(.loader,.mock-load,.err-mark) .mk{width:76px;height:76px;overflow:visible;display:block}
+:is(.loader,.mock-load) .mk .s{stroke-dasharray:1.03;stroke-dashoffset:1.03;animation:drawloop 1.9s var(--ease) infinite;animation-delay:var(--d,0s)}
+.err-mark .mk{width:92px;height:92px}
+.err-mark .mk .s{stroke-dasharray:1.03;stroke-dashoffset:1.03;animation:draw 1.1s var(--ease) var(--d,0s) forwards}
+:is(.loader,.mock-load,.err-mark) .mk .s:nth-child(1){--d:.1s}:is(.loader,.mock-load,.err-mark) .mk .s:nth-child(2){--d:.4s}
+:is(.loader,.mock-load,.err-mark) .mk .s:nth-child(3){--d:.5s}:is(.loader,.mock-load,.err-mark) .mk .s:nth-child(4){--d:.6s}
+:is(.loader,.mock-load,.err-mark) .mk .s:nth-child(5){--d:.75s}:is(.loader,.mock-load,.err-mark) .mk .s:nth-child(6){--d:.8s}
+:is(.loader,.mock-load,.err-mark) .mk .s:nth-child(7){--d:.85s}:is(.loader,.mock-load,.err-mark) .mk .s:nth-child(8){--d:.9s}
+@keyframes drawloop{0%{stroke-dashoffset:1.03}42%,76%{stroke-dashoffset:0}100%{stroke-dashoffset:-1.03}}
+/* an app screen waits behind the same icon until its page has loaded */
+.mock-load{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+.mock-load .mk{width:56px;height:56px}
+@media (prefers-reduced-motion:reduce){
+  :is(.loader,.mock-load,.err-mark) .mk .s{animation:none;stroke-dasharray:none;stroke-dashoffset:0}
+  .loader{transition:none}
+}
+
+/* ===== error pages (404, 403, 500, 503) ===== */
+.err{padding:120px 0 96px;text-align:center}
+.err-mark{display:grid;place-items:center;margin-bottom:6px}
+.err-code{font:300 clamp(80px,14vw,170px)/1 var(--font-title);letter-spacing:-.04em;color:var(--ink);margin:6px 0 4px}
+.err h1{font-size:clamp(28px,4vw,46px);max-width:760px;margin:0 auto}
+.err .lead{max-width:620px;margin:16px auto 0}
+.err .hero-cta{margin-top:30px}
+.err-links{list-style:none;margin:64px auto 0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:860px;text-align:left}
+.err-links a{display:block;text-decoration:none;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 20px;transition:transform .25s var(--ease),border-color .25s}
+.err-links a:hover{transform:translateY(-3px);border-color:var(--line2)}
+.err-links b{display:block;font-family:var(--font-head);font-weight:560;font-size:16.5px}
+.err-links span{display:block;color:var(--muted);font-size:14px;margin-top:3px}
+@media (max-width:760px){.err{padding:90px 0 72px}.err-links{grid-template-columns:1fr 1fr}}
+@media (max-width:480px){.err-links{grid-template-columns:1fr}}
+/* price region: a small toggle in the top right corner of the price card */
+.pcard.win{position:relative}
+.region-tg{position:absolute;top:22px;right:22px;display:inline-flex;border:1px solid var(--line2);border-radius:999px;padding:3px;background:rgba(127,120,150,.08)}
+.region-tg button{border:0;background:none;color:var(--ink2);font:600 13.5px/1 var(--font);padding:0 14px;height:32px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.region-tg button:hover{color:var(--ink)}
+.region-tg button[aria-pressed=true]{background:var(--solid);color:var(--on-solid)}
+.region-tg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+@media (max-width:520px){.region-tg{top:18px;right:14px}.region-tg button{padding:0 10px;font-size:12.5px}}
+/* the card title leaves room for the toggle */
+.pcard.win :is(h2,h3){padding-right:0;margin-top:34px}
+/* control icons: solid ink and a heavier stroke so they read on white, the glass bar and dark alike */
+.ctl-ic{color:var(--ink);opacity:1}
+.ctl-ic svg{width:17px;height:17px}
+.seg button{color:var(--ink);min-width:32px;min-height:32px;justify-content:center}
+.seg button svg{width:16px;height:16px}
+.seg button[aria-pressed=true]{color:var(--on-solid)}
+.seg{border-color:var(--ink2);border-width:1.5px}
+.ctl>.ctl-ic{color:var(--ink);opacity:1}
+.ctl>.ctl-ic svg{stroke-width:2.4}
+/* a link that looks like plain text: same colour, weight and cursor, no underline, no hover change; keyboard focus
+   still shows a ring so the page stays usable without a mouse */
+.name-link{color:inherit;font:inherit;letter-spacing:inherit;text-decoration:none;cursor:pointer}
+.name-link:hover{color:inherit;text-decoration:none}
+.name-link:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+/* nav fit with About Us: the full bar from 1320px, a compact bar from 1100px, the drawer menu below 1100px */
+.menu>li>a,.menu>li>button{padding:10px 10px}
+@media (max-width:1319px){.nav-get{display:none}.ctl-ic{display:none}}
+@media (min-width:1100px) and (max-width:1319px){
+  .site-h .wrap.nav{gap:10px;padding:0 12px 0 16px}
+  .menu>li>a,.menu>li>button{padding:10px 8px;font-size:15px}
+  .seg button{padding:5px 8px}
+  .ctls.nav-ctls{gap:8px}
+}
+@media (max-width:1099px){
+  .menu{display:none}
+  .menu-tg{display:block;margin-left:8px}
+  .ctls.nav-ctls{display:none}
+  .menu.open-m{display:flex;position:absolute;top:calc(100% + 8px);left:0;right:0;height:auto;max-height:calc(100dvh - 110px);background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);flex-direction:column;padding:10px 18px 18px;margin:0;overflow:auto;gap:0}
+  .menu.open-m>li>a,.menu.open-m>li>button{width:100%;justify-content:space-between;font-size:19px;padding:16px 8px;border-bottom:1px solid var(--line);border-radius:0}
+  .menu.open-m .mega{position:static;visibility:visible;opacity:1;transform:none;padding:0;display:none}
+  .menu.open-m li.open>.mega{display:block}
+  .menu.open-m .mega-in{width:100%;box-shadow:none;border:0;padding:6px 0 10px;grid-template-columns:1fr}
+  .menu.open-m .menu-ctls{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:16px 4px 4px}
+  .menu-ctls .ctl-ic{display:inline-grid}
+  .menu-ctls .ctl{justify-content:space-between}
+  .menu-ctls .ctl-name{display:block;flex:1;font-size:15px;font-weight:600;color:var(--ink);margin-left:8px}
+  .menu-ctls .seg button{padding:7px 14px}
+}
+@media (max-width:1099px) and (min-width:480px){.nav-get{display:inline-flex}}
+/* the Features dropdown opens under the whole bar, so even hidden it never reaches past the screen edge */
+@media (min-width:1100px){
+  .menu>li.has-mega:first-child{position:static}
+  .menu>li.has-mega:first-child>.mega{left:0;right:0;padding-top:14px}
+  .menu>li.has-mega:first-child .mega-in{width:auto}
+}
+
+/* Themes page: starter theme cards, numbered steps, code boxes */
+.tnav{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.tnav a{background:var(--surface);border:1px solid var(--line2);border-radius:999px;padding:8px 16px;font-weight:600;font-size:15px;color:var(--ink);text-decoration:none}
+.tnav a:hover{border-color:var(--solid)}
+.tcards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.tcard .tsw svg{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line)}
+.tcard h3{margin-top:6px}
+.tcard p{color:var(--ink2);font-size:16px;flex:1}
+.tcard .btn{align-self:flex-start;padding:12px 18px;font-size:15px;overflow-wrap:anywhere;text-align:center}
+.isteps{list-style:none;counter-reset:ts;margin:0;padding:0;display:grid;gap:14px}
+.isteps li{counter-increment:ts;position:relative;padding:4px 0 4px 52px;min-height:38px;color:var(--ink2)}
+.isteps li::before{content:counter(ts);position:absolute;left:0;top:0;width:36px;height:36px;border-radius:50%;background:var(--solid);color:var(--on-solid);display:grid;place-items:center;font-weight:800}
+.isteps b{color:var(--ink)}
+.tshot{margin-top:28px}
+.codebox{margin:20px 0}
+.codebox pre{margin:0;padding:20px 22px;background:var(--surface);border:1px solid var(--line2);border-radius:14px;overflow-x:auto;font:14.5px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--ink)}
+code{font:.92em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--tint);border-radius:6px;padding:1px 6px}
+.codebox code{background:none;padding:0;font-size:inherit}
+@media (max-width:980px){.tcards{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.tcards{grid-template-columns:1fr}}
+
+/* ===== menu drawer: close glyph, page behind it locked and dimmed, primary action inside it on small phones ===== */
+.menu-tg>span{display:grid;place-items:center}
+.menu-tg svg{width:22px;height:22px}
+.menu-tg .tg-close,.menu-tg[aria-expanded=true] .tg-open{display:none}
+.menu-tg[aria-expanded=true] .tg-close{display:grid}
+.menu-get{display:none}
+html.menu-lock{overflow:hidden}
+@media (max-width:1099px){
+  html.menu-lock body::after{content:"";position:fixed;inset:0;z-index:40;background:rgba(20,17,36,.5)}
+}
+@media (max-width:479px){
+  .menu.open-m .menu-get{display:block;order:-1;padding:6px 0 10px}
+  .menu.open-m>li.menu-get>a{justify-content:center;border:2px solid transparent;border-radius:12px;padding:16px 26px;font-size:17px;width:100%}
+}
+
+/* ===== store button message: a small bubble beside the button, placed by script, no layout shift ===== */
+.store-msg{position:absolute;z-index:120;left:0;top:0;max-width:min(300px,calc(100vw - 16px));padding:10px 14px;border-radius:10px;background:var(--solid);color:var(--on-solid);font:600 14.5px/1.35 var(--font);box-shadow:var(--shadow);text-align:center;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .15s}
+.store-msg.show{visibility:visible;opacity:1}
+.store-msg::before{content:"";position:absolute;left:var(--ax,50%);top:-6px;margin-left:-6px;border:6px solid transparent;border-top:0;border-bottom-color:var(--solid)}
+.store-msg.up::before{top:auto;bottom:-6px;border-top:6px solid var(--solid);border-bottom:0}
+
+/* previous and next tutorial, at the foot of each tutorial */
+.tnext{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:34px}
+.tnext a{display:block;text-decoration:none;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 20px;min-height:44px}
+.tnext a:hover{border-color:var(--line2);transform:translateY(-2px)}
+.tnext span{display:block;font-size:13.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tnext b{display:block;margin-top:4px;font-family:var(--font-head);font-weight:560;font-size:17px;line-height:1.3}
+.tnext small{display:block;margin-top:4px;font-size:13.5px;color:var(--muted)}
+.tn-next{grid-column:2;text-align:right}
+.tn-prev{grid-column:1}
+.tnext a::before{content:none}
+@media (max-width:640px){.tnext{grid-template-columns:1fr}.tn-next,.tn-prev{grid-column:auto;text-align:left}}
+
+/* three promises (the offline claim already has its own card above) */
+.promise-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:760px){.promise-row{grid-template-columns:minmax(0,1fr)}}
+/* the primary action stays in the bar from 1240px; below that the bar is full (the pricing link and every page's call to action band lead on) */
+@media (min-width:1240px) and (max-width:1319px){.nav-get{display:inline-flex;padding:9px 14px}}
+/* the drawer's primary action keeps the primary button look (the drawer's own link rules would flatten it) */
+.menu.open-m .menu-get a.btn-primary{background:var(--accent);color:#fff}
+.menu.open-m .menu-get a.btn-primary:hover{background:var(--accent-d)}
+/* phone widths: cards and large buttons give the long store labels more room */
+@media (max-width:640px){
+  .btn-lg{padding:16px 20px;font-size:16px}
+  .pcard{padding:30px 22px}
+  .panel{padding:26px 22px}
+}

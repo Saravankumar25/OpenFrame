@@ -1,0 +1,14 @@
+{
+  "formatVersion": 1,
+  "id": "plum-premiere",
+  "name": "Plum Premiere",
+  "description": "Plum-tinted neutrals with a bright rose accent for evening work.",
+  "author": "OpenFrame Studio",
+  "seeds": {
+    "neutralHue": 310,
+    "neutralTint": 0.03,
+    "accentHue": 350,
+    "accentChroma": 0.15,
+    "accentLightnessNudge": 0
+  }
+}

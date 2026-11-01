@@ -1,0 +1,672 @@
+export default {
+  area: `OpenFrame AI`,
+  slug: `openframe-ai`,
+  order: 23,
+  part: `Assistant`,
+  intro: [
+    `OpenFrame AI is a panel that answers questions about your project and prepares changes for you to review. You ask in plain words, for example "How many scenes are in the script?", "Open Scene 12." or "Create a task to scout the railway station." Answers come from your project and say what they are based on. OpenFrame AI never changes anything by itself: a change appears as a Proposed Changes card, and nothing happens until you click Apply Changes.`,
+    `OpenFrame AI is optional and runs on your computer. OpenFrame AI is a one-time download that you start yourself. After that it works without the internet, and your project text, questions and answers are never sent to OpenFrame or to an AI service. If you never download it, the rest of OpenFrame works exactly the same.`,
+    `The panel opens on the right side of the window, beside the page you are on. The page narrows to make room, so the panel never covers a control. Open it with the Assistant button in the top bar or with Ctrl+J. The settings for OpenFrame AI are in Project settings, on the Offline AI tab.`,
+    `Because OpenFrame AI is a small model that runs on your own computer, treat its answers as help, not as the final word. Open See sources to check what an answer used, and read every Proposed Changes card before you apply it.`,
+  ],
+  layout: [
+    { name: `Panel header`, text: `The sparkle icon and the title OpenFrame AI, a status label (AI Ready when OpenFrame AI can answer), the ... button (Offline AI settings) and the x button (Close OpenFrame AI).` },
+    { name: `Scope row`, text: `The Scope list, the Save conversation for review button (a download arrow, greyed out until the first answer) and the New button. Under it, a line says what the next question will use, for example Using: Whole Project.` },
+    { name: `Conversation`, text: `Your questions sit on the right in dark bubbles. Answers sit on the left in light bubbles, with a See sources link under each one. A Proposed Changes card appears under an answer that prepares a change. Before your first question this area shows a short introduction with examples.` },
+    { name: `Ask box`, text: `At the bottom: the Ask or command box (placeholder Ask or command… e.g. "Open Scene 42.") and the Send button. Send stays greyed out until you type something.` },
+    { name: `Resize edge`, text: `The thin edge on the left side of the panel. Drag it to make the panel wider or narrower, and double-click it to put it back to its normal width.` },
+    { name: `Offline AI tab`, text: `In Project settings: the status and the Stop Offline AI (free memory) and Remove OpenFrame AI… buttons, the Graphics card choice, AI HEALTH with Export AI report, ASSISTANT MEMORY and TECHNICAL DETAILS. Before the download it also holds the Download OpenFrame AI card.` },
+  ],
+  workflows: [
+    {
+      id: `openframe-ai-open-panel`,
+      title: `Open, close and resize OpenFrame AI`,
+      purpose: `Open the panel next to any page of your project, make it the width you like and close it again.`,
+      level: `Beginner`,
+      prerequisites: [`A project is open.`, `OpenFrame AI is downloaded and the panel says AI Ready. See Download OpenFrame AI to get it.`],
+      steps: [
+        {
+          screen: `ai-panel-ready`,
+          do: `Click the Assistant button in the top bar, or press Ctrl+J.`,
+          explain: `The Assistant button is the sparkle icon near the right end of the top bar, next to the Settings gear. The panel opens on the right. In the picture the Home page has narrowed to fit beside it. The header reads OpenFrame AI with AI Ready on the right. Under it are Scope, the Save conversation for review button and New, then a short line explaining what to ask, and at the bottom the Ask or command box with Send.`,
+        },
+        {
+          screen: `ai-panel-empty-project`,
+          do: `Open a brand new project and open the panel there.`,
+          explain: `The panel works the same in a project with nothing in it yet, here Empty Short. OpenFrame AI can only answer from what the project holds, so a new project gives short answers until you add ideas, a story or a screenplay.`,
+        },
+        {
+          screen: `ai-panel-screenplay`,
+          do: `Move to another page, for example Screenplay.`,
+          explain: `The panel stays docked on the right while you work on the page. The screenplay narrows instead of being covered. The Scope you chose stays in place while you move between pages.`,
+        },
+        {
+          screen: `ai-panel-ready`,
+          do: `To change the width, drag the thin edge on the left side of the panel. Double-click the edge to put it back to the normal width.`,
+          explain: `You can also click the edge to focus it and press the Left Arrow key to make the panel wider or the Right Arrow key to make it narrower. The width is remembered. On a small window a wide panel is brought back within bounds so the page is never squeezed away.`,
+        },
+        {
+          screen: `ai-panel-ready`,
+          do: `Click the x button (Close OpenFrame AI), or press Ctrl+J again.`,
+          explain: `The panel closes and the page uses the full width again. The Assistant button in the top bar looks pressed while the panel is open.`,
+        },
+      ],
+      result: `The panel opens beside your page at the width you chose, and closes when you are done.`,
+      cautions: [
+        `If you open the panel before any project is open, it says Open a project to ask about it. OpenFrame AI answers from the project that is open.`,
+        `If the panel does not say AI Ready, it shows the download card or a message instead. See Download OpenFrame AI and the troubleshooting list.`,
+      ],
+      related: [`openframe-ai-ask-question`, `openframe-ai-download-models`],
+    },
+    {
+      id: `openframe-ai-ask-question`,
+      title: `Ask a question about your project`,
+      purpose: `Type a question, send it and read the answer.`,
+      level: `Beginner`,
+      prerequisites: [`OpenFrame AI panel is open and says AI Ready.`],
+      steps: [
+        {
+          screen: `ai-panel-ready`,
+          do: `Click the Ask or command box at the bottom of the panel.`,
+          explain: `The box shows the example Ask or command… e.g. "Open Scene 42." Send is greyed out while the box is empty. You can type up to 2,000 characters.`,
+        },
+        {
+          screen: `ai-question-typed`,
+          do: `Type your question, for example List the characters.`,
+          explain: `Send turns orange as soon as there is text. Press Enter to send, or Shift+Enter to start a new line in a longer question. Scope decides which part of the project OpenFrame AI uses. Here it is Whole Project. See Choose what OpenFrame AI looks at.`,
+        },
+        {
+          screen: `ai-working`,
+          do: `Click Send and wait.`,
+          explain: `Your question moves into a dark bubble and the answer bubble reads Writing the answer with a Cancel button. The first question after OpenFrame AI has been idle also shows Getting Offline AI ready on this computer… above your question while it starts. While it works, the Ask box is switched off. A longer job may show a short line saying what step it is on.`,
+        },
+        {
+          screen: `ai-answer-characters`,
+          do: `Read the answer.`,
+          explain: `The answer is plain text in a light bubble. Here it lists Lakshmi as the Lead character, Venkat Rao and Farooq as Supporting characters and Padma as a Minor character. Under the answer is the See sources link. The Save conversation for review button is now ready to use.`,
+        },
+        {
+          screen: `ai-answer-scene-count`,
+          do: `Ask a question about numbers, for example How many scenes are in the script?`,
+          explain: `Here the Scope is Current Screenplay and the answer says The project contains 36 scenes and names the screenplay it counted. Every answer follows the same layout: the text first, then See sources.`,
+        },
+      ],
+      result: `You have an answer in the panel, with a See sources link to check it.`,
+      cautions: [
+        `OpenFrame AI answers only from your project. If something is not in the project, it says so instead of making up a fact.`,
+        `If a question fails, your text is put back in the Ask box so you can send it again.`,
+        `A very long first start can take a little time because the language model is loaded into memory.`,
+      ],
+      related: [`openframe-ai-check-sources`, `openframe-ai-choose-scope`, `openframe-ai-stop-request`],
+    },
+    {
+      id: `openframe-ai-check-sources`,
+      title: `Check what an answer is based on`,
+      purpose: `Open See sources to see how sure the answer is and which parts of your project it used.`,
+      level: `Beginner`,
+      prerequisites: [`You have an answer in the panel.`],
+      steps: [
+        {
+          screen: `ai-answer-characters`,
+          do: `Click See sources under the answer.`,
+          explain: `The link opens a small section under the answer. Click it again to fold it away.`,
+        },
+        {
+          screen: `ai-answer-characters-sources`,
+          do: `Read the lines under See sources.`,
+          explain: `The first line says how the answer was made. Inferred · written by Offline AI means OpenFrame AI wrote the sentence from what it found. Exact · from project data means the answer is a figure or list taken straight from the project. Not available in project data means the project does not hold it. Under Based on: are chips such as Character: LAKSHMI, Character: VENKAT RAO, Character: FAROOQ and Character: PADMA. Most chips are buttons: click one to open that item in your project.`,
+        },
+        {
+          screen: `ai-answer-locations`,
+          do: `Ask a question that needs several places, for example Which locations are used in the screenplay?`,
+          explain: `The Scope here is Current Screenplay. Read the whole answer before you trust it. In the picture, the first lines name Rayapuram Bus Stand, Venkat Radio Works and Pedda Revu Tower, and the lines after them repeat the tower in different places.`,
+        },
+        {
+          screen: `ai-answer-locations-sources-open`,
+          do: `Open See sources and compare the answer with the chips.`,
+          explain: `Based on lists Scene locations: THE TOWER AT PEDDA REVU, then Location: Pedda Revu tower, Location: Rayapuram bus stand and Location: Venkat Radio Works. Those are the real records. Click a chip to open it and check, and ignore sentences that the sources do not support. An answer that took several steps also lists the steps it ran here.`,
+        },
+      ],
+      result: `You know which records an answer came from, and you can open them to check.`,
+      cautions: [
+        `Offline AI can write a sentence that sounds right and is not. The Based on chips are the part to trust. When a sentence does not match them, check the screenplay or ask again with a narrower Scope.`,
+        `A long list shows its first eight rows with a Show all button. Click it to see every row.`,
+      ],
+      related: [`openframe-ai-choose-scope`, `openframe-ai-ask-question`],
+    },
+    {
+      id: `openframe-ai-choose-scope`,
+      title: `Choose what OpenFrame AI looks at`,
+      purpose: `Set the Scope so an answer uses only the part of the project you mean.`,
+      level: `Intermediate`,
+      prerequisites: [`OpenFrame AI panel is open.`],
+      steps: [
+        {
+          screen: `ai-panel-ready`,
+          do: `Click the Scope list at the top of the panel.`,
+          explain: `On the Home page the list offers Current Screenplay, Beat Board, Production Workspace and Whole Project. The line under it says what the next question will use, for example Using: Whole Project. Whole Project looks at everything in the project.`,
+        },
+        {
+          screen: `ai-scope-current-screenplay`,
+          do: `Choose Current Screenplay.`,
+          explain: `The line changes to Using: Current Screenplay. Questions now use the screenplay draft you have open in the Screenplay page. A project with several screenplays uses the one that is open there.`,
+        },
+        {
+          screen: `ai-scope-beat-board`,
+          do: `Choose Beat Board.`,
+          explain: `The line reads Using: Beat Board. Use it for questions about acts, sequences, beats and scene cards.`,
+        },
+        {
+          screen: `ai-panel-screenplay`,
+          do: `Open the Screenplay page with the panel open.`,
+          explain: `On this page the list also offers narrower choices when something specific is open. Current Scene appears when a scene is selected and Specific Draft appears when a draft is open. If you have not chosen a Scope yourself, the panel starts with the one that fits the page. In the picture the Scope you chose earlier, Whole Project, is kept.`,
+        },
+        {
+          screen: `ai-panel-story`,
+          do: `Open the Story page.`,
+          explain: `Beat Board is the Scope that fits Story. The Scope you picked stays in place while you move around, unless it does not apply to the new page.`,
+        },
+        {
+          screen: `ai-panel-breakdown`,
+          do: `Open the Breakdown page.`,
+          explain: `Production Workspace is the Scope that fits Breakdown, Production and Call Sheets. It looks at the production side of the project: breakdown, catalog, locations, cast and crew, schedule and so on.`,
+        },
+        {
+          screen: `ai-panel-production`,
+          do: `Open the Production page.`,
+          explain: `The panel sits beside the Production overview. Shooting Day and Call Sheet appear in the Scope list when a shooting day or a call sheet is open.`,
+        },
+        {
+          screen: `ai-panel-vault`,
+          do: `Open the Idea Vault, select one or more items and look at the Scope list.`,
+          explain: `Idea Vault Selection appears when items are selected, and Current Selection appears for selected cards on other pages. The Idea Vault in the picture is the project's own vault, This Project.`,
+        },
+      ],
+      result: `Each question uses the part of the project you chose, shown in the Using line.`,
+      cautions: [
+        `If an answer seems to miss things, check the Using line. A narrow Scope such as Current Screenplay does not look at the Beat Board or the Idea Vault.`,
+        `A Scope that needs a target is offered only when there is one. If Current Scene is missing, open a scene first.`,
+      ],
+      related: [`openframe-ai-ask-question`, `openframe-ai-check-sources`],
+    },
+    {
+      id: `openframe-ai-open-pages`,
+      title: `Ask OpenFrame AI to take you somewhere`,
+      purpose: `Use a request such as Open Scene 12. to jump to a scene, a page or an item without clicking through the app.`,
+      level: `Beginner`,
+      prerequisites: [`OpenFrame AI panel is open and says AI Ready.`],
+      steps: [
+        {
+          screen: `ai-panel-ready`,
+          do: `Type a request that names a place, for example Open Scene 42., and click Send.`,
+          explain: `The example in the Ask box is Open Scene 42. Moving around is not a change to your project, so it happens straight away and there is no Proposed Changes card.`,
+        },
+        {
+          screen: `ai-panel-screenplay`,
+          do: `Look at the page that opened.`,
+          explain: `The page opens beside the panel, which stays where it is. The answer in the panel shows an Open button, or Open again once you are already there, so you can come back to the same place after moving away.`,
+        },
+      ],
+      result: `You land on the scene, page or item you asked for.`,
+      cautions: [
+        `Moving around changes nothing in your project, so there is nothing to apply or undo.`,
+        `Rows in a list answer can have a Show button. It takes you to that item.`,
+      ],
+      related: [`openframe-ai-ask-question`],
+    },
+    {
+      id: `openframe-ai-ask-for-a-change`,
+      title: `Ask for a change and read the Proposed Changes card`,
+      purpose: `Ask OpenFrame AI to prepare a change, read what it would do and reject it if it is not what you want.`,
+      level: `Intermediate`,
+      prerequisites: [`OpenFrame AI panel is open and says AI Ready.`],
+      steps: [
+        {
+          screen: `ai-proposed-changes`,
+          do: `Type a request that changes something, for example Create a task to scout the railway station., and click Send.`,
+          explain: `The answer reads I prepared a task. Nothing has been added yet. Under it is the Proposed Changes card. Nothing in your project has changed so far.`,
+        },
+        {
+          screen: `ai-proposed-changes`,
+          do: `Read the Proposed Changes card from top to bottom.`,
+          explain: `The title says what kind of change it is, here Proposed task. Affected areas names the part of OpenFrame it would touch, here Notes & Tasks. The rows below show the exact content, here Task: Scout the railway station. Impact says how much, here 1 new object. The last line says 1 change, applied together as one step you can undo. If any part fails, nothing is changed. Reject and Apply Changes are the two buttons under the card.`,
+        },
+        {
+          screen: `ai-proposal-rejected`,
+          do: `Click Reject if the card is not what you want.`,
+          explain: `The buttons go away and the panel says Rejected. Nothing was changed. You can ask again with more detail, for example the due date or a name.`,
+        },
+      ],
+      result: `You saw exactly what OpenFrame AI wanted to change, and nothing was added to your project.`,
+      cautions: [
+        `OpenFrame AI can only prepare changes. It cannot apply them. Nothing happens until you click Apply Changes.`,
+        `A card can turn out of date if you edit the project after it was prepared. It then reads Proposed Changes (out of date), Apply Changes is replaced by Re-check & Review, and you can only reject it or check it again against the current project.`,
+      ],
+      related: [`openframe-ai-apply-and-undo`, `openframe-ai-review-deletion`],
+    },
+    {
+      id: `openframe-ai-apply-and-undo`,
+      title: `Apply a proposed change and undo it`,
+      purpose: `Accept a Proposed Changes card, find what it added and reverse it if you change your mind.`,
+      level: `Intermediate`,
+      prerequisites: [`OpenFrame AI has prepared a change and a Proposed Changes card is showing.`],
+      steps: [
+        {
+          screen: `ai-proposed-changes-second`,
+          do: `Check the card, for example Task: Book the bus for the night shoot, then click Apply Changes.`,
+          explain: `Apply Changes is the orange button under the card. The whole change runs together. If any part fails, nothing is changed.`,
+        },
+        {
+          screen: `ai-proposal-applied`,
+          do: `Read the message under the card, and the message at the bottom of the window.`,
+          explain: `The panel says Applied 1 change. Use Undo to reverse it. A message at the bottom of the window reads Applied: Proposed task with an Undo link and an x to close it. The new task is now in Notes & Tasks.`,
+        },
+        {
+          screen: `ai-proposal-applied`,
+          do: `To reverse the change, click Undo in that message, or press Ctrl+Z.`,
+          explain: `Everything the card changed is reversed as one step. Undo and Redo also appear in the project menu at the top left, where the entry names the change, for example AI-applied: Proposed task.`,
+        },
+      ],
+      result: `The change is in your project, and you can reverse it in one step.`,
+      cautions: [
+        `The Undo message does not stay on screen for long. Ctrl+Z still works, and the project menu lists the last change under Undo.`,
+        `A change you applied appears in the Recent list on the project's Home page, for example AI-applied: Proposed task.`,
+      ],
+      related: [`openframe-ai-ask-for-a-change`, `openframe-ai-review-deletion`],
+    },
+    {
+      id: `openframe-ai-review-deletion`,
+      title: `Review a proposal that deletes something`,
+      purpose: `Read a deletion proposal carefully, confirm it only when it is exactly what you want and know how to get the items back.`,
+      level: `Advanced`,
+      prerequisites: [`OpenFrame AI panel is open.`],
+      steps: [
+        {
+          screen: `ai-answer-delete-request`,
+          do: `Ask for a deletion, for example Delete all the scenes in the screenplay.`,
+          explain: `OpenFrame AI does not delete anything. It answers I prepared this change. Nothing has been changed yet. and shows a Proposed Changes card titled Proposed scene deletion.`,
+        },
+        {
+          screen: `ai-answer-delete-request`,
+          do: `Read the Delete row, Its text, Other drafts and Items.`,
+          explain: `Affected areas says Screenplay. Delete names what would go. Its text says how much text it holds, here 16 lines. Other drafts says Not changed. Items repeats the list of what is affected. Compare this list with what you asked for. In the picture you asked for every scene and the card lists only Scene 1: EXT. RAYAPURAM BUS STAND - DAY, so check the list before you apply.`,
+        },
+        {
+          screen: `ai-answer-delete-request`,
+          do: `Click Reject if the list is wrong. Click Apply Changes only if it is exactly right.`,
+          explain: `Because the change deletes items, Apply Changes first opens a confirmation titled Apply changes that delete items? It says that deleted items go to Recently Deleted and that you can use Undo to reverse the whole change. Confirm with Apply Changes, or cancel.`,
+        },
+      ],
+      result: `You know what a deletion would remove, and you can undo it or restore the items.`,
+      cautions: [
+        `After a deletion is applied, open Recently Deleted to restore an item, or use Undo (Ctrl+Z) to reverse the whole change.`,
+        `Never apply a deletion card you have not read. OpenFrame AI can misunderstand a request, and the card is where you catch it.`,
+      ],
+      related: [`openframe-ai-apply-and-undo`, `openframe-ai-ask-for-a-change`],
+    },
+    {
+      id: `openframe-ai-stop-request`,
+      title: `Stop a request that is taking too long`,
+      purpose: `Cancel a question while OpenFrame AI is still working on it.`,
+      level: `Beginner`,
+      prerequisites: [`You have sent a question and the panel shows Writing the answer.`],
+      steps: [
+        {
+          screen: `ai-working`,
+          do: `Click Cancel in the answer bubble that says Writing the answer.`,
+          explain: `The bubble changes to Stopping… and the request ends. A question that was only being answered changes nothing in your project.`,
+        },
+      ],
+      result: `The request stops and the Ask box is ready for a new question.`,
+      cautions: [
+        `If you cancel before the answer is ready, the question may need to be sent again. Retype it or shorten it.`,
+        `A change is only ever made when you click Apply Changes, so cancelling can never leave a half applied change.`,
+      ],
+      related: [`openframe-ai-ask-question`],
+    },
+    {
+      id: `openframe-ai-save-conversation`,
+      title: `Save a conversation or start a new one`,
+      purpose: `Save the questions and answers of one conversation to a file, and clear the panel for a new topic.`,
+      level: `Intermediate`,
+      prerequisites: [`OpenFrame AI panel is open and has at least one answer in it.`],
+      steps: [
+        {
+          screen: `ai-panel-ready`,
+          do: `Look at the download arrow beside the Scope list.`,
+          explain: `The Save conversation for review button is greyed out until the first answer, because there is nothing to save yet.`,
+        },
+        {
+          screen: `ai-answer-characters`,
+          do: `Click the download arrow (Save conversation for review) once there is an answer.`,
+          explain: `A Windows Save window titled Save conversation for review opens. It suggests the name openframe-ai-conversation.json. Pick a folder and save. The file goes only where you choose.`,
+        },
+        {
+          screen: `ai-answer-characters`,
+          do: `Look for the message at the bottom of the window.`,
+          explain: `It says Saved followed by the file name and how many questions it holds, for example 1 question.`,
+        },
+        {
+          screen: `ai-panel-ready`,
+          do: `Click New to start a new conversation.`,
+          explain: `The panel goes back to the short introduction with its examples, and the next question starts fresh. Save the conversation first if you want a file of it.`,
+        },
+      ],
+      result: `You have a file of the conversation and a clean panel.`,
+      cautions: [
+        `The file holds your questions and the answers, so treat it like your project and share it only if you mean to.`,
+        `Saving a conversation is separate from the AI health report. See Read AI health and export a report.`,
+      ],
+      related: [`openframe-ai-ai-health-report`],
+    },
+    {
+      id: `openframe-ai-panel-menu`,
+      title: `Use the panel's ... menu`,
+      purpose: `Open the Offline AI settings from the panel or stop OpenFrame AI to free memory.`,
+      level: `Beginner`,
+      prerequisites: [`OpenFrame AI panel is open.`],
+      steps: [
+        {
+          screen: `ai-settings-menu`,
+          do: `Click the ... button in the panel header (Offline AI settings).`,
+          explain: `A menu opens under the heading OFFLINE AI with two items: Offline AI settings… and Stop Offline AI (free memory).`,
+        },
+        {
+          screen: `ai-offline-settings`,
+          do: `Choose Offline AI settings….`,
+          explain: `Project settings opens on the Offline AI tab. The panel stays open beside it, so you can read the settings and try a question in the same window.`,
+        },
+        {
+          screen: `ai-settings-menu`,
+          do: `To free memory without leaving the panel, open the menu again and choose Stop Offline AI (free memory).`,
+          explain: `A message says Offline AI stopped. It starts again when you ask something. The first question afterwards takes a little longer while OpenFrame AI starts again.`,
+        },
+      ],
+      result: `You can reach the settings and free the memory from the panel.`,
+      cautions: [
+        `The menu shows Offline AI settings… only while a project is open, and Stop Offline AI (free memory) only while OpenFrame AI is ready.`,
+      ],
+      related: [`openframe-ai-offline-settings-page`, `openframe-ai-stop-or-remove`],
+    },
+    {
+      id: `openframe-ai-offline-settings-page`,
+      title: `Read the Offline AI settings`,
+      purpose: `Find the status of OpenFrame AI, what it is built from and where its privacy promise is written.`,
+      level: `Intermediate`,
+      prerequisites: [`A project is open.`],
+      steps: [
+        {
+          screen: `ai-offline-settings`,
+          do: `Click Project settings, then the Offline AI tab. You can also use the ... menu in the panel.`,
+          explain: `The tabs are Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance and Storage. The page is titled Offline AI with the line AI runs on this computer.`,
+        },
+        {
+          screen: `ai-offline-settings`,
+          do: `Read the OFFLINE AI card.`,
+          explain: `It shows the status label, here AI Ready, and the promise: OpenFrame AI runs on this computer after a one-time download. Your project data is not sent to OpenFrame or to an AI cloud service. Below are Stop Offline AI (free memory), Remove OpenFrame AI… and the Graphics card choice. A line at the bottom says OpenFrame works normally without OpenFrame AI.`,
+        },
+        {
+          screen: `ai-offline-settings`,
+          do: `Look at the other cards on the page: AI HEALTH, ASSISTANT MEMORY and TECHNICAL DETAILS.`,
+          explain: `Each has its own workflow in this chapter. AI HEALTH holds counts and times. ASSISTANT MEMORY lists what OpenFrame AI remembers. TECHNICAL DETAILS is closed until you click it.`,
+        },
+        {
+          screen: `ai-offline-technical-details`,
+          do: `Click TECHNICAL DETAILS.`,
+          explain: `A table lists each part with its COMPONENT, LICENCE and SIZE: the AI engine, the language model and two search models. Each row has a version and a check code, and the licence name, with a link where one exists. Below the table are a note about the model licence, the package check, the memory and processor of this computer, where the engine is installed, where the log file is kept and how much space the AI uses. A final line says everything runs on this computer, and the only network use is the model download you start.`,
+        },
+      ],
+      result: `You can see whether OpenFrame AI is ready and what it is made of.`,
+      cautions: [
+        `The status label changes with the situation. It can read Not downloaded, Checking its files…, Getting Offline AI ready on this computer…, Needs a new download, Needs a reinstall, Not available on this computer, or Stopped after a problem. It restarts when you ask something.`,
+      ],
+      related: [`openframe-ai-graphics-card`, `openframe-ai-ai-health-report`, `openframe-ai-memory`],
+    },
+    {
+      id: `openframe-ai-graphics-card`,
+      title: `Choose whether OpenFrame AI may use the graphics card`,
+      purpose: `Let OpenFrame AI use a graphics card when it is safe, or keep it on the processor.`,
+      level: `Advanced`,
+      prerequisites: [`OpenFrame AI is downloaded, so the Graphics card choice is shown on the Offline AI tab.`],
+      steps: [
+        {
+          screen: `ai-offline-settings`,
+          do: `On the Offline AI tab, find Graphics card under the two buttons.`,
+          explain: `It has two choices, Automatic and Off. Automatic is selected. The line under it says Decided before the first answer. Automatic uses a graphics card only after it passes a short check; the processor is always the fallback.`,
+        },
+        {
+          screen: `ai-offline-health-filled`,
+          do: `Read the line under Graphics card.`,
+          explain: `It says where OpenFrame AI runs now. In the picture it says Runs on the processor. The graphics card does not have enough memory for OpenFrame AI. This is not a fault. The answers do not change, only how fast they come.`,
+        },
+        {
+          screen: `ai-offline-settings`,
+          do: `Click Off to keep OpenFrame AI on the processor, or Automatic to let it use a checked graphics card.`,
+          explain: `A message confirms: OpenFrame AI will run on the processor, or OpenFrame AI will use a checked graphics card when there is one. The choice is decided before the first answer, so it applies the next time OpenFrame AI starts. Stop Offline AI (free memory) makes that happen sooner.`,
+        },
+      ],
+      result: `OpenFrame AI runs where you chose, and the line under the choice tells you where.`,
+      cautions: [
+        `If OpenFrame AI fails or the computer slows down, choose Off. The processor always works.`,
+      ],
+      related: [`openframe-ai-ai-health-report`],
+    },
+    {
+      id: `openframe-ai-ai-health-report`,
+      title: `Read AI health and export a report`,
+      purpose: `See how OpenFrame AI is doing in numbers and save those numbers to a file.`,
+      level: `Intermediate`,
+      prerequisites: [`You have used OpenFrame AI at least once.`],
+      steps: [
+        {
+          screen: `ai-offline-settings`,
+          do: `Open the Offline AI tab and look at the AI HEALTH card.`,
+          explain: `Before you use OpenFrame AI it says No requests yet. The figures appear after you use OpenFrame AI. A note says only numbers are kept on this computer: no questions, answers or project text, and nothing is sent. Export AI report is under the note.`,
+        },
+        {
+          screen: `ai-offline-health-filled`,
+          do: `After some use, read the table.`,
+          explain: `REQUESTS COUNTED is how many requests were made. TYPICAL ANSWER TIME is the middle answer time in seconds. PROPOSALS APPLIED shows the share of proposals you applied, with how many were decided, for example 0% (0 of 3 decided). CHECKS PER ANSWER shows how many checks an answer needed, 1.0 being one. ERRORS is the number of failures. RUNS ON says processor or graphics card. WEAKEST TOOL names the kind of request that went wrong most often, or says none stands out.`,
+        },
+        {
+          screen: `ai-offline-health-filled`,
+          do: `Click Export AI report and choose where to save the file.`,
+          explain: `A Windows Save window titled Export AI report opens with the name openframe-ai-report.json. A message then says Saved with the file name and the number of requests. The file holds the same numbers, so you can send them to someone if you want to.`,
+        },
+      ],
+      result: `You can read OpenFrame AI's numbers and have them in a file.`,
+      cautions: [
+        `The report holds numbers only. It never holds your questions, the answers or any project text, and nothing is sent anywhere. Sharing the file is your choice.`,
+      ],
+      related: [`openframe-ai-save-conversation`, `openframe-ai-graphics-card`],
+    },
+    {
+      id: `openframe-ai-memory`,
+      title: `See and delete what OpenFrame AI remembers`,
+      purpose: `Read the facts and preferences OpenFrame AI has kept for you, and make it forget any of them.`,
+      level: `Intermediate`,
+      prerequisites: [`The Offline AI tab is open.`],
+      steps: [
+        {
+          screen: `ai-offline-settings`,
+          do: `Find the ASSISTANT MEMORY card.`,
+          explain: `While nothing is kept it says Nothing is remembered yet. OpenFrame AI keeps a fact or preference only when you state it outright, or confirm one of its answers. A note says the memory is saved on this computer, in this project, for you only.`,
+        },
+        {
+          screen: `ai-offline-settings`,
+          do: `Once entries exist, read the list. Click Delete on an entry to remove it.`,
+          explain: `Each entry shows its text, whether it is a Preference or a Fact, and when it was saved. Delete removes it and a message says Forgotten. OpenFrame AI no longer uses it.`,
+        },
+      ],
+      result: `You know what OpenFrame AI has kept, and you can remove any of it.`,
+      cautions: [
+        `The memory belongs to one project. A fact kept in one project is not used in another.`,
+      ],
+      related: [`openframe-ai-offline-settings-page`],
+    },
+    {
+      id: `openframe-ai-stop-or-remove`,
+      title: `Stop OpenFrame AI or remove OpenFrame AI`,
+      purpose: `Free the memory OpenFrame AI uses, or remove the downloaded models to free disk space.`,
+      level: `Intermediate`,
+      prerequisites: [`OpenFrame AI is downloaded and ready.`],
+      steps: [
+        {
+          screen: `ai-offline-settings`,
+          do: `To free memory only, click Stop Offline AI (free memory).`,
+          explain: `OpenFrame AI stops and a message says Offline AI stopped. It starts again when you ask something. Your downloaded files stay where they are. Use this when another heavy program needs the memory.`,
+        },
+        {
+          screen: `ai-offline-settings`,
+          do: `To free disk space, click Remove OpenFrame AI….`,
+          explain: `This opens a confirmation. Nothing is removed yet.`,
+        },
+        {
+          screen: `ai-offline-remove-confirm`,
+          do: `Read Remove OpenFrame AI? and click Remove.`,
+          explain: `It says: This frees the space the AI models use on this computer. AI stays off until you download it again. Your projects are not changed. Cancel keeps everything. The x closes the dialog. Remove is red because it deletes the downloaded files. A message then says OpenFrame AI was removed and that you can download it again here.`,
+        },
+      ],
+      result: `Either the memory is free, or the downloaded models are gone and the panel offers the download again.`,
+      cautions: [
+        `Removing means a new download of about 1.2 GB if you want OpenFrame AI back.`,
+        `Your projects, ideas, screenplays and OpenFrame AI's settings are not touched.`,
+      ],
+      related: [`openframe-ai-download-models`],
+    },
+    {
+      id: `openframe-ai-download-models`,
+      title: `Download OpenFrame AI, or import model files`,
+      purpose: `Get OpenFrame AI ready on your computer with a one-time download, or from model files you already have.`,
+      level: `Beginner`,
+      prerequisites: [`A project is open.`, `About 1.2 GB of free disk space, and an internet connection for the download only.`],
+      steps: [
+        {
+          screen: `ai-offline-settings`,
+          do: `Open OpenFrame AI panel, or open Project settings and the Offline AI tab.`,
+          explain: `Until OpenFrame AI is downloaded, the panel and the Offline AI tab show a card titled Download OpenFrame AI in place of the conversation. This card is only there until the download is done, so it is not in the pictures here, which show a computer where OpenFrame AI is already ready.`,
+        },
+        {
+          screen: `ai-offline-settings`,
+          do: `Read the card, then click Download OpenFrame AI.`,
+          explain: `The card says A one-time download of 1.2 GB and how much free space it needs, with how much is free on the drive. A note says the download uses the internet once. After it, OpenFrame AI works on this computer without the internet, and your projects are never sent anywhere. Nothing touches the internet until you click. If the drive is too full, a warning says There is not enough free space on this drive. Free some space, then download.`,
+        },
+        {
+          screen: `ai-offline-settings`,
+          do: `Watch the progress bar. Click Pause if you need to stop for a while.`,
+          explain: `The line shows Downloading with how much has arrived. After the files arrive, it says it is checking the files and getting OpenFrame AI ready. Pause keeps what has arrived. The button then reads Resume download and carries on from where it stopped. If the download fails, the card says why and the button reads Try again.`,
+        },
+        {
+          screen: `ai-offline-settings`,
+          do: `If you already have the model files, click Import a model file… and pick one in the Windows window.`,
+          explain: `The window is titled Import an OpenFrame AI model file and takes .gguf files. The file is copied and checked, never moved. A message says OpenFrame AI is ready when the set is complete, or says to import the other model file to finish.`,
+        },
+        {
+          screen: `ai-panel-ready`,
+          do: `When the download finishes, look at the panel header.`,
+          explain: `The status label reads AI Ready and the conversation, Scope and Ask box replace the download card.`,
+        },
+      ],
+      result: `The panel says AI Ready and you can ask questions.`,
+      cautions: [
+        `The files are checked after they arrive. A damaged or missing file shows Download OpenFrame AI again with a message about it. Click Download again to replace it.`,
+        `On a copy of OpenFrame that cannot download, the card says so and offers Import a model file… only.`,
+        `The download is the only time OpenFrame uses the internet for OpenFrame AI.`,
+      ],
+      related: [`openframe-ai-open-panel`, `openframe-ai-stop-or-remove`],
+    },
+  ],
+  screens: {
+    'ai-panel-ready': `OpenFrame AI panel open beside the Home page of a project, with AI Ready in the header. It shows the Scope list, the greyed out Save conversation for review button, New, the line Using: Whole Project, the short introduction with examples and the empty Ask box with a greyed out Send. Used in openframe-ai-open-panel, openframe-ai-ask-question, openframe-ai-choose-scope, openframe-ai-open-pages, openframe-ai-save-conversation and openframe-ai-download-models.`,
+    'ai-settings-menu': `The panel's ... menu open under the heading OFFLINE AI, with Offline AI settings… and Stop Offline AI (free memory). Used in openframe-ai-panel-menu.`,
+    'ai-scope-current-screenplay': `The panel with the Scope set to Current Screenplay, so the line under it reads Using: Current Screenplay. Used in openframe-ai-choose-scope.`,
+    'ai-scope-beat-board': `The panel with the Scope set to Beat Board, so the line reads Using: Beat Board. Used in openframe-ai-choose-scope.`,
+    'ai-offline-settings': `Project settings on the Offline AI tab with the panel still open. The OFFLINE AI card shows AI Ready, Stop Offline AI (free memory), Remove OpenFrame AI… and the Graphics card choice. AI HEALTH says No requests yet and offers Export AI report. ASSISTANT MEMORY says Nothing is remembered yet. TECHNICAL DETAILS is closed. Used in openframe-ai-offline-settings-page, openframe-ai-graphics-card, openframe-ai-ai-health-report, openframe-ai-memory, openframe-ai-stop-or-remove, openframe-ai-panel-menu and openframe-ai-download-models.`,
+    'ai-offline-technical-details': `The same tab with TECHNICAL DETAILS open: a table of the engine and the three models with version, licence and size, the model licence note, the package check, this computer's memory and processor, and the line that everything runs on this computer. Used in openframe-ai-offline-settings-page.`,
+    'ai-offline-remove-confirm': `The Remove OpenFrame AI? dialog. It explains that this frees the space the models use, that AI stays off until you download it again and that your projects are not changed. It has an x, Cancel and a red Remove button. Used in openframe-ai-stop-or-remove.`,
+    'ai-question-typed': `The panel with List the characters. typed in the Ask box and Send turned orange. Used in openframe-ai-ask-question.`,
+    'ai-working': `The panel while a question runs. The question sits in a dark bubble, the line Getting Offline AI ready on this computer… shows above it, and the answer bubble reads Writing the answer with a Cancel button. Used in openframe-ai-ask-question and openframe-ai-stop-request.`,
+    'ai-answer-characters': `The panel after the question List the characters. The answer lists the characters and their roles, with a See sources link. The Save conversation for review button is now active. Used in openframe-ai-ask-question, openframe-ai-check-sources and openframe-ai-save-conversation.`,
+    'ai-answer-characters-sources': `The same answer with See sources open: Inferred · written by Offline AI, and the Based on chips Character: LAKSHMI, Character: VENKAT RAO, Character: FAROOQ and Character: PADMA. Used in openframe-ai-check-sources.`,
+    'ai-panel-screenplay': `The panel beside the Screenplay page, which has narrowed to make room. The Scope still reads Whole Project from before. Used in openframe-ai-open-panel, openframe-ai-choose-scope and openframe-ai-open-pages.`,
+    'ai-answer-locations': `The panel on the Screenplay page with the Scope set to Current Screenplay. The question Which locations are used in the screenplay? has a long answer and a See sources link. Used in openframe-ai-check-sources.`,
+    'ai-answer-locations-sources-open': `The same answer with See sources open. Based on lists Scene locations: THE TOWER AT PEDDA REVU, Location: Pedda Revu tower, Location: Rayapuram bus stand and Location: Venkat Radio Works. Used in openframe-ai-check-sources.`,
+    'ai-answer-scene-count': `The panel after the question How many scenes are in the script? with the Scope on Current Screenplay. The answer says the project contains 36 scenes and names the screenplay. Used in openframe-ai-ask-question.`,
+    'ai-proposed-changes': `The panel after the request Create a task to scout the railway station. The answer says nothing has been added yet and a Proposed Changes card shows Proposed task, Affected areas Notes & Tasks, Task Scout the railway station, Impact 1 new object, and the Reject and Apply Changes buttons. Used in openframe-ai-ask-for-a-change.`,
+    'ai-proposal-rejected': `The same card after Reject. The buttons are gone and the panel says Rejected. Nothing was changed. Used in openframe-ai-ask-for-a-change.`,
+    'ai-proposed-changes-second': `A second Proposed Changes card for Create a task to book the bus for the night shoot, ready to apply. Used in openframe-ai-apply-and-undo.`,
+    'ai-proposal-applied': `The card after Apply Changes. The panel says Applied 1 change. Use Undo to reverse it. and a message at the bottom of the window offers Undo. Used in openframe-ai-apply-and-undo.`,
+    'ai-answer-delete-request': `A Proposed scene deletion card for the request Delete all the scenes in the screenplay. It lists Affected areas Screenplay, the scene under Delete, Its text 16 lines, Other drafts Not changed and Items, with Reject and Apply Changes. Used in openframe-ai-review-deletion.`,
+    'ai-panel-story': `The panel beside the Story page. Variant of the panel with another page open, part of openframe-ai-choose-scope.`,
+    'ai-panel-breakdown': `The panel beside the Breakdown page. Variant of the panel with another page open, part of openframe-ai-choose-scope.`,
+    'ai-panel-production': `The panel beside the Production overview. Variant of the panel with another page open, part of openframe-ai-choose-scope.`,
+    'ai-panel-vault': `The panel beside the project's Idea Vault. Variant of the panel with another page open, part of openframe-ai-choose-scope.`,
+    'ai-offline-health-filled': `The Offline AI tab after some use. AI HEALTH shows REQUESTS COUNTED, TYPICAL ANSWER TIME, PROPOSALS APPLIED, CHECKS PER ANSWER, ERRORS, RUNS ON and WEAKEST TOOL. The line under Graphics card says OpenFrame AI runs on the processor. Used in openframe-ai-ai-health-report and openframe-ai-graphics-card.`,
+    'ai-panel-empty-project': `The panel open beside the Home page of a new, empty project, Empty Short. Used in openframe-ai-open-panel.`,
+  },
+  shortcuts: [
+    [`Ctrl+J`, `Open or close OpenFrame AI`],
+    [`Enter`, `Send the question in the Ask box`],
+    [`Shift+Enter`, `Start a new line in the Ask box`],
+    [`Ctrl+Z`, `Undo an applied change`],
+  ],
+  limits: [
+    `OpenFrame AI answers only from the project that is open. It does not look anything up on the internet.`,
+    `It never changes your project by itself. Every change is a Proposed Changes card that waits for Apply Changes.`,
+    `It never sends your project, your questions or its answers to OpenFrame or to an AI service. The only network use is the one-time model download that you start.`,
+    `It is a small model that runs on your computer. Answers can be wrong, and quality is best in English. Use See sources to check.`,
+    `It refuses requests about licences and payment.`,
+    `A question can be up to 2,000 characters.`,
+    `Its speed depends on your computer. On a processor without a usable graphics card, a long answer can take several seconds.`,
+  ],
+  troubleshooting: [
+    {
+      problem: `The panel shows a Download OpenFrame AI card, not a conversation.`,
+      fix: `OpenFrame AI is not downloaded yet, or a downloaded file is damaged. Click Download OpenFrame AI (or Download again) and wait until the panel says AI Ready.`,
+    },
+    {
+      problem: `The panel says AI is not available right now.`,
+      fix: `OpenFrame AI cannot run at the moment. The message says everything else in OpenFrame works normally. Open Project settings and the Offline AI tab to read the status. If it says Needs a reinstall, reinstall OpenFrame.`,
+    },
+    {
+      problem: `The panel says Open a project to ask about it.`,
+      fix: `OpenFrame AI answers from the open project. Open a project, then ask again.`,
+    },
+    {
+      problem: `The panel says OpenFrame AI stopped after a problem.`,
+      fix: `Ask your question again. OpenFrame AI restarts when you ask something. If it keeps stopping, choose Off under Graphics card on the Offline AI tab.`,
+    },
+    {
+      problem: `A notice says Preparing project context… and answers use fewer sources.`,
+      fix: `OpenFrame is getting your project ready for search, for example after a big import. OpenFrame AI still answers, with fewer sources. Wait a moment and ask again.`,
+    },
+    {
+      problem: `The first answer takes a long time.`,
+      fix: `OpenFrame AI loads into memory on the first question, and the panel says Getting Offline AI ready on this computer…. Later answers are quicker. Click Cancel if you do not want to wait.`,
+    },
+    {
+      problem: `The computer feels slow while OpenFrame AI works.`,
+      fix: `Close the panel and click Stop Offline AI (free memory). On the Offline AI tab you can also set Graphics card to Off.`,
+    },
+    {
+      problem: `An answer is wrong or does not match my script.`,
+      fix: `Open See sources and compare. Narrow the Scope, for example to Current Screenplay, and ask in a shorter way.`,
+    },
+    {
+      problem: `A Proposed Changes card says it is out of date.`,
+      fix: `The project changed after the card was prepared. Click Re-check & Review to check it again, or Reject and ask again.`,
+    },
+    {
+      problem: `I applied a change by mistake.`,
+      fix: `Click Undo in the message at the bottom, or press Ctrl+Z. Deleted items are also in Recently Deleted.`,
+    },
+    {
+      problem: `The Save conversation for review button is greyed out.`,
+      fix: `It becomes active after the first answer. Ask a question first.`,
+    },
+    {
+      problem: `I want the disk space back.`,
+      fix: `Open the Offline AI tab and click Remove OpenFrame AI…. Your projects are not changed, and you can download it again later.`,
+    },
+  ],
+};

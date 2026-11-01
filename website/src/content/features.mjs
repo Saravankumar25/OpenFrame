@@ -1,6 +1,6 @@
 // Feature page content, one entry per FEATURES slug in nav.mjs. Claims follow research/capability-matrix.md.
 // Shots: win = research/WindowsHTML-src/light/<name>.html, mac = research/MacHTML-src/light/<name>.html.
-// mac: null means no truthful Mac screen exists for that row; the page then shows the Windows screen, labelled.
+// mac: null means no truthful Mac screen exists for that row; Mac visitors then see the text without a screen.
 
 export const FEATURE_PAGES = {
   'idea-vault': {
@@ -8,7 +8,7 @@ export const FEATURE_PAGES = {
     description: 'Collect notes, images, links, files, voice notes and video in the Idea Vault of OpenFrame Studio. No title or folder needed. Send ideas to the Beat Board.',
     h1: 'Catch every idea. Decide what it is later.',
     lead: 'The Idea Vault holds everything about the film before it has a shape: notes, images, links, files, voice notes and video. Nothing needs a title, a folder or a category.',
-    hero: { win: '151-vault-grid-all-types', mac: '259-vault-filled' },
+    hero: { win: '151-vault-grid-all-types', mac: '288-vault-view-card' },
     rows: [
       { heading: 'Throw it in first. Sort it out later.',
         text: 'Add a note, a quote, a picture, a link, any file or a voice note you record in the app. Every item opens in a side drawer where you can read it, tag it or flag it as research.',
@@ -47,21 +47,21 @@ export const FEATURE_PAGES = {
       { heading: 'A wall of index cards that never falls down',
         text: 'Acts are columns, sequences group the scenes, and each card is a short reminder of what happens. Drag a card and an insertion line shows where it will land.',
         bullets: ['Multi-select to move several cards at once', 'A Parking Lot for scenes you are not sure about', 'Twelve card details to show or hide, with Minimal, Story and Production presets', 'An outline view of the same story'],
-        shots: { win: '211-story-outline-view', mac: '221-story-outline' } },
+        shots: { win: '194-story-board-card-selected', mac: '208-story-card-selected' } },
       { heading: 'From cards to screenplay scenes',
         text: 'Build Screenplay turns the cards you choose into screenplay scenes. You see a preview first, and your cards stay as they were.',
         bullets: ['Cards without a scene heading are pointed out before anything is created', 'Apply a new board order to the screenplay when you are ready'],
-        shots: { win: '203-story-build-dialog', mac: '220-story-build-sheet' } },
+        shots: { win: '215-story-build-dialog-missing-heading', mac: '220-story-build-sheet' } },
       { heading: 'Characters and how they connect',
         text: 'Keep a directory of characters with their details and relationships, and see them on a relationship map. A timeline lays the screenplay scenes out by story day.',
         bullets: ['Warnings before you delete a character used in scenes', 'Archive characters you no longer need'],
-        shots: { win: '224-story-relationship-map', mac: '243-story-relationship-map' } },
+        shots: { win: '224-story-relationship-map', mac: '263-story-character-relationships' } },
     ],
     flow: 'Ideas arrive from the Idea Vault. Built scenes go to the Screenplay, where the writing happens. Scene numbers always come from the screenplay, not the board.',
     good: [
       'The Story page exports as TXT, PDF or Word. The Beat Board exports as PDF, TXT or CSV.',
       'A Beat Board can be shared for review as a package file. There is no live shared editing.',
-      'The assistant never reads or changes the Story page.',
+      'OpenFrame AI never reads or changes the Story page.',
     ],
     platform: [],
     related: ['idea-vault', 'screenplay', 'drafts-revisions'],
@@ -99,7 +99,7 @@ export const FEATURE_PAGES = {
     description: 'Write in industry screenplay format as you type in OpenFrame Studio: eight elements, smart suggestions, page setup, title page, comments and private notes.',
     h1: 'Write. The formatting keeps up.',
     lead: 'Type a screenplay with eight elements: Scene Heading, Action, Character, Parenthetical, Dialogue, Transition, Shot and General. Tab and Enter move you to the element that comes next.',
-    hero: { win: '244-sp-editor-standard', mac: '068-screenplay-editor-typing' },
+    hero: { win: '254-sp-editor-scrolled-mid-script', mac: '101-screenplay-editor-selection' },
     rows: [
       { heading: 'Suggestions that save keystrokes',
         text: 'Start a scene heading and the editor offers INT. and EXT., your locations and times of day. Start a character cue and it offers the characters you already have.',
@@ -107,12 +107,12 @@ export const FEATURE_PAGES = {
         shots: { win: '258-sp-suggestion-list', mac: '114-screenplay-empty-suggestions' } },
       { heading: 'Notes beside the page',
         text: 'The Writing Room opens panels next to the script: scene notes, characters, comments and the Beat Board. Private notes are seen only by the person who wrote them.',
-        bullets: ['Comments with replies, resolve and reopen', 'Focus mode hides everything but the page', 'Private notes are never exported and never read by the assistant'],
+        bullets: ['Comments with replies, resolve and reopen', 'Focus mode hides everything but the page', 'Private notes are never exported and never read by OpenFrame AI'],
         shots: { win: '293-sp-writing-room-two-panels', mac: '129-screenplay-comments-two-open' } },
       { heading: 'Pages that look right',
         text: 'Page setup offers Letter or A4, font, size and spacing, with header and footer. MORE and CONT\'D are added for you. Fill in a structured title page and see it as you type.',
         bullets: ['Several screenplays in one project, with a picker', 'Custom elements when your format needs one', 'Print preview matches the PDF'],
-        shots: { win: '269-sp-title-page-dialog', mac: '163-screenplay-title-page-filled' } },
+        shots: { win: '282-sp-page-setup-header-filled', mac: '171-screenplay-page-setup-a4-header' } },
     ],
     flow: 'Scenes can start as cards on the Beat Board. Once a draft is locked for shooting, the Breakdown reads its scenes, and from there the schedule, call sheets and sides.',
     good: [
@@ -134,12 +134,12 @@ export const FEATURE_PAGES = {
     description: 'Save named screenplay drafts, compare two drafts scene by scene or as text, lock a shooting draft and track coloured revisions with OpenFrame Studio.',
     h1: 'Every draft kept. Every change visible.',
     lead: 'Save named drafts as the script grows, compare any two of them, then lock a shooting draft and track revisions the way a production expects.',
-    hero: { win: '308-sp-compare-text-only', mac: '145-screenplay-compare-text-only' },
+    hero: { win: '329-sp-revision-draft-editor', mac: '145-screenplay-compare-text-only' },
     rows: [
       { heading: 'Compare two drafts',
         text: 'Pick two drafts and step through the changes, either scene by scene or as plain text. Nothing is merged unless you do it yourself.',
         bullets: ['New drafts start from the current one or an older one', 'Rename and delete drafts you no longer need'],
-        shots: { win: '299-sp-drafts-drawer', mac: '139-screenplay-drafts-two' } },
+        shots: { win: '321-sp-compare-same-draft', mac: '089-screenplay-compare-drafts' } },
       { heading: 'Lock for the shoot, then revise',
         text: 'Lock Shooting Draft freezes the production scene numbers. Start a revision with a label, a colour and a reason, and the changed lines are marked on the page.',
         bullets: ['Revision marks show in Page View and in the exported PDF', 'Scene numbers stay put once the draft is locked'],
@@ -160,7 +160,7 @@ export const FEATURE_PAGES = {
     description: 'Bring scripts into OpenFrame Studio from Final Draft, Fountain, Word, PDF or plain text with a preview first, and export to PDF, FDX, Fountain, Word or text.',
     h1: 'Bring your scripts. Take them anywhere.',
     lead: 'Import a screenplay from Final Draft, Fountain, Word, PDF or plain text, and see what will arrive before anything changes. Export the same way, with no branding on your script.',
-    hero: { win: '011-sp-import-preview', mac: '078-screenplay-tools-import-screenplay' },
+    hero: { win: '015-sp-import-complete', mac: '083-screenplay-draft-example-short-imported' },
     rows: [
       { heading: 'A preview before every import',
         text: 'Import Screenplay shows the scenes, characters and warnings it found. You decide whether to go ahead. Four sample scripts are there if you want to try it first.',
@@ -182,39 +182,39 @@ export const FEATURE_PAGES = {
     tutorials: ['import-script', 'export-script'],
   },
 
-  'ai-assistant': {
-    title: 'Offline Assistant',
-    description: 'An optional assistant that runs on your own computer after one 1.2 GB download. It answers with sources and proposes changes you apply yourself, or reject.',
-    h1: 'An assistant that stays on your computer.',
-    lead: 'The assistant is optional. After a one-time download of about 1.2 GB it runs on your computer, answers questions about your project, and suggests changes. Nothing changes until you press Apply.',
-    hero: { win: '384-ai-answer-characters-sources', mac: null },
+  'openframe-ai': {
+    title: 'OpenFrame AI',
+    description: 'OpenFrame AI that runs on your own computer after one 1.2 GB download. It answers with sources and proposes changes you apply yourself, or reject.',
+    h1: 'OpenFrame AI that stays on your computer.',
+    lead: 'OpenFrame AI is optional. After a one-time download of about 1.2 GB it runs on your computer, answers questions about your project, and suggests changes. Nothing changes until you press Apply.',
+    hero: { win: '384-ai-answer-characters-sources', mac: '694-ai-panel-story' },
     rows: [
       { heading: 'Ask about your project in plain words',
-        text: 'Open the assistant with Ctrl+J, or Cmd+J on the Mac, and ask. It searches the project and answers with the sources behind See sources, so you can check every claim.',
+        text: 'Open OpenFrame AI with Ctrl+J, or Cmd+J on the Mac, and ask. It searches the project and answers with the sources behind See sources, so you can check every claim.',
         bullets: ['Works in Idea Vault, Story, Screenplay, Breakdown and Production', 'Answers in the language of your question; English is the best tested'],
-        shots: { win: '387-ai-answer-locations-sources-open', mac: null } },
+        shots: { win: '387-ai-answer-locations-sources-open', mac: 'ai-panel' } },
       { heading: 'It proposes. You decide.',
-        text: 'When you ask for a change, the assistant shows one set of Proposed Changes. Read it, then apply it or reject it. Applied changes can be undone like any other.',
+        text: 'When you ask for a change, OpenFrame AI shows one set of Proposed Changes. Read it, then apply it or reject it. Applied changes can be undone like any other.',
         bullets: ['Never changes a project without your Apply', 'Never reads other people\'s private notes or the Story page'],
         shots: { win: '389-ai-proposed-changes', mac: null } },
       { heading: 'Download once, then work offline',
-        text: 'Settings, Offline AI downloads three model files from public Hugging Face files and checks each one by size and SHA-256. You can also import the files by hand, and remove them any time.',
+        text: 'Settings, Offline AI downloads the files OpenFrame AI needs and checks each one before use. You can also import the files by hand, and remove them any time.',
         bullets: ['No account, no API key, no cloud AI', 'Project data is never sent anywhere', 'The app works fully without it'],
-        shots: { win: '789-settings-offline-ai-ready', mac: null } },
+        shots: { win: '789-settings-offline-ai-ready', mac: 'ai-offline-ai-settings' } },
     ],
-    flow: 'The assistant can read across the project and propose scenes, cards, characters, catalog items, notes, tasks, schedule changes and shots. Every proposal goes through you.',
+    flow: 'OpenFrame AI can read across the project and propose scenes, cards, characters, catalog items, notes, tasks, schedule changes and shots. Every proposal goes through you.',
     good: [
-      'Models: Gemma 3 1B Instruct with two small search models, 1.2 GB in total.',
+      'A one-time download of about 1.2 GB.',
       'The chat model needs 4 GB of memory at minimum; 8 GB is recommended.',
       'Quality is measured against a fixed test set in English. Other languages work but are weaker today.',
-      'It refuses licence, payment and team password requests.',
+      'It does not handle licences or payments.',
     ],
     platform: [
-      'Windows runs the model on the processor, or on the graphics card through Vulkan when a first-run check passes.',
-      'The Mac runs it through Metal on Apple silicon. Mac screens of the assistant at work are not ready yet, so the Windows app is shown here.',
+      'On Windows it runs on the processor, or on the graphics card when your computer supports it.',
+      'On the Mac it uses the graphics of Apple silicon.',
     ],
     related: ['screenplay', 'breakdown', 'scheduling'],
-    tutorials: ['ai-assistant-setup', 'ai-assistant-ask'],
+    tutorials: ['openframe-ai-setup', 'openframe-ai-ask'],
   },
 
   breakdown: {
@@ -252,7 +252,7 @@ export const FEATURE_PAGES = {
     description: 'Keep cast, crew and locations in one project in OpenFrame Studio: actors linked to characters, contacts, availability, and locations with access notes.',
     h1: 'The people and places, linked to the scenes.',
     lead: 'Cast, crew and locations live in the Production workspace, linked to the scenes they belong to, so the schedule and call sheets already know who and where.',
-    hero: { win: '469-prod-cast', mac: '507-plan-cast-linked' },
+    hero: { win: '468-prod-locations', mac: '507-plan-cast-linked' },
     rows: [
       { heading: 'Locations with the practical details',
         text: 'Record the address, access, parking, the nearest hospital, availability, notes and photos. Mark each place as an idea, shortlisted, confirmed or rejected.',
@@ -278,12 +278,12 @@ export const FEATURE_PAGES = {
     description: 'Plan every shot before the shoot in OpenFrame Studio: shot lists per scene in list or grid view, and storyboard panels from images or the built-in sketch tool.',
     h1: 'Plan every shot before the shoot.',
     lead: 'Shot lists per scene and storyboard panels you draw or import, kept next to the script they come from.',
-    hero: { win: '521-prod-shots-list', mac: '549-plan-shots-list' },
+    hero: { win: '540-prod-shots-scene-actions-menu', mac: '593-plan-shots-more-menu' },
     rows: [
       { heading: 'A shot list for each scene',
         text: 'Add shots with their details, view them as a list or a grid, move them between scenes and attach references.',
         bullets: ['Copy planning from one scene to another', 'Export as PDF, CSV or Excel (XLSX)'],
-        shots: { win: '522-prod-shots-grid', mac: '550-plan-shots-grid' } },
+        shots: { win: '538-prod-shot-move-dialog', mac: '596-plan-shot-move-sheet' } },
       { heading: 'Storyboards, drawn or imported',
         text: 'Build storyboard panels from imported images, from the built-in sketch tool, or as empty panels to fill in later. Export a panel sheet as PDF.',
         bullets: ['Link a storyboard to its scene', 'Reorder panels and set their duration'],
@@ -305,7 +305,7 @@ export const FEATURE_PAGES = {
     description: 'Build the shooting schedule on a stripboard in OpenFrame Studio: drag scenes into days, plan each day hour by hour, and get warnings before problems.',
     h1: 'A stripboard that warns you first.',
     lead: 'Drag scenes from the Unscheduled pool into shooting days. The schedule checks availability and points out conflicts, and it never moves a scene on its own.',
-    hero: { win: '533-prod-schedule-board', mac: '366-schedule-board' },
+    hero: { win: '563-prod-schedule-strip-moved', mac: '389-schedule-board-three-days' },
     rows: [
       { heading: 'Plan the day hour by hour',
         text: 'Each shooting day has a timeline with crew call and target wrap. Add meal breaks, travel and company moves, and see when the day runs over.',
@@ -318,7 +318,7 @@ export const FEATURE_PAGES = {
       { heading: 'Day Out of Days',
         text: 'Day Out of Days is built from the cast and the schedule, with a date range and room for manual corrections.',
         bullets: ['Schedule and Day Out of Days export as PDF, CSV or Excel (XLSX)'],
-        shots: { win: '589-prod-dood-table', mac: '393-schedule-dood' } },
+        shots: { win: '601-prod-dood-corrected', mac: '393-schedule-dood' } },
     ],
     flow: 'The schedule is built from the scenes of the production script and the Breakdown. Each shooting day becomes a call sheet, a Daily View and sides.',
     good: ['When the schedule changes after a call sheet was made, the call sheet asks to be refreshed.'],
@@ -332,12 +332,12 @@ export const FEATURE_PAGES = {
     description: 'Create a call sheet from a shooting day in OpenFrame Studio, fill in only what is missing, refresh it when the schedule moves, finalize and export to PDF.',
     h1: 'From shooting day to call sheet.',
     lead: 'Create a call sheet from a day on the schedule. Scenes, cast and locations are filled in for you; you add call times and the practical notes.',
-    hero: { win: '645-cs-editor-draft', mac: '420-callsheet-editor' },
+    hero: { win: '677-cs-final', mac: '470-callsheet-finalized' },
     rows: [
       { heading: 'Add only the sections you need',
         text: 'Weather, extras, departments, advance schedule, crew, communication, special notes, attachments, reference images and custom fields. Anything unknown says Needs input.',
         bullets: ['Finalize checks for missing essentials such as crew call', 'Make a new revision when plans change'],
-        shots: { win: '647-cs-add-section-menu', mac: '421-callsheet-section-menu' } },
+        shots: { win: '666-cs-section-reference-images', mac: '449-callsheet-section-menu' } },
       { heading: 'Stays in step with the schedule',
         text: 'If the shooting day changes after you made the call sheet, it shows that it needs a refresh and lists what changed before you apply it.',
         bullets: ['Older revisions are kept and marked as replaced'],
@@ -363,7 +363,7 @@ export const FEATURE_PAGES = {
       { heading: 'Sides for the whole unit or one actor',
         text: 'Pick a shooting day and the scenes are there. Narrow them to selected cast, leave out a scene, and add the call sheet as a cover page.',
         bullets: ['Save a version of the sides as it was handed out', 'Export as PDF'],
-        shots: { win: '606-prod-sides-cover-page', mac: '404-schedule-sides-cover' } },
+        shots: { win: '617-prod-sides-scene-unchecked', mac: '404-schedule-sides-cover' } },
       { heading: 'One day at a glance',
         text: 'Daily View answers one question: what do I need to know for this day? Scenes, cast, locations and times, taken from the schedule.',
         bullets: ['Step through the days of the shoot', 'Export the day as a document'],
@@ -381,7 +381,7 @@ export const FEATURE_PAGES = {
     description: 'Six production reports and a light budget with planned and actual columns in OpenFrame Studio, with saved snapshots and export to PDF, CSV and Excel.',
     h1: 'Reports and a budget you can read.',
     lead: 'Six production reports drawn from the project, and a light budget that compares what you planned with what you spent.',
-    hero: { win: '612-prod-reports-scene', mac: '408-schedule-reports-scene' },
+    hero: { win: '631-prod-reports-live-with-snapshots', mac: '408-schedule-reports-scene' },
     rows: [
       { heading: 'Six reports, always current',
         text: 'Scenes, locations, cast by scene, props, schedule and breakdown completeness. View them live or save a snapshot to compare later.',
@@ -390,7 +390,7 @@ export const FEATURE_PAGES = {
       { heading: 'A budget without the spreadsheet',
         text: 'Add budget lines by category with Planned and Actual amounts. Totals and the difference are worked out for you. Save named snapshots as the plan grows.',
         bullets: ['Choose the currency', 'Export as PDF, CSV or Excel (XLSX)'],
-        shots: { win: '623-prod-budget-filled', mac: '449-budget-table' } },
+        shots: { win: '638-prod-budget-line-added', mac: '485-budget-with-plan' } },
     ],
     flow: 'Reports read the Breakdown, cast, locations and schedule. The budget stands on its own beside them.',
     good: ['The budget is a planning tool. It is not accounting or payroll software.'],
@@ -404,7 +404,7 @@ export const FEATURE_PAGES = {
     description: 'Autosave, project undo, Recently Deleted for 30 days, crash recovery and backup files you control. How OpenFrame Studio keeps your work from being lost.',
     h1: 'Nothing lost by accident.',
     lead: 'Your work is saved as you type. Deleted items wait in Recently Deleted. Undo works across the project. Backups are files you keep wherever you like.',
-    hero: { win: '741-trash-filled', mac: '613-pages-deleted-items' },
+    hero: { win: '035-shell-toast-saved', mac: '662-pages-deleted-restored' },
     rows: [
       { heading: 'Backups you can hold in your hand',
         text: 'Create Backup saves the whole project as one .ofbackup file. Export Full Project makes an .ofproject package to move to another computer. Restore either from the home screen.',
@@ -431,5 +431,5 @@ export const FEATURE_PAGES = {
 };
 
 const all = (plat) => [...new Set(Object.values(FEATURE_PAGES).flatMap((f) => [f.hero, ...f.rows.map((r) => r.shots)].map((s) => s[plat]).filter(Boolean)))];
-// Rows with mac: null show the Windows screen to Mac visitors too, so 'win' already covers them.
+// Rows with mac: null show no screen to Mac visitors.
 export const SCREENS = { win: all('win'), mac: all('mac') };

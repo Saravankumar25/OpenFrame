@@ -1,0 +1,61 @@
+/* App screens as live pages: one clean frame (hairline, soft shadow, the page edge to edge) and the screen viewer
+   (lightbox.js). A card holds an iframe that site.js scales and moves so the card rectangle of the page fills it.
+   Colours come from the site tokens, so both website themes work. */
+:root{--shot-r:12px;--shot-shadow:0 1px 2px rgba(29,26,46,.06),0 18px 40px -22px rgba(29,26,46,.30)}
+:root[data-theme=dark]{--shot-shadow:0 1px 2px rgba(0,0,0,.4),0 22px 44px -22px rgba(0,0,0,.75)}
+
+figure.shot{margin:0}
+figure.shot figcaption{margin-top:10px;font-size:14px;color:var(--muted)}
+.shot-open{position:relative;display:block;width:100%;overflow:hidden;border-radius:var(--shot-r);border:1px solid var(--line2);background:var(--frame);box-shadow:var(--shot-shadow);line-height:0;color:inherit}
+a.shot-open{cursor:zoom-in}
+a.shot-open:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.shot-ratio{display:block;width:100%;height:auto}
+.shot-view{position:absolute;inset:0;overflow:hidden;pointer-events:none;contain:strict}
+.shot-view iframe{position:absolute;left:0;top:0;width:1px;height:1px;max-width:none;border:0;transform-origin:0 0;background:transparent;pointer-events:none;transition:opacity .4s var(--ease)}
+:root.js :is(.shot-open,.thumb):not(.loaded) .shot-view iframe{opacity:0}
+.shot-open .mock-load{transition:opacity .4s var(--ease)}
+.shot-open.loaded .mock-load{opacity:0;visibility:hidden}
+:root:not(.js) .shot-open .mock-load{display:none}
+.shot-missing{display:block;padding:14px;border:1px dashed var(--line2);border-radius:var(--shot-r);color:var(--muted);font-size:13px}
+a.shot-link{cursor:zoom-in}
+.tut .thumb .shot-view iframe{transition:opacity .3s var(--ease)}
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+  a.shot-open{transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+  a.shot-open:hover{transform:translateY(-3px);box-shadow:0 1px 2px rgba(29,26,46,.08),0 26px 48px -22px rgba(29,26,46,.38)}
+  :root[data-theme=dark] a.shot-open:hover{box-shadow:0 1px 2px rgba(0,0,0,.5),0 28px 52px -22px rgba(0,0,0,.85)}
+}
+@media (prefers-reduced-motion:reduce){.shot-view iframe,.shot-open .mock-load{transition:none}}
+
+/* viewer */
+html.lb-open{overflow:hidden;padding-right:var(--lb-sbw,0)}
+dialog.lb{position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;overflow:hidden;color:#fff;background:rgba(9,8,14,.92)}
+dialog.lb:not([open]){display:none}
+dialog.lb::backdrop{background:rgba(9,8,14,.92)}
+@supports (backdrop-filter:blur(1px)){dialog.lb{background:rgba(9,8,14,.8);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}}
+@media (prefers-reduced-motion:no-preference){dialog.lb[open]{animation:lbin .22s var(--ease)}@keyframes lbin{from{opacity:0}}}
+.lb-stage{position:absolute;inset:64px 80px 72px}
+.lb-view{position:absolute;overflow:hidden;border-radius:10px;background:#fff;box-shadow:0 24px 60px -20px rgba(0,0,0,.7)}
+.lb-frame{position:absolute;left:0;top:0;max-width:none;border:0;transform-origin:0 0;background:transparent}
+.lb-view .lb-load{z-index:1;background:var(--frame,#1b1926);transition:opacity .25s}
+.lb-view:not(.is-loading) .lb-load{opacity:0;visibility:hidden}
+.lb-cap{position:absolute;left:80px;right:80px;bottom:22px;margin:0;text-align:center;font-size:15px;line-height:1.4;color:#e9e6f4;text-wrap:balance}
+.lb-btn{position:absolute;display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.12);color:#fff;cursor:pointer;transition:background .2s}
+.lb-btn svg{width:22px;height:22px}
+.lb-btn:hover:not(:disabled){background:rgba(255,255,255,.24)}
+.lb-btn:focus-visible,.lb-new:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.lb-btn:disabled{opacity:.3;cursor:default}
+.lb-btn[hidden]{display:none}
+.lb-close{top:12px;right:14px}
+.lb-new{position:absolute;top:12px;left:14px;display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px 0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.12);color:#fff;font-size:14px;font-weight:600;text-decoration:none;transition:background .2s}
+.lb-new:hover{background:rgba(255,255,255,.24)}
+.lb-new svg{width:18px;height:18px}
+.lb-prev,.lb-next{top:50%;margin-top:-22px}
+.lb-prev{left:14px}
+.lb-next{right:14px}
+@media (max-width:760px){
+  .lb-stage{inset:64px 8px 84px}
+  .lb-cap{left:68px;right:68px;bottom:26px;font-size:14px}
+  .lb-prev,.lb-next{top:auto;bottom:18px;margin:0}
+  .lb-prev{left:12px}
+  .lb-next{right:12px}
+}

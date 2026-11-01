@@ -1,277 +1,166 @@
-// Information pages: platform pages, download, pricing, FAQ, switching, compare, privacy, themes, about, contact, legal.
-// Truth source: research/facts.json and research/capability-matrix.md. Do not add claims they do not show.
-import {
-  PRICES, SHORTCUTS, SHORTCUT_NOTE, IMPORT_OK, IMPORT_REFUSED, EXPORTS, THEMES, FAQ,
-} from '../content/copy.mjs';
+// Information pages in the approved website design: platform pages, download, pricing, FAQ, switching, compare,
+// privacy, themes and about. Legal and contact pages live in legal.mjs. Truth source: research/facts.json and
+// research/capability-matrix.md. Do not add claims they do not show.
+import { FOUNDERS } from '../content/founders.mjs';
+import { themesBody } from '../lib/themes-page.mjs';
+import { SHORTCUTS, SHORTCUT_NOTE, IMPORT_OK, IMPORT_REFUSED, EXPORTS, THEMES, FAQ } from '../content/copy.mjs';
 
-export const SCREENS = {
-  win: ['003-app-home-empty', '797-settings-appearance', '079-apphome-settings-appearance'],
-  mac: ['003-home-empty', '022-settings-appearance', '024-settings-appearance-theme-chosen'],
-};
-
-const UPDATED = '21 October 2026';
+// Structured data for search and answer engines lives in src/lib/seo.mjs (organization, app with prices, website).
+import { ORG, APP, WEBSITE } from '../lib/seo.mjs';
+export { ORG, APP, WEBSITE };
+const slug = (s) => s.toLowerCase().replace(/\W+/g, '-');
 
 export default function (ctx) {
-  const { html, md, kbd, shot, osBlocks, cta } = ctx;
+  const { html, md, mock, osBlocks, storeBtn, price, cta } = ctx;
 
   // Build-time guard: a page that breaks the title or description rules fails the build.
   const page = (p) => {
     if (p.title.length > 60) throw new Error(`title too long (${p.title.length}): ${p.path}`);
     const d = p.description.length;
-    if (d < 120 || d > 160) throw new Error(`description length ${d}: ${p.path}`);
+    if (d < 110 || d > 165) throw new Error(`description length ${d}: ${p.path}`);
     return { os: null, alternates: null, nav: null, ...p };
   };
-
-  // Turn key combinations inside a sentence into keycaps.
+  const kbd = (combo) => html`<span class="keys">${combo.split('+').map((k, i) => html`${i ? '+' : ''}<kbd>${k}</kbd>`)}</span>`;
   const KEY = /((?:Ctrl|Cmd|Alt|Opt|Shift)(?:\+[A-Za-z0-9[\],.]+)+|F7)/;
   const keys = (s) => s.split(KEY).map((part, i) => (i % 2 ? kbd(part) : part));
+  const phero = (eyebrow, h1, lead, extra = '') => html`<section class="phero"><div class="wrap"><span class="eyebrow">${eyebrow}</span><h1>${h1}</h1><p class="lead">${md(lead)}</p>${extra}</div></section>`;
+  const shortcutTable = (idx) => html`<div class="tbl-wrap fit"><table class="tbl"><thead><tr><th scope="col">Action</th><th scope="col">Shortcut</th></tr></thead>
+<tbody>${SHORTCUTS.filter((r) => r[idx]).map((r) => html`<tr><td><b>${r[0]}</b></td><td>${keys(r[idx])}</td></tr>`)}</tbody></table></div>
+<p class="small-print">${SHORTCUT_NOTE}</p>`;
+  // Each answer has a stable id from its question (q-<words>, at most 60 characters), so a link can open it exactly.
+  const faqId = (q) => 'q-' + slug(q).replace(/^-+|-+$/g, '').slice(0, 60).replace(/-+$/, '');
+  const faqItem = ([q, a]) => html`<details class="faq-item" id="${faqId(q)}"><summary>${q}</summary><div class="a"><p>${md(a)}</p></div></details>`;
 
-  const shortcutTable = (idx) => html`
-    <div class="i-scroll"><table class="table i-table">
-      <thead><tr><th scope="col">Action</th><th scope="col">Shortcut</th></tr></thead>
-      <tbody>${SHORTCUTS.filter((r) => r[idx]).map((r) => html`<tr><th scope="row">${r[0]}</th><td>${keys(r[idx])}</td></tr>`)}</tbody>
-    </table></div>
-    <p class="i-small">${SHORTCUT_NOTE}</p>`;
-
-  const faqGroup = (group, items) => html`
-    <section class="i-faq-group" aria-labelledby="g-${group.toLowerCase().replace(/\W+/g, '-')}">
-      <h2 id="g-${group.toLowerCase().replace(/\W+/g, '-')}">${group}</h2>
-      ${items.map(([q, a]) => html`<details class="i-q"><summary>${q}</summary><div class="i-a"><p>${md(a)}</p></div></details>`)}
-    </section>`;
-
-  const head = (h1, lead) => html`<h1>${h1}</h1><p class="lead">${md(lead)}</p>`;
-
-  const statusNote = html`<p class="note"><strong>Status today.</strong> OpenFrame Studio is in internal team testing. The builds are unsigned and ask a team password. There is no public download, no price on sale and no trial running.</p>`;
-
-  // ---------- Windows ----------
-  const windows = page({
-    path: '/windows/',
-    title: 'OpenFrame Studio for Windows',
-    description: 'OpenFrame Studio for Windows 11: system needs, how the internal team build installs, keyboard shortcuts and release status. No public download yet.',
-    nav: 'download',
-    os: 'win',
-    alternates: { win: '/windows/', mac: '/mac/' },
-    breadcrumbs: [['Windows', '/windows/']],
-    body: html`
-<section class="section"><div class="wrap i-hero">
-  <div class="i-hero-text">
-    ${head('OpenFrame Studio for Windows', 'Write, plan and schedule a film in one project on your own computer. This page says what Windows needs, how the current internal build installs, and which keys you will use.')}
-    ${statusNote}
-    <p><a class="btn btn-ghost" href="/windows/tutorials/">Windows tutorials</a> <a class="btn btn-ghost" href="/download/">All download options</a></p>
-  </div>
-  ${shot('win', '003-app-home-empty', { alt: 'Application Home in OpenFrame Studio on Windows, before any project has been created.', caption: 'Application Home on Windows, before your first project.' })}
-</div></section>
-
-<section class="section tint"><div class="wrap">
-  <div class="sec-head"><h2>What you need</h2></div>
-  <dl class="kv i-kv">
-    <div><dt>System</dt><dd>Windows 11 on a 64-bit (x64) computer. Windows 10 is not supported.</dd></div>
-    <div><dt>Window size</dt><dd>At least 1200 by 720 pixels.</dd></div>
-    <div><dt>Memory and disk space</dt><dd>A minimum has not been published yet. The installer is about 27 MB. The optional assistant adds a 1.2 GB download and its chat model needs 4 GB of memory at least (8 GB recommended).</dd></div>
-    <div><dt>Account and internet</dt><dd>Neither. The app works offline. The internet is used only for the assistant download you start, and by the installer if Windows needs Microsoft's WebView2 component.</dd></div>
-  </dl>
-</div></section>
-
-<section class="section"><div class="narrow">
-  <h2>Release status and download</h2>
-  <div class="prose">
-    <p>The Windows app exists today as an internal team build: an unsigned installer (.exe) that asks a team password every time it starts. It has no trial, no price and no purchase step.</p>
-    <p>There is no public download yet. The public release is planned through the Microsoft Store, with a 7-day trial and a one-time payment. Both are planned, not live. See <a href="/pricing/">Pricing</a>.</p>
-  </div>
-  <h2>How installation works</h2>
-  <p>These are the steps for the current internal installer. The Microsoft Store version will install in the normal Store way and will not show the warning in step 2.</p>
-  <ol class="i-steps">
-    <li><strong>Run the installer.</strong> It installs for your user account only.</li>
-    <li><strong>Get past SmartScreen.</strong> Because the build is unsigned, Windows may show "Windows protected your PC". Choose <strong>More info</strong>, then <strong>Run anyway</strong>. This is expected for an unsigned build. It is not a fault in the app.</li>
-    <li><strong>Start OpenFrame Studio and enter the team password.</strong> The password is at least 8 characters. After wrong tries the app makes you wait, from one minute up to thirty. It is a door lock for the test team, not encryption.</li>
-    <li><strong>Say what to call you.</strong> The first launch asks for a display name. It stays on this computer. There is no account.</li>
-    <li><strong>Optional: add the assistant.</strong> Open Settings, Offline AI, and choose Download OpenFrame AI. The download is about 1.2 GB, is checked against fixed sizes and checksums, and can resume. You can skip this and use the whole app without it.</li>
-  </ol>
-</div></section>
-
-<section class="section tint"><div class="wrap">
-  <div class="sec-head"><h2>Keyboard shortcuts on Windows</h2><p class="lead">Defaults. You can change any of them in Settings.</p></div>
-  ${shortcutTable(1)}
-</div></section>
-
-<section class="section"><div class="narrow">
-  <h2>Good to know on Windows</h2>
-  <ul class="ticks">
-    <li>Your project is a folder named <strong>Title.openframe</strong>, by default under Documents, in OpenFrame, Projects. Network (UNC) paths are refused, and a folder inside a cloud-sync service gets a warning.</li>
-    <li>Settings for the app live in your Local AppData folder, in OpenFrame.</li>
-    <li>The project menu inside the window holds Share and Exchange, and Backup and Portability. The left rail holds Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets and Files.</li>
-    <li>Undo and redo use the keyboard. The old Undo and Redo buttons in the top bar were removed.</li>
-    <li>Spell check uses the dictionaries installed in Windows, with a main and a second language.</li>
-  </ul>
-  <p>New to the app? Start with the <a href="/windows/tutorials/">Windows tutorials</a>.</p>
-</div></section>
+  // ---------- Platform pages ----------
+  const platform = (os) => {
+    const win = os === 'win';
+    const name = win ? 'Windows' : 'Mac';
+    return page({
+      path: win ? '/windows/' : '/mac/', os, alternates: { win: '/windows/', mac: '/mac/' }, nav: 'download',
+      title: `OpenFrame Studio for ${name}`,
+      description: win
+        ? 'OpenFrame Studio for Windows 11: what it needs, how it installs from the Microsoft Store, the keyboard shortcuts and the step-by-step Windows tutorials.'
+        : 'OpenFrame Studio for Mac on Apple silicon: what it needs, the Mac App Store, Mac keyboard shortcuts, how it differs, and the step-by-step Mac tutorials.',
+      breadcrumbs: [[name, win ? '/windows/' : '/mac/']],
+      jsonld: [APP(ctx, win ? 'Windows 11' : 'macOS 14 or later (Apple silicon)', win ? '/windows/' : '/mac/')],
+      body: html`
+${phero(win ? 'Windows 11' : 'macOS on Apple silicon', `OpenFrame Studio for ${name}.`, win
+        ? 'Write, plan and schedule a film in one project on your own computer, in an app made for Windows 11.'
+        : 'The same project and the same engine, in a native Mac app with the Mac menu bar, sheets and Command shortcuts.',
+      html`<div class="hero-cta">${storeBtn(os, 'btn-lg')}<a class="btn btn-ghost btn-lg" href="${win ? '/windows/tutorials/' : '/mac/tutorials/'}">${name} tutorials</a></div>
+<div class="tour-real">${mock(os, win ? 'app-home-empty' : 'home-empty', { caption: `Application Home on ${name}, before your first project.`, eager: true })}</div>`)}
+<section class="tint sec-s"><div class="wrap narrow"><div class="sec-head"><h2>What you need</h2></div>
+<div class="tbl-wrap fit"><table class="tbl"><tbody>
+<tr><td><b>System</b></td><td>${win ? 'Windows 11 on a 64-bit computer. Windows 10 is not supported.' : 'A Mac with Apple silicon, running macOS 14 or later. Intel Macs are not supported.'}</td></tr>
+${win ? html`<tr><td><b>Window size</b></td><td>At least 1200 by 720 pixels.</td></tr>` : ''}
+<tr><td><b>Account and internet</b></td><td>No OpenFrame account. The app works offline. The internet is used for the store and for OpenFrame AI download that you start.</td></tr>
+<tr><td><b>OpenFrame AI</b></td><td>A one-time download of about 1.2 GB. Its chat model needs at least 4 GB of memory, 8 GB recommended.</td></tr>
+<tr><td><b>Price</b></td><td>7-day free trial, then one payment of ${price()}.</td></tr>
+</tbody></table></div></div></section>
+<section class="sec-s" id="install"><div class="wrap"><div class="sec-head"><h2>Get started in four steps</h2></div>
+<div class="steps3 four">
+<div class="step"><div class="n">1</div><h3>Install</h3><p>${win ? 'Get OpenFrame Studio from the Microsoft Store. The Store installs and updates it.' : 'Get OpenFrame Studio from the Mac App Store. The App Store installs and updates it.'}</p></div>
+<div class="step"><div class="n">2</div><h3>Choose where projects live</h3><p>The first start asks where to keep your projects. The suggested place is fine for most people.</p></div>
+<div class="step"><div class="n">3</div><h3>Say what to call you</h3><p>Your name appears on notes, tasks and activity. It stays on this computer. There is no account.</p></div>
+<div class="step"><div class="n">4</div><h3>Create a project</h3><p>Create Project asks for a title. Everything else is optional and can be changed later.</p></div>
+</div>
+<p class="center mt26"><a class="more" href="${win ? '/windows/tutorials/' : '/mac/tutorials/'}">Follow the step-by-step ${name} tutorials &rarr;</a></p></div></section>
+<section class="tint sec-s"><div class="wrap narrow"><div class="sec-head"><h2>Keyboard shortcuts on ${name}</h2><p class="lead">The defaults. You can change any of them in Settings.</p></div>
+${shortcutTable(win ? 1 : 2)}</div></section>
+<section class="sec-s"><div class="wrap narrow"><div class="facts"><h3>Good to know on ${name}</h3><ul class="ticks">
+${win ? html`<li><span>Your project is a folder named <b>Title.openframe</b>, by default under Documents, in OpenFrame. Network folders are refused, and a folder inside a cloud-sync service gets a warning.</span></li>
+<li><span>The left rail holds Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets and Files. The project menu holds sharing, backups and project tools.</span></li>
+<li><span>Spell check uses the dictionaries installed in Windows, with a main and a second language.</span></li>`
+        : html`<li><span>It uses the Mac menu bar: File, Edit, View, Go, Window and Help. Import, export, print and Close Project live in the File menu.</span></li>
+<li><span>Dialogs appear as sheets attached to the window. Settings opens with Command and comma.</span></li>
+<li><span>Project undo and redo use Command, Option and Z. Plain Command and Z undoes text.</span></li>
+<li><span>Search and Commands opens with Command and K. Spell check uses the macOS spelling service.</span></li>`}
+</ul></div>
+<p class="center mt26"><a class="btn btn-dark" href="${win ? '/windows/tutorials/' : '/mac/tutorials/'}">Read the ${name} tutorials</a></p></div></section>
 ${cta()}`,
-  });
-
-  // ---------- Mac ----------
-  const mac = page({
-    path: '/mac/',
-    title: 'OpenFrame Studio for Mac',
-    description: 'OpenFrame Studio for macOS 14 or later on Apple silicon: what is planned, how an unsigned build opens, Mac keyboard shortcuts and how it differs.',
-    nav: 'download',
-    os: 'mac',
-    alternates: { win: '/windows/', mac: '/mac/' },
-    breadcrumbs: [['Mac', '/mac/']],
-    body: html`
-<section class="section"><div class="wrap i-hero">
-  <div class="i-hero-text">
-    ${head('OpenFrame Studio for Mac', 'The same project and the same engine, in a native Mac app. This page says what the Mac needs, where the build stands, and how it differs from Windows.')}
-    <p class="note"><strong>Status today.</strong> The Mac app has been built by the developers but is not packaged yet. The internal disk image (.dmg), unsigned and not notarized, is planned and has not been built. There is no public download. The Mac App Store is planned for the public release.</p>
-    <p><a class="btn btn-ghost" href="/mac/tutorials/">Mac tutorials</a> <a class="btn btn-ghost" href="/download/">All download options</a></p>
-  </div>
-  ${shot('mac', '003-home-empty', { alt: 'Application Home in OpenFrame Studio on a Mac, before any project has been created.', caption: 'Application Home on the Mac, before your first project.' })}
-</div></section>
-
-<section class="section tint"><div class="wrap">
-  <div class="sec-head"><h2>What you need</h2></div>
-  <dl class="kv i-kv">
-    <div><dt>System</dt><dd>A Mac with Apple silicon, running macOS 14 or later. Intel Macs are not supported.</dd></div>
-    <div><dt>Memory and disk space</dt><dd>A minimum has not been published yet. The optional assistant adds a 1.2 GB download and its chat model needs 4 GB of memory at least (8 GB recommended).</dd></div>
-    <div><dt>Account and internet</dt><dd>Neither. The app works offline. The internet is used only for the assistant download you start.</dd></div>
-  </dl>
-</div></section>
-
-<section class="section"><div class="narrow">
-  <h2>When the internal build arrives</h2>
-  <p>The first Mac build for the team will be an unsigned, not notarized .dmg that asks the team password. macOS Gatekeeper will warn about it, which is normal for an unsigned build.</p>
-  <ol class="i-steps">
-    <li><strong>Open the .dmg</strong> and drag OpenFrame Studio into Applications.</li>
-    <li><strong>Control-click the app, then choose Open</strong>, and confirm in the dialog. If macOS does not offer Open, go to System Settings, Privacy and Security, and choose Open Anyway next to the message about OpenFrame Studio.</li>
-    <li><strong>Enter the team password</strong> (at least 8 characters). It is a door lock for the test team, not encryption.</li>
-    <li><strong>Optional: add the assistant</strong> from Settings, Offline AI. It is a download of about 1.2 GB and the app works fully without it.</li>
-  </ol>
-  <p>Until that build exists, there is nothing to install on a Mac. Public release is planned through the Mac App Store, with a 7-day trial and a one-time payment, both planned and not live. See <a href="/pricing/">Pricing</a>.</p>
-</div></section>
-
-<section class="section tint"><div class="wrap">
-  <div class="sec-head"><h2>Keyboard shortcuts on the Mac</h2><p class="lead">Defaults. You can change any of them in Settings.</p></div>
-  ${shortcutTable(2)}
-</div></section>
-
-<section class="section"><div class="narrow">
-  <h2>How the Mac app differs</h2>
-  <ul class="ticks">
-    <li>It uses the normal Mac menu bar: File, Edit, View, Go and Help. Import, export, print and close-project commands live in the File menu.</li>
-    <li>Dialogs that Windows shows as windows appear as sheets attached to the app window. Settings opens with Cmd+, and Project Settings with Cmd+Shift+,.</li>
-    <li>Project undo and redo use Cmd+Opt+Z and Cmd+Opt+Shift+Z. Plain Cmd+Z stays as text undo.</li>
-    <li>There is no Save shortcut. The app saves as you type.</li>
-    <li>There is no status bar. The window subtitle names the page. The sidebar holds the same eight places as the Windows left rail.</li>
-    <li>Search is called Search and Commands and opens with Cmd+K. Spell check uses the macOS spelling service.</li>
-    <li>The assistant runs through a separate helper process that uses the Mac's graphics (Metal).</li>
-    <li>Your projects are kept in the Documents folder, in OpenFrame, and app settings in Library, Application Support.</li>
-  </ul>
-  <p>New to the app? Start with the <a href="/mac/tutorials/">Mac tutorials</a>.</p>
-</div></section>
-${cta()}`,
-  });
+    });
+  };
 
   // ---------- Download ----------
-  const card = (h, href, lines) => html`
-    <article class="card i-os-card">
-      <h2>${h}</h2>
-      ${lines.map((l) => html`<p>${md(l)}</p>`)}
-      <p><a class="btn btn-ghost" href="${href}">Read about ${h.replace('OpenFrame Studio for ', '')}</a></p>
-    </article>`;
-
   const download = page({
-    path: '/download/',
-    title: 'Download OpenFrame Studio: current status',
-    description: 'There is no public download of OpenFrame Studio yet. See where the Windows and Mac builds stand and how the public release is planned.',
-    nav: 'download',
+    path: '/download/', nav: 'download',
+    title: 'Download OpenFrame Studio for Windows and Mac',
+    description: 'Get OpenFrame Studio from the Microsoft Store for Windows 11 or the Mac App Store for Apple silicon Macs. 7-day free trial, then one payment.',
     breadcrumbs: [['Download', '/download/']],
     body: html`
-<section class="section"><div class="narrow">
-  ${head('Download OpenFrame Studio', 'There is nothing to download from this site yet. OpenFrame Studio is in internal team testing, and the public release is planned through the Microsoft Store and the Mac App Store.')}
-  ${osBlocks({
-    win: html`<p class="note i-you">You are viewing Windows details. More on <a href="/windows/">OpenFrame Studio for Windows</a>.</p>`,
-    mac: html`<p class="note i-you">You are viewing macOS details. More on <a href="/mac/">OpenFrame Studio for Mac</a>.</p>`,
-  })}
-</div>
-<div class="wrap i-os-grid">
-  ${card('OpenFrame Studio for Windows', '/windows/', [
-    '**Needs:** Windows 11, 64-bit.',
-    '**Build today:** an unsigned internal .exe of about 27 MB for the invited team. It asks a team password.',
-    '**Public release:** planned on the Microsoft Store. No date yet.',
-  ])}
-  ${card('OpenFrame Studio for Mac', '/mac/', [
-    '**Needs:** macOS 14 or later, Apple silicon.',
-    '**Build today:** none. An unsigned internal .dmg is planned and not built.',
-    '**Public release:** planned on the Mac App Store. No date yet.',
-  ])}
-</div>
-<div class="narrow">
-  <h2>What to expect</h2>
-  <ul class="ticks">
-    <li>There are no download buttons here because there is no public file. Anything else that offers an OpenFrame Studio installer is not from us.</li>
-    <li>Internal builds have no trial and no price. A 7-day trial and a one-time payment are planned for the store release. See <a href="/pricing/">Pricing</a>.</li>
-    <li>The optional assistant is a separate download of about 1.2 GB that you start inside the app.</li>
-    <li>Windows 10 and Intel Macs are not supported.</li>
-  </ul>
-  <p>Questions? See the <a href="/faq/">questions and answers</a> or <a href="/contact/">Contact</a>.</p>
-</div></section>`,
+${phero('Download', 'Get OpenFrame Studio.', 'From the Microsoft Store on Windows and the Mac App Store on the Mac. Try it free for 7 days.')}
+<section class="sec-s pt30"><div class="wrap"><div class="price-grid">
+<div class="pcard win rv"><span class="badge">Windows 11</span><h2>OpenFrame Studio for Windows</h2><p class="price-sub mt10">Installed and updated by the Microsoft Store.</p>
+<ul class="ticks"><li><span>Windows 11, 64-bit</span></li><li><span>7-day free trial, then one payment</span></li><li><span>Works offline, no OpenFrame account</span></li></ul>${storeBtn('win', 'btn-lg')}
+<p class="small-print"><a href="/windows/">More about Windows</a></p></div>
+<div class="pcard mac rv d1"><span class="badge">Mac</span><h2>OpenFrame Studio for Mac</h2><p class="price-sub mt10">Installed and updated by the Mac App Store.</p>
+<ul class="ticks"><li><span>macOS 14 or later on Apple silicon</span></li><li><span>7-day free trial, then one payment</span></li><li><span>Works offline, no OpenFrame account</span></li></ul>${storeBtn('mac', 'btn-lg')}
+<p class="small-print"><a href="/mac/">More about the Mac</a></p></div>
+</div></div></section>
+<section class="tint sec-s" id="trial"><div class="wrap"><div class="sec-head"><span class="eyebrow">Have trust issues? Good.</span><h2>Your 7-day free trial, step by step.</h2></div>
+<div class="steps3">
+<div class="step rv"><div class="n">1</div><h3>Install</h3><p>Get the app from the Microsoft Store or the Mac App Store. The 7-day trial starts with the whole app.</p></div>
+<div class="step rv d1"><div class="n">2</div><h3>Make something real</h3><p>Write a scene, build a Beat Board, schedule a day, make a call sheet. A small chip shows the days left.</p></div>
+<div class="step rv d2"><div class="n">3</div><h3>Decide</h3><p>Before the trial ends the app reminds you. Buy in the store to keep using the full app. Your project folders stay on your computer either way.</p></div>
+</div></div></section>`,
   });
 
   // ---------- Pricing ----------
   const pricing = page({
-    path: '/pricing/',
-    title: 'Pricing | OpenFrame Studio',
-    description: 'The planned model for OpenFrame Studio is one payment, yours to keep. Target prices and the 7-day trial are planned for the store release, not on sale.',
-    nav: 'pricing',
+    path: '/pricing/', nav: 'pricing',
+    title: 'Pricing: pay once, own forever | OpenFrame Studio',
+    description: 'OpenFrame Studio is a one-time lifetime purchase: ₹2,999 in India, €89 in Europe and US$89 elsewhere, after a 7-day free trial. No subscription and no renewal.',
     breadcrumbs: [['Pricing', '/pricing/']],
     body: html`
-<section class="section"><div class="narrow">
-  ${head('Pricing', 'The plan is simple: pay once and keep it. Nothing is on sale yet. The figures below are targets for the store release.')}
-  <p class="note"><strong>Not on sale.</strong> There is no price to pay today. The numbers are targets and may change. The store will show the final price when you buy.</p>
-  <h2>The planned model</h2>
-  <div class="prose">
-    <p>One payment, no subscription, no renewal. You pay once for the app and own it.</p>
-    <p>Purchases will be made through the Microsoft Store on Windows and the Mac App Store on the Mac. The app never shows a price. The store's own purchase window does.</p>
-  </div>
-  <h2>Target prices</h2>
-  <div class="i-scroll"><table class="table i-table">
-    <thead><tr><th scope="col">Region</th><th scope="col">Target price</th><th scope="col">State</th></tr></thead>
-    <tbody>${PRICES.map(([r, p]) => html`<tr><th scope="row">${r}</th><td>${p}</td><td>Target, not on sale</td></tr>`)}</tbody>
-  </table></div>
-  <h2>The 7-day trial</h2>
-  <div class="prose">
-    <p>A free 7-day trial is planned for the store release. It does not need a credit card to start. It is <strong>not running yet</strong>, because the app is not in the stores.</p>
-    <p>The store version is designed to offer only Buy and Restore once a trial ends without a purchase. Your project files stay on your computer.</p>
-    <p>Still open: the final prices, the refund rules, and exactly what the trial includes.</p>
-  </div>
-  <h2>What one purchase covers</h2>
-  <ul class="ticks">
-    <li>The whole app. There are no editions and no locked parts: Idea Vault, Beat Board, screenplay editor, breakdown, schedule, call sheets, reports and budget.</li>
-    <li>The optional offline assistant. It runs on your own computer, so it has no running cost.</li>
-    <li>Import, export, backups and project packages.</li>
-    <li>No account, and no data leaving your computer.</li>
-  </ul>
-  <h2>Internal builds</h2>
-  <p>The builds the team tests today have no trial, no price, no purchase step and no lock, other than the team password.</p>
-  <h2>Quick answers</h2>
-  ${FAQ.find(([g]) => g === 'Pricing and release')[1].map(([q, a]) => html`<details class="i-q"><summary>${q}</summary><div class="i-a"><p>${md(a)}</p></div></details>`)}
-  <p>More in the <a href="/faq/">questions and answers</a>.</p>
-</div></section>
+${phero('Pricing', 'Pay once. Own forever.', 'No subscription, no renewal, no rented software. One payment for the whole app, after a 7-day free trial.')}
+<section class="sec-s pt30"><div class="wrap"><div class="price-one">
+<div class="pcard win rv"><span class="badge">Lifetime purchase</span>
+<div class="region-tg" role="group" aria-label="Price region"><button type="button" data-region-set="in" aria-pressed="false">India</button><button type="button" data-region-set="eu" aria-pressed="false">Europe</button><button type="button" data-region-set="world" aria-pressed="false">Other countries</button></div>
+<h2>OpenFrame Studio</h2>
+<div class="price"><b>${price()}</b></div>
+<p class="price-sub">One payment for <span data-region-name>your region</span>. Bought separately for Windows and for Mac, each in its own store. 7-day free trial first.</p>
+<ul class="ticks">
+<li><span>Idea Vault, Story page, Beat Board and moodboards</span></li>
+<li><span>Screenplay editor with drafts, review and revisions</span></li>
+<li><span>Import and export: Final Draft, Fountain, PDF, Word and text</span></li>
+<li><span>Breakdown, catalog, cast, crew and locations</span></li>
+<li><span>Shot lists, storyboards and the shooting schedule</span></li>
+<li><span>Call sheets, sides, Daily View, reports and a light budget</span></li>
+<li><span>Backups and project packages</span></li>
+<li><span>OpenFrame AI, with no running cost</span></li>
+</ul>
+<div class="store-col">${storeBtn('win')}${storeBtn('mac')}</div>
+<p class="price-note">The Microsoft Store and the Mac App Store set the final checkout amount under their own rules, which can include taxes where you live. The website does not convert currencies.</p></div>
+</div></div></section>
+<section class="dark"><div class="wrap manifesto">
+<div class="rv"><span class="eyebrow">Rent vs own</span><h2>Renting looks cheap in month one.</h2>
+<p class="lead mt18">Five tools, five bills, every month, for as long as you make films. Or one payment, and it is yours. Break the chain of corporate rentals.</p>
+<p class="big-line">Pay once. <span>Own forever.</span></p></div>
+<div class="rv d2"><div class="chart"><svg viewBox="0 0 520 320" role="img" aria-label="Illustration: rented tools cost more every year; a one-time purchase stays flat.">
+<g stroke="#ffffff1f"><line x1="46" y1="270" x2="500" y2="270"/><line x1="46" y1="200" x2="500" y2="200" stroke-dasharray="3 6"/><line x1="46" y1="130" x2="500" y2="130" stroke-dasharray="3 6"/></g>
+<path d="M46 250 L110 250 L110 228 L190 228 L190 190 L270 190 L270 150 L350 150 L350 108 L430 108 L430 66 L492 66" stroke="#ff7a52" stroke-width="4" fill="none"/>
+<path d="M46 250 L56 250 L56 214 L492 214" stroke="#fff" stroke-width="4" fill="none"/><circle cx="56" cy="214" r="6" fill="#fff"/>
+<text x="496" y="52" text-anchor="end" fill="#ffab8e" font-weight="700" font-size="15">Rented tools: the bill never stops</text>
+<text x="496" y="240" text-anchor="end" fill="#fff" font-weight="700" font-size="15">OpenFrame: you paid once</text>
+<g text-anchor="middle"><text x="110" y="292">Year 1</text><text x="190" y="292">Year 2</text><text x="270" y="292">Year 3</text><text x="350" y="292">Year 4</text><text x="430" y="292">Year 5</text></g></svg>
+<p class="cap">Illustration of the idea, not real prices.</p></div></div></div></section>
+<section class="sec-s"><div class="wrap narrow"><div class="sec-head"><span class="eyebrow">Have trust issues? Good.</span><h2>Questions about the trial</h2></div>
+${FAQ.find(([g]) => g === 'Pricing and trial')[1].map(faqItem)}</div></section>
 ${cta()}`,
   });
 
   // ---------- FAQ ----------
   const faq = page({
-    path: '/faq/',
+    path: '/faq/', nav: 'faq',
     title: 'Questions and answers | OpenFrame Studio',
-    description: 'Answers about OpenFrame Studio: platforms, privacy and data, the offline assistant, files and formats, and the planned price, trial and release.',
-    nav: 'faq',
+    description: 'Answers about OpenFrame Studio: platforms, privacy and data, OpenFrame AI, files and formats, the price and the 7-day free trial.',
     breadcrumbs: [['Questions', '/faq/']],
+    jsonld: [{ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ.flatMap(([, items]) => items.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') } }))) }],
     body: html`
-<section class="section"><div class="narrow">
-  ${head('Questions and answers', 'Short, plain answers. If something here is planned and not live, the answer says so.')}
-  <nav class="i-jump" aria-label="Question groups">${FAQ.map(([g]) => html`<a href="#g-${g.toLowerCase().replace(/\W+/g, '-')}">${g}</a>`)}</nav>
-  ${FAQ.map(([g, items]) => faqGroup(g, items))}
-  <p>Not answered here? See <a href="/contact/">Contact</a>.</p>
+${phero('FAQ', 'Questions and answers.', 'Short, plain answers about the app, your data, OpenFrame AI, files, the price and the trial.', html`<div class="fchips">${FAQ.map(([g]) => html`<a class="fchip" href="#g-${slug(g)}">${g}</a>`)}</div>`)}
+<section class="sec-s pt30"><div class="wrap narrow">
+${FAQ.map(([g, items]) => html`<div class="faq-group" id="g-${slug(g)}"><h2>${g}</h2>${items.map(faqItem)}</div>`)}
+<p class="small-print">Not answered here? See <a href="/contact/">Contact</a> or the <a href="/tutorials/">tutorials</a>.</p>
 </div></section>
 ${cta()}`,
   });
@@ -283,36 +172,25 @@ ${cta()}`,
     description: 'Bring a screenplay into OpenFrame Studio from Final Draft, Fountain, Word, PDF or text, see a preview first, and export it back out any time.',
     breadcrumbs: [['Switch', '/switch/']],
     body: html`
-<section class="section"><div class="narrow">
-  ${head('Switch to OpenFrame Studio', 'Bring your script in, check what will happen, and know you can take it out again in a standard format.')}
-  <h2>What you can import</h2>
-  <div class="i-scroll"><table class="table i-table">
-    <thead><tr><th scope="col">Format</th><th scope="col">Detail</th></tr></thead>
-    <tbody>${IMPORT_OK.map(([f, d]) => html`<tr><th scope="row">${f}</th><td>${d}</td></tr>`)}</tbody>
-  </table></div>
-  <p>PDF import is best effort. A PDF has no real screenplay structure inside it, so the app guesses the elements. Read the preview before you accept.</p>
-  <h2>You see a preview first</h2>
-  <p>Import Screenplay shows a preview with counts and warnings before anything in your project changes. Four sample scripts are offered if you want to try the steps with nothing of your own.</p>
-  <h2>What is refused</h2>
-  <p>These formats are not opened. The app says so with a clear message instead of guessing.</p>
-  <ul class="i-chips">${IMPORT_REFUSED.map((f) => html`<li>${f}</li>`)}</ul>
-  <p>If your script is in one of these, save or export it as Final Draft, Fountain, Word or plain text from the program that made it, then import that file.</p>
-  <h2>Other things you can bring</h2>
-  <ul class="ticks">
-    <li>The Idea Vault takes notes, images, links, any file and video, and voice notes recorded in the app.</li>
-    <li>OpenFrame packages that it opens: backups (.ofbackup), full projects (.ofproject), screenplay review packages (.ofscriptreview), Beat Board packages (.ofstory) and replies (.ofresponse).</li>
-    <li>Older breakdown, shot list, schedule and call sheet review files still import.</li>
-  </ul>
-  <h2>What you can export</h2>
-  <div class="i-scroll"><table class="table i-table">
-    <thead><tr><th scope="col">Document</th><th scope="col">Formats</th></tr></thead>
-    <tbody>${EXPORTS.map(([d, f]) => html`<tr><th scope="row">${d}</th><td>${f}</td></tr>`)}</tbody>
-  </table></div>
-  <p>Screenplay files carry no OpenFrame branding. Production PDFs carry a small "Created using OpenFrame" line. CSV files stay clean.</p>
-  <h2>Writing in your own language</h2>
-  <p>You can type, save, search and export Hindi, Telugu, Tamil, Kannada and Malayalam text, and the screenplay PDF embeds fonts for them. Other scripts such as Chinese, Japanese, Korean and Arabic can be typed and exported to Final Draft, Fountain and Word, but the screenplay PDF refuses them with a clear message.</p>
-  <p>Next: <a href="/features/import-export/">Import and Export</a> or the <a href="/faq/">questions and answers</a>.</p>
+${phero('Easy migration', 'Coming from other software? Bring your scripts.', 'See exactly what will be imported, and every warning, before anything is applied. Nothing is silently flattened or lost.')}
+<section class="sec-s pt30"><div class="wrap"><div class="frow">
+<div class="ftxt"><h2>What you can import</h2>
+<div class="tbl-wrap fit mt18"><table class="tbl"><tbody>${IMPORT_OK.map(([f, d]) => html`<tr><td><b>${f}</b></td><td>${d}</td></tr>`)}</tbody></table></div>
+<p>PDF import is best effort. A PDF has no real screenplay structure inside it, so the app guesses the elements. Read the preview before you accept.</p></div>
+<div>${osBlocks({ win: mock('win', 'sp-import-preview', { caption: 'The import preview on Windows' }), mac: mock('mac', 'screenplay-tools-import-screenplay', { caption: 'Import Screenplay on the Mac' }) })}</div>
+</div></div></section>
+<section class="tint sec-s"><div class="wrap narrow">
+<h2>What is refused</h2><p class="lead mt18">These formats are not opened. The app says so with a clear message instead of guessing.</p>
+<div class="fmts">${IMPORT_REFUSED.map((f) => html`<span>${f}</span>`)}</div>
+<p class="mt26 muted">If your script is in one of these, save or export it as Final Draft, Fountain, Word or plain text from the program that made it, then import that file.</p>
+<h2 class="mt84">What you can export</h2>
+<div class="tbl-wrap fit mt18"><table class="tbl"><tbody>${EXPORTS.map(([d, f]) => html`<tr><td><b>${d}</b></td><td>${f}</td></tr>`)}</tbody></table></div>
+<p class="mt26 muted">Screenplay files carry no OpenFrame branding. Production PDFs carry a small "Created using OpenFrame" line. CSV files stay clean.</p>
 </div></section>
+<section class="sec-s"><div class="wrap narrow"><div class="facts"><h3>Writing in your own language</h3><ul class="ticks">
+<li><span>Type, save, search and export Hindi, Telugu, Tamil, Kannada and Malayalam text. The screenplay PDF embeds fonts for them.</span></li>
+<li><span>Other scripts such as Chinese, Japanese, Korean and Arabic can be typed and exported to Final Draft, Fountain and Word. The screenplay PDF refuses them with a clear message.</span></li>
+</ul></div></div></section>
 ${cta()}`,
   });
 
@@ -328,34 +206,25 @@ ${cta()}`,
   ];
   const compare = page({
     path: '/compare/',
-    title: 'One app or many tools | OpenFrame Studio',
+    title: 'One app or five tools | OpenFrame Studio',
     description: 'An honest look at using OpenFrame Studio as one app for ideas, script and production planning versus several separate tools, with its limits stated.',
     breadcrumbs: [['Compare', '/compare/']],
     body: html`
-<section class="section"><div class="narrow">
-  ${head('One app or several tools', 'Many productions run on a notes app, a screenwriting program, spreadsheets and documents. This page compares that way of working with one app, and says where one app is the wrong choice.')}
-  <h2>The same job, two ways</h2>
-  <div class="i-scroll"><table class="table i-table i-compare">
-    <thead><tr><th scope="col">Job</th><th scope="col">With separate tools</th><th scope="col">In OpenFrame Studio</th></tr></thead>
-    <tbody>${rows.map(([j, a, b]) => html`<tr><th scope="row">${j}</th><td>${a}</td><td>${b}</td></tr>`)}</tbody>
-  </table></div>
-  <h2>What one app gives you</h2>
-  <ul class="ticks">
-    <li>Change a scene once and the breakdown, the schedule and the call sheet know about it.</li>
-    <li>No copying between files, and no version of the truth hiding in an old spreadsheet.</li>
-    <li>One place to back up and one project file to send.</li>
-    <li>Everything stays on your computer, with no account.</li>
-  </ul>
-  <h2>Where separate tools may suit you better</h2>
-  <ul class="ticks">
-    <li>You need several people editing the same document at the same moment. OpenFrame has no live collaboration. People pass files back and forth instead.</li>
-    <li>You want your work available on a phone or in a browser. OpenFrame is a desktop app for Windows 11 and for Apple silicon Macs.</li>
-    <li>You need accounting or payroll. The budget is a light planning sheet.</li>
-    <li>You are happy with a tool you already know well and only need one part of the job.</li>
-  </ul>
-  <h2>Not released yet</h2>
-  <p>OpenFrame Studio is in internal team testing. There is no public download today. You can follow the state on the <a href="/download/">download page</a>.</p>
-</div></section>
+${phero('One app vs five', 'What you stop paying for.', 'Many productions run on a notes app, a screenwriting program, spreadsheets and documents. Here is the same job done both ways, and where one app is the wrong choice.')}
+<section class="sec-s pt30"><div class="wrap"><div class="tbl-wrap" tabindex="0" role="region" aria-label="Separate tools compared with OpenFrame Studio"><table class="tbl">
+<thead><tr><th scope="col">Job</th><th scope="col">With separate tools</th><th scope="col" class="us">In OpenFrame Studio</th></tr></thead>
+<tbody>${rows.map(([j, a, b]) => html`<tr><td><b>${j}</b></td><td class="no">${a}</td><td class="us">${b}</td></tr>`)}</tbody></table></div></div></section>
+<section class="tint sec-s"><div class="wrap"><div class="grid2">
+<div class="card"><h2 class="t3">What one app gives you</h2><ul class="ticks">
+<li><span>Change a scene once and the breakdown, the schedule and the call sheet know about it.</span></li>
+<li><span>No copying between files, and no version of the truth hiding in an old spreadsheet.</span></li>
+<li><span>One place to back up and one project to send.</span></li>
+<li><span>Everything stays on your computer, with no OpenFrame account.</span></li></ul></div>
+<div class="card"><h2 class="t3">Where separate tools may suit you better</h2><ul class="ticks">
+<li><span>You need several people editing the same document at the same moment. OpenFrame has no live collaboration; people pass files instead.</span></li>
+<li><span>You want your work on a phone or in a browser. OpenFrame is a desktop app for Windows 11 and Apple silicon Macs.</span></li>
+<li><span>You need accounting or payroll. The budget is a light planning sheet.</span></li></ul></div>
+</div></div></section>
 ${cta()}`,
   });
 
@@ -363,39 +232,24 @@ ${cta()}`,
   const local = page({
     path: '/local-and-private/',
     title: 'Local and private | OpenFrame Studio',
-    description: 'OpenFrame Studio keeps your work on your computer: no account, no telemetry, no update check. The few network uses are listed, and encryption is not offered.',
+    description: 'OpenFrame Studio keeps your work on your computer: no OpenFrame account, no telemetry, no cloud service. The few network uses are listed here.',
     breadcrumbs: [['Local and private', '/local-and-private/']],
     body: html`
-<section class="section"><div class="narrow">
-  ${head('Local and private', 'Your scripts and plans stay on your computer. This page says exactly what the app does, and does not do, with your data and your network.')}
-  <h2>Where your work lives</h2>
-  <p>Each project is one folder named <strong>Title.openframe</strong>. Inside are the project database (SQLite), your assets, recovery copies and backups. By default it sits in Documents, in OpenFrame. You can copy, move or back up that folder like any other.</p>
-  <h2>What the app does not do</h2>
-  <ul class="ticks">
-    <li>No account and no sign-in.</li>
-    <li>No telemetry, no analytics and no crash upload.</li>
-    <li>No update check. The app does not call home to ask whether a new version exists.</li>
-    <li>No network service that other computers can reach.</li>
-  </ul>
-  <h2>The only times it uses the network</h2>
-  <ol class="i-steps">
-    <li><strong>The assistant download you start.</strong> It fetches about 1.2 GB of model files from huggingface.co and its content network, nothing else. Each file is checked against a fixed size and checksum built into the app. You can also import the files by hand.</li>
-    <li><strong>A saved link in the Idea Vault.</strong> When you click it, it opens in your normal browser.</li>
-    <li><strong>The Windows installer.</strong> If Windows lacks Microsoft's WebView2 component, the installer fetches it.</li>
-  </ol>
-  <h2>The offline assistant</h2>
-  <p>After the download, the assistant runs on your computer and talks only to your own machine, using a key made for each launch. It never changes your project without your Apply, never sends project data anywhere, and does not read other people's private notes or your Story page.</p>
-  <h2>Projects are not encrypted</h2>
-  <p class="note">OpenFrame does not encrypt your projects. Anyone who can open the project folder or a backup file can read it. If you need that protection, use your operating system's disk encryption. The team password on internal builds is a door lock for testers, not encryption.</p>
-  <h2>Backups, packages and diagnostics</h2>
-  <ul class="ticks">
-    <li>Create a backup (.ofbackup) or export a full project (.ofproject) to move a project to another computer.</li>
-    <li>Share a screenplay or Beat Board for review as a package file. Send it however you like. The reply comes back as a file, and you preview its changes before applying them.</li>
-    <li>A diagnostics bundle exists, but only you can create it. You can read it before you decide to share it. Local log files are kept for 14 days.</li>
-    <li>Network (UNC) paths are refused as project locations, and a folder inside a cloud-sync service gets a warning, because two programs writing one project can damage it.</li>
-  </ul>
-  <p>The website has its own notice: <a href="/legal/privacy/">website privacy notice</a>.</p>
+${phero('Completely local', 'Your privacy stays on your computer.', 'Your scripts and plans stay on your computer. This page says exactly what the app does, and does not do, with your data and your network.')}
+<section class="sec-s pt30"><div class="wrap split">
+<div><h2>Where your work lives</h2><p class="lead mt18">Each project is one folder named <b>Title.openframe</b>, by default in Documents, in OpenFrame. You can copy, move or back up that folder like any other.</p>
+<ul class="ticks"><li><span><b>No OpenFrame account</b> and no sign-in.</span></li><li><span><b>No telemetry</b>, no analytics and no crash upload.</span></li><li><span><b>No network service</b> that other computers can reach.</span></li><li><span><b>Not encrypted by the app.</b> Use your operating system's disk encryption if you need that protection.</span></li></ul></div>
+<div class="facts"><h3>The only times the app uses the network</h3><ul class="ticks">
+<li><span><b>The store</b> installs and updates the app and handles the trial and the purchase.</span></li>
+<li><span><b>OpenFrame AI download you start.</b> About 1.2 GB, checked before use. You can also import the files by hand.</span></li>
+<li><span><b>A saved link in the Idea Vault.</b> When you click it, it opens in your normal browser.</span></li></ul></div>
 </div></section>
+<section class="tint sec-s"><div class="wrap narrow"><h2>Backups, packages and diagnostics</h2><ul class="ticks">
+<li><span>Create a backup (.ofbackup) or export a full project (.ofproject) to move a project to another computer.</span></li>
+<li><span>Share a screenplay or Beat Board for review as a package file. The reply comes back as a file, and you preview its changes before applying them.</span></li>
+<li><span>A diagnostics bundle exists, but only you can create it, and you can read it before you decide to share it.</span></li>
+<li><span>Network folders are refused as project locations, and a folder inside a cloud-sync service gets a warning, because two programs writing one project can damage it.</span></li></ul>
+<p class="small-print">The website has its own notice: <a href="/legal/privacy/">website privacy notice</a>.</p></div></section>
 ${cta()}`,
   });
 
@@ -403,136 +257,35 @@ ${cta()}`,
   const themes = page({
     path: '/themes/',
     title: 'Themes | OpenFrame Studio',
-    description: 'OpenFrame Studio has 17 built-in themes in Light, Dark or System, plus your own imported themes. Your screenplay prints in the standard look either way.',
+    description: 'Make your own OpenFrame Studio theme as a small .json file, import it on Windows or the Mac, see the check, and share it. Starter themes to download.',
     breadcrumbs: [['Themes', '/themes/']],
-    body: html`
-<section class="section"><div class="narrow">
-  ${head('Themes', 'Choose how the app looks. Your documents do not change.')}
-  <h2>17 built-in themes</h2>
-  <ul class="i-chips i-chips-wide">${THEMES.map((t) => html`<li>${t}</li>`)}</ul>
-  <p>Each theme works in <strong>Light</strong> or <strong>Dark</strong>, or follows your system with <strong>System</strong>. High Contrast is there for people who need stronger separation.</p>
-</div>
-<div class="wrap i-shots">
-  ${osBlocks({
-    win: html`${shot('win', '797-settings-appearance', { alt: 'The Appearance page of Settings in OpenFrame Studio on Windows, listing the built-in themes.', caption: 'Settings, Appearance, on Windows.' })}${shot('win', '079-apphome-settings-appearance', { alt: 'The Appearance settings opened from Application Home on Windows.', caption: 'The same page opened from Application Home.' })}`,
-    mac: html`${shot('mac', '022-settings-appearance', { alt: 'The Appearance page of Settings in OpenFrame Studio on a Mac, listing the built-in themes.', caption: 'Settings, Appearance, on the Mac.' })}${shot('mac', '024-settings-appearance-theme-chosen', { alt: 'The Appearance page on a Mac after a different theme has been chosen.', caption: 'After choosing another theme.' })}`,
-  })}
-</div>
-<div class="narrow">
-  <h2>Your own themes</h2>
-  <p>Import a theme file or paste one in. The app checks it for readable contrast, shows what it found, and keeps it under My Themes. You can rename, export or delete your own themes.</p>
-  <h2>Documents keep the standard look</h2>
-  <p>A theme changes the app, not your pages. Print preview and exports such as PDF use the standard screenplay look in every theme.</p>
-  <p>Looking for more? See <a href="/features/">Features</a>.</p>
-</div></section>
-${cta()}`,
+    body: themesBody({ ...ctx, THEMES }),
   });
 
   // ---------- About ----------
   const about = page({
-    path: '/about/',
-    title: 'About | OpenFrame Studio',
-    description: 'OpenFrame Studio is a desktop app for writers, screenwriters and production teams that keeps every project on your own computer. This is why it exists.',
+    path: '/about/', nav: 'about',
+    title: 'About OpenFrame Studio and its founders',
+    description: 'Why OpenFrame Studio exists, who it is for, the promises it keeps about your work, and the two founding engineers who build it.',
     breadcrumbs: [['About', '/about/']],
+    jsonld: [ORG(ctx)],
     body: html`
-<section class="section"><div class="narrow">
-  ${head('About OpenFrame Studio', 'A desktop app for writers, screenwriters and production teams. One app for everyone, with no separate editions.')}
-  <h2>What it is for</h2>
-  <p>A film often starts as scattered notes and ends as a pile of separate files. OpenFrame Studio keeps the whole path in one project folder: first idea, story, screenplay, breakdown, schedule, call sheets and a light budget.</p>
-  <h2>What we believe</h2>
-  <ul class="ticks">
-    <li><strong>Your work is yours.</strong> It lives on your computer. No account, no cloud service, no telemetry.</li>
-    <li><strong>You stay in charge.</strong> The optional assistant only suggests. Nothing changes until you choose Apply.</li>
-    <li><strong>Say only what is true.</strong> This site claims nothing the app cannot show, and says plainly what is planned.</li>
-    <li><strong>No lock-in.</strong> Standard formats in, standard formats out.</li>
-  </ul>
-  <h2>How it is built</h2>
-  <p>One engine, written in Rust over SQLite, holds the rules, storage, search, import and export. Windows uses a Tauri shell and the Mac uses a native SwiftUI shell, both on that same engine. The offline assistant runs on llama.cpp.</p>
-  <h2>Where we are</h2>
-  <p>The work is in three stages: finish and test the app on Windows and the Mac, build this website, then release through the Microsoft Store and the Mac App Store. We are in the first stage, with internal team testing. See <a href="/download/">Download</a> for the current state.</p>
-  <p>The company name, legal details and a public contact address will be published when the official domain is ready. See <a href="/contact/">Contact</a>.</p>
-</div></section>
+${phero('About OpenFrame', 'From film lovers, to film lovers across the world.', 'OpenFrame Studio is one app for the whole film, made for people who make films with limited resources.')}
+<section class="tint sec-s"><div class="wrap"><div class="two">
+<div class="rv"><h2>What it is for</h2><p class="lead mt18">A film often starts as scattered notes and ends as a pile of separate files. OpenFrame Studio keeps the whole path in one project: first idea, story, screenplay, breakdown, schedule, call sheets and a light budget.</p></div>
+<div class="rv d1"><h2>Who it is for</h2><p class="lead mt18">Writers, screenwriters and production teams, especially people who make films with limited resources. There is one app for everyone and no separate editions.</p></div>
+</div></div></section>
+<section class="sec-s"><div class="wrap"><div class="sec-head"><span class="eyebrow">The founders</span><h2>Two founding engineers.</h2>
+<p class="lead">One turns the film-making journey into a product. The other turns that product into software you can trust with your work.</p></div>
+<div class="founders">${FOUNDERS.map((f, i) => html`<article class="founder rv${i ? ' d1' : ''}"><span class="role">${f.role}</span><h3>${f.link ? html`<a class="name-link" href="${f.link}" target="_blank" rel="noopener noreferrer">${f.name}</a>` : f.name}</h3>${f.text.map((p) => html`<p>${p}</p>`)}</article>`)}
+</div></div></section>
+<section class="tint sec-s"><div class="wrap"><div class="sec-head"><h2>Your idea. Your film. Our promise.</h2></div><div class="grid3">
+<div class="card rv"><h3>Your work is yours</h3><p>It lives on your computer. No OpenFrame account, no cloud service, no telemetry.</p></div>
+<div class="card rv d1"><h3>You stay in charge</h3><p>OpenFrame AI only suggests. Nothing changes until you choose Apply.</p></div>
+<div class="card rv d2"><h3>No lock-in</h3><p>Standard formats in, standard formats out. Back up and move your whole project any time.</p></div>
+</div></div></section>
 ${cta()}`,
   });
 
-  // ---------- Contact ----------
-  const contact = page({
-    path: '/contact/',
-    title: 'Contact | OpenFrame Studio',
-    description: 'No public contact address for OpenFrame Studio has been set yet. It will be published here with the official domain. There is no contact form on this site.',
-    breadcrumbs: [['Contact', '/contact/']],
-    body: html`
-<section class="section"><div class="narrow">
-  ${head('Contact', 'There is no public contact address yet.')}
-  <div class="prose">
-    <p>We have not chosen an official domain or a company email address yet. When they exist, the address will be published on this page. Until then there is nothing to write to, and we would rather say so than show an address that does not work.</p>
-    <p>This site has no contact form and collects nothing, so a message typed here would go nowhere.</p>
-    <p>If you are part of the invited testing team, report problems the way you were told when you were invited.</p>
-  </div>
-  <p>Many answers are already on the <a href="/faq/">questions and answers</a> page, and the state of the release is on <a href="/download/">Download</a>.</p>
-</div></section>`,
-  });
-
-  // ---------- Legal ----------
-  const legalNote = (t) => html`<p class="note"><strong>${t}</strong> Website notice, not the product licence. Final legal terms will be published before release. Last updated ${UPDATED}.</p>`;
-
-  const privacy = page({
-    path: '/legal/privacy/',
-    title: 'Website privacy notice | OpenFrame Studio',
-    description: 'How this static website treats visitor data: no cookies, no analytics and no forms. Cloudflare serves the pages and may keep standard request logs.',
-    breadcrumbs: [['Privacy notice', '/legal/privacy/']],
-    body: html`
-<section class="section"><div class="narrow">
-  <h1>Website privacy notice</h1>
-  ${legalNote('Interim notice.')}
-  <div class="prose">
-    <h2>What this covers</h2>
-    <p>This notice is about this website only. It is not about the OpenFrame Studio app, which has its own behaviour described on <a href="/local-and-private/">Local and private</a>. The app has no account, no telemetry and no update check.</p>
-    <h2>What the site does not do</h2>
-    <ul class="ticks">
-      <li>It sets no cookies.</li>
-      <li>It runs no analytics and no advertising or tracking scripts.</li>
-      <li>It has no forms, no accounts and no email sign-up, so it collects no personal details from you.</li>
-      <li>It does not load scripts, fonts or images from other companies.</li>
-    </ul>
-    <h2>What happens when you visit</h2>
-    <p>The pages are served by Cloudflare, which hosts the site. Like any web host, Cloudflare receives your request and may keep standard request logs, such as your IP address, the page asked for, the time and your browser type. These logs are handled by Cloudflare under its own policies. We do not add anything to them and we do not use them to identify you.</p>
-    <p>If a page remembers a display choice, such as light or dark, it keeps it only in your own browser and never sends it to us.</p>
-    <h2>Links</h2>
-    <p>If a link takes you to another site, that site has its own policy.</p>
-    <h2>Contact and changes</h2>
-    <p>No public contact address exists yet. See <a href="/contact/">Contact</a>. This notice will be updated when the official domain and the company details are set.</p>
-  </div>
-</div></section>`,
-  });
-
-  const terms = page({
-    path: '/legal/terms/',
-    title: 'Website terms | OpenFrame Studio',
-    description: 'Interim terms for using this website. The OpenFrame Studio product terms and licence are not published yet and will appear before the public release.',
-    breadcrumbs: [['Terms', '/legal/terms/']],
-    body: html`
-<section class="section"><div class="narrow">
-  <h1>Website terms</h1>
-  ${legalNote('Interim terms.')}
-  <div class="prose">
-    <h2>Product terms are not published yet</h2>
-    <p>The licence and terms for the OpenFrame Studio app itself are not written yet. They will be published before any public release. The internal test builds are for invited testers only.</p>
-    <h2>Using this website</h2>
-    <ul class="ticks">
-      <li>You may read this site and link to it.</li>
-      <li>The site is information only. It is not an offer to sell anything. Prices shown are targets and nothing is on sale.</li>
-      <li>We try to keep the pages accurate and say what is planned and what is live, but the app is still changing. Features, platforms and plans may change.</li>
-      <li>The site is provided as it is, without any promise that it is complete or always available.</li>
-      <li>Please do not copy the site's text or screens and present them as your own, or use the OpenFrame Studio name in a way that suggests we endorse you.</li>
-    </ul>
-    <h2>Other parties</h2>
-    <p>Other product names mentioned on this site belong to their owners. Links to other sites are for convenience, and we are not responsible for what they contain.</p>
-    <h2>Company details and law</h2>
-    <p>The legal entity, the governing law and a contact address have not been set. They will be added when the official domain is ready. See also the <a href="/legal/privacy/">website privacy notice</a> and <a href="/contact/">Contact</a>.</p>
-  </div>
-</div></section>`,
-  });
-
-  return [windows, mac, download, pricing, faq, migrate, compare, local, themes, about, contact, privacy, terms];
+  return [platform('win'), platform('mac'), download, pricing, faq, migrate, compare, local, themes, about];
 }

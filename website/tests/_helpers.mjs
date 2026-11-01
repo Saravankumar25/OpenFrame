@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-export const DIST = path.join(ROOT, 'dist');
+export const DIST = process.env.OF_DIST ? path.resolve(process.env.OF_DIST) : path.join(ROOT, 'dist');
 export const HAS_DIST = existsSync(path.join(DIST, 'index.html'));
 export const SKIP = HAS_DIST ? false : 'dist/ is missing: run "npm run build" first';
 
@@ -23,8 +23,9 @@ export function pagePath(file) {
   return '/' + rel;
 }
 
+/** The site's own pages. The app screen pages under /mockups/ are separate documents, shown in frames, and are left out. */
 export function htmlFiles() {
-  return HAS_DIST ? walk(DIST).filter((f) => f.endsWith('.html')) : [];
+  return HAS_DIST ? walk(path.join(DIST)).filter((f) => f.endsWith('.html') && !path.relative(DIST, f).startsWith('mockups' + path.sep)) : [];
 }
 
 export const read = (f) => readFileSync(f, 'utf8');

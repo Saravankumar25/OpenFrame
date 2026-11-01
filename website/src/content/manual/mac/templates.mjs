@@ -1,0 +1,251 @@
+export default {
+  area: `Templates`,
+  slug: `templates`,
+  order: 24,
+  part: `Project and data`,
+  intro: [
+    `A template is a saved starting point. Instead of beginning a screenplay, a call sheet or a budget from a blank page, you start from a template and change what you need. Templates are optional: every document can also start blank.`,
+    `OpenFrame comes with eight built-in templates: Feature Film Screenplay, Short Film Screenplay, Episodic / Series, Simple Beat Board, Indie Call Sheet, Shot List, Moodboard and Lightweight Budget. You can also make your own and keep them in one project or in every project.`,
+    `Using a template always makes an independent copy. Changing or deleting a template never changes anything you already made from it.`,
+    `Templates live in Project settings. Click Templates on Project Home, or open Project settings and choose the Templates tab.`,
+  ],
+  layout: [
+    { name: `Settings tabs`, text: `At the top of the window: Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance and Storage. Templates is chosen. Done closes the window.` },
+    { name: `Header`, text: `The title Templates, the question Would a saved starting point help me begin faster? and the Create Template button.` },
+    { name: `Built-in`, text: `The section BUILT-IN: Starting points that come with OpenFrame. Use one to copy it into this project. One card per template, with its kind and a short description.` },
+    { name: `Yours`, text: `The section YOURS: Kept on this computer and available in every project. It holds templates you saved to My Templates.` },
+    { name: `This project`, text: `The section THIS PROJECT: Copies kept inside this project. Changing a template never changes anything already made from it.` },
+    { name: `Card actions`, text: `Each card has an actions button (three dots). Clicking the card itself opens a preview.` },
+    { name: `Footer`, text: `A note that Offline AI, Appearance and Keyboard shortcuts apply to every project on this Mac, and the App Settings… button.` },
+  ],
+  workflows: [
+    {
+      id: `templates-open`,
+      title: `Open Templates and see what comes with OpenFrame`,
+      purpose: `Find the Templates page and read the eight built-in templates.`,
+      level: `Beginner`,
+      prerequisites: [`A project is open.`],
+      steps: [
+        {
+          screen: `pages-templates-from-home`,
+          do: `On Project Home, click Templates under Quick access.`,
+          explain: `Project settings opens on the Templates tab over Project Home. You can also click Project settings and then Templates, or press Command+Shift+, to open Project settings.`,
+        },
+        {
+          screen: `pages-templates`,
+          do: `Read the BUILT-IN section.`,
+          explain: `The cards are Feature Film Screenplay, Short Film Screenplay and Episodic / Series (Screenplay starters), Simple Beat Board (Beat Board starter), Indie Call Sheet (Call sheet), Shot List, Moodboard and Lightweight Budget (Simple budget). Each shows its kind and a line of description, for example Indie Call Sheet: Six default sections plus weather, crew and walkie channels.`,
+        },
+      ],
+      result: `You know which starting points come with OpenFrame.`,
+      cautions: [],
+      related: [`templates-preview`, `templates-use`],
+    },
+    {
+      id: `templates-preview`,
+      title: `Preview a built-in template`,
+      purpose: `Look inside a template before you use it.`,
+      level: `Beginner`,
+      prerequisites: [`The Templates tab is open.`],
+      steps: [
+        {
+          screen: `pages-templates-actions-menu`,
+          do: `Click the three dots on a card. For example the card of Feature Film Screenplay.`,
+          explain: `The menu has Preview, Start the screenplay, Use in This Project and Copy to My Templates. The second item changes with the kind of template, so a call sheet says Create a call sheet.`,
+        },
+        {
+          screen: `pages-templates-preview`,
+          do: `Choose Preview, or click the card.`,
+          explain: `A panel opens with the name, Screenplay starter · Built-in and its description, Feature film · three acts. A Scenes list shows what it contains: 1. EXT. OPENING LOCATION - DAY, 2. INT. MIDPOINT LOCATION - NIGHT and 3. EXT. FINAL LOCATION - DAY. Close shuts the panel. Start the screenplay and Use in This Project are at the bottom.`,
+        },
+      ],
+      result: `You have seen what a template contains.`,
+      cautions: [],
+      related: [`templates-use`],
+    },
+    {
+      id: `templates-use`,
+      title: `Make a document from a template`,
+      purpose: `Create a new document from a starting point, as an independent copy.`,
+      level: `Beginner`,
+      prerequisites: [`The Templates tab is open.`],
+      steps: [
+        {
+          screen: `pages-templates-actions-menu`,
+          do: `Click the three dots on a card and choose the action that starts the document, for example Start the screenplay or Use in This Project.`,
+          explain: `The same actions are at the bottom of the preview panel.`,
+        },
+        {
+          screen: `pages-templates-apply`,
+          do: `Read the window that opens, for example Create a call sheet.`,
+          explain: `It says From “Indie Call Sheet”. The new document is an independent copy. A line tells you when it cannot be made yet, for example Every shooting day already has a call sheet, or the schedule has no shooting day yet. It also says: Undo removes everything this creates in one step. If any part can't be made, nothing is created.`,
+        },
+        {
+          screen: `pages-templates-apply`,
+          do: `Click Create. Cancel closes the window and creates nothing.`,
+          explain: `The new document is made in your project. To take it back, choose Undo Project Change in the Edit menu.`,
+        },
+      ],
+      result: `A new document exists in the project, copied from the template.`,
+      cautions: [
+        `The new document is a copy. Editing it later never changes the template.`,
+        `If the window says nothing can be created yet, do what it says first. For a call sheet that means having a shooting day in the schedule.`,
+      ],
+      related: [`templates-copy-to-mine`],
+    },
+    {
+      id: `templates-copy-to-mine`,
+      title: `Copy a template to My Templates`,
+      purpose: `Keep a template on this Mac so it is available in every project.`,
+      level: `Intermediate`,
+      prerequisites: [`The Templates tab is open.`],
+      steps: [
+        {
+          screen: `pages-templates-actions-menu`,
+          do: `On a built-in card click the three dots and choose Copy to My Templates.`,
+          explain: `A copy is added to the YOURS section, which is kept on this computer and available in every project.`,
+        },
+        {
+          screen: `pages-templates-own-menu`,
+          do: `On a template of your own, click the three dots and choose Save to My Templates.`,
+          explain: `A template that is kept only in this project moves to YOURS this way. The menu of your own template has Preview, Create a call sheet, Save to My Templates, Edit and Delete….`,
+        },
+        {
+          screen: `pages-templates-delete-confirm`,
+          do: `Look at the message at the top.`,
+          explain: `It says, for example, “Short night shoot call sheet” is now in your templates for every project. The template appears under YOURS.`,
+        },
+      ],
+      result: `The template is available in every project on this Mac.`,
+      cautions: [],
+      related: [`templates-create`],
+    },
+    {
+      id: `templates-create`,
+      title: `Create a template of your own`,
+      purpose: `Save a starting point you can reuse, in this project or in every project.`,
+      level: `Intermediate`,
+      prerequisites: [`The Templates tab is open.`],
+      steps: [
+        {
+          screen: `pages-templates-new`,
+          do: `Click Create Template.`,
+          explain: `A window opens: A saved starting point for new documents. It has Name, Type, Keep in, Description and Added sections, with Cancel and Create.`,
+        },
+        {
+          screen: `pages-templates-type-menu`,
+          do: `Click the Type menu and choose what the template is for.`,
+          explain: `The choices are Call sheet, Screenplay starter, Shot list, Moodboard, Report, Beat Board starter, Breakdown document, Simple budget and Project starter.`,
+        },
+        {
+          screen: `pages-templates-new-filled`,
+          do: `Type a name in Template name, for example Short night shoot call sheet. Under Keep in, choose This project or Every project.`,
+          explain: `This project keeps the template inside the project. Every project keeps it on this Mac so all projects can use it. Add a Description if you want.`,
+        },
+        {
+          screen: `pages-templates-new-filled`,
+          do: `In Added sections, type one section per line, then click Create.`,
+          explain: `The box asks for Added sections (Weather, Crew, Extras…). These become the added sections of new documents made from this template. Cancel closes the window.`,
+        },
+        {
+          screen: `pages-templates-saved`,
+          do: `Look at the page.`,
+          explain: `A message says Created “Short night shoot call sheet” in this project. The new template is listed under THIS PROJECT. YOURS still says: Save a project template to My Templates, or create one, to reuse it in every project.`,
+        },
+      ],
+      result: `Your template is on the page and ready to use.`,
+      cautions: [
+        `Pick Keep in with care. A template kept in This project is not available in other projects until you save it to My Templates.`,
+      ],
+      related: [`templates-edit`, `templates-copy-to-mine`],
+    },
+    {
+      id: `templates-edit`,
+      title: `Edit one of your templates`,
+      purpose: `Change a template's name, type, description or sections for future use.`,
+      level: `Intermediate`,
+      prerequisites: [`You have a template of your own.`],
+      steps: [
+        {
+          screen: `pages-templates-own-menu`,
+          do: `Click the three dots on your template and choose Edit.`,
+          explain: `Built-in templates cannot be edited. Copy one to My Templates to get a version you can change.`,
+        },
+        {
+          screen: `pages-templates-edit`,
+          do: `Change what you need and click Save.`,
+          explain: `The window says Edit Template and Changes apply to future use only. It holds Name, Type, Keep in, Description and Added sections. Cancel closes it with no change.`,
+        },
+      ],
+      result: `The template has your changes. Documents already made from it stay as they are.`,
+      cautions: [],
+      related: [`templates-delete`],
+    },
+    {
+      id: `templates-delete`,
+      title: `Delete one of your templates`,
+      purpose: `Remove a template you no longer want.`,
+      level: `Beginner`,
+      prerequisites: [`You have a template of your own.`],
+      steps: [
+        {
+          screen: `pages-templates-own-menu`,
+          do: `Click the three dots on your template and choose Delete….`,
+          explain: `Delete… is the last item in the menu.`,
+        },
+        {
+          screen: `pages-templates-delete-confirm`,
+          do: `Read the question Delete template “Short night shoot call sheet”? and click Delete Template.`,
+          explain: `It says: This template is removed from this computer. Projects and documents that already used it are not affected. Cancel keeps the template.`,
+        },
+      ],
+      result: `The template is gone from the page. Documents made from it are untouched.`,
+      cautions: [
+        `The built-in templates cannot be deleted.`,
+      ],
+      related: [`templates-create`],
+    },
+  ],
+  screens: {
+    'pages-templates-from-home': `Project settings opened on the Templates tab from Project Home. The tabs run from Project settings to Storage, with Done at the right. The page shows Create Template and the BUILT-IN section. Used in templates-open.`,
+    'pages-templates': `The Templates page. The title, the question Would a saved starting point help me begin faster?, Create Template and the eight built-in cards, with App Settings… in the footer. Used in templates-open.`,
+    'pages-templates-preview': `The preview of Feature Film Screenplay: its kind, its description and a list of three scenes, with Close, Start the screenplay and Use in This Project. Used in templates-preview.`,
+    'pages-templates-actions-menu': `The actions menu of a built-in template: Preview, Start the screenplay, Use in This Project and Copy to My Templates. Used in templates-preview, templates-use and templates-copy-to-mine.`,
+    'pages-templates-new': `The Create Template window, empty, with Name, Type (Call sheet), Keep in (This project or Every project), Description and Added sections, with Cancel and Create. Used in templates-create.`,
+    'pages-templates-type-menu': `The Type menu of the Create Template window: Screenplay starter, Shot list, Moodboard, Report, Beat Board starter, Breakdown document, Simple budget and Project starter, as well as Call sheet. Used in templates-create.`,
+    'pages-templates-new-filled': `The Create Template window filled in with the name Short night shoot call sheet and the type Call sheet. Used in templates-create.`,
+    'pages-templates-saved': `Templates after Create. A message says Created “Short night shoot call sheet” in this project. The new template is under THIS PROJECT, and YOURS is still empty. Used in templates-create.`,
+    'pages-templates-own-menu': `The actions menu of your own template: Preview, Create a call sheet, Save to My Templates, Edit and Delete…. Used in templates-copy-to-mine, templates-edit and templates-delete.`,
+    'pages-templates-edit': `The Edit Template window. It says Changes apply to future use only and holds Name, Type, Keep in, Description and Added sections, with Cancel and Save. Used in templates-edit.`,
+    'pages-templates-delete-confirm': `The confirmation Delete template “Short night shoot call sheet”? It says the template is removed from this computer and that documents already made from it are not affected. A message behind it says the template is now in your templates for every project. Used in templates-copy-to-mine and templates-delete.`,
+    'pages-templates-apply': `The Create a call sheet window from the Indie Call Sheet template. It says the new document is an independent copy, explains when it cannot be created, and describes Undo. Buttons are Cancel and Create. Used in templates-use.`,
+  },
+  shortcuts: [
+    [`Command+Shift+,`, `Open Project settings`],
+    [`Command+Option+Z`, `Undo Project Change`],
+  ],
+  limits: [
+    `Built-in templates cannot be edited or deleted. Copy one to My Templates to make a version you can change.`,
+    `A template only starts a document. Changing or deleting it never changes anything already made from it.`,
+    `Templates are optional. Every document can also start blank.`,
+    `Your templates are kept on this Mac. They are not sent anywhere.`,
+  ],
+  troubleshooting: [
+    {
+      problem: `I cannot create a call sheet from Indie Call Sheet.`,
+      fix: `The window says every shooting day already has a call sheet, or the schedule has no shooting day yet. Add a shooting day in Schedule, then try again.`,
+    },
+    {
+      problem: `My template is not in another project.`,
+      fix: `It was kept in This project. Click the three dots on it and choose Save to My Templates to make it available everywhere.`,
+    },
+    {
+      problem: `I cannot edit a built-in template.`,
+      fix: `Built-in templates are fixed. Choose Copy to My Templates, then Edit the copy.`,
+    },
+    {
+      problem: `I created a document from a template by mistake.`,
+      fix: `Choose Undo Project Change in the Edit menu. It removes everything that was created, in one step.`,
+    },
+  ],
+};
