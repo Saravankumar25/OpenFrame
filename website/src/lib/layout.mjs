@@ -171,6 +171,7 @@ ${ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(
 </head>
 <body data-nav="${esc(page.nav || '')}">
 <div class="loader" id="loader" aria-hidden="true"><div class="loader-in">${MARK}</div></div>
+${page.top || ''}
 ${header(page, switchHref)}
 <main id="main">
 ${page.body}

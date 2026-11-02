@@ -44,7 +44,7 @@ if (tpl && tpl.content && nav !== 'download' && nav !== 'pricing') {
   });
   pill.addEventListener('click', open);
 
-  var hero = document.querySelector('.hero');
+  var hero = document.querySelector('.hero, .hx');
   var past = function () { return hero ? hero.getBoundingClientRect().bottom < innerHeight * 0.5 : scrollY > 400; };
   var showPill = function () { pill.hidden = false; };
   var onScroll = function () {
