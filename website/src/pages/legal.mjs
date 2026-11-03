@@ -6,14 +6,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { COMPANY } from '../content/nav.mjs';
+import { COMPANY, COMPANY_ADDRESS, SUPPORT_EMAIL } from '../content/nav.mjs';
 
-const UPDATED = '31 October 2026';
+const UPDATED = '3 November 2026';
 const FONTS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'assets', 'fonts');
 
-// The public contact address. Set OF_CONTACT_EMAIL when the company mailbox exists (docs/OPERATIONS.md). Until then the
-// contact page and the privacy page point to each other instead.
-const EMAIL = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/.test(process.env.OF_CONTACT_EMAIL || '') ? process.env.OF_CONTACT_EMAIL : '';
 
 const LINKS = {
   msPrivacy: 'https://www.microsoft.com/privacy/privacystatement',
@@ -36,8 +33,8 @@ export default function (ctx) {
   };
   const ph = (key, text) => (SHOW ? html`<span class="ph" data-placeholder="${key}">[${text}]</span>` : html`<span data-placeholder="${key}" hidden></span>`);
   const ext = (href, text) => html`<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`;
-  const mail = () => html`<a href="mailto:${EMAIL}">${EMAIL}</a>`;
-  const reach = () => (EMAIL ? html`write to ${mail()}` : html`use the ${md('[contact page](/contact/)')}${ph('contact-email', 'Contact email address, to be added when the company mailbox exists')}`);
+  const mail = () => html`<a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>`;
+  const reach = () => html`write to ${mail()}`;
   const phero = (eyebrow, h1, lead) => html`<section class="phero"><div class="wrap"><span class="eyebrow">${eyebrow}</span><h1>${h1}</h1><p class="lead">${md(lead)}</p></div></section>`;
   const doc = (eyebrow, h1, lead, inner) => html`${phero(eyebrow, h1, lead)}
 <section class="sec-s pt30"><div class="wrap legal"><p class="upd">Last updated ${UPDATED}</p>
@@ -71,7 +68,8 @@ ${CARDS.map(([h, t, b]) => html`<a class="card linkcard" href="${h}"><h3>${t}</h
     breadcrumbs: crumb('Privacy', '/legal/privacy/'),
     body: doc('Privacy', 'Privacy.', 'Your work stays on your computer. This page covers the app, the website, and the few times either one uses the internet.', html`
 <h2>Who is responsible</h2>
-<p>${COMPANY} (“we”) publishes OpenFrame Studio and runs this website. Under India’s Digital Personal Data Protection Act, 2023, we are the data fiduciary for the personal data described on this page. We are a company registered in India.${ph('registered-office', 'Registered office address, to be added from the company records')}</p>
+<p>${COMPANY} (“we”) publishes OpenFrame Studio and runs this website. Under India’s Digital Personal Data Protection Act, 2023, we are the data fiduciary for the personal data described on this page, which other laws call the data controller. We are a company registered in India.</p>
+<p>Address: ${COMPANY_ADDRESS}. Contact: ${mail()}.</p>
 
 <h2>The app</h2>
 <ul>
@@ -126,6 +124,7 @@ ${CARDS.map(([h, t, b]) => html`<a class="card linkcard" href="${h}"><h3>${t}</h
     body: doc('Terms', 'Terms.', 'The short version: you buy a licence once, your work is yours, and the store you bought from sets the payment terms.', html`
 <h2>Who we are</h2>
 <p>OpenFrame Studio is published by ${COMPANY}. “You” means the person who installs or uses the app or visits this website.</p>
+<p>Address: ${COMPANY_ADDRESS}. Contact: ${mail()}.</p>
 
 <h2>The licence</h2>
 <ul>
@@ -166,7 +165,7 @@ ${CARDS.map(([h, t, b]) => html`<a class="card linkcard" href="${h}"><h3>${t}</h
 ${ph('discontinuation', 'What happens if the product is withdrawn, counsel to word')}${ph('liability', 'Disclaimer of warranties and limit of liability, to be drafted by counsel, respecting consumer law')}${ph('governing-law', 'Governing law and courts, to be drafted by counsel')}
 
 <h2>Changes and contact</h2>
-<p>If we change these terms, we will update this page and its date. Questions: see ${md('[Contact](/contact/)')}.</p>`),
+<p>If we change these terms, we will update this page and its date. Questions: write to ${mail()} or see ${md('[Contact](/contact/)')}.</p>`),
   });
 
   // ---------- Refunds
@@ -262,7 +261,7 @@ ${phero('Contact us', 'Questions? Start here.', 'Most answers are already in the
 <a class="card linkcard" href="/faq/"><h3>Questions and answers</h3><p>Platforms, privacy, files and the trial.</p></a>
 <a class="card linkcard" href="/pricing/"><h3>Pricing</h3><p>One payment after a 7-day trial.</p></a>
 </div></div>
-<div class="cinfo">${EMAIL ? html`<h3>Write to us</h3><p>${mail()}</p>` : html`<h3>Support email</h3><p>Our support address is being set up. Until it opens, the tutorials and the questions and answers cover most things.</p>`}<h3>Purchases and refunds</h3><p>The Microsoft Store and the Mac App Store handle purchases, receipts and refunds. Use ${ext(LINKS.msRefund, 'Microsoft’s refund help')} for Windows and ${ext(LINKS.appleRefund, 'Apple’s refund help')} for the Mac. More on our <a href="/legal/refunds/">refunds page</a>.</p><h3>Privacy</h3><p>Your rights and how to use them are on the <a href="/legal/privacy/">privacy page</a>.</p><h3>This website</h3><p>The site has no contact form and collects nothing.</p></div>
+<div class="cinfo"><h3>Write to us</h3><p>${mail()}</p><h3>Purchases and refunds</h3><p>The Microsoft Store and the Mac App Store handle purchases, receipts and refunds. Use ${ext(LINKS.msRefund, 'Microsoft’s refund help')} for Windows and ${ext(LINKS.appleRefund, 'Apple’s refund help')} for the Mac. More on our <a href="/legal/refunds/">refunds page</a>.</p><h3>Privacy</h3><p>Your rights and how to use them are on the <a href="/legal/privacy/">privacy page</a>.</p><h3>This website</h3><p>The site has no contact form and collects nothing.</p></div>
 </div></div></section>`,
   });
 
