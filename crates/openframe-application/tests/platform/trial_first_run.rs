@@ -21,9 +21,9 @@ use openframe_entitlement::adapters::{
     StoreAppLicence, StoreLicenceError, StoreLicenceSource, StorePurchaseStatus,
 };
 use openframe_entitlement::mac::{
-    AppTransactionInfo, BridgeError, InstantClock, LIFETIME_PRODUCT_ID, MacInputs, NoNonces,
-    ProductInfo, PurchaseOutcome, RevalidateReason, StoreEnvironment, StoreKitBridge,
-    UnavailableServer, VerifiedTransaction,
+    AppTransactionInfo, BridgeError, InstantClock, LIFETIME_PRODUCT_ID, MacInputs, PurchaseOutcome,
+    RevalidateReason, StoreEnvironment, StoreKitBridge, StoreProducts, SystemWallClock,
+    VerifiedTransaction,
 };
 use serde_json::{Value, json};
 
@@ -562,9 +562,10 @@ fn lifetime_tx() -> VerifiedTransaction {
         original_transaction_id: "2000000077".to_string(),
         app_transaction_id: None,
         purchase_date_ms: T0,
+        original_purchase_date_ms: T0,
+        signed_date_ms: T0,
         revocation_date_ms: None,
         environment: StoreEnvironment::Production,
-        signed_jws: "aGVhZA.Ym9keQ.c2ln".to_string(),
     }
 }
 
@@ -591,8 +592,16 @@ impl StoreKitBridge for FakeStore {
     fn environment(&self) -> StoreEnvironment {
         StoreEnvironment::Production
     }
-    fn product_info(&self, _product_id: &str) -> Result<ProductInfo, BridgeError> {
-        Err(BridgeError::ProductNotFound)
+    fn load_products(&self) -> Result<StoreProducts, BridgeError> {
+        Ok(StoreProducts {
+            lifetime_display_price: "{test price}".to_string(),
+        })
+    }
+    fn load_guard(&self) -> Result<Option<String>, BridgeError> {
+        Ok(None)
+    }
+    fn save_guard(&self, _record_json: &str) -> Result<(), BridgeError> {
+        Ok(())
     }
 }
 
@@ -601,10 +610,8 @@ fn mac_core(root: &Path, store: &FakeStore) -> Arc<AppCore> {
         channel: Channel::MacAppStore,
         mac_inputs: Some(MacInputs {
             bridge: Box::new(store.clone()),
-            server: Box::new(UnavailableServer),
-            nonces: Box::new(NoNonces),
             clock: Box::new(InstantClock::new()),
-            response_key: None,
+            wall: Box::new(SystemWallClock),
         }),
         ..AppConfig::isolated(root)
     })

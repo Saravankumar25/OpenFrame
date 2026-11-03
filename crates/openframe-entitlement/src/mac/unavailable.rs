@@ -1,16 +1,14 @@
-//! Stand-ins for a build without an App Store connection: a Windows build, or a Mac shell that
-//! does not supply the StoreKit bridge and the licensing server client yet.
+//! A stand-in for a build without an App Store connection: a Windows build, or a Mac shell that does
+//! not supply the StoreKit bridge.
 //!
 //! Every call answers with the module's "not available" error, so the adapter derives
 //! [`super::MacState::NeedsOnlineCheck`]: opening and exporting keep working, editing is locked,
 //! and neither the trial nor the lifetime unlock is ever granted this way.
 
-use super::adapter::NonceSource;
 use super::bridge::{
-    AppTransactionInfo, BridgeError, ProductInfo, PurchaseOutcome, StoreEnvironment,
-    StoreKitBridge, VerifiedTransaction,
+    AppTransactionInfo, BridgeError, PurchaseOutcome, StoreEnvironment, StoreKitBridge,
+    StoreProducts, VerifiedTransaction,
 };
-use super::server::{LicenceServer, NONCE_BYTES, ServerError, ValidateRequest, ValidateResponse};
 
 /// A StoreKit bridge that is not there. Every call fails with [`BridgeError::StoreUnavailable`].
 #[derive(Debug, Default, Clone, Copy)]
@@ -29,36 +27,23 @@ impl StoreKitBridge for UnavailableBridge {
         Err(BridgeError::StoreUnavailable)
     }
 
-    /// Production, so a cache written by a real build is never mistaken for this one's.
     fn environment(&self) -> StoreEnvironment {
         StoreEnvironment::Production
     }
 
-    fn product_info(&self, _product_id: &str) -> Result<ProductInfo, BridgeError> {
+    fn load_products(&self) -> Result<StoreProducts, BridgeError> {
         Err(BridgeError::StoreUnavailable)
     }
 
-    fn sync(&self) -> Result<(), BridgeError> {
+    fn sync(&self) -> Result<Option<i64>, BridgeError> {
         Err(BridgeError::StoreUnavailable)
     }
-}
 
-/// A licensing server that is not there. Every call fails with [`ServerError::Unavailable`].
-#[derive(Debug, Default, Clone, Copy)]
-pub struct UnavailableServer;
-
-impl LicenceServer for UnavailableServer {
-    fn validate(&self, _req: ValidateRequest) -> Result<ValidateResponse, ServerError> {
-        Err(ServerError::Unavailable)
+    fn load_guard(&self) -> Result<Option<String>, BridgeError> {
+        Err(BridgeError::StoreUnavailable)
     }
-}
 
-/// A nonce source with no random bytes, so no request is ever sent.
-#[derive(Debug, Default, Clone, Copy)]
-pub struct NoNonces;
-
-impl NonceSource for NoNonces {
-    fn nonce(&self) -> Option<[u8; NONCE_BYTES]> {
-        None
+    fn save_guard(&self, _record_json: &str) -> Result<(), BridgeError> {
+        Err(BridgeError::StoreUnavailable)
     }
 }

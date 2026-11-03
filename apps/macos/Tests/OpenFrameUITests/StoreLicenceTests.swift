@@ -1,7 +1,7 @@
 // The Mac App Store licence flow through the real core as the store channel (debug test switch),
-// with a fake Apple and a fake licensing server that signs its answers: trial start, days left,
-// expiry, purchase, restore, revocation, unverified results dropped, environments never mixed, and
-// the screens the model names. The real StoreKit purchase sheet needs Xcode's StoreKit testing and
+// with a fake Apple, a fake Keychain and a clock the test moves: trial start, days left, expiry,
+// the clock guard, purchase, restore, revocation, unverified results dropped, environments never
+// mixed, and the screens the model names. The real StoreKit purchase sheet needs Xcode's StoreKit testing and
 // cannot run here.
 
 import Foundation
@@ -24,6 +24,42 @@ struct StoreLicenceTests {
         #expect(rig.licence.chip == nil)
     }
 
+    @Test func theFirstLaunchShowsThePriceFromTheStoreAndOnlyThenOffersTheTrial() async throws {
+        let rig = try await StoreRig.start()
+        defer { rig.finish() }
+        #expect(rig.licence.lifetimePrice == fakeDisplayPrice)
+        #expect(rig.licence.canStartTrial)
+        #expect(LicenceRules.trialDisclosure(price: fakeDisplayPrice).hasSuffix("one-time purchase of \(fakeDisplayPrice)."))
+    }
+
+    @Test func aFirstLaunchOfflineLandsOnTheCheckScreenNotABlankOrAGuess() async throws {
+        let root = try Fixture.root()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = FakeStoreKitSource()
+        source.productsFail = true
+        let runtime = StoreRuntime(source: source, keychain: FakeGuardKeychain(), clock: { storeT0 })
+        var options = CoreStartOptions(appVersion: "0.1.0-test", isolatedDataRoot: root, writeLogs: false)
+        runtime.install(into: &options)
+        options.testStoreChannel = true
+        let core = try await Core.start(options)
+        defer { core.stop() }
+        let licence = LicenceModel()
+        licence.today = { "2026-10-09" }
+        await licence.attach(core: core, runtime: runtime, observeSystem: false)
+        for _ in 0..<50 {
+            try await Task.sleep(for: .milliseconds(20))
+            await licence.refresh()
+        }
+        #expect(licence.state == .needsOnlineCheck)
+        #expect(licence.screen == .checkNeeded)
+        #expect(licence.lifetimePrice == nil)
+        #expect(!licence.canStartTrial)
+        // Back online, "Try again" offers the choice.
+        source.productsFail = false
+        await licence.restore()
+        #expect(licence.screen == .macFirstLaunch)
+    }
+
     @Test func startingTheTrialCountsSevenDaysFromApplesDateAndTheChipSaysSo() async throws {
         let rig = try await StoreRig.start(now: storeT0.addingTimeInterval(3600))
         defer { rig.finish() }
@@ -31,48 +67,160 @@ struct StoreLicenceTests {
         #expect(rig.source.purchaseCalls == [trialProductID])
         #expect(try await rig.status().state == .trialActive(days_left: 7))
         #expect(rig.licence.screen == nil)
-        #expect(rig.licence.chip?.label == "Trial: 7 days left")
+        #expect(rig.licence.chip?.label == "Trial ends in 7 days")
         #expect(rig.licence.chip?.ending == false)
-        // The server was asked with the signed transaction, never with a Mac date.
-        let request = rig.server.requests.last
-        #expect((request?["transactionJws"] as? [String])?.count == 1)
-        #expect(request?["environment"] as? String == "production")
+        #expect(rig.licence.chip?.spoken == "Free trial. Ends in 7 days.")
+        #expect(rig.licence.trialEndsAt == storeT0.addingTimeInterval(7 * storeDay))
+        #expect(rig.keychain.stored?.contains("trial_start_ms") == true, "the Keychain record has the start")
     }
 
-    @Test func daysLeftFollowTheServersClockAndTheLastThreeShowAReminderOverAProject() async throws {
+    @Test func daysLeftFollowTheMacsClockAndTheLastThreeShowAReminderOnHomeOrOverAProject() async throws {
         let rig = try await StoreRig.start()
         defer { rig.finish() }
         await rig.startTrial()
-        rig.server.now = storeT0.addingTimeInterval(3 * storeDay)
-        await rig.licence.restore()
+        await rig.advance(days: 3)
         #expect(try await rig.status().state == .trialActive(days_left: 4))
         #expect(rig.licence.chip?.ending == false)
+        #expect(rig.licence.screen == nil, "no reminder on days 1 to 4")
 
-        rig.server.now = storeT0.addingTimeInterval(4.5 * storeDay)
-        await rig.licence.restore()
+        await rig.advance(days: 4.5)
         #expect(try await rig.status().state == .trialActive(days_left: 3))
         #expect(rig.licence.chip?.ending == true)
-        #expect(rig.licence.chip?.spoken == "Free trial, 3 days left. Your trial ends soon.")
-        // No reminder on Application Home; it shows once a project is open.
-        #expect(rig.licence.screen == nil)
-        await rig.licence.setProjectOpen(true)
+        #expect(rig.licence.chip?.spoken == "Free trial. Ends in 3 days. Your trial ends soon.")
+        // The reminder shows with no project open.
         #expect(rig.licence.screen == .reminder(daysLeft: 3))
         #expect(LicenceRules.reminderHeadline(3) == "Your free trial ends in 3 days")
         await rig.licence.closeReminder()
         #expect(rig.licence.screen == nil)
         // Once per calendar day, also after the model reads the core again.
-        await rig.licence.setProjectOpen(false)
-        await rig.licence.setProjectOpen(true)
         await rig.licence.refresh()
         #expect(rig.licence.screen == nil)
+    }
+
+    @Test func buyingOnAnyDayRemovesTheChipButtonAndReminderAtOnce() async throws {
+        for days in [0.0, 3.0, 6.5] {
+            let rig = try await StoreRig.start()
+            await rig.startTrial()
+            await rig.advance(days: days)
+            await rig.licence.closeReminder()
+            await rig.buyLifetime()
+            #expect(try await rig.status().state == .purchased)
+            #expect(rig.licence.chip == nil)
+            #expect(rig.licence.screen == .dataNote)
+            rig.finish()
+        }
+    }
+
+    @Test func aTrialEndingWhileOpenFlushesPendingWorkBeforeTheLockAndKeepsItOnDisk() async throws {
+        let rig = try await StoreRig.start()
+        defer { rig.finish() }
+        await rig.startTrial()
+        let project = try await rig.core.projectCreate(CreateProjectArgs(title: "Kept", projectType: .featureFilm))
+        // The editor still holds text: it is stored while the lock is being set, not refused.
+        let core = rig.core
+        var flushed: Result<StoryPageSaved, Error>?
+        rig.licence.flushBeforeLock = {
+            do {
+                flushed = .success(try await core.storyPageSave(StoryPageSaveArgs(text: "typed just before the trial ended", expectedRev: 0)))
+            } catch {
+                flushed = .failure(error)
+            }
+        }
+        await rig.advance(days: 8)
+        #expect(rig.licence.screen == .locked(revoked: false))
+        if case let .failure(error)? = flushed { Issue.record("the save was refused: \(error)") }
+        #expect(flushed != nil, "the flush ran before the lock screen")
+        // From here the lock holds.
+        await #expect(throws: CoreFailure.self) {
+            _ = try await core.storyPageGet()
+        }
+        // Buying opens it again with the text there.
+        await rig.buyLifetime()
+        let page = try await core.storyPageGet()
+        #expect(page.text == "typed just before the trial ended")
+        _ = project
+    }
+
+    @Test func theLockAndTheCheckAndTheClockScreensOfferContactUsWithTheWebsiteAddress() async throws {
+        let rig = try await StoreRig.start()
+        defer { rig.finish() }
+        var opened: [URL] = []
+        rig.licence.openAddress = { opened.append($0) }
+        rig.licence.openContact()
+        #expect(opened.map(\.absoluteString) == ["https://openframestudio.app/contact/"])
+    }
+
+    @Test func aClockTurnedBackLocksAndClearsByItselfWithNoClick() async throws {
+        let rig = try await StoreRig.start()
+        defer { rig.finish() }
+        await rig.startTrial()
+        await rig.advance(days: 6)
+        #expect(try await rig.status().state == .trialActive(days_left: 1))
+        await rig.licence.closeReminder()
+
+        // Back by a week: the core looks by itself and locks once it is asked again.
+        rig.clock.now = storeT0
+        await rig.licence.restore()
+        #expect(try await rig.status().state == .clockChanged)
+        #expect(rig.licence.screen == .clockLocked)
+        #expect(rig.licence.screen?.mandatory == true)
+        #expect(rig.licence.chip == nil)
+        await #expect(throws: CoreFailure.self) {
+            _ = try await rig.core.projectCreate(CreateProjectArgs(title: "Blocked", projectType: .featureFilm))
+        }
+        // The clock is fixed: the 5 second look clears it, with no click.
+        rig.clock.now = storeT0.addingTimeInterval(6 * storeDay)
+        var state = try await rig.status().state
+        for _ in 0..<400 where state == .clockChanged {
+            try await Task.sleep(for: .milliseconds(25))
+            state = try await rig.status().state
+        }
+        #expect(state == .trialActive(days_left: 1))
+        await rig.licence.refresh()
+        #expect(rig.licence.screen != .clockLocked)
+    }
+
+    @Test func aWrongFutureClockSinceFixedRecoversFromAFreshAppleDateOnCheckAgain() async throws {
+        let rig = try await StoreRig.start()
+        defer { rig.finish() }
+        await rig.startTrial()
+        // The clock was a year ahead for one check, then fixed.
+        await rig.advance(days: 365)
+        rig.clock.now = storeT0.addingTimeInterval(storeDay)
+        await rig.licence.restore()
+        #expect(try await rig.status().state == .clockChanged)
+        rig.source.syncSigned = rig.clock.now.addingTimeInterval(-60)
+        await rig.licence.restore()
+        #expect(try await rig.status().state == .trialActive(days_left: 6))
+    }
+
+    @Test func theTrialKeepsCountingOfflineAfterTheFirstStartAndABuyerStaysUnlocked() async throws {
+        let keychain = FakeGuardKeychain()
+        let rig = try await StoreRig.start(keychain: keychain)
+        await rig.startTrial()
+        rig.source.productsFail = true
+        rig.source.entitlements = []
+        await rig.advance(days: 2)
+        #expect(try await rig.status().state == .trialActive(days_left: 5))
+        await rig.advance(days: 7)
+        #expect(try await rig.status().state == .trialEnded)
+        rig.finish()
+
+        // A buyer, a new launch, no network.
+        let buyer = try await StoreRig.start()
+        await buyer.buyLifetime()
+        buyer.source.productsFail = true
+        buyer.source.entitlements = []
+        await buyer.licence.restore()
+        #expect(try await buyer.status().state == .purchased)
+        buyer.finish()
     }
 
     @Test func whenTheTrialEndsTheAppLocksUntilAPurchaseOrARestore() async throws {
         let rig = try await StoreRig.start()
         defer { rig.finish() }
         await rig.startTrial()
-        rig.server.now = storeT0.addingTimeInterval(8 * storeDay)
-        await rig.licence.restore()
+        await rig.advance(days: 8)
         #expect(try await rig.status().state == .trialEnded)
         #expect(rig.licence.screen == .locked(revoked: false))
         #expect(rig.licence.blocksApp)
@@ -169,11 +317,10 @@ struct StoreLicenceTests {
         defer { try? FileManager.default.removeItem(at: root) }
         let source = FakeStoreKitSource()
         source.environment = .sandbox
-        let server = FakeLicenceServer()
-        let runtime = StoreRuntime(source: source, server: server)
+        let runtime = StoreRuntime(source: source, keychain: FakeGuardKeychain(), clock: { storeT0 })
         var options = CoreStartOptions(appVersion: "0.1.0-test", isolatedDataRoot: root, writeLogs: false)
         runtime.install(into: &options)
-        options.testStoreResponseKeyHex = server.publicKeyHex
+        options.testStoreChannel = true
         let core = try await Core.start(options)
         defer { core.stop() }
         source.entitlements = [.verified(fakeTransaction(lifetimeProductID, id: "6", env: .production))]
@@ -190,6 +337,7 @@ struct StoreLicenceTests {
         rig.source.queue(.success(.pending))
         await rig.licence.startTrial()
         #expect(try await rig.status().state == .trialNotStarted)
+        #expect(rig.licence.message == "This purchase is waiting for approval. OpenFrame Studio updates by itself once it is approved.")
         rig.source.queue(.success(.cancelled))
         await rig.licence.buy()
         #expect(try await rig.status().state == .trialNotStarted)
@@ -200,8 +348,7 @@ struct StoreLicenceTests {
         let rig = try await StoreRig.start()
         defer { rig.finish() }
         await rig.startTrial(at: storeT0, id: "2000000001")
-        rig.server.now = storeT0.addingTimeInterval(2 * storeDay)
-        await rig.licence.restore()
+        await rig.advance(days: 2)
         let before = try await rig.status().state
         #expect(before == .trialActive(days_left: 5))
         // Apple would not sell it again, but even a later trial transaction does not move the end.
@@ -224,38 +371,6 @@ struct StoreLicenceTests {
         await rig.licence.buy()
         #expect(rig.licence.message == "OpenFrame could not reach the App Store. Connect to the internet, then try again.")
         #expect(try await rig.status().state == .trialNotStarted)
-    }
-
-    @Test func aTrialThatCannotBeConfirmedOnlineAsksToCheckAndKeepsOpeningAndExporting() async throws {
-        let rig = try await StoreRig.start()
-        defer { rig.finish() }
-        rig.server.mode = .offline
-        await rig.startTrial()
-        let status = try await rig.status()
-        #expect(status.state == .needsOnlineCheck)
-        #expect(rig.licence.screen == .checkNeeded)
-        #expect(rig.licence.screen?.mandatory == false)
-        #expect(!rig.licence.blocksApp)
-        // "Not now" closes it and the top bar offers "Check purchase".
-        rig.licence.closeCheck()
-        #expect(rig.licence.screen == nil)
-        #expect(rig.licence.showsCheckPurchase)
-        rig.licence.reopenCheck()
-        #expect(rig.licence.screen == .checkNeeded)
-        // Back online, "Try again" confirms the trial and the screen goes away.
-        rig.server.mode = .honest
-        await rig.licence.restore()
-        #expect(try await rig.status().state == .trialActive(days_left: 7))
-        #expect(rig.licence.screen == nil)
-        #expect(!rig.licence.showsCheckPurchase)
-    }
-
-    @Test func aServerAnswerSignedWithAnotherKeyNeverStartsOrExtendsATrial() async throws {
-        let rig = try await StoreRig.start()
-        defer { rig.finish() }
-        rig.server.mode = .wrongKey
-        await rig.startTrial()
-        #expect(try await rig.status().state == .needsOnlineCheck)
     }
 
     @Test func storeKitUpdatesAskTheCoreForANewCheck() async throws {
@@ -298,7 +413,6 @@ struct StoreInternalBuildTests {
         rig.core.requestStoreCheck("storeKitChanged")
         try await Task.sleep(for: .milliseconds(200))
         #expect(rig.source.calls == 0, "StoreKit is never called in the internal build")
-        #expect(rig.server.requests.isEmpty)
         #expect(rig.licence.screen == nil)
         // Not even with a trial that ended: nothing locks and nothing shows.
         let notice = try await rig.core.entitlementNotice(EntitlementNoticeArgs(today: "2026-10-09"))
@@ -317,13 +431,36 @@ struct StoreInternalBuildTests {
     @Test func screenTextsNameNoPriceAndNoPricingModel() {
         let words = [
             LicenceRules.reminderHeadline(1), LicenceRules.reminderHeadline(3), LicenceRules.buyFailed,
-            LicenceRules.newLaptopInstallStep(.macAppStore),
+            LicenceRules.newLaptopInstallStep(.macAppStore), LicenceRules.buyCardText, LicenceRules.lockSafety,
+            LicenceRules.clockTitle, LicenceRules.clockBody, LicenceRules.clockSafety, LicenceRules.contactLink,
+            LicenceRules.trialDisclosure(price: ""), LicenceRules.lockBody(revoked: false, price: nil),
+            LicenceRules.lockBody(revoked: true, price: nil),
         ] + LicenceRules.dataPoints.map(\.body) + LicenceRules.tutorialChecks
         for text in words {
-            #expect(!text.contains("$") && !text.contains("€") && !text.lowercased().contains("subscription"))
+            #expect(!text.lowercased().contains("subscription"))
         }
         #expect(!words.joined().contains("\u{2014}"))
     }
+
+    /// Prices are never typed: a currency symbol, or digits next to a currency code, in the licence
+    /// sources or their strings fails the build's tests.
+    @Test func noCurrencyIsTypedInTheLicenceSources() throws {
+        let store = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Sources/OpenFrameUI/Store")
+        let files = try FileManager.default.contentsOfDirectory(at: store, includingPropertiesForKeys: nil)
+        #expect(files.count >= 7)
+        let literal = #/"[^"\n]*"/#
+        let price = #/[$€£₹¥]\s*\d|\d\s*[$€£₹¥]|\b(USD|EUR|INR|GBP|rupees?|dollars?|euros?)\b\s*\d|\d[\d.,]*\s*(USD|EUR|INR|GBP|rupees?|dollars?|euros?)\b/#
+        for file in files where file.pathExtension == "swift" {
+            let text = try String(contentsOf: file, encoding: .utf8)
+            for match in text.matches(of: literal) {
+                let quoted = String(text[match.range])
+                #expect(quoted.firstMatch(of: price) == nil, "\(file.lastPathComponent) names a price: \(quoted)")
+            }
+        }
+    }
+
 }
 
 @Suite("Licence rules")
@@ -331,11 +468,38 @@ struct LicenceRulesTests {
     @Test func theChipClampsToSevenDaysAndSpeaksTheLastDay() {
         #expect(LicenceRules.trialChip(.trialActive(days_left: 9))?.daysLeft == 7)
         #expect(LicenceRules.trialChip(.trialActive(days_left: 0.2))?.daysLeft == 1)
-        #expect(LicenceRules.trialChip(.trialActive(days_left: 1))?.label == "Trial: 1 day left")
-        #expect(LicenceRules.trialChip(.trialActive(days_left: 1))?.spoken == "Free trial, last day. Your trial ends today.")
+        #expect(LicenceRules.trialChip(.trialActive(days_left: 1))?.label == "Trial ends in 1 day")
+        #expect(LicenceRules.trialChip(.trialActive(days_left: 2))?.label == "Trial ends in 2 days")
+        #expect(LicenceRules.trialChip(.trialActive(days_left: 1))?.spoken == "Free trial, last day. Your trial ends within 24 hours.")
+        for days in 1...7 {
+            #expect(LicenceRules.trialChip(.trialActive(days_left: Double(days)))?.ending == (days <= 3))
+        }
         #expect(LicenceRules.trialChip(.purchased) == nil)
         #expect(LicenceRules.trialChip(.trialEnded) == nil)
         #expect(LicenceRules.trialChip(nil) == nil)
+    }
+
+    @Test func theLastDayHeadlineSaysTodayOrTomorrowAndTheEndLineIsLocal() {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "Asia/Kolkata")!
+        let now = Date(timeIntervalSince1970: 1_791_244_800) // 05:30 on the 6th in India
+        #expect(LicenceRules.reminderHeadline(1, endsAt: now.addingTimeInterval(3600), now: now, calendar: cal) == "Your free trial ends today")
+        #expect(LicenceRules.reminderHeadline(1, endsAt: now.addingTimeInterval(20 * 3600), now: now, calendar: cal) == "Your free trial ends tomorrow")
+        #expect(LicenceRules.reminderHeadline(2, endsAt: now, now: now, calendar: cal) == "Your free trial ends in 2 days")
+        #expect(LicenceRules.reminderEndLine(now, calendar: cal) == "It ends on Tue 6 Oct at 5:30 AM.")
+    }
+
+    @Test func theLockWordsFollowThePackage() {
+        #expect(LicenceRules.lockBody(revoked: false, price: fakeDisplayPrice).hasSuffix("One-time purchase of \(fakeDisplayPrice)."))
+        #expect(LicenceRules.lockBody(revoked: false, price: nil) == "Buy the full version to keep using OpenFrame Studio.")
+        #expect(LicenceRules.lockBody(revoked: true, price: nil).contains("no longer shows a purchase"))
+    }
+
+    @Test func releaseBuildsHideSocialHandlesWithoutARealAddress() {
+        #expect(LicenceRules.visibleSocialLinks(release: true).isEmpty)
+        #expect(LicenceRules.visibleSocialLinks(release: false).count == 8)
+        let real = LicenceRules.SocialLink(name: "X", short: "X", handle: "@a", url: "https://x.com/a")
+        #expect(LicenceRules.visibleSocialLinks(release: true, links: [real]) == [real])
     }
 
     @Test func theLocalDayUsesThePersonsOwnCalendar() {

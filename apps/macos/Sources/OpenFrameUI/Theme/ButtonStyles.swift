@@ -17,10 +17,13 @@ public struct StandardButtonStyle: PrimitiveButtonStyle {
 /// The one main action of a screen or sheet: accent fill with dark text.
 public struct ProminentButtonStyle: PrimitiveButtonStyle {
     @Environment(\.ofTheme) private var theme
+    @Environment(\.controlActiveState) private var active
 
     public func makeBody(configuration: Configuration) -> some View {
         Button(role: configuration.role, action: configuration.trigger) {
-            configuration.label.foregroundStyle(theme["accent-ink"])
+            // An inactive window draws the button without its accent fill, where the dark label
+            // would not be readable.
+            configuration.label.foregroundStyle(active == .inactive ? Color.primary : theme["accent-ink"])
         }
         .buttonStyle(.borderedProminent)
         .tint(theme["accent"])

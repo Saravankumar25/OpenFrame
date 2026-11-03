@@ -21,7 +21,7 @@ mod logging;
 mod shell;
 mod store;
 
-pub use store::{LicenceServerCallbacks, StoreKitCallbacks};
+pub use store::StoreKitCallbacks;
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -77,12 +77,11 @@ pub struct CoreConfig {
     pub ai_bundle_dir: Option<String>,
     /// Write the JSON log files under the app data folder.
     pub write_logs: bool,
-    /// The automated tests of the Mac App Store screens: run as the store channel with this
-    /// licence response public key (64 hex characters). Honoured only by a debug build on a test
-    /// folder, like the other test switches (ADR-0031); a release build and a run on the person's
-    /// own data ignore it, so the channel always comes from the build.
-    #[uniffi(default = None)]
-    pub test_store_response_key_hex: Option<String>,
+    /// The automated tests of the Mac App Store screens: run as the store channel. Honoured only by
+    /// a debug build on a test folder, like the other test switches (ADR-0031); a release build and
+    /// a run on the person's own data ignore it, so the channel always comes from the build.
+    #[uniffi(default = false)]
+    pub test_store_channel: bool,
     /// The automated tests of the first-start library setup: the test folder starts like a new
     /// computer whose library is not chosen yet (`AppConfig::isolated_needing_setup`). Honoured
     /// only by a debug build on a test folder, like `OPENFRAME_LIBRARY_SETUP=1` on Windows.
@@ -150,7 +149,11 @@ fn build_config(config: &CoreConfig) -> Result<(AppConfig, bool), CoreError> {
         None => AppConfig::for_current_user(&config.app_version)?,
     };
     app.channel = channel_for(cfg!(openframe_store));
-    if test_store_key(config, cfg!(debug_assertions), isolated.is_some()).is_some() {
+    if test_switch(
+        config.test_store_channel,
+        cfg!(debug_assertions),
+        isolated.is_some(),
+    ) {
         app.channel = openframe_entitlement::Channel::MacAppStore;
     }
     app.ai_bundle_dir = config
@@ -158,6 +161,8 @@ fn build_config(config: &CoreConfig) -> Result<(AppConfig, bool), CoreError> {
         .as_deref()
         .map(PathBuf::from)
         .filter(|p| p.is_absolute());
+    // A store build signs the engine (and Apple signs it again), so it is checked by signature.
+    app.ai_engine_store_signed = cfg!(openframe_store);
     app.ai_model_source =
         openframe_application::ModelSource::from_build(option_env!("OPENFRAME_TEST_MODEL_SOURCE"));
     app.ai_deterministic = test_switch(
@@ -175,12 +180,6 @@ fn test_switch(asked: bool, debug: bool, isolated: bool) -> bool {
     asked && debug && isolated
 }
 
-/// The test response key of the store screen tests: only a debug build on a test folder.
-fn test_store_key(config: &CoreConfig, debug: bool, isolated: bool) -> Option<&str> {
-    let key = config.test_store_response_key_hex.as_deref()?;
-    (debug && isolated && !key.is_empty()).then_some(key)
-}
-
 /// The disk image is an internal team build; the Mac App Store package is the store channel.
 fn channel_for(store_build: bool) -> openframe_entitlement::Channel {
     if store_build {
@@ -194,21 +193,16 @@ fn channel_for(store_build: bool) -> openframe_entitlement::Channel {
 impl CoreHandle {
     /// Start the core: open the app database, the entitlement check and the event stream.
     ///
-    /// `storekit` and `licence_server` are the shell's StoreKit 2 and licensing server client.
-    /// They are used only in the store channel; the internal disk image build ignores them.
-    #[uniffi::constructor(default(storekit = None, licence_server = None))]
+    /// `storekit` is the shell's StoreKit 2 and Keychain object. It is used only in the store
+    /// channel; the internal disk image build ignores it.
+    #[uniffi::constructor(default(storekit = None))]
     pub fn start(
         config: CoreConfig,
         listener: Box<dyn EventListener>,
         storekit: Option<Box<dyn StoreKitCallbacks>>,
-        licence_server: Option<Box<dyn LicenceServerCallbacks>>,
     ) -> Result<Arc<Self>, CoreError> {
-        let (mut app_config, isolated) = build_config(&config)?;
-        let key_hex = test_store_key(&config, cfg!(debug_assertions), isolated)
-            .unwrap_or(store::LICENCE_RESPONSE_PUBLIC_KEY_HEX)
-            .to_string();
-        app_config.mac_inputs =
-            store::mac_inputs(app_config.channel, storekit, licence_server, &key_hex);
+        let (mut app_config, _isolated) = build_config(&config)?;
+        app_config.mac_inputs = store::mac_inputs(app_config.channel, storekit);
         let store_mode = app_config.mac_inputs.is_some();
         let guard = if config.write_logs {
             logging::init(&app_config.app_data_dir)
@@ -333,8 +327,8 @@ impl CoreHandle {
         shell::open_url(&url).map_err(Into::into)
     }
 
-    /// Ask for a licence and trial check in the store channel: `launch`, `resume`,
-    /// `storeKitChanged` or `leaseExpired`. Returns at once; the answer arrives later as an
+    /// Ask for a licence and trial check in the store channel: `launch`, `resume` or
+    /// `storeKitChanged`. Returns at once; the answer arrives later as an
     /// `entitlement` module event. Does nothing in the internal build.
     pub fn request_store_check(&self, reason: String) {
         if let (Some(worker), Some(reason)) = (&self.store_worker, store::reason_from_name(&reason))
@@ -406,7 +400,7 @@ mod tests {
             isolated_data_root: Some("relative/folder".into()),
             ai_bundle_dir: None,
             write_logs: false,
-            test_store_response_key_hex: None,
+            test_store_channel: false,
             test_library_setup: false,
             test_ai_deterministic: false,
         };
@@ -423,7 +417,7 @@ mod tests {
             isolated_data_root: Some(dir.path().to_string_lossy().into_owned()),
             ai_bundle_dir: Some("Resources/ai".into()),
             write_logs: false,
-            test_store_response_key_hex: None,
+            test_store_channel: false,
             test_library_setup: false,
             test_ai_deterministic: false,
         };
@@ -441,7 +435,7 @@ mod tests {
             isolated_data_root: Some(dir.path().to_string_lossy().into_owned()),
             ai_bundle_dir: None,
             write_logs: false,
-            test_store_response_key_hex: None,
+            test_store_channel: false,
             test_library_setup: true,
             test_ai_deterministic: true,
         };

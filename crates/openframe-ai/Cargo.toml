@@ -21,6 +21,14 @@ rand.workspace = true
 parking_lot.workspace = true
 tracing.workspace = true
 
+# TLS for the model download: Apple's own (Security framework) on the Mac, so the app ships no
+# encryption code of its own there; rustls elsewhere.
+[target.'cfg(target_os = "macos")'.dependencies]
+reqwest = { workspace = true, features = ["native-tls"] }
+
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+reqwest = { workspace = true, features = ["rustls-tls"] }
+
 # Available memory from the kernel's own statistics on the Mac (hardware.rs).
 [features]
 # Development tools and tests only: install the pinned models from the build inputs as a finished

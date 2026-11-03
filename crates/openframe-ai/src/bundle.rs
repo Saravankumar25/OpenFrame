@@ -26,7 +26,7 @@ use openframe_domain::{AppError, AppResult, now_ms};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
-use crate::engines::{EngineFiles, hash_file};
+use crate::engines::{EngineFiles, hash_file, is_code};
 
 /// The lock compiled into this build (the same file the build verified the package against).
 pub const LOCK_JSON: &str = include_str!("../../../packaging/ai/ai-assets.lock.json");
@@ -585,6 +585,9 @@ pub struct BundledAi {
     /// The Vulkan build for a graphics card, when this platform has one (ADR-0029).
     gpu_runtime: Option<RuntimeEntry>,
     models: Option<InstalledModels>,
+    /// Mac App Store build: the engine's code files are signed, so they are judged by code
+    /// signature, not by the hashes in the lock ([`EngineFiles::with_signed_code`]).
+    store_signed: bool,
 }
 
 /// `bundle-check.json` in the writable app data folder.
@@ -634,7 +637,14 @@ impl BundledAi {
             runtime,
             gpu_runtime,
             models,
+            store_signed: false,
         })
+    }
+
+    /// Judge the engine's code files by code signature (the Mac App Store build).
+    pub fn with_store_signed(mut self, on: bool) -> BundledAi {
+        self.store_signed = on;
+        self
     }
 
     pub fn root(&self) -> &Path {
@@ -658,6 +668,7 @@ impl BundledAi {
     /// The engine files with their pinned hashes (checked again before every launch).
     pub fn engine_files(&self) -> EngineFiles {
         EngineFiles::pinned(&self.runtime_dir(), &self.runtime.files)
+            .with_signed_code(self.store_signed)
     }
     pub fn gpu_runtime(&self) -> Option<&RuntimeEntry> {
         self.gpu_runtime.as_ref()
@@ -673,7 +684,10 @@ impl BundledAi {
     pub fn gpu_engine(&self) -> Option<(PathBuf, EngineFiles)> {
         let r = self.graphics_runtime()?;
         let dir = self.root.join("runtimes").join(&r.runtime_id);
-        Some((dir.join(&r.executable), EngineFiles::pinned(&dir, &r.files)))
+        Some((
+            dir.join(&r.executable),
+            EngineFiles::pinned(&dir, &r.files).with_signed_code(self.store_signed),
+        ))
     }
     /// Bytes of the engine for this platform and of the downloaded models.
     pub fn total_bytes(&self) -> u64 {
@@ -779,7 +793,9 @@ impl BundledAi {
             let modified = modified_ms(&meta);
             // Model files live in writable app data: always hashed again (they are held open from
             // just before this check, see ModelStamp::hold). Engine files use the record.
+            let signed_code = !p.model && self.store_signed && is_code(&p.path);
             let cached = !p.model
+                && !signed_code
                 && previous.as_ref().is_some_and(|r| {
                     r.files.iter().any(|c| {
                         c.rel == p.rel
@@ -788,7 +804,14 @@ impl BundledAi {
                             && c.sha256 == p.sha256
                     })
                 });
-            if !cached {
+            if signed_code {
+                // The bytes differ from the lock after signing; never cached, so an unsigned or
+                // changed file cannot pass on an earlier record.
+                if !openframe_platform::code_signature::is_apple_signed(&p.path) {
+                    let _ = std::fs::remove_file(record);
+                    return Err(p.damaged("is not validly signed"));
+                }
+            } else if !cached {
                 // Opened first so a busy file is told apart from a missing or damaged one.
                 std::fs::File::open(&p.path).map_err(|e| p.unreadable(&e))?;
                 let (bytes, sha) = hash_file(&p.path).map_err(|e| {
@@ -875,6 +898,66 @@ mod tests {
         cpu.backend = "cpu".into();
         two.runtimes.push(cpu);
         assert!(two.validate().is_err(), "two main builds on one platform");
+    }
+
+    /// A bundle with one library, one plain file and a tiny model set, all pinned by hash.
+    fn tiny_bundle(root: &Path) -> BundledAi {
+        use crate::engines::hash_file;
+        let lock = AssetLock::embedded().unwrap();
+        let mut runtime = lock.runtimes[0].clone();
+        let dir = root.join("runtimes").join(&runtime.runtime_id);
+        std::fs::create_dir_all(&dir).unwrap();
+        let models_dir = root.join("models").join("v1");
+        std::fs::create_dir_all(&models_dir).unwrap();
+        let pin = |dir: &Path, name: &str, bytes: &[u8]| {
+            std::fs::write(dir.join(name), bytes).unwrap();
+            let (bytes, sha256) = hash_file(&dir.join(name)).unwrap();
+            PinnedFile {
+                path: name.into(),
+                bytes,
+                sha256,
+            }
+        };
+        runtime.files = vec![
+            pin(&dir, "libggml.0.dylib", b"library"),
+            pin(&dir, "LICENSE", b"MIT"),
+        ];
+        let models = InstalledModels {
+            version: "v1".into(),
+            dir: models_dir.clone(),
+            chat: pin(&models_dir, "chat.gguf", b"chat"),
+            embedding: pin(&models_dir, "embed.gguf", b"embed"),
+            multilingual: None,
+        };
+        BundledAi {
+            root: root.to_path_buf(),
+            lock,
+            runtime,
+            gpu_runtime: None,
+            models: Some(models),
+            store_signed: false,
+        }
+    }
+
+    #[test]
+    fn the_store_check_judges_code_by_signature_and_never_by_the_cache() {
+        let tmp = tempfile::tempdir().unwrap();
+        let record = tmp.path().join("bundle-check.json");
+        let ai = tiny_bundle(&tmp.path().join("ai"));
+        // The direct build: bytes match the lock, the check passes and is recorded.
+        ai.verify(&record).unwrap();
+        ai.verify(&record).unwrap();
+        // The store build, same bytes and the same record: the library is not signed, so it is
+        // refused even though its hash matches and the record says it was checked.
+        let store = ai.clone().with_store_signed(true);
+        let e = store.verify(&record).unwrap_err();
+        assert_eq!(e.code_str(), "ai.assets_damaged");
+        assert!(e.detail.unwrap().contains("libggml.0.dylib"));
+        // A changed plain file is still refused in the store build.
+        let dir = ai.runtime_dir();
+        std::fs::write(dir.join("LICENSE"), b"GPL").unwrap();
+        assert!(ai.verify(&record).is_err());
+        assert!(store.verify(&record).is_err());
     }
 
     #[test]

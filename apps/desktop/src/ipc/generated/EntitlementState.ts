@@ -3,4 +3,4 @@
 /**
  * What the app knows about the user's right to use it.
  */
-export type EntitlementState = { "state": "trialActive", days_left: number, } | { "state": "trialEnded" } | { "state": "purchased" } | { "state": "revoked" } | { "state": "unknown" } | { "state": "needsOnlineCheck" } | { "state": "trialNotStarted" } | { "state": "internalBuild" };
+export type EntitlementState = { "state": "trialActive", days_left: number, } | { "state": "trialEnded" } | { "state": "purchased" } | { "state": "revoked" } | { "state": "unknown" } | { "state": "needsOnlineCheck" } | { "state": "trialNotStarted" } | { "state": "clockChanged" } | { "state": "internalBuild" };

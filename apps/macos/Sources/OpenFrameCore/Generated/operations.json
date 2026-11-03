@@ -928,6 +928,14 @@
     "resultType": "BuyOutcome"
   },
   {
+    "argType": "LockReadyArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Licence and trial",
+    "name": "entitlement.lock_ready",
+    "resultType": "EntitlementStatus"
+  },
+  {
     "argType": "EntitlementNoticeArgs",
     "kind": "query",
     "longRunning": false,

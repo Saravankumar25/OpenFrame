@@ -48,6 +48,7 @@ impl AiService {
         )
         .map(|mut c| {
             c.deterministic = config.ai_deterministic;
+            c.engine_store_signed = config.ai_engine_store_signed;
             c
         })
         .and_then(AiManager::new);

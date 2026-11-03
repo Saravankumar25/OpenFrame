@@ -111,6 +111,10 @@ pub enum Notice {
     /// Mac, ADR-0023 for the Microsoft Store). The core refuses every project operation
     /// underneath it.
     Locked,
+    /// Mac App Store: the Mac's clock is behind a date the app already trusted (mock 201). The whole
+    /// app is locked like the lock above and the screen cannot be closed; it checks again by itself
+    /// every 5 seconds (ADR-0040).
+    ClockLocked,
     /// Either store: the licence could not be confirmed online (mock 192). The screen can be
     /// closed: opening and exporting keep working (ADR-0018 decision 6).
     CheckNeeded,
@@ -119,6 +123,7 @@ pub enum Notice {
 /// Which screen is due.
 ///
 /// - **The internal installer build:** nothing, ever (ADR-0023).
+/// - **The clock lock beats everything else** in a store build (ADR-0040).
 /// - **Either store first:** TrialEnded and Revoked show the lock, NeedsOnlineCheck shows the
 ///   purchase check, and on the Mac TrialNotStarted shows the first-launch choice.
 /// - **After a purchase, either store, once each and in order:** the data note, then the
@@ -137,6 +142,7 @@ pub fn due(
         return Notice::None;
     }
     match state {
+        EntitlementState::ClockChanged => Notice::ClockLocked,
         EntitlementState::TrialNotStarted if channel == Channel::MacAppStore => {
             Notice::MacFirstLaunch
         }
@@ -233,11 +239,22 @@ impl NoticeStore {
             },
             None => {
                 tracing::warn!("the notice record is not readable; screens may show again");
+                self.set_aside();
                 LoadedNotices {
                     record: NoticeRecord::default(),
                     replaced: true,
                 }
             }
+        }
+    }
+
+    /// Keep an unusable record as `notices.json.bad` (an older one is replaced), so the next save
+    /// starts clean and the bad bytes stay for support. A failure is only logged.
+    fn set_aside(&self) {
+        let mut bad = self.path.clone().into_os_string();
+        bad.push(".bad");
+        if let Err(e) = std::fs::rename(&self.path, std::path::PathBuf::from(bad)) {
+            tracing::warn!(kind = ?e.kind(), "the unreadable notice record could not be kept aside");
         }
     }
 
@@ -306,6 +323,7 @@ mod tests {
             EntitlementState::Purchased,
             EntitlementState::NeedsOnlineCheck,
             EntitlementState::TrialNotStarted,
+            EntitlementState::ClockChanged,
             EntitlementState::Unknown,
             EntitlementState::InternalBuild,
         ] {
@@ -459,6 +477,12 @@ mod tests {
                 Notice::Locked
             );
         }
+        // The clock lock beats a pending first-run screen too.
+        let empty = NoticeRecord::default();
+        assert_eq!(
+            due(MAC, EntitlementState::ClockChanged, &empty, None),
+            Notice::ClockLocked
+        );
         // Only the Mac has a trial the user starts.
         assert_eq!(
             due(MAC, EntitlementState::TrialNotStarted, &r, None),
@@ -522,5 +546,29 @@ mod tests {
         let store = NoticeStore::in_app_data(dir.path());
         assert!(!store.load().replaced);
         assert!(store.write(&NoticeRecord::default()).is_err());
+    }
+
+    #[test]
+    fn an_unusable_record_is_kept_as_bad_and_an_older_bad_one_is_replaced() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = NoticeStore::in_app_data(dir.path());
+        let bad = dir.path().join("entitlement").join("notices.json.bad");
+        std::fs::create_dir_all(bad.parent().unwrap()).unwrap();
+        std::fs::write(&bad, b"older").unwrap();
+        std::fs::write(store.path(), b"{\"welcomeShown\": tr").unwrap();
+        let loaded = store.load();
+        assert!(loaded.replaced && !loaded.record.welcome_shown);
+        assert!(!store.path().exists(), "the bad file is moved, not copied");
+        assert_eq!(std::fs::read(&bad).unwrap(), b"{\"welcomeShown\": tr");
+        // The next load is a clean first run, and a good record is never moved.
+        assert!(!store.load().replaced);
+        store
+            .write(&NoticeRecord {
+                welcome_shown: true,
+                ..NoticeRecord::default()
+            })
+            .unwrap();
+        assert!(store.load().record.welcome_shown);
+        assert_eq!(std::fs::read(&bad).unwrap(), b"{\"welcomeShown\": tr");
     }
 }

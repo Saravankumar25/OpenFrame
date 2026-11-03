@@ -35,6 +35,7 @@ enum QuitGate {
         guard !quitting else { return }
         quitting = true
         defer { quitting = false }
+        AppDelegate.model?.licence.prepareForQuit()
         await closeSheets(windows: windows)
         terminate()
     }

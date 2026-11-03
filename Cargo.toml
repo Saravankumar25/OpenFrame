@@ -63,12 +63,11 @@ time = { version = "0.3", features = ["formatting", "parsing", "macros", "local-
 directories = "6"
 image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "fs", "io-util", "net", "process"] }
-reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream", "json"] }
-ed25519-dalek = { version = "2", features = ["rand_core"] }
+# No TLS feature here: the TLS library is chosen per operating system in crates/openframe-ai.
+reqwest = { version = "0.12", default-features = false, features = ["stream", "json"] }
 base64 = "0.22"
 rand = "0.8"
 # Random salt for that hash, read in the desktop build script only.
-getrandom = "0.3"
 sysinfo = "0.37"
 csv = "1"
 rust_xlsxwriter = "0.100"

@@ -25,7 +25,7 @@ use crate::modules::storage::{self, library, library::Library};
 use crate::registry::Registry;
 use crate::store::{SaveTracker, Store};
 
-/// Not `Clone`: it can carry the macOS shell's StoreKit bridge and licence server client, which are
+/// Not `Clone`: it can carry the macOS shell's StoreKit bridge, which is
 /// handed to the entitlement service exactly once.
 pub struct AppConfig {
     /// `%LOCALAPPDATA%/OpenFrame`: settings, recents, AI records, logs.
@@ -41,6 +41,9 @@ pub struct AppConfig {
     /// Temperature 0 and a fixed seed for the Offline AI. Only the end-to-end suite turns it on
     /// (a debug build on an isolated test data root); never in a release build.
     pub ai_deterministic: bool,
+    /// Mac App Store build: the engine is signed, so its code files are checked by code
+    /// signature, not by the hashes in the lock. Only the Mac store build sets it.
+    pub ai_engine_store_signed: bool,
     /// Default parent folder for new projects.
     pub projects_dir: PathBuf,
     /// Global Idea Vault folder (user content).
@@ -59,7 +62,7 @@ pub struct AppConfig {
     /// Release channel for the licence and trial check. The desktop shell sets it; anything that
     /// is not a store package is an internal team build (ADR-0023, ADR-0024).
     pub channel: Channel,
-    /// The Mac App Store channel's StoreKit bridge, licence server client, nonce source and
+    /// The Mac App Store channel's StoreKit bridge and
     /// clock, supplied by the macOS desktop shell. `None` on Windows and in tests: the Mac channel
     /// then runs over the "unavailable" bridge and never grants anything. When set, the first
     /// check waits for the shell's background revalidation (see `EntitlementService::start`).
@@ -82,6 +85,7 @@ impl std::fmt::Debug for AppConfig {
             .field("ai_bundle_dir", &self.ai_bundle_dir)
             .field("ai_model_source", &self.ai_model_source)
             .field("ai_deterministic", &self.ai_deterministic)
+            .field("ai_engine_store_signed", &self.ai_engine_store_signed)
             .field("projects_dir", &self.projects_dir)
             .field("global_vault_dir", &self.global_vault_dir)
             .field("library_file", &self.library_file)
@@ -153,6 +157,7 @@ impl AppConfig {
             ai_bundle_dir: Self::installed_ai_bundle_dir(),
             ai_model_source: None,
             ai_deterministic: false,
+            ai_engine_store_signed: false,
             projects_dir,
             global_vault_dir,
             library_file,
@@ -179,6 +184,7 @@ impl AppConfig {
             ai_bundle_dir: None,
             ai_model_source: None,
             ai_deterministic: false,
+            ai_engine_store_signed: false,
             projects_dir: root.join("projects"),
             global_vault_dir: root.join("global-vault"),
             library_file: Some(root.join(crate::modules::storage::library::LIBRARY_FILE_NAME)),
@@ -229,6 +235,9 @@ pub struct ProjectSession {
     pub opened_at: i64,
     /// The assistant's list of things a user can name, built on first use (AI harness S3).
     pub ai_index: crate::modules::ai::index::IndexCache,
+    /// The search index rebuild that runs after open (`project::start_search_rebuild`). Closing,
+    /// switching or restoring the project waits for it, so no database file is open behind them.
+    search_rebuild: Mutex<Option<std::thread::JoinHandle<()>>>,
     _lock: ProjectLock,
 }
 
@@ -247,9 +256,25 @@ impl ProjectSession {
             recovery: Mutex::new(recovery),
             opened_at: now_ms(),
             ai_index: Default::default(),
+            search_rebuild: Mutex::new(None),
             _lock: lock,
         }
     }
+
+    /// Remember the background search rebuild so a close can wait for it.
+    pub(crate) fn set_search_rebuild(&self, handle: std::thread::JoinHandle<()>) {
+        *self.search_rebuild.lock() = Some(handle);
+    }
+
+    /// Wait until the search rebuild started at open has finished (it holds the project open).
+    /// Returns at once when none is running.
+    pub(crate) fn wait_for_search_rebuild(&self) {
+        let handle = self.search_rebuild.lock().take();
+        if let Some(h) = handle {
+            let _ = h.join();
+        }
+    }
+
     pub fn project_id(&self) -> String {
         self.manifest.lock().project_id.clone()
     }
@@ -707,6 +732,10 @@ impl AppCore {
 
     pub fn set_project(&self, session: Option<Arc<ProjectSession>>) -> Option<Arc<ProjectSession>> {
         let prev = std::mem::replace(&mut *self.project.write(), session.clone());
+        // A search rebuild still running for the project that just left finishes first.
+        if let Some(p) = &prev {
+            p.wait_for_search_rebuild();
+        }
         // The derived AI intelligence index follows the open project (detach waits for its
         // background worker to release the project files; attach never blocks).
         crate::modules::ai::intelligence::session_changed(self, prev.as_ref(), session.as_ref());

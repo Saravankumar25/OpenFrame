@@ -1,7 +1,8 @@
 // About OpenFrame Studio (Windows: workspaces/settings/About.tsx, scenario 16-about): the app
-// version, the core version, the build channel and the licence notice. An internal team build says
-// plainly that it is not for sale. There is no price and no Buy button anywhere in it.
+// version, the core version, the build channel, the publisher and the licence notice. An internal
+// team build says plainly that it is not for sale. There is no price and no Buy button anywhere in it.
 
+import AppKit
 import SwiftUI
 import OpenFrameCore
 
@@ -46,9 +47,9 @@ struct AboutView: View {
 
     var body: some View {
         VStack(spacing: 10) {
-            BrandMark(size: 64)
+            BrandLogo(markSize: 40, wordSize: 28)
             Text("OpenFrame Studio")
-                .font(.system(size: 22, weight: .semibold))
+                .font(.system(size: 15, weight: .semibold))
             if let about {
                 Text("Version \(about.appVersion)")
                     .accessibilityIdentifier("about-version")
@@ -75,6 +76,19 @@ struct AboutView: View {
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 8)
+            Text("Copyright 2026 Vighnajith Advisories Private Limited")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("about-publisher")
+            Button("Contact us") {
+                if let url = URL(string: LicenceRules.contactAddress) { NSWorkspace.shared.open(url) }
+            }
+            .buttonStyle(.link)
+            .controlSize(.small)
+            .accessibilityHint("Opens the contact page in your browser")
+            .accessibilityIdentifier("about-contact")
         }
         .padding(28)
         .frame(width: 340)

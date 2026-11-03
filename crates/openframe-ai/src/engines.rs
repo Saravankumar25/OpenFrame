@@ -3,7 +3,10 @@
 //! - [`EngineFiles`]: the SHA-256 of every file of the bundled engine, pinned in the committed
 //!   lock (`packaging/ai/ai-assets.lock.json`, ADR-0025) and checked again before every launch. A
 //!   changed or missing file, or an added program file (an `.exe`, `.dll`, `.dylib` or `.so`
-//!   planted next to the engine), stops the launch.
+//!   planted next to the engine), stops the launch. On the Mac App Store build the program files
+//!   are signed (and Apple signs them again), so their bytes cannot match the lock: those files
+//!   must carry a valid Apple-chained code signature instead, and every other file is still
+//!   compared byte for byte.
 //! - [`EngineRegistry`]: every engine OpenFrame launches is recorded with its pid, start time and
 //!   program (`engines.json`) and removed when it stops. At the next start, an engine still
 //!   running from a record (left behind by a crash) is stopped. A reused pid of another program is
@@ -32,6 +35,8 @@ pub struct EngineFiles {
     dir: PathBuf,
     /// Relative `/`-separated path -> (bytes, sha256).
     files: BTreeMap<String, (u64, String)>,
+    /// Store build: code files are checked by code signature, not by hash.
+    signed_code: bool,
 }
 
 /// The error shown when the engine files do not match the pinned hashes.
@@ -74,6 +79,30 @@ fn is_program(name: &str) -> bool {
     .any(|e| lower.ends_with(e))
         || lower.split('/').any(|part| part.ends_with(".local"))
         || !lower.contains('.')
+}
+
+/// Files a signature can cover: libraries and programs, by extension, and a file without an
+/// extension that is a Mach-O program (so `LICENSE` stays a plain file checked by hash). A file
+/// that is not there is not code here; the hash step then reports it missing.
+pub(crate) fn is_code(path: &Path) -> bool {
+    let lower = path.to_string_lossy().to_ascii_lowercase();
+    if [".exe", ".dll", ".dylib", ".so"]
+        .iter()
+        .any(|e| lower.ends_with(e))
+    {
+        return true;
+    }
+    if path.extension().is_some() {
+        return false;
+    }
+    let mut magic = [0u8; 4];
+    std::fs::File::open(path)
+        .and_then(|mut f| f.read_exact(&mut magic))
+        .is_ok()
+        && matches!(
+            u32::from_be_bytes(magic),
+            0xfeed_face | 0xfeed_facf | 0xcefa_edfe | 0xcffa_edfe | 0xcafe_babe | 0xbeba_feca
+        )
 }
 
 /// Every regular file under `dir` as a `/`-separated relative path. Links are refused: the
@@ -123,7 +152,15 @@ impl EngineFiles {
                 .iter()
                 .map(|f| (f.path.clone(), (f.bytes, f.sha256.clone())))
                 .collect(),
+            signed_code: false,
         }
+    }
+
+    /// Check code files (programs and libraries) by their code signature instead of their bytes.
+    /// For the Mac App Store build, where signing changes the bytes the lock pins.
+    pub fn with_signed_code(mut self, on: bool) -> EngineFiles {
+        self.signed_code = on;
+        self
     }
 
     /// Hash the folder again: every pinned file must be present and unchanged, and no program
@@ -140,6 +177,12 @@ impl EngineFiles {
             return Err(unverified().with_detail(format!("unexpected program file {extra}")));
         }
         for (rel, want) in &self.files {
+            if self.signed_code && is_code(&self.dir.join(rel)) {
+                if !openframe_platform::code_signature::is_apple_signed(&self.dir.join(rel)) {
+                    return Err(unverified().with_detail(format!("unsigned or changed {rel}")));
+                }
+                continue;
+            }
             let got = hash_file(&self.dir.join(rel))
                 .map_err(|_| unverified().with_detail(format!("missing {rel}")))?;
             if &got != want {
@@ -364,5 +407,68 @@ mod tests {
         std::fs::write(tmp.path().join("engines.json"), b"{broken").unwrap();
         let reg = EngineRegistry::new(tmp.path().join("engines.json"));
         assert_eq!(reg.sweep(), 0);
+    }
+
+    /// A program file carries a different hash after signing; in signature mode it is judged by
+    /// its signature, and everything else is still judged by bytes.
+    #[test]
+    fn signature_mode_refuses_unsigned_code_and_changed_plain_files() {
+        // Hash mode, as on the direct build: a changed library is refused.
+        let tmp = tempfile::tempdir().unwrap();
+        let pins = engine(tmp.path());
+        std::fs::write(tmp.path().join("ggml.dll"), b"tampered").unwrap();
+        assert!(EngineFiles::pinned(tmp.path(), &pins).verify().is_err());
+
+        // Signature mode: the same file is refused because it is not signed.
+        let e = EngineFiles::pinned(tmp.path(), &pins)
+            .with_signed_code(true)
+            .verify()
+            .unwrap_err();
+        assert_eq!(e.code_str(), "ai.assets_damaged");
+        assert!(e.detail.unwrap().contains("ggml.dll"));
+
+        // An unsigned, unchanged library is refused too (hashing does not rescue it).
+        let tmp = tempfile::tempdir().unwrap();
+        let pins = engine(tmp.path());
+        let e = EngineFiles::pinned(tmp.path(), &pins).with_signed_code(true);
+        assert!(e.verify().is_err());
+
+        // A changed non-code file is refused in signature mode.
+        let tmp = tempfile::tempdir().unwrap();
+        let pins = engine(tmp.path());
+        std::fs::write(tmp.path().join("LICENSE"), b"GPL").unwrap();
+        let e = EngineFiles::pinned(tmp.path(), &pins).with_signed_code(true);
+        assert!(e.verify().is_err());
+    }
+
+    /// Signed code with bytes unlike the pinned ones passes in signature mode (it is what a store
+    /// build looks like); a planted or missing file is still refused.
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn signature_mode_accepts_signed_code_whatever_its_bytes() {
+        let tmp = tempfile::tempdir().unwrap();
+        let dir = tmp.path();
+        std::fs::copy("/bin/ls", dir.join("llama-server")).unwrap();
+        std::fs::write(dir.join("LICENSE"), b"MIT").unwrap();
+        let pin = |rel: &str, bytes: u64, sha: &str| PinnedFile {
+            path: rel.into(),
+            bytes,
+            sha256: sha.into(),
+        };
+        let (b, h) = hash_file(&dir.join("LICENSE")).unwrap();
+        // The lock pins other bytes for the program, as it would before signing.
+        let pins = vec![pin("llama-server", 1, "00"), pin("LICENSE", b, &h)];
+        let files = EngineFiles::pinned(dir, &pins).with_signed_code(true);
+        files.verify().unwrap();
+        assert!(
+            EngineFiles::pinned(dir, &pins).verify().is_err(),
+            "hash mode"
+        );
+
+        std::fs::write(dir.join("version.dll"), b"x").unwrap();
+        assert!(files.verify().is_err(), "planted program");
+        std::fs::remove_file(dir.join("version.dll")).unwrap();
+        std::fs::remove_file(dir.join("llama-server")).unwrap();
+        assert!(files.verify().is_err(), "missing program");
     }
 }

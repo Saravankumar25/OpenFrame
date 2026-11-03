@@ -31,6 +31,11 @@ struct AppCommands: Commands {
             Divider()
             Button("Keyboard Shortcuts\u{2026}") { NotificationCenter.default.post(name: .openFrameShowShortcuts, object: nil) }
                 .disabled(!isHome && !isProject)
+            Divider()
+            // Works in every state, the lock included: it only opens the browser.
+            Button("Contact OpenFrame Support") {
+                if let url = URL(string: LicenceRules.contactAddress) { NSWorkspace.shared.open(url) }
+            }
         }
         CommandGroup(after: .textEditing) {
             Divider()

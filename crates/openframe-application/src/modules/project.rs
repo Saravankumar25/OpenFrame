@@ -154,6 +154,12 @@ pub fn register(r: &mut Registry) {
 
 /// Keys of `sys_settings` (application database).
 const SETTING_DISPLAY_NAME_SET: &str = "profile.display_name_confirmed";
+/// Prefix of the per-project key that remembers which version of the search indexer built the
+/// project's search index (the project database has no settings table, and the index is derived).
+const SETTING_SEARCH_INDEX_VERSION: &str = "search.index_version.";
+/// The version of the search indexer. Raise it whenever the text that is indexed changes without
+/// a schema migration: every project then rebuilds its search index once, after it opens.
+pub const SEARCH_INDEX_VERSION: u32 = 1;
 /// Maximum size of the free-form project settings object.
 const MAX_SETTINGS_BYTES: usize = 64 * 1024;
 
@@ -953,16 +959,20 @@ pub(crate) fn open_at_unguarded(
             })?,
         )
     })?;
-    if (search_empty || report.migrated_from.is_some())
-        && let Err(e) = session.store.rebuild_search_index()
-    {
-        tracing::warn!(
-            code = e.code_str(),
-            "search index rebuild failed; search may be incomplete"
-        );
-    }
+    let search_key = format!("{SETTING_SEARCH_INDEX_VERSION}{}", session.project_id());
+    let built_with = crate::modules::writing::read_app_setting(core, &search_key)
+        .ok()
+        .flatten()
+        .and_then(|v| v.as_u64());
+    let search_stale = search_empty
+        || report.migrated_from.is_some()
+        || built_with != Some(SEARCH_INDEX_VERSION.into());
     let summary = load_summary(&session)?;
-    core.set_project(Some(session));
+    core.set_project(Some(session.clone()));
+    if search_stale {
+        start_search_rebuild(core, &session, search_key);
+    }
+    drop(session);
     record_recent(core, &summary)?;
     core.emit(AppEvent::ProjectOpened {
         project_id: summary.id.clone(),
@@ -974,6 +984,57 @@ pub(crate) fn open_at_unguarded(
     })
 }
 
+/// Rebuild the search index on a background thread, so opening never waits for it. The thread
+/// holds the project only while it works; closing or switching the project waits for it
+/// (`ProjectSession::wait_for_search_rebuild`). A failure is logged and search stays as it was.
+/// Search is correct once the `search` event `indexed` arrives; edits made meanwhile are indexed
+/// as usual and the rebuild reads the canonical tables, so nothing is lost either way.
+fn start_search_rebuild(core: &AppCore, session: &Arc<ProjectSession>, version_key: String) {
+    let weak_session = Arc::downgrade(session);
+    let weak_core = Arc::downgrade(&core.arc());
+    let spawned = std::thread::Builder::new()
+        .name("of-search-rebuild".into())
+        .spawn(move || {
+            let Some(session) = weak_session.upgrade() else {
+                return;
+            };
+            if let Err(e) = session.store.rebuild_search_index() {
+                tracing::warn!(
+                    code = e.code_str(),
+                    "search index rebuild failed; search may be incomplete"
+                );
+                return;
+            }
+            let Some(core) = weak_core.upgrade() else {
+                return;
+            };
+            let version = serde_json::json!(SEARCH_INDEX_VERSION);
+            if let Err(e) =
+                crate::modules::writing::write_app_setting(&core, &version_key, Some(&version))
+            {
+                tracing::warn!(
+                    code = e.code_str(),
+                    "could not record the search index version; it will be rebuilt again"
+                );
+            }
+            // Tell the screens only while this project is still the open one.
+            if core
+                .project_opt()
+                .is_some_and(|open| Arc::ptr_eq(&open, &session))
+            {
+                core.emit(AppEvent::Module {
+                    module: "search".into(),
+                    name: "indexed".into(),
+                    payload: serde_json::json!({ "projectId": session.project_id() }),
+                });
+            }
+        });
+    match spawned {
+        Ok(handle) => session.set_search_rebuild(handle),
+        Err(e) => tracing::warn!(error = %e, "could not start the search index rebuild"),
+    }
+}
+
 /// Clean close: fold the WAL, refresh the "last confirmed" checkpoint, clear the crash marker.
 pub fn close_current(core: &AppCore) -> AppResult<()> {
     // One close at a time, start to end: quitting while a close is under way waits for it, so
@@ -983,6 +1044,8 @@ pub fn close_current(core: &AppCore) -> AppResult<()> {
         return Ok(());
     };
     let id = session.project_id();
+    // A search rebuild still running finishes first, so the checkpoint holds the whole index.
+    session.wait_for_search_rebuild();
     // The clean-close work comes first, while the project is still the open one: the window
     // shows Application Home as soon as no project is open, and a person may quit right then.
     // Detaching the project afterwards can wait for its AI index worker (up to a few seconds);

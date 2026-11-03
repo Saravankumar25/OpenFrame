@@ -81,6 +81,15 @@ while IFS=$'\t' read -r name phases timeout ends; do
     printf "%s\tskip\t0\tneeds a development build (OPENFRAME_LIBRARY_SETUP is debug only)\n" "$name" >> "$RUN/results.tsv"
     skip=$((skip + 1)); echo "SKIP  $name (needs a development build)"; continue
   fi
+  # The store screens run over a scripted App Store, which exists in a development build only.
+  STORE=""
+  if [[ "$name" == 99-store/* ]]; then
+    STORE=1
+    if [[ "$DEV_BUILD" != true ]]; then
+      printf "%s\tskip\t0\tneeds a development build (the scripted App Store is debug only)\n" "$name" >> "$RUN/results.tsv"
+      skip=$((skip + 1)); echo "SKIP  $name (needs a development build)"; continue
+    fi
+  fi
   safe="${name//\//__}"
   OUT="$RUN/$safe"; DATA="$WORK/data-$safe"; mkdir -p "$OUT" "$DATA"
   # Each scenario starts with no preferences (its own phases keep theirs).
@@ -97,7 +106,7 @@ while IFS=$'\t' read -r name phases timeout ends; do
       # The first-start scenarios (and the capture tour's library setup) begin like a new computer whose
       # library is not chosen yet.
       LIB=""; [[ "$name" == 71-storage/first-start* || "$name" == zz-capture/*first-start* ]] && LIB=1
-      OPENFRAME_DATA_ROOT="$DATA" OPENFRAME_LIBRARY_SETUP="$LIB" OPENFRAME_E2E_WORK="$WORK" OPENFRAME_E2E_SCENARIO="$name" \
+      OPENFRAME_DATA_ROOT="$DATA" OPENFRAME_LIBRARY_SETUP="$LIB" OPENFRAME_TEST_STORE="$STORE" OPENFRAME_E2E_WORK="$WORK" OPENFRAME_E2E_SCENARIO="$name" \
         OPENFRAME_E2E_PHASE="$p" OPENFRAME_E2E_OUT="$OUT" DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >"$OUT/app-$p.log" 2>&1 &
     fi
     pid=$!

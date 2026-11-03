@@ -16,6 +16,7 @@ public enum LicenceScreen: Equatable, Identifiable {
     case welcome
     case macFirstLaunch
     case locked(revoked: Bool)
+    case clockLocked
     case checkNeeded
 
     public var id: String {
@@ -26,15 +27,17 @@ public enum LicenceScreen: Equatable, Identifiable {
         case .welcome: "welcome"
         case .macFirstLaunch: "macFirstLaunch"
         case let .locked(revoked): "locked-\(revoked)"
+        case .clockLocked: "clockLocked"
         case .checkNeeded: "checkNeeded"
         }
     }
 
     /// Mandatory screens cannot be closed: no close button, Escape does nothing. They are the
-    /// lock after the trial or a refund, the Mac first launch, the data note and the tutorial.
+    /// lock after the trial or a refund, the clock lock, the Mac first launch, the data note and
+    /// the tutorial.
     public var mandatory: Bool {
         switch self {
-        case .dataNote, .tutorial, .macFirstLaunch, .locked: true
+        case .dataNote, .tutorial, .macFirstLaunch, .locked, .clockLocked: true
         case .reminder, .welcome, .checkNeeded: false
         }
     }
@@ -55,13 +58,23 @@ public final class LicenceModel {
     public private(set) var saveError: String?
 
     private var dismissedOn: String?
-    private var projectOpen = false
+    /// The app is quitting: even a screen that cannot be closed steps aside, or it would hold the
+    /// quit. Nothing is unlocked by this: the core still refuses, and the next launch shows it again.
+    private var quitting = false
     @ObservationIgnored private var core: Core?
     @ObservationIgnored private var runtime: StoreRuntime?
     @ObservationIgnored private var observers: [NSObjectProtocol] = []
-    @ObservationIgnored private var leftAt: Date?
     /// Injected by tests, so a reminder day does not depend on the date the test runs.
     @ObservationIgnored var today: @MainActor () -> String = { LicenceRules.localDay() }
+    /// The address opener. A shell action, so it works while the core has locked every project
+    /// operation. Injected by tests.
+    @ObservationIgnored var openAddress: @MainActor (URL) -> Void = { NSWorkspace.shared.open($0) }
+    /// Saves what the editors still hold, before the lock takes hold. Set by the app.
+    @ObservationIgnored public var flushBeforeLock: @MainActor () async -> Void = {}
+    /// Screens read again what was refused while the lock held. Set by the app.
+    @ObservationIgnored public var onLockLifted: @MainActor () -> Void = {}
+    /// The lock window was closed for this lock, so it is not asked for twice.
+    @ObservationIgnored private var flushedForLock = false
 
     public init() {}
 
@@ -83,21 +96,16 @@ public final class LicenceModel {
         observers = []
     }
 
-    /// Window focus and wake: the Mac asks the store again after a long absence (30 minutes) or a
-    /// sleep, like the Windows build's worker.
+    /// The app coming to the front and a wake ask the store again. The core's worker leaves out a
+    /// repeat within a minute.
     private func observeApp() {
         guard observers.isEmpty else { return }
         let center = NotificationCenter.default
-        observers.append(center.addObserver(forName: NSApplication.didResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.leftAt = Date() }
-        })
         observers.append(center.addObserver(forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated {
                 guard let self else { return }
-                let away = self.leftAt.map { Date().timeIntervalSince($0) } ?? 0
-                self.leftAt = nil
                 Task { await self.refresh() }
-                if away > 30 * 60 { self.core?.requestStoreCheck("resume") }
+                self.core?.requestStoreCheck("resume")
             }
         })
         observers.append(NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
@@ -119,7 +127,7 @@ public final class LicenceModel {
 
     /// The screen due now, or `nil`.
     public var screen: LicenceScreen? {
-        guard let notice, isStore else { return nil }
+        guard let notice, isStore, !quitting else { return nil }
         if let d = reminderDays { return .reminder(daysLeft: d) }
         switch notice.notice {
         case .dataNote: return .dataNote
@@ -127,6 +135,7 @@ public final class LicenceModel {
         case .welcome: return .welcome
         case .macFirstLaunch: return .macFirstLaunch
         case .locked: return .locked(revoked: notice.status.state == .revoked)
+        case .clockLocked: return .clockLocked
         case .checkNeeded: return checkClosed ? nil : .checkNeeded
         case .reminder, .none_: return nil
         }
@@ -136,6 +145,18 @@ public final class LicenceModel {
     public var blocksApp: Bool { screen?.mandatory == true }
 
     public var chip: LicenceRules.TrialChip? { isStore ? LicenceRules.trialChip(state) : nil }
+
+    /// `Product.displayPrice` of the lifetime product, read at run time. `nil` until both products
+    /// loaded.
+    public var lifetimePrice: String? { notice?.status.lifetimePrice }
+
+    /// The moment a running trial ends, for the reminder's end line.
+    public var trialEndsAt: Date? {
+        (notice?.status.trialEndsAtMs).map { Date(timeIntervalSince1970: $0 / 1000) }
+    }
+
+    /// "Start free trial" waits until the App Store has answered with both products.
+    public var canStartTrial: Bool { lifetimePrice != nil && !busy }
 
     /// "Check purchase" in the top bar, after "Not now" on the check screen.
     public var showsCheckPurchase: Bool {
@@ -149,6 +170,7 @@ public final class LicenceModel {
         guard let core else { return }
         do {
             let next = try await core.entitlementNotice(EntitlementNoticeArgs(today: today()))
+            await finishSavesIfLocking(next)
             notice = next
             if checkClosed {
                 // A closed check screen stays closed only while the core still names it.
@@ -160,16 +182,27 @@ public final class LicenceModel {
         }
     }
 
-    /// The window shows a project or Application Home. A reminder shows only over a project.
-    public func setProjectOpen(_ open: Bool) async {
-        projectOpen = open
-        await showReminderIfDue()
+    /// The core just turned to a lock: store what the editors still hold before the lock screen
+    /// appears, then tell the core, which refuses every project operation from there on. A lock
+    /// that is lifted and comes back flushes again.
+    private func finishSavesIfLocking(_ next: EntitlementNotice) async {
+        let locking = next.status.channel != .directInstaller
+            && (next.notice == .locked || next.notice == .clockLocked)
+        guard locking else {
+            if flushedForLock { onLockLifted() }
+            flushedForLock = false
+            return
+        }
+        guard !flushedForLock, let core else { return }
+        flushedForLock = true
+        await flushBeforeLock()
+        _ = try? await core.entitlementLockReady()
     }
 
-    /// A reminder is remembered as soon as it is shown, so it appears at most once that day even
+    /// Shown on Application Home or over a project. A reminder is remembered as soon as it is shown, so it appears at most once that day even
     /// if OpenFrame closes while it is open. A failed save only means it may show once more.
     private func showReminderIfDue() async {
-        guard let core, isStore, projectOpen, reminderDays == nil, dismissedOn != today(),
+        guard let core, isStore, reminderDays == nil, dismissedOn != today(),
               case let .reminder(days) = notice?.notice
         else { return }
         reminderDays = Int(days.rounded())
@@ -181,6 +214,8 @@ public final class LicenceModel {
         dismissedOn = today()
         await refresh()
     }
+
+    func prepareForQuit() { quitting = true }
 
     public func closeCheck() { checkClosed = true }
     public func reopenCheck() { checkClosed = false }
@@ -196,7 +231,7 @@ public final class LicenceModel {
         await storeAction { core in try await core.entitlementBuy().message }
     }
 
-    /// "Restore purchase" and "Try again".
+    /// "Restore purchase", "Try again" and "Check again".
     public func restore() async {
         await storeAction { core in
             _ = try await core.entitlementRestorePurchase()
@@ -220,6 +255,12 @@ public final class LicenceModel {
         }
         await refresh()
         return ok
+    }
+
+    /// "Contact us". Opens the website's contact page in the browser; the app sends nothing.
+    public func openContact() {
+        guard let url = URL(string: LicenceRules.contactAddress) else { return }
+        openAddress(url)
     }
 
     /// The data note, the tutorial or the welcome was finished.

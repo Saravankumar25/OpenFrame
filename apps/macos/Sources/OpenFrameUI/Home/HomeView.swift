@@ -148,12 +148,8 @@ struct HomeView: View {
             .safeAreaInset(edge: .bottom, spacing: 0) { statusLine }
             .toolbar {
                 ToolbarItem(placement: .navigation) {
-                    HStack(spacing: 6) {
-                        BrandMark(size: 20)
-                        Text("OpenFrame").font(.headline)
-                    }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel("OpenFrame Studio")
+                    BrandLogo(markSize: 22, wordSize: 15)
+                        .accessibilityLabel("OpenFrame Studio")
                 }
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button { showVault = true } label: { Label("Global Idea Vault", systemImage: "lightbulb").labelStyle(.titleAndIcon) }

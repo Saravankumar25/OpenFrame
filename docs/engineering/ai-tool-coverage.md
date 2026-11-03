@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **521** (164 queries, 357 commands)
-- Exposed to the assistant through tools: **308**; not AI-accessible: **213**
+- Registered operations: **522** (164 queries, 358 commands)
+- Exposed to the assistant through tools: **308**; not AI-accessible: **214**
 - Tools: **254** (61 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -261,6 +261,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
 |---|---|---|---|---|---|---|---|
 | `entitlement.buy`: Buy the full version through the store's own purchase window: Apple's payment sheet on the Mac, the Microsoft Store purchase dialog on Windows. The internal installer build never sells. | command | Mutate | app level | P | `BuyArgs` → `BuyOutcome` | hidden | none |
+| `entitlement.lock_ready`: The shell finished saving what was pending, so the lock now refuses every project operation. | command | Mutate | app level |  | `LockReadyArgs` → `EntitlementStatus` | hidden | none |
 | `entitlement.notice`: Which trial reminder or first-run screen to show now: a reminder in the last 3 trial days, the data note, the file safety tutorial and the welcome after a purchase, or the store screens (the lock after the trial, the licence check, the Mac first launch). | query | Read | app level |  | `EntitlementNoticeArgs` → `EntitlementNotice` | hidden | none |
 | `entitlement.record_notice`: Remember that a trial reminder was shown today, or that the data note, the tutorial or the welcome was finished. | command | Mutate | app level | P | `RecordNoticeArgs` → `EntitlementNotice` | hidden | none |
 | `entitlement.restore_purchase`: Ask the release channel to restore a purchase, then check the licence and trial again. | command | Mutate | app level | P | `RestorePurchaseArgs` → `EntitlementStatus` | hidden | none |
@@ -717,7 +718,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Keystroke-level screenplay editor primitive (batched typing, element moves/splits); the assistant proposes scene-level changes instead.**
   `screenplay.apply_edits`, `screenplay.merge_scene`, `screenplay.move_element`, `screenplay.split_scene`
 - **Licence and free-trial status belong to the person at this computer and the release channel; the assistant never reads, restores or changes them.**
-  `entitlement.buy`, `entitlement.notice`, `entitlement.record_notice`, `entitlement.restore_purchase`, `entitlement.start_trial`, `entitlement.status`
+  `entitlement.buy`, `entitlement.lock_ready`, `entitlement.notice`, `entitlement.record_notice`, `entitlement.restore_purchase`, `entitlement.start_trial`, `entitlement.status`
 - **Manual visual arrangement (drag position, size, stacking order) with no content meaning; the user arranges directly.**
   `locations.move_photo`, `moodboard.arrange_item`, `moodboard.move_items`, `moodboard.reorder`, `moodboard.resize_item`
 - **Offline AI status and engine control belong to the user in Settings, not to the assistant itself.**
