@@ -2,7 +2,7 @@
 // Features and Why OpenFrame menus, footer with the company, and the shared ctx helpers (app screens, store buttons).
 import { html, raw, esc } from './html.mjs';
 import { ICON, MARK, GRADIENT_DEFS } from './icons.mjs';
-import { FEATURE_GROUPS, WHY, OS, COMPANY } from '../content/nav.mjs';
+import { FEATURE_GROUPS, WHY, OS, COMPANY, COMPANY_ADDRESS, SUPPORT_EMAIL } from '../content/nav.mjs';
 import { SITE_URL, SITE_NAME, STORE } from '../../site.config.mjs';
 import { headMeta, jsonLd } from './seo.mjs';
 
@@ -143,7 +143,8 @@ ${col('Plan & Shoot', all.slice(7).map(([s, t]) => [t, `/features/${s}/`]).conca
 ${col('Why OpenFrame', WHY.map(([h, t]) => [t, h]).concat([['Windows', '/windows/'], ['Mac', '/mac/']]))}
 ${col('Support', [['Windows tutorials', '/windows/tutorials/'], ['Mac tutorials', '/mac/tutorials/'], ['FAQ', '/faq/'], ['Contact us', '/contact/'], ['Download', '/download/'], ['About us', '/about/']])}
 </div><nav class="f-legal" aria-label="Legal">${LEGAL_LINKS.map(([a, h]) => html`<a href="${h}">${a}</a>`)}</nav><div class="f-bot"><span>&copy; ${new Date().getFullYear()} ${COMPANY}. <b>Your privacy stays on your computer.</b></span>
-<span>Microsoft and Microsoft Store are trademarks of the Microsoft group of companies. Apple, Mac, macOS and Mac App Store are trademarks of Apple Inc.</span></div></div></footer>${getapp}`;
+<span>Microsoft and Microsoft Store are trademarks of the Microsoft group of companies. Apple, Mac, macOS and Mac App Store are trademarks of Apple Inc.</span></div>
+<p class="f-pub">Published by ${COMPANY} · ${COMPANY_ADDRESS} · <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a></p></div></footer>${getapp}`;
 }
 
 export function renderPage(page, { css, js, switchHref }) {

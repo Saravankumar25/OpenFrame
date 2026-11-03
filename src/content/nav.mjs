@@ -52,3 +52,5 @@ export const OS = {
 };
 
 export const COMPANY = 'Vighnajith Advisories Private Limited';
+export const COMPANY_ADDRESS = '12/1, Ground Floor, 22nd Main Road, Bengaluru, Karnataka 560078, India';
+export const SUPPORT_EMAIL = 'support@openframestudio.app';

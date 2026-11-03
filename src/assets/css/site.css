@@ -242,6 +242,8 @@ footer.site-f .brand .wm b{color:#fff}
 footer.site-f p.about{margin:16px 0 18px;max-width:300px;line-height:1.5}
 .f-bot{border-top:1px solid #ffffff1f;margin-top:46px;padding-top:22px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:13.5px;color:#a39dbb}
 .f-bot b{color:#fff}
+.f-pub{margin:14px 0 0;font-size:13.5px;line-height:1.5;color:#a39dbb}
+footer.site-f .f-pub a{color:#cfc9e2;overflow-wrap:anywhere;text-decoration:underline;text-underline-offset:3px}
 
 /* reveal */
 :root.js .rv{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--rd,0s)}
