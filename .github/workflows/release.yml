@@ -3,7 +3,8 @@
 #
 # Runs on demand only. FAILS CLOSED: nothing is built while a store-only value is a placeholder
 # (scripts/check-release-placeholders.mjs), while a secret below is missing, or when the build number
-# did not rise. Notarization belongs to the internal disk image, not to this path.
+# did not rise. Upload only runs from main; certificates are imported after every step that runs
+# project code. Notarization belongs to the internal disk image, not to this path.
 #
 # Repository secrets, all supplied by the owner (docs/release/mac-store-placeholders.md):
 #   MAC_APPLICATION_CERT_P12, MAC_APPLICATION_CERT_PASSWORD   Apple Distribution certificate, base64
@@ -48,7 +49,7 @@ jobs:
 
       - name: Placeholders and governance gates
         run: |
-          node scripts/check-release-placeholders.mjs
+          node scripts/check-release-placeholders.mjs --mac
           node scripts/check-writing-standard.mjs
           node scripts/check-migrations.mjs
           node scripts/architecture-lint.mjs
@@ -67,6 +68,15 @@ jobs:
           for v in MAC_APPLICATION_IDENTITY MAC_INSTALLER_IDENTITY APP_P12 INSTALLER_P12 PROFILE; do
             [[ -n "${!v}" ]] || { echo "::error::$v is not set"; exit 1; }
           done
+
+      - name: Fetch the AI engine into the bundle inputs
+        run: packaging/ai/fetch-macos-runtime.sh
+
+      - name: Build the core interface
+        run: apps/macos/scripts/build-core.sh release
+
+      - name: Tests
+        run: apps/macos/scripts/test.sh
 
       - name: Import certificates into a temporary keychain
         env:
@@ -90,15 +100,6 @@ jobs:
           rm -f "$RUNNER_TEMP/app.p12" "$RUNNER_TEMP/installer.p12"
           echo "$PROFILE" | base64 --decode > "$RUNNER_TEMP/store.provisionprofile"
 
-      - name: Fetch the AI engine into the bundle inputs
-        run: packaging/ai/fetch-macos-runtime.sh
-
-      - name: Build the core interface
-        run: apps/macos/scripts/build-core.sh release
-
-      - name: Tests
-        run: apps/macos/scripts/test.sh
-
       - name: Build, sign and package
         env:
           MAC_APPLICATION_IDENTITY: ${{ vars.MAC_APPLICATION_IDENTITY }}
@@ -116,7 +117,7 @@ jobs:
           echo "$ASC_API_KEY_P8_B64" | base64 --decode > "$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_API_KEY_ID}.p8"
           PKG="release-out/mac-store/OpenFrame-Studio.pkg"
           xcrun altool --validate-app -f "$PKG" -t macos --apiKey "$ASC_API_KEY_ID" --apiIssuer "$ASC_API_ISSUER_ID"
-          if [[ "$UPLOAD" == "true" ]]; then
+          if [[ "$UPLOAD" == "true" && "$GITHUB_REF" == "refs/heads/main" ]]; then
             xcrun altool --upload-app -f "$PKG" -t macos --apiKey "$ASC_API_KEY_ID" --apiIssuer "$ASC_API_ISSUER_ID"
           fi
           rm -f "$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_API_KEY_ID}.p8"
@@ -128,6 +129,9 @@ jobs:
           path: release-out/mac-store/OpenFrame-Studio.pkg
           retention-days: 14
 
-      - name: Remove the temporary keychain
+      - name: Remove the temporary keychain and every secret left on disk
         if: always()
-        run: security delete-keychain "$RUNNER_TEMP/signing.keychain-db" || true
+        run: |
+          security delete-keychain "$RUNNER_TEMP/signing.keychain-db" || true
+          rm -f "$RUNNER_TEMP/app.p12" "$RUNNER_TEMP/installer.p12" "$RUNNER_TEMP/store.provisionprofile"
+          rm -rf "$HOME/.appstoreconnect/private_keys"

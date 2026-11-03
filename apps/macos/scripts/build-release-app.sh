@@ -43,8 +43,9 @@ BUILD="$(git -C "$ROOT" rev-list --count HEAD)"
 if [[ "$STORE" == 1 ]]; then
   echo "== 0. Store gates"
   # Fails while any store-only value is still a placeholder, and when the build number did not rise.
-  node "$ROOT/scripts/check-release-placeholders.mjs"
+  node "$ROOT/scripts/check-release-placeholders.mjs" --mac
   node "$ROOT/scripts/check-release-placeholders.mjs" --build-number "$BUILD"
+  [[ -d "$ROOT/.build-cache/ai-runtime/macos-arm64" ]] || { echo "the AI engine is missing: run packaging/ai/fetch-macos-runtime.sh" >&2; exit 1; }
   : "${MAC_APPLICATION_IDENTITY:?the Apple Distribution certificate name is required}"
   : "${MAC_INSTALLER_IDENTITY:?the Mac Installer Distribution certificate name is required}"
   : "${MAC_PROVISIONING_PROFILE:?the path of the provisioning profile is required}"

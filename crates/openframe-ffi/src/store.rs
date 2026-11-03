@@ -229,6 +229,7 @@ pub(crate) fn reason_from_name(name: &str) -> Option<RevalidateReason> {
     match name {
         "launch" => Some(RevalidateReason::Launch),
         "resume" => Some(RevalidateReason::Resume),
+        "wake" => Some(RevalidateReason::Wake),
         "storeKitChanged" => Some(RevalidateReason::StoreKitChanged),
         _ => None,
     }
@@ -263,18 +264,32 @@ impl StoreWorker {
                     };
                     // The state can change on an operation thread too (a restore, a purchase), so
                     // what is due is read fresh each time.
-                    let due = weak.upgrade().and_then(|core| core.entitlement.next_check());
+                    let Some(looking) = weak.upgrade() else { return };
+                    let due = looking.entitlement.next_check();
                     let timed = due
                         .filter(|(wait, _)| last_look.elapsed() >= *wait)
-                        .map(|(_, reason)| reason);
+                        .map(|(_, reason)| reason)
+                        // A running trial is also looked at between full checks, so a clock moved
+                        // back or the end of the trial is noticed within seconds. Local only.
+                        .or_else(|| {
+                            matches!(
+                                looking.entitlement.state(),
+                                openframe_entitlement::EntitlementState::TrialActive { .. }
+                            )
+                            .then_some(RevalidateReason::ClockTick)
+                        });
+                    drop(looking);
                     let now = Instant::now();
                     let reason = asked.or(timed);
                     let Some(mut reason) = reason else { continue };
-                    // Requests that queued up meanwhile are answered by this one check. Any
-                    // reason other than a resume is kept, so it is never debounced away.
-                    for queued in rx.try_iter() {
-                        if reason == RevalidateReason::Resume {
-                            reason = queued;
+                    // Requests that queued up meanwhile are answered by this one check. A full
+                    // check wins over a resume or a tick, so it is never debounced away. The stored
+                    // look at launch stays first: it must not wait for the store.
+                    if reason != RevalidateReason::Stored {
+                        for queued in rx.try_iter() {
+                            if matches!(reason, RevalidateReason::Resume | RevalidateReason::ClockTick) {
+                                reason = queued;
+                            }
                         }
                     }
                     if reason == RevalidateReason::Resume
@@ -285,11 +300,11 @@ impl StoreWorker {
                     let Some(core) = weak.upgrade() else { return };
                     let before = core.entitlement.state();
                     let after = core.entitlement.revalidate(reason);
-                    last_look = Instant::now();
                     if reason != RevalidateReason::ClockTick {
+                        last_look = Instant::now();
                         last_check = Some(last_look);
                     }
-                    // The clock screen looks every 5 seconds; only a change is worth telling.
+                    // The clock looks every 5 seconds; only a change is worth telling.
                     if reason != RevalidateReason::ClockTick || before != after {
                         events.emit(&AppEvent::Module {
                             module: "entitlement".into(),
@@ -302,6 +317,7 @@ impl StoreWorker {
         if spawned.is_err() {
             tracing::warn!("the licence check thread could not start; the state stays as it is");
         }
+        let _ = tx.send(RevalidateReason::Stored);
         let _ = tx.send(RevalidateReason::Launch);
         Self {
             queue: Mutex::new(Some(tx)),

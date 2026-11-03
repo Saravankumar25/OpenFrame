@@ -140,12 +140,12 @@ pub mod hidden {
     pub const USER_PATH: &str = "Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).";
     pub const DELETE_FOREVER: &str = "Permanent deletion ('Delete forever') is never offered to the assistant (spec §28); items stay in Recently Deleted.";
     pub const VIEW_STATE: &str = "Per-user view state (collapsed rows, remembered positions, current episode); not project content.";
-    pub const FREE_WRITING: &str = "The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so the assistant neither reads nor changes it.";
+    pub const FREE_WRITING: &str = "The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so no tool reads or changes it. Its text reaches the assistant only when the person picks the Story Page section for that question (ADR-0041).";
     pub const SESSION_CONTROL: &str = "Immediate session control (undo/redo, save, cancel a running task, display name) stays a direct user action; an applied Change Set is itself one undo step.";
-    pub const STANDALONE_PAGE: &str = "The Story page is a free page kept apart from the rest of the project (owner request 2026-10-20): nothing links to it, and the assistant neither reads nor edits it.";
+    pub const STANDALONE_PAGE: &str = "The Story page is a free page kept apart from the rest of the project (owner request 2026-10-20): nothing links to it and no tool reads or edits it. Its text reaches the assistant only when the person picks the Story Page section for that question (ADR-0041).";
     pub const MAINTENANCE: &str = "Internal maintenance with no user-visible project change.";
     pub const PACKAGE_REVIEW: &str = "Exchange and review packages bring other people's changes in from package files; opening, reviewing and applying them stays a human workflow.";
-    pub const CROSS_PROJECT: &str = "Crosses the project boundary (Global Idea Vault or another project); the assistant is scoped to the open project.";
+    pub const CROSS_PROJECT: &str = "Crosses the project boundary (Global Idea Vault or another project); no tool crosses it. The Global Idea Vault reaches the assistant only when the person picks its section for that question (ADR-0041).";
     pub const PREFERENCE: &str = "Personal writing preference (keyboard shortcuts, personal dictionary, spell checking switch and languages); a direct user choice in Settings or the editor, not project content the assistant changes.";
     pub const UI_FLOW: &str = "Data for an interactive dialog or editor preview; the assistant reads the same facts through its own bounded tools.";
     pub const EDITOR_PRIMITIVE: &str = "Keystroke-level screenplay editor primitive (batched typing, element moves/splits); the assistant proposes scene-level changes instead.";
@@ -496,6 +496,14 @@ impl Registry {
         // The Mac lock (ADR-0022): after the trial or a refund on the Mac App Store build, only the
         // lock screen's own operations run. Every caller reaches handlers through here.
         core.entitlement.check_operation(name)?;
+        // While the Mac App Store build waits for a purchase check, changes to a project wait too.
+        // Exports and packages write copies elsewhere and stay allowed, as reads do.
+        let changes_project = entry.meta.as_ref().is_some_and(|m| {
+            matches!(m.operation_class, OpClass::Mutate)
+                && m.required_capability
+                    .is_some_and(|c| !matches!(c, Capability::View | Capability::Export | Capability::CreatePackage))
+        });
+        core.entitlement.check_edit(name, changes_project)?;
         // Defence in depth (Windows phase W3): the capability an operation declares is checked
         // here for every caller, before its arguments are read. Handlers keep their own checks.
         // The Global Idea Vault is the local person's own store, whatever their role in the open

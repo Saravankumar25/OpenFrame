@@ -33,7 +33,8 @@
 //! [`crate::registry::Registry::dispatch`], the one path every operation takes (the interface, the
 //! assistant's change sets and package imports), so the webview cannot get around it. The
 //! projects stay on disk untouched. The internal installer build never locks, and
-//! NeedsOnlineCheck never locks (ADR-0018 decision 6). Work never gets lost to the lock: when the
+//! NeedsOnlineCheck never locks (ADR-0018 decision 6), but on the Mac it and TrialNotStarted refuse
+//! changes to a project ([`EntitlementService::check_edit`]). Work never gets lost to the lock: when the
 //! state turns to a lock while the app is open, [`EntitlementService::check_operation`] lets the
 //! shell's last saves through until it says it has flushed (`entitlement.lock_ready`), with
 //! [`LOCK_FLUSH_GRACE`] as the upper bound. Editing alone is not yet gated in the
@@ -439,11 +440,12 @@ impl EntitlementService {
                 Some((Duration::from_secs(5), RevalidateReason::ClockTick))
             }
             EntitlementState::TrialActive { .. } => {
+                // Past the end there is no time left, so the check is due now.
                 let until_end = self
                     .adapter
                     .get()
                     .and_then(|a| a.as_deref().and_then(ChannelAdapter::trial_time_left))
-                    .unwrap_or(FIVE_MINUTES);
+                    .unwrap_or(Duration::ZERO);
                 Some((until_end.min(FIVE_MINUTES), RevalidateReason::Timer))
             }
             EntitlementState::NeedsOnlineCheck | EntitlementState::Unknown => {
@@ -537,6 +539,21 @@ impl EntitlementService {
 /// None of them reads or writes a project.
 pub const ALLOWED_WHILE_LOCKED: &[&str] = &["app.info", "appearance.get"];
 
+/// Plain words for a change refused while the Mac App Store build waits for a purchase check or for
+/// the trial to start (package file 02, section 2). Opening and exporting keep working.
+pub const EDIT_LOCKED_MESSAGE: &str = "OpenFrame Studio needs to check your purchase before you can change anything. Your projects can still be opened and exported.";
+
+/// Commands that keep working while editing waits for a check: opening and closing a project and
+/// settling a recovery, because Open must work.
+pub const COMMANDS_ALLOWED_WITHOUT_EDIT: &[&str] = &[
+    "project.open",
+    "project.close",
+    "project.resolve_recovery",
+];
+
+/// App-level commands that bring a new project into being, which wait with the other changes.
+pub const NEW_PROJECT_COMMANDS: &[&str] = &["project.create", "project.duplicate"];
+
 /// Plain words for an operation refused by the Mac lock.
 pub const LOCKED_MESSAGE: &str = "Buy OpenFrame Studio or restore your purchase to open your projects again. Nothing is deleted.";
 
@@ -558,6 +575,22 @@ impl EntitlementService {
             return Ok(());
         }
         Err(AppError::new("permission.licence_required", LOCKED_MESSAGE)
+            .with_detail(format!("{op} refused: {}", state_name(self.state()))))
+    }
+
+    /// The Mac App Store build while it waits for a purchase check or for the trial to start: an
+    /// operation that changes a project is refused, opening and exporting are not. Called with what
+    /// the registry knows about the operation, because only the registry can tell.
+    pub fn check_edit(&self, op: &str, changes_project: bool) -> AppResult<()> {
+        if self.channel() != Channel::MacAppStore
+            || !(changes_project || NEW_PROJECT_COMMANDS.contains(&op))
+            || self.state().permits(self.channel(), Permission::Edit)
+            || op.starts_with("entitlement.")
+            || COMMANDS_ALLOWED_WITHOUT_EDIT.contains(&op)
+        {
+            return Ok(());
+        }
+        Err(AppError::new("permission.licence_required", EDIT_LOCKED_MESSAGE)
             .with_detail(format!("{op} refused: {}", state_name(self.state()))))
     }
 }

@@ -8,7 +8,7 @@ import path from "node:path";
 import test from "node:test";
 import url from "node:url";
 
-import { buildNumberRises, findPlaceholders } from "../check-release-placeholders.mjs";
+import { SCANNED, buildNumberRises, findPlaceholders } from "../check-release-placeholders.mjs";
 
 const ROOT = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "../..");
 const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
@@ -46,6 +46,8 @@ test("the store build's sandbox keeps its small list of rights", () => {
   const ent = read("apps/macos/packaging/OpenFrameStudio-store.entitlements").replace(/<!--[\s\S]*?-->/g, "");
   const keys = [...ent.matchAll(/<key>([^<]+)<\/key>/g)].map((m) => m[1]).sort();
   assert.deepEqual(keys, [
+    "com.apple.application-identifier",
+    "com.apple.developer.team-identifier",
     "com.apple.security.app-sandbox",
     "com.apple.security.device.audio-input",
     "com.apple.security.files.bookmarks.app-scope",
@@ -71,6 +73,15 @@ test("the guard finds placeholders in the store files and ignores the comments t
   const found = findPlaceholders(dir, [{ dir: ".", exts: [".plist", ".swift"] }]).map((f) => f.name).sort();
   assert.deepEqual(found, ["REPLACE_WITH_TEAM_ID", "REPLACE_WITH_THING"]);
   fs.rmSync(dir, { recursive: true });
+});
+
+test("a scanned file that is missing fails, and the Mac scan leaves out the Windows file", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "placeholders-"));
+  const found = findPlaceholders(dir, [{ file: "gone.plist" }]);
+  assert.deepEqual(found, [{ file: "gone.plist", name: "the file is missing" }]);
+  fs.rmSync(dir, { recursive: true });
+  const mac = findPlaceholders(ROOT, SCANNED.filter((t) => !t.windows)).map((f) => f.file);
+  assert.ok(!mac.some((f) => f.includes("msix")));
 });
 
 test("today a release build fails: the owner's values are still placeholders", () => {

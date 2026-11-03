@@ -45,7 +45,8 @@ stores' own calls.
      mark at the last Apple signature plus 2 days (written and tested, `cap_high_water_at_apple_date`). The check is item 6
      of `docs/release/mac-store-test.md`.
 7. **A buyer is never locked by the network or the clock.** Lifetime is decided before the clock guard. `lifetime_seen`
-   keeps a buyer unlocked while the store shows nothing, online or offline. A refund arrives as a transaction with a
+   keeps a buyer unlocked whenever the store cannot be reached, whatever the cached list holds. When the store answers, it
+   decides: Restore purchase is the way back for a buyer signed in with another account. A refund arrives as a transaction with a
    revocation date (the Swift source also reads `Transaction.latest(for:)`, because `currentEntitlements` drops a refunded
    product), gives `Revoked` and clears `lifetime_seen`.
 8. **The trial start source** sits behind one small interface, `TrialStartSource`. Plan B, not built: should App Store
@@ -53,17 +54,28 @@ stores' own calls.
 
 ## Disagreements with the package, settled here
 
-- **Reachable, nothing listed, `lifetime_seen` set, no trial in the guard.** Package rule 4 read literally gives
-  `TrialNotStarted`. Chosen: `Purchased`, because a buyer signed out of the App Store must not be sent back to the first
-  launch screen, and a refund has its own path (decision 7).
 - **Second Apple Account.** Package file 04 M8 expects a new trial for a second account, while rule 7 and the guard rules say
   the start never moves later. Chosen: rule 7. On one Keychain (same Mac, same macOS user) the earlier start is kept. A
   second account on another Mac or macOS user gets its own trial. The manual checklist states this.
+
+## Editing while the store has not answered
+
+The package says editing stays locked in `NeedsOnlineCheck`, and the code did not enforce it. It does now: on the store channel
+the core refuses an operation that changes a project while the state permits no editing (`check_edit`), and the first look at
+launch reads the Keychain record before StoreKit answers, so a buyer or a running trial is not held back by a slow store.
 
 ## Accepted limits
 
 - A person who deletes the Keychain item, or who uses a second Apple Account on another Mac or macOS user, gets more trial
   time. The owner accepts this. No device binding, no server, no DeviceCheck.
+- A person who turns off automatic time, stays offline and sets the clock back to the high water mark before each launch uses
+  only the hours the app runs. Only an online check can tell. Recorded on 2026-11-03 for the owner to weigh.
+- A Mac that signed in with a buyer's account once keeps `lifetime_seen`, so it stays unlocked while offline. Online the store
+  decides.
+- The store build checks engine programs against an Apple-rooted signature, not the team identifier, so any Apple-signed binary
+  placed there passes. It needs write access to the app bundle. Tighten this when the Team ID is known and a store-signed build
+  can be tested.
+- Do not turn on the G4 fallback without limiting it to one use: repeated, it gives time back.
 
 ## Consequences
 

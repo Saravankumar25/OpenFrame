@@ -6,6 +6,7 @@
 //
 //   node scripts/check-release-placeholders.mjs                  fail while one remains
 //   node scripts/check-release-placeholders.mjs --report-only    print them, exit 0
+//   node scripts/check-release-placeholders.mjs --mac            leave out the Windows files
 //   node scripts/check-release-placeholders.mjs --build-number N fail unless N rises above the last
 //                                                                upload in store-identity.json
 
@@ -21,7 +22,7 @@ export const SCANNED = [
   { dir: "apps/macos/packaging", exts: [".entitlements", ".plist", ".json", ".xcprivacy", ".storekit"] },
   { dir: "apps/macos/Sources/OpenFrameUI/Store", exts: [".swift"] },
   { file: ".github/workflows/release.yml" },
-  { file: "packaging/msix/store.config.json" },
+  { file: "packaging/msix/store.config.json", windows: true },
 ];
 
 function walk(dir, exts) {
@@ -47,9 +48,13 @@ function codeOnly(file, text) {
 export function findPlaceholders(root = ROOT, targets = SCANNED) {
   const found = [];
   for (const t of targets) {
-    const files = t.dir
-      ? (fs.existsSync(path.join(root, t.dir)) ? walk(path.join(root, t.dir), t.exts) : [])
-      : (fs.existsSync(path.join(root, t.file)) ? [path.join(root, t.file)] : []);
+    const where = path.join(root, t.dir ?? t.file);
+    if (!fs.existsSync(where)) {
+      // A file that moved must not pass this check by no longer being read.
+      found.push({ file: t.dir ?? t.file, name: "the file is missing" });
+      continue;
+    }
+    const files = t.dir ? walk(where, t.exts) : [where];
     for (const f of files) {
       const text = codeOnly(f, fs.readFileSync(f, "utf8"));
       for (const m of text.matchAll(PLACEHOLDER)) found.push({ file: path.relative(root, f), name: m[0] });
@@ -76,7 +81,7 @@ if (process.argv[1] === url.fileURLToPath(import.meta.url)) {
     console.log(`Build number ${next} rises above ${identity.lastUploadedBuild}.`);
     process.exit(0);
   }
-  const found = findPlaceholders();
+  const found = findPlaceholders(ROOT, argv.includes("--mac") ? SCANNED.filter((t) => !t.windows) : SCANNED);
   for (const { file, name } of found) console.log(`${file}: ${name}`);
   if (found.length && !argv.includes("--report-only")) {
     console.error(`${found.length} placeholder(s) remain. See docs/release/mac-store-placeholders.md.`);

@@ -301,19 +301,18 @@ impl MacTrialPolicy {
             advance(input, record);
             return MacState::Revoked;
         }
+        // Rule 6, the buyer: never locked because the network is down, whatever else the Mac's
+        // cached list holds.
+        if !input.store_reachable && record.lifetime_seen {
+            advance(input, record);
+            return MacState::Lifetime;
+        }
         // Rule 5. A revoked trial is listed with its date, so check before the rest.
         if r.trials.iter().any(|t| t.is_revoked()) {
             advance(input, record);
             return MacState::Revoked;
         }
         if r.trials.is_empty() {
-            // A person who bought on this Mac stays unlocked while the store shows nothing for
-            // this account, whether or not the network is up (ADR-0040): a refund arrives as a
-            // transaction with a revocation date and is handled above.
-            if record.lifetime_seen {
-                advance(input, record);
-                return MacState::Lifetime;
-            }
             if record.trial_start_ms.is_none() {
                 if input.store_reachable && answered {
                     // Rule 4.

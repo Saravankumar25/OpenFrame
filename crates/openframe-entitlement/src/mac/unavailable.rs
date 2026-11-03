@@ -31,6 +31,10 @@ impl StoreKitBridge for UnavailableBridge {
         StoreEnvironment::Production
     }
 
+    fn known_environment(&self) -> Option<StoreEnvironment> {
+        None
+    }
+
     fn load_products(&self) -> Result<StoreProducts, BridgeError> {
         Err(BridgeError::StoreUnavailable)
     }

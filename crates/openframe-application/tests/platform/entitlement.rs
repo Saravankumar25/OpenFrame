@@ -511,7 +511,8 @@ fn plat_014_mac_channel_without_the_store_bridge_needs_an_online_check_and_keeps
             ..AppConfig::isolated(dir.path())
         })
     };
-    let core = mac_core();
+    // Made earlier, by a build that could edit.
+    let core = internal_core(dir.path());
     let path = make_project(&core, "Harbour Lights", "Meena waits at the pier");
     stop(core);
 
@@ -721,11 +722,29 @@ fn plat_014_a_mac_trial_that_ended_locks_open_edit_and_export_and_a_restore_unlo
         json!({ "channel": "macAppStore", "state": { "state": "purchased" } }),
     );
     open_read_export(&core, dir.path(), &path, card);
-    // A failed online check never locks opening or exporting (ADR-0018 decision 6).
+    // A failed online check never locks opening or exporting (ADR-0018 decision 6), but on the Mac
+    // changes wait for it, and so does a new project. The Microsoft Store is not gated this way.
+    for state in ["needsOnlineCheck", "trialNotStarted"] {
+        call(
+            &core,
+            "entitlement.debug_set",
+            json!({ "channel": "macAppStore", "state": { "state": state } }),
+        );
+        open_read_export(&core, dir.path(), &path, card);
+        let who = core.local_actor();
+        let edit = core.dispatch(&who, "story.page.save", json!({ "text": "x", "expectedRev": 0 }));
+        assert_eq!(edit.unwrap_err().code_str(), "permission.licence_required", "{state}");
+        let new = core.dispatch(
+            &who,
+            "project.create",
+            json!({ "title": "Waits", "projectType": "Feature Film" }),
+        );
+        assert_eq!(new.unwrap_err().code_str(), "permission.licence_required", "{state}");
+    }
     call(
         &core,
         "entitlement.debug_set",
-        json!({ "channel": "macAppStore", "state": { "state": "needsOnlineCheck" } }),
+        json!({ "channel": "microsoftStore", "state": { "state": "needsOnlineCheck" } }),
     );
     open_read_export(&core, dir.path(), &path, card);
 }

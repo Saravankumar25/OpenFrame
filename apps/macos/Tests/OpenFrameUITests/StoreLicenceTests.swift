@@ -54,10 +54,17 @@ struct StoreLicenceTests {
         #expect(licence.screen == .checkNeeded)
         #expect(licence.lifetimePrice == nil)
         #expect(!licence.canStartTrial)
+        // Editing waits: the core refuses a new project and the editors do not take typing.
+        #expect(licence.editingWaits)
+        #expect(LicenceGate.editingWaits)
+        await #expect(throws: CoreFailure.self) {
+            _ = try await core.projectCreate(CreateProjectArgs(title: "Waits", projectType: .featureFilm))
+        }
         // Back online, "Try again" offers the choice.
         source.productsFail = false
         await licence.restore()
         #expect(licence.screen == .macFirstLaunch)
+        LicenceGate.editingWaits = false
     }
 
     @Test func startingTheTrialCountsSevenDaysFromApplesDateAndTheChipSaysSo() async throws {

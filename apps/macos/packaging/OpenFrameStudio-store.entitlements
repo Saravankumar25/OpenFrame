@@ -14,8 +14,8 @@
      - keychain-access-groups: the trial's clock guard record in the data protection Keychain (ADR-0040).
        REPLACE_WITH_TEAM_ID comes from the owner's Apple Developer account, Membership. Never change
        the group after the first release: a new group cannot read the old record.
-     The application-identifier and team-identifier keys come from the owner's provisioning profile
-     at signing time; they are not written here. -->
+     - com.apple.application-identifier and com.apple.developer.team-identifier: plain codesign embeds
+       only this file, so they must match the provisioning profile (Team ID from the same page). -->
 <plist version="1.0">
 <dict>
 	<key>com.apple.security.app-sandbox</key><true/>
@@ -25,6 +25,8 @@
 	<key>com.apple.security.network.server</key><true/>
 	<key>com.apple.security.device.audio-input</key><true/>
 	<key>com.apple.security.print</key><true/>
+	<key>com.apple.application-identifier</key><string>REPLACE_WITH_TEAM_ID.app.openframestudio.studio</string>
+	<key>com.apple.developer.team-identifier</key><string>REPLACE_WITH_TEAM_ID</string>
 	<key>keychain-access-groups</key>
 	<array><string>REPLACE_WITH_TEAM_ID.app.openframestudio.studio</string></array>
 </dict>

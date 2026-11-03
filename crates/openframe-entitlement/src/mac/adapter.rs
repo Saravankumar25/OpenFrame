@@ -38,6 +38,9 @@ use crate::{Channel, EntitlementState, PurchaseStatus};
 /// it still has to be confirmed in the sandbox.
 pub const G4_USES_FRESH_SIGNATURE: bool = true;
 
+/// How often the worker's clock look saves a higher reading to the Keychain.
+const GUARD_SAVE_EVERY_MS: i64 = 5 * 60 * 1000;
+
 /// Plain words for a purchase that waits for approval (Ask to Buy, or a payment step).
 pub const PURCHASE_PENDING: &str =
     "This purchase is waiting for approval. OpenFrame Studio updates by itself once it is approved.";
@@ -104,8 +107,13 @@ pub enum RevalidateReason {
     StoreKitChanged,
     /// The 5 minute timer while a trial runs, or the moment the trial ends.
     Timer,
-    /// The clock screen's own 5 second check. Asks StoreKit nothing.
+    /// The Mac woke from sleep. Never left out as a repeat: the monotonic clock stood still.
+    Wake,
+    /// The worker's 5 second look at the clock. Asks StoreKit nothing.
     ClockTick,
+    /// The first look at launch: what the Keychain record says, before StoreKit has answered, so a
+    /// buyer or a running trial is not held back while the store is slow.
+    Stored,
 }
 
 #[derive(Default)]
@@ -157,7 +165,10 @@ pub struct MacAppStoreAdapter<B: StoreKitBridge> {
     wall: Box<dyn WallClock>,
     /// False when the build has no App Store connection ([`Self::unavailable`]).
     store_connected: bool,
-    policy: MacTrialPolicy,
+    /// Rebuilt when the environment could only be guessed at first (see `confirm_environment`).
+    policy: Mutex<MacTrialPolicy>,
+    /// The environment was really read, not guessed.
+    environment_known: Mutex<bool>,
     session: Mutex<Session>,
     /// Serialises refreshes and purchases so two never interleave.
     refresh_lock: Mutex<()>,
@@ -187,20 +198,36 @@ impl DynMacAppStoreAdapter {
 
 impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
     pub fn new(bridge: B, clock: Box<dyn MonotonicClock>, wall: Box<dyn WallClock>) -> Self {
-        let policy = MacTrialPolicy::new(bridge.environment());
+        let known = bridge.known_environment();
+        let policy = MacTrialPolicy::new(known.unwrap_or_else(|| bridge.environment()));
         Self {
             bridge,
             clock,
             wall,
             store_connected: true,
-            policy,
+            policy: Mutex::new(policy),
+            environment_known: Mutex::new(known.is_some()),
             session: Mutex::new(Session::default()),
             refresh_lock: Mutex::new(()),
         }
     }
 
     pub fn environment(&self) -> StoreEnvironment {
-        self.policy.app_environment()
+        lock(&self.policy).app_environment()
+    }
+
+    /// A read that failed at launch sticks to Production, and Apple's reviewer tests a production
+    /// build in the sandbox: ask again until the environment is really known.
+    fn confirm_environment(&self) {
+        if *lock(&self.environment_known) {
+            return;
+        }
+        if let Some(env) = self.bridge.known_environment() {
+            *lock(&self.policy) = MacTrialPolicy::new(env);
+            *lock(&self.environment_known) = true;
+            // The record could not be read against the right environment until now.
+            lock(&self.session).record_loaded = false;
+        }
     }
 
     /// The launch check. The same as `revalidate(RevalidateReason::Launch)`.
@@ -214,10 +241,12 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
     pub fn revalidate(&self, reason: RevalidateReason) -> MacState {
         let _serial = lock(&self.refresh_lock);
         tracing::debug!(?reason, "entitlement check");
-        if reason != RevalidateReason::ClockTick {
-            self.ask_store();
+        match reason {
+            RevalidateReason::ClockTick => {}
+            RevalidateReason::Stored => self.load_guard(),
+            _ => self.ask_store(),
         }
-        self.finish()
+        self.finish(reason == RevalidateReason::ClockTick)
     }
 
     /// The state now, from this session's verified data and the clocks. Makes no calls, so a trial
@@ -270,7 +299,7 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
         if let Ok(fresh) = &synced {
             self.recover_clock(*fresh, known_signed);
         }
-        let state = self.finish();
+        let state = self.finish(false);
         synced.map(|_| state)
     }
 
@@ -307,7 +336,7 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
             Some(txs) => EntitlementsView::Known(txs),
             None => EntitlementsView::Unavailable,
         };
-        let derived = self.policy.derive_state(TrialInputs {
+        let derived = lock(&self.policy).derive_state(TrialInputs {
             entitlements,
             store_reachable: session.store_reachable,
             now_wall_ms: wall,
@@ -330,6 +359,10 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
             Ok(stored) => {
                 let mut parsed = GuardRecord::parse(stored.as_deref());
                 let env = self.environment();
+                // Nothing is judged, and nothing saved over it, while the environment is a guess.
+                if !*lock(&self.environment_known) {
+                    return;
+                }
                 if parsed.record.env.is_some_and(|written| written != env) {
                     // Written by a build for another environment: test and real never mix.
                     parsed.record = GuardRecord::default();
@@ -352,6 +385,7 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
     /// Ask StoreKit. On success the list replaces the session list; on failure the session list
     /// from earlier in this launch stays, so a lifetime purchase keeps working.
     fn ask_store(&self) {
+        self.confirm_environment();
         self.load_guard();
         let products = self.bridge.load_products();
         let entitlements = self.bridge.current_entitlements();
@@ -396,7 +430,7 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
         }
         let wall = self.wall.now_ms();
         let read_now = session.entitlements.as_deref().map_or(0, |txs| {
-            self.policy.relevant(txs).latest_signed_ms
+            lock(&self.policy).relevant(txs).latest_signed_ms
         });
         let freshest = fresh_signed_ms.unwrap_or(0).max(read_now);
         let changed = if G4_USES_FRESH_SIGNATURE {
@@ -415,8 +449,9 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
         }
     }
 
-    /// Derive the state and keep the guard record safe.
-    fn finish(&self) -> MacState {
+    /// Derive the state and keep the guard record safe. A tick saves a higher clock reading at most
+    /// every 5 minutes (rule G3); anything else that changed goes to the Keychain at once.
+    fn finish(&self, tick: bool) -> MacState {
         let mut session = lock(&self.session);
         let state = self.derive(&mut session);
         let a = session.anomalies;
@@ -428,9 +463,20 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
                 "entitlement anomalies ignored"
             );
         }
+        let due = match &session.saved {
+            Some(saved) if tick => {
+                let only_the_clock = GuardRecord {
+                    high_water_ms: saved.high_water_ms,
+                    ..session.record.clone()
+                } == *saved;
+                !only_the_clock || session.record.high_water_ms - saved.high_water_ms >= GUARD_SAVE_EVERY_MS
+            }
+            Some(saved) => *saved != session.record,
+            None => true,
+        };
         if self.store_connected
             && session.record_loaded
-            && session.saved.as_ref() != Some(&session.record)
+            && due
             && let Some(text) = session.record.to_stored()
         {
             match self.bridge.save_guard(&text) {
@@ -447,7 +493,8 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
         {
             let mut session = lock(&self.session);
             let known = session.entitlements.as_deref().unwrap_or_default();
-            let relevant = self.policy.relevant(known);
+            let policy = *lock(&self.policy);
+            let relevant = policy.relevant(known);
             let owned = if product_id == TRIAL_PRODUCT_ID {
                 !relevant.trials.is_empty()
                     || relevant.active_lifetime.is_some()
@@ -458,7 +505,7 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
             if owned {
                 // Nothing to buy: a second trial purchase would never extend the trial.
                 drop(session);
-                return Ok(PurchaseEnd::Finished(self.finish()));
+                return Ok(PurchaseEnd::Finished(self.finish(false)));
             }
             if product_id == TRIAL_PRODUCT_ID {
                 session.purchase_pending = false;
@@ -482,11 +529,11 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
                 if product_id == TRIAL_PRODUCT_ID {
                     lock(&self.session).purchase_pending = true;
                 }
-                return Ok(PurchaseEnd::Pending(self.finish()));
+                return Ok(PurchaseEnd::Pending(self.finish(false)));
             }
             PurchaseOutcome::Cancelled => {}
         }
-        Ok(PurchaseEnd::Finished(self.finish()))
+        Ok(PurchaseEnd::Finished(self.finish(false)))
     }
 }
 

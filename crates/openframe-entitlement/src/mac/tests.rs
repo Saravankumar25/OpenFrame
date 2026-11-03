@@ -205,13 +205,32 @@ fn rule_6_offline_with_no_transaction_never_reads_as_no_trial_yet() {
 }
 
 #[test]
-fn a_buyer_stays_unlocked_when_the_store_shows_nothing_for_this_account() {
-    // Signed out of the App Store, online. Refunds arrive with a revocation date instead.
+fn a_store_that_answers_and_lists_no_purchase_decides_and_restore_is_the_way_back() {
+    // Signed in with another account, online: the memory of a purchase does not stand in for the
+    // store, so a borrowed sign-in does not unlock this Mac while it is online.
     let g = GuardRecord {
         lifetime_seen: true,
         ..GuardRecord::default()
     };
-    assert_eq!(online(&[], T0, &g).state, MacState::Lifetime);
+    assert_eq!(
+        online(&[], T0, &g).state,
+        MacState::TrialNotStarted {
+            purchase_pending: false
+        }
+    );
+}
+
+#[test]
+fn a_buyer_offline_is_never_locked_by_what_the_cached_list_holds() {
+    let g = GuardRecord {
+        lifetime_seen: true,
+        trial_start_ms: Some(T0),
+        high_water_ms: T0 + 90 * DAY_MS,
+        ..GuardRecord::default()
+    };
+    // A trial is listed and the lifetime record is missing, the clock is even behind.
+    assert_eq!(offline(&[trial(T0)], T0 + 30 * DAY_MS, &g).state, MacState::Lifetime);
+    assert_eq!(offline(&[revoked(trial(T0))], T0 + 30 * DAY_MS, &g).state, MacState::Lifetime);
 }
 
 #[test]
@@ -814,15 +833,109 @@ fn check_again_while_offline_cannot_clear_the_clock_lock() {
 }
 
 #[test]
+fn a_stored_look_answers_from_the_keychain_without_asking_the_store() {
+    let r = rig(T0);
+    r.adapter.refresh();
+    r.start_trial(T0);
+    r.clocks.sleep(DAY_MS);
+    r.adapter.refresh();
+    // The next launch, with the store slow: the record alone gives the trial.
+    let next = r.relaunch();
+    r.apple.lock().unwrap().entitlements_fail = true;
+    assert_eq!(days_left(next.revalidate(RevalidateReason::Stored)), 6);
+}
+
+#[test]
+fn the_clock_tick_writes_the_keychain_at_most_every_five_minutes() {
+    let r = rig(T0);
+    r.adapter.refresh();
+    r.start_trial(T0);
+    let writes = r.apple.lock().unwrap().keychain_writes;
+    for _ in 0..10 {
+        r.clocks.pass(5_000);
+        r.adapter.revalidate(RevalidateReason::ClockTick);
+    }
+    assert_eq!(r.apple.lock().unwrap().keychain_writes, writes);
+    r.clocks.pass(5 * MINUTE_MS);
+    r.adapter.revalidate(RevalidateReason::ClockTick);
+    assert_eq!(r.apple.lock().unwrap().keychain_writes, writes + 1);
+}
+
+#[test]
+fn an_environment_that_could_not_be_read_is_asked_again_and_wipes_nothing() {
+    #[derive(Clone)]
+    struct Late {
+        inner: FakeBridge,
+        known: Arc<Mutex<Option<StoreEnvironment>>>,
+    }
+    impl StoreKitBridge for Late {
+        fn current_entitlements(&self) -> Result<Vec<VerifiedTransaction>, BridgeError> {
+            self.inner.current_entitlements()
+        }
+        fn purchase(&self, p: &str) -> Result<PurchaseOutcome, BridgeError> {
+            self.inner.purchase(p)
+        }
+        fn app_transaction(&self) -> Result<AppTransactionInfo, BridgeError> {
+            self.inner.app_transaction()
+        }
+        fn environment(&self) -> StoreEnvironment {
+            StoreEnvironment::Production
+        }
+        fn known_environment(&self) -> Option<StoreEnvironment> {
+            *self.known.lock().unwrap()
+        }
+        fn load_products(&self) -> Result<StoreProducts, BridgeError> {
+            self.inner.load_products()
+        }
+        fn load_guard(&self) -> Result<Option<String>, BridgeError> {
+            self.inner.load_guard()
+        }
+        fn save_guard(&self, record_json: &str) -> Result<(), BridgeError> {
+            self.inner.save_guard(record_json)
+        }
+    }
+    // Apple's reviewer: a sandbox purchase, and the environment read failed at launch.
+    let mut t = lifetime(T0);
+    t.environment = SANDBOX;
+    let apple = Arc::new(Mutex::new(Apple {
+        entitlements: vec![t],
+        keychain: Some(r#"{"v":1,"env":"sandbox","lifetime_seen":true}"#.to_string()),
+        ..Apple::default()
+    }));
+    let clocks = Clocks::new(T0);
+    let known = Arc::new(Mutex::new(None));
+    let adapter = MacAppStoreAdapter::new(
+        Late {
+            inner: FakeBridge {
+                apple: apple.clone(),
+                env: SANDBOX,
+            },
+            known: known.clone(),
+        },
+        Box::new(clocks.clone()),
+        Box::new(clocks.clone()),
+    );
+    adapter.refresh();
+    assert!(
+        apple.lock().unwrap().keychain.as_deref().unwrap().contains("lifetime_seen\":true"),
+        "the record survives while the environment is only a guess"
+    );
+    *known.lock().unwrap() = Some(SANDBOX);
+    assert_eq!(adapter.revalidate(RevalidateReason::Resume), MacState::Lifetime);
+}
+
+#[test]
 fn only_restore_runs_app_store_sync() {
     let r = rig(T0);
     r.adapter.refresh();
     for reason in [
         RevalidateReason::Launch,
         RevalidateReason::Resume,
+        RevalidateReason::Wake,
         RevalidateReason::StoreKitChanged,
         RevalidateReason::Timer,
         RevalidateReason::ClockTick,
+        RevalidateReason::Stored,
     ] {
         r.adapter.revalidate(reason);
     }

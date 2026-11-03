@@ -166,8 +166,14 @@ pub trait StoreKitBridge: Send + Sync {
     /// `AppTransaction.shared`, verified.
     fn app_transaction(&self) -> Result<AppTransactionInfo, BridgeError>;
 
-    /// The environment this build talks to, from the verified `AppTransaction`.
+    /// The environment this build talks to, from the verified `AppTransaction`. Production when it
+    /// cannot be read, so transactions from another environment are refused.
     fn environment(&self) -> StoreEnvironment;
+
+    /// The environment when it was really read, `None` when [`Self::environment`] is only a guess.
+    fn known_environment(&self) -> Option<StoreEnvironment> {
+        Some(self.environment())
+    }
 
     /// `Product.products(for:)` for both products. An error, or fewer than two products, means the
     /// App Store is not reachable in this evaluation.
@@ -204,6 +210,9 @@ impl<T: StoreKitBridge + ?Sized> StoreKitBridge for Box<T> {
     }
     fn environment(&self) -> StoreEnvironment {
         (**self).environment()
+    }
+    fn known_environment(&self) -> Option<StoreEnvironment> {
+        (**self).known_environment()
     }
     fn load_products(&self) -> Result<StoreProducts, BridgeError> {
         (**self).load_products()

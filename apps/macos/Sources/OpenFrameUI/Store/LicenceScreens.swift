@@ -519,7 +519,7 @@ struct CheckDialog: View {
                     text: "We could not reach the App Store. Connect to the internet to check your purchase. If you bought before, your purchase will be restored as soon as the check succeeds."
                 )
             }
-            Banner(tone: .info, text: "Your projects stay open and can be exported. Nothing is deleted.")
+            Banner(tone: .info, text: "Your projects can be opened and exported. Changes wait until the check succeeds. Nothing is deleted.")
             StoreMessage(message: licence.message)
             HStack { Spacer(); ContactLink(licence: licence); Spacer() }
         } footer: {

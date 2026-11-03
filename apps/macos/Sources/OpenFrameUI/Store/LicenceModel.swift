@@ -8,6 +8,13 @@ import Foundation
 import Observation
 import OpenFrameCore
 
+/// Whether the long-text editors take typing. While a Mac App Store build waits for a purchase check
+/// the core refuses changes, so the editors stay read-only rather than hold text they cannot store.
+@MainActor
+enum LicenceGate {
+    static var editingWaits = false
+}
+
 /// One screen at a time.
 public enum LicenceScreen: Equatable, Identifiable {
     case reminder(daysLeft: Int)
@@ -109,7 +116,7 @@ public final class LicenceModel {
             }
         })
         observers.append(NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.core?.requestStoreCheck("resume") }
+            MainActor.assumeIsolated { self?.core?.requestStoreCheck("wake") }
         })
     }
 
@@ -172,6 +179,7 @@ public final class LicenceModel {
             let next = try await core.entitlementNotice(EntitlementNoticeArgs(today: today()))
             await finishSavesIfLocking(next)
             notice = next
+            LicenceGate.editingWaits = editingWaits
             if checkClosed {
                 // A closed check screen stays closed only while the core still names it.
                 if case .checkNeeded = next.notice {} else { checkClosed = false }
@@ -216,6 +224,16 @@ public final class LicenceModel {
     }
 
     func prepareForQuit() { quitting = true }
+
+    /// The quit did not happen after all: the screens come back, so a locked person has Buy again.
+    func quitDidNotHappen() { quitting = false }
+
+    /// The Mac App Store build is waiting for a check or for the trial to start, and the core
+    /// refuses changes. Editors stay read-only rather than take text they could not store.
+    public var editingWaits: Bool {
+        guard isStore, let status = notice?.status else { return false }
+        return !status.canEdit
+    }
 
     public func closeCheck() { checkClosed = true }
     public func reopenCheck() { checkClosed = false }
@@ -269,6 +287,7 @@ public final class LicenceModel {
         saveError = nil
         do {
             notice = try await core.entitlementRecordNotice(RecordNoticeArgs(notice: kind, today: today()))
+            LicenceGate.editingWaits = editingWaits
         } catch {
             saveError = CoreFailure(asCore: error).message
             if kind == .welcome { await refresh() }
