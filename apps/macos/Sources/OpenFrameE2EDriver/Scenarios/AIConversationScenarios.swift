@@ -37,6 +37,7 @@ extension UI {
     /// Types the question and presses Enter; does not wait for the answer.
     func convSend(_ q: String) async throws {
         try await convOpenAssistant()
+        try await ensureSection()
         let input = try await wait(id: "ai-input", timeout: 60, "the Ask box")
         let ready = Date().addingTimeInterval(60)
         while !input.isEnabled, Date() < ready { await idle(0.3) }

@@ -168,6 +168,14 @@
     "resultType": "AiMemoryListDto"
   },
   {
+    "argType": "SectionsArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.sections",
+    "resultType": "SectionsDto"
+  },
+  {
     "argType": "AiEmptyArgs",
     "kind": "query",
     "longRunning": false,

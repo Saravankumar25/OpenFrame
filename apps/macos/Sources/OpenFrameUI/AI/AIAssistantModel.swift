@@ -3,7 +3,8 @@
 // operation. The core decides what is allowed and what the answer is; nothing here judges an
 // answer. One conversation id is kept per conversation and sent with every question, so the core's
 // focus, memory and "no re-ask" work. The typed question is never lost: when a request fails it
-// goes back into the box.
+// goes back into the box. The person picks the sections the assistant reads (ADR-0041): nothing is
+// picked for them, Send waits for a pick, and the picks stay for the follow-ups of one conversation.
 
 import Foundation
 import Observation
@@ -21,7 +22,14 @@ final class AIAssistantModel {
     var index: AiIndexStatus?
     var exchanges: [AiExchange] = []
     var context = AIScopeContext()
-    var chosenScope: AiScopeKind?
+    /// The tree of sections and what their pickers list, from `ai.sections`.
+    var sections: AiSections?
+    /// The scenes of the draft chosen under the Scenes section, when it is not the current draft.
+    var draftScenes: [AiSectionInstance]?
+    /// What the person picked, in the order they picked it.
+    var picks: [AISectionChoice] = []
+    /// The picks of the last question: its stored label stands while they are unchanged.
+    private var askedPicks: [AiSectionPick]?
     var text = ""
     /// The question being answered now.
     var pending: String?
@@ -66,19 +74,24 @@ final class AIAssistantModel {
     // MARK: Derived
 
     var mode: AILogic.PanelMode { AILogic.panelMode(status) }
-    var scopeOptions: [AiScopeKind] { AILogic.scopeOptions(context) }
-    var effectiveScope: AiScopeKind {
-        if let chosenScope, scopeOptions.contains(chosenScope) { return chosenScope }
-        return AILogic.defaultScope(context)
+    var sendHint: String? { AILogic.sendHint(picks, sections: sections) }
+    var canSend: Bool {
+        !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && pending == nil && sendHint == nil
     }
-    var canSend: Bool { !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && pending == nil }
     /// A question can be sent now (a starter question fills the box itself).
-    var canAskNow: Bool { pending == nil }
+    var canAskNow: Bool { pending == nil && sendHint == nil }
 
-    /// "Using: Whole Project" (the line scenario 73 checks), or the label the last answer carried.
+    /// What the scene pickers list: the chosen draft's scenes, else the current draft's.
+    var allScenes: [AiSectionInstance] { (draftScenes ?? []) + (sections?.scenes ?? []) }
+
+    /// The label the last answer carried while the picks are the same; before that, what is picked.
     var usingLabel: String {
-        if let last = exchanges.last, last.scopeLabel == "Using: \(effectiveScope.label)" { return last.scopeLabel }
-        return "Using: \(effectiveScope.label)"
+        if let last = exchanges.last, askedPicks == picks.map(\.pick), !picks.isEmpty { return last.scopeLabel }
+        return AILogic.usingLine(picks, sections: sections, scenes: allScenes)
+    }
+
+    func sectionLabel(_ c: AISectionChoice) -> String {
+        AILogic.sectionLabel(c, sections: sections, scenes: allScenes)
     }
 
     /// The newest applied change set of this conversation: the only card that offers Undo, because
@@ -91,11 +104,83 @@ final class AIAssistantModel {
 
     // MARK: Where the person is
 
-    /// The workspace changed (or the hints did). A scope the new place does not offer is dropped.
+    /// The workspace changed (or the hints did). Only the questions to start with follow it.
     func setContext(_ new: AIScopeContext) {
-        let workspaceChanged = new.workspace != context.workspace
         context = new
-        if workspaceChanged { chosenScope = nil }
+    }
+
+    // MARK: Sections
+
+    /// Read the tree. When it cannot be read the picker stays empty and Send stays off.
+    func loadSections() async {
+        guard let core else { return }
+        do {
+            sections = try await core.aiSections(AiSectionsArgs())
+        } catch {
+            self.error = CoreFailure(asCore: error).message
+        }
+    }
+
+    func toggleSection(_ leaf: String) {
+        picks = AILogic.togglingSection(picks, leaf: leaf)
+        if !picks.contains(where: { $0.draftId != nil }) { draftScenes = nil }
+    }
+
+    func removeSection(_ leaf: String) {
+        picks.removeAll { $0.leaf == leaf }
+        if !picks.contains(where: { $0.draftId != nil }) { draftScenes = nil }
+    }
+
+    private func update(_ leaf: String, _ change: (inout AISectionChoice) -> Void) {
+        guard let i = picks.firstIndex(where: { $0.leaf == leaf }) else { return }
+        change(&picks[i])
+    }
+
+    /// Choose the screenplay of the Scenes section: its draft and scene go back to the default.
+    func chooseScreenplay(_ id: String?, for leaf: String) async {
+        update(leaf) {
+            $0.screenplayId = id
+            $0.draftId = nil
+            $0.sceneId = nil
+        }
+        await loadDraftScenes(AILogic.drafts(sections, screenplay: id).first { $0.isCurrent }?.id)
+    }
+
+    /// Choose the draft of the Scenes section (nil: the current draft). A scene of another draft goes.
+    func chooseDraft(_ id: String?, for leaf: String) async {
+        update(leaf) {
+            $0.draftId = id
+            $0.sceneId = nil
+        }
+        await loadDraftScenes(id)
+    }
+
+    private func loadDraftScenes(_ id: String?) async {
+        guard let core, let id else {
+            draftScenes = nil
+            return
+        }
+        do {
+            draftScenes = try await core.aiSections(AiSectionsArgs(draftId: id)).scenes
+        } catch {
+            self.error = CoreFailure(asCore: error).message
+        }
+    }
+
+    func chooseScene(_ id: String?, for leaf: String) { update(leaf) { $0.sceneId = id } }
+
+    func chooseDay(_ id: String?, for leaf: String) {
+        update(leaf) {
+            $0.shootingDayId = id
+            $0.callSheetId = nil
+        }
+    }
+
+    func chooseCallSheet(_ id: String?, for leaf: String) {
+        update(leaf) {
+            $0.callSheetId = id
+            $0.shootingDayId = nil
+        }
     }
 
     // MARK: Reading
@@ -149,7 +234,7 @@ final class AIAssistantModel {
     /// Start a request. The box is emptied at once; it is filled again if the request fails.
     func send() {
         let question = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !question.isEmpty, pending == nil else { return }
+        guard !question.isEmpty, pending == nil, sendHint == nil else { return }
         let id = conversationForAsk
         let request = UUID()
         pending = question
@@ -180,10 +265,15 @@ final class AIAssistantModel {
             finishFailed(question, message: AIText.unavailable)
             return
         }
-        let scope = await resolvedScopeArgs()
+        let chosen = picks.map(\.pick)
+        // The core reads the picks; this scope is the field it still requires until the agent moves
+        // to sections too (ADR-0041, slice R6).
+        let scope = AiScopeArgs(kind: .wholeProject, selection: [])
         do {
-            let exchange = try await core.aiAsk(AiAskArgs(text: question, scope: scope, conversationId: conversationId))
+            let exchange = try await core.aiAsk(
+                AiAskArgs(text: question, scope: scope, conversationId: conversationId, sections: chosen))
             conversation = .some(exchange.conversationId)
+            askedPicks = chosen
             await loadHistory()
             // The answer is on screen: the question and its Working line go in the same update.
             finishRunning(request)
@@ -255,6 +345,9 @@ final class AIAssistantModel {
         conversation = .some(nil)
         exchanges = []
         error = nil
+        picks = []
+        draftScenes = nil
+        askedPicks = nil
     }
 
     // MARK: Save conversation for review
@@ -273,19 +366,6 @@ final class AIAssistantModel {
             ToastCenter.shared.show(CoreFailure(asCore: error).message, kind: .error)
             return nil
         }
-    }
-
-    /// The draft the Screenplay workspace shows, when the hints name none (nothing is guessed:
-    /// the core's own current draft of the oldest screenplay).
-    func resolvedScopeArgs() async -> AiScopeArgs {
-        let kind = effectiveScope
-        var fallback: String?
-        if (kind == .currentScreenplay || kind == .specificDraft), context.draftId == nil, context.workspace == .screenplay {
-            if let o = try? await core?.screenplayOverview(ScreenplayOverviewArgs()) {
-                fallback = o.screenplay?.currentDraftId ?? o.drafts.first?.id
-            }
-        }
-        return AILogic.scopeArgs(kind, context, fallbackDraftId: fallback)
     }
 
     // MARK: Change Sets
