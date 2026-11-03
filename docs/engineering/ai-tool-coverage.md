@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **522** (164 queries, 358 commands)
-- Exposed to the assistant through tools: **308**; not AI-accessible: **214**
+- Registered operations: **523** (165 queries, 358 commands)
+- Exposed to the assistant through tools: **308**; not AI-accessible: **215**
 - Tools: **254** (61 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -293,6 +293,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `ai.index_status`: State of the derived project-context index (current, updating, rebuilding…). | query | Read | View |  | `AiIndexArgs` → `IndexStatusDto` | hidden | none |
 | `ai.memory_delete`: Make the assistant forget one of the user's remembered entries; the words are erased. | command | Mutate | UseAi | DI | `AiMemoryDeleteArgs` → `AiMemoryDeleteDto` | hidden | none |
 | `ai.memory_list`: What the assistant remembers about the user in this project (their own entries only). | query | Read | UseAi |  | `AiEmptyArgs` → `AiMemoryListDto` | hidden | none |
+| `ai.sections`: The sections the assistant can read, and the drafts, scenes, days and call sheets their pickers list. | query | Read | UseAi |  | `SectionsArgs` → `SectionsDto` | hidden | none |
 | `ai.status`: Offline AI status: available, downloaded models check, engine state. | query | Read | app level |  | `AiEmptyArgs` → `AiStatusDto` | hidden | none |
 | `ai.stop_runtime`: Stop the local AI engine. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 
@@ -695,10 +696,10 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
   `project.clear_cover`, `project.close`, `project.create`, `project.current`, `project.discover`, `project.duplicate`, `project.list_recent`, `project.move`, `project.open`, `project.recovery_state`, `project.remove_recent`, `project.rename`, `project.resolve_recovery`, `project.set_archived`, `project.set_pinned`
 - **Changing appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; the assistant reads how the app looks but never changes it.**
   `appearance.check_theme`, `appearance.delete_theme`, `appearance.export_theme`, `appearance.import_theme`, `appearance.rename_theme`, `appearance.set_mode`, `appearance.set_theme`
-- **Crosses the project boundary (Global Idea Vault or another project); the assistant is scoped to the open project.**
+- **Crosses the project boundary (Global Idea Vault or another project); no tool crosses it. The Global Idea Vault reaches the assistant only when the person picks its section for that question (ADR-0041).**
   `templates.copy`, `vault.copy_to_store`
 - **Data for an interactive dialog or editor preview; the assistant reads the same facts through its own bounded tools.**
-  `app.save_state`, `breakdown.quick_reuse`, `breakdown.source_anchor`, `history.info`, `interchange.draft_scenes`, `interchange.export_preview`, `interchange.sources`, `moodboard.suggestions`, `packages.backup_preview`, `packages.exchange_preview`, `packages.exchange_scenes`, `packages.exchange_sources`, `production.references`, `screenplay.page_view`, `screenplay.samples`, `screenplay.title_page_preview`, `tasks.relatable_types`, `vault.story_targets`, `visual.vault_images`, `writing.check_spelling`, `writing.navigator_columns`, `writing.spelling_suggestions`, `writing.suggestion_sources`
+  `ai.sections`, `app.save_state`, `breakdown.quick_reuse`, `breakdown.source_anchor`, `history.info`, `interchange.draft_scenes`, `interchange.export_preview`, `interchange.sources`, `moodboard.suggestions`, `packages.backup_preview`, `packages.exchange_preview`, `packages.exchange_scenes`, `packages.exchange_sources`, `production.references`, `screenplay.page_view`, `screenplay.samples`, `screenplay.title_page_preview`, `tasks.relatable_types`, `vault.story_targets`, `visual.vault_images`, `writing.check_spelling`, `writing.navigator_columns`, `writing.spelling_suggestions`, `writing.suggestion_sources`
 - **Deleting a whole screenplay (every draft, locked draft and production number in it) stays a deliberate human action (owner decision 2026-10-08); the assistant can propose deleting one draft or restoring a screenplay from Recently Deleted.**
   `screenplay.delete`
 - **Display appearance (category colours and icons) with no content meaning; the user customises it in Settings.**
@@ -743,7 +744,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
   `diagnostics.export_bundle`, `diagnostics.preview`
 - **The assistant's own entry point and conversation history; a tool calling it would recurse.**
   `ai.ask`, `ai.cancel`, `ai.history`, `ai.memory_delete`, `ai.memory_list`
-- **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so the assistant neither reads nor changes it.**
+- **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so no tool reads or changes it. Its text reaches the assistant only when the person picks the Story Page section for that question (ADR-0041).**
   `story.page.get`, `story.page.save`
 - **Would move content across the private/shared boundary; the assistant only reads private notes of their owner.**
   `project.adopt_orphan_notes`, `project.orphan_notes`

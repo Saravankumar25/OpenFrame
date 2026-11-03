@@ -6,6 +6,11 @@
 > built yet. Where a number comes from a run, the run is named; where it is a proposal, it says so. The first spike
 > (section 12) already changed the design in four places; those are marked "spike".
 
+> **Section-scoped assistant (ADR-0041, 2026-11-03).** The person picks up to 3 leaves before asking. Slices R1 to R3 are built:
+> the leaf registry `modules/ai/sections.rs` and its coverage tests, the `sections` field of `ai.ask`, the operation `ai.sections`,
+> the Mac picker and the dossier by leaves with search held to the picks. Sections 5.3 domain words and 5.4 plan below describe the
+> wide path, which stays for `AppConfig.ai_eval_any_sections` until slice R7. The design is `OpenFrame_Release_Package/ai-reharness.md`.
+
 ## 1. What the owner asked for (2026-10-26)
 
 - The assistant is a chat assistant for the whole platform, not a router. It answers any question about any part of the

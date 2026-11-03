@@ -128,6 +128,7 @@ fn dossier_typed(env: &TestEnv, actor: &Actor, message: &str, t: Option<AnswerTy
                 selected_scene: None,
                 focus: None,
                 previous_message: None,
+                sections: None,
             }))
         })
         .expect("dossier")

@@ -172,7 +172,11 @@ impl Soak {
     fn new() -> Arc<Soak> {
         let dir = tempfile::tempdir().unwrap();
         let sink = Arc::new(Sink::default());
-        let core = AppCore::new(AppConfig::isolated(dir.path()), sink.clone()).unwrap();
+        let config = AppConfig {
+            ai_eval_any_sections: true,
+            ..AppConfig::isolated(dir.path())
+        };
+        let core = AppCore::new(config, sink.clone()).unwrap();
         let embedder = Arc::new(ConceptEmbedder::with_dim(64));
         intelligence::service(&core).set_settings(settings());
         intelligence::service(&core).set_embedder(Some(embedder.clone() as Arc<dyn Embedder>));
@@ -1145,7 +1149,11 @@ fn run_soak(total: Duration) {
     let dir_path = s.dir.path().to_path_buf();
     s.core.shutdown();
     let sink = Arc::new(Sink::default());
-    let core = AppCore::new(AppConfig::isolated(&dir_path), sink).unwrap();
+    let config = AppConfig {
+        ai_eval_any_sections: true,
+        ..AppConfig::isolated(&dir_path)
+    };
+    let core = AppCore::new(config, sink).unwrap();
     let reopened = core
         .dispatch(
             &core.local_actor(),

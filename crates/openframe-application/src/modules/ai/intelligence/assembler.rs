@@ -225,6 +225,13 @@ pub fn assemble(
         {
             continue;
         }
+        // Held to a section: the canonical navigation target decides, whatever the index said.
+        if req
+            .nav
+            .is_some_and(|n| !n.iter().any(|r| r.matches(&b.nav)))
+        {
+            continue;
+        }
         let text = if graph_only {
             // Related entity: its header (what it is + key facts), not its full text.
             b.doc

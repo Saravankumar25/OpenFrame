@@ -14,6 +14,7 @@ use super::{Fact, Input};
 use crate::core::AppCore;
 use crate::modules::ai::index::{EntityIndex, Kind, Resolved, ScreenplayInfo, normalize};
 use crate::modules::ai::queries;
+use crate::modules::ai::sections::PickedLeaf;
 use crate::modules::ai::turn::ReadHow;
 use crate::modules::schedule::board::{self, DayRow};
 
@@ -45,6 +46,8 @@ pub struct FetchCtx<'a> {
     pub message: String,
     pub m: Msg,
     pub guard: Guard,
+    /// The section this fetcher reads for, when the person picked sections (ADR-0041).
+    pub picked: Option<&'a PickedLeaf>,
     drafts: RefCell<HashMap<String, Option<queries::DraftRef>>>,
     presence: RefCell<HashMap<String, Rc<Presence>>>,
     days: RefCell<Option<Rc<Vec<DayRow>>>>,
@@ -64,10 +67,34 @@ impl<'a> FetchCtx<'a> {
             m: Msg::new(&message),
             message,
             guard: Guard::for_actor(input.actor),
+            picked: None,
             drafts: RefCell::new(HashMap::new()),
             presence: RefCell::new(HashMap::new()),
             days: RefCell::new(None),
         }
+    }
+
+    /// The context of one picked section: its topic words open the fetchers, its draft is the draft
+    /// every read of that screenplay uses, and its role rule can only take contact data away.
+    pub fn for_leaf(input: &Input<'a>, picked: &'a PickedLeaf) -> Self {
+        let mut ctx = Self::new(input);
+        ctx.m = Msg::with_topic(&ctx.message, picked.leaf.topic);
+        ctx.picked = Some(picked);
+        ctx.guard.contacts =
+            ctx.guard.contacts && picked.leaf.min_role.allows_contacts(input.actor);
+        if let Some(d) = &picked.draft {
+            ctx.drafts
+                .borrow_mut()
+                .insert(d.screenplay_id.clone(), Some(d.clone()));
+        }
+        ctx
+    }
+
+    /// The day this section was narrowed to, when the person chose one.
+    pub fn picked_day(&self) -> Option<&str> {
+        self.picked
+            .and_then(|p| p.day.as_ref())
+            .map(|d| d.id.as_str())
     }
 
     /// The screenplay a message without a title is about: the named one, the only one, else the

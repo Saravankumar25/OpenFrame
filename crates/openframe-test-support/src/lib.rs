@@ -22,13 +22,40 @@ pub struct TestEnv {
     pub sink: Arc<RecordingSink>,
 }
 
+/// The configuration of a test: a request with no section reads every area, as the legacy suites
+/// expect (ADR-0041). `TestEnv::picking_sections` is the app's own rule.
+fn test_config(dir: &std::path::Path) -> AppConfig {
+    AppConfig {
+        ai_eval_any_sections: true,
+        ..AppConfig::isolated(dir)
+    }
+}
+
 impl TestEnv {
     /// An isolated OpenFrame environment (own app data, projects dir, global vault).
     pub fn new() -> TestEnv {
         let dir = tempfile::tempdir().expect("tempdir");
         let sink = Arc::new(RecordingSink::default());
+        let core = AppCore::new(test_config(dir.path()), sink.clone()).expect("core");
+        TestEnv { dir, core, sink }
+    }
+
+    /// An isolated environment that follows the app's rule: a request must pick a section.
+    pub fn picking_sections() -> TestEnv {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let sink = Arc::new(RecordingSink::default());
         let core = AppCore::new(AppConfig::isolated(dir.path()), sink.clone()).expect("core");
         TestEnv { dir, core, sink }
+    }
+
+    /// [`TestEnv::picking_sections`] with a freshly created, open project.
+    pub fn picking_sections_with_project(title: &str, project_type: &str) -> TestEnv {
+        let env = TestEnv::picking_sections();
+        env.ok(
+            "project.create",
+            json!({ "title": title, "projectType": project_type }),
+        );
+        env
     }
 
     /// Environment with a freshly created, open project.
@@ -104,7 +131,7 @@ impl TestEnv {
         let TestEnv { dir, core, .. } = self;
         drop(core);
         let sink = Arc::new(RecordingSink::default());
-        let core = AppCore::new(AppConfig::isolated(dir.path()), sink.clone()).expect("core");
+        let core = AppCore::new(test_config(dir.path()), sink.clone()).expect("core");
         TestEnv { dir, core, sink }
     }
 
@@ -116,7 +143,7 @@ impl TestEnv {
         drop(session);
         drop(core);
         let sink = Arc::new(RecordingSink::default());
-        let core = AppCore::new(AppConfig::isolated(dir.path()), sink.clone()).expect("core");
+        let core = AppCore::new(test_config(dir.path()), sink.clone()).expect("core");
         TestEnv { dir, core, sink }
     }
 

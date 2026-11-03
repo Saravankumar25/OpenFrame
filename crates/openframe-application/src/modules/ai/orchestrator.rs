@@ -36,7 +36,9 @@ use super::index::{self, EntityIndex, Focus, Resolved};
 use super::memory::{self, TurnMemory};
 use super::queries;
 use super::records::{self, NewRequest, NewResult, NewStep, RequestOutcome, ai_meta};
-use super::scope::{self, AiScopeArgs, ResolvedScope};
+use super::retrieval;
+use super::scope::{self, AiScopeArgs, AiScopeKind, ResolvedScope};
+use super::sections::{self, SectionPick, SectionsTrace, Selection};
 use super::service::service;
 use super::tools::ToolOutput;
 use super::turn::{self, AnswerType, Group, TurnRead};
@@ -58,6 +60,10 @@ pub struct AskArgs {
     #[serde(default)]
     #[ts(optional)]
     pub max_steps: Option<u32>,
+    /// The sections to read, 1 to 3 (ADR-0041). The person picks them; with none the core answers
+    /// with a fixed sentence and runs no model.
+    #[serde(default)]
+    pub sections: Vec<SectionPick>,
 }
 
 pub const MAX_REQUEST_CHARS: usize = 2_000;
@@ -70,6 +76,8 @@ pub const FINAL_TOOL: &str = "final_answer";
 pub const TOOL_CATALOG_CHARS: usize = 7_000;
 pub const FINAL_TEXT_CHARS: usize = 1_200;
 const MAX_LINKED_SOURCES: usize = 6;
+/// What a request with no section is stored as.
+const NO_SECTION_LABEL: &str = "Using: no section";
 
 /// The path a turn took, written to the trace (`lane` column) and to the result.
 pub(super) mod path {
@@ -636,6 +644,93 @@ fn stage_log(
     log
 }
 
+/// The scope a request with picked sections runs under: the drafts and the scene of the picks, never
+/// what is on screen.
+fn section_scope(c: &Connection, sel: &Selection) -> AppResult<ResolvedScope> {
+    let draft = match sel.draft() {
+        Some(d) => Some(d.clone()),
+        None => queries::current_draft(c)?,
+    };
+    Ok(ResolvedScope {
+        kind: AiScopeKind::WholeProject,
+        label: sel.label.clone(),
+        draft,
+        scene: sel.scene().cloned(),
+        selection: Vec::new(),
+        context: Vec::new(),
+    })
+}
+
+/// A request with no section: one fixed sentence, stored like any other answer. No model runs.
+fn ask_without_section(
+    core: &AppCore,
+    actor: &Actor,
+    text: &str,
+    conversation: Option<String>,
+) -> AppResult<AiExchange> {
+    let s = core.project()?;
+    let conversation = conversation
+        .filter(|c| valid_conversation_id(c))
+        .unwrap_or_else(new_id);
+    let request_id = new_id();
+    let project_id = s.project_id();
+    let started = std::time::Instant::now();
+    s.store.mutate(actor, ai_meta("ai.ask"), |tx| {
+        records::insert_request(
+            tx,
+            &NewRequest {
+                id: &request_id,
+                project_id: Some(project_id.clone()),
+                conversation_id: &conversation,
+                scope_kind: AiScopeKind::WholeProject.as_str(),
+                scope_json: &json!({ "sections": [] }),
+                scope_label: NO_SECTION_LABEL,
+                text,
+                model_reference: None,
+            },
+        )
+    })?;
+    let trace_row = SectionsTrace {
+        retrieval: "none".to_string(),
+        ..SectionsTrace::default()
+    };
+    let outcome = fixed(AiResultKind::Answer, sections::PICK_A_SECTION);
+    let stages = json!({ "path": path::FIXED, "sections": sections::stage_json(&trace_row) });
+    persist(core, actor, &request_id, outcome, &stages)?;
+    trace::record(
+        core,
+        &trace::TraceRow {
+            request_id: &request_id,
+            project_id: Some(&project_id),
+            scope_kind: AiScopeKind::WholeProject.as_str(),
+            model_reference: None,
+            context_tokens: None,
+            tools_offered: 0,
+            tools_chosen: Vec::new(),
+            steps: 0,
+            sources: 0,
+            usage: None,
+            total_ms: started.elapsed().as_millis() as u64,
+            passes: 0,
+            checks_failed: Vec::new(),
+            result_kind: "Answer",
+            error_code: None,
+            proposed: false,
+            path: path::FIXED,
+            fallback: "",
+            cancelled: false,
+            turn: None,
+            turn_ms: 0,
+            dossier: None,
+            dossier_ms: 0,
+            sections: Some(trace_row.clone()),
+        },
+    );
+    s.store
+        .read(|c| records::load_exchange(c, actor, &request_id))?
+        .ok_or_else(|| AppError::internal("assistant exchange not recorded"))
+}
+
 /// Handle one assistant request end to end.
 pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange> {
     actor.require(Capability::UseAi, "use the assistant")?;
@@ -658,9 +753,24 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         .max_steps
         .map_or(DEFAULT_MAX_STEPS, |n| (n as usize).clamp(1, HARD_MAX_STEPS));
     let s = core.project()?;
+    // The person is the router (ADR-0041). Picks are checked first: a bad pick runs nothing.
+    let selection = if args.sections.is_empty() {
+        if !core.config.ai_eval_any_sections {
+            return ask_without_section(core, actor, &text, args.conversation_id);
+        }
+        None
+    } else {
+        Some(
+            s.store
+                .read(|c| sections::resolve_picks(c, &args.sections))?,
+        )
+    };
     let svc = service(core);
     let model = svc.model().ok_or_else(|| svc.unavailable_reason())?;
-    let mut scope = s.store.read(|c| scope::resolve(c, actor, &args.scope))?;
+    let mut scope = match &selection {
+        Some(sel) => s.store.read(|c| section_scope(c, sel))?,
+        None => s.store.read(|c| scope::resolve(c, actor, &args.scope))?,
+    };
     let conversation = args
         .conversation_id
         .filter(|c| valid_conversation_id(c))
@@ -682,7 +792,10 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
                 )
             });
         let differs = scope.draft.as_ref().is_none_or(|d| d.screenplay_id != id);
+        // A draft the person picked is not overruled by a title in the message.
+        let picked = selection.as_ref().is_some_and(|sel| sel.draft().is_some());
         if differs
+            && !picked
             && (scope.draft.is_none() || named)
             && let Some(draft) = s.store.read(|c| index::draft_for_screenplay(c, id))?
         {
@@ -716,6 +829,22 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     // The facts this answer is written from (slice S5), and the names as the stage completed them.
     let dossier_started = std::time::Instant::now();
     let project_ix = reading.as_ref().and_then(|_| index::project_index(&s).ok());
+    // Text inside the picked sections. It opens the store itself, so it runs before the fetch stage.
+    let retrieved = selection
+        .as_ref()
+        .filter(|_| {
+            matches!(
+                turn_read.group,
+                Group::Facts | Group::Narrative | Group::Brainstorm
+            )
+        })
+        .map(|sel| sections::retrieve(core, actor, sel, &text));
+    let leaf_read = selection.as_ref().map(|sel| dossier::LeafRead {
+        selection: sel,
+        passages: retrieved
+            .as_ref()
+            .map_or(&[][..], |r| r.passages.as_slice()),
+    });
     let dossier = reading.as_ref().and_then(|r| {
         let ix = project_ix.as_ref()?;
         if matches!(turn_read.group, Group::Chat | Group::Change) {
@@ -734,6 +863,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
                     selected_scene: scope.scene.as_ref().map(|s| s.id.as_str()),
                     focus: Some(&r.focus_after),
                     previous_message: r.previous_message.as_deref(),
+                    sections: leaf_read.as_ref(),
                 }))
             })
             .ok()
@@ -768,10 +898,11 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             names: project_ix.as_deref(),
         })
     })?;
-    let scope_json = memory::counts_in(
-        index::focus_in(scope.refs_json(), &focus_after),
-        &turn_memory,
-    );
+    let mut scope_refs = scope.refs_json();
+    if let (Some(sel), Value::Object(m)) = (&selection, &mut scope_refs) {
+        m.insert("sections".into(), json!(sel.codes()));
+    }
+    let scope_json = memory::counts_in(index::focus_in(scope_refs, &focus_after), &turn_memory);
     s.store.mutate(actor, ai_meta("ai.ask"), |tx| {
         records::insert_request(
             tx,
@@ -805,20 +936,28 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     };
     // What the message names once the dossier completed it (the scene on screen, the one screenplay
     // that has the data); the resolver's own answer when there is no dossier.
-    let named = dossier
-        .as_ref()
-        .map(|d| d.resolved.clone())
-        .or_else(|| resolved_now.clone());
+    // Opening something stays with the agent until slice R6: it reads every name of the message.
+    let held_to_sections = selection.is_some() && turn_read.group != Group::Navigate;
+    let named = if selection.is_some() && !held_to_sections {
+        resolved_now.clone()
+    } else {
+        dossier
+            .as_ref()
+            .map(|d| d.resolved.clone())
+            .or_else(|| resolved_now.clone())
+    };
     // The resolver asks when nothing settles which screenplay or person is meant. A scene number that
     // fits several screenplays is settled by the one with the production data (an `Assumed` fact,
     // which the answer says out loud); a question with no scene number is asked, not guessed.
     let settled = dossier.as_ref().is_some_and(|d| {
         !d.resolved.scenes.is_empty() && d.facts.iter().any(|f| f.kind == "Assumed")
     });
-    let question = resolved_now
-        .as_ref()
-        .and_then(|r| r.ambiguous.as_ref())
-        .filter(|_| !settled);
+    let question = if held_to_sections {
+        dossier.as_ref().and_then(|d| d.resolved.ambiguous.as_ref())
+    } else {
+        resolved_now.as_ref().and_then(|r| r.ambiguous.as_ref())
+    }
+    .filter(|_| !settled);
     let mut outcome = run_turn(&Turn {
         core,
         actor,
@@ -838,6 +977,13 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         started,
     });
     put_path(&mut outcome.output, outcome.path);
+    // Full text stood in for the hybrid search: the answer says the context is still being prepared.
+    if retrieved.as_ref().is_some_and(|r| r.degraded) && outcome.written.is_some() {
+        outcome
+            .output
+            .details
+            .push(retrieval::PREPARING_NOTICE.to_string());
+    }
     if matches!(
         outcome.output.kind,
         AiResultKind::Answer | AiResultKind::Proposal | AiResultKind::Navigate
@@ -864,7 +1010,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     };
     let usage = model.take_usage();
     let cached = usage.map_or(0, |u| u.cached_tokens);
-    let stages = stage_log(
+    let mut stages = stage_log(
         &turn_read,
         turn_ms,
         dossier_summary.as_ref(),
@@ -872,6 +1018,22 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         &outcome,
         cached,
     );
+    let sections_trace = selection.as_ref().map(|sel| SectionsTrace {
+        leaves: sel.codes().iter().map(|c| (*c).to_string()).collect(),
+        tokens: dossier.as_ref().map_or_else(Vec::new, |d| {
+            d.leaf_tokens.iter().map(|l| l.tokens).collect()
+        }),
+        instances: sel.picks.iter().filter(|p| p.narrowed()).count(),
+        retrieval: retrieved
+            .as_ref()
+            .map_or("none", sections::Retrieved::path_code)
+            .to_string(),
+        degraded: retrieved.as_ref().is_some_and(|r| r.degraded),
+        outside: dossier.as_ref().map_or(0, |d| d.outside.len()),
+    });
+    if let Some(t) = &sections_trace {
+        stages["sections"] = sections::stage_json(t);
+    }
     let trace_row = (
         outcome
             .steps
@@ -919,6 +1081,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             turn_ms,
             dossier: dossier_summary,
             dossier_ms,
+            sections: sections_trace,
         },
     );
     s.store

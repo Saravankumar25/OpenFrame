@@ -44,6 +44,10 @@ pub struct AppConfig {
     /// Mac App Store build: the engine is signed, so its code files are checked by code
     /// signature, not by the hashes in the lock. Only the Mac store build sets it.
     pub ai_engine_store_signed: bool,
+    /// Tests and the evaluation only: a request with no section reads every area, as before the
+    /// section picker (ADR-0041), so the legacy suites and gold cases measure the same path. Never
+    /// set by `crates/openframe-ffi`: in the app a request with no section gets a fixed sentence.
+    pub ai_eval_any_sections: bool,
     /// Default parent folder for new projects.
     pub projects_dir: PathBuf,
     /// Global Idea Vault folder (user content).
@@ -86,6 +90,7 @@ impl std::fmt::Debug for AppConfig {
             .field("ai_model_source", &self.ai_model_source)
             .field("ai_deterministic", &self.ai_deterministic)
             .field("ai_engine_store_signed", &self.ai_engine_store_signed)
+            .field("ai_eval_any_sections", &self.ai_eval_any_sections)
             .field("projects_dir", &self.projects_dir)
             .field("global_vault_dir", &self.global_vault_dir)
             .field("library_file", &self.library_file)
@@ -158,6 +163,7 @@ impl AppConfig {
             ai_model_source: None,
             ai_deterministic: false,
             ai_engine_store_signed: false,
+            ai_eval_any_sections: false,
             projects_dir,
             global_vault_dir,
             library_file,
@@ -185,6 +191,7 @@ impl AppConfig {
             ai_model_source: None,
             ai_deterministic: false,
             ai_engine_store_signed: false,
+            ai_eval_any_sections: false,
             projects_dir: root.join("projects"),
             global_vault_dir: root.join("global-vault"),
             library_file: Some(root.join(crate::modules::storage::library::LIBRARY_FILE_NAME)),

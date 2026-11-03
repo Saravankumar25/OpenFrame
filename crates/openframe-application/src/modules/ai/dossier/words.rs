@@ -7,13 +7,33 @@ use crate::modules::ai::index::normalize;
 pub struct Msg {
     pub norm: String,
     padded: String,
+    /// The words the person typed, without a section's topic words.
+    typed: String,
 }
 
 impl Msg {
     pub fn new(s: &str) -> Self {
         let norm = normalize(s);
         let padded = format!(" {norm} ");
-        Self { norm, padded }
+        Self {
+            typed: norm.clone(),
+            norm,
+            padded,
+        }
+    }
+
+    /// The message with the words of a section the person picked, so a fetcher that opens on a
+    /// topic word reads its area whatever the question says. [`Msg::keywords`] stays with the words
+    /// the person typed: a topic word never becomes a search term.
+    pub fn with_topic(s: &str, topic: &str) -> Self {
+        let typed = normalize(s);
+        let norm = normalize(&format!("{s} {topic}"));
+        let padded = format!(" {norm} ");
+        Self {
+            typed,
+            norm,
+            padded,
+        }
     }
 
     pub fn has(&self, phrase: &str) -> bool {
@@ -35,7 +55,9 @@ impl Msg {
 
     /// Words that carry a topic: four letters or more and not a common word.
     pub fn keywords(&self) -> Vec<String> {
-        self.words()
+        self.typed
+            .split(' ')
+            .filter(|w| !w.is_empty())
             .filter(|w| {
                 w.chars().count() >= 3 && !COMMON.contains(w) && !w.chars().all(char::is_numeric)
             })

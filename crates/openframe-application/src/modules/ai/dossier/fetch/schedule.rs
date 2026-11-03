@@ -33,6 +33,23 @@ pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
     safe("schedule", || fetch(ctx, read, r))
 }
 
+/// The Call Sheets section (ADR-0041): all of them, the ones of a chosen day, or the chosen sheet.
+pub fn call_sheets_section(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    safe("call sheets", || {
+        let sheet = ctx
+            .picked
+            .and_then(|p| p.call_sheet.as_ref())
+            .map(|s| s.id.as_str());
+        let want = named_days(ctx, r);
+        let narrowed = sheet.is_some() || !want.is_empty();
+        let mut facts = call_sheets(ctx, read, &want, narrowed)?;
+        if let Some(id) = sheet {
+            facts.retain(|f| f.record_id == id);
+        }
+        Ok(facts)
+    })
+}
+
 /// The shooting days a message names: the resolved ones and "day 4".
 pub fn named_days(ctx: &FetchCtx<'_>, r: &Resolved) -> Vec<u32> {
     let mut out: Vec<u32> = r

@@ -67,6 +67,7 @@ fn env() -> Option<Env> {
         ai_bundle_dir: Some(bundle.into()),
         ai_model_source: Some(source),
         ai_deterministic: true,
+        ai_eval_any_sections: true,
         ..AppConfig::isolated(dir.path())
     };
     let core = AppCore::new(config, Arc::new(RecordingSink::default())).unwrap();

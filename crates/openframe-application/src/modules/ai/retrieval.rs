@@ -26,6 +26,7 @@ use ts_rs::TS;
 
 use super::intelligence::{self, assembler, retriever, router};
 use super::scope::{ContextItem, ResolvedScope};
+use super::sections::NavRule;
 use super::types::{NavTarget, Provenance};
 use crate::core::AppCore;
 use crate::registry::Registry;
@@ -65,6 +66,8 @@ pub struct RetrieveRequest {
     pub limit: usize,
     /// Force a route; `None` = deterministic router.
     pub route: Option<RetrievalRoute>,
+    /// Look only where these rules allow (the search filter of a picked section, ADR-0041).
+    pub nav: Option<&'static [NavRule]>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]

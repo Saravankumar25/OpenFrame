@@ -12,7 +12,7 @@ use regex::Regex;
 
 use super::ctx::FetchCtx;
 use super::{Fact, Input, P_HIGH};
-use crate::modules::ai::index::{Hit, How, Resolved, SceneHit};
+use crate::modules::ai::index::{EntityIndex, Hit, How, Resolved, SceneHit};
 use crate::modules::ai::queries;
 use crate::modules::ai::turn::{Domain, ReadHow};
 
@@ -185,6 +185,27 @@ pub fn effective(ctx: &FetchCtx<'_>, input: &Input<'_>) -> (Resolved, Vec<Fact>)
         }
     }
     (r, notes)
+}
+
+/// The scene numbers of a message, read in one screenplay.
+pub fn scenes_in_message(ix: &EntityIndex, message: &str, screenplay_id: &str) -> Vec<SceneHit> {
+    let mut out: Vec<SceneHit> = Vec::new();
+    for c in SCENE_N.captures_iter(message) {
+        let n: u32 = c[1].parse().unwrap_or(0);
+        if out.iter().any(|s| s.ordinal == n) {
+            continue;
+        }
+        if let Some(e) = ix.scene(screenplay_id, n) {
+            out.push(SceneHit {
+                screenplay_id: screenplay_id.to_string(),
+                ordinal: n,
+                scene_id: Some(e.id.clone()),
+                heading: Some(e.name.clone()),
+                how: How::Exact,
+            });
+        }
+    }
+    out
 }
 
 /// The screenplay of the active Production Source, else the longest one with a current draft.

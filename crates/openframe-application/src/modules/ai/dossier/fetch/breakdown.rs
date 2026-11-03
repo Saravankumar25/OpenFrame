@@ -199,3 +199,47 @@ fn project_counts(ctx: &FetchCtx<'_>, t: AnswerType, asked: &[&str]) -> AppResul
     }
     Ok(out)
 }
+
+/// How much the breakdown holds, for a question that names no category and no scene.
+pub fn summary(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    if !categories_in(&ctx.m).is_empty() || !ctx.focus_scenes(r).is_empty() {
+        return Vec::new();
+    }
+    safe("breakdown summary", || {
+        let mut st = ctx.conn.prepare(
+            "SELECT category, count(*) FROM breakdown_element
+             WHERE deleted_at IS NULL AND archived = 0 AND confirmation_state <> 'Rejected'
+             GROUP BY category ORDER BY category",
+        )?;
+        let rows: Vec<(String, i64)> = st
+            .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))?
+            .collect::<Result<_, _>>()?;
+        if rows.is_empty() {
+            return Ok(vec![Fact::absent(
+                "any breakdown elements",
+                "the Breakdown",
+            )]);
+        }
+        let total: i64 = rows.iter().map(|(_, n)| n).sum();
+        let mut whole = Fact::new("Count", "")
+            .f("what", "elements in the breakdown")
+            .f("value", total.to_string())
+            .prio(P_HIGH);
+        if read.answer_type == AnswerType::Count {
+            whole = whole.require(total.to_string());
+        }
+        let mut out = vec![whole];
+        for (category, n) in rows {
+            out.push(
+                Fact::new("Count", "")
+                    .f(
+                        "what",
+                        format!("{} elements in the breakdown", category.to_lowercase()),
+                    )
+                    .f("value", n.to_string())
+                    .prio(P_MID),
+            );
+        }
+        Ok(out)
+    })
+}

@@ -15,6 +15,7 @@ use serde_json::{Value, json};
 use ts_rs::TS;
 
 use super::dossier;
+use super::sections::SectionsTrace;
 use super::turn::TurnRead;
 use crate::core::AppCore;
 
@@ -50,6 +51,8 @@ pub struct TraceRow<'a> {
     /// What the fetch stage gathered (counts only), and how long it took.
     pub dossier: Option<dossier::Summary>,
     pub dossier_ms: u64,
+    /// The picked sections: leaf ids, counts, tokens per leaf and the search path (ADR-0041).
+    pub sections: Option<SectionsTrace>,
 }
 
 pub fn record(core: &AppCore, r: &TraceRow<'_>) {
@@ -67,9 +70,10 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
                                       context_fill_pct, prompt_ms, generation_ms, total_ms, passes, checks_failed,
                                       result_kind, error_code, proposed, cached_tokens, lane, runner_up_lane, cancelled,
                                       answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote, turn_ms,
-                                      dossier_facts, dossier_tokens, dossier_missing, dossier_required, dossier_ms)
+                                      dossier_facts, dossier_tokens, dossier_missing, dossier_required, dossier_ms,
+                                      sections_json)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27,
-                     ?28, ?29, ?30, ?31, ?32, ?33, ?34, ?35, ?36, ?37, ?38, ?39)",
+                     ?28, ?29, ?30, ?31, ?32, ?33, ?34, ?35, ?36, ?37, ?38, ?39, ?40)",
             params![
                 new_id(),
                 r.request_id,
@@ -110,6 +114,7 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
                 r.dossier.map_or(0, |d| d.missing as i64),
                 r.dossier.map_or(0, |d| d.required as i64),
                 r.dossier_ms.min(i64::MAX as u64) as i64,
+                r.sections.as_ref().map(SectionsTrace::to_json),
             ],
         )?;
         Ok(())
@@ -362,7 +367,7 @@ fn trace_json(c: &Connection, request_id: Option<&str>) -> AppResult<Vec<Value>>
                 prompt_ms, generation_ms, total_ms, passes, checks_failed, result_kind, error_code, proposed, outcome,
                 lane, runner_up_lane, cancelled,
                 answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote, turn_ms,
-                dossier_facts, dossier_tokens, dossier_missing, dossier_required, dossier_ms
+                dossier_facts, dossier_tokens, dossier_missing, dossier_required, dossier_ms, sections_json
          FROM sys_ai_trace WHERE (?1 IS NULL OR request_id = ?1) ORDER BY created_at",
     )?;
     let names: Vec<String> = st.column_names().iter().map(|s| s.to_string()).collect();

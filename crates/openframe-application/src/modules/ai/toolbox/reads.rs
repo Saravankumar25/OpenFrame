@@ -616,6 +616,7 @@ pub fn retrieve_hybrid(
             scope: Some(scope.clone()),
             limit: a_limit(args, 8).min(24),
             route: None,
+            nav: None,
         },
     )?;
     let mut o = ToolOutput::exact(if packet.items.is_empty() {

@@ -181,6 +181,9 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
       text: q,
       scope: scopeArgs(effectiveScope, route),
       conversationId: conversationForAsk,
+      // The section picker is not built in this shell yet (ADR-0041, Windows session): with no
+      // section the core answers with a fixed sentence and runs no model.
+      sections: [],
     })
       .then((x) => {
         setConversation(x.conversationId);

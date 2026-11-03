@@ -114,7 +114,7 @@ pub fn day_sort_key(day: &str) -> (u8, i64, String) {
     }
 }
 
-fn load(c: &Connection, a: &StoryTimelineArgs) -> AppResult<StoryTimelineDto> {
+pub(crate) fn load(c: &Connection, a: &StoryTimelineArgs) -> AppResult<StoryTimelineDto> {
     let ep = a.episode_id.as_deref();
     super::tree::check_episode(c, ep)?;
     let options = screenplays_in_scope(c, ep)?;

@@ -41,6 +41,15 @@ Only leaves can be picked and the cap of 3 counts leaves. Idea Vault Global and 
 kept within one conversation. Added branches: Notes & Tasks, App Help & Settings. Starting word limits: describe, brief and
 relationship 250; story explanation 350.
 
+Taken while building slices R1 to R3:
+
+- The Story page and the Global Idea Vault are read only when the person picks their section for that question. This is newer than
+  the 2026-10-20 owner request that kept the Story page from the assistant, and it narrows it rather than ending it: the page stays
+  out of search, out of every tool and out of every other section. The owner can take the `story/page` leaf out with one table row.
+- A leaf narrowed to one scene, day or call sheet reads through its fetchers and runs no text search.
+- The Home screen belongs to Production Overview; Activity and Recently Deleted belong to Settings, so that every screen has one leaf.
+- The trace keeps the picks in one new column, `sys_ai_trace.sections_json`: leaf ids, counts and tokens per leaf.
+
 ## Measuring
 
 Measure first (ADR-0028 decision 1). The baseline and the new test set come before any runtime change and each slice is

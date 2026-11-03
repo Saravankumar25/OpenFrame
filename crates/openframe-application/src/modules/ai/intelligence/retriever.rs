@@ -20,9 +20,13 @@ use super::documents::DocKey;
 use super::indexer::{IndexSnapshot, ProjectIndex};
 use crate::core::{AppCore, ProjectSession};
 use crate::modules::ai::retrieval::{RetrievalRoute, RetrieveRequest};
+use crate::modules::ai::sections::{self, NavRule};
 
 const LEXICAL_K: usize = 40;
 const VECTOR_K: usize = 48;
+/// Nearest chunks read when the search is held to one section: the vector index cannot filter, so
+/// more are read and the ones outside are dropped.
+const VECTOR_K_FILTERED: usize = 256;
 const GRAPH_SEEDS: usize = 5;
 
 const STOPWORDS: &[&str] = &[
@@ -143,15 +147,25 @@ fn scope_keys(c: &Connection, actor: &Actor, req: &RetrieveRequest) -> AppResult
     Ok(out)
 }
 
-fn lexical(c: &Connection, actor: &Actor, terms: &[String]) -> AppResult<Vec<(DocKey, String)>> {
+fn lexical(
+    c: &Connection,
+    actor: &Actor,
+    terms: &[String],
+    nav: Option<&[NavRule]>,
+) -> AppResult<Vec<(DocKey, String)>> {
     let Some(q) = fts_or_query(terms) else {
         return Ok(Vec::new());
     };
-    let mut stmt = c.prepare_cached(
+    // The rules are constants of the section registry; nothing typed reaches this text.
+    let held_to = nav.map_or(String::new(), |rules| {
+        let any: Vec<String> = rules.iter().map(NavRule::sql).collect();
+        format!(" AND ({})", any.join(" OR "))
+    });
+    let mut stmt = c.prepare_cached(&format!(
         "SELECT d.source_table, d.entity_id, d.title FROM search_fts JOIN search_doc d ON d.rowid = search_fts.rowid
-         WHERE search_fts MATCH ?1 AND (d.owner_user_id IS NULL OR d.owner_user_id = ?2)
-         ORDER BY bm25(search_fts, 4.0, 1.0) LIMIT ?3",
-    )?;
+         WHERE search_fts MATCH ?1 AND (d.owner_user_id IS NULL OR d.owner_user_id = ?2){held_to}
+         ORDER BY bm25(search_fts, 4.0, 1.0) LIMIT ?3"
+    ))?;
     let rows = stmt
         .query_map(params![q, actor.user_id, LEXICAL_K as i64 * 2], |r| {
             Ok((
@@ -264,7 +278,7 @@ pub fn gather(
     // 1. Lexical (FTS5/BM25), canonical; available whenever the project is open.
     if route.wants_lexical() {
         let t = Instant::now();
-        match session.store.read(|c| lexical(c, actor, &terms)) {
+        match session.store.read(|c| lexical(c, actor, &terms, req.nav)) {
             Ok(hits) => {
                 for (rank, (k, title)) in hits.into_iter().enumerate() {
                     let e = ev.entry(k).or_default();
@@ -300,7 +314,12 @@ pub fn gather(
             let t2 = Instant::now();
             match qv.and_then(|qv| {
                 ix.with_reader(|c| {
-                    let hits = SqliteVecIndex.search(c, &qv, VECTOR_K)?;
+                    let k = if req.nav.is_some() {
+                        VECTOR_K_FILTERED
+                    } else {
+                        VECTOR_K
+                    };
+                    let hits = SqliteVecIndex.search(c, &qv, k)?;
                     let rows = docs::chunks_by_vec_rowids(
                         c,
                         &hits.iter().map(|h| h.vec_rowid).collect::<Vec<_>>(),
@@ -329,6 +348,12 @@ pub fn gather(
                         let Some(key) = DocKey::parse(&doc.doc_id) else {
                             continue;
                         };
+                        if req
+                            .nav
+                            .is_some_and(|n| !sections::kind_may_match(key.kind, n))
+                        {
+                            continue;
+                        }
                         if !seen.insert(key.clone()) {
                             continue;
                         }
@@ -384,6 +409,12 @@ pub fn gather(
                             let Some(key) = DocKey::parse(&h.node.node_id) else {
                                 continue;
                             };
+                            if req
+                                .nav
+                                .is_some_and(|n| !sections::kind_may_match(key.kind, n))
+                            {
+                                continue;
+                            }
                             let e = ev.entry(key).or_default();
                             if h.score > e.graph_score {
                                 e.graph_score = h.score;

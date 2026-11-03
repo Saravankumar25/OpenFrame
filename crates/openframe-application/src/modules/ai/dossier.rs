@@ -26,8 +26,9 @@
 //! writer and checks the written answer against it.
 
 mod ctx;
-mod fetch;
+pub(super) mod fetch;
 pub(crate) mod guard;
+mod leaves;
 mod names;
 mod registry;
 #[cfg(test)]
@@ -46,7 +47,8 @@ use super::turn::{self, Group, LengthClass, TurnRead};
 use crate::core::AppCore;
 
 pub use ctx::FetchCtx;
-pub use registry::{FETCHERS, Fetcher};
+pub use leaves::{LeafRead, LeafTokens, OutsideName, split_budget};
+pub use registry::{FETCHERS, FetchFn, Fetcher};
 
 /// How much a fact matters when the dossier is over its cap. A fact with a required value is never
 /// cut whatever its priority.
@@ -190,6 +192,10 @@ pub struct Dossier {
     /// What the message names once the scene on screen, the focus and the default screenplay are
     /// counted in. `resolved.ambiguous` is the one question left when nothing settles it.
     pub resolved: Resolved,
+    /// Names the message holds that no picked section can answer about, for the pointer.
+    pub outside: Vec<OutsideName>,
+    /// How many tokens each picked section took, for the trace.
+    pub leaf_tokens: Vec<LeafTokens>,
 }
 
 /// What the trace keeps: numbers only, never the text.
@@ -250,6 +256,9 @@ pub struct Input<'a> {
     pub focus: Option<&'a Focus>,
     /// The person's previous message, which a correction repeats the question of.
     pub previous_message: Option<&'a str>,
+    /// The sections the person picked (ADR-0041). `None`: the wide path, kept for the evaluation
+    /// and the legacy suites until slice R7.
+    pub sections: Option<&'a LeafRead<'a>>,
 }
 
 /// The most a dossier may hold, in tokens.
@@ -270,6 +279,9 @@ pub fn try_build(input: &Input<'_>) -> Option<Dossier> {
 /// Build the dossier of one message. Never fails and never blocks: a fetcher that cannot read its
 /// tables adds nothing and logs a warning.
 pub fn build(input: &Input<'_>) -> Dossier {
+    if let Some(read) = input.sections {
+        return leaves::build(input, read);
+    }
     let ctx = FetchCtx::new(input);
     let (resolved, mut facts) = names::effective(&ctx, input);
     // The names may have grown (the scene on screen, the focus): so do the domains.
@@ -359,6 +371,8 @@ fn finish(
         notes_on_guard,
         tokens_estimate,
         resolved: resolved.clone(),
+        outside: Vec::new(),
+        leaf_tokens: Vec::new(),
     }
 }
 

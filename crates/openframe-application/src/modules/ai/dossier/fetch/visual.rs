@@ -266,3 +266,45 @@ fn vault(ctx: &FetchCtx<'_>, read: &TurnRead, named: &[String]) -> AppResult<Vec
     }
     Ok(out)
 }
+
+/// The Global Idea Vault, read only when the person picks its section (ADR-0041). It lives outside
+/// the project, so a failure to reach it says nothing about the project.
+pub fn global_vault(ctx: &FetchCtx<'_>, read: &TurnRead, _r: &Resolved) -> Vec<Fact> {
+    safe("global idea vault", || {
+        let Some(core) = ctx.core else {
+            return Ok(Vec::new());
+        };
+        let rows: Vec<(String, String, String, String, String)> =
+            core.global_store()?.read(|c| {
+                let mut st = c.prepare(
+                    "SELECT id, COALESCE(title, ''), item_type, COALESCE(body, ''), COALESCE(caption, '') FROM vault_item
+                     WHERE deleted_at IS NULL ORDER BY created_at, id LIMIT 200",
+                )?;
+                let rows = st
+                    .query_map([], |r| {
+                        Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?))
+                    })?
+                    .collect::<Result<_, _>>()?;
+                Ok(rows)
+            })?;
+        if rows.is_empty() {
+            return Ok(vec![Fact::absent("any items", "the Global Idea Vault")]);
+        }
+        let narrative = matches!(read.group, Group::Narrative | Group::Brainstorm);
+        let words = ctx.m.keywords();
+        let mut out = Vec::new();
+        for (id, title, kind, body, caption) in &rows {
+            let text = format!("{title} {body} {caption}").to_lowercase();
+            let hit = words.iter().any(|w| text.contains(w.as_str()));
+            let mut f = Fact::new("Global Idea Vault item", id)
+                .f("title", title)
+                .f("type", kind)
+                .prio(if hit { P_HIGH } else { P_MID });
+            if hit || narrative {
+                f = f.f("text", clip(&format!("{body} {caption}"), 360));
+            }
+            out.push(f);
+        }
+        Ok(out)
+    })
+}

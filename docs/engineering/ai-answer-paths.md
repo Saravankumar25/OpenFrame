@@ -24,6 +24,17 @@
 Fixed text that stays code (spec section 4.1): refusals (licence, payment, actions the person may not do),
 errors, "the model is not ready", progress and Cancel.
 
+### With picked sections (ADR-0041)
+
+The person picks 1 to 3 leaves of `sections.rs`. `orchestrator::ask` checks them first (`sections::resolve_picks`: a bad pick is
+invalid input and nothing runs; no pick gets the fixed sentence `PICK_A_SECTION` and no model). Then `sections::retrieve` runs the
+hybrid search once per leaf, prefiltered by the leaf's `nav_json` rules and the owner rule, and `dossier/leaves.rs` builds the dossier:
+only the picked leaves' fetchers, only the kinds each admits, names held to what those leaves can answer about (the rest go to
+`Dossier.outside` for the pointer of slice R4), the budget split by weight with a minimum share. No extra domain is added. Without vectors the same
+search is full text inside the leaf, the trace says `full_text` and the answer carries the "Preparing project context" notice.
+`AppConfig.ai_eval_any_sections` (tests and the evaluation, never the FFI) keeps the wide path of this page for a request with no
+picks until slice R7.
+
 ## 2. Engine
 
 `crates/openframe-ai/`: llama.cpp b11259, Gemma 3 1B, one slot, `cache_prompt` on every call, a 512 MB prompt store.

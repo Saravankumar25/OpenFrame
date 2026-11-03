@@ -34,6 +34,7 @@ pub mod records;
 pub mod retrieval;
 mod sanitize;
 pub mod scope;
+pub mod sections;
 pub mod service;
 #[cfg(test)]
 mod test_script;
@@ -123,6 +124,13 @@ pub fn register(r: &mut Registry) {
             "Ask the assistant (one request, one AI Result).",
         )
         .hidden(h::AI_SELF),
+    );
+    r.query("ai.sections", sections::sections_op).meta(
+        M::query(
+            Capability::UseAi,
+            "The sections the assistant can read, and the drafts, scenes, days and call sheets their pickers list.",
+        )
+        .hidden(h::UI_FLOW),
     );
     r.command("ai.cancel", cancel_request).meta(
         M::command(

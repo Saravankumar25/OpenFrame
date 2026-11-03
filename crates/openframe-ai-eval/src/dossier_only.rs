@@ -168,6 +168,7 @@ pub fn run(
                         selected_scene: selected.as_deref(),
                         focus: Some(focus),
                         previous_message: m.turn.checked_sub(1).map(|i| conv.turns[i].as_str()),
+                        sections: None,
                     }))
                 })
                 .map_err(|e| e.message)?;

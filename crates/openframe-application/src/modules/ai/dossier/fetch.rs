@@ -3,13 +3,16 @@
 pub mod breakdown;
 pub mod budget;
 pub mod files;
+pub mod notes;
 pub mod people;
+pub mod plans;
 pub mod product;
 pub mod production;
 pub mod schedule;
 pub mod screenplay;
 pub mod settings;
 pub mod story;
+pub mod story_tabs;
 pub mod visual;
 
 use super::ctx::{FetchCtx, safe};

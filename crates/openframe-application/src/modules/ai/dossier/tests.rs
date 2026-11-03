@@ -390,6 +390,8 @@ fn the_summary_holds_counts_only() {
         notes_on_guard: 0,
         tokens_estimate: 42,
         resolved: Default::default(),
+        outside: Vec::new(),
+        leaf_tokens: Vec::new(),
     };
     assert_eq!(
         d.summary(),
@@ -402,4 +404,50 @@ fn the_summary_holds_counts_only() {
     );
     assert_eq!(cap_tokens(LengthClass::Paragraph), 2_500);
     assert_eq!(cap_tokens(LengthClass::OneSentence), 1_500);
+}
+
+#[test]
+fn one_leaf_gets_the_whole_budget() {
+    assert_eq!(split_budget(1_500, &[(3, 9_000)]), vec![1_500]);
+}
+
+#[test]
+fn the_budget_goes_by_weight_when_every_leaf_wants_more() {
+    let got = split_budget(1_000, &[(3, 9_000), (1, 9_000)]);
+    assert_eq!(got.iter().sum::<usize>(), 1_000);
+    assert!(got[0] > got[1] * 2, "{got:?}");
+}
+
+#[test]
+fn a_leaf_keeps_a_minimum_share_against_a_much_heavier_one() {
+    let got = split_budget(1_000, &[(50, 9_000), (1, 9_000), (1, 9_000)]);
+    assert_eq!(got.iter().sum::<usize>(), 1_000);
+    assert!(got[1] >= 200 && got[2] >= 200, "{got:?}");
+}
+
+#[test]
+fn what_a_leaf_does_not_need_flows_to_the_others() {
+    let got = split_budget(1_000, &[(1, 100), (1, 9_000)]);
+    assert_eq!(got, vec![100, 900]);
+    let got = split_budget(1_000, &[(5, 10), (1, 300), (1, 9_000)]);
+    assert_eq!(got[0], 10);
+    assert_eq!(got[1], 300);
+    assert_eq!(got[2], 690);
+}
+
+#[test]
+fn the_budget_is_never_more_than_the_cap_and_never_more_than_wanted() {
+    for wanted in [
+        vec![(1_u32, 0_usize), (1, 0), (1, 0)],
+        vec![(3, 1), (2, 2), (1, 3)],
+        vec![(1, 400), (1, 400), (1, 400)],
+        vec![(9, 5_000), (1, 5_000)],
+    ] {
+        let got = split_budget(900, &wanted);
+        assert!(got.iter().sum::<usize>() <= 900, "{got:?}");
+        for (g, (_, w)) in got.iter().zip(&wanted) {
+            assert!(g <= w, "{got:?} of {wanted:?}");
+        }
+    }
+    assert!(split_budget(900, &[]).is_empty());
 }

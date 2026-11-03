@@ -355,6 +355,7 @@ fn ask(env: &TestEnv, actor: &Actor, q: &str, route: Option<RetrievalRoute>) -> 
             scope: None,
             limit: 12,
             route,
+            nav: None,
         },
     )
     .unwrap()
@@ -1024,6 +1025,7 @@ fn spec_20_draft_boundaries_and_explicit_scope_come_first() {
             scope: Some(old_scope),
             limit: 10,
             route: Some(RetrievalRoute::Hybrid),
+            nav: None,
         },
     )
     .unwrap();
@@ -1054,6 +1056,7 @@ fn spec_20_draft_boundaries_and_explicit_scope_come_first() {
             scope: Some(scene_scope),
             limit: 10,
             route: Some(RetrievalRoute::Hybrid),
+            nav: None,
         },
     )
     .unwrap();
@@ -1091,6 +1094,7 @@ fn retrieval_inherits_permissions_and_bounds_its_input() {
             scope: None,
             limit: 5,
             route: None,
+            nav: None,
         },
     )
     .unwrap_err();
@@ -1107,6 +1111,7 @@ fn retrieval_inherits_permissions_and_bounds_its_input() {
             scope: None,
             limit: 5,
             route: None,
+            nav: None,
         },
     )
     .unwrap_err();
@@ -1119,6 +1124,7 @@ fn retrieval_inherits_permissions_and_bounds_its_input() {
             scope: None,
             limit: 500,
             route: Some(RetrievalRoute::HybridGraph),
+            nav: None,
         },
     )
     .unwrap();

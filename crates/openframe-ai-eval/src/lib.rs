@@ -26,6 +26,10 @@ pub struct Case {
     pub setup: Vec<SetupOp>,
     #[serde(default)]
     pub scope: Option<Value>,
+    /// The sections the case picks (ADR-0041), resolved by the harness to ids and sent as
+    /// `AskArgs.sections`. A case without it keeps the path that reads every area.
+    #[serde(default)]
+    pub sections: Option<Vec<CaseSection>>,
     pub request: String,
     /// Conversation cases: earlier requests, sent first in the same conversation; their answers
     /// are ignored.
@@ -35,6 +39,18 @@ pub struct Case {
     pub review: Option<String>,
     #[serde(default)]
     pub expect: Expect,
+}
+
+/// One section of a case: the leaf, and which scene or shoot day when the case narrows to one.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct CaseSection {
+    pub leaf: String,
+    /// The scene's place in the case's draft (1-based).
+    #[serde(default)]
+    pub scene: Option<usize>,
+    /// The shoot day number.
+    #[serde(default)]
+    pub day: Option<u32>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

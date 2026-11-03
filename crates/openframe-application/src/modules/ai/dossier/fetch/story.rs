@@ -204,8 +204,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     }
 
     // ---- a name asked about that the project does not have
+    // With sections picked, the stage says so itself and names where it looked.
     if let Some(who) = unknown_name(&ctx.message, r)
         && named.is_empty()
+        && ctx.picked.is_none()
     {
         out.push(Fact::absent(
             format!("a character called {who}"),

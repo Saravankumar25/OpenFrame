@@ -258,7 +258,8 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     if r.persons.is_empty()
         && r.characters.is_empty()
         && asks_cast
-        && !asks_crew_role
+        // A picked Cast & Crew section reads both whatever the question says.
+        && (!asks_crew_role || ctx.picked.is_some())
         && !m.any(&[
             "problem",
             "problems",

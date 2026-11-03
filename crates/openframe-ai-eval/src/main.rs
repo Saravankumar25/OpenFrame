@@ -40,6 +40,7 @@ use openframe_ai_eval::{
 use openframe_application::core::{AppConfig, AppCore};
 use openframe_application::events::RecordingSink;
 use openframe_application::modules::ai::{intelligence, orchestrator, retrieval, scope, toolbox};
+use openframe_application::modules::schedule;
 use openframe_domain::AppResult;
 use serde_json::{Value, json};
 
@@ -181,6 +182,8 @@ fn run() -> Result<(), String> {
         ai_bundle_dir: Some(bundle.clone()),
         ai_model_source: Some(source),
         ai_deterministic: true,
+        // A case without sections measures the path that reads every area (ADR-0041).
+        ai_eval_any_sections: true,
         ..AppConfig::isolated(data.path())
     };
     let core =
@@ -573,6 +576,43 @@ fn scope_args(case: &Case, p: &Project) -> Value {
     }
 }
 
+/// The sections of a case as `AskArgs.sections`: a scene ordinal and a day number become their ids.
+fn section_args(core: &AppCore, case: &Case, p: &Project) -> Result<Option<Value>, String> {
+    let Some(picks) = &case.sections else {
+        return Ok(None);
+    };
+    let mut out = Vec::with_capacity(picks.len());
+    for pick in picks {
+        let mut arg = json!({ "leaf": pick.leaf });
+        if let Some(n) = pick.scene {
+            let id = p
+                .scene_ids
+                .get(n.saturating_sub(1))
+                .ok_or_else(|| format!("case {}: no scene {n}", case.id))?;
+            arg["sceneId"] = json!(id);
+        }
+        if let Some(n) = pick.day {
+            let session = core.project().map_err(|e| e.message)?;
+            let id: Option<String> = session
+                .store
+                .read(|c| {
+                    let Some(s) = schedule::board::current_schedule(c)? else {
+                        return Ok(None);
+                    };
+                    Ok(schedule::board::load_days(c, &s.id)?
+                        .into_iter()
+                        .find(|d| d.number == Some(i64::from(n)))
+                        .map(|d| d.id))
+                })
+                .map_err(|e| e.message)?;
+            let id = id.ok_or_else(|| format!("case {}: no shoot day {n}", case.id))?;
+            arg["shootingDayId"] = json!(id);
+        }
+        out.push(arg);
+    }
+    Ok(Some(Value::Array(out)))
+}
+
 fn engine_mb() -> u64 {
     let mut sys = sysinfo::System::new();
     sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
@@ -665,6 +705,7 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
             scope: None,
             limit: 10,
             route: None,
+            nav: None,
         };
         match retrieval::retrieve(core, &actor, &req) {
             Ok(packet) => {
@@ -705,20 +746,31 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
             .collect();
         }
     }
+    let section_list = match section_args(core, case, &p) {
+        Ok(list) => list,
+        Err(e) => {
+            o.setup_error = Some(e);
+            return o;
+        }
+    };
     // Earlier requests of a conversation case go first in the same conversation; their answers
     // are ignored, they only become the history the real request is asked against.
     let conversation = (!case.before.is_empty()).then(|| format!("eval-{}", case.id));
     for earlier in &case.before {
-        let _ = op(
-            core,
-            "ai.ask",
-            json!({ "text": earlier, "scope": scope_json, "conversationId": conversation }),
-        );
+        let mut ask =
+            json!({ "text": earlier, "scope": scope_json, "conversationId": conversation });
+        if let Some(list) = &section_list {
+            ask["sections"] = list.clone();
+        }
+        let _ = op(core, "ai.ask", ask);
     }
     let t = Instant::now();
     let mut ask = json!({ "text": case.request, "scope": scope_json });
     if let Some(id) = &conversation {
         ask["conversationId"] = json!(id);
+    }
+    if let Some(list) = &section_list {
+        ask["sections"] = list.clone();
     }
     let asked = op(core, "ai.ask", ask);
     o.elapsed_ms = t.elapsed().as_millis() as u64;

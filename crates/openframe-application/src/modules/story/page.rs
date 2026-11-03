@@ -3,7 +3,8 @@
 //! The page is not linked to any card, scene, screenplay or other data. It is one row of
 //! `story_page`, created by the first save. Saving is a normal project write (one transaction,
 //! `rev` checked) but never enters the undo history (typing is undone in the editor itself),
-//! never writes an activity entry, is not indexed for search, and is not offered to the assistant.
+//! never writes an activity entry, is not indexed for search, and is offered to no assistant tool. Its
+//! text reaches the assistant only when the person picks the Story Page section (ADR-0041).
 //! Backups and full project packages carry the table whole; exchange packages do not carry it.
 //!
 //! The text may carry formatting (bold, italic, underline, highlight, a size per stretch of text;

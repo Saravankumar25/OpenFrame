@@ -265,6 +265,7 @@ fn spec_34_retrieval_budgets_on_a_feature_length_fixture() {
                         scope: None,
                         limit: 12,
                         route: Some(route),
+                        nav: None,
                     },
                 )
                 .unwrap();

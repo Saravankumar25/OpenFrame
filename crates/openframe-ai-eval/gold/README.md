@@ -32,6 +32,7 @@ whatever production numbers the script carries.
 | `project` | The sample to import (table above). |
 | `setup` | Optional list of `{ "op", "args" }` run through the core before the request (for example a planted note for an injection case). `$scene:N` in a string is replaced by the id of scene N. |
 | `scope` | Optional. What the assistant panel is pointed at: `{ "kind": "scene", "scene": N }`, `{ "kind": "act", "act": "ACT TWO" }` or `{ "kind": "project" }` (the default). |
+| `sections` | optional: the sections the case picks (ADR-0041), an array of `{ "leaf": "production/budget", "scene": 4, "day": 2 }`; the harness turns `scene` (place in the draft) and `day` (shoot day number) into ids. Without it the case reads every area. |
 | `request` | What the person types. |
 | `review` | `automated review only` for non-English cases. |
 | `expect.scenes` | Retrieval: scene ordinals; at least one must be in the top `expect.k` results (default 5). Recall and reciprocal rank are computed from the first hit. |
