@@ -13,12 +13,13 @@ The work has three chapters (owner decision 2026-10-09; `docs/product/vision-and
    the team tests it by hand. Then the Mac: a SwiftUI shell over the same Rust core, the internal `.dmg`, team testing.
    Builds are unsigned, open without a password (team password removed, owner decision 2026-10-27) and download the AI
    after install
-   (ADR-0026). **This is the only chapter in progress.**
+   (ADR-0026).
 2. **Website.** Purchased domain and company email, faithful recreations of the real screens. Its implementation plan is
    written when Chapter 1 closes.
 3. **Commercial distribution.** Microsoft Store and Mac App Store, 7-day trial, paid activation (target 3,000 rupees,
-   89 dollars, 89 euros), signing and notarization. Its implementation plan is written when Chapter 2 closes. No
-   Chapter 2 or Chapter 3 code is written in Chapter 1.
+   89 dollars, 89 euros), signing and notarization. **Started by the owner on 2026-11-03** with the release package
+   (`OpenFrame_Release_Package/`; `docs/implementation/owner-decisions.md`), which wins over earlier decisions where they
+   differ. The Mac trial is offline with no licence server (ADR-0040) and the assistant is section-scoped (ADR-0041).
 
 Decisions behind this: `docs/adr/` (register in `docs/adr/README.md`) and `docs/implementation/owner-decisions.md`.
 
