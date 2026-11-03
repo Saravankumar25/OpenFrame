@@ -10,7 +10,7 @@
 
 | Stage | Code | What it does |
 |---|---|---|
-| Ask | `apps/desktop/src/ai/Conversation.tsx`, `orchestrator.rs` | The message, the scope and the conversation id reach `ai.ask`. Progress lines and Cancel run for the whole turn. |
+| Ask | `apps/desktop/src/ai/Conversation.tsx`, `orchestrator.rs` | The message, the picked sections (Mac; the Windows panel still sends a scope, the Windows tree follows) and the conversation id reach `ai.ask`. Progress lines and Cancel run for the whole turn. |
 | Memory | `memory/` | The last 8 turns in full within about 1,200 tokens, summary lines for older turns, and up to 5 long-term entries of this user and project that match the message. |
 | Resolve | `index/` | An in-memory index of everything a user can name (screenplays, scenes, characters and aliases, relationships, cast, crew, locations, acts, cards, vault items, files, budget lines, shoot days, call sheets), rebuilt when content changes. Titles, scene numbers, names, typos and pronouns are matched against it and the conversation focus. With several screenplays, the title, the focus, a scene number only one screenplay has, or the current draft decides; only when none can does the turn ask one question, and the answer is kept in the focus. |
 | Answer type | `turn.rs`, `turn/` | One of lookup, list, count, explain, relation, compare, brainstorm, navigate, change, help, chat, plus its group, the domains and the length class. Code rules first, then a correction takes the previous type, then a nearest-neighbour vote over `turn_examples.jsonl` with the bundled multilingual embedding model, and the 1B model only when the vote is weak. |
@@ -24,16 +24,22 @@
 Fixed text that stays code (spec section 4.1): refusals (licence, payment, actions the person may not do),
 errors, "the model is not ready", progress and Cancel.
 
-### With picked sections (ADR-0041)
+### The path with picked sections (ADR-0041, current)
 
-The person picks 1 to 3 leaves of `sections.rs`. `orchestrator::ask` checks them first (`sections::resolve_picks`: a bad pick is
-invalid input and nothing runs; no pick gets the fixed sentence `PICK_A_SECTION` and no model). Then `sections::retrieve` runs the
-hybrid search once per leaf, prefiltered by the leaf's `nav_json` rules and the owner rule, and `dossier/leaves.rs` builds the dossier:
-only the picked leaves' fetchers, only the kinds each admits, names held to what those leaves can answer about (the rest go to
-`Dossier.outside` for the pointer of slice R4), the budget split by weight with a minimum share. No extra domain is added. Without vectors the same
-search is full text inside the leaf, the trace says `full_text` and the answer carries the "Preparing project context" notice.
-`AppConfig.ai_eval_any_sections` (tests and the evaluation, never the FFI) keeps the wide path of this page for a request with no
-picks until slice R7.
+The wide path in the table above is superseded for questions; the table rows Memory, Check, Fallback and Store still apply. The order now:
+
+1. **Panel picks.** The person picks 1 to 3 leaves of `sections.rs` and the picks travel in `AskArgs.sections`. Nothing is pre-selected and there is no whole-project pick.
+2. **Permission.** `sections::resolve_picks` rejects a bad pick as invalid input (nothing runs) and drops a leaf the person may not read. No pick gets the fixed sentence `PICK_A_SECTION` and no model call.
+3. **Names restricted to picks.** Resolve matches only entities whose home leaf is picked. Names homed elsewhere go to `Dossier.outside`.
+4. **Answer type.** `turn.rs` reads the type, now including describe, brief, relationship and story explanation (limits 250 and 350 words). The domain is only a hint for the pointer.
+5. **Fetchers of picked leaves.** `dossier/leaves.rs` runs only the fetchers of the picked leaves and the kinds each admits.
+6. **Leaf-scoped retrieval.** `sections::retrieve` runs the hybrid search once per leaf, prefiltered by the leaf's `nav_json` rules and the owner rule. Without vectors it is full text inside the leaf, the trace says `full_text` and the answer carries the "Preparing project context" notice.
+7. **Split budget.** The dossier budget is split across leaves by weight with a minimum share; required facts are never cut.
+8. **Writer.** One model call as in the table, with the answer type's length class.
+9. **Checker.** `answer/check.rs`, code only, at most three passes; a pass-1 answer shows at once.
+10. **Pointer.** If a name, an existence check or a topic word points to an unpicked leaf, code builds the sentence "That is in <leaf>. Add it to your selection and ask again." with an Add button (at 3 leaves it says to remove one first). It runs after the permission check, names a leaf and never carries content. The agent's tool list is filtered to the tools of the picked leaves.
+
+`AppConfig.ai_eval_any_sections` (tests and the evaluation, never the FFI) keeps the wide path for a request with no picks until slice R7. The "Using:" line is built from the real picks and stored in the trace (`sys_ai_trace.sections_json`).
 
 ## 2. Engine
 

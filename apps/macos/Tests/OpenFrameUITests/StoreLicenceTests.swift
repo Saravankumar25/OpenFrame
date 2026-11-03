@@ -509,6 +509,21 @@ struct LicenceRulesTests {
         #expect(LicenceRules.visibleSocialLinks(release: true, links: [real]) == [real])
     }
 
+    @Test func theLicencesSheetNamesThePublisherAndReadsTheShippedFiles() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let notices = root.appendingPathComponent("ai/notices", isDirectory: true)
+        try FileManager.default.createDirectory(at: notices, withIntermediateDirectories: true)
+        try "list of crates".write(to: root.appendingPathComponent("THIRD_PARTY_LICENSES.md"), atomically: true, encoding: .utf8)
+        try "Gemma terms".write(to: notices.appendingPathComponent("gemma-NOTICE.txt"), atomically: true, encoding: .utf8)
+        let text = LicenceNotices.text(resources: root, engine: root.appendingPathComponent("ai", isDirectory: true))
+        #expect(text.contains("Vighnajith Advisories Private Limited"))
+        #expect(text.contains("list of crates"))
+        #expect(text.contains("Gemma terms"))
+        // A build without the files still names the publisher.
+        #expect(LicenceNotices.text(resources: nil, engine: nil) == LicenceNotices.publisher)
+    }
+
     @Test func theLocalDayUsesThePersonsOwnCalendar() {
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = TimeZone(identifier: "Asia/Kolkata")!

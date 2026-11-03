@@ -174,6 +174,8 @@ Full contract: runtime spec §1–§9, §14–§15.
 
 ## 5.1 Scopes
 
+> **Superseded for the Mac app (ADR-0041, 2026-11-03).** The assistant has no Scope selector there and no Whole Project: the person picks up to 3 sections before asking. The Windows tree follows; until then the text below describes Windows.
+
 The panel's Scope selector offers the scopes that make sense where the user is: Current Selection (or Selected Idea
 Vault items) when something is selected, Current Scene when a scene is open, Current Screenplay, Specific Draft when a
 draft is open, Beat Board, Production, Specific Shooting Day and Call Sheet when one is open, and Whole Project. The

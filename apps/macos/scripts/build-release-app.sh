@@ -94,6 +94,8 @@ cp "$BIN/OpenFrameStudio" "$APP/Contents/MacOS/OpenFrameStudio"
 strip -x "$APP/Contents/MacOS/OpenFrameStudio" 2>/dev/null || true
 for b in "$BIN"/*.bundle; do [[ -e "$b" ]] && cp -R "$b" "$APP/Contents/Resources/"; done
 cp "$MACOS/packaging/PrivacyInfo.xcprivacy" "$APP/Contents/Resources/PrivacyInfo.xcprivacy"
+# The third-party notices the About window's Licences sheet shows.
+cp "$ROOT/THIRD_PARTY_LICENSES.md" "$APP/Contents/Resources/THIRD_PARTY_LICENSES.md"
 [[ -f "$MACOS/packaging/AppIcon.icns" ]] && cp "$MACOS/packaging/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 # The offline AI engine (llama.cpp with Metal), when packaging/ai has fetched it (ADR-0026).
 if [[ -d "$ROOT/.build-cache/ai-runtime/macos-arm64" ]]; then

@@ -1,5 +1,7 @@
 # Offline AI assistant with the bundled model
 
+> Mac note (ADR-0041): the Mac assistant has no scope list and no Whole Project; the person picks up to 3 sections and the line reads "Using: <sections>". This scenario describes the Windows app; the Windows tree follows.
+
 Spec: `tests/e2e/specs/72-ai-assistant.test.mjs`
 
 Tags: `@e2e-data-root: own`

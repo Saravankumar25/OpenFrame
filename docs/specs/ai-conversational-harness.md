@@ -6,6 +6,8 @@
 > built yet. Where a number comes from a run, the run is named; where it is a proposal, it says so. The first spike
 > (section 12) already changed the design in four places; those are marked "spike".
 
+> **SUPERSEDED in part by [ADR-0041](../adr/ADR-0041-section-scoped-assistant.md) (2026-11-03).** Domain found by topic words as the router (section 5.3, domain part), Stage B and Stage C (ADR-0037 decisions 5 and 6, and section 5.4's plan by answer type and domain) and scope kinds for questions are SUPERSEDED: the person picks up to 3 sections, an out-of-section question gets a code-built pointer, and narrative answers get new types and limits. Marked in place below; the text stays as history.
+>
 > **Section-scoped assistant (ADR-0041, 2026-11-03).** The person picks up to 3 leaves before asking. Slices R1 to R3 are built:
 > the leaf registry `modules/ai/sections.rs` and its coverage tests, the `sections` field of `ai.ask`, the operation `ai.sections`,
 > the Mac picker and the dossier by leaves with search held to the picks. Sections 5.3 domain words and 5.4 plan below describe the
@@ -181,6 +183,8 @@ Built in slice S6 (`modules/ai/memory/`, stage `memory::prepare`, typed input `m
 
 ### 5.3 Read the answer type (rules, nearest neighbours, one short model call)
 
+> SUPERSEDED in part (ADR-0041): the **domain** reading below no longer routes questions. Only the answer type is kept.
+
 Spike: with one list of 12 intents, the model got 20 of 28 right, and half of its misses were overlap between the
 *topic* (budget, schedule) and the *kind of answer* (a count, a lookup). Spike S1b then showed that rules tuned on a
 word list fail on new wording (53% on held-out messages) and that a 1B model confuses close labels. So the turn reads two
@@ -315,6 +319,8 @@ stand-in embedder that places each example on its own axis and a scripted model 
 `ai-eval --turn-only`.
 
 ### 5.4 Fetch the dossier (code)
+
+> SUPERSEDED in part (ADR-0041): the plan by answer type and domain (Stage B) and the extra round (Stage C) are replaced by fetchers of the picked sections. See `docs/engineering/ai-answer-paths.md`.
 
 Built in slice S5 as `modules/ai/dossier/`. One stage with typed input (`dossier::Input`: the connection, the person, the
 index, the message, the `TurnRead` and the `Resolved`) and typed output (`Dossier`: the facts, the values a correct answer

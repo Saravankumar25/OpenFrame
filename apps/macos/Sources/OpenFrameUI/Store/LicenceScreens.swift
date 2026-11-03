@@ -165,7 +165,8 @@ struct ReminderDialog: View {
                 Text(LicenceRules.reminderEndLine(end)).frame(maxWidth: .infinity)
                     .accessibilityIdentifier("licence-reminder-end")
             }
-            Text("Buy the full version to keep using OpenFrame Studio.").frame(maxWidth: .infinity)
+            Text("Buy the full version to keep using OpenFrame Studio. Pay once, own forever. No subscription.")
+                .multilineTextAlignment(.center).frame(maxWidth: .infinity)
             Banner(tone: .info, text: "Your projects stay on your computer either way. Nothing is deleted when the trial ends.")
             StoreMessage(message: licence.message)
         } footer: {

@@ -2685,6 +2685,8 @@ Project-changing actions require the explicit approval flow defined in Section 9
 
 # 96. AI Scope Selector
 
+> **Superseded for the Mac app (ADR-0041, 2026-11-03).** The assistant has no Scope selector there and no Whole Project: the person picks up to 3 sections before asking. The Windows tree follows; until then the text below describes Windows.
+
 The assistant can operate over:
 
 - Current Selection;
