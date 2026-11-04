@@ -1,5 +1,6 @@
 // One-off: draws src/static/og.png (1200x630) for link previews from the brand mark and a real app screen.
-// Re-run when the brand line changes. Needs .cache/win-full from scripts/render-screens.mjs.
+// Re-run when the brand line changes. Needs .cache/win-full from scripts/render-screens.mjs, and the Manrope font installed
+// as a system font (librsvg finds fonts through fontconfig; src/assets/fonts has only the woff2).
 import sharp from 'sharp';
 import path from 'node:path';
 const ROOT = path.resolve(import.meta.dirname, '..');
