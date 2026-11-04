@@ -91,18 +91,17 @@ const CTL_ICON = {
   mlight: I('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/>'),
   mdark: I('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="currentColor"/>'),
 };
-const seg = (name, key, opts) => html`<div class="ctl" role="group" aria-label="${name}"><span class="ctl-ic" title="${name}">${CTL_ICON[key]}</span><span class="ctl-name" aria-hidden="true">${name}</span><span class="seg">${opts.map(([v, t, ic = v]) => html`<button type="button" data-set="${key}" data-val="${v}" aria-pressed="false" aria-label="${name}: ${t}" title="${name}: ${t}">${CTL_ICON[ic]}</button>`)}</span></div>`;
+const seg = (name, key, opts) => html`<div class="ctl" role="group" aria-label="${name}"><span class="ctl-ic" title="${name}">${CTL_ICON[key]}</span><span class="seg">${opts.map(([v, t, ic = v]) => html`<button type="button" data-set="${key}" data-val="${v}" aria-pressed="false" aria-label="${name}: ${t}" title="${name}: ${t}">${CTL_ICON[ic]}</button>`)}</span></div>`;
 
 function header(page, switchHref) {
   const cur = (k) => (page.nav === k ? raw(' aria-current="page"') : '');
   const feat = FEATURE_GROUPS.map(([g, items]) => html`<div class="mg"><p class="mg-h">${g}</p>${items.map(([slug, t, b]) => html`<a href="/features/${slug}/"><b>${t}</b><span>${b}</span></a>`)}</div>`);
   const why = WHY.map(([href, t, b]) => html`<div class="mg"><a href="${href}"><b>${t}</b><span>${b}</span></a></div>`);
-  // The three controls sit in the header on wide screens and inside the menu drawer on narrow ones.
   const ctls = html`${seg('Platform', 'os', [['win', 'Windows'], ['mac', 'Mac']])}${seg('Website theme', 'theme', [['light', 'Light'], ['dark', 'Dark']])}${seg('App screen theme', 'mock', [['light', 'Light', 'mlight'], ['dark', 'Dark', 'mdark']])}`;
   return html`<a class="skip" href="#main">Skip to content</a>${GRADIENT_DEFS}
 <header class="site-h"><div class="wrap nav">
 <a class="brand" href="/">${BRANDLOGO}<span class="sr">Straft Studio, home</span></a>
-<ul class="menu" id="menu">
+<div class="nav-row"><ul class="menu" id="menu">
 <li class="has-mega"><button type="button" aria-expanded="false"${page.nav === 'features' ? raw(' class="is-current"') : ''}>Features${ICON.chev}</button><div class="mega"><div class="mega-in">${feat}
 <div class="mega-foot"><span>One film, moving forward, from first idea to final call sheet.</span><a href="/features/">See everything Straft does &rarr;</a></div></div></div></li>
 <li class="has-mega"><button type="button" aria-expanded="false">Why Straft${ICON.chev}</button><div class="mega small"><div class="mega-in">${why}</div></div></li>
@@ -110,31 +109,24 @@ function header(page, switchHref) {
 <li><a href="/tutorials/" data-os-href-win="/windows/tutorials/" data-os-href-mac="/mac/tutorials/"${cur('tutorials')}>Tutorials</a></li>
 <li><a href="/faq/"${cur('faq')}>FAQ</a></li>
 <li><a href="/about/"${cur('about')}>About Us</a></li>
-<li class="menu-get"><a class="btn btn-primary" href="/download/">Get Straft</a></li>
-<li class="menu-ctls">${ctls}</li>
 </ul>
-<div class="ctls nav-ctls">${ctls}</div>
+<div class="ctls nav-ctls">${ctls}</div></div>
 <a class="srch-btn" href="/search/" data-search-open aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K /"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span class="sr">Search</span><kbd class="srch-k" aria-hidden="true"><span data-os-show="win">Ctrl K</span><span data-os-show="mac">Cmd K</span></kbd></a>
 <a class="btn btn-primary btn-sm nav-get" href="/download/"${cur('download')}>Get Straft</a>
-<button type="button" class="menu-tg" id="menutg" aria-label="Menu" aria-controls="menu" aria-expanded="false"><span class="tg-open">${ICON.menu}</span><span class="tg-close">${ICON.cross}</span></button>
 </div></header>
 <script type="application/json" id="os-switch">${raw(JSON.stringify(switchHref))}</script>`;
 }
 
 const LEGAL_LINKS = [['Privacy', '/legal/privacy/'], ['Terms', '/legal/terms/'], ['Refunds', '/legal/refunds/'], ['Cookies', '/legal/cookies/'], ['Notices', '/legal/notices/']];
-function footer() {
+function footer(page) {
   const col = (t, items) => html`<div><p class="f-h">${t}</p><ul>${items.map(([a, h]) => html`<li><a href="${h}">${a}</a></li>`)}</ul></div>`;
   const all = FEATURE_GROUPS.flatMap(([, items]) => items);
-  // The Get Straft dialog and pill (src/assets/js/getapp.js clones this). Same store buttons and price as everywhere else.
-  const { storeBtn, price } = makeHelpers();
-  const getapp = html`<template id="getapp-tpl"><dialog class="gp-dlg" aria-labelledby="gp-title"><div class="gp-box">
+  // The Home page pop-up (src/assets/js/getapp.js opens it). It names no price: the download page shows the price and the stores.
+  const getapp = page.nav !== 'home' ? '' : html`<template id="getapp-tpl"><dialog class="gp-dlg" aria-labelledby="gp-title"><div class="gp-box">
 <button type="button" class="gp-x" data-gp-close aria-label="Close">${ICON.cross}</button>
-<div class="gp-top"><h2 id="gp-title">Try Straft Studio free for 7 days</h2><p class="gp-lead">Pay once. Own forever. No subscription.</p><p class="gp-price">Keep it for ${price()}, paid once.</p></div>
-<div class="gp-body">
-<section class="gp-sec" data-gp-os="win" aria-labelledby="gp-win"><h3 id="gp-win">Windows</h3><p>Get it from the Microsoft Store.</p>${storeBtn('win', 'btn-lg')}</section>
-<section class="gp-sec" data-gp-os="mac" aria-labelledby="gp-mac"><h3 id="gp-mac">Mac</h3><p>Get it from the Mac App Store.</p>${storeBtn('mac', 'btn-lg')}</section>
-<p class="gp-links"><a href="/pricing/">See pricing</a><a href="/tutorials/" data-os-href-win="/windows/tutorials/" data-os-href-mac="/mac/tutorials/">Explore the tutorials</a></p>
-</div></div></dialog><button type="button" class="gp-pill" hidden>Get Straft</button></template>`;
+<h2 id="gp-title">Straft Studio is on sale</h2><p class="gp-lead">Try it free for 7 days on Windows or Mac.</p>
+<a class="btn btn-primary btn-lg" href="/download/">Go to download</a>
+</div></dialog></template>`;
   return html`<footer class="site-f"><div class="wrap"><div class="f-grid">
 <div><a class="brand" href="/">${BRANDLOGO}<span class="sr">Straft Studio, home</span></a>
 <p class="about">A film production software for all your needs. From film lovers, to film lovers across the world.</p>
@@ -177,7 +169,7 @@ ${header(page, switchHref)}
 <main id="main">
 ${page.body}
 </main>
-${footer()}
+${footer(page)}
 <script src="${js}" defer></script>
 </body>
 </html>

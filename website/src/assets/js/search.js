@@ -312,8 +312,6 @@ function ui(Core) {
   }
   function open(q) {
     if (document.getElementById('sp-q')) { document.getElementById('sp-q').focus(); return; }
-    var tg = document.getElementById('menutg');
-    if (tg && tg.getAttribute('aria-expanded') === 'true') tg.click();
     build();
     if (!dlg.open) { opener = document.activeElement; dlg.showModal(); doc.classList.add('srch-open'); }
     if (typeof q === 'string') input.value = q;

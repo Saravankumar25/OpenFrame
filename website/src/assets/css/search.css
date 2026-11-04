@@ -95,10 +95,5 @@ html.srch-open{overflow:hidden}
   .menu>li>a,.menu>li>button{padding:10px 8px}
   .nav-get{margin-left:0}
 }
-@media (max-width:1099px){
-  .srch-btn{margin-left:auto}
-  .nav-get{margin-left:8px}
-  .menu-tg{margin-left:8px}
-}
 @media (max-width:640px){.srch-btn{height:40px;min-width:40px}}
 @media (prefers-reduced-motion:reduce){.srch-btn,.sp .srch-it{transition:none}}

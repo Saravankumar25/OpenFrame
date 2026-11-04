@@ -132,8 +132,7 @@ test('structured data matches the page: FAQ answers, prices, founders and the si
   assert.deepEqual(about.founder.map((x) => x.name), ['Saravan Kumar M K', 'Badrinath Reddy A']);
   for (const p of pages) for (const app of ldOf(p.s).filter((o) => o['@type'] === 'SoftwareApplication')) {
     assert.ok(app.operatingSystem && app.applicationCategory, p.path);
-    const body = p.s.replace(/<dialog class="gp-dlg"[\s\S]*?<\/dialog>/, ''); // the get-the-app pop-up is on every page and is not the page's price
-    const shown = /₹3,999/.test(body) && /US\$89/.test(body);
+    const shown = /₹3,999/.test(p.s) && /US\$89/.test(p.s);
     assert.equal(!!app.offers, shown, `offers only where the price is shown (${p.path})`);
     if (!app.offers) continue;
     const [inr, eur, usd] = app.offers;

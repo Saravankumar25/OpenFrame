@@ -86,7 +86,7 @@ ${cta()}`,
     description: 'Get Straft Studio from the Microsoft Store for Windows 11 or the Mac App Store for Apple silicon Macs. 7-day free trial, then one payment.',
     breadcrumbs: [['Download', '/download/']],
     body: html`
-${phero('Download', 'Get Straft Studio.', 'From the Microsoft Store on Windows and the Mac App Store on the Mac. Try it free for 7 days.')}
+${phero('Download', 'Get Straft Studio.', 'From the Microsoft Store on Windows and the Mac App Store on the Mac. Try it free for 7 days.', html`<div class="price dl-price">${price()}</div>`)}
 <section class="sec-s pt30"><div class="wrap"><div class="price-grid">
 <div class="pcard win rv"><span class="badge">Windows 11</span><h2>Straft Studio for Windows</h2><p class="price-sub mt10">Windows 11, 64-bit. Installed and updated by the Microsoft Store.</p>${storeBtn('win', 'btn-lg')}
 <p class="small-print"><a href="/windows/">More about Windows</a></p></div>
@@ -114,6 +114,16 @@ ${phero('Pricing', 'Pay once. Own forever.', 'A lifetime purchase with no subscr
 <div class="region-tg" role="group" aria-label="Price region"><button type="button" data-region-set="in" aria-pressed="false">India</button><button type="button" data-region-set="eu" aria-pressed="false">Europe</button><button type="button" data-region-set="world" aria-pressed="false">USA and others</button></div>
 <h2>Straft Studio</h2>
 <div class="price">${price()}</div>
+<ul class="ticks">
+<li><span>Idea Vault, Story page, Beat Board and moodboards</span></li>
+<li><span>Screenplay editor with drafts, review and revisions</span></li>
+<li><span>Import and export: Final Draft, Fountain, PDF, Word and text</span></li>
+<li><span>Breakdown, catalog, cast, crew and locations</span></li>
+<li><span>Shot lists, storyboards and the shooting schedule</span></li>
+<li><span>Call sheets, sides, Daily View, reports and a light budget</span></li>
+<li><span>Backups and project packages</span></li>
+<li><span>Straft AI, with no running cost</span></li>
+</ul>
 <div class="store-col">${storeBtn('win')}${storeBtn('mac')}</div></div>
 <p class="price-note center">Bought separately for Windows and for Mac, each in its own store. The store sets the final checkout amount under its own rules, which can include taxes where you live. The website does not convert currencies.</p>
 </div></div></section>

@@ -65,32 +65,32 @@ test('heading levels never skip and each page has one h1', { skip: SKIP }, () =>
   assert.deepEqual([...new Set(bad)], []);
 }));
 
-test('mobile menu: Escape closes it and returns focus, the page scrolls again, Tab stays inside', { skip: SKIP }, () => withPage(async (page) => {
+test('phone bar: every laptop nav item is in the bar, no menu button, panels open on tap and close', { skip: SKIP }, () => withPage(async (page) => {
   await page.goto(base + '/');
-  const open = () => page.evaluate(() => ({ m: document.getElementById('menu').classList.contains('open-m'), x: document.getElementById('menutg').getAttribute('aria-expanded'), lock: document.documentElement.classList.contains('menu-lock'), inert: document.getElementById('main').hasAttribute('inert') }));
-  await page.click('#menutg');
-  assert.deepEqual(await open(), { m: true, x: 'true', lock: true, inert: true });
-  assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).overflow), 'hidden');
-  // Tab many times: focus never leaves the header
-  for (let i = 0; i < 40; i++) {
-    await page.keyboard.press('Tab');
-    assert.ok(await page.evaluate(() => !!document.activeElement.closest('.site-h')), `tab ${i} left the header`);
+  await page.waitForFunction(() => document.documentElement.classList.contains('ready'));
+  assert.equal(await page.locator('#menutg').count(), 0, 'no menu button');
+  for (const s of ['.brand', '.srch-btn', '.nav-get', '#menu > li > a[href="/pricing/"]', '#menu > li > a[href="/faq/"]', '#menu > li > a[href="/about/"]', '#menu > li > a[data-os-href-win]', '.nav-ctls [data-set="os"]', '.nav-ctls [data-set="theme"]', '.nav-ctls [data-set="mock"]']) {
+    const r = await page.evaluate((q) => { const e = document.querySelector(q); e.scrollIntoView({ block: 'nearest', inline: 'nearest' }); const b = e.getBoundingClientRect(), h = document.querySelector('.site-h').getBoundingClientRect(); return b.width > 0 && b.top >= h.top && b.bottom <= h.bottom && b.left >= 0 && b.right <= innerWidth + 1; }, s); // the row scrolls in whole pixels
+    assert.ok(r, s + ' is on screen inside the bar');
   }
-  await page.focus('#menu a[href="/pricing/"]');
+  const features = page.locator('#menu .has-mega > button').first(), why = page.locator('#menu .has-mega > button').nth(1);
+  await features.click();
+  const panel = () => page.evaluate(() => { const m = document.querySelector('.has-mega.open > .mega'); if (!m) return null; const r = m.getBoundingClientRect(), h = document.querySelector('.site-h').getBoundingClientRect(); return { l: r.left, r: innerWidth - r.right, t: Math.round(r.top - h.bottom), b: innerHeight - r.bottom, over: document.documentElement.scrollWidth - innerWidth }; });
+  assert.deepEqual(await page.locator('.has-mega.open').count(), 1);
+  await page.waitForFunction(() => document.querySelector('.has-mega.open > .mega').getAnimations().length === 0); // the panel slides in
+  const f = await panel();
+  assert.ok(f.l === 0 && f.r === 0 && f.t <= 1 && f.b >= 0 && f.over <= 0, JSON.stringify(f));
+  await why.click();
+  assert.equal(await page.locator('.has-mega.open').count(), 1, 'one panel at a time');
   await page.keyboard.press('Escape');
-  assert.deepEqual(await open(), { m: false, x: 'false', lock: false, inert: false });
-  assert.equal(await page.evaluate(() => document.activeElement.id), 'menutg');
-  assert.notEqual(await page.evaluate(() => getComputedStyle(document.documentElement).overflow), 'hidden');
-  // growing to desktop width with the menu open restores scrolling
-  await page.click('#menutg');
-  await page.mouse.move(5, 5); // off the menu button, so no wide-screen dropdown opens under the pointer when the window grows
-  await page.setViewportSize({ width: 1300, height: 800 });
-  assert.deepEqual(await open(), { m: false, x: 'false', lock: false, inert: false });
-  // a tap outside the open drawer closes it (the drawer is flush under the bar and as tall as its links, so the window is tall enough to leave page below it)
-  await page.setViewportSize({ width: 375, height: 900 });
-  await page.click('#menutg');
-  await page.mouse.click(5, 890);
-  assert.equal((await open()).m, false);
+  assert.equal(await page.locator('.has-mega.open').count(), 0, 'Escape closes');
+  await why.click();
+  await page.mouse.click(5, 690);
+  assert.equal(await page.locator('.has-mega.open').count(), 0, 'a tap outside closes');
+  assert.notEqual(await page.evaluate(() => getComputedStyle(document.documentElement).overflow), 'hidden', 'the page still scrolls');
+  // the toggles work from the row
+  await page.click('.nav-ctls [data-set="theme"][data-val="dark"]');
+  assert.equal(await page.evaluate(() => document.documentElement.getAttribute('data-theme')), 'dark');
 }, { viewport: { width: 375, height: 700 } }));
 
 test('desktop menu: Escape closes an open panel and returns focus to its button', { skip: SKIP }, () => withPage(async (page) => {
@@ -152,15 +152,11 @@ test('header: skip link is the first stop, controls are at least 24 px, the menu
   assert.ok(sizes.every(([w, h]) => w >= 32 && h >= 32), JSON.stringify(sizes));
 }));
 
-test('a primary call to action is reachable from phone to wide desktop (1100 to 1239 px has no room: the bar is full)', { skip: SKIP }, () => withPage(async (page) => {
-  for (const w of [320, 390, 479, 480, 700, 1099, 1240, 1280, 1320, 1600]) {
+test('Get Straft is in the bar at every width', { skip: SKIP }, () => withPage(async (page) => {
+  for (const w of [320, 390, 479, 480, 700, 1099, 1100, 1239, 1240, 1280, 1320, 1600]) {
     await page.setViewportSize({ width: w, height: 800 });
     await page.goto(base + '/pricing/');
-    const bar = await page.evaluate(() => { const a = document.querySelector('.nav-get'); return !!a && a.getClientRects().length > 0; });
-    if (bar) continue;
-    // otherwise it is inside the drawer
-    await page.click('#menutg').catch(() => {});
-    assert.ok(await page.isVisible('#menu .menu-get a'), `no Get Straft at ${w}px`);
+    assert.ok(await page.isVisible('.site-h .nav-get'), `no Get Straft at ${w}px`);
   }
 }));
 

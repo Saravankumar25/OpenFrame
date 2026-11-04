@@ -47,44 +47,25 @@
     mark();
   }
 
-  /* ---------- menus (desktop hover and click, mobile drawer) ---------- */
+  /* ---------- menus (hover and click on the full bar, tap on the two-row bar) ---------- */
   function menus() {
-    var menu = document.getElementById('menu'), tg = document.getElementById('menutg'), timers = new WeakMap();
-    if (!menu || !tg) return;
-    var head = tg.closest('.site-h') || menu, wide = matchMedia('(min-width:1100px)');
+    var menu = document.getElementById('menu'), timers = new WeakMap();
+    if (!menu) return;
+    var full = matchMedia('(min-width:1240px)');
     function setOpen(li, on) { li.classList.toggle('open', on); li.firstElementChild.setAttribute('aria-expanded', String(on)); }
-    function inDrawer() { return menu.classList.contains('open-m'); }
-    // The drawer: the page behind it is inert and does not scroll; Escape, a link, a click outside or a wide window close it.
-    function drawer(on, refocus) {
-      menu.classList.toggle('open-m', on); tg.setAttribute('aria-expanded', String(on)); doc.classList.toggle('menu-lock', on);
-      document.querySelectorAll('main, footer.site-f').forEach(function (e) { if (on) e.setAttribute('inert', ''); else e.removeAttribute('inert'); });
-      if (!on) menu.querySelectorAll('.has-mega.open').forEach(function (o) { setOpen(o, false); });
-      if (refocus) tg.focus();
-    }
+    function closeAll(except) { menu.querySelectorAll('.has-mega.open').forEach(function (o) { if (o !== except) setOpen(o, false); }); }
     menu.querySelectorAll('.has-mega').forEach(function (li) {
-      li.addEventListener('mouseenter', function () { if (innerWidth <= 1099) return; clearTimeout(timers.get(li)); menu.querySelectorAll('.has-mega.open').forEach(function (o) { if (o !== li) setOpen(o, false); }); timers.set(li, setTimeout(function () { setOpen(li, true); }, 90)); });
-      li.addEventListener('mouseleave', function () { if (innerWidth <= 1099) return; clearTimeout(timers.get(li)); timers.set(li, setTimeout(function () { setOpen(li, false); }, 170)); });
-      li.firstElementChild.addEventListener('click', function () { setOpen(li, !li.classList.contains('open')); });
-      li.addEventListener('focusout', function (e) { if (!li.contains(e.relatedTarget)) setOpen(li, false); });
+      li.addEventListener('mouseenter', function () { if (!full.matches) return; clearTimeout(timers.get(li)); closeAll(li); timers.set(li, setTimeout(function () { setOpen(li, true); }, 90)); });
+      li.addEventListener('mouseleave', function () { if (!full.matches) return; clearTimeout(timers.get(li)); timers.set(li, setTimeout(function () { setOpen(li, false); }, 170)); });
+      li.firstElementChild.addEventListener('click', function () { closeAll(li); setOpen(li, !li.classList.contains('open')); });
+      li.addEventListener('focusout', function (e) { if (e.relatedTarget && !li.contains(e.relatedTarget)) setOpen(li, false); });
     });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && !e.defaultPrevented) {
-        var inside = head.contains(document.activeElement), openLi = menu.querySelector('.has-mega.open');
-        if (inDrawer()) { drawer(false, inside); return; }
-        if (openLi) { setOpen(openLi, false); if (openLi.contains(document.activeElement)) openLi.firstElementChild.focus(); }
-      } else if (e.key === 'Tab' && inDrawer() && head.contains(document.activeElement)) {
-        // keep Tab inside the header while the drawer is open
-        var f = [].filter.call(head.querySelectorAll('a[href], button'), function (x) { return x.getClientRects().length; });
-        var first = f[0], last = f[f.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-      }
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      var openLi = menu.querySelector('.has-mega.open');
+      if (openLi) { setOpen(openLi, false); if (openLi.contains(document.activeElement)) openLi.firstElementChild.focus(); }
     });
-    tg.addEventListener('click', function () { drawer(!inDrawer(), false); });
-    menu.addEventListener('click', function (e) { if (inDrawer() && e.target.closest('a[href]')) drawer(false, false); });
-    document.addEventListener('click', function (e) { if (inDrawer() && !head.contains(e.target)) drawer(false, false); });
-    var onWide = function () { if (wide.matches && inDrawer()) drawer(false, false); };
-    if (wide.addEventListener) wide.addEventListener('change', onWide); else wide.addListener(onWide);
+    document.addEventListener('click', function (e) { if (!menu.contains(e.target)) closeAll(); });
   }
 
   /* ---------- store buttons: no listing yet, so a click says so, politely, next to the button (no layout shift) ---------- */
