@@ -4,16 +4,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
+import { MARK_D } from '../src/lib/icons.mjs';
 
 const OUT = path.resolve(import.meta.dirname, '..', 'src', 'static');
-const NAVY = '#1d1a2e';
-// The mark on the brand navy. radius: corner of the tile; inset: space around the mark (fraction of the tile).
+const TILE = '#1a1d26';
+// The mark on the app icon tile. radius: corner of the tile; inset: space around the mark (fraction of the tile).
 const tile = (size, { radius = 0.22, inset = 0.14 } = {}) => {
-  const s = size, m = s * inset, k = (s - 2 * m) / 24;
+  const s = size, m = s * inset, k = (s - 2 * m) / 1024;
   return Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
-<defs><linearGradient id="g" gradientUnits="userSpaceOnUse" x1="${m}" y1="${m}" x2="${s - m}" y2="${s - m}"><stop offset="0" stop-color="#ff5d6c"/><stop offset=".55" stop-color="#ff9a3d"/><stop offset="1" stop-color="#ffc23d"/></linearGradient></defs>
-<rect width="${s}" height="${s}" rx="${s * radius}" fill="${NAVY}"/>
-<g transform="translate(${m} ${m}) scale(${k})" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.2"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M22 7h-5M22 17h-5"/></g></svg>`);
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF5E6C"/><stop offset="0.5" stop-color="#FF9A45"/><stop offset="1" stop-color="#FFC13D"/></linearGradient></defs>
+<rect width="${s}" height="${s}" rx="${s * radius}" fill="${TILE}"/>
+<g transform="translate(${m} ${m}) scale(${k})"><path fill-rule="evenodd" fill="url(#g)" d="${MARK_D}"/></g></svg>`);
 };
 const png = (size, opts) => sharp(tile(size * 4, opts)).resize(size, size).png({ compressionLevel: 9 }).toBuffer();
 const write = (name, buf) => { fs.writeFileSync(path.join(OUT, name), buf); console.log(name, buf.length + ' bytes'); };

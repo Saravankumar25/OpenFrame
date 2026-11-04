@@ -5,16 +5,16 @@ and the exact control the user acts on in each screen. These maps drive animated
 A tutorial with a wrong screen is a failed tutorial: accuracy beats coverage.
 
 Sources (read-only):
-- Windows: C:\StraftWebsite\research\WindowsHTML-src\ (README.md, index.html lists every screen with its title,
+- Windows: research\WindowsHTML-src\ (README.md, index.html lists every screen with its title,
   light\NNN-name.html are the pages; captured at 1600x1000 from the real app; invisible <a> overlays link a control to
   the screen it leads to, which is strong evidence of the real flow). README lists states that could not be captured.
-- Mac: C:\StraftWebsite\research\MacHTML-src\ (README.md, light\pages.json has n/file/title/area/expect texts for
+- Mac: research\MacHTML-src\ (README.md, light\pages.json has n/file/title/area/expect texts for
   all 692 screens; pages hold one .el element per accessibility element with data-id and aria-label; an <a class="el"
   href="NNN-x.html"> means that control led to that captured screen).
 - App source for checking a flow: Windows C:\Straft\apps\desktop\src ; Mac
   C:\Users\SARAVA~1\AppData\Local\Temp\claude\C--Users-Saravan-Kumar--claude-spares-spare-OBdvmq\9cc92431-6d5c-49b4-9ce4-11e16ae79ad1\scratchpad\mac\mac\apps\macos
 
-Probe tool (run from C:\StraftWebsite):
+Probe tool (run from the website folder):
 - `node research/probe.mjs win 003-app-home-empty.html` lists visible controls with a suggested selector and rect.
 - `node research/probe.mjs mac 003-home-empty.html '[data-id="home-new-project"]'` checks a selector: it must
   return count 1. Selectors are Playwright selectors: CSS (`[data-id="x"]`, `button[aria-label="Settings"]`),

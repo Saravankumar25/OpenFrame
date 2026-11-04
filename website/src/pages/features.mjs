@@ -93,7 +93,6 @@ ${ctx.cta()}`;
 
 function indexPage(ctx) {
   const { html } = ctx;
-  const count = Object.values(CATALOG).reduce((n, l) => n + l.length, 0);
   const body = html`
 <section class="phero"><div class="wrap"><span class="eyebrow">All features</span><h1>One film, moving forward.</h1>
 <p class="lead">From the first scrap of an idea to the final call sheet. Every part of Straft talks to every other part, so you never retype anything.</p>
@@ -103,10 +102,6 @@ ${ctx.FEATURE_GROUPS.map(([group, items]) => html`<div class="cat-group"><h2>${g
 ${items.map(([slug, title]) => html`<a class="card linkcard" href="/features/${slug}/"><h3>${title}</h3><p>${FEATURE_PAGES[slug].lead}</p></a>`)}
 </div></div>`)}
 </div></section>
-${count ? html`<section class="tint sec-s"><div class="wrap"><div class="sec-head"><span class="eyebrow">Complete catalog</span><h2>Every capability at a glance.</h2></div>
-${ctx.FEATURE_GROUPS.flatMap(([, items]) => items).map(([slug, title]) => (CATALOG[slug] || []).length ? html`<div class="lib-area"><h2><a href="/features/${slug}/#catalog">${title}</a></h2><ul class="lib">
-${CATALOG[slug].map((f) => html`<li><b><a href="/features/${slug}/#${f.id}">${f.name}</a></b>${f.summary} <span class="small-print">${[f.win?.length && 'Windows', f.mac?.length && 'Mac'].filter(Boolean).join(' and ')}</span></li>`)}</ul></div>` : '')}
-</div></section>` : ''}
 ${ctx.cta()}`;
   return {
     path: '/features/', nav: 'features', os: null, alternates: null,

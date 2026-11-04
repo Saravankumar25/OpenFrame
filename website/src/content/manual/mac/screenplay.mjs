@@ -653,7 +653,7 @@ export default {
           explain: `Only the first draft, Draft 1, is listed, followed by New Draft…, Manage Drafts… and Renumber Scenes.`,
         },
         {
-          screen: `screenplay-draft-example-short-imported`,
+          screen: `screenplay-draft-menu`,
           do: `Choose a draft in the list to open it.`,
           explain: `Choosing the draft you are already in changes nothing. Renumber Scenes gives the scenes fresh numbers in order.`,
         },
@@ -1211,7 +1211,6 @@ export default {
     'screenplay-tools-import-screenplay': `The Import Screenplay sheet with the three steps, Screenplay file and Browse…, pasted text, sample scripts, and Cancel and Preview. See Bring in an existing screenplay.`,
     'screenplay-tools-export-screenplay': `The Export Screenplay sheet with Source, Format, Scope, the four options, Additional formats…, Cancel, Preview… and Export…. See Export the screenplay.`,
     'screenplay-draft-menu': `The Draft menu with the current draft, New Draft…, Manage Drafts… and Renumber Scenes. See Start a new draft.`,
-    'screenplay-draft-example-short-imported': `The Draft menu with the draft Example-Short (imported) under the pointer. It belongs to Understand the Draft menu of a new screenplay.`,
     'screenplay-draft-new-draft': `The New Draft sheet with Draft name, Note (optional), Cancel and Create Draft, and the line that the source draft stays exactly as it is. See Start a new draft.`,
     'screenplay-draft-manage-drafts': `The Drafts sheet opened with Manage Drafts… and its Recovery History. It belongs to Manage drafts and to Go back to an earlier point.`,
     'screenplay-element-picker': `The Element menu while the cursor is on an Action line: Scene Heading, Character, Parenthetical, Transition, Shot, General note (not printed) and Insert Page Break. See Choose the kind of line.`,

@@ -1,0 +1,66 @@
+// Photographs of the home hero film and the record of where each came from. All are from Unsplash under the Unsplash
+// License (https://unsplash.com/license), checked on each photo's page on 2026-11-04: https://unsplash.com/photos/<short>.
+// Uploaded before September 2023 on purpose, to avoid AI-generated pictures. No clearly identifiable faces: the licence gives no
+// model release. No film titles and no maker names readable at tile size. Order matters: the first are the featured photographs (the last of
+// them shows first, and the first stays in the middle of the wall), the next can take a double-size tile, and the rest
+// fill the wall from the middle outward.
+export const FEATURED = 5, DOUBLE = 6;
+const P = (id, short, by, user) => ({ id, short, by, user });
+export const HERO_PHOTOS = [
+  P('1615414047026-802692414b79', 'ebsrin6WqxQ', 'Liam McGarry', 'liammcgarry'),
+  P('1518929458119-e5bf444c30f4', 'iwfHhOZLVMU', 'Chris Murray', 'seemurray'),
+  P('1572701393175-5970ff3841a9', 'SWTHldDCpHM', 'Jordan Graff', 'jordankgraff'),
+  P('1580127645995-d43fe9598711', 'y3Tl-cbU-CU', 'Digital Content Writers India', 'digitalcontentwritersindia'),
+  P('1652616555250-57d49a2034e2', 'fGrb35rHPCQ', 'Mykhaylo Kopyt', 'mykhailokopyt'),
+
+  P('1621873493371-9aea49f66b9b', 'dyJq7vzPeU8', 'Wesley Pribadi', 'wesleypribadi'),
+  P('1658042250011-2dd5c9b514c8', 'yRXgGX7g4tM', 'Anthony Lim', 'neonboiiz'),
+  P('1453090522900-026de5423c2a', 'SKcTKYNRvHY', 'Camille Orgel', 'cam_bam'),
+  P('1603218734550-be7fcffeb817', 'ACAJGonG8rA', 'Harald Müller', 'brickhario'),
+  P('1512412632857-b93f6ecce335', 'HdgB6VyjK70', 'Hermes Rivera', 'hermez777'),
+  P('1565798846807-2af22c843402', 'Hm_iFim94bw', 'Barry Weatherall', 'dgmke_06'),
+
+  P('1623557685191-d06bc6fb7277', '-HSPLQZXMVs', 'Laura Nyhuis', 'lauraintacoma'),
+  P('1554941426-a965fb2b9258', 'e6BkcrbCvzs', 'Keagan Henman', 'henmankk'),
+  P('1675278439879-d0bab3c98d7d', '2gp-15gzsg8', 'Johnny Briggs', 'johnnyboylee'),
+  P('1456959890911-d3332c55bc7b', 'IIDxzNru2GY', 'Csabi Elter', 'bulgakovmihaly'),
+  P('1681301968989-1a7d8874864c', 'zbfyAE76fcc', 'Johnny Briggs', 'johnnyboylee'),
+  P('1674567633971-ac38e9faab4f', 'RdZA9R9wiSU', 'Ottr Dan', 'ottrdan'),
+  P('1455390582262-044cdead277a', 'y02jEX_B0O0', 'Aaron Burden', 'aaronburden'),
+  P('1543769657-fcf1236421bc', '00nHr1Lpq6w', 'Micah Boswell', 'micahboswell'),
+  P('1625396056350-91dd4f83fc5e', 'pZJfBG9I2Z0', 'Dahee Jeoung', 'lancott'),
+  P('1587135991058-8816b028691f', 'wcMysLw5ROM', 'Eugene Chystiakov', 'eugenechystiakov'),
+  P('1440404653325-ab127d49abc1', '2uwFEAGUm6E', 'Noom Peerapong', 'imnoom'),
+  P('1478720568477-152d9b164e26', 'J39X2xX_8CQ', 'Jeremy Yap', 'jeremyyappy'),
+  P('1632180807550-5a46d458b5a9', 'Jowx9DUhoMM', 'Lucia Macedo', 'sample_in_photography'),
+  P('1569766670290-f5581d3bb53f', 'pJwWrP-OIfk', 'Matt Popovich', 'mattpopovich'),
+  P('1571232151946-f7f00c61ade7', 'WAchuh1Gc-0', 'Waldemar Brandt', 'waldemarbrandt67w'),
+  P('1637248578458-934f03db3ea2', 'aYDIuBWzSc4', 'Leuchtturm Entertainment', 'leuchtturm_entertainment'),
+  P('1654197308647-e10569aa987a', 'UNJOcGNUmXo', 'Michael Heise', 'momheise'),
+  P('1646019443835-71037e870764', 'VJDcon8_1JM', 'Matt Benson', 'mattgyver'),
+  P('1611540881474-bf7c8731bfd2', 'U01J3s657V8', 'José Pinto', 'gearfilms'),
+  P('1628618484803-05b8e80cd81a', 'UQ470wQWx4o', 'Sten Ritterfeld', 'stenslens'),
+  P('1624357574583-2a6fef835b87', 'ZI3n0D0gefA', 'Siri louis', 'siri_louis'),
+  P('1619473667776-48cd8e52d380', 'zrJH5NUEdOM', 'Billy Freeman', 'billyfreeman'),
+  P('1600660792241-240f01455c6f', '4SYDbxHG0t8', 'Gordon Cowie', 'gcowie'),
+  P('1580746353748-e7b3febae39a', 'lLT4FLiqlXo', 'Jakob Owens', 'jakobowens1'),
+  P('1681137063068-081072cf04b4', 'LP24lfRFKis', 'Huong Do', 'huongddn'),
+  P('1577190651915-bf62d54d5b36', '9Qccv5rZtRM', 'Natalie Parham', 'natalieparham'),
+  P('1655195215404-a89325e7dd3e', 'HmhOg6yDtsY', 'Voyage Pro', 'voyagepro'),
+  P('1621939938486-7a21d605c2d9', 's68kUxPax7A', 'Julia Cheperis', 'inception'),
+  P('1650569383091-955916e4c715', '7gQnsIW0rXg', 'Joshua Niyogakiza', 'jochelag'),
+  P('1503095396549-807759245b35', 'p6rNTdAPbuk', 'Kyle Head', 'kyleunderscorehead'),
+  P('1558970439-add78fc68990', 'jhPSJDhiRyQ', 'stefano stacchini', 'stak59'),
+  P('1621038603871-26d9df5803fe', 'mYcICuiKVo8', 'kevs', 'akevsery'),
+  P('1678656037828-371b7029cf10', 'ZfcfV7fhLvE', 'Matt Benson', 'mattgyver'),
+  P('1658244274838-0f62b80187d5', 'Tfu5pQeL5hc', 'Nataliia Kvitovska', 'nkvitovska'),
+  P('1615754890634-69ac8bca7189', 'd5-GkHQVlIM', 'Luis Morera', 'luismorerat'),
+  P('1585236820787-8cb3b8f97613', 'xiiUq3BtlNc', 'Nick Fewings', 'jannerboy62'),
+  P('1513106580091-1d82408b8cd6', 'nW1n9eNHOsc', 'Kilyan Sockalingum', 'kilyan_s'),
+  P('1659497379075-a807be116f74', 'ZHqgjvqilIQ', 'Jill Marv', 'shop12girl'),
+  P('1649366735070-8e78a4f86f31', 'uUUy1YnTcfQ', 'Shannia Christanty', 'shanniacy'),
+  P('1596972811652-11d30aa10342', '-fJ8Rbnj8Mo', 'Immo Wegmann', 'tinkerman'),
+  P('1627597986031-190cc8411372', 'TLLUV4D3Mdw', 'Jason Leung', 'ninjason'),
+  P('1623557348651-43020c38ce7c', 'dGFcO8nG3GY', 'Laura Nyhuis', 'lauraintacoma'),
+  P('1623090351083-90cce8ec842e', 'mn6DDkoBIss', 'Moses Williams', 'spacejunkpictures'),
+];

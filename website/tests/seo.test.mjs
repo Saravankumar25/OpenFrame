@@ -133,11 +133,11 @@ test('structured data matches the page: FAQ answers, prices, founders and the si
   for (const p of pages) for (const app of ldOf(p.s).filter((o) => o['@type'] === 'SoftwareApplication')) {
     assert.ok(app.operatingSystem && app.applicationCategory, p.path);
     const body = p.s.replace(/<dialog class="gp-dlg"[\s\S]*?<\/dialog>/, ''); // the get-the-app pop-up is on every page and is not the page's price
-    const shown = /₹2,999/.test(body) && /US\$89/.test(body);
+    const shown = /₹3,999/.test(body) && /US\$89/.test(body);
     assert.equal(!!app.offers, shown, `offers only where the price is shown (${p.path})`);
     if (!app.offers) continue;
     const [inr, eur, usd] = app.offers;
-    assert.equal(inr.price + inr.priceCurrency, '2999INR'); assert.equal(inr.eligibleRegion.name, 'IN');
+    assert.equal(inr.price + inr.priceCurrency, '3999INR'); assert.equal(inr.eligibleRegion.name, 'IN');
     assert.equal(eur.price + eur.priceCurrency, '89EUR'); assert.equal(eur.eligibleRegion.name, 'Europe');
     assert.equal(usd.price + usd.priceCurrency, '89USD'); assert.deepEqual(usd.ineligibleRegion.map((r) => r.name), ['IN', 'Europe']);
     for (const o of app.offers) assert.equal(o.priceValidUntil, undefined, 'the price has no end date, so none is stated');
@@ -156,7 +156,7 @@ test('title and description helpers cut at word boundaries', () => {
 test('llms.txt and llms-full.txt are accurate, plain, and free of company and technology details', { skip: SKIP }, () => {
   const stack = /\b(Rust|SQLite|Tauri|React|TypeScript|SwiftUI|UniFFI|llama\.cpp|Gemma|Vulkan|Hugging Face|SHA-256|Vighnajith|Pvt|Private Limited)\b|[–—]/;
   const short = read(path.join(DIST, 'llms.txt')), full = read(path.join(DIST, 'llms-full.txt'));
-  for (const s of [short, full]) { assert.doesNotMatch(s, stack); assert.match(s, /₹2,999/); assert.match(s, /US\$89/); assert.match(s, /7-day free trial/); }
+  for (const s of [short, full]) { assert.doesNotMatch(s, stack); assert.match(s, /₹3,999/); assert.match(s, /US\$89/); assert.match(s, /7-day free trial/); }
   assert.match(short, /^# Straft Studio\n\n> /);
   assert.match(short, /€89 in Europe/, 'Europe has its own price (owner, 2026-10-31)');
   for (const m of (short + full).matchAll(/\]\((https?:\/\/[^)]+)\)/g)) {

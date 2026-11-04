@@ -157,7 +157,7 @@ ${CARDS.map(([h, t, b]) => html`<a class="card linkcard" href="${h}"><h3>${t}</h
 </ul>
 
 <h2>The stores</h2>
-<p>Straft Studio is sold only through the Microsoft Store and the Mac App Store. The store takes the payment, shows the final price and taxes, and handles receipts and refunds. The store’s own terms apply to your purchase. For the Mac, Apple’s ${ext(LINKS.appleEula, 'Standard Licensed Application End User License Agreement')} applies, together with this page. If this page and a store’s terms disagree about your purchase, the store’s terms win. Prices on this site are ₹2,999 in India and US$89 elsewhere; the store shows the final amount.</p>
+<p>Straft Studio is sold only through the Microsoft Store and the Mac App Store. The store takes the payment, shows the final price and taxes, and handles receipts and refunds. The store’s own terms apply to your purchase. For the Mac, Apple’s ${ext(LINKS.appleEula, 'Standard Licensed Application End User License Agreement')} applies, together with this page. If this page and a store’s terms disagree about your purchase, the store’s terms win. The launch prices on this site are ₹3,999 in India, €89 in Europe and US$89 in the USA and other countries; the store shows the final amount.</p>
 
 <h2>This website</h2>
 <p>You may read this site and link to it. We describe the app as accurately as we can, but the app changes over time, so screens and features can differ from what you see here. The site is provided as it is, without a promise that it is complete or always available. Please do not copy its text or screens and present them as your own, or use the Straft Studio name in a way that suggests we endorse you. Other product names belong to their owners. Microsoft and Microsoft Store are trademarks of the Microsoft group of companies. Apple, Mac, macOS and Mac App Store are trademarks of Apple Inc.</p>
@@ -229,12 +229,12 @@ ${ph('discontinuation', 'What happens if the product is withdrawn, counsel to wo
   });
 
   // ---------- Notices
-  const FONT_LIST = [['Inter', 'OFL-Inter.txt', 'body text'], ['Manrope', 'OFL-Manrope.txt', 'wordmark'], ['Newsreader', 'OFL-Newsreader.txt', 'page titles'], ['Sora', 'OFL-Sora.txt', 'headings']];
+  const FONT_LIST = [['Inter', 'OFL-Inter.txt', 'body text'], ['Newsreader', 'OFL-Newsreader.txt', 'page titles'], ['Sora', 'OFL-Sora.txt', 'headings']];
   const licence = (f) => fs.readFileSync(path.join(FONTS, f), 'utf8').trim();
   const notices = page({
     path: '/legal/notices/',
     title: 'Notices | Straft Studio',
-    description: 'Licences for the four fonts this website uses, published in full, and where to find the notices for the Straft Studio app itself.',
+    description: 'Licences for the three fonts this website uses, published in full, and where to find the notices for the Straft Studio app itself.',
     breadcrumbs: crumb('Notices', '/legal/notices/'),
     body: doc('Notices', 'Notices.', 'The licences for the work of others that this website uses.', html`
 <h2>Website fonts</h2>

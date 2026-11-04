@@ -33,13 +33,13 @@ test('website theme and app screen theme are independent and remembered', { skip
   assert.equal(await attr(page, 'data-theme'), 'dark');
   assert.equal(await attr(page, 'data-mock'), 'light');
   assert.ok((await frameSrc(page)).every((s) => s.includes('/light/')));
-  await page.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(14, 13, 21)');
+  await page.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(28, 27, 26)');
   await page.click('.nav-ctls [data-set="mock"][data-val="dark"]');
   assert.equal(await attr(page, 'data-theme'), 'dark');
   assert.ok((await frameSrc(page)).every((s) => s.includes('/dark/')));
   await page.click('.nav-ctls [data-set="theme"][data-val="light"]');
   assert.equal(await attr(page, 'data-mock'), 'dark');
-  await page.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(255, 255, 255)');
+  await page.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(250, 249, 245)');
   await page.goto(base + '/pricing/');
   assert.equal(await attr(page, 'data-theme'), 'light');
   assert.equal(await attr(page, 'data-mock'), 'dark');

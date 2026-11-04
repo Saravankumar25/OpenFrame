@@ -41,14 +41,16 @@ test('every internal link, image and app screen resolves', { skip: SKIP }, () =>
 test('company name in every footer, founders on About, supplied logo present', { skip: SKIP }, () => {
   for (const [f, s] of html) assert.ok(s.includes(`&copy; 2026 ${COMPANY}`), pagePath(f));
   const about = read(path.join(DIST, 'about', 'index.html'));
-  // Exact names, Saravan Kumar M K first, each credited with their own work (owner, 2026-10-31).
-  const a = about.indexOf('>Saravan Kumar M K</a></h3>'), b = about.indexOf('<h3>Badrinath Reddy A</h3>');
-  assert.match(about, /<h3><a class="name-link" href="https:\/\/saravankumar25\.github\.io" target="_blank" rel="noopener noreferrer">Saravan Kumar M K<\/a><\/h3>/);
+  // Exact names, Saravan Kumar M K first, each credited with their team (owner, 2026-11-04).
+  const a = about.indexOf('>Saravan Kumar M K</a> and team</h3>'), b = about.indexOf('<h3>Badrinath Reddy A and team</h3>');
+  assert.match(about, /<h3><a class="name-link" href="https:\/\/saravankumar25\.github\.io" target="_blank" rel="noopener noreferrer">Saravan Kumar M K<\/a> and team<\/h3>/);
   assert.ok(a > 0 && b > a, 'founder order');
-  assert.match(about, /Saravan Kumar M K is responsible for the end-to-end technical implementation/);
+  assert.match(about, /Technical Co-Founding Engineer/);
+  assert.match(about, /Saravan Kumar M K led the technical development of Straft Studio with the engineering team/);
   FOUNDERS[0].text.forEach((p, i) => assert.equal(p.length, FOUNDERS[1].text[i].length, `founder paragraph ${i + 1}: same number of characters`));
   assert.doesNotMatch(about.slice(about.indexOf('<div class="founders">'), about.indexOf('</section>', about.indexOf('<div class="founders">'))), /<h4>|<ul class="ticks">/, 'founder profiles are prose');
-  assert.match(about, /Badrinath Reddy A is responsible for the product idea, the ideation, the product design/);
+  assert.match(about, /Product Co-Founding Engineer/);
+  assert.match(about, /Badrinath Reddy A led the product development of Straft Studio with the product team/);
   assert.ok(existsSync(path.join(DIST, 'company', 'vighnajith-advisories-logo.webp')));
   for (const s of html.values()) assert.doesNotMatch(s, /Vignajith|Advisorys|Sarvan Kumar|Kumar MK|Reddy Avuku|web[- ]?series/i);
 });
@@ -61,12 +63,16 @@ test('store buttons show the approved labels and are not links until listings ex
   for (const v of html.values()) assert.doesNotMatch(v, /apps\.microsoft\.com|apps\.apple\.com|ms-windows-store:/);
 });
 
-test('prices: rupees for India, euros for Europe, US dollars for other countries', { skip: SKIP }, () => {
+test('launch prices: rupees for India, euros for Europe, US dollars for the USA and other countries, originals crossed out', { skip: SKIP }, () => {
   const s = read(path.join(DIST, 'pricing', 'index.html'));
-  assert.match(s, /data-price-in>₹2,999</);
-  assert.match(s, /data-price-eu>€89</);
-  assert.match(s, /data-price-us>US\$89</);
-  assert.match(s, /<div class="region-tg"[^>]*>[\s\S]*data-region-set="in"[^>]*>India<[\s\S]*data-region-set="eu"[^>]*>Europe<[\s\S]*data-region-set="world"[^>]*>Other countries</);
+  assert.match(s, /data-price-in><s>₹7,999<\/s> <b>₹3,999<\/b></);
+  assert.match(s, /data-price-eu><s>€149<\/s> <b>€89<\/b></);
+  assert.match(s, /data-price-us><s>US\$149<\/s> <b>US\$89<\/b></);
+  assert.match(s, /class="launch">Launch Price</);
+  const card = s.slice(s.indexOf('<div class="pcard win'), s.indexOf('class="price-note'));
+  assert.doesNotMatch(card, /<ul|class="ticks"|class="badge"|class="price-sub"/, 'the card holds only the name, the prices and the store buttons');
+  assert.match(card, /data-store="win"[\s\S]*data-store="mac"/);
+  assert.match(s, /<div class="region-tg"[^>]*>[\s\S]*data-region-set="in"[^>]*>India<[\s\S]*data-region-set="eu"[^>]*>Europe<[\s\S]*data-region-set="world"[^>]*>USA and others</);
   assert.doesNotMatch(s, /<select/);
   for (const v of html.values()) assert.doesNotMatch(v, /89 euros|3,000 rupees|Outside India/);
 });

@@ -10,8 +10,8 @@ code wins and the disagreement is listed in section 6.
 | `W:` | `C:\Straft` (Windows app, Tauri v2, React and TypeScript, shared Rust core) | `main` at `1711450`, 2026-10-21 |
 | `M:` | `C:\Users\SARAVA~1\AppData\Local\Temp\claude\C--Users-Saravan-Kumar--claude-spares-spare-OBdvmq\9cc92431-6d5c-49b4-9ce4-11e16ae79ad1\scratchpad\mac\mac` (Mac app, SwiftUI over the same Rust core through UniFFI) | branch `mac/windows-parity`, handoff of 2026-10-20; not merged, not pushed |
 | `FS` | `W:\docs\implementation\feature-status.md` (feature rows; line numbers given as `FS:<line>`) | rewritten 2026-10-06, rows updated to 2026-10-20 |
-| `WinHTML` | `C:\StraftWebsite\research\WindowsHTML-src` (809 Windows screens, captured from commit `0dd87ae`) | screen names given as `NNN-name` |
-| `MacHTML` | `C:\StraftWebsite\research\MacHTML-src\light\pages.json` (692 Mac screens, 26 areas, commit `8d40f4e`) | screen names given as `Mac NNN-name` |
+| `WinHTML` | `research\WindowsHTML-src` (809 Windows screens, captured from commit `0dd87ae`) | screen names given as `NNN-name` |
+| `MacHTML` | `research\MacHTML-src\light\pages.json` (692 Mac screens, 26 areas, commit `8d40f4e`) | screen names given as `Mac NNN-name` |
 
 Status words in the Windows column are the feature status file's words. Proof levels (ADR-0030, `FS:24-33`):
 P1 = code exists with named tests; P2 = end-to-end on the debug build; P3 = end-to-end on the release build (evidence

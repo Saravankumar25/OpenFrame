@@ -8,13 +8,13 @@ Names of secrets appear here. Values never do, and they must never be pasted int
 
 ## 1. Build, test, deploy
 
-Run these from `C:\StraftWebsite`.
+Run these from the website folder.
 
 | Step | Command | What it does |
 |---|---|---|
 | Build | `npm run build` | Renders every page into `dist/`: HTML, CSS, JS, `_headers`, `_redirects`, `sitemap.xml`, `robots.txt`, `llms.txt`, `404.html`. |
 | Test | `npm test` | Runs every file in `tests/` against `dist/`: static checks, content checks, browser checks, accessibility. Build first. |
-| Deploy | `npm run deploy` | Uploads `dist/` to the Cloudflare Pages project `openframe-studio`, production branch `main`. |
+| Deploy | `npm run deploy` | Uploads `dist/` to the Cloudflare Pages project `straft-studio`, production branch `main`. A push to `main` on GitHub does this by itself (section 9). |
 | Preview | `node scripts/deploy.mjs preview` | Uploads the same folder as a preview deployment on a branch named `preview`. Not the live site. |
 
 Release order: `npm run build`, then `npm test`, then `npm run deploy`. Never deploy with a red test.
@@ -61,7 +61,7 @@ do nothing.
 
 Pages keeps every deployment. Production points at one of them, and you can move the pointer.
 
-1. Cloudflare dashboard, Workers & Pages, `openframe-studio`, Deployments.
+1. Cloudflare dashboard, Workers & Pages, `straft-studio`, Deployments.
 2. In "All deployments", find the last good production deployment. Open its three-dot menu.
 3. Choose "Rollback to this deployment" and confirm. Production switches at once.
 4. Open the live site in a private window and check the home page, `/features/`, and one tutorial.
@@ -74,7 +74,7 @@ or the next normal deploy will bring the bad change back.
 
 Second way, from a known good commit: check out the commit, run the full build and test, and `npm run deploy`. This is
 slower but leaves a clean record. To list deployments from the command line, run
-`npx wrangler@4.151.3 pages deployment list --project-name openframe-studio`. Wrangler's documentation does not list a
+`npx wrangler@4.151.3 pages deployment list --project-name straft-studio`. Wrangler's documentation does not list a
 rollback command, so use the dashboard for the actual rollback.
 
 Source: Cloudflare Pages, Rollbacks (https://developers.cloudflare.com/pages/configuration/rollbacks/) and Wrangler
@@ -113,7 +113,7 @@ a fast site that costs nothing to run, sets no cookies of its own, and has one c
 
 ### 4.1 Pages (live now)
 
-- Project `openframe-studio`, live at https://openframestudio.app (apex and `www` active), direct upload from this folder.
+- Project `straft-studio`, live at https://straftstudio.com, direct upload by the workflow in section 9 or from this folder.
 - Static assets are free and unlimited, on Free and paid plans. Cost appears only if a Pages Function runs; there are
   none, and the site has no `functions/` folder. Keep it that way until a feature needs one.
 - Pages caches by itself. For cacheable requests it sends `public, max-age=0, must-revalidate` with an ETag, so
@@ -141,8 +141,8 @@ simple.
 Steps:
 
 1. Buy the domain on Cloudflare Registrar (or add an existing domain as a zone and switch its nameservers).
-2. Workers & Pages, `openframe-studio`, Custom domains, Set up a domain. Add the apex first. Cloudflare creates the
-   CNAME to `openframe-studio.pages.dev` itself. Then add `www` the same way.
+2. Workers & Pages, `straft-studio`, Custom domains, Set up a domain. Add the apex first. Cloudflare creates the
+   CNAME to `straft-studio.pages.dev` itself. Then add `www` the same way.
    Add the domain in the Pages screen before touching DNS: a hand-made CNAME that Pages does not know about gives a
    522 error.
 3. Check CAA records. If the zone has any, they must allow Cloudflare's certificate authorities (Let's Encrypt,
@@ -152,7 +152,7 @@ Steps:
    `https://<domain>/${1}`), status 301, keep the query string. Both hostnames must be proxied (orange cloud), which
    they are when Pages created them. The Free plan allows 10 single redirect rules per zone, with wildcards but no
    regular expressions. Use the redirect simulator before deploying the rule.
-5. Redirect the old `openframe-studio.pages.dev` address to the domain with an account-level Bulk Redirect (Free plan:
+5. Redirect the old `straft-studio.pages.dev` address to the domain with an account-level Bulk Redirect (Free plan:
    15 rules, 5 lists, 10,000 redirects per account). Cloudflare names this as the way to retire `*.pages.dev`. Single
    Redirects run before Bulk Redirects, and Bulk Redirects run after the WAF.
 6. Rebuild with `OF_SITE_URL` (section 1), test, deploy.
@@ -194,7 +194,7 @@ cookie banners, so whether a banner is needed is a legal question for the owner'
 
 How to switch it on for a Pages project:
 
-1. Workers & Pages, `openframe-studio`, Metrics, Web Analytics, Enable.
+1. Workers & Pages, `straft-studio`, Metrics, Web Analytics, Enable.
 2. Cloudflare adds its snippet on the next deployment, so run `npm run deploy` once afterwards.
 3. Read the reports under Web Analytics in the dashboard. Cloudflare keeps six months of data.
 
@@ -301,40 +301,42 @@ Things that could cost money. None is on by default; do not switch any of them o
 
 Before the domain:
 
-- [ ] Workers & Pages, `openframe-studio`, Metrics: Web Analytics enabled (needs the CSP change in 4.4, then a deploy).
+- [ ] Workers & Pages, `straft-studio`, Metrics: Web Analytics enabled (needs the CSP change in 4.4, then a deploy).
 - [ ] Billing: confirm the account is on the Free plan and a payment method is attached only if the domain is bought here.
 
 When the domain is bought:
 
-- [x] Registrar: openframestudio.app bought on Cloudflare Registrar (2026-11-01). Auto-renew and WHOIS redaction: not checked.
+- [x] Domain: straftstudio.com is an active zone on this Cloudflare account (owner, 2026-11-04). Auto-renew and WHOIS redaction: not checked.
 - [ ] DNS: DNSSEC on.
 - [ ] Pages custom domains: apex added, then `www` added, both show Active.
 - [ ] Redirect Rule: `www` to apex, 301, query string kept. Tested with the simulator.
-- [ ] Bulk Redirect: `openframe-studio.pages.dev` to the domain.
+- [ ] Bulk Redirect: `straft-studio.pages.dev` to the domain.
 - [ ] SSL/TLS: mode Full (strict) where offered; Always Use HTTPS on; Minimum TLS 1.2; TLS 1.3 on.
 - [ ] HSTS: decision made (the site already sends it); Preload still off.
 - [ ] Security: Free Managed Ruleset deployed; Bot Fight Mode on only after the privacy page covers its cookies.
 - [ ] Speed, Observatory: first test of three pages saved.
-- [x] Site rebuilt for https://openframestudio.app, tested (131/131), deployed; `site.config.mjs` default changed.
+- [x] Site rebuilt for https://straftstudio.com and deployed; `site.config.mjs` default changed.
 - [ ] Search setup (section 5) started.
 
-### 4.11 Domain automation and token permissions (live since 2026-11-01)
+### 4.11 Domain automation and token permissions
+
+Do not run `npm run domain:ensure` on `straftstudio.com` without the owner's word. It changes SSL/TLS settings and adds redirect rules. It never touches MX or TXT records, and it stops if a name already has other records.
 
 `npm run domain:ensure` makes the Cloudflare side match this document. It only looks, then changes what differs, so it is
 safe to run again. `npm run domain:verify` needs no credentials and checks the public site. `npm run deploy` runs the
 verify step after every deploy.
 
-What `ensure` keeps in place for `openframestudio.app`:
+What `ensure` keeps in place for `straftstudio.com`:
 
 | Item | Setting |
 |---|---|
-| DNS | `@` and `www`, CNAME to `openframe-studio.pages.dev`, proxied |
-| Pages custom domains | apex and `www` on project `openframe-studio`, both Active |
+| DNS | `@` and `www`, CNAME to `straft-studio.pages.dev`, proxied |
+| Pages custom domains | apex and `www` on project `straft-studio`, both Active |
 | `www` redirect | Single Redirect rule `www_to_apex`, 301, path kept, query string kept |
 | SSL/TLS | mode Full (strict), Always Use HTTPS on, minimum TLS 1.2, TLS 1.3 on; DNSSEC on |
-| Old address | account Bulk Redirect list `pages_dev_to_domain`: `openframe-studio.pages.dev` to the apex, 301, path and query kept (official method, Pages docs "Disable access to `*.pages.dev` subdomain"). Preview addresses (`*.openframe-studio.pages.dev`) are not touched |
+| Old address | account Bulk Redirect list `pages_dev_to_domain`: `straft-studio.pages.dev` to the apex, 301, path and query kept (official method, Pages docs "Disable access to `*.pages.dev` subdomain"). Preview addresses (`*.straft-studio.pages.dev`) are not touched |
 
-Token permissions (token `openframe-website`, kept in the user variables `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`,
+Token permissions (token `straft-website`, kept in the user variables `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`,
 never in the repository):
 
 | Scope | Permission | Used for |
@@ -346,19 +348,16 @@ never in the repository):
 | Account | Account Filter Lists: Edit | the `pages_dev_to_domain` list |
 | Account | Mass URL Redirects: Edit | the Bulk Redirect rule |
 
-Limit the zone permissions to the one zone `openframestudio.app` and the account permissions to this account. The other
+Limit the zone permissions to the one zone `straftstudio.com` and the account permissions to this account. The other
 permissions on the token (analytics, cache, WAF, email routing and so on) are not used by these scripts.
 
-Why there is no GitHub Actions deploy: the site build needs the screen pictures in `.cache/shots`, which are generated on
-this machine and are not in Git, and GitHub holds only `mac/`, `windows/` and `website/`. The one pipeline is
-`npm run build`, `npm test`, `npm run deploy` on this machine. A failed deploy or a failed live check ends with a
-non-zero exit code and a FAIL line.
+A failed deploy or a failed live check ends with a non-zero exit code and a FAIL line. Automatic deploys: section 9.
 
 Troubleshooting:
 
 - A name shows `ENOTFOUND` right after DNS records were created: the resolver cached the empty answer. Wait about five
   minutes, or test with `curl --resolve <host>:443:<cloudflare ip>`.
-- Pages domain stays Pending: check the CNAME is proxied and points to `openframe-studio.pages.dev`; run `domain:ensure`.
+- Pages domain stays Pending: check the CNAME is proxied and points to `straft-studio.pages.dev`; run `domain:ensure`.
 - Error 522 on a custom hostname: the hostname is not added in Pages, or its record was changed away from Pages.
 - Redirect loop on `www`: the rule must match only `www`; it must never redirect the apex.
 - Recovery after a bad change: rerun `npm run domain:ensure`. A bad deploy: section 2.
@@ -437,3 +436,35 @@ https://www.indexnow.org/documentation (IndexNow).
 - Custom domain and company email; a public contact address.
 - Mac screens of Straft AI at work (the Mac capture had no engine installed).
 - Owner direction on the hero animation and on real photography (see `docs/ROADMAP.md`).
+
+## 8. The domain, email and the old project
+
+The public address is one line: the `SITE_URL` default in `site.config.mjs`. To move again, change that line, change `SUPPORT_EMAIL`
+in `src/content/nav.mjs`, and push. Canonical links, Open Graph URLs, the sitemap, `robots.txt` and `llms.txt` all follow.
+
+`straftstudio.com` and `www.straftstudio.com` are custom domains on the Pages project, with one CNAME record each to
+`straft-studio.pages.dev`. Google Workspace mail lives in the same zone. Never add, edit or delete its MX, SPF, DKIM or
+verification records when working on the website. Official addresses: admin@, support@, contact@, developer@ and hello@straftstudio.com.
+
+The old Cloudflare project `openframe-studio` and its domain `openframestudio.app` stay as they were and are no longer deployed
+to. Removing them or redirecting them is the owner's decision.
+
+## 9. Automatic deploys
+
+A push to `main` that changes `website/` runs `.github/workflows/website-deploy.yml` at the root of the GitHub repository: it
+builds, runs the tests and deploys. Only pushes to `main` and manual runs trigger it, so pull requests, including those from
+forks, never see the secrets. The repository secrets are `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Cloudflare's own
+Git builds are not used, because the Cloudflare GitHub app is not authorised on this account, and a project made for direct
+upload cannot switch to them later.
+
+The build needs the screen pages in `.cache/shots` (about 675 MB), which are made on this machine and are not in Git. They are
+kept as one file on a GitHub release, and `scripts/screens-bundle.json` names the tag, the file and its SHA-256. The workflow
+downloads that file and refuses it if the checksum differs. After the screens change:
+
+1. `npm run screens`, then `node scripts/sim-mac.mjs`.
+2. `node scripts/pack-screens.mjs <next number>`. It replaces developer paths in the captured text, and refuses other file types, the
+   old product name or a leftover developer path.
+3. `gh release create website-screens-<number> .cache/website-screens-<number>.tar.gz --latest=false --title "Website screens <number>" --notes "Screen pages for the website build."`
+4. Commit `scripts/screens-bundle.json` and push through a pull request.
+
+To deploy again without a change, use Run workflow on the Actions page. To deploy from this machine, use `npm run build`, `npm test`, `npm run deploy`.

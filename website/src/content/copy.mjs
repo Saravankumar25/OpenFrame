@@ -1,8 +1,9 @@
 // Shared plain-English copy for the information pages. Source of truth: research/facts.json and
 // research/capability-matrix.md (audited 2026-10-21). Nothing here may claim more than those files show.
 
-// Confirmed prices (owner, 2026-10-31): one-time purchase. India sees rupees, every other region US dollars.
-export const PRICES = { in: '₹2,999', eu: '€89', us: 'US$89' };
+// Launch prices (owner, 2026-11-04): one-time purchase, shown with the original price crossed out. India sees rupees,
+// Europe euros, and the USA and every other country US dollars.
+export const PRICES = { in: { was: '₹7,999', now: '₹3,999' }, eu: { was: '€149', now: '€89' }, us: { was: 'US$149', now: 'US$89' } };
 
 // [action, Windows, Mac]. null means the platform has no shortcut for it.
 export const SHORTCUTS = [
@@ -76,13 +77,11 @@ export const FAQ = [
   ]],
   ['Platforms', [
     ['Which systems does it run on?',
-      'Windows 11 on 64-bit computers, and macOS 14 or later on Apple silicon Macs. Windows 10 and Intel Macs are not supported.'],
+      'Windows 11 on 64-bit computers, and macOS 14 or later on Apple silicon Macs. Windows 10 and Intel Macs are not supported. Straft AI downloads about 1.2 GB, and its chat model needs at least 4 GB of memory (8 GB recommended).'],
     ['Where do I get it?',
       'From the Microsoft Store on Windows and the Mac App Store on the Mac. See [Download](/download/).'],
     ['Is the Mac app different from the Windows app?',
       'It does the same work on the same kind of project, in a native Mac app: the Mac menu bar, sheets instead of dialog windows, and Command shortcuts. The [Mac tutorials](/mac/tutorials/) use the real Mac screens.'],
-    ['What does it need?',
-      'Windows 11 on a 64-bit computer, or macOS 14 on Apple silicon. Straft AI downloads about 1.2 GB, and its chat model needs at least 4 GB of memory (8 GB recommended).'],
   ]],
   ['Privacy and data', [
     ['Where are my files stored?',
@@ -114,11 +113,9 @@ export const FAQ = [
   ]],
   ['Pricing and trial', [
     ['How much does it cost?',
-      'One payment of ₹2,999 in India, €89 in Europe, or US$89 in other countries. It is a lifetime purchase, not a subscription, and Windows and Mac are bought separately. The store shows the final checkout amount, which can include taxes that apply where you live. See [Pricing](/pricing/).'],
+      'The launch price is one payment of ₹3,999 in India (originally ₹7,999), €89 in Europe (originally €149), or US$89 in the USA and other countries (originally US$149). It is a lifetime purchase, not a subscription, and Windows and Mac are bought separately. The store shows the final checkout amount, which can include taxes that apply where you live. See [Pricing](/pricing/).'],
     ['Is there a free trial?',
       'Yes. Every new install starts a 7-day free trial with the whole app. After the trial, buy Straft Studio in the store to keep using its full functionality.'],
-    ['Is there a subscription?',
-      'No. Pay once and keep it.'],
     ['What happens to my projects if I do not buy?',
       'Your project folders stay on your computer. They are ordinary files, and nothing is deleted when a trial ends.'],
   ]],

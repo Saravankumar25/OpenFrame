@@ -237,8 +237,8 @@
     "confidence": "high"
   },
   "screenEvidence": {
-    "windows": {"count": 809, "modes": "Light and Dark", "commit": "0dd87ae", "evidence": "C:\\StraftWebsite\\research\\WindowsHTML-src\\README.md"},
-    "mac": {"count": 692, "areas": 26, "modes": "Light and Dark", "commit": "8d40f4e", "evidence": "C:\\StraftWebsite\\research\\MacHTML-src\\README.md; C:\\StraftWebsite\\research\\MacHTML-src\\light\\pages.json"},
+    "windows": {"count": 809, "modes": "Light and Dark", "commit": "0dd87ae", "evidence": "research\\WindowsHTML-src\\README.md"},
+    "mac": {"count": 692, "areas": 26, "modes": "Light and Dark", "commit": "8d40f4e", "evidence": "research\\MacHTML-src\\README.md; research\\MacHTML-src\\light\\pages.json"},
     "warning": "WindowsHTML screens 416 to 433 (licence, trial, Buy) come from a simulated store state; they are not live in any build.",
     "confidence": "high"
   },

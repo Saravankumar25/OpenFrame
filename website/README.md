@@ -5,7 +5,7 @@ design package (`research/package-src`, the Website Share Package) and shows the
 Mac screen is embedded as its captured HTML page, in light or dark. Static HTML, CSS and JavaScript, generated at build
 time and hosted on Cloudflare Pages.
 
-Live: https://openframestudio.app
+Live: https://straftstudio.com
 
 ## Three independent controls
 
@@ -24,7 +24,7 @@ Each choice is kept in the browser (`of_os`, `of_theme`, `of_mock`) and none cha
 | `npm run build` | Writes the site to `dist/`, with the screen pages under `/mockups/`. `OF_SKIP_MOCKUPS=1` skips copying screens for quick page builds. |
 | `npm test` | Static checks, content checks and browser tests (controls, regional price, phone width, axe). |
 | `npm run serve` | Serves `dist/` on http://localhost:4173. |
-| `npm run deploy` | Deploys `dist/` to the Cloudflare Pages project `openframe-studio`. |
+| `npm run deploy` | Deploys `dist/` to the Cloudflare Pages project `straft-studio`. |
 
 ## Sources
 
