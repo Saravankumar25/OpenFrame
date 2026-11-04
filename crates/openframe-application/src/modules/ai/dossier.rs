@@ -264,7 +264,7 @@ pub struct Input<'a> {
 /// The most a dossier may hold, in tokens.
 pub fn cap_tokens(class: LengthClass) -> usize {
     match class {
-        LengthClass::Paragraph => 2_500,
+        LengthClass::Paragraph | LengthClass::Narrative | LengthClass::Story => 2_500,
         _ => 1_500,
     }
 }

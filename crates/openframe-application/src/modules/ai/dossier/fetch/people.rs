@@ -270,10 +270,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
             "issue",
             "issues",
         ])
-        && matches!(
-            t,
-            AnswerType::List | AnswerType::Lookup | AnswerType::Count | AnswerType::Explain
-        )
+        && (t.tells() || matches!(t, AnswerType::List | AnswerType::Lookup | AnswerType::Count))
     {
         if cast.is_empty() {
             out.push(Fact::absent("any cast", "Cast and Crew"));
@@ -330,6 +327,9 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 | AnswerType::Count
                 | AnswerType::Compare
                 | AnswerType::Explain
+                | AnswerType::Describe
+                | AnswerType::Brief
+                | AnswerType::Story
         )
         && r.persons.is_empty()
     {

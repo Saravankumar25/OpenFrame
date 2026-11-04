@@ -235,6 +235,9 @@ struct AIResultView: View {
                     .controlSize(.small)
                     .accessibilityIdentifier("ai-open")
             }
+            if let pointer = r.pointer {
+                pointerAction(pointer)
+            }
             if layout.hasSources {
                 seeSources(layout)
             }
@@ -262,6 +265,26 @@ struct AIResultView: View {
 
     /// Sources, how sure the answer is, rows that back the text and the steps: closed until asked
     /// for. Each source that has a place in OpenFrame opens it.
+    /// The reply names a section that is not picked: one press adds it, unless three are picked.
+    @ViewBuilder
+    private func pointerAction(_ pointer: AiPointerDto) -> some View {
+        switch AILogic.pointerAction(pointer.leaf, picks: model.picks) {
+        case .add:
+            Button("Add \(pointer.label)") { model.addPointedSection(pointer.leaf) }
+                .controlSize(.small)
+                .disabled(model.pending != nil)
+                .accessibilityIdentifier("ai-pointer-add")
+        case .full:
+            Text(AIText.sectionsAtMost)
+                .font(.caption)
+                .foregroundStyle(theme["muted"])
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("ai-pointer-full")
+        case .picked:
+            EmptyView()
+        }
+    }
+
     private func seeSources(_ layout: AILogic.ResultLayout) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Button {

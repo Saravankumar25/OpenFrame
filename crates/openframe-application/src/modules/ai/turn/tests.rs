@@ -100,6 +100,82 @@ fn strong_rules_read_the_shape_of_the_question() {
 }
 
 #[test]
+fn the_long_answer_types_are_read_by_rules_and_names() {
+    let anjali = Resolved {
+        characters: vec![named("Anjali")],
+        ..Resolved::default()
+    };
+    for (m, r, want) in [
+        ("describe Anjali for the casting call", &anjali, Describe),
+        ("how would you describe her, Anjali", &anjali, Describe),
+        ("tell me about Anjali", &anjali, Describe),
+        ("why does Anjali leave the harbour", &anjali, Story),
+        ("what does Anjali want from all this", &anjali, Story),
+    ] {
+        let got = read_with(m, None, r);
+        assert_eq!((m, got.answer_type, got.how), (m, want, ReadHow::Rule));
+        assert_eq!(got.group, Group::Narrative);
+    }
+    for (m, want) in [
+        ("brief me on the night shoot", Brief),
+        ("brief scene 12 for the producer", Brief),
+        ("give me a short brief of the market scene", Brief),
+        ("summarise the scene at the market", Brief),
+        ("what is this movie about", Story),
+        ("tell me the plot in simple words", Story),
+        ("explain the story of the show", Story),
+        ("explain act three to me", Story),
+        ("how does the film end", Story),
+        ("what role does the ferry play in the plot", Story),
+        ("what connects the cook and the captain", Relation),
+        ("how do those two stand with each other", Relation),
+        ("what does the clerk have to do with the owner", Relation),
+    ] {
+        let got = plain(m);
+        assert_eq!((m, got.answer_type), (m, want), "{got:?}");
+        assert_eq!(got.how, ReadHow::Rule, "{m}");
+    }
+    // No name: still an explanation, and "keep it brief" asks for no brief.
+    assert_eq!(
+        plain("describe the mood of the harbour").answer_type,
+        Explain
+    );
+    assert_eq!(plain("why is the budget over").answer_type == Story, false);
+    assert_ne!(plain("explain scene 4, keep it brief").answer_type, Brief);
+}
+
+#[test]
+fn the_person_can_change_a_long_answer_in_words() {
+    let class = |m: &str, t: AnswerType| rules::length_class(m, t);
+    assert_eq!(class("describe Anjali", Describe), LengthClass::Narrative);
+    assert_eq!(
+        class("describe Anjali briefly", Describe),
+        LengthClass::Short
+    );
+    assert_eq!(
+        class("describe Anjali in detail", Describe),
+        LengthClass::Story
+    );
+    assert_eq!(class("the whole story", Story), LengthClass::Story);
+    assert_eq!(class("the whole story briefly", Story), LengthClass::Short);
+    assert_eq!(
+        class("how are they related", Relation),
+        LengthClass::Narrative
+    );
+    // The word of the request is not a request for fewer words.
+    assert_eq!(class("brief scene 4", Brief), LengthClass::Narrative);
+    assert_eq!(
+        class("a quick brief of scene 4", Brief),
+        LengthClass::Narrative
+    );
+    assert_eq!(class("brief scene 4, in short", Brief), LengthClass::Short);
+    assert_eq!(
+        class("explain scene 4 in brief", Explain),
+        LengthClass::Short
+    );
+}
+
+#[test]
 fn how_many_times_is_a_complaint_not_a_count() {
     let r = read_with(
         "bro how many times do I have to say it is the feature",
@@ -574,7 +650,7 @@ fn a_weak_vote_asks_the_model_with_the_closed_list() {
     assert_eq!((r.answer_type, r.how), (Relation, ReadHow::Model));
     let asked = model.calls.lock();
     assert_eq!(asked.len(), 1);
-    assert!(asked[0].contains("lookup, list, count, explain, relation"));
+    assert!(asked[0].contains("lookup, list, count, explain, describe, brief, story, relation"));
     assert!(asked[0].contains("Previous message: an earlier message"));
 }
 

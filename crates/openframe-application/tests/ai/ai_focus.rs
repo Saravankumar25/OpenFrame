@@ -234,7 +234,7 @@ fn the_answer_type_is_read_stored_in_the_focus_and_kept_in_the_trace() {
     let (t, g, _, class, _) = trace_turn(&env, &brief);
     assert_eq!(
         (t.as_str(), g.as_str(), class.as_str()),
-        ("explain", "narrative", "short")
+        ("story", "narrative", "short")
     );
     let hello = ask_lenient(&env, "thanks, that is all", "c-turn-3");
     let (t, g, domains, class, _) = trace_turn(&env, &hello);

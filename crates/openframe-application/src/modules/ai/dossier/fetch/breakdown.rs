@@ -125,7 +125,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                     out.push(f);
                 }
             }
-            if rows.is_empty() && t != AnswerType::Explain {
+            if rows.is_empty() && !t.tells() {
                 out.push(Fact::absent(
                     format!("any breakdown elements for scene {}", s.number),
                     "the Breakdown",

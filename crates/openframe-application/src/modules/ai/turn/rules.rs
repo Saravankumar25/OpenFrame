@@ -246,7 +246,7 @@ pub(super) fn strong(m: &str, men: Mentions) -> Option<AnswerType> {
         .any(|f| !f.as_str().ends_with("times"));
     if !counting
         && re!(
-            r"\b(?:relationships?|related|relation|relations|bonds?|connected|connection|connections|rivalry|rivals|get along|know each other|ties|linked|friends or enemies)\b"
+            r"\b(?:relationships?|related|relation|relations|bonds?|connected|connection|connections|rivalry|rivals|get along|know each other|ties|linked|friends or enemies|each other|connects?|relates? to|have to do with|has to do with|link between)\b"
         )
         .is_match(m)
         && !re!(r"\binternet\b").is_match(m)
@@ -316,6 +316,9 @@ pub(super) fn strong(m: &str, men: Mentions) -> Option<AnswerType> {
     {
         return Some(Help);
     }
+    if let Some(t) = conversational(m, men) {
+        return Some(t);
+    }
     if re!(concat!(
         pre!(),
         r"(?:describe|summari[sz]e|recap|break down|tell me (?:about|more about)|talk me through|walk me through)\b"
@@ -375,6 +378,41 @@ pub(super) fn strong(m: &str, men: Mentions) -> Option<AnswerType> {
     None
 }
 
+/// The long conversational answers (ADR-0041 decision 6): a brief of a scene, a description of a thing
+/// the message names, and the story. A question about the story with no name in it reads only these
+/// words: "why is the budget over" is not a question about the story.
+fn conversational(m: &str, men: Mentions) -> Option<AnswerType> {
+    use AnswerType::*;
+    if re!(
+        r"\bbrief(?:ing)?\s+(?:me|us|scene|the)\b|\b(?:a|quick|short)\s+brief(?:ing)?\s+(?:of|on|for)\b|\b(?:quick|short)\s+brief\b|\bsummari[sz]e\b[^.?!]*\bscene\b|\bwhat goes on in\b|\bwhat happens in (?:this|that|the) scene\b[^.?!]*\b(?:short|quick)\b"
+    )
+    .is_match(m)
+    {
+        return Some(Brief);
+    }
+    if re!(
+        r"\bwhat(?:'s| is) (?:this|the) (?:film|movie|story|script|screenplay) about\b|\b(?:explain|tell me|summari[sz]e|recap|walk me through|talk me through)\b[^.?!]*\b(?:story|plot)\b|\b(?:explain|summari[sz]e|recap)\b[^.?!]*\bact\b|\bhow does (?:the|this) (?:story|film|movie|script|screenplay) (?:end|begin|start)\b|\bwhat (?:role|part|place)\b[^.?!]*\bin the (?:story|film|plot)\b|\bwhat happened in \d{4}\b"
+    )
+    .is_match(m)
+    {
+        return Some(Story);
+    }
+    if men.other
+        && re!(r"^\W*why (?:does|did|do|is|was|are|were|would)\b|\bwhat does [^.?!]{1,40} want\b|\bwhat happened to\b")
+            .is_match(m)
+    {
+        return Some(Story);
+    }
+    let names_a_thing = men.other || men.scene || re!(r"\b(?:character|location)\b").is_match(m);
+    if names_a_thing
+        && re!(r"\bdescribe\b|\btell me (?:more )?about\b|\bwhat (?:kind|sort) of person\b")
+            .is_match(m)
+    {
+        return Some(Describe);
+    }
+    None
+}
+
 /// "which budget lines", "which locations are": a plural noun right after "which" asks for several.
 fn plural_after_which(m: &str) -> bool {
     re!(r"\bwhich\s+(?:\w+\s+){0,2}?(\w{3,}s)\b")
@@ -410,8 +448,10 @@ pub(super) fn length_class(text: &str, t: AnswerType) -> LengthClass {
             LengthClass::OneSentence
         };
     }
-    let shorten = re!(
-        r"\b(?:briefly|in brief|brief|short answer|keep it short|shortly|quickly|quick answer|in a few words|concise|concisely|in short)\b"
+    // "Brief scene 4" asks for a brief; it does not ask for a short answer.
+    let shorten = t != AnswerType::Brief && re!(r"\bbrief\b").is_match(&m);
+    let shorten = shorten || re!(
+        r"\b(?:briefly|in brief|short answer|keep it short|shortly|quickly|quick answer|in a few words|concise|concisely|in short)\b"
     )
     .is_match(&m);
     let lengthen = re!(

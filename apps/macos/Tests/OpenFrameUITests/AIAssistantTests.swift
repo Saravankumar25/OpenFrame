@@ -234,6 +234,21 @@ struct AIAssistantTests {
         #expect(!r.model.canAskNow)
     }
 
+    @Test func theAddButtonOfAPointerAddsTheSectionAndNeverTakesOneAway() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        r.model.picks = [AISectionChoice(leaf: "production/budget")]
+        r.model.addPointedSection("production/cast-crew")
+        #expect(r.model.picks.map(\.leaf) == ["production/budget", "production/cast-crew"])
+        r.model.addPointedSection("production/cast-crew")
+        #expect(r.model.picks.count == 2, "already picked: pressing it again does not remove it")
+        r.model.addPointedSection("files/files")
+        r.model.addPointedSection("notes/notes")
+        #expect(r.model.picks.count == 3, "at three sections nothing is added")
+        #expect(!r.model.picks.contains { $0.leaf == "notes/notes" })
+    }
+
     @Test func aChosenInstanceGoesToTheCoreAndChangingTheDraftDropsTheScene() async throws {
         let stub = AIStubCore()
         let r = try Rig.stubbed(stub)

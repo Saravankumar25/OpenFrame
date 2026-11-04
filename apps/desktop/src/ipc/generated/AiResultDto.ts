@@ -2,6 +2,7 @@
 import type { AiChangeSetDto } from "./AiChangeSetDto";
 import type { AiConfidence } from "./AiConfidence";
 import type { AiNavTarget } from "./AiNavTarget";
+import type { AiPointerDto } from "./AiPointerDto";
 import type { AiProvenance } from "./AiProvenance";
 import type { AiResultItem } from "./AiResultItem";
 import type { AiResultKind } from "./AiResultKind";
@@ -25,4 +26,8 @@ taskId: string | null,
 /**
  * The path that answered: write, navigate, change or fixed (harness spec, section 5).
  */
-lane?: string, createdAt: number, };
+lane?: string, 
+/**
+ * The section this reply says to add (ADR-0041): the screens show an Add button for it.
+ */
+pointer?: AiPointerDto, createdAt: number, };

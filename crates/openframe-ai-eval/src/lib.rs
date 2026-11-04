@@ -150,6 +150,8 @@ pub const LENGTH_CLASSES: &[(&str, usize, usize)] = &[
     ("short", 1, 80),
     ("paragraph", 40, 200),
     ("brief", 1, 40),
+    ("narrative", 15, 250),
+    ("story", 40, 350),
 ];
 
 /// Words an answer must not use to describe the app's inside (`no_internal_words`). Matched at the
@@ -1892,7 +1894,7 @@ mod tests {
     fn the_length_classes_are_the_ones_the_turn_stage_uses() {
         use openframe_application::modules::ai::turn::LengthClass::*;
         for (name, lo, hi) in LENGTH_CLASSES {
-            let class = [OneSentence, Short, Paragraph, Brief]
+            let class = [OneSentence, Short, Paragraph, Brief, Narrative, Story]
                 .into_iter()
                 .find(|c| c.code() == *name)
                 .unwrap_or_else(|| panic!("{name} is not a class of the turn stage"));

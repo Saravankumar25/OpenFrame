@@ -21,6 +21,9 @@
 //! - **abstain**: when the project holds nothing for the question, the answer says it could not find
 //!   it or that none is recorded.
 //! - **echo**: the lines of the data (`Kind | field: value`) are not copied.
+//! - **relationship** and **mood** (long answers, ADR-0041): a word for how two people are related, or
+//!   for what someone feels, that no text holds. Cheap and in code, and off behind
+//!   [`NARRATIVE_WORD_CHECKS`] until their false alarms are measured on real answers.
 
 use std::collections::HashSet;
 use std::sync::LazyLock;
@@ -34,6 +37,11 @@ use super::super::turn::LengthClass;
 fn re(p: &str) -> Regex {
     Regex::new(p).expect("valid pattern")
 }
+
+/// The unsupported relationship word and unstated mood checks of a long answer. They start off: a
+/// false alarm costs a rewrite and can cost the answer, and no run has measured how often they fire on
+/// a good one. Turn them on only after that run (`docs/engineering/ai-answer-paths.md`).
+pub(crate) const NARRATIVE_WORD_CHECKS: bool = false;
 
 /// What a check can find wrong.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -51,6 +59,8 @@ pub(crate) enum Rule {
     Abstain,
     Echo,
     ChangeClaim,
+    Relationship,
+    Mood,
 }
 
 impl Rule {
@@ -70,6 +80,8 @@ impl Rule {
             Rule::Abstain => "abstain",
             Rule::Echo => "echo",
             Rule::ChangeClaim => "change_claim",
+            Rule::Relationship => "relationship",
+            Rule::Mood => "mood",
         }
     }
 
@@ -108,6 +120,8 @@ pub(crate) struct Expect<'a> {
     pub missing: &'a [String],
     /// The language of the request when it is not English.
     pub language: Option<&'static str>,
+    /// Run the relationship and mood checks ([`NARRATIVE_WORD_CHECKS`]).
+    pub narrative_words: bool,
 }
 
 // ------------------------------------------------------------------ normal form
@@ -344,6 +358,40 @@ pub(crate) fn states_absence(answer: &str, missing: &[String]) -> bool {
     missing.iter().any(|m| !content_words(m).is_disjoint(&said))
 }
 
+static RELATIONSHIP_WORD: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r"(?i)\b(?:mother|father|parents?|brothers?|sisters?|sons?|daughters?|aunts?|uncles?|cousins?|nephews?|nieces?|grandmother|grandfather|wife|husband|fianc[eé]e?|lovers?|girlfriend|boyfriend|friends?|enemy|enemies|rivals?|mentors?|boss|colleagues?)\b",
+    )
+});
+static MOOD_WORD: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r"(?i)\b(?:angry|furious|sad|heartbroken|afraid|scared|terrified|nervous|anxious|desperate|guilty|ashamed|jealous|lonely|hopeful|bitter|resentful|grieving|haunted|torn|determined)\b",
+    )
+});
+
+/// Words of `found` in the answer that no text holds, lower case and once each.
+fn unsupported(answer: &str, found: &Regex, pool: &[&str]) -> Vec<String> {
+    let pool = pool.join("\n").to_lowercase();
+    let mut out: Vec<String> = Vec::new();
+    for m in found.find_iter(answer) {
+        let w = m.as_str().to_lowercase();
+        if !pool.contains(&w) && !out.contains(&w) {
+            out.push(w);
+        }
+    }
+    out
+}
+
+/// A word for how people are related that no fact, request or context holds.
+pub(crate) fn unsupported_relationship_words(answer: &str, pool: &[&str]) -> Vec<String> {
+    unsupported(answer, &RELATIONSHIP_WORD, pool)
+}
+
+/// A word for what someone feels that no fact, request or context holds.
+pub(crate) fn unstated_moods(answer: &str, pool: &[&str]) -> Vec<String> {
+    unsupported(answer, &MOOD_WORD, pool)
+}
+
 static ECHO: LazyLock<Regex> = LazyLock::new(|| re(r"\s\|\s|^\|\s|\s\|$"));
 
 // ------------------------------------------------------------------ the whole check
@@ -411,6 +459,16 @@ pub(crate) fn check(answer: &str, m: &Material<'_>, e: &Expect<'_>) -> Vec<Offen
     if text::claims_a_change(answer) {
         add(Rule::ChangeClaim, Vec::new());
     }
+    if e.narrative_words {
+        let words = unsupported_relationship_words(answer, &evidence);
+        if !words.is_empty() {
+            add(Rule::Relationship, words);
+        }
+        let moods = unstated_moods(answer, &evidence);
+        if !moods.is_empty() {
+            add(Rule::Mood, moods);
+        }
+    }
     out
 }
 
@@ -448,6 +506,8 @@ pub(crate) fn feedback(offences: &[Offence], say: &str) -> String {
             }
             Rule::Echo => "write sentences; do not copy the lines of the data".to_string(),
             Rule::ChangeClaim => "nothing was changed; do not say that anything was renamed, added, removed or updated".to_string(),
+            Rule::Relationship => format!("the project does not say this relationship: {list}; remove it"),
+            Rule::Mood => format!("the project does not say anyone feels this: {list}; remove it"),
         });
     }
     format!(

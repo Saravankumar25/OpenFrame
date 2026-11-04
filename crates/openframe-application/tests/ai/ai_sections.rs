@@ -1429,3 +1429,142 @@ fn a_pointer_reply_keeps_its_section_when_the_conversation_is_read_again() {
     assert!(raw.contains("production/cast-crew"), "{raw}");
     assert_eq!(x["result"]["pointer"]["label"], "Production > Cast & Crew");
 }
+
+// ------------------------------------------------------------------ long answers (R5)
+
+#[test]
+fn a_description_reads_scene_lines_that_carry_their_numbers_only_from_the_screenplay() {
+    let f = film();
+    let d = facts_for(
+        &f.env,
+        "Describe Arjun",
+        &[pick("screenplay/scenes"), pick("story/characters")],
+        AnswerType::Describe,
+    );
+    let lines: Vec<&dossier::Fact> = d.facts.iter().filter(|x| x.kind == "Scene text").collect();
+    assert!(!lines.is_empty(), "{}", d.render());
+    for l in &lines {
+        assert_eq!(l.field("scene"), Some("2"), "{}", l.render());
+        assert!(
+            l.field("text").unwrap().contains("photograph"),
+            "{}",
+            l.render()
+        );
+    }
+    assert!(
+        text_of(&d).contains("A tired detective."),
+        "the card: {}",
+        text_of(&d)
+    );
+    // The Characters section alone has the card and no scene text.
+    let d = facts_for(
+        &f.env,
+        "Describe Arjun",
+        &[pick("story/characters")],
+        AnswerType::Describe,
+    );
+    let text = text_of(&d);
+    assert!(text.contains("A tired detective."), "{text}");
+    assert!(!text.contains("photograph"), "{text}");
+    assert!(
+        !text.contains("Karthik Menon"),
+        "who plays him is Cast & Crew: {text}"
+    );
+}
+
+#[test]
+fn a_description_of_a_place_reads_the_scenes_set_there() {
+    let f = film();
+    let d = facts_for(
+        &f.env,
+        "Describe the Police Station",
+        &[pick("screenplay/scenes")],
+        AnswerType::Describe,
+    );
+    let text = d.render();
+    assert!(text.contains("Rain lashes"), "{text}");
+    assert!(!text.contains("photograph"), "{text}");
+}
+
+#[test]
+fn a_relationship_answer_reads_the_record_and_the_scenes_the_two_share() {
+    let f = film();
+    let id = |n: &str| n.to_string();
+    f.env.ok(
+        "story.create_relationship",
+        json!({ "fromCharacterId": id("meera"), "toCharacterId": id("arjun"), "relationshipType": "sister of" }),
+    );
+    // Both speak in one scene of the current draft.
+    exec(
+        &f.env,
+        "INSERT INTO screenplay_element(id,scene_id,position,element_type,text,created_at,updated_at) VALUES
+            ('e8','s2',4,'character','MEERA',1,1),
+            ('e9','s2',5,'dialogue','It came at midnight.',1,1)",
+    );
+    let d = facts_for(
+        &f.env,
+        "How are Arjun and Meera related?",
+        &[pick("story/characters"), pick("screenplay/scenes")],
+        AnswerType::Relation,
+    );
+    let text = d.render();
+    assert!(text.contains("Meera is sister of Arjun."), "{text}");
+    let scene = d
+        .facts
+        .iter()
+        .find(|x| x.kind == "Scene text")
+        .expect("a shared scene");
+    assert_eq!(scene.field("scene"), Some("2"));
+}
+
+#[test]
+fn a_story_explanation_reads_the_acts_and_one_line_per_scene_within_the_cap() {
+    let f = film();
+    let d = facts_for(
+        &f.env,
+        "What is this film about?",
+        &[pick("story/beat-board"), pick("screenplay/scenes")],
+        AnswerType::Story,
+    );
+    let text = d.render();
+    assert!(text.contains("Act One"), "{text}");
+    assert!(text.contains("Meera finds the folder"), "{text}");
+    let scenes: Vec<&str> = d
+        .facts
+        .iter()
+        .filter(|x| x.kind == "Scene")
+        .filter_map(|x| x.field("scene"))
+        .collect();
+    assert_eq!(scenes, vec!["1", "2", "3"], "{text}");
+    assert!(d.tokens_estimate <= dossier::cap_tokens(turn::LengthClass::Story));
+    assert_eq!(dossier::cap_tokens(turn::LengthClass::Story), 2_500);
+    assert_eq!(dossier::cap_tokens(turn::LengthClass::Narrative), 2_500);
+}
+
+#[test]
+fn a_long_answer_runs_through_the_writer_with_its_policy_and_its_limit() {
+    let f = film();
+    let model = attach(&f.env);
+    let x = ask(
+        &f.env,
+        "Describe Arjun",
+        json!([{ "leaf": "story/characters" }, { "leaf": "screenplay/scenes" }]),
+    );
+    let prompt = prompt_of(&model, 0);
+    assert!(
+        prompt.contains("no motive, feeling or backstory"),
+        "{prompt}"
+    );
+    assert!(prompt.contains("at most 250 words"), "{prompt}");
+    assert!(prompt.contains("photograph"), "{prompt}");
+    assert!(model.calls() <= 3, "at most three passes");
+    assert!(x["result"]["content"].is_string());
+    let briefly = model.calls();
+    ask(
+        &f.env,
+        "Describe Arjun briefly",
+        json!([{ "leaf": "story/characters" }]),
+    );
+    let prompt = prompt_of(&model, briefly);
+    assert!(prompt.contains("at most 80 words"), "{prompt}");
+}

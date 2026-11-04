@@ -12,11 +12,14 @@ use super::{ANSWER_TYPES, AnswerType};
 const TIMEOUT: Duration = Duration::from_secs(20);
 
 const PROMPT: &str = "Label the kind of answer the person wants from a film-production assistant. \
-Reply with one label only, from: lookup, list, count, explain, relation, compare, brainstorm, navigate, change, help, chat.
+Reply with one label only, from: lookup, list, count, explain, describe, brief, story, relation, compare, brainstorm, navigate, change, help, chat.
 lookup: one fact (who plays X, the phone of Y, where scene 4 is set).
 list: several items listed.
 count: a number of things.
-explain: explain or summarise a scene, an act or the story.
+explain: explain or summarise a scene or an act.
+describe: what a named character, place or scene is like.
+brief: a brief of a scene or a sequence for someone who works on it.
+story: what the film is about, how the story goes, why something in it happens.
 relation: how people or things are connected.
 compare: planned against actual, one thing against another, a difference.
 brainstorm: ideas, improvements, options.
@@ -29,7 +32,10 @@ If the message only names something, label it like the previous message.
 Examples:
 \"who is the stunt coordinator\" -> lookup
 \"planned against actual for transport\" -> compare
-\"describe the opening scene\" -> explain
+\"explain the opening scene\" -> explain
+\"describe the harbour master\" -> describe
+\"brief me on the night shoot scene\" -> brief
+\"what is this movie about\" -> story
 \"how are Rhea and her brother related\" -> relation
 \"two ideas for a better ending\" -> brainstorm
 \"add a task to book the van\" -> change

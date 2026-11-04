@@ -12,7 +12,14 @@ const SAMPLES: &[&str] = &[
     "example-scene",
     "fdx-interchange-test",
 ];
-const LENGTH_CLASSES: &[&str] = &["one_sentence", "short", "paragraph", "brief"];
+const LENGTH_CLASSES: &[&str] = &[
+    "one_sentence",
+    "short",
+    "paragraph",
+    "brief",
+    "narrative",
+    "story",
+];
 const ANSWER_TYPES: &[&str] = &[
     "lookup",
     "list",
@@ -118,6 +125,7 @@ fn gold_folder_loads_and_the_lowtide_bench_is_well_formed() {
 #[test]
 fn the_section_bench_is_well_formed_and_every_leaf_is_a_real_one() {
     use openframe_application::modules::ai::sections::leaf;
+    use openframe_application::modules::ai::turn::AnswerType;
 
     let cases: Vec<_> = load_cases(&gold())
         .unwrap()
@@ -149,6 +157,11 @@ fn the_section_bench_is_well_formed_and_every_leaf_is_a_real_one() {
             .as_deref()
             .unwrap_or_else(|| panic!("{}: no type", c.id));
         assert!(ANSWER_TYPES.contains(&at), "{}: answer_type {at}", c.id);
+        assert!(
+            AnswerType::parse(at).is_some(),
+            "{}: the core lacks {at}",
+            c.id
+        );
         let lc = e
             .length_class
             .as_deref()

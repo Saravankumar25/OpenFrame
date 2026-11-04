@@ -126,6 +126,13 @@ final class AIAssistantModel {
         if !picks.contains(where: { $0.draftId != nil }) { draftScenes = nil }
     }
 
+    /// The Add button of a reply that names another section. It never takes a section away, and at
+    /// three sections it adds nothing.
+    func addPointedSection(_ leaf: String) {
+        guard AILogic.pointerAction(leaf, picks: picks) == .add else { return }
+        picks = AILogic.togglingSection(picks, leaf: leaf)
+    }
+
     func removeSection(_ leaf: String) {
         picks.removeAll { $0.leaf == leaf }
         if !picks.contains(where: { $0.draftId != nil }) { draftScenes = nil }

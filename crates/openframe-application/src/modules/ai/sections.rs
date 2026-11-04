@@ -15,8 +15,8 @@ use serde_json::{Value, json};
 use ts_rs::TS;
 
 use super::dossier::fetch::{
-    breakdown, budget, files, notes, people, plans, product, production, schedule, screenplay,
-    settings, story, story_tabs, visual,
+    breakdown, briefing, budget, files, notes, people, plans, product, production, schedule,
+    screenplay, settings, story, story_tabs, visual,
 };
 use super::dossier::{Fact, FetchFn, P_LOW};
 use super::index::Kind;
@@ -431,7 +431,10 @@ pub const LEAVES: &[Leaf] = &[
         label: "Scenes",
         title: "Screenplay",
         aliases: &["screenplay", "script", "draft", "scene", "dialogue"],
-        fetchers: &[f("screenplay", screenplay::run)],
+        fetchers: &[
+            f("screenplay", screenplay::run),
+            f("briefing", briefing::scenes),
+        ],
         kinds: &[
             "Scene",
             "Scene text",

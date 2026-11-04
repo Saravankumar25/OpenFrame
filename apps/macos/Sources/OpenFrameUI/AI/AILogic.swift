@@ -107,6 +107,21 @@ enum AILogic {
         return picks + [AISectionChoice(leaf: leaf)]
     }
 
+    /// What the Add button of a reply that names another section may do.
+    enum PointerAction: Equatable {
+        /// Add the section.
+        case add
+        /// Three sections are picked: one has to go first.
+        case full
+        /// The section is already picked (the person added it after the reply).
+        case picked
+    }
+
+    static func pointerAction(_ leaf: String, picks: [AISectionChoice]) -> PointerAction {
+        if picks.contains(where: { $0.leaf == leaf }) { return .picked }
+        return picks.count >= maxSections ? .full : .add
+    }
+
     /// A row can be used when it is picked (to remove it), or when there is room and the project has it.
     static func sectionRowEnabled(_ leaf: AiSectionLeaf, picks: [AISectionChoice]) -> Bool {
         if picks.contains(where: { $0.leaf == leaf.id }) { return true }

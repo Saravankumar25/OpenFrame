@@ -58,6 +58,12 @@ pub enum AnswerType {
     List,
     Count,
     Explain,
+    /// A character, a place or a scene as the project shows it.
+    Describe,
+    /// A scene or a sequence, for someone who has to act on it.
+    Brief,
+    /// What the story is, how it goes, why a thing in it happens.
+    Story,
     Relation,
     Compare,
     Brainstorm,
@@ -67,11 +73,14 @@ pub enum AnswerType {
     Chat,
 }
 
-pub const ANSWER_TYPES: [AnswerType; 11] = [
+pub const ANSWER_TYPES: [AnswerType; 14] = [
     AnswerType::Lookup,
     AnswerType::List,
     AnswerType::Count,
     AnswerType::Explain,
+    AnswerType::Describe,
+    AnswerType::Brief,
+    AnswerType::Story,
     AnswerType::Relation,
     AnswerType::Compare,
     AnswerType::Brainstorm,
@@ -88,6 +97,9 @@ impl AnswerType {
             AnswerType::List => "list",
             AnswerType::Count => "count",
             AnswerType::Explain => "explain",
+            AnswerType::Describe => "describe",
+            AnswerType::Brief => "brief",
+            AnswerType::Story => "story",
             AnswerType::Relation => "relation",
             AnswerType::Compare => "compare",
             AnswerType::Brainstorm => "brainstorm",
@@ -108,7 +120,11 @@ impl AnswerType {
             AnswerType::Lookup | AnswerType::List | AnswerType::Count | AnswerType::Compare => {
                 Group::Facts
             }
-            AnswerType::Explain | AnswerType::Relation => Group::Narrative,
+            AnswerType::Explain
+            | AnswerType::Describe
+            | AnswerType::Brief
+            | AnswerType::Story
+            | AnswerType::Relation => Group::Narrative,
             AnswerType::Brainstorm => Group::Brainstorm,
             AnswerType::Navigate => Group::Navigate,
             AnswerType::Change => Group::Change,
@@ -123,12 +139,31 @@ impl AnswerType {
                 LengthClass::OneSentence
             }
             AnswerType::List | AnswerType::Compare => LengthClass::Short,
-            AnswerType::Explain
-            | AnswerType::Relation
-            | AnswerType::Brainstorm
-            | AnswerType::Help => LengthClass::Paragraph,
+            AnswerType::Explain | AnswerType::Brainstorm | AnswerType::Help => {
+                LengthClass::Paragraph
+            }
+            AnswerType::Describe | AnswerType::Brief | AnswerType::Relation => {
+                LengthClass::Narrative
+            }
+            AnswerType::Story => LengthClass::Story,
             AnswerType::Chat => LengthClass::Brief,
         }
+    }
+
+    /// The person wants something told, not one value: the fetchers read the whole record.
+    pub fn tells(self) -> bool {
+        matches!(
+            self,
+            AnswerType::Explain | AnswerType::Describe | AnswerType::Brief | AnswerType::Story
+        )
+    }
+
+    /// The long conversational answers of ADR-0041 decision 6, with their own writer policy.
+    pub fn conversational(self) -> bool {
+        matches!(
+            self,
+            AnswerType::Describe | AnswerType::Brief | AnswerType::Story | AnswerType::Relation
+        )
     }
 }
 
@@ -166,6 +201,10 @@ pub enum LengthClass {
     Short,
     Paragraph,
     Brief,
+    /// A description, a brief or a relationship: up to 250 words.
+    Narrative,
+    /// A story explanation: up to 350 words.
+    Story,
 }
 
 impl LengthClass {
@@ -175,6 +214,8 @@ impl LengthClass {
             LengthClass::Short => "short",
             LengthClass::Paragraph => "paragraph",
             LengthClass::Brief => "brief",
+            LengthClass::Narrative => "narrative",
+            LengthClass::Story => "story",
         }
     }
 
@@ -185,6 +226,8 @@ impl LengthClass {
             LengthClass::Short => (1, 80),
             LengthClass::Paragraph => (40, 200),
             LengthClass::Brief => (1, 40),
+            LengthClass::Narrative => (15, 250),
+            LengthClass::Story => (40, 350),
         }
     }
 
@@ -193,15 +236,18 @@ impl LengthClass {
         match self {
             LengthClass::Paragraph => LengthClass::Short,
             LengthClass::Short => LengthClass::OneSentence,
+            LengthClass::Narrative | LengthClass::Story => LengthClass::Short,
             other => other,
         }
     }
 
-    /// One class longer, up to a paragraph. A chat reply stays brief.
+    /// One class longer, up to a paragraph, or up to the story class for a long answer. A chat reply
+    /// stays brief.
     fn longer(self) -> Self {
         match self {
             LengthClass::OneSentence => LengthClass::Short,
             LengthClass::Short => LengthClass::Paragraph,
+            LengthClass::Narrative => LengthClass::Story,
             other => other,
         }
     }

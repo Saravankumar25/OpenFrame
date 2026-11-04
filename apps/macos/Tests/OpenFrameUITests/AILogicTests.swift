@@ -54,6 +54,15 @@ struct AILogicTests {
         AiSectionDraft(id: id, screenplayId: screenplay, screenplayTitle: screenplay, name: name, isCurrent: current)
     }
 
+    @Test func theAddButtonOfAPointerAddsOnlyWhenThereIsRoom() {
+        let picks = ["a", "b"].map { AISectionChoice(leaf: $0) }
+        #expect(AILogic.pointerAction("c", picks: picks) == .add)
+        #expect(AILogic.pointerAction("a", picks: picks) == .picked)
+        let full = picks + [AISectionChoice(leaf: "c")]
+        #expect(AILogic.pointerAction("d", picks: full) == .full)
+        #expect(AILogic.pointerAction("c", picks: full) == .picked)
+    }
+
     @Test func aSectionIsAddedAndTakenAwayAndNeverMoreThanThree() {
         var picks: [AISectionChoice] = []
         for id in ["a", "b", "c"] { picks = AILogic.togglingSection(picks, leaf: id) }

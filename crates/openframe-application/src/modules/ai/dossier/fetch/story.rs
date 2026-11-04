@@ -86,7 +86,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     let wants_description = narrative
         || asks_names
         || m.any(&["who is", "what is", "about", "describe", "like", "tell"])
-        || matches!(t, AnswerType::Explain);
+        || t.tells();
     for ch in &named {
         let mut f = Fact::new("Character", &ch.id)
             .f("name", &ch.name)
@@ -104,7 +104,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 f = f.require(n);
             }
         }
-        if narrative || m.any(&["plays", "played", "actor", "actress", "cast"]) {
+        // Who plays a character is a fact of Cast & Crew: with sections picked, only that section says it.
+        let may_name_actors = ctx.picked.is_none_or(|p| p.leaf.takes(Kind::Person));
+        if may_name_actors && (narrative || m.any(&["plays", "played", "actor", "actress", "cast"]))
+        {
             let who: Vec<String> = ctx
                 .index
                 .played_by(&ch.id)
@@ -119,19 +122,14 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     // ---- relationships
     let general_relations = r.characters.is_empty()
         && m.stem("relationship")
-        && matches!(
-            t,
-            AnswerType::Relation | AnswerType::Explain | AnswerType::List
-        );
+        && (t.tells() || matches!(t, AnswerType::Relation | AnswerType::List));
     let asks_relations = !named.is_empty()
-        && (matches!(
-            t,
-            AnswerType::Relation
-                | AnswerType::Explain
-                | AnswerType::Lookup
-                | AnswerType::List
-                | AnswerType::Compare
-        ) || narrative
+        && (t.tells()
+            || matches!(
+                t,
+                AnswerType::Relation | AnswerType::Lookup | AnswerType::List | AnswerType::Compare
+            )
+            || narrative
             || m.stem("relat")
             || m.stem("connect"));
     if asks_relations || general_relations {
@@ -162,11 +160,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                     .require(all.len().to_string())
                     .prio(P_HIGH),
             );
-        } else if matches!(
-            t,
-            AnswerType::List | AnswerType::Explain | AnswerType::Lookup
-        ) || narrative
-        {
+        } else if t.tells() || matches!(t, AnswerType::List | AnswerType::Lookup) || narrative {
             let few = all.len() <= 14;
             for ch in all
                 .iter()
@@ -225,7 +219,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     if narrative
         && named.is_empty()
         && r.scenes.is_empty()
-        && matches!(t, AnswerType::Explain | AnswerType::Brainstorm)
+        && (t.tells() || t == AnswerType::Brainstorm)
     {
         out.extend(project_line(ctx)?);
     }

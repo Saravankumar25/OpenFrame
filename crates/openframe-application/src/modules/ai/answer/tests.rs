@@ -37,6 +37,7 @@ fn run_check(
         required: &required,
         missing: &missing,
         language: language_of(request),
+        narrative_words: false,
     };
     check::check(answer, &m, &e)
         .into_iter()
@@ -167,6 +168,7 @@ fn a_digit_number_the_facts_do_not_hold_is_found() {
             required: &[],
             missing: &[],
             language: None,
+            narrative_words: false,
         },
     );
     assert_eq!(offence[0].items, vec!["99".to_string()]);
@@ -938,4 +940,149 @@ fn a_passage_the_answer_retells_is_a_source_and_one_it_does_not_is_not() {
     let used = sources_of(&d, "At the bus stop, Arjun meets Meera again in the rain.");
     let ids: Vec<&str> = used.iter().map(|f| f.record_id.as_str()).collect();
     assert_eq!(ids, vec!["scene-2"]);
+}
+
+// ------------------------------------------------------------------ long answers (ADR-0041)
+
+#[test]
+fn a_long_answer_has_room_and_the_person_can_change_it_in_words() {
+    use crate::modules::ai::turn::AnswerType::{Describe, Story};
+    assert_eq!(Describe.length_class(), LengthClass::Narrative);
+    assert_eq!(AnswerType::Brief.length_class(), LengthClass::Narrative);
+    assert_eq!(AnswerType::Relation.length_class(), LengthClass::Narrative);
+    assert_eq!(Story.length_class(), LengthClass::Story);
+    assert_eq!(LengthClass::Narrative.words(), (15, 250));
+    assert_eq!(LengthClass::Story.words(), (40, 350));
+    assert!(prompt::length_say(LengthClass::Narrative).contains("250"));
+    assert!(prompt::length_say(LengthClass::Story).contains("350"));
+    assert!(prompt::max_tokens(LengthClass::Narrative) >= 400);
+    assert!(prompt::max_tokens(LengthClass::Story) >= 550);
+}
+
+#[test]
+fn a_long_answer_is_held_to_its_length_and_cut_at_a_sentence() {
+    let text = "One two three four five six seven eight nine ten. ".repeat(30);
+    assert!(run_check(&text, "x", LengthClass::Narrative, &[], &[]).contains(&Rule::Length));
+    assert!(!run_check(&text, "x", LengthClass::Story, &[], &[]).contains(&Rule::Length));
+    let cut = check::cut_to(&text, LengthClass::Narrative);
+    assert!(text::word_count(&cut) <= 250);
+    assert!(cut.ends_with('.'), "{cut}");
+}
+
+#[test]
+fn the_writer_is_held_to_what_the_facts_show_in_a_long_answer() {
+    let r = Run::new(&[
+        "Mariamma is a radio operator who raised her niece in the old station house for years and years without help.",
+    ]);
+    let d = Dossier {
+        facts: vec![Fact::new("Character", "c1").f("name", "Mariamma")],
+        ..Dossier::default()
+    };
+    let _ = r.ask("Describe Mariamma", AnswerType::Describe, &d);
+    let system = &r.model.request(0).messages[0].content;
+    assert!(
+        system.contains("no motive, feeling or backstory"),
+        "{system}"
+    );
+    assert!(system.contains("only from a relationship line"), "{system}");
+    assert!(system.contains("scene number"), "{system}");
+    assert!(user_text(&r.model, 0).contains("at most 250 words"));
+    // An explanation keeps the measured policy of the earlier slices.
+    let r = Run::new(&[
+        "Scene 3 is at the beach and the two of them talk about the radio for a long while here.",
+    ]);
+    let _ = r.ask("Explain scene 3", AnswerType::Explain, &d);
+    assert!(!r.model.request(0).messages[0].content.contains("backstory"));
+}
+
+#[test]
+fn only_a_brief_of_several_scenes_is_written_as_a_list() {
+    let scene = |n: &str| Fact::new("Scene", n).f("scene", n);
+    let two = Dossier {
+        facts: vec![scene("1"), scene("2")],
+        ..Dossier::default()
+    };
+    let one = Dossier {
+        facts: vec![scene("1")],
+        ..Dossier::default()
+    };
+    let say = |t, d| prompt::say_for(t, LengthClass::Narrative, Some(d));
+    assert_eq!(say(AnswerType::Brief, &two), prompt::SCENE_BY_SCENE);
+    assert!(say(AnswerType::Brief, &one).contains("plain sentences"));
+    assert!(say(AnswerType::Describe, &two).contains("plain sentences"));
+    // Line breaks of a scene-by-scene brief survive the wash.
+    let lines = crate::modules::ai::text::tidy(
+        "Scene 1: Anjali arrives at the jetty.\nScene 2: Babu makes his offer.",
+        "brief scenes 1 and 2",
+    );
+    assert_eq!(lines.lines().count(), 2, "{lines}");
+}
+
+#[test]
+fn a_long_answer_keeps_three_passes_and_shows_a_passing_first_pass_at_once() {
+    let first = "Mariamma raised Anjali in Kadalpuram, and scene 3 shows her at the jetty when she comes back to the station.";
+    let r = Run::new(&[first]);
+    let d = Dossier {
+        facts: vec![Fact::new("Character", "c1").f("name", "Mariamma").f(
+            "note",
+            "raised Anjali in Kadalpuram, scene 3 at the jetty, back to the station",
+        )],
+        ..Dossier::default()
+    };
+    let a = r
+        .ask("Describe Mariamma", AnswerType::Describe, &d)
+        .unwrap();
+    assert_eq!(a.shown, Shown::Written);
+    assert_eq!(r.model.calls(), 1);
+    let bad = "Mariamma and Silvanus walk the long road together to the old harbour in the rain at night, again and again.";
+    let r = Run::new(&[bad, bad, bad, bad]);
+    let a = r
+        .ask("Describe Mariamma", AnswerType::Describe, &d)
+        .unwrap();
+    assert_eq!(a.pass_count(), MAX_PASSES as u32);
+    assert_eq!(r.model.calls(), MAX_PASSES);
+    assert_eq!(
+        a.shown,
+        Shown::Abstained,
+        "code writes what the project holds"
+    );
+}
+
+#[test]
+fn the_relationship_and_mood_checks_work_and_start_off() {
+    assert!(!check::NARRATIVE_WORD_CHECKS, "off until measured");
+    let m = Material {
+        facts: "Mariamma is aunt of Anjali. | note: She raised Anjali.",
+        request: "How are they related?",
+        context: "",
+    };
+    let on = Expect {
+        class: LengthClass::Narrative,
+        required: &[],
+        missing: &[],
+        language: None,
+        narrative_words: true,
+    };
+    let answer = "Mariamma is the mother of Anjali, and she feels guilty about the aunt she became over the many years here.";
+    let rules: Vec<Rule> = check::check(answer, &m, &on)
+        .into_iter()
+        .map(|o| o.rule)
+        .collect();
+    assert!(rules.contains(&Rule::Relationship), "{rules:?}");
+    assert!(rules.contains(&Rule::Mood), "{rules:?}");
+    assert_eq!(
+        check::unsupported_relationship_words(answer, &[m.facts, m.request]),
+        vec!["mother"],
+        "the aunt the facts hold passes"
+    );
+    assert_eq!(check::unstated_moods(answer, &[m.facts]), vec!["guilty"]);
+    let off = Expect {
+        narrative_words: false,
+        ..on
+    };
+    assert!(
+        check::check(answer, &m, &off)
+            .iter()
+            .all(|o| !matches!(o.rule, Rule::Relationship | Rule::Mood))
+    );
 }

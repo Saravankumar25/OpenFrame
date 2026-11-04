@@ -245,6 +245,7 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
         required: &dossier.required,
         missing: &dossier.missing,
         language: language_of(i.message),
+        narrative_words: check::NARRATIVE_WORD_CHECKS && group == Group::Narrative,
     };
 
     let map = match i.sections {
@@ -254,6 +255,7 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
     let focus = prompt::focus_text(i.focus, i.index, i.sections);
     let base = prompt::build(&prompt::Parts {
         group,
+        answer_type: i.read.answer_type,
         class,
         map: &map,
         memory: i.memory,
@@ -265,7 +267,7 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
         partial: i.partial,
     });
 
-    let say = prompt::length_say(class);
+    let say = prompt::say_for(i.read.answer_type, class, (!chat).then_some(dossier));
     let mut messages: Vec<ChatMessage> = base;
     let mut logs: Vec<PassLog> = Vec::new();
     let mut attempts: Vec<(String, Vec<Offence>)> = Vec::new();
@@ -308,13 +310,13 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
                 passes: logs,
             });
         }
-        let ask = check::feedback(&offences, say);
+        let ask = check::feedback(&offences, &say);
         attempts.push((written.clone(), offences));
         if pass == MAX_PASSES || i.started.elapsed() >= VERIFY_BUDGET {
             break;
         }
         messages.push(ChatMessage::assistant(queries::truncate_chars(
-            &written, 1_200,
+            &written, 2_600,
         )));
         messages.push(ChatMessage::user(ask));
     }

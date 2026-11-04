@@ -1,6 +1,7 @@
 //! The fetchers, one file per domain, and the wider round used when a plan found nothing.
 
 pub mod breakdown;
+pub mod briefing;
 pub mod budget;
 pub mod files;
 pub mod notes;
