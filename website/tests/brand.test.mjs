@@ -1,5 +1,5 @@
 // Brand guard: the product is Straft Studio. No text file of the website may carry the old product name, except the
-// external identifiers that keep it on purpose (domain, email, social handle, Cloudflare Pages project, API token, GitHub repository)
+// external identifiers that keep it on purpose (domain, email, Cloudflare Pages project, Cloudflare API token)
 // and the SIL OFL phrase in the font licences. The old name is built from parts so this file does not match itself.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,11 +15,9 @@ const SKIP_DIR = /^(node_modules|dist|\.cache|\.git|\.tmp|\.wrangler|test-result
 // [files the exception applies to, exact text that may stay]. Longer texts first: they are removed before shorter ones.
 const ALLOWED = [
   [/./, `${O}${F}studio.app`], // the domain, and the support address on it
-  [/./, `@${O}${F}studio`], // the social media handle shown in the app's welcome dialog
   [/./, `${O}${F}-studio.pages.dev`], // the Pages host
   [/^(site\.config\.mjs|README\.md|docs\/.*|scripts\/deploy\.mjs)$/, `${O}${F}-studio`], // the Cloudflare Pages project id
   [/^docs\/OPERATIONS\.md$/, `${O}${F}-website`], // the name of the Cloudflare API token
-  [/^docs\/SECURITY\.md$/, 'Saravankumar25/' + 'Open' + 'Frame'], // the GitHub repository
   [/(^|\/)OFL-[^/]+\.txt$/, `${O} ${F}work`], // SIL Open Font License wording
 ];
 

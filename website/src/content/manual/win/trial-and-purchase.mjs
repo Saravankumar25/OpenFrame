@@ -146,7 +146,7 @@ export default {
         {
           screen: `licence-welcome-family`,
           do: `Read the welcome, then click OK.`,
-          explain: `The title is Welcome to the Straft Studio family. It says: Thank you for backing independent filmmaking. Be a part of our community. It lists Instagram, YouTube, X, Facebook, LinkedIn, Reddit, Discord and Threads, all as @openframestudio. OK, or the x, closes it.`,
+          explain: `The title is Welcome to the Straft Studio family. It says: Thank you for backing independent filmmaking. Be a part of our community. It lists Instagram, YouTube, X, Facebook, LinkedIn, Reddit, Discord and Threads, all as @straftstudio. OK, or the x, closes it.`,
         },
       ],
       result: `You have finished the tutorial and you are back in your project, with the full version.`,

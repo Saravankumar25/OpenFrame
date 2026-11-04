@@ -3,8 +3,7 @@
 // any case) and replaced case-aware: STRAFT for an all-caps form, straft for one starting in lowercase, Straft otherwise
 // (so the old "<name> Studio" becomes "Straft Studio"). "an <old name>" becomes "a Straft".
 // Domains and addresses that still use the old name (the site domain, its email addresses, the Pages project host) are left
-// as they are: a form directly followed by "...studio.app" or "...studio.pages.dev" is kept, and so is a social handle
-// ("@" directly before the name), since contact details change only when the accounts do.
+// as they are: a form directly followed by "...studio.app" or "...studio.pages.dev" is kept.
 // The patterns spell the old name with character classes, so a repo grep for it stays clean.
 //
 // BRAND_RULES is plain data ([source, flags, kind]) so the same rules can be handed to a browser page (scripts/shots.mjs and
@@ -15,7 +14,7 @@ const KEEP = '(?![\\w-]*studio\\.(?:app|pages\\.dev))'; // not part of a domain 
 
 export const BRAND_RULES = [
   [`\\b([Aa])[Nn](\\s+)(?=${NAME}${KEEP})`, 'g', 'article'], // an / An / AN before the name -> a / A / A
-  [`(?<!@)${NAME}${KEEP}`, 'g', 'name'],
+  [`${NAME}${KEEP}`, 'g', 'name'],
 ];
 
 // Self-contained (no outer references), so it can also be rebuilt inside a page: new Function('return ' + makeRebrand)().
@@ -60,4 +59,4 @@ export function rebrandDom(o) {
 }
 
 // True when text still holds the old name outside the kept domains (for checks).
-export const hasOldName = (t) => new RegExp(`(?<!@)${NAME}${KEEP}`).test(t); // the same forms the name rule renames
+export const hasOldName = (t) => new RegExp(`${NAME}${KEEP}`).test(t); // the same forms the name rule renames
