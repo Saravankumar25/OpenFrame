@@ -19,7 +19,7 @@ charge (Guideline 3.1.1). The price shown comes from StoreKit at run time.
 
 **How to restore.** Restore purchase is on the first-launch screen, the lock screen and the check screen.
 
-**Network use.** The app works offline after the first start. The AI assistant is optional: its model is a data file the
+**Network use.** The app works offline after the first start. OpenFrame AI is optional: its model is a data file the
 person chooses to download, in Settings, from Hugging Face. The AI engine itself is inside the app and nothing executable is
 downloaded after install. The engine helper is sandboxed (inherits) and listens on 127.0.0.1 only.
 

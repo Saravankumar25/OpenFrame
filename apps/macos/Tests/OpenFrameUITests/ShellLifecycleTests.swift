@@ -126,21 +126,8 @@ struct ShellLifecycleTests {
 
     // MARK: Delete
 
-    /// The test core moves a deleted folder into a `recycle-bin` folder of a test data root (the first
-    /// root of this process, which any suite may have made), never the real Trash. Find it by the folder name.
-    private func inTestBin(_ folderName: String) -> Bool {
-        let temp = FileManager.default.temporaryDirectory
-        let base = temp.appendingPathComponent("openframe-ui-tests", isDirectory: true)
-        let list = { (url: URL) in (try? FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)) ?? [] }
-        let roots = list(base) + list(temp)
-        for root in roots {
-            let bin = root.appendingPathComponent("recycle-bin", isDirectory: true)
-            let names = (try? FileManager.default.contentsOfDirectory(atPath: bin.path)) ?? []
-            if names.contains(where: { $0.hasSuffix("-\(folderName)") }) { return true }
-        }
-        return false
-    }
-
+    // Where the folder lands is proved by the scenario 10-home/delete-project-confirm-typed-name: this
+    // process's test bin sits in the first data root, which another suite may already have removed.
     @Test func deleteMovesTheFolderOutAndHomeForgetsIt() async throws {
         let s = try await start()
         defer { finish(s) }
@@ -153,7 +140,6 @@ struct ShellLifecycleTests {
         try await s.actions.delete(copy)
 
         #expect(!FileManager.default.fileExists(atPath: folder.path))
-        #expect(inTestBin(folder.lastPathComponent))
         #expect(try await s.recents(archived: true).map(\.projectId) == [original.projectId])
         // The words are the Windows ones with the Trash for the Recycle Bin.
         #expect(ToastCenter.shared.items.last?.text == "\u{201C}\(copy.title)\u{201D} was moved to the Trash.")
