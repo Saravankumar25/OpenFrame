@@ -334,7 +334,7 @@ What `ensure` keeps in place for `openframestudio.app`:
 | SSL/TLS | mode Full (strict), Always Use HTTPS on, minimum TLS 1.2, TLS 1.3 on; DNSSEC on |
 | Old address | account Bulk Redirect list `pages_dev_to_domain`: `openframe-studio.pages.dev` to the apex, 301, path and query kept (official method, Pages docs "Disable access to `*.pages.dev` subdomain"). Preview addresses (`*.openframe-studio.pages.dev`) are not touched |
 
-Token permissions (token `straft-website`, kept in the user variables `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`,
+Token permissions (token `openframe-website`, kept in the user variables `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`,
 never in the repository):
 
 | Scope | Permission | Used for |

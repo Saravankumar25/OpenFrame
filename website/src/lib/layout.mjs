@@ -12,8 +12,8 @@ export const BOOT = "(function(){var d=document.documentElement;d.classList.add(
 
 // Store marks are single-colour and take the button's text colour, so they sit cleanly on any button fill.
 const MSICON = raw('<svg class="i logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor"><path d="M3 3h8.5v8.5H3zM12.5 3H21v8.5h-8.5zM3 12.5h8.5V21H3zM12.5 12.5H21V21h-8.5z"/></svg>');
-const STUDIO = raw('<small aria-hidden="true"><i>S</i><i>T</i><i>U</i><i>D</i><i>I</i><i>O</i></small>');
-export const WORDMARK = html`<span class="wm"><b><i>Open</i>Frame</b>${STUDIO}</span>`;
+// The wordmark from the brand logo (Manrope): "Straft" bold, "Studio" regular in the brand orange, one line.
+export const WORDMARK = html`<span class="wm"><b>Straft</b> <i>Studio</i></span>`;
 
 export function makeHelpers(cat, missing, shots = { win: {}, mac: {} }, noShot = new Set(), hasPage = () => true) {
   // One screen = one interactive page, /mockups/<plat>/<theme>/<file>.html (made by scripts/shots.mjs). The manifest
@@ -100,7 +100,7 @@ function header(page, switchHref) {
   const ctls = html`${seg('Platform', 'os', [['win', 'Windows'], ['mac', 'Mac']])}${seg('Website theme', 'theme', [['light', 'Light'], ['dark', 'Dark']])}${seg('App screen theme', 'mock', [['light', 'Light', 'mlight'], ['dark', 'Dark', 'mdark']])}`;
   return html`<a class="skip" href="#main">Skip to content</a>${GRADIENT_DEFS}
 <header class="site-h"><div class="wrap nav">
-<a class="brand draw" href="/" >${MARK}${WORDMARK}<span class="sr"> Studio, home</span></a>
+<a class="brand draw" href="/" >${MARK}${WORDMARK}<span class="sr">, home</span></a>
 <ul class="menu" id="menu">
 <li class="has-mega"><button type="button" aria-expanded="false"${page.nav === 'features' ? raw(' class="is-current"') : ''}>Features${ICON.chev}</button><div class="mega"><div class="mega-in">${feat}
 <div class="mega-foot"><span>One film, moving forward, from first idea to final call sheet.</span><a href="/features/">See everything Straft does &rarr;</a></div></div></div></li>
@@ -135,7 +135,7 @@ function footer() {
 <p class="gp-links"><a href="/pricing/">See pricing</a><a href="/tutorials/" data-os-href-win="/windows/tutorials/" data-os-href-mac="/mac/tutorials/">Explore the tutorials</a></p>
 </div></div></dialog><button type="button" class="gp-pill" hidden>Get Straft</button></template>`;
   return html`<footer class="site-f"><div class="wrap"><div class="f-grid">
-<div><a class="brand" href="/" >${MARK}${WORDMARK}<span class="sr"> Studio, home</span></a>
+<div><a class="brand" href="/" >${MARK}${WORDMARK}<span class="sr">, home</span></a>
 <p class="about">A film production software for all your needs. From film lovers, to film lovers across the world.</p>
 <div class="f-company"><img src="/company/vighnajith-advisories-logo-192.webp" srcset="/company/vighnajith-advisories-logo-96.webp 96w, /company/vighnajith-advisories-logo-192.webp 192w, /company/vighnajith-advisories-logo-288.webp 288w" sizes="96px" width="96" height="48" alt="${COMPANY} logo" loading="lazy"><span>${SITE_NAME} is a product of ${COMPANY}.</span></div></div>
 ${col('Ideate & Write', all.slice(0, 7).map(([s, t]) => [t, `/features/${s}/`]))}

@@ -60,7 +60,7 @@ ${STAGES.map(stage)}
 <div class="apps" aria-label="Five separate kinds of app">
 ${[['bulb', 'Notes and idea app'], ['board', 'Story outlining tool'], ['page', 'Screenwriting software'], ['list', 'Breakdown and scheduling'], ['clip', 'Call sheet tool']].map(([k, t]) => html`<div class="app">${svg(k)}<b>${t}</b><small>own login, own bill</small></div>`)}
 </div>
-<div class="one"><div class="one-card"><div class="wm"><i>Open</i><b>Frame</b></div><p>One app. One install. One payment.</p>
+<div class="one"><div class="one-card"><div class="wm"><b>Straft</b></div><p>One app. One install. One payment.</p>
 <div class="pills"><span>Idea Vault</span><span>Beat Board</span><span>Screenplay</span><span>Breakdown and Schedule</span><span>Call Sheets</span></div></div></div>
 </div>
 <div class="merge-stats rv">
