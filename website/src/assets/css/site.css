@@ -1,7 +1,7 @@
 /* Straft Studio website styles, ported from the approved website design package (Website_Share_Package).
    Colours are tokens so the site has a Light theme (white) and a Dark theme (black); see theme.css. */
 :root{
-  --surface:#fdfcf9; --cream2:#f7f6f1; --frame:#edebe3; --header-bg:rgba(250,249,245,.92); --solid:#1f1e1d; --on-solid:#faf9f5; --solid-h:#141413; --accent-ink:#a34d2d;
+  --surface:#fdfcf9; --cream2:#f7f6f1; --frame:#edebe3; --solid:#1f1e1d; --on-solid:#faf9f5; --solid-h:#141413; --accent-ink:#a34d2d;
   --ink:#1f1e1d; --ink2:#4a4945; --muted:#6b6a64;
   --bg:#faf9f5; --cream:#f5f4ee; --tint:#f0eee6; --line:#e8e6dc; --line2:#d9d6ca;
   --accent:#d97757; --accent-d:#c6613f; --on-accent:#141413; --accent-soft:#f6e7e0; --ok:#157a5b;
@@ -9,10 +9,11 @@
   --r:14px; --shadow:0 4px 16px rgba(31,30,29,.08);
   --font:"Segoe UI Variable Display","Segoe UI",Inter,system-ui,-apple-system,Arial,sans-serif;
   --ease:cubic-bezier(.22,.8,.2,1);
+  --nav-h:67px; /* the fixed bar: 66px of content and a 1px hairline; body and anchors are offset by exactly this */
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{margin:0;font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1.55;font-size:17px;-webkit-font-smoothing:antialiased}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;scroll-padding-top:calc(var(--nav-h) + 12px)}
+body{margin:0;padding-top:var(--nav-h);font-family:var(--font);color:var(--ink);background:var(--bg);line-height:1.55;font-size:17px;-webkit-font-smoothing:antialiased}
 img,svg,iframe{max-width:100%}
 a{color:inherit}
 button{font:inherit;color:inherit}
@@ -50,8 +51,8 @@ section.tint{background:var(--cream)}
 
 
 /* header */
-.site-h{position:sticky;top:0;z-index:50;background:var(--header-bg);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line)}
-.nav{display:flex;align-items:center;height:72px;gap:28px}
+.site-h{position:fixed;top:0;left:0;right:0;width:100%;height:var(--nav-h);margin:0;z-index:50;border-radius:0;background:var(--bg);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;height:100%;gap:28px}
 .brand{display:flex;align-items:center;gap:11px;text-decoration:none;flex:none}
 .brandlogo{display:inline-flex;align-items:center;color:var(--ink)}
 .brandlogo svg{display:block;height:34px;width:auto;flex:none}
@@ -247,7 +248,7 @@ footer.site-f .f-pub a{color:#cfcdc4;overflow-wrap:anywhere;text-decoration:unde
   .menu-tg{display:block;margin-left:auto}
   .nav-cta{margin-left:auto}
   .menu-tg+.nav-cta{margin-left:0}
-  .menu.open-m{display:flex;position:absolute;top:100%;left:0;right:0;height:calc(100vh - 72px);height:calc(100dvh - 72px);background:var(--surface);flex-direction:column;padding:14px 20px 90px;margin:0;overflow:auto;gap:0}
+  .menu.open-m{display:flex;position:fixed;top:var(--nav-h);left:0;right:0;height:calc(100vh - var(--nav-h));height:calc(100dvh - var(--nav-h));background:var(--surface);flex-direction:column;padding:14px 20px 90px;margin:0;overflow:auto;gap:0}
   .menu.open-m>li>a,.menu.open-m>li>button{width:100%;justify-content:space-between;font-size:19px;padding:16px 8px;border-bottom:1px solid var(--line);border-radius:0}
   .menu.open-m .mega{position:static;visibility:visible;opacity:1;transform:none;padding:0;display:none}
   .menu.open-m li.open>.mega{display:block}
@@ -261,6 +262,7 @@ footer.site-f .f-pub a{color:#cfcdc4;overflow-wrap:anywhere;text-decoration:unde
   .merge-stats{grid-template-columns:1fr}
 }
 @media (max-width:640px){
+  :root{--nav-h:61px}
   body{font-size:16px}
   section{padding:72px 0}
   .grid3,.promise-row{grid-template-columns:1fr}
@@ -272,6 +274,7 @@ footer.site-f .f-pub a{color:#cfcdc4;overflow-wrap:anywhere;text-decoration:unde
   .sale-top,.sale-body{padding-inline:20px}
   .f-grid{grid-template-columns:1fr}
 }
+@media print{:root{--nav-h:0px}.site-h{position:static;height:auto}}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01s!important;animation-delay:0s!important;transition-duration:.01s!important;scroll-behavior:auto!important}
   :root.js .rv{opacity:1;transform:none}

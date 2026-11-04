@@ -169,16 +169,6 @@
     els.forEach(function (e) { io.observe(e); });
   }
 
-  /* ---------- glass header tightens once the page scrolls ---------- */
-  function headerState() {
-    var h = document.querySelector('.site-h'); if (!h) return;
-    var on = false, tick = false;
-    // two thresholds, so the class never flips back and forth near one scroll position
-    function upd() { tick = false; var v = on ? scrollY > 8 : scrollY > 32; if (v !== on) { on = v; h.classList.toggle('scrolled', v); } }
-    addEventListener('scroll', function () { if (!tick) { tick = true; requestAnimationFrame(upd); } }, { passive: true });
-    upd();
-  }
-
   /* ---------- loading: the page splash (the Straft icon) lifts once the page has loaded; first visit of a session ---------- */
   function splash() {
     var done = false;
@@ -214,7 +204,7 @@
   /* error pages: Try again */
   function reloads() { document.addEventListener('click', function (e) { if (e.target.closest('[data-reload]')) location.reload(); }); }
 
-  function init() { splash(); shotViews(); reloads(); controls(); menus(); storeMsg(); stages(); pricing(); reveal(); headerState(); }
+  function init() { splash(); shotViews(); reloads(); controls(); menus(); storeMsg(); stages(); pricing(); reveal(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   addEventListener('pageshow', function () { mark(); });
 })();

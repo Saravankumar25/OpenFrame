@@ -89,7 +89,7 @@
 .tut .meta{font-size:13.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink)}
 .tut h3{margin-top:8px;font-size:20px}
 .tut p{color:var(--ink2);font-size:15.5px;margin-top:8px}
-.tview{position:fixed;inset:0;z-index:110;background:rgba(28,27,26,.62);backdrop-filter:blur(5px);display:none;align-items:flex-start;justify-content:center;padding:28px 16px;overflow:auto}
+.tview{position:fixed;inset:0;z-index:110;background:rgba(28,27,26,.62);display:none;align-items:flex-start;justify-content:center;padding:28px 16px;overflow:auto}
 .tview.show{display:flex}
 .tview-box{background:var(--surface);border-radius:22px;width:min(1080px,100%);padding:30px 30px 34px;position:relative;animation:pop .4s var(--ease)}
 .tview-x{position:absolute;right:16px;top:16px;width:40px;height:40px;border-radius:50%;border:0;background:var(--tint);font-size:22px;cursor:pointer}

@@ -146,7 +146,7 @@ test('a click opens the real page in the viewer; Esc closes it and focus returns
   await page.keyboard.press('Escape');
   await page.waitForSelector('dialog.lb', { state: 'hidden' });
   assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('href')), href);
-  assert.notEqual(await page.$eval('html', (h) => getComputedStyle(h).overflow), 'hidden');
+  await page.waitForFunction(() => getComputedStyle(document.documentElement).overflow !== 'hidden'); // released just after the dialog closes
 }));
 
 test('the viewer fits the window with the screen\'s own shape and is interactive (hover works on the Mac page)', { skip: SKIP }, () => withPage(async (page) => {

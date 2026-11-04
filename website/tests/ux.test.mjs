@@ -83,12 +83,13 @@ test('mobile menu: Escape closes it and returns focus, the page scrolls again, T
   assert.notEqual(await page.evaluate(() => getComputedStyle(document.documentElement).overflow), 'hidden');
   // growing to desktop width with the menu open restores scrolling
   await page.click('#menutg');
+  await page.mouse.move(5, 5); // off the menu button, so no wide-screen dropdown opens under the pointer when the window grows
   await page.setViewportSize({ width: 1300, height: 800 });
   assert.deepEqual(await open(), { m: false, x: 'false', lock: false, inert: false });
-  // a tap outside the open drawer closes it
-  await page.setViewportSize({ width: 375, height: 700 });
+  // a tap outside the open drawer closes it (the drawer is flush under the bar and as tall as its links, so the window is tall enough to leave page below it)
+  await page.setViewportSize({ width: 375, height: 900 });
   await page.click('#menutg');
-  await page.mouse.click(5, 690);
+  await page.mouse.click(5, 890);
   assert.equal((await open()).m, false);
 }, { viewport: { width: 375, height: 700 } }));
 

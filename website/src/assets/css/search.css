@@ -13,7 +13,7 @@
 /* ---------- command palette ---------- */
 html.srch-open{overflow:hidden}
 .srch-dlg{padding:0;border:1px solid var(--line2);border-radius:18px;background:var(--surface);color:var(--ink);width:min(680px,100% - 24px);max-width:none;max-height:none;margin:max(12px,9vh) auto auto;box-shadow:var(--shadow);overflow:hidden}
-.srch-dlg::backdrop{background:rgba(28,27,26,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.srch-dlg::backdrop{background:rgba(28,27,26,.55)}
 .srch-box{display:flex;flex-direction:column;max-height:min(640px,100dvh - 24px)}
 .srch-in{display:flex;align-items:center;gap:12px;padding:0 14px 0 18px;height:60px;border-bottom:1px solid var(--line);flex:none}
 .srch-in:focus-within{border-bottom-color:var(--accent)}
