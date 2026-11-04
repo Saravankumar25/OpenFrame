@@ -6251,7 +6251,7 @@
    "url": "/mac/tutorials/screenplay-draft-menu-first/",
    "screens": [
     "screenplay-empty-draft-menu",
-    "screenplay-draft-example-short-imported"
+    "screenplay-draft-menu"
    ]
   },
   {
@@ -8114,7 +8114,6 @@
    "url": "/mac/tutorials/files-open-details/",
    "screens": [
     "pages-files-context-menu",
-    "pages-files-more-menu",
     "pages-files-selected",
     "pages-files-selected"
    ]
@@ -8210,7 +8209,7 @@
    "title": "Delete a file and get it back",
    "url": "/mac/tutorials/files-delete-restore/",
    "screens": [
-    "pages-files-more-menu",
+    "pages-files-context-menu",
     "pages-files-deleted",
     "pages-files-deleted"
    ]
@@ -12549,7 +12548,8 @@
    "screenplay-draft-info"
   ],
   "mac/screenplay-draft-menu": [
-   "screenplay-new-draft"
+   "screenplay-new-draft",
+   "screenplay-draft-menu-first"
   ],
   "mac/screenplay-draft-new-draft": [
    "screenplay-new-draft"
@@ -12567,9 +12567,6 @@
    "screenplay-new-draft"
   ],
   "mac/screenplay-empty-draft-menu": [
-   "screenplay-draft-menu-first"
-  ],
-  "mac/screenplay-draft-example-short-imported": [
    "screenplay-draft-menu-first"
   ],
   "mac/screenplay-tools-drafts": [
@@ -13779,10 +13776,7 @@
   ],
   "mac/pages-files-context-menu": [
    "files-open-details",
-   "files-move"
-  ],
-  "mac/pages-files-more-menu": [
-   "files-open-details",
+   "files-move",
    "files-delete-restore"
   ],
   "mac/pages-files-selected": [

@@ -130,11 +130,6 @@ export default {
           explain: `The menu lists Details, Rename, Move to, Reveal in Finder, Export Copy… and Delete. The More actions button on the row opens the same menu.`,
         },
         {
-          screen: `pages-files-more-menu`,
-          do: `Or click More actions on the file's row.`,
-          explain: `This is the same menu, opened from the button instead of by right-clicking.`,
-        },
-        {
           screen: `pages-files-selected`,
           do: `Read the File details panel at the right.`,
           explain: `It shows the file name, a Close button, Name, Folder, and Where. Where shows Stored in project with the type and size (for example Text · 78 B) and the line A copy is stored inside the project folder and travels with the project. Below are Notes, then the original file name with the dates Added and Changed.`,
@@ -357,7 +352,7 @@ export default {
       prerequisites: [`The project has a file.`],
       steps: [
         {
-          screen: `pages-files-more-menu`,
+          screen: `pages-files-context-menu`,
           do: `Choose Delete from the file's menu, or click Delete in the details panel.`,
           explain: `Both do the same thing.`,
         },
@@ -389,8 +384,7 @@ export default {
     'pages-files-list': `Project Files in List view with four files: three stored in the project and one, Lamp rig quote.txt, linked. Used in files-add-link and files-list-grid.`,
     'pages-files-grid': `Project Files in Grid view. Each file is a card with its type label, name and a stored or linked badge. Used in files-list-grid.`,
     'pages-files-grid-selected': `Grid view with one card selected and the File details panel open at the right. Used in files-list-grid.`,
-    'pages-files-context-menu': `The context menu of a file: Details, Rename, Move to, Reveal in Finder, Export Copy… and Delete. Used in files-open-details and files-move.`,
-    'pages-files-more-menu': `The More actions menu of a file. It has the same items as the context menu. Used in files-open-details and files-delete-restore.`,
+    'pages-files-context-menu': `The context menu of a file: Details, Rename, Move to, Reveal in Finder, Export Copy… and Delete. Used in files-open-details, files-move and files-delete-restore.`,
     'pages-files-selected': `A stored file selected in List view with the File details panel open: Name, Folder, Where, Notes, original name and dates, Reveal in Finder, Export Copy…, Delete and Open. Used in files-open-details, files-rename-note and files-export-copy.`,
     'pages-files-details-notes': `The details panel with a note written in Notes. Used in files-rename-note.`,
     'pages-files-moved': `Project Files after a file was moved into References. A message says Moved “Depot permit letter.txt” to “References”, and the folder counts changed. Used in files-move.`,

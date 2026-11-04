@@ -33,10 +33,10 @@ const manual = { win: await loadManual('win'), mac: await loadManual('mac') };
 
 // ---------- assets (content-hashed names)
 const hash = (buf) => crypto.createHash('sha256').update(buf).digest('hex').slice(0, 10);
-const cssFiles = ['site.css', 'pages-base.css', 'theme.css', 'shots.css', 'search.css', 'legal.css', 'getapp.css'].map((f) => path.join(SRC, 'assets', 'css', f));
+const cssFiles = ['site.css', 'pages-base.css', 'theme.css', 'shots.css', 'search.css', 'legal.css', 'getapp.css', 'mosaic.css'].map((f) => path.join(SRC, 'assets', 'css', f));
 const cssOut = (await esbuild.transform(cssFiles.map((f) => fs.readFileSync(f, 'utf8')).join('\n'), { loader: 'css', minify: true })).code;
 // Each script is its own scope, so the files cannot clash on names.
-const jsSrc = ['getapp.js', 'site.js', 'lightbox.js', 'search.js'].map((f) => `;(function(){\n${fs.readFileSync(path.join(SRC, 'assets', 'js', f), 'utf8')}\n})();`).join('\n');
+const jsSrc = ['getapp.js', 'site.js', 'lightbox.js', 'search.js', 'mosaic.js'].map((f) => `;(function(){\n${fs.readFileSync(path.join(SRC, 'assets', 'js', f), 'utf8')}\n})();`).join('\n');
 const jsOut = (await esbuild.transform(jsSrc, { loader: 'js', minify: true, target: 'es2019' })).code;
 fs.mkdirSync(path.join(DIST, 'assets', 'fonts'), { recursive: true });
 const cssName = `/assets/site.${hash(cssOut)}.css`, jsName = `/assets/site.${hash(jsOut)}.js`;
@@ -121,7 +121,7 @@ const today = new Date().toISOString().slice(0, 10);
 writeSitemapAndRobots(DIST, pages); // sitemap.xml and robots.txt (scripts/seo-files.mjs)
 // ---------- standard site files
 const webmanifest = { name: SITE_NAME, short_name: 'Straft', description: 'Film production software for ideas, scripts, schedules and call sheets.', start_url: '/', scope: '/', display: 'browser',
-  background_color: '#0e0d15', theme_color: '#1d1a2e', lang: 'en',
+  background_color: '#1c1b1a', theme_color: '#1f1e1d', lang: 'en',
   icons: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png' }, { src: '/icon-512.png', sizes: '512x512', type: 'image/png' }, { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }] };
 fs.writeFileSync(path.join(DIST, 'site.webmanifest'), JSON.stringify(webmanifest, null, 2));
 fs.mkdirSync(path.join(DIST, '.well-known'), { recursive: true });
@@ -133,8 +133,8 @@ Canonical: ${SITE_URL}/.well-known/security.txt
 Policy: ${SITE_URL}/legal/privacy/
 `);
 fs.writeFileSync(path.join(DIST, 'humans.txt'), `/* TEAM */
-Technical Founding Engineer: Saravan Kumar M K
-Product Founding Engineer: Badrinath Reddy A
+Technical Co-Founding Engineer: Saravan Kumar M K and team
+Product Co-Founding Engineer: Badrinath Reddy A and team
 
 /* SITE */
 Last update: ${today}

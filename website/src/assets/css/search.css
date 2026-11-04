@@ -3,7 +3,7 @@
 
 /* ---------- header button ---------- */
 .srch-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:none;height:38px;min-width:38px;padding:0 10px;border:1px solid var(--line2);border-radius:999px;
-  background:rgba(127,120,150,.08);color:var(--ink2);text-decoration:none;font:600 12.5px/1 var(--font);cursor:pointer;transition:color .15s,border-color .15s,background .15s}
+  background:rgba(130,128,120,.08);color:var(--ink2);text-decoration:none;font:600 12.5px/1 var(--font);cursor:pointer;transition:color .15s,border-color .15s,background .15s}
 .srch-btn:hover{color:var(--ink);border-color:var(--ink2);background:var(--tint)}
 .srch-btn svg{width:18px;height:18px;flex:none}
 .srch-k{display:none;font:inherit;font-size:12px;letter-spacing:.02em;color:var(--muted);white-space:nowrap}
@@ -13,7 +13,7 @@
 /* ---------- command palette ---------- */
 html.srch-open{overflow:hidden}
 .srch-dlg{padding:0;border:1px solid var(--line2);border-radius:18px;background:var(--surface);color:var(--ink);width:min(680px,100% - 24px);max-width:none;max-height:none;margin:max(12px,9vh) auto auto;box-shadow:var(--shadow);overflow:hidden}
-.srch-dlg::backdrop{background:rgba(14,13,21,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.srch-dlg::backdrop{background:rgba(28,27,26,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 .srch-box{display:flex;flex-direction:column;max-height:min(640px,100dvh - 24px)}
 .srch-in{display:flex;align-items:center;gap:12px;padding:0 14px 0 18px;height:60px;border-bottom:1px solid var(--line);flex:none}
 .srch-in:focus-within{border-bottom-color:var(--accent)}
@@ -62,8 +62,8 @@ html.srch-open{overflow:hidden}
 .sp-g{padding:0}
 .sp-g h2{font-size:24px;margin:30px 0 14px}
 .sp-list{display:grid;gap:10px}
-.sp .srch-it{margin:0;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);gap:5px;transition:border-color .15s,box-shadow .15s}
-.sp .srch-it:hover,.sp .srch-it:focus-visible{border-color:var(--accent);box-shadow:0 10px 26px -18px rgba(29,26,46,.5)}
+.sp .srch-it{margin:0;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);gap:5px;transition:border-color .15s}
+.sp .srch-it:hover,.sp .srch-it:focus-visible{border-color:var(--accent)}
 .sp .srch-t{font-size:18px}
 .sp .srch-s{font-size:15px}
 .sp-more{margin-top:14px}

@@ -160,7 +160,7 @@ export const FEATURE_PAGES = {
     description: 'Bring scripts into Straft Studio from Final Draft, Fountain, Word, PDF or plain text with a preview first, and export to PDF, FDX, Fountain, Word or text.',
     h1: 'Bring your scripts. Take them anywhere.',
     lead: 'Import a screenplay from Final Draft, Fountain, Word, PDF or plain text, and see what will arrive before anything changes. Export the same way, with no branding on your script.',
-    hero: { win: '015-sp-import-complete', mac: '083-screenplay-draft-example-short-imported' },
+    hero: { win: '015-sp-import-complete', mac: '080-screenplay-tools-import-screenplay' },
     rows: [
       { heading: 'A preview before every import',
         text: 'Import Screenplay shows the scenes, characters and warnings it found. You decide whether to go ahead. Four sample scripts are there if you want to try it first.',

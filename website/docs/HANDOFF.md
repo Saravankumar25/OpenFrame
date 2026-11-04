@@ -13,7 +13,7 @@ capture whose AI panel or Offline AI pane is redrawn as live HTML with the Windo
 `research/screens-mac.json` with `sim: true` (`extract-screens.mjs` drops them, so re-run `sim-mac.mjs` after it).
 
 - 742 pages: home, 15 feature pages with a capability catalog, 390 Windows and 310 Mac written tutorials (with previous
-  and next links), platform pages, pricing (₹2,999 in India, US$89 elsewhere, bought separately per platform), download,
+  and next links), platform pages, pricing (launch price ₹3,999 in India, €89 in Europe, US$89 elsewhere, bought separately per platform), download,
   about, FAQ, Themes (custom theme files and six starters), /search/, and the legal hub (Privacy, Terms, Refunds, Cookies
   and browser storage, Notices). Missing legal facts are hidden markers listed in `.cache/agents/legal-report.md`.
 - Content source: `src/content/manual/<win|mac>/`. The two PDF manuals built from it are internal only.

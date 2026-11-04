@@ -1,8 +1,9 @@
 // Page shell in the approved website design: control strip (platform, website theme, screen theme), header with the
 // Features and Why Straft menus, footer with the company, and the shared ctx helpers (app screens, store buttons).
 import { html, raw, esc } from './html.mjs';
-import { ICON, MARK, GRADIENT_DEFS } from './icons.mjs';
+import { ICON, MARK, BRANDLOGO, GRADIENT_DEFS } from './icons.mjs';
 import { FEATURE_GROUPS, WHY, OS, COMPANY, COMPANY_ADDRESS, SUPPORT_EMAIL } from '../content/nav.mjs';
+import { PRICES } from '../content/copy.mjs';
 import { SITE_URL, SITE_NAME, STORE } from '../../site.config.mjs';
 import { headMeta, jsonLd } from './seo.mjs';
 
@@ -12,8 +13,6 @@ export const BOOT = "(function(){var d=document.documentElement;d.classList.add(
 
 // Store marks are single-colour and take the button's text colour, so they sit cleanly on any button fill.
 const MSICON = raw('<svg class="i logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor"><path d="M3 3h8.5v8.5H3zM12.5 3H21v8.5h-8.5zM3 12.5h8.5V21H3zM12.5 12.5H21V21h-8.5z"/></svg>');
-// The wordmark from the brand logo (Manrope): "Straft" bold, "Studio" regular in the brand orange, one line.
-export const WORDMARK = html`<span class="wm"><b>Straft</b> <i>Studio</i></span>`;
 
 export function makeHelpers(cat, missing, shots = { win: {}, mac: {} }, noShot = new Set(), hasPage = () => true) {
   // One screen = one interactive page, /mockups/<plat>/<theme>/<file>.html (made by scripts/shots.mjs). The manifest
@@ -64,8 +63,10 @@ export function makeHelpers(cat, missing, shots = { win: {}, mac: {} }, noShot =
       : html`<button type="button" class="btn ${kind} ${cls}" data-store="${plat}">${icon}${label}</button>`;
   };
   const storeRow = (cls = 'btn-lg') => html`<div class="store-row">${storeBtn('win', cls)}${storeBtn('mac', cls)}</div>`;
-  // Price for the visitor's region (India: rupees, Europe: euros, other countries: US dollars). Without script all three are listed.
-  const price = () => html`<span class="pr" data-price><span data-price-in>₹2,999</span><span data-price-both> in India, </span><span data-price-eu>€89</span><span data-price-both> in Europe, </span><span data-price-us>US$89</span><span data-price-both> in other countries</span></span>`;
+  // Launch price for the visitor's region (India: rupees, Europe: euros, the USA and other countries: US dollars), with the
+  // original price crossed out. Without script all three are listed.
+  const amount = ({ was, now }) => html`<s>${was}</s> <b>${now}</b>`;
+  const price = () => html`<span class="pr" data-price><span data-price-in>${amount(PRICES.in)}</span><span data-price-both> in India, </span><span data-price-eu>${amount(PRICES.eu)}</span><span data-price-both> in Europe, </span><span data-price-us>${amount(PRICES.us)}</span><span data-price-both> in the USA and other countries</span> <span class="launch">Launch Price</span></span>`;
   const cta = () => html`<section class="cta-band"><div class="wrap">
 <span class="eyebrow">Ready when you are</span>
 <h2>Try it free for 7 days. Pay once if you keep it.</h2>
@@ -100,7 +101,7 @@ function header(page, switchHref) {
   const ctls = html`${seg('Platform', 'os', [['win', 'Windows'], ['mac', 'Mac']])}${seg('Website theme', 'theme', [['light', 'Light'], ['dark', 'Dark']])}${seg('App screen theme', 'mock', [['light', 'Light', 'mlight'], ['dark', 'Dark', 'mdark']])}`;
   return html`<a class="skip" href="#main">Skip to content</a>${GRADIENT_DEFS}
 <header class="site-h"><div class="wrap nav">
-<a class="brand draw" href="/" >${MARK}${WORDMARK}<span class="sr">, home</span></a>
+<a class="brand" href="/">${BRANDLOGO}<span class="sr">Straft Studio, home</span></a>
 <ul class="menu" id="menu">
 <li class="has-mega"><button type="button" aria-expanded="false"${page.nav === 'features' ? raw(' class="is-current"') : ''}>Features${ICON.chev}</button><div class="mega"><div class="mega-in">${feat}
 <div class="mega-foot"><span>One film, moving forward, from first idea to final call sheet.</span><a href="/features/">See everything Straft does &rarr;</a></div></div></div></li>
@@ -135,7 +136,7 @@ function footer() {
 <p class="gp-links"><a href="/pricing/">See pricing</a><a href="/tutorials/" data-os-href-win="/windows/tutorials/" data-os-href-mac="/mac/tutorials/">Explore the tutorials</a></p>
 </div></div></dialog><button type="button" class="gp-pill" hidden>Get Straft</button></template>`;
   return html`<footer class="site-f"><div class="wrap"><div class="f-grid">
-<div><a class="brand" href="/" >${MARK}${WORDMARK}<span class="sr">, home</span></a>
+<div><a class="brand" href="/">${BRANDLOGO}<span class="sr">Straft Studio, home</span></a>
 <p class="about">A film production software for all your needs. From film lovers, to film lovers across the world.</p>
 <div class="f-company"><img src="/company/vighnajith-advisories-logo-192.webp" srcset="/company/vighnajith-advisories-logo-96.webp 96w, /company/vighnajith-advisories-logo-192.webp 192w, /company/vighnajith-advisories-logo-288.webp 288w" sizes="96px" width="96" height="48" alt="${COMPANY} logo" loading="lazy"><span>${SITE_NAME} is a product of ${COMPANY}.</span></div></div>
 ${col('Ideate & Write', all.slice(0, 7).map(([s, t]) => [t, `/features/${s}/`]))}
@@ -156,8 +157,8 @@ export function renderPage(page, { css, js, switchHref }) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 ${headMeta(page)}
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e0d15" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#faf9f5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1b1a" media="(prefers-color-scheme: dark)">
 <meta name="application-name" content="Straft Studio">
 <meta name="apple-mobile-web-app-title" content="Straft">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">

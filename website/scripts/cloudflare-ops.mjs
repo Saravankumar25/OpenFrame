@@ -7,6 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { SITE_URL, PAGES_PROJECT } from '../site.config.mjs';
 
 const APEX = new URL(SITE_URL).hostname, WWW = `www.${APEX}`, PAGES_HOST = `${PAGES_PROJECT}.pages.dev`;
+const ON_PAGES_DEV = APEX === PAGES_HOST; // no custom domain yet: there is no www host and nothing to redirect
 const ev = (k) => process.env[k] || (process.platform === 'win32' ? execFileSync('powershell', ['-NoProfile', '-Command', `[Environment]::GetEnvironmentVariable('${k}','User')`], { encoding: 'utf8' }).trim() : '');
 const problems = [], notes = [];
 const ok = (m) => console.log(`  ok    ${m}`), warn = (m) => { notes.push(m); console.log(`  WARN  ${m}`); }, bad = (m) => { problems.push(m); console.log(`  FAIL  ${m}`); };
@@ -76,7 +77,7 @@ async function ensure() {
   let list = lists.result.find((l) => l.name === listName);
   if (!list) { const c = await cf('POST', `/accounts/${account}/rules/lists`, { name: listName, kind: 'redirect', description: `${PAGES_HOST} to ${APEX}` }); if (!need(c, 'create list', 'Account > Account Filter Lists > Edit')) return; list = c.result; }
   const items = await cf('GET', `/accounts/${account}/rules/lists/${list.id}/items`);
-  if (need(items, 'list items', 'Account > Account Filter Lists > Edit') && !items.result.length) need(await cf('POST', `/accounts/${account}/rules/lists/${list.id}/items`, [item]), 'add list item', 'Account > Account Filter Lists > Edit');
+  if (need(items, 'list items', 'Account > Account Filter Lists > Edit') && !items.result.some((i) => i.redirect?.source_url === item.redirect.source_url)) need(await cf('POST', `/accounts/${account}/rules/lists/${list.id}/items`, [item]), 'add list item', 'Account > Account Filter Lists > Edit');
   const bphase = `/accounts/${account}/rulesets/phases/http_request_redirect/entrypoint`;
   const bcur = await cf('GET', bphase);
   const brules = bcur.ok ? bcur.result.rules || [] : [];
@@ -95,9 +96,11 @@ async function verify() {
   await retry(`${home} returns 200 with a valid certificate`, async () => { const r = await get(home); return r.status === 200 ? '' : `status ${r.status} ${r.error || ''}`; });
   await retry(`canonical tag is ${home}`, async () => { const t = await (await get(home)).text(); return t.includes(`<link rel="canonical" href="${home}">`) ? '' : 'canonical tag missing or wrong'; });
   await retry('robots.txt allows crawling and names the sitemap', async () => { const t = await (await get(`${home}robots.txt`)).text(); return t.includes(`Sitemap: ${SITE_URL}/sitemap.xml`) && !/^Disallow: \/\s*$/m.test(t) ? '' : 'robots.txt wrong'; });
-  await retry('sitemap.xml lists only the domain', async () => { const r = await get(`${home}sitemap.xml`); const t = await r.text(); return r.status === 200 && t.includes(`<loc>${home}`) && !t.includes('pages.dev') ? '' : `status ${r.status} or wrong host`; });
+  await retry('sitemap.xml lists only the domain', async () => { const r = await get(`${home}sitemap.xml`); const t = await r.text(); return r.status === 200 && t.includes(`<loc>${home}`) && (ON_PAGES_DEV || !t.includes('pages.dev')) ? '' : `status ${r.status} or wrong host`; });
   await retry('http redirects to https', async () => { const r = await get(`http://${APEX}/`); return r.status === 301 && r.headers.get('location') === home ? '' : `status ${r.status} to ${r.headers.get('location')}`; });
-  await retry(`${WWW} redirects to the apex with path and query`, async () => { const r = await get(`https://${WWW}/features?x=1`); return r.status === 301 && r.headers.get('location') === `${home}features?x=1` ? '' : `status ${r.status} to ${r.headers.get('location')}`; });
+  if (ON_PAGES_DEV) return;
+  // www may serve the site directly until the owner adds the redirect rule; the canonical tag still names the apex.
+  { const r = await get(`https://${WWW}/features?x=1`); if (r.status === 301 && r.headers.get('location') === `${home}features?x=1`) ok(`${WWW} redirects to the apex with path and query`); else if (r.status === 200 || r.status === 308) warn(`${WWW} answers ${r.status} and does not redirect to the apex yet`); else bad(`${WWW}: status ${r.status} ${r.error || ''}`); }
   const r = await get(`https://${PAGES_HOST}/features?x=1`);
   if (r.status === 301 && r.headers.get('location') === `${home}features?x=1`) ok(`${PAGES_HOST} redirects to the apex with path and query`);
   else warn(`${PAGES_HOST} does not redirect yet (status ${r.status}); the Bulk Redirect needs account token permissions`);

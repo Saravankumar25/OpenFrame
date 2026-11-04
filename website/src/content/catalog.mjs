@@ -641,7 +641,7 @@ export const CATALOG = {
     e('br-file-folders', 'Folders for files', 'Organise your documents.', 'Create, rename and delete folders and move files into them.', 'To keep a large file cabinet in order.',
       ['files-new-folder-dialog', 'files-folder-created', 'files-folder-contracts', 'files-rename-folder-dialog', 'files-delete-folder-confirm'], ['files-new-folder-sheet', 'files-with-folder', 'pages-files-new-subfolder', 'pages-files-moved', 'pages-files-rename-folder']),
     e('br-file-details', 'File details and notes', 'Notes beside each file.', 'Open a file to rename it in the app, write notes, choose its folder, reveal it in the file manager or save a copy.', 'To keep context with each document.',
-      ['files-details-drawer', 'files-details-notes', 'files-details-renamed'], ['pages-files-selected', 'pages-files-details-notes', 'pages-files-more-menu']),
+      ['files-details-drawer', 'files-details-notes', 'files-details-renamed'], ['pages-files-selected', 'pages-files-details-notes', 'pages-files-context-menu']),
     e('br-linked-files', 'Linked files that go missing', 'A moved file is flagged, not lost.', 'A linked file that cannot be found stays in the list with a clear notice, so you can relink it.', 'To never wonder why a file stopped opening.',
       ['files-linked-file', 'files-unavailable-linked-file', 'files-unavailable-details'], ['pages-files-linked-details', 'pages-files-unavailable', 'pages-files-unavailable-details']),
     e('br-files-search', 'Search files', 'Find a document.', 'Search the file cabinet by name.', 'To find a contract in seconds.',

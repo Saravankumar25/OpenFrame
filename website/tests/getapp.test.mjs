@@ -141,7 +141,7 @@ test('the platform follows data-os: the visitor\'s platform comes first', { skip
 });
 
 test('the price follows the region', { skip: SKIP }, async () => {
-  for (const [r, want, not] of [['in', '₹2,999', /€|US\$/], ['eu', '€89', /₹|US\$/], ['world', 'US$89', /₹|€/]]) {
+  for (const [r, want, not] of [['in', '₹3,999', /€|US\$/], ['eu', '€89', /₹|US\$/], ['world', 'US$89', /₹|€/]]) {
     await withPage(async (page) => {
       await go(page, '/faq/');
       await page.waitForSelector('.gp-pill:not([hidden])', { timeout: 4000 });

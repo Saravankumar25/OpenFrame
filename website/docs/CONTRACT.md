@@ -10,9 +10,10 @@ agent, WebP screens, `src/content/tutorials`) is superseded and kept in git hist
   shows the text without a screen.
 - No em or en dashes (the build fails on them). No internal release wording (no team testing, unsigned builds,
   passwords, plans or dates); `tests/static.test.mjs` fails on it.
-- Company: Vighnajith Advisories Private Limited, named in the footer only (owner decision 2026-10-31). Founders, in this order: Saravan Kumar M K (Technical Founding Engineer: end-to-end
-  technical implementation) and Badrinath Reddy A (Product Founding Engineer: idea, ideation, design, direction).
-- Prices: ₹2,999 in India, US$89 elsewhere, one-time, after a 7-day trial. No other currency.
+- Company: Vighnajith Advisories Private Limited, named in the footer only (owner decision 2026-10-31). Founders, in this order: Saravan Kumar M K and team (Technical Co-Founding Engineer:
+  led technical development) and Badrinath Reddy A and team (Product Co-Founding Engineer: led product development).
+- Launch prices (owner, 2026-11-04), original crossed out: ₹7,999 to ₹3,999 in India, €149 to €89 in Europe, US$149 to US$89 in
+  the USA and other countries. One-time, lifetime, after a 7-day trial.
 - Store buttons look normal and do nothing when clicked until `STORE` in `site.config.mjs` holds a real listing link.
 
 ## Page modules

@@ -1,7 +1,7 @@
 # Website security
 
 Audit of 2026-10-31 by the `seo-sec` agent. Scope: the static site in this repository and its Cloudflare Pages deployment
-(project `openframe-studio`). The product apps are out of scope. The checks below are repeated by `tests/seo.test.mjs` on every
+(project `straft-studio`). The product apps are out of scope. The checks below are repeated by `tests/seo.test.mjs` on every
 build, so this page is the explanation and the test is the guard.
 
 ## 1. What the site is, and what that means for risk
@@ -66,7 +66,7 @@ CSP, one line in the file:
 Do this before relying on it. The privacy notice currently says the site runs no analytics and loads nothing from other
 companies: update `src/pages/legal.mjs` (and `docs/SEO.md` owner list) in the same change, or do not switch it on.
 
-1. In the Cloudflare dashboard, Pages, `openframe-studio`, Settings, Web Analytics, enable it. Cloudflare then adds
+1. In the Cloudflare dashboard, Pages, `straft-studio`, Settings, Web Analytics, enable it. Cloudflare then adds
    `<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{...}'>` to each page when it is
    served. The page needs no change.
 2. Safe check with Report-Only. In `scripts/seo-files.mjs` add one more line under `/*`:
@@ -123,7 +123,7 @@ None of these can be done from the repository. Order matters only where stated.
    or a file. It lives only in the Windows user environment variables.
 3. Turn on notifications: deployment failed, and certificate expiry (once the custom domain exists).
 
-**Pages project `openframe-studio`**
+**Pages project `straft-studio`**
 4. Settings, General, Access policy: enable it for preview deployments, so non-production branches are not public.
 5. Settings, Builds, Branch control: keep `main` as the production branch.
 6. Settings, Web Analytics: leave off until the privacy notice is updated and the check in section 3 is done.

@@ -43,7 +43,7 @@ export function writeLlms(DIST, { paths, manual, FEATURE_GROUPS, CATALOG, OS }) 
 
 Facts:
 - Platforms: Windows 11 (64-bit) and macOS 14 or later on Apple silicon Macs. Sold through the Microsoft Store and the Mac App Store.
-- Price: one-time lifetime purchase, ₹2,999 in India, €89 in Europe and US$89 in other countries, after a 7-day free trial. The store sets the final checkout amount.
+- Price: one-time lifetime purchase at a launch price of ₹3,999 in India (originally ₹7,999), €89 in Europe (originally €149) and US$89 in the USA and other countries (originally US$149), after a 7-day free trial. The store sets the final checkout amount.
 - Privacy: no Straft account, no telemetry, no cloud service. Works offline. Projects are not encrypted by the app.
 - Straft AI: optional. One-time download of about 1.2 GB that the person starts; runs on the computer; suggests changes that apply only when the person clicks Apply.
 - Import: Final Draft (.fdx), Fountain, Word (.docx), PDF (best effort), plain text. Screenplay export: PDF, FDX, Fountain, DOCX, TXT.
@@ -55,7 +55,7 @@ ${link('/features/', 'Features', 'every capability, marked for Windows and Mac.'
 - [Complete feature catalog and tutorial list](${SITE_URL}/llms-full.txt)
 `);
   // llms-full.txt: the whole feature catalog and every tutorial, as plain text for answer engines.
-  const full = [`# ${SITE_NAME}: complete feature catalog and tutorials`, '', `Platforms: Windows 11 and macOS 14 or later on Apple silicon. Price: one-time purchase, ₹2,999 in India, €89 in Europe and US$89 in other countries, after a 7-day free trial.`, ''];
+  const full = [`# ${SITE_NAME}: complete feature catalog and tutorials`, '', `Platforms: Windows 11 and macOS 14 or later on Apple silicon. Price: one-time purchase at a launch price of ₹3,999 in India, €89 in Europe and US$89 in the USA and other countries, after a 7-day free trial.`, ''];
   for (const [, items] of FEATURE_GROUPS) for (const [slug, title] of items) {
     full.push(`## ${title} (${SITE_URL}/features/${slug}/)`, '');
     for (const f of CATALOG[slug] || []) full.push(`- ${f.name} [${[f.win?.length && 'Windows', f.mac?.length && 'Mac'].filter(Boolean).join(', ')}]: ${f.does} ${f.purpose}`);

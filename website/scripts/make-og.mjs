@@ -1,16 +1,15 @@
 // One-off: draws src/static/og.png (1200x630) for link previews from the brand mark and a real app screen.
-// Re-run when the brand line changes. Needs .cache/win-full from scripts/render-screens.mjs, and the Manrope font installed
-// as a system font (librsvg finds fonts through fontconfig; src/assets/fonts has only the woff2).
+// Re-run when the brand line changes. Needs .cache/win-full from scripts/render-screens.mjs.
 import sharp from 'sharp';
 import path from 'node:path';
+import { MARK_D, STRAFT_D, STUDIO_D, LOGO_VIEWBOX } from '../src/lib/icons.mjs';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const shot = path.join(ROOT, '.cache', 'win-full', '016-shell-project-home.png');
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630">
 <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1d1a2e"/><stop offset="1" stop-color="#0e0d15"/></linearGradient>
-<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5d6c"/><stop offset=".55" stop-color="#ff9a3d"/><stop offset="1" stop-color="#ffc23d"/></linearGradient></defs>
+<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FF5E6C"/><stop offset="0.5" stop-color="#FF9A45"/><stop offset="1" stop-color="#FFC13D"/></linearGradient></defs>
 <rect width="1200" height="630" fill="url(#bg)"/>
-<g transform="translate(72 66) scale(2.5)" fill="none" stroke="url(#g)" stroke-width="1.6" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="2.2"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M22 7h-5M22 17h-5"/></g>
-<text x="148" y="113" font-family="Manrope, Segoe UI, Arial, sans-serif" font-size="44" fill="#fff" xml:space="preserve"><tspan font-weight="700">Straft</tspan><tspan font-weight="400" fill="#ff9a3d"> Studio</tspan></text>
+<svg x="72" y="62" width="360" height="80" viewBox="${LOGO_VIEWBOX}"><g transform="translate(70 26.4) scale(0.3)"><path fill-rule="evenodd" fill="url(#g)" d="${MARK_D}"/></g><path fill="#fff" d="${STRAFT_D}"/><path fill="#FF9A45" d="${STUDIO_D}"/></svg>
 <text x="72" y="232" font-family="Georgia, serif" font-size="58" fill="#fff">A film production software</text>
 <text x="72" y="300" font-family="Georgia, serif" font-size="58" fill="#fff">for all your needs.</text>
 <text x="72" y="366" font-family="Segoe UI, Arial, sans-serif" font-size="26" fill="#cfc9e2">Ideate, write, plan and shoot in one app.</text>

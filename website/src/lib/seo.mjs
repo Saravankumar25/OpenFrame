@@ -14,11 +14,11 @@ export const ORG = (ctx = { SITE_URL }) => ({ '@context': 'https://schema.org', 
   logo: { '@type': 'ImageObject', url: ctx.SITE_URL + '/icon-512.png', width: 512, height: 512 },
   slogan: 'From film lovers, to film lovers across the world.',
   founder: FOUNDERS.map((f) => ({ '@type': 'Person', name: f.name, jobTitle: f.role, description: f.text[0], ...(f.link ? { url: f.link, sameAs: [f.link] } : {}) })) });
-// India pays in rupees, Europe in euros, other countries in US dollars; all one-time. No priceValidUntil: the price has no end date.
+// India pays in rupees, Europe in euros, the USA and other countries in US dollars; all one-time launch prices. No priceValidUntil: no end date is set.
 const OFFERS = (url) => [
-  { '@type': 'Offer', price: '2999', priceCurrency: 'INR', eligibleRegion: { '@type': 'Country', name: 'IN' }, url, availability: 'https://schema.org/InStock', description: 'One-time purchase after a 7-day free trial. India.' },
-  { '@type': 'Offer', price: '89', priceCurrency: 'EUR', eligibleRegion: { '@type': 'Place', name: 'Europe' }, url, availability: 'https://schema.org/InStock', description: 'One-time purchase after a 7-day free trial. Europe.' },
-  { '@type': 'Offer', price: '89', priceCurrency: 'USD', ineligibleRegion: [{ '@type': 'Country', name: 'IN' }, { '@type': 'Place', name: 'Europe' }], url, availability: 'https://schema.org/InStock', description: 'One-time purchase after a 7-day free trial. Other countries.' }];
+  { '@type': 'Offer', price: '3999', priceCurrency: 'INR', eligibleRegion: { '@type': 'Country', name: 'IN' }, url, availability: 'https://schema.org/InStock', description: 'One-time purchase at the launch price after a 7-day free trial. India.' },
+  { '@type': 'Offer', price: '89', priceCurrency: 'EUR', eligibleRegion: { '@type': 'Place', name: 'Europe' }, url, availability: 'https://schema.org/InStock', description: 'One-time purchase at the launch price after a 7-day free trial. Europe.' },
+  { '@type': 'Offer', price: '89', priceCurrency: 'USD', ineligibleRegion: [{ '@type': 'Country', name: 'IN' }, { '@type': 'Place', name: 'Europe' }], url, availability: 'https://schema.org/InStock', description: 'One-time purchase at the launch price after a 7-day free trial. USA and other countries.' }];
 export const APP = (ctx = { SITE_URL }, os, p = '/') => ({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', '@id': ID.app, name: SITE_NAME, url: ctx.SITE_URL + p,
   applicationCategory: 'MultimediaApplication', applicationSubCategory: 'Screenwriting and film production planning', operatingSystem: os,
   description: DESC, image: ctx.SITE_URL + OG.path, inLanguage: 'en',
@@ -31,7 +31,7 @@ export const WEBSITE = (ctx = { SITE_URL }) => ({ '@context': 'https://schema.or
 function matchVisible(o, body) {
   const t = String(body);
   const x = { ...o };
-  if (x['@type'] === 'SoftwareApplication' && !/₹2,999/.test(t)) delete x.offers; // price not shown on this page
+  if (x['@type'] === 'SoftwareApplication' && !/₹3,999/.test(t)) delete x.offers; // price not shown on this page
   if (x['@type'] === 'Organization' && !t.includes(FOUNDERS[0].name)) delete x.founder; // founders only where they are named
   return x;
 }

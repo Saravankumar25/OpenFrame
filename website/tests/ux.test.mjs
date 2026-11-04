@@ -168,6 +168,8 @@ for (const theme of ['light', 'dark']) {
     for (const p of ['/features/screenplay/', '/features/scheduling/', '/tutorials/']) {
       await page.goto(base + p);
       await page.evaluate((t) => document.documentElement.setAttribute('data-theme', t), theme);
+      // judge the settled colours, not the moment the theme is still fading
+      await page.waitForFunction(() => !document.getAnimations().some((a) => a.transitionProperty));
       const r = await new AxeBuilder({ page }).withRules(['color-contrast']).analyze();
       assert.deepEqual(r.violations.map((v) => v.nodes.map((n) => n.target.join(' ')).slice(0, 3)), [], `${p} ${theme}`);
     }

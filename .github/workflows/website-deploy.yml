@@ -1,0 +1,60 @@
+# Builds website/ and deploys it to the Cloudflare Pages project straft-studio. Details: website/docs/OPERATIONS.md section 9.
+name: Website deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'website/**'
+      - '.github/workflows/website-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: website
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - run: npm ci --no-audit --no-fund
+
+      - name: Fetch the screen pages, which are too large for Git
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(jq -r .tag scripts/screens-bundle.json)
+          file=$(jq -r .file scripts/screens-bundle.json)
+          sum=$(jq -r .sha256 scripts/screens-bundle.json)
+          gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern "$file" --dir "$RUNNER_TEMP"
+          echo "$sum  $RUNNER_TEMP/$file" | sha256sum --check --strict -
+          mkdir -p .cache/shots
+          tar -xzf "$RUNNER_TEMP/$file" -C .cache/shots
+
+      - run: npm run build
+
+      - run: npx playwright install --with-deps chromium
+
+      - run: npm test
+
+      - name: Deploy and check the live site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npm run deploy

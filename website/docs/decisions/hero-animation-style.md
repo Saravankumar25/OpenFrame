@@ -1,6 +1,14 @@
 # Decision: hero animation style
 
-Status: proposed, waiting for the owner. Date: 2026-10-31. Decision only. Nothing has been implemented.
+Status: decided. The owner chose the photo mosaic on 2026-11-04, and it is built: `src/assets/js/mosaic.js`, `src/assets/css/mosaic.css`,
+`src/content/hero-photos.mjs`, `tests/mosaic.test.mjs`.
+
+What shipped: a 1.15 s splash, then a film of 6.5 s in which a wall of 54 photographs (113 WebP files, 1.4 MB) fills the hero. The
+tiles clear 7.1 s after load, 7.3 s on a phone, and the words remain. Skip or a key press clears them in under 0.7 s. A later
+visit in the same session has no film, and with reduced motion no film runs and no photographs download.
+
+Everything below this line is the proposal of 2026-10-31. It is superseded and kept as history: none of its styles, including the
+recommended Aurora Gradient, was built.
 
 ## What the hero needs
 

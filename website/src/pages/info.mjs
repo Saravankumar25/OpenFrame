@@ -63,8 +63,7 @@ ${win ? html`<tr><td><b>Window size</b></td><td>At least 1200 by 720 pixels.</td
 <div class="step"><div class="n">2</div><h3>Choose where projects live</h3><p>The first start asks where to keep your projects. The suggested place is fine for most people.</p></div>
 <div class="step"><div class="n">3</div><h3>Say what to call you</h3><p>Your name appears on notes, tasks and activity. It stays on this computer. There is no account.</p></div>
 <div class="step"><div class="n">4</div><h3>Create a project</h3><p>Create Project asks for a title. Everything else is optional and can be changed later.</p></div>
-</div>
-<p class="center mt26"><a class="more" href="${win ? '/windows/tutorials/' : '/mac/tutorials/'}">Follow the step-by-step ${name} tutorials &rarr;</a></p></div></section>
+</div></div></section>
 <section class="tint sec-s"><div class="wrap narrow"><div class="sec-head"><h2>Keyboard shortcuts on ${name}</h2><p class="lead">The defaults. You can change any of them in Settings.</p></div>
 ${shortcutTable(win ? 1 : 2)}</div></section>
 <section class="sec-s"><div class="wrap narrow"><div class="facts"><h3>Good to know on ${name}</h3><ul class="ticks">
@@ -75,8 +74,7 @@ ${win ? html`<li><span>Your project is a folder named <b>Title.straft</b>, by de
 <li><span>Dialogs appear as sheets attached to the window. Settings opens with Command and comma.</span></li>
 <li><span>Project undo and redo use Command, Option and Z. Plain Command and Z undoes text.</span></li>
 <li><span>Search and Commands opens with Command and K. Spell check uses the macOS spelling service.</span></li>`}
-</ul></div>
-<p class="center mt26"><a class="btn btn-dark" href="${win ? '/windows/tutorials/' : '/mac/tutorials/'}">Read the ${name} tutorials</a></p></div></section>
+</ul></div></div></section>
 ${cta()}`,
     });
   };
@@ -90,14 +88,12 @@ ${cta()}`,
     body: html`
 ${phero('Download', 'Get Straft Studio.', 'From the Microsoft Store on Windows and the Mac App Store on the Mac. Try it free for 7 days.')}
 <section class="sec-s pt30"><div class="wrap"><div class="price-grid">
-<div class="pcard win rv"><span class="badge">Windows 11</span><h2>Straft Studio for Windows</h2><p class="price-sub mt10">Installed and updated by the Microsoft Store.</p>
-<ul class="ticks"><li><span>Windows 11, 64-bit</span></li><li><span>7-day free trial, then one payment</span></li><li><span>Works offline, no Straft account</span></li></ul>${storeBtn('win', 'btn-lg')}
+<div class="pcard win rv"><span class="badge">Windows 11</span><h2>Straft Studio for Windows</h2><p class="price-sub mt10">Windows 11, 64-bit. Installed and updated by the Microsoft Store.</p>${storeBtn('win', 'btn-lg')}
 <p class="small-print"><a href="/windows/">More about Windows</a></p></div>
-<div class="pcard mac rv d1"><span class="badge">Mac</span><h2>Straft Studio for Mac</h2><p class="price-sub mt10">Installed and updated by the Mac App Store.</p>
-<ul class="ticks"><li><span>macOS 14 or later on Apple silicon</span></li><li><span>7-day free trial, then one payment</span></li><li><span>Works offline, no Straft account</span></li></ul>${storeBtn('mac', 'btn-lg')}
+<div class="pcard mac rv d1"><span class="badge">Mac</span><h2>Straft Studio for Mac</h2><p class="price-sub mt10">macOS 14 or later on Apple silicon. Installed and updated by the Mac App Store.</p>${storeBtn('mac', 'btn-lg')}
 <p class="small-print"><a href="/mac/">More about the Mac</a></p></div>
 </div></div></section>
-<section class="tint sec-s" id="trial"><div class="wrap"><div class="sec-head"><span class="eyebrow">Have trust issues? Good.</span><h2>Your 7-day free trial, step by step.</h2></div>
+<section class="tint sec-s" id="trial"><div class="wrap"><div class="sec-head"><h2>Your 7-day free trial, step by step.</h2></div>
 <div class="steps3">
 <div class="step rv"><div class="n">1</div><h3>Install</h3><p>Get the app from the Microsoft Store or the Mac App Store. The 7-day trial starts with the whole app.</p></div>
 <div class="step rv d1"><div class="n">2</div><h3>Make something real</h3><p>Write a scene, build a Beat Board, schedule a day, make a call sheet. A small chip shows the days left.</p></div>
@@ -109,42 +105,19 @@ ${phero('Download', 'Get Straft Studio.', 'From the Microsoft Store on Windows a
   const pricing = page({
     path: '/pricing/', nav: 'pricing',
     title: 'Pricing: pay once, own forever | Straft Studio',
-    description: 'Straft Studio is a one-time lifetime purchase: ₹2,999 in India, €89 in Europe and US$89 elsewhere, after a 7-day free trial. No subscription and no renewal.',
+    description: 'Straft Studio is a one-time lifetime purchase. Launch price: ₹3,999 in India, €89 in Europe and US$89 elsewhere, after a 7-day free trial.',
     breadcrumbs: [['Pricing', '/pricing/']],
     body: html`
-${phero('Pricing', 'Pay once. Own forever.', 'No subscription, no renewal, no rented software. One payment for the whole app, after a 7-day free trial.')}
+${phero('Pricing', 'Pay once. Own forever.', 'A lifetime purchase with no subscription. One payment for the whole app, after a 7-day free trial.')}
 <section class="sec-s pt30"><div class="wrap"><div class="price-one">
-<div class="pcard win rv"><span class="badge">Lifetime purchase</span>
-<div class="region-tg" role="group" aria-label="Price region"><button type="button" data-region-set="in" aria-pressed="false">India</button><button type="button" data-region-set="eu" aria-pressed="false">Europe</button><button type="button" data-region-set="world" aria-pressed="false">Other countries</button></div>
+<div class="pcard win rv">
+<div class="region-tg" role="group" aria-label="Price region"><button type="button" data-region-set="in" aria-pressed="false">India</button><button type="button" data-region-set="eu" aria-pressed="false">Europe</button><button type="button" data-region-set="world" aria-pressed="false">USA and others</button></div>
 <h2>Straft Studio</h2>
-<div class="price"><b>${price()}</b></div>
-<p class="price-sub">One payment for <span data-region-name>your region</span>. Bought separately for Windows and for Mac, each in its own store. 7-day free trial first.</p>
-<ul class="ticks">
-<li><span>Idea Vault, Story page, Beat Board and moodboards</span></li>
-<li><span>Screenplay editor with drafts, review and revisions</span></li>
-<li><span>Import and export: Final Draft, Fountain, PDF, Word and text</span></li>
-<li><span>Breakdown, catalog, cast, crew and locations</span></li>
-<li><span>Shot lists, storyboards and the shooting schedule</span></li>
-<li><span>Call sheets, sides, Daily View, reports and a light budget</span></li>
-<li><span>Backups and project packages</span></li>
-<li><span>Straft AI, with no running cost</span></li>
-</ul>
-<div class="store-col">${storeBtn('win')}${storeBtn('mac')}</div>
-<p class="price-note">The Microsoft Store and the Mac App Store set the final checkout amount under their own rules, which can include taxes where you live. The website does not convert currencies.</p></div>
+<div class="price">${price()}</div>
+<div class="store-col">${storeBtn('win')}${storeBtn('mac')}</div></div>
+<p class="price-note center">Bought separately for Windows and for Mac, each in its own store. The store sets the final checkout amount under its own rules, which can include taxes where you live. The website does not convert currencies.</p>
 </div></div></section>
-<section class="dark"><div class="wrap manifesto">
-<div class="rv"><span class="eyebrow">Rent vs own</span><h2>Renting looks cheap in month one.</h2>
-<p class="lead mt18">Five tools, five bills, every month, for as long as you make films. Or one payment, and it is yours. Break the chain of corporate rentals.</p>
-<p class="big-line">Pay once. <span>Own forever.</span></p></div>
-<div class="rv d2"><div class="chart"><svg viewBox="0 0 520 320" role="img" aria-label="Illustration: rented tools cost more every year; a one-time purchase stays flat.">
-<g stroke="#ffffff1f"><line x1="46" y1="270" x2="500" y2="270"/><line x1="46" y1="200" x2="500" y2="200" stroke-dasharray="3 6"/><line x1="46" y1="130" x2="500" y2="130" stroke-dasharray="3 6"/></g>
-<path d="M46 250 L110 250 L110 228 L190 228 L190 190 L270 190 L270 150 L350 150 L350 108 L430 108 L430 66 L492 66" stroke="#ff7a52" stroke-width="4" fill="none"/>
-<path d="M46 250 L56 250 L56 214 L492 214" stroke="#fff" stroke-width="4" fill="none"/><circle cx="56" cy="214" r="6" fill="#fff"/>
-<text x="496" y="52" text-anchor="end" fill="#ffab8e" font-weight="700" font-size="15">Rented tools: the bill never stops</text>
-<text x="496" y="240" text-anchor="end" fill="#fff" font-weight="700" font-size="15">Straft: you paid once</text>
-<g text-anchor="middle"><text x="110" y="292">Year 1</text><text x="190" y="292">Year 2</text><text x="270" y="292">Year 3</text><text x="350" y="292">Year 4</text><text x="430" y="292">Year 5</text></g></svg>
-<p class="cap">Illustration of the idea, not real prices.</p></div></div></div></section>
-<section class="sec-s"><div class="wrap narrow"><div class="sec-head"><span class="eyebrow">Have trust issues? Good.</span><h2>Questions about the trial</h2></div>
+<section class="sec-s"><div class="wrap narrow"><div class="sec-head"><h2>Questions about the price and the trial</h2></div>
 ${FAQ.find(([g]) => g === 'Pricing and trial')[1].map(faqItem)}</div></section>
 ${cta()}`,
   });
@@ -266,23 +239,18 @@ ${cta()}`,
   const about = page({
     path: '/about/', nav: 'about',
     title: 'About Straft Studio and its founders',
-    description: 'Why Straft Studio exists, who it is for, the promises it keeps about your work, and the two founding engineers who build it.',
+    description: 'Why Straft Studio exists, who it is for, and the co-founding engineers who lead its technical and product development with their teams.',
     breadcrumbs: [['About', '/about/']],
     jsonld: [ORG(ctx)],
     body: html`
-${phero('About Straft', 'From film lovers, to film lovers across the world.', 'Straft Studio is one app for the whole film, made for people who make films with limited resources.')}
+${phero('About Straft', 'From film lovers, to film lovers across the world.', 'Straft Studio is one app for the whole film.')}
 <section class="tint sec-s"><div class="wrap"><div class="two">
 <div class="rv"><h2>What it is for</h2><p class="lead mt18">A film often starts as scattered notes and ends as a pile of separate files. Straft Studio keeps the whole path in one project: first idea, story, screenplay, breakdown, schedule, call sheets and a light budget.</p></div>
 <div class="rv d1"><h2>Who it is for</h2><p class="lead mt18">Writers, screenwriters and production teams, especially people who make films with limited resources. There is one app for everyone and no separate editions.</p></div>
 </div></div></section>
-<section class="sec-s"><div class="wrap"><div class="sec-head"><span class="eyebrow">The founders</span><h2>Two founding engineers.</h2>
-<p class="lead">One turns the film-making journey into a product. The other turns that product into software you can trust with your work.</p></div>
-<div class="founders">${FOUNDERS.map((f, i) => html`<article class="founder rv${i ? ' d1' : ''}"><span class="role">${f.role}</span><h3>${f.link ? html`<a class="name-link" href="${f.link}" target="_blank" rel="noopener noreferrer">${f.name}</a>` : f.name}</h3>${f.text.map((p) => html`<p>${p}</p>`)}</article>`)}
-</div></div></section>
-<section class="tint sec-s"><div class="wrap"><div class="sec-head"><h2>Your idea. Your film. Our promise.</h2></div><div class="grid3">
-<div class="card rv"><h3>Your work is yours</h3><p>It lives on your computer. No Straft account, no cloud service, no telemetry.</p></div>
-<div class="card rv d1"><h3>You stay in charge</h3><p>Straft AI only suggests. Nothing changes until you choose Apply.</p></div>
-<div class="card rv d2"><h3>No lock-in</h3><p>Standard formats in, standard formats out. Back up and move your whole project any time.</p></div>
+<section class="sec-s"><div class="wrap"><div class="sec-head"><span class="eyebrow">The founders</span><h2>Co-founding engineers and their teams.</h2>
+<p class="lead">Technical and product development, each led by a co-founding engineer with a team.</p></div>
+<div class="founders">${FOUNDERS.map((f, i) => html`<article class="founder rv${i ? ' d1' : ''}"><span class="role">${f.role}</span><h3>${f.link ? html`<a class="name-link" href="${f.link}" target="_blank" rel="noopener noreferrer">${f.name}</a>` : f.name} and team</h3>${f.text.map((p) => html`<p>${p}</p>`)}</article>`)}
 </div></div></section>
 ${cta()}`,
   });

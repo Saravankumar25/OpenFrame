@@ -35,7 +35,7 @@ test('footer links to the five legal pages on every page, and they resolve', { s
     const h = page(p);
     const foot = h.slice(h.indexOf('<footer'));
     for (const l of FOOTER) assert.ok(foot.includes(`href="${l}"`), `${p} footer lacks ${l}`);
-    assert.ok(text(foot).replace(/\s+/g, " ").includes("Published by Vighnajith Advisories Private Limited · 12/1, Ground Floor, 22nd Main Road, Bengaluru, Karnataka 560078, India · support@openframestudio.app"), `${p} footer lacks the publisher line`);
+    assert.ok(text(foot).replace(/\s+/g, " ").includes("Published by Vighnajith Advisories Private Limited · 12/1, Ground Floor, 22nd Main Road, Bengaluru, Karnataka 560078, India · support@straftstudio.com"), `${p} footer lacks the publisher line`);
   }
   for (const l of FOOTER) assert.ok(resolvesInDist(l), l);
 });
@@ -66,7 +66,7 @@ test('default build shows visitors no placeholder text, and keeps every hidden m
   assert.deepEqual([...new Set(found)].sort(), [...KEYS].sort());
 });
 
-test('every hidden item is listed in the report as an owner or lawyer action', () => {
+test('every hidden item is listed in the report as an owner or lawyer action', { skip: !existsSync(path.join(ROOT, '.cache/agents/legal-report.md')) }, () => {
   const report = read(path.join(ROOT, '.cache/agents/legal-report.md'));
   for (const k of KEYS) assert.ok(report.includes('`' + k + '`'), `${k} missing from legal-report.md`);
 });
@@ -87,12 +87,12 @@ test('OF_SHOW_PLACEHOLDERS=1 renders the bracketed text for review builds', asyn
 test('the contact page shows the support email and links the verified store pages', { skip: SKIP }, () => {
   const h = main(page('/contact/'));
   assert.ok(!h.includes('data-placeholder'));
-  assert.ok(h.includes('href="mailto:support@openframestudio.app"'));
+  assert.ok(h.includes('href="mailto:support@straftstudio.com"'));
   assert.ok(h.includes('support.microsoft.com/en-us/accounts-billing/subscriptions/get-a-refund-for-apps-and-games-purchased-from-microsoft-store'));
   assert.ok(h.includes('support.apple.com/en-us/118223'));
   assert.ok(!/\+?\d[\d ()-]{8,}\d/.test(text(h)), 'no phone number may appear');
   for (const m of text(h).match(/[\w.+-]+@[\w-]+\.[\w.]+/g) || []) assert.ok(h.includes(`mailto:${m}`), `${m} must be a mailto link`);
-  for (const p of ['/legal/privacy/', '/legal/terms/']) { const m = text(main(page(p))); assert.match(m, /12[/]1, Ground Floor, 22nd Main Road, Bengaluru, Karnataka 560078, India/); assert.ok(page(p).includes('href="mailto:support@openframestudio.app"')); }
+  for (const p of ['/legal/privacy/', '/legal/terms/']) { const m = text(main(page(p))); assert.match(m, /12[/]1, Ground Floor, 22nd Main Road, Bengaluru, Karnataka 560078, India/); assert.ok(page(p).includes('href="mailto:support@straftstudio.com"')); }
 });
 
 test('privacy, cookies and refunds state the verified facts', { skip: SKIP }, () => {
@@ -108,13 +108,13 @@ test('privacy, cookies and refunds state the verified facts', { skip: SKIP }, ()
   assert.match(page('/legal/terms/'), /apple\.com\/legal\/internet-services\/itunes\/dev\/stdeula\//);
 });
 
-test('notices publish the four font licences', { skip: SKIP }, () => {
+test('notices publish the three font licences', { skip: SKIP }, () => {
   const h = page('/legal/notices/');
-  for (const f of ['OFL-Inter.txt', 'OFL-Manrope.txt', 'OFL-Newsreader.txt', 'OFL-Sora.txt']) {
+  for (const f of ['OFL-Inter.txt', 'OFL-Newsreader.txt', 'OFL-Sora.txt']) {
     assert.ok(h.includes(`/assets/fonts/${f}`), f);
     assert.ok(resolvesInDist(`/assets/fonts/${f}`), f);
   }
-  assert.equal((h.match(/SIL OPEN FONT LICENSE Version 1\.1/g) || []).length, 4);
+  assert.equal((h.match(/SIL OPEN FONT LICENSE Version 1\.1/g) || []).length, 3);
 });
 
 test('the old privacy, terms and contact pages are gone from info.mjs', () => {

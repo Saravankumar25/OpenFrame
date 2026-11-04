@@ -1,0 +1,23 @@
+/* Home hero: the headline, with a film of photographs that plays once and leaves the screen completely. Tiles are placed by
+   mosaic.js and never take a pointer, so the links and buttons above them always work. Without script: the headline alone. */
+.hero.center{padding-top:0}
+.hero-top{position:relative;overflow:hidden;display:grid;align-content:center;min-height:max(720px,100svh);padding:150px 0 90px}
+.hero-top .caption{max-width:720px;margin-inline:auto;margin-bottom:34px}
+.hero-copy{position:relative;z-index:2;transition:opacity .7s var(--ease)}
+.mos-intro .hero-copy{opacity:0;transition:none}
+.mos-skipped .hero-copy{transition-delay:.2s}
+.mos{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:0;transition:opacity .4s}
+.mos.on{opacity:1}
+:root:not(.js) .mos{display:none}
+.mos img{position:absolute;left:0;top:0;display:none;border-radius:2px;background:var(--line);transform-origin:center}
+.mos img.show{display:block}
+.mos img.front{z-index:3}
+.mos-skip{position:absolute;z-index:3;right:18px;bottom:18px;min-height:40px;padding:0 16px;border:1px solid var(--line2);border-radius:10px;background:var(--surface);color:var(--ink);font:600 14px/1 var(--font);cursor:pointer}
+.mos-skip[hidden]{display:none}
+.mos-skip:hover{border-color:var(--solid)}
+.mos-skip:focus-visible{outline:2px solid var(--accent-d);outline-offset:2px}
+@media (max-width:640px){
+  .hero-top{padding:110px 0 60px}
+  /* the left corner: on a phone the Get Straft button holds the right one */
+  .mos-skip{right:auto;left:12px;bottom:12px}
+}

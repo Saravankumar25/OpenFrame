@@ -14,6 +14,7 @@ import { loadManual, checkContent } from './check-content.mjs';
 import { PARTS, COMPANY } from '../src/content/nav.mjs';
 import { SHORTCUTS } from '../src/content/copy.mjs';
 import { esc } from '../src/lib/html.mjs';
+import { LOGO_SVG } from '../src/lib/icons.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const OUT = path.join(ROOT, 'manuals');
@@ -136,7 +137,6 @@ async function chapterHtml(plat, a, n, cat, figs) {
 
 const CSS = `
 @font-face{font-family:Inter;src:url(${pathToFileURL(path.join(ROOT, 'src/assets/fonts/inter-latin-wght-normal.woff2')).href}) format("woff2");font-weight:100 900}
-@font-face{font-family:Manrope;src:url(${pathToFileURL(path.join(ROOT, 'src/assets/fonts/manrope-latin-wght-normal.woff2')).href}) format("woff2");font-weight:200 800}
 *{box-sizing:border-box}
 body{font-family:"Segoe UI",Inter,system-ui,sans-serif;font-size:10.2pt;line-height:1.5;color:#1d1a2e;margin:0}
 h1,h2,h3{line-height:1.2;color:#1d1a2e;break-after:avoid}
@@ -146,7 +146,7 @@ h3{font-size:11.5pt;margin:12pt 0 3pt}
 p{margin:0 0 6pt}
 a{color:#b53713;text-decoration:none}
 .cover{height:255mm;display:flex;flex-direction:column;justify-content:space-between;break-after:page}
-.cover .brand{font-family:Manrope,Inter,sans-serif;font-size:30pt;letter-spacing:-.01em;white-space:nowrap}.cover .brand b{font-weight:700}.cover .brand i{font-style:normal;font-weight:400;color:#d2441c}
+.cover .brand svg{display:block;height:46pt;width:auto;color:#1d1a2e}
 .cover h1{font-size:34pt;margin-top:40mm}
 .cover .sub{font-size:13pt;color:#4b4660}
 .cover .co{display:flex;align-items:center;gap:14pt}.cover .co img{width:56mm}
@@ -203,7 +203,7 @@ async function build(plat, browser) {
   let n = 0;
   for (const [part] of PARTS) for (const a of areas.filter((x) => x.part === part)) { n++; chapters.push({ a, n, part, html: await chapterHtml(plat, a, n, cat, figs) }); }
   const head = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(M.title)}</title><style>${CSS}</style></head><body>`;
-  const cover = `<section class="cover"><div><div class="brand"><b>Straft</b> <i>Studio</i></div>
+  const cover = `<section class="cover"><div><div class="brand">${LOGO_SVG}</div>
 <h1>${plat === 'mac' ? 'macOS' : 'Windows'} User Manual</h1><p class="sub">Every workspace, screen, control and workflow of Straft Studio for ${esc(M.name)}, explained step by step.</p>
 <p class="sub">${esc(M.sys)} · ${EDITION}</p></div>
 <div class="co"><img src="${logo}" alt="${esc(COMPANY)} logo"><p>Straft Studio is a product of ${esc(COMPANY)}.<br>© 2026 ${esc(COMPANY)}.</p></div></section>`;

@@ -149,7 +149,6 @@
       p.querySelector('[data-price-eu]').hidden = r !== 'eu';
       p.querySelector('[data-price-us]').hidden = r !== 'world';
     });
-    document.querySelectorAll('[data-region-name]').forEach(function (s) { s.textContent = r === 'in' ? 'India' : r === 'eu' ? 'Europe' : 'your country'; });
     document.querySelectorAll('[data-region-set]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-region-set') === r)); });
   }
   function pricing() {
