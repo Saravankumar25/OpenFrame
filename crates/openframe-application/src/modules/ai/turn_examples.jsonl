@@ -335,13 +335,13 @@
 {"t": "describe", "l": "en", "m": "describe the harbour cafe owner"}
 {"t": "brief", "l": "en", "m": "brief the crew on scene 9"}
 {"t": "story", "l": "en", "m": "why did the ferry stop running"}
-{"t":"lookup","l":"en","m":"what is the last card on the beat board"}
-{"t":"lookup","l":"en","m":"how long should room tone be recorded"}
-{"t":"lookup","l":"en","m":"what is the wind limit"}
-{"t":"lookup","l":"en","m":"what does he want"}
-{"t":"lookup","l":"en","m":"how tall is the mast"}
-{"t":"list","l":"en","m":"what kinds of things have i saved"}
-{"t":"list","l":"en","m":"what shots are planned for this scene"}
-{"t":"list","l":"en","m":"which call sheets are final"}
-{"t":"help","l":"en","m":"where in settings do i get the ai model"}
-{"t":"help","l":"en","m":"can the ai work without a connection"}
+{"t":"lookup","l":"en","m":"what is the final beat on the board"}
+{"t":"lookup","l":"en","m":"how long do we hold for room tone"}
+{"t":"lookup","l":"en","m":"what is the rain limit for the crane"}
+{"t":"lookup","l":"en","m":"what does she want"}
+{"t":"lookup","l":"en","m":"how wide is the bridge"}
+{"t":"list","l":"en","m":"what kinds of items did i keep"}
+{"t":"list","l":"en","m":"what setups are planned here"}
+{"t":"list","l":"en","m":"which sheets are done"}
+{"t":"help","l":"en","m":"where in settings do i find the model"}
+{"t":"help","l":"en","m":"can the assistant run with no connection"}
