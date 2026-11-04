@@ -866,7 +866,7 @@ extension Scenarios {
             try await ui.waitGone(id: "export-sheet")
             f.check(ui.fileSize(pdf) > 500, "the PDF is larger than 500 bytes: \(ui.fileSize(pdf))")
             let pdfBytes = (try? Data(contentsOf: pdf)) ?? Data()
-            f.check(pdfBytes.range(of: Data("Straft Studio".utf8)) == nil, "the PDF does not contain the word Straft Studio")
+            f.check(pdfBytes.range(of: Data("Straft Studio".utf8)) == nil, "the PDF does not contain the product name")
             let fdx = dir.appendingPathComponent("signal-box.fdx")
             try await ui.exportDraft(format: "fdx", to: fdx, titlePage: true)
             try await ui.tap(id: "export-close")
@@ -1003,7 +1003,10 @@ extension UI {
         return Int(t.split(separator: " ").first ?? "") ?? 0
     }
 
-    static let modelsDir = URL(fileURLWithPath: "/Users/m.udarshreddy/Desktop/Straft/.ai-assets/models")
+    /// `.ai-assets/models` of this checkout, whatever its folder is called: run.sh passes `<root>/tests/fixtures`.
+    static let modelsDir = URL(fileURLWithPath: ProcessInfo.processInfo.environment["STRAFT_E2E_FIXTURES"] ?? "/nonexistent")
+        .deletingLastPathComponent().deletingLastPathComponent()
+        .appendingPathComponent(".ai-assets/models")
     /// The three verified model files, in the order they are imported: language model, then the two search models.
     static let modelFiles = ["gemma-3-1b-it-q8-0-v1", "bge-small-en-v1.5-q8-0-v1", "multilingual-e5-small-q8-0-v1"]
         .map { modelsDir.appendingPathComponent($0).appendingPathComponent("model.gguf") }

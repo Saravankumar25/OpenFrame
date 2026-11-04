@@ -9,9 +9,9 @@ design and the contract the code follows; the code is the ground truth.
 | Kind | Default place (Windows) | Removed by uninstall? |
 |---|---|---|
 | Application binaries | `%LOCALAPPDATA%\Programs\Straft Studio` | Yes |
-| Technical app data (settings, recents, AI records, logs, models) | `%LOCALAPPDATA%\Straft Studio` (MSIX: the package `LocalState\Straft Studio`) | Only with the "delete app data" box (direct installer); always for MSIX |
+| Technical app data (settings, recents, AI records, logs, models) | `%LOCALAPPDATA%\Straft` (MSIX: the package `LocalState\Straft Studio`) | Only with the "delete app data" box (direct installer); always for MSIX |
 | Library folder (the one folder to back up) | chosen on the first start; suggested `C:\Users\<name>\Straft Studio` | Never |
-| Library pointer (where the library is) | `%APPDATA%\Straft Studio\library-pointer.json` (Roaming) | Never (the uninstaller only removes listed items under `%LOCALAPPDATA%\Straft Studio`) |
+| Library pointer (where the library is) | `%APPDATA%\Straft\library-pointer.json` (Roaming) | Never (the uninstaller only removes listed items under `%LOCALAPPDATA%\Straft`) |
 | Library file (identity and chosen places) | `<library>\library.json` | Never |
 | Default folder for new projects | `<library>\Projects` (changeable) | Never |
 | Global Idea Vault | `<library>\Global Idea Vault` (movable) | Never |
@@ -195,17 +195,17 @@ any point leaves the app pointing at a complete vault or project: the old one un
 
 ## 7. Platforms
 
-- Direct installer (NSIS): the uninstall box deletes only listed items under `%LOCALAPPDATA%\Straft Studio`; the library
+- Direct installer (NSIS): the uninstall box deletes only listed items under `%LOCALAPPDATA%\Straft`; the library
   folder, projects, vault and backups are never touched (`installer-hooks.nsh`), and neither is the library pointer
-  in `%APPDATA%\Straft Studio` (Roaming), so a reinstall opens the same library without asking.
+  in `%APPDATA%\Straft` (Roaming), so a reinstall opens the same library without asking.
 - Microsoft Store (MSIX): Windows removes the package app data on uninstall, and `%APPDATA%` writes are redirected
   into the package, so the pointer goes too; the library file in the library folder survives, and the first start
   finds a library at the suggested folder or in Documents,
   so identity and places come back after a reinstall. Not tested on a real Store install yet (Chapter 3).
 - Mac (internal disk image): the first start suggests the library at `~/Straft Studio`, in the home folder and outside
   the iCloud Drive "Desktop & Documents" folders, so iCloud does not sync or offload it. The library pointer is
-  `~/Library/Application Support/Straft Studio Library/library-pointer.json`, a folder of its own outside the app data
-  folder `~/Library/Application Support/Straft Studio` (`library_pointer_dir()` in `straft-platform`), so resetting the
+  `~/Library/Application Support/Straft Library/library-pointer.json`, a folder of its own outside the app data
+  folder `~/Library/Application Support/Straft` (`library_pointer_dir()` in `straft-platform`), so resetting the
   app data keeps the pointer, and the library file in the library keeps the identity even if both go. Dragging the app
   to the Trash removes neither. Finder files (`.DS_Store`, `._*`) are skipped in the copy of a move and in the check
   after it, and do not stop an emptied folder from being removed.

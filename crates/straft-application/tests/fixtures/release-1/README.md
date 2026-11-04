@@ -7,7 +7,8 @@ of this project with the build under test, which is what an update does to a rea
 
 ## What is here
 
-- `project/`: a project folder as the app writes it. `straft.json` and `project.sqlite`. Records:
+- `project/`: a project folder as the app wrote it at that release: the manifest under its earlier
+  name (`straft_platform::legacy_names::MANIFEST_FILE`) and `project.sqlite`. Records:
   a two-scene screenplay (Harbour Light, with action and dialogue), two story characters (Meera,
   Karthik), one budget line (Cast, Lead actor, 5,000,000 planned, 5,500,000 actual), one note.
 - `appdata/entitlement/notices.json`: notice flags with every flag set (welcome shown, data note

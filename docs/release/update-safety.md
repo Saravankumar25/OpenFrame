@@ -42,8 +42,8 @@ Run before each submission, on a clean Mac (or a new user account), with build N
 2026-11-03, internal builds on the owner's M1: `apps/macos/E2E/update-check.sh` from build 183 (commit of 2026-10-28) to the installed build
 225 (`a46790ac`), 4 of 4: Story page text, saved text after a kill, Command-Q with a sheet open, every piece of work after a kill. The same
 install on the owner's real data: `app.sqlite` went from version 9 to 11, integrity check ok, 2 of 2 recents and their folders kept, models
-kept, process up, no warnings or errors logged. The bundle identifier changed from `studio.straft.mac` to `app.straftstudio.studio`,
-so preferences macOS keeps per identifier start fresh once. The manual run above on a store build has not been done.
+kept, process up, no warnings or errors logged. The bundle identifier differed between those two builds (internal builds before the
+rename of 2026-11-04 used an earlier one; ADR-0042), so preferences macOS keeps per identifier started fresh once. The manual run above on a store build has not been done.
 
 ## Adding a release fixture
 

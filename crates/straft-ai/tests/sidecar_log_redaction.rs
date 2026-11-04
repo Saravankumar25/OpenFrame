@@ -18,7 +18,7 @@ const SENTINEL: &str = "OF-SIDECAR-SENTINEL-END";
 /// Lines a runtime can print that the sanitized log must neutralise today.
 fn covered_lines() -> Vec<String> {
     vec![
-        r"llama_model_loader: loaded meta data from C:\Users\OfMarkerUser7731\AppData\Local\Straft Studio\models\chat.gguf".into(),
+        r"llama_model_loader: loaded meta data from C:\Users\OfMarkerUser7731\AppData\Local\Straft\models\chat.gguf".into(),
         "srv  log_server_r: request from ofmarker.contact7731@example.com".into(),
         "main: token=OFMARKERTOKEN7731".into(),
         "main: api_key=OFMARKERKEY7731 (from environment)".into(),
@@ -142,7 +142,7 @@ fn sidecar_log_redacts_home_paths_emails_and_keys() {
     }
     // Positive controls: the lines arrived, redacted rather than dropped wholesale.
     assert!(
-        log.contains(r"%USERPROFILE%\AppData\Local\Straft Studio\models"),
+        log.contains(r"%USERPROFILE%\AppData\Local\Straft\models"),
         "{log}"
     );
     assert!(log.contains("[email]"), "{log}");

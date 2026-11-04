@@ -179,6 +179,15 @@ pub fn integrity_problems(conn: &Connection, full: bool) -> AppResult<Vec<String
     Ok(rows.into_iter().filter(|r| r != "ok").collect())
 }
 
+/// Open a database that was just copied and run the quick check on it. False when it does not open
+/// as a database or the check finds a problem. The connection is closed again on return.
+pub fn copied_database_is_sound(path: &Path) -> AppResult<bool> {
+    let Ok(conn) = open_connection(path, false) else {
+        return Ok(false);
+    };
+    Ok(integrity_problems(&conn, false).is_ok_and(|p| p.is_empty()))
+}
+
 /// Foreign-key violations as `table:rowid` strings (empty = healthy).
 pub fn foreign_key_problems(conn: &Connection) -> AppResult<Vec<String>> {
     let mut stmt = conn.prepare("PRAGMA foreign_key_check")?;

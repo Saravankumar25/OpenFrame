@@ -45,7 +45,7 @@ unmodified.
 
 - Fixtures live only in tests. Shipped code has no demo or fake data.
 - Fixtures are synthetic or public domain. No real user projects, and no personal data.
-- Tests never touch `%LOCALAPPDATA%\Straft Studio` or `Documents\Straft Studio` (hermetic temp dirs).
+- Tests never touch `%LOCALAPPDATA%\Straft` or `Documents\Straft Studio` (hermetic temp dirs).
 - Deterministic: no wall-clock dependence beyond ordering (use relative comparisons), and no network.
 
 ## 4. Traceability

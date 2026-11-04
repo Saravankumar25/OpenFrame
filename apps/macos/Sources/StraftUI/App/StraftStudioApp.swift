@@ -124,6 +124,8 @@ public struct StraftStudioApp: App {
     @State private var themes: ThemeStore
 
     public init() {
+        // First, before any screen or @AppStorage reads a preference.
+        LegacyDefaultsMigration.runAtLaunch()
         // The StoreKit bridge goes to the core; only the Mac App Store build uses it. The internal
         // disk image build ignores it.
         var options = LaunchOptions.make()

@@ -42,7 +42,7 @@ and the store listings and privacy policy must describe the one network use.
    download starts. A file becomes usable only after its size and SHA-256 match, by an atomic rename. The last
    known-good model is kept until the new one passes a health check. A bad file is quarantined and the user is told in
    plain words.
-6. **Storage.** Models live in `%LOCALAPPDATA%\Straft Studio\models\` (Windows) and the platform app-data folder on the Mac,
+6. **Storage.** Models live in `%LOCALAPPDATA%\Straft\models\` (Windows) and the platform app-data folder on the Mac,
    once per user, never per project. Projects never contain models. The Mac App Store build keeps the models in its
    container, inside App Sandbox.
 7. **Without the AI.** Before the download, and if it is removed, Straft Studio works fully. AI features show "not installed"

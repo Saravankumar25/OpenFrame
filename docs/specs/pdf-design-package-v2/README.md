@@ -46,7 +46,7 @@ Implementation-ready **design and specification** package for every user-accessi
 
 Each family folder also has `stress-test/` with clearly named `*_STRESS_TEST*.html/.pdf` edge-case renders (fictional data: long text, many rows, missing images, empty states, wide tables). They are QA evidence, not the primary reference.
 
-Other folders: `00_SYSTEM/assets/` (shared stylesheet, preview script, **official logo** cropped to artwork bounds + the unmodified original), `00_SYSTEM/sample-assets/` (real images extracted from the supplied PDFs), `tools/` (render + verify scripts; `tools/build/` holds the generators that produced the references — provided for transparency, some contain machine-specific paths to the supplied PDFs and are not a portable build).
+Other folders: `00_SYSTEM/assets/` (shared stylesheet, preview script, **official logo** trimmed to artwork bounds + the dark-background master), `00_SYSTEM/sample-assets/` (real images extracted from the supplied PDFs), `tools/` (render + verify scripts; `tools/build/` holds the generators that produced the references — provided for transparency, some contain machine-specific paths to the supplied PDFs and are not a portable build).
 
 ## Key design decisions (all explained in the specs)
 

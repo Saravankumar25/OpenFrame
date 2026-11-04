@@ -4,12 +4,13 @@
 ; file (Documents\Straft Studio\library.json, ADR-0038), which keeps the person's identity, so a
 ; reinstall finds their work and their private notes again even when the app data was deleted.
 ; The "delete app data" checkbox (Tauri's $DeleteAppDataCheckboxState) removes only the items the
-; app itself creates inside %LOCALAPPDATA%\Straft Studio, then the folder itself if it is empty:
+; app itself creates inside %LOCALAPPDATA%\Straft, then the folder itself if it is empty:
 ;   folders: models, ai, logs, entitlement, tmp, reviews
 ;   files:   app.sqlite (with its -wal, -shm and -journal side files), engines.json
 ; Any other item in that folder is never removed, and then the folder stays. The root is never
 ; deleted recursively, so a project or anything else a person once placed there survives.
-; The folder list is checked against the code by scripts/tests/governance.test.mjs.
+; The same box clears the same list in the data folder of the earlier product name.
+; The folder lists are checked against the code by scripts/tests/governance.test.mjs.
 ;
 ; Projects are normally kept out of this folder: check_project_parent (straft-application/src/util.rs)
 ; refuses it, because protected_roots() lists app_data_dir first. Older builds, received packages and
@@ -26,18 +27,30 @@
 !macro NSIS_HOOK_POSTUNINSTALL
   ${If} $DeleteAppDataCheckboxState = 1
   ${AndIf} $UpdateMode <> 1
-    RMDir /r "$LOCALAPPDATA\Straft Studio\models"
-    RMDir /r "$LOCALAPPDATA\Straft Studio\ai"
-    RMDir /r "$LOCALAPPDATA\Straft Studio\logs"
-    RMDir /r "$LOCALAPPDATA\Straft Studio\entitlement"
-    RMDir /r "$LOCALAPPDATA\Straft Studio\tmp"
-    RMDir /r "$LOCALAPPDATA\Straft Studio\reviews"
-    Delete "$LOCALAPPDATA\Straft Studio\app.sqlite"
-    Delete "$LOCALAPPDATA\Straft Studio\app.sqlite-wal"
-    Delete "$LOCALAPPDATA\Straft Studio\app.sqlite-shm"
-    Delete "$LOCALAPPDATA\Straft Studio\app.sqlite-journal"
-    Delete "$LOCALAPPDATA\Straft Studio\engines.json"
+    RMDir /r "$LOCALAPPDATA\Straft\models"
+    RMDir /r "$LOCALAPPDATA\Straft\ai"
+    RMDir /r "$LOCALAPPDATA\Straft\logs"
+    RMDir /r "$LOCALAPPDATA\Straft\entitlement"
+    RMDir /r "$LOCALAPPDATA\Straft\tmp"
+    RMDir /r "$LOCALAPPDATA\Straft\reviews"
+    Delete "$LOCALAPPDATA\Straft\app.sqlite"
+    Delete "$LOCALAPPDATA\Straft\app.sqlite-wal"
+    Delete "$LOCALAPPDATA\Straft\app.sqlite-shm"
+    Delete "$LOCALAPPDATA\Straft\app.sqlite-journal"
+    Delete "$LOCALAPPDATA\Straft\engines.json"
     ; Not recursive: succeeds only when nothing else is left inside.
-    RMDir "$LOCALAPPDATA\Straft Studio"
+    RMDir "$LOCALAPPDATA\Straft"
+    RMDir /r "$LOCALAPPDATA\OpenFrame\models" ; LEGACY: Open Frame name kept for migration
+    RMDir /r "$LOCALAPPDATA\OpenFrame\ai" ; LEGACY: Open Frame name kept for migration
+    RMDir /r "$LOCALAPPDATA\OpenFrame\logs" ; LEGACY: Open Frame name kept for migration
+    RMDir /r "$LOCALAPPDATA\OpenFrame\entitlement" ; LEGACY: Open Frame name kept for migration
+    RMDir /r "$LOCALAPPDATA\OpenFrame\tmp" ; LEGACY: Open Frame name kept for migration
+    RMDir /r "$LOCALAPPDATA\OpenFrame\reviews" ; LEGACY: Open Frame name kept for migration
+    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite" ; LEGACY: Open Frame name kept for migration
+    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-wal" ; LEGACY: Open Frame name kept for migration
+    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-shm" ; LEGACY: Open Frame name kept for migration
+    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-journal" ; LEGACY: Open Frame name kept for migration
+    Delete "$LOCALAPPDATA\OpenFrame\engines.json" ; LEGACY: Open Frame name kept for migration
+    RMDir "$LOCALAPPDATA\OpenFrame" ; LEGACY: Open Frame name kept for migration
   ${EndIf}
 !macroend

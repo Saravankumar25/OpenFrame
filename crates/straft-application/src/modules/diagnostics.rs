@@ -765,8 +765,10 @@ fn log_files(dir: &Path) -> Vec<PathBuf> {
 }
 
 fn is_log_name(name: &str) -> bool {
+    // A copied app data folder keeps the log files of the earlier version.
     let Some(date) = name
         .strip_prefix("straft.")
+        .or_else(|| name.strip_prefix(straft_platform::legacy_names::LOG_FILE_PREFIX))
         .and_then(|s| s.strip_suffix(".log"))
     else {
         return false;
@@ -861,7 +863,9 @@ fn sanitize_message(target: &str, raw: &str) -> String {
     }
     // The panic hook logs "panic at <file>:<line>: <message>"; keep the source location
     // only (panic messages can quote values).
-    if target.starts_with("straft")
+    let ours = target.starts_with("straft")
+        || target.starts_with(straft_platform::legacy_names::LOG_TARGET_PREFIX);
+    if ours
         && let Some(rest) = raw.strip_prefix("panic at ")
     {
         let loc = rest.split(": ").next().unwrap_or("");
@@ -1166,6 +1170,10 @@ mod tests {
         assert!(is_log_name("straft.2026-09-30.log"));
         assert!(!is_log_name("straft.log"));
         assert!(!is_log_name("straft.2026-09-30.log.bak"));
+        let earlier = straft_platform::legacy_names::LOG_FILE_PREFIX;
+        assert!(is_log_name(&format!("{earlier}2026-09-30.log")));
+        assert!(!is_log_name(&format!("{earlier}log")));
+        assert!(!is_log_name(&format!("{earlier}2026-09-30.log.bak")));
         assert!(is_timestamp("2026-09-30T06:08:22.082235Z"));
         assert!(!is_timestamp("yesterday at noon, honestly"));
     }

@@ -17,6 +17,7 @@ mod permission_matrix;
 mod project_lifecycle;
 mod property_invariants;
 mod recently_deleted_purge;
+mod rename_migration;
 mod security_review;
 mod soak;
 mod storage;

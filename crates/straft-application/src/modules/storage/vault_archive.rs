@@ -161,7 +161,8 @@ fn is_allowed(name: &str) -> bool {
 
 fn parse_manifest(bytes: &[u8]) -> AppResult<VaultManifest> {
     let raw: Value = serde_json::from_slice(bytes).map_err(|_| not_vault())?;
-    if raw.get("format").and_then(Value::as_str) != Some(FORMAT) {
+    let format = raw.get("format").and_then(Value::as_str);
+    if format != Some(FORMAT) && format != Some(straft_platform::legacy_names::VAULT_FORMAT) {
         return Err(not_vault());
     }
     let version = raw
@@ -732,6 +733,21 @@ mod tests {
             .collect();
         names.sort();
         names
+    }
+
+    #[test]
+    fn a_manifest_with_the_format_name_of_an_earlier_version_is_a_vault() {
+        let manifest = |format: &str| {
+            serde_json::to_vec(&json!({
+                "format": format, "formatVersion": FORMAT_VERSION, "kind": "backup",
+                "appVersion": "1", "createdAt": 1, "schemaVersion": 1,
+                "ideaCount": 0, "assetCount": 0, "missingAssets": [],
+            }))
+            .unwrap()
+        };
+        assert!(parse_manifest(&manifest(straft_platform::legacy_names::VAULT_FORMAT)).is_ok());
+        assert!(parse_manifest(&manifest(FORMAT)).is_ok());
+        assert!(parse_manifest(&manifest("another-app-vault")).is_err());
     }
 
     /// An unpacked vault file whose checksums match what is in it.

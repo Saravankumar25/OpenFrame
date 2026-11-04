@@ -82,7 +82,7 @@ a change to repeat on Windows.
 
 | File | Change | Windows |
 |---|---|---|
-| `crates/straft-platform/src/dirs.rs` | `library_pointer_dir()`: on macOS `~/Library/Application Support/Straft Studio Library`, a folder of its own outside the app data (on Windows it is the Roaming folder, as before) | No change needed |
+| `crates/straft-platform/src/dirs.rs` | `library_pointer_dir()`: on macOS `~/Library/Application Support/Straft Library`, a folder of its own outside the app data (on Windows it is the Roaming folder, as before) | No change needed |
 | `modules/storage/library_ops.rs` | The pointer uses `library_pointer_dir()`; the OneDrive earlier-library folder is looked at on Windows only | Same behaviour |
 | `modules/storage/tree.rs`, `relocate.rs`, `library_ops.rs` | Finder files (`.DS_Store`, `._*`) are not copied, checked or counted, and do not stop an empty folder from being removed | Harmless on Windows; repeat for one core |
 | `modules/story/page.rs` | A Story page saved by a Mac build of 2026-10-20 (random row id) is read as an unsaved page, so the first save keeps its text | Repeat for one core (no effect on Windows data) |

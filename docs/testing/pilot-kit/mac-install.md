@@ -66,4 +66,4 @@ Quit Straft Studio, then drag the new app onto Applications and choose **Replace
 
 Drag Straft Studio from Applications to the Bin. Your projects are not deleted: they stay in the folders you chose
 (by default the Straft Studio folder in your Documents). Settings and logs are in
-`~/Library/Application Support/Straft Studio`; delete that folder too only if you want nothing left.
+`~/Library/Application Support/Straft`; delete that folder too only if you want nothing left.

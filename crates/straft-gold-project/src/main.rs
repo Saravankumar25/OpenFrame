@@ -9,7 +9,9 @@
 //! Inputs: `tests/gold-project/content/` (the film as readable files) and the local Offline AI
 //! build inputs (`.ai-assets/models`, `.build-cache/ai-runtime/macos-arm64`). Outputs:
 //! `tests/gold-project/outputs/`, `COVERAGE.md`, `VERIFY.md`. Scratch data lives in
-//! `tests/gold-project/.work/` (git-ignored) and is rebuilt on every run.
+//! `tests/gold-project/.work/` (git-ignored) and is rebuilt on every run. `STRAFT_GOLD_WORK` names
+//! another scratch folder (absolute): packages record linked files by their absolute path, and a run
+//! whose result is committed should not record the checkout's folder name.
 
 mod coverage;
 mod gold;
@@ -88,7 +90,8 @@ fn main() {
     let base = repo.join("tests/gold-project");
     let content = base.join("content");
     let out = base.join("outputs");
-    let work = base.join(".work");
+    let work = std::env::var_os("STRAFT_GOLD_WORK")
+        .map_or_else(|| base.join(".work"), PathBuf::from);
     // Every run starts from nothing, so the result never depends on an earlier run.
     let _ = std::fs::remove_dir_all(&work);
     let _ = std::fs::remove_dir_all(&out);

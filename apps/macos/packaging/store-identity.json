@@ -5,6 +5,6 @@
   "lifetimeProductId": "app.straftstudio.studio.lifetime",
   "keychainGroupSuffix": "app.straftstudio.studio",
   "keychainService": "app.straftstudio.studio.trial-guard",
-  "dataRootName": "Straft Studio",
+  "dataRootName": "Straft",
   "lastUploadedBuild": 0
 }

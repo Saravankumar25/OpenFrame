@@ -23,7 +23,7 @@ same executable with `STRAFT_DISTRIBUTION=store` and `scripts/build-msix.mjs`. M
 updates it. See [27-microsoft-store.md](27-microsoft-store.md).
 
 **User data is never inside the install directory.** Uninstalling removes the program only. Projects
-(`Documents\Straft Studio`) and app data (`%LOCALAPPDATA%\Straft Studio`) remain. 📋 The NSIS uninstaller should offer an
+(`Documents\Straft Studio`) and app data (`%LOCALAPPDATA%\Straft`) remain. 📋 The NSIS uninstaller should offer an
 explicit, unchecked-by-default "Also remove Straft Studio settings and logs" option. It must never offer to remove
 projects.
 

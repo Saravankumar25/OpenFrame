@@ -30,5 +30,6 @@ that did not rise. `CFBundleVersion` is the commit count, `CFBundleShortVersionS
 
 ## Internal testers
 
-Internal builds were `studio.straft.mac` and are now `app.straftstudio.studio`. Settings kept by the system under the
-old name start fresh once. Data from the non-sandboxed disk image build does not carry over to a sandbox container.
+Internal builds were earlier under a former identifier and are now `app.straftstudio.studio` (ADR-0042). Settings kept by
+the system come across on the Mac; the Keychain trial guard starts fresh, because no store build ever shipped. Data from
+the non-sandboxed disk image build does not carry over to a sandbox container.

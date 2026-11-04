@@ -84,7 +84,7 @@ fn inspect_folder(
         files_missing: 0,
         active: false,
     };
-    if dir.join(pf::MANIFEST_FILE).is_file() {
+    if pf::is_project_folder(&dir) {
         return Ok(empty(VaultFolderKind::Project));
     }
     let (kind, vault) = if dir.join(VAULT_DB).is_file() {

@@ -8,12 +8,12 @@
 //!
 //! Two adapters live here, selected at compile time:
 //!
-//! - **Windows adapter:** `%LOCALAPPDATA%\Straft Studio`, `Documents\Straft Studio`, suspended creation
+//! - **Windows adapter:** `%LOCALAPPDATA%\Straft`, `Documents\Straft Studio`, suspended creation
 //!   into one-process kill-on-close Job Objects for managed child processes, `GetFileAttributesW`
 //!   existence checks, MSIX package identity, `Ctrl` key labels, Windows spelling dictionaries,
 //!   mapped network drive detection, the long-path SQLite form, sleep and wake notifications, and
 //!   open or reveal through the shell.
-//! - **macOS adapter:** `~/Library/Application Support/Straft Studio`, `~/Documents/Straft Studio`,
+//! - **macOS adapter:** `~/Library/Application Support/Straft`, `~/Documents/Straft Studio`,
 //!   process groups for managed child processes, `Command` key labels, `open` and `open -R`.
 //!   Parts that need Mac hardware or the App Sandbox to verify are marked in each module.
 //!
@@ -29,6 +29,7 @@ pub mod exists;
 pub mod files;
 pub mod graphics;
 pub mod identity;
+pub mod legacy_names;
 pub mod memory;
 pub mod paths;
 pub mod power;

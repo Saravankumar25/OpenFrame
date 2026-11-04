@@ -57,10 +57,10 @@
     <div>
       <div class="logo-stage">
         <span class="clear"><img src="assets/straft-logo.png" alt="Straft Studio logo lockup"></span>
-        <p class="anno" style="margin-top:16pt">Clear space ≈ ½ the lockup height on all four sides (dashed). Aspect ratio 699 : 163 = 4.289 : 1.</p>
+        <p class="anno" style="margin-top:16pt">Clear space ≈ ½ the lockup height on all four sides (dashed). Aspect ratio 735 : 163 = 4.509 : 1.</p>
       </div>
       <div class="sizes">
-        <figure><img src="assets/straft-logo.png" style="height:17pt;width:auto" alt=""><figcaption>Footer size · 17 pt high (72.9 pt wide)</figcaption></figure>
+        <figure><img src="assets/straft-logo.png" style="height:17pt;width:auto" alt=""><figcaption>Footer size · 17 pt high (76.7 pt wide)</figcaption></figure>
         <figure><img src="assets/straft-logo.png" style="height:14pt;width:auto" alt=""><figcaption>Minimum · 14 pt high</figcaption></figure>
         <figure><img src="assets/straft-logo.png" style="height:26pt;width:auto" alt=""><figcaption>Cover / title use · 26 pt</figcaption></figure>
       </div>
@@ -69,9 +69,9 @@
       <table class="spec">
         <thead><tr><th>Rule</th><th>Value</th></tr></thead>
         <tbody>
-          <tr><td>Artwork</td><td>The supplied raster logo (812 × 347 px, RGBA, opaque). <b>Cropped only to its artwork bounds</b> (x 69–768, y 96–259) to remove empty margin; pixels untouched. Original kept in <code>straft-logo-original.png</code>.</td></tr>
+          <tr><td>Artwork</td><td>The official raster logo for light paper (735 × 163 px, RGBA, transparent background). <b>Trimmed to its artwork bounds</b>. Dark-background master (1406 × 360 px) kept in <code>straft-logo-original.png</code>.</td></tr>
           <tr><td>Never</td><td>retype, redraw, recolour, outline, stretch, crop into the artwork, put on a coloured fill, add effects, or substitute a font.</td></tr>
-          <tr><td>Embedding</td><td>Embed once as a lossless image (Flate RGB) and reuse on all pages — do not JPEG-recompress.</td></tr>
+          <tr><td>Embedding</td><td>Embed once as a lossless image (Flate RGB with an alpha mask) and reuse on all pages; do not JPEG-recompress.</td></tr>
           <tr><td>Where</td><td>Footer, bottom-left, every page. Not in headers. Optional larger use on a title/cover only where a document spec says so (none in this package).</td></tr>
           <tr><td>Source for the app</td><td>Mark gradient (#FF5D6C → #FF9A3D → #FFC23D) and "STUDIO" in orange live inside the artwork; they are <b>not</b> PDF palette colours.</td></tr>
         </tbody>
@@ -81,7 +81,7 @@
   <div class="dont" aria-label="Incorrect uses">
     <figure><span class="x"><img src="assets/straft-logo.png" style="width:90pt;height:10pt" alt=""></span><figcaption>Stretched</figcaption></figure>
     <figure><span class="x"><img src="assets/straft-logo.png" class="gray" alt=""></span><figcaption>Recoloured</figcaption></figure>
-    <figure><span class="x"><span style="font:700 12pt Helvetica,Arial;color:#1a2438"><span style="font-weight:300">Open</span>Frame</span></span><figcaption>Typed wordmark</figcaption></figure>
+    <figure><span class="x"><span style="font:700 12pt Helvetica,Arial;color:#1a2438">Straft <span style="font-weight:300">Studio</span></span></span><figcaption>Typed wordmark</figcaption></figure>
     <figure><span class="x"><span style="display:inline-block;width:46pt;height:20pt;overflow:hidden;vertical-align:top"><img src="assets/straft-logo.png" style="height:20pt;width:auto;max-width:none" alt=""></span></span><figcaption>Cropped</figcaption></figure>
   </div>
 </section>

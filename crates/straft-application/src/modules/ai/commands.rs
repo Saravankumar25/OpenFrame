@@ -53,7 +53,8 @@ static OPEN_WORKSPACE: LazyLock<Regex> = LazyLock::new(|| {
 /// program itself. A licence plate or a driving licence in the story is project content.
 static PROGRAM_ACCESS: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)\b(?:(?:change|remove|turn\s+off|switch\s+off|disable|bypass|skip|unlock|extend|reset|crack|activate|deactivate|get\s+around|avoid|cancel|edit|delete)\b.{0,40}\b(?:licen[cs]e|licensing|activation|subscription|payment|trial\s+period|free\s+trial)\b|(?:do\s+not|don'?t|never)\s+(?:need|have)\s+to\s+pay|(?:use|get)\s+(?:straft|the\s+app|it)\s+for\s+free)"#,
+        // LEGACY: Open Frame name kept for migration
+        r#"(?i)\b(?:(?:change|remove|turn\s+off|switch\s+off|disable|bypass|skip|unlock|extend|reset|crack|activate|deactivate|get\s+around|avoid|cancel|edit|delete)\b.{0,40}\b(?:licen[cs]e|licensing|activation|subscription|payment|trial\s+period|free\s+trial)\b|(?:do\s+not|don'?t|never)\s+(?:need|have)\s+to\s+pay|(?:use|get)\s+(?:straft(?:\s+studio)?|open\s*frame|the\s+app|it)\s+for\s+free)"#,
     )
 });
 static STORY_LICENCE: LazyLock<Regex> =

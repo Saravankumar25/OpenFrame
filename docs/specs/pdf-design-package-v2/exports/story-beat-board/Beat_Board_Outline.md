@@ -171,7 +171,7 @@ Changes versus the current output, and why: tiles, bands and indentation (the hi
 * QA performed: `tools/verify_pdf.py` on all four PDFs (letter portrait, header text checked), every page of the primary PDF and the stress PDFs viewed at 90-100 dpi, grayscale thumbnails viewed, both scope variants printed and viewed, the preview script's variant switching tested in headless Chrome.
 
 ### J. Acceptance criteria
-1. PDF is US Letter portrait; metadata title "Beat Board Outline"; footer on every page with the logo image (aspect 699:163, 17 pt high), "Created using Straft Studio" and "Page X of Y" with the real total (`tools/verify_pdf.py` passes).
+1. PDF is US Letter portrait; metadata title "Beat Board Outline"; footer on every page with the logo image (aspect 735:163, 17 pt high), "Created using Straft Studio" and "Page X of Y" with the real total (`tools/verify_pdf.py` passes).
 2. Running header "<PROJECT> · BEAT BOARD OUTLINE" on every page and nothing else in the top margin; a blank project omits the project part.
 3. No text, shape or image enters the footer band or the 46 pt side margins.
 4. Order of acts, sequences, beats and cards equals board order (`position`); card numbers equal `Node.number`; Parking Lot items have no number; numbers are unchanged under scope "selected".

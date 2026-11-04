@@ -6,6 +6,19 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-11-04: product renamed to Straft Studio, names changed across the documents
+
+Owner decision of 2026-11-04 ([ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md)). The product name, the assistant name
+(Straft AI), crate and package names, identifiers and the data folder changed in every living document, in the three Word
+manuals (inside their compressed XML, other content untouched) and in the file names under `docs/`, `.github/` and the root.
+The `docs/history` records, which CLAUDE.md normally forbids editing, were edited in place for the product name only, by the
+owner's instruction of the same day. No fact, date, number or decision was changed. The domain, the Instagram account name and
+the `.of*` package extensions were left as they were. Renamed documents are linked by their new names (`node scripts/check-links.mjs`
+passes). A PDF under `docs/specs/pdf-design-package-v2/00_SYSTEM/` still holds the old name in an image description (alt text) and was not
+edited; the next regeneration of that package replaces it.
+Nine old-run screenshots showing the old name were removed for the rename (five in `release/evidence/mac/windows-sync-2026-10-27/pdf-check/`, four `screens/71-storage-*` there); they stay in git history. The PDF package was regenerated the same day, so the alt text note above no longer applies.
+Spec 90 reads its baseline from `release/evidence/M0/M0.20-visual-baseline/`, which does not exist in this checkout, not from `tests/e2e/visual-baseline/` where the table below and the masterplan place it (the Windows sync in `68ce45c6` restored the old path). The baseline pictures and their checksum file were removed for the rename, so the next Windows run recreates the baseline with `E2E_UPDATE_BASELINE=1`.
+
 ## 2026-11-03: gold cases name sections instead of a scope (slice R7)
 
 The field `scope` is gone from the assistant, so the gold cases moved with it. A case that held `{"kind":"scene","scene":N}` now picks

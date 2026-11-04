@@ -249,7 +249,7 @@ pub(crate) fn locate_vault(core: &AppCore, args: LocateVaultArgs) -> AppResult<S
             "That folder can't be found. If it's on an external drive, reconnect it and try again.",
         ));
     }
-    if dir.join(pf::MANIFEST_FILE).is_file() {
+    if pf::is_project_folder(&dir) {
         return Err(AppError::invalid_input(
             "That folder is a project, not a vault. Choose the folder that holds your Global Idea Vault.",
         ));

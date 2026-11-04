@@ -268,35 +268,6 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `entitlement.start_trial`: Start the free 7-day trial from the App Store on the Mac. Other channels start the trial by themselves. | command | Mutate | app level | P | `StartTrialArgs` → `BuyOutcome` | hidden | none |
 | `entitlement.status`: Licence and free-trial status for Settings: channel, days left and whether editing is allowed. | query | Read | app level |  | `EntitlementStatusArgs` → `EntitlementStatus` | hidden | none |
 
-### Straft AI
-
-| Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
-|---|---|---|---|---|---|---|---|
-| `ai.ask`: Ask Straft AI (one request, one AI Result). | command | Mutate | UseAi |  | `AskArgs` → `AiExchange` | hidden | none |
-| `ai.cancel`: Stop Straft AI request that is running in a conversation (nothing is changed). | command | Mutate | UseAi |  | `AiCancelArgs` → `AiCancelDto` | hidden | none |
-| `ai.change_set.accept`: Apply a proposal after explicit human approval. | command | Mutate | ApplyChangeSet |  | `AcceptArgs` → `ChangeSetDto` | hidden | none |
-| `ai.change_set.get`: One prepared Change Set (proposal) of the requesting user. | query | Read | View |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
-| `ai.change_set.recheck`: Re-check a stale proposal against the current project. | command | Mutate | UseAi |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
-| `ai.change_set.reject`: Reject a proposal (project unchanged). | command | Mutate | UseAi |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
-| `ai.diagnostics`: Straft AI technical details for Settings (versions, licences, hashes, paths). | query | Read | app level |  | `AiEmptyArgs` → `AiDiagnosticsDto` | hidden | none |
-| `ai.download.import`: Use a model file the person already has; it is copied and used only when it matches a pinned file. | command | Mutate | app level |  | `AiImportArgs` → `AiImportResult` | hidden | none |
-| `ai.download.pause`: Pause the Straft AI download; it resumes where it stopped. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
-| `ai.download.remove`: Remove the downloaded Straft AI models; projects are not touched. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
-| `ai.download.start`: Start or resume the Straft AI download (the person's click; the app's only network use). | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
-| `ai.download.status`: The Download Straft AI screen: size, free space, progress. | query | Read | app level |  | `AiEmptyArgs` → `AiDownloadDto` | hidden | none |
-| `ai.export_conversation`: Write one of the person's own conversations (their questions, the answers and the sources) to a file they chose. | command | Mutate | UseAi |  | `AiConversationExportArgs` → `AiReportResult` | hidden | none |
-| `ai.export_report`: Write the local AI trace (numbers and ids only) and the health figures to a file the person chose. | command | Mutate | app level |  | `AiReportArgs` → `AiReportResult` | hidden | none |
-| `ai.graphics.set`: Settings, Straft AI, Graphics card: Automatic or Off. | command | Mutate | app level |  | `AiGraphicsArgs` → `()` | hidden | none |
-| `ai.health`: The Straft AI health card: medians, apply rate, passes and the weakest tool, from the local numbers-only trace. | query | Read | app level |  | `AiHealthArgs` → `AiHealthDto` | hidden | none |
-| `ai.history`: The user's own Straft AI conversation history. | query | Read | UseAi |  | `AiHistoryArgs` → `AiHistoryDto` | hidden | none |
-| `ai.index_rebuild`: Rebuild the derived project-context index in the background. | command | Mutate | UseAi | L | `AiIndexArgs` → `IndexRebuildStarted` | hidden | none |
-| `ai.index_status`: State of the derived project-context index (current, updating, rebuilding…). | query | Read | View |  | `AiIndexArgs` → `IndexStatusDto` | hidden | none |
-| `ai.memory_delete`: Make Straft AI forget one of the user's remembered entries; the words are erased. | command | Mutate | UseAi | DI | `AiMemoryDeleteArgs` → `AiMemoryDeleteDto` | hidden | none |
-| `ai.memory_list`: What Straft AI remembers about the user in this project (their own entries only). | query | Read | UseAi |  | `AiEmptyArgs` → `AiMemoryListDto` | hidden | none |
-| `ai.sections`: The sections Straft AI can read, and the drafts, scenes, days and call sheets their pickers list. | query | Read | UseAi |  | `SectionsArgs` → `SectionsDto` | hidden | none |
-| `ai.status`: Straft AI status: available, downloaded models check, engine state. | query | Read | app level |  | `AiEmptyArgs` → `AiStatusDto` | hidden | none |
-| `ai.stop_runtime`: Stop the local AI engine. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
-
 ### Packages
 
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
@@ -611,6 +582,35 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `story.update_sequence`: Rename a sequence or edit its note. | command | Mutate | Edit |  | `StoryUpdateSequenceArgs` → `()` | tool | `propose_update_sequence` |
 | `story.view_state`: The user's Beat Board view state (collapsed rows, current episode). | query | Read | View |  | `StoryScopeArgs` → `StoryViewState` | hidden | none |
 
+### Straft AI
+
+| Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
+|---|---|---|---|---|---|---|---|
+| `ai.ask`: Ask Straft AI (one request, one AI Result). | command | Mutate | UseAi |  | `AskArgs` → `AiExchange` | hidden | none |
+| `ai.cancel`: Stop Straft AI request that is running in a conversation (nothing is changed). | command | Mutate | UseAi |  | `AiCancelArgs` → `AiCancelDto` | hidden | none |
+| `ai.change_set.accept`: Apply a proposal after explicit human approval. | command | Mutate | ApplyChangeSet |  | `AcceptArgs` → `ChangeSetDto` | hidden | none |
+| `ai.change_set.get`: One prepared Change Set (proposal) of the requesting user. | query | Read | View |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
+| `ai.change_set.recheck`: Re-check a stale proposal against the current project. | command | Mutate | UseAi |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
+| `ai.change_set.reject`: Reject a proposal (project unchanged). | command | Mutate | UseAi |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
+| `ai.diagnostics`: Straft AI technical details for Settings (versions, licences, hashes, paths). | query | Read | app level |  | `AiEmptyArgs` → `AiDiagnosticsDto` | hidden | none |
+| `ai.download.import`: Use a model file the person already has; it is copied and used only when it matches a pinned file. | command | Mutate | app level |  | `AiImportArgs` → `AiImportResult` | hidden | none |
+| `ai.download.pause`: Pause the Straft AI download; it resumes where it stopped. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
+| `ai.download.remove`: Remove the downloaded Straft AI models; projects are not touched. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
+| `ai.download.start`: Start or resume the Straft AI download (the person's click; the app's only network use). | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
+| `ai.download.status`: The Download Straft AI screen: size, free space, progress. | query | Read | app level |  | `AiEmptyArgs` → `AiDownloadDto` | hidden | none |
+| `ai.export_conversation`: Write one of the person's own conversations (their questions, the answers and the sources) to a file they chose. | command | Mutate | UseAi |  | `AiConversationExportArgs` → `AiReportResult` | hidden | none |
+| `ai.export_report`: Write the local AI trace (numbers and ids only) and the health figures to a file the person chose. | command | Mutate | app level |  | `AiReportArgs` → `AiReportResult` | hidden | none |
+| `ai.graphics.set`: Settings, Straft AI, Graphics card: Automatic or Off. | command | Mutate | app level |  | `AiGraphicsArgs` → `()` | hidden | none |
+| `ai.health`: The Straft AI health card: medians, apply rate, passes and the weakest tool, from the local numbers-only trace. | query | Read | app level |  | `AiHealthArgs` → `AiHealthDto` | hidden | none |
+| `ai.history`: The user's own Straft AI conversation history. | query | Read | UseAi |  | `AiHistoryArgs` → `AiHistoryDto` | hidden | none |
+| `ai.index_rebuild`: Rebuild the derived project-context index in the background. | command | Mutate | UseAi | L | `AiIndexArgs` → `IndexRebuildStarted` | hidden | none |
+| `ai.index_status`: State of the derived project-context index (current, updating, rebuilding…). | query | Read | View |  | `AiIndexArgs` → `IndexStatusDto` | hidden | none |
+| `ai.memory_delete`: Make Straft AI forget one of the user's remembered entries; the words are erased. | command | Mutate | UseAi | DI | `AiMemoryDeleteArgs` → `AiMemoryDeleteDto` | hidden | none |
+| `ai.memory_list`: What Straft AI remembers about the user in this project (their own entries only). | query | Read | UseAi |  | `AiEmptyArgs` → `AiMemoryListDto` | hidden | none |
+| `ai.sections`: The sections Straft AI can read, and the drafts, scenes, days and call sheets their pickers list. | query | Read | UseAi |  | `SectionsArgs` → `SectionsDto` | hidden | none |
+| `ai.status`: Straft AI status: available, downloaded models check, engine state. | query | Read | app level |  | `AiEmptyArgs` → `AiStatusDto` | hidden | none |
+| `ai.stop_runtime`: Stop the local AI engine. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
+
 ### Visual Planning
 
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
@@ -722,10 +722,6 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
   `entitlement.buy`, `entitlement.lock_ready`, `entitlement.notice`, `entitlement.record_notice`, `entitlement.restore_purchase`, `entitlement.start_trial`, `entitlement.status`
 - **Manual visual arrangement (drag position, size, stacking order) with no content meaning; the user arranges directly.**
   `locations.move_photo`, `moodboard.arrange_item`, `moodboard.move_items`, `moodboard.reorder`, `moodboard.resize_item`
-- **Straft AI status and engine control belong to the user in Settings, not to Straft AI itself.**
-  `ai.diagnostics`, `ai.download.import`, `ai.download.pause`, `ai.download.remove`, `ai.download.start`, `ai.download.status`, `ai.export_report`, `ai.graphics.set`, `ai.health`, `ai.status`, `ai.stop_runtime`
-- **Straft AI's own entry point and conversation history; a tool calling it would recurse.**
-  `ai.ask`, `ai.cancel`, `ai.history`, `ai.memory_delete`, `ai.memory_list`
 - **Owner-only override of a lock or finalization; it stays a deliberate human action.**
   `screenplay.unlock_draft`
 - **Per-user view state (collapsed rows, remembered positions, current episode); not project content.**
@@ -742,6 +738,10 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
   `app.info`, `files.asset`, `storage.info`
 - **Screenplay page layout settings (paper, font, spacing, header and footer, page breaks, custom element looks) stay a human decision (screenplay engine contract doc 32 §2.5); Straft AI reads the resulting page facts.**
   `screenplay.create_custom_element`, `screenplay.delete_custom_element`, `screenplay.delete_page_preset`, `screenplay.save_page_preset`, `screenplay.update_custom_element`, `screenplay.update_page_setup`
+- **Straft AI status and engine control belong to the user in Settings, not to Straft AI itself.**
+  `ai.diagnostics`, `ai.download.import`, `ai.download.pause`, `ai.download.remove`, `ai.download.start`, `ai.download.status`, `ai.export_report`, `ai.graphics.set`, `ai.health`, `ai.status`, `ai.stop_runtime`
+- **Straft AI's own entry point and conversation history; a tool calling it would recurse.**
+  `ai.ask`, `ai.cancel`, `ai.history`, `ai.memory_delete`, `ai.memory_list`
 - **Support diagnostics are user-initiated only (ADR-0021): the user reviews the bundle and saves it to a location they pick; Straft AI never gathers, exports or sends diagnostics.**
   `diagnostics.export_bundle`, `diagnostics.preview`
 - **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so no tool reads or changes it. Its text reaches Straft AI only when the person picks the Story Page section for that question (ADR-0041).**

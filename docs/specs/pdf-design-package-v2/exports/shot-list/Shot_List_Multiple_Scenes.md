@@ -189,7 +189,7 @@ v2 note: the portrait HTML uses no `landscape` class and `@page { size: 8.5in 11
 ## J. Acceptance criteria
 
 Run on the rendered PDF (every page is **612 x 792 pt portrait** Letter; `verify_pdf.py --size letter`):
-- [ ] Footer on every page: logo image 17 pt high, aspect 699:163 undistorted, "Created using Straft Studio", "Page X of Y" with the true total; no content inside the bottom 66 pt (`tools/verify_pdf.py --size landscape`).
+- [ ] Footer on every page: logo image 17 pt high, aspect 735:163 undistorted, "Created using Straft Studio", "Page X of Y" with the true total; no content inside the bottom 66 pt (`tools/verify_pdf.py --size landscape`).
 - [ ] No content outside the 46 pt side margins; no text overlaps its neighbour column; no word is split mid-word in Size, Movement, Angle, Lens or Shot (search the extracted text for "Overhea", "anamorphi", "MOVEMEN" immediately followed by a lone letter on the next line).
 - [ ] Column order is Done, Image, Shot, Description, Size, Movement, Angle, Lens (no Notes column); a column is absent exactly when no shot of the export has that data; the grid is identical in every scene table of the document; content width 520 pt.
 - [ ] Notes lines appear inside the Description cell, below the description text, in the order Characters, Storyboard, Sound, Camera, with the builder's wording; a shot without notes has no gap or empty line; no text smaller than 6.8 pt.

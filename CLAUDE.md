@@ -45,7 +45,7 @@ Context rot is the slow loss of accuracy in long sessions and the quiet build-up
    change. Status text lags code (three feature rows were stale on 2026-10-09); read the code before trusting a row.
 6. Keep this file short (about 150 lines). Anything long belongs in `docs/` with a link here. Anything about the past
    belongs in the progress log or git history, never here (the archive folder was removed on 2026-10-19).
-7. Memory (`~/.claude/projects/C--Straft Studio/memory/`) holds only facts the repository cannot show: owner preferences,
+7. Memory (`~/.claude/projects/C--Straft/memory/`) holds only facts the repository cannot show: owner preferences,
    decisions not yet written down, hardware facts. Delete a memory when the repository records it or it is wrong.
 
 ## Project control documents
@@ -78,8 +78,10 @@ standard" section of `masterplan.md`. Run `security-guidance` and `ecc:security-
 process control, settings, imports and anything that touches payment or licence checks.
 
 ### Writing standard (permanent)
-No em dashes and no AI-sounding writing anywhere: app screens, errors, exports, installers, listings, website, manual,
-documents, code comments, commit and pull request text. Rules and banned phrases: `docs/engineering/35-writing-standard.md`.
+The product is **Straft Studio** and its assistant is **Straft AI** (ADR-0042). Use no other name in text, code or file
+names; the only kept legacy names are the website domain and the Instagram account. No em dashes and no AI-sounding
+writing anywhere: app screens, errors, exports, installers, listings, website, manual, documents, code comments, commit
+and pull request text. Rules and banned phrases: `docs/engineering/35-writing-standard.md`.
 `npm run check:writing` is a ratchet that fails when a count goes up. When you touch a file, fix its hits.
 
 ### Clean as you go (permanent)
@@ -119,7 +121,7 @@ The repository is public (owner decision 2026-11-04), so nothing that must stay 
 
 ### Storage and workspace hygiene (permanent)
 Full policy: `docs/development-storage-policy.md` (sections 7 and 8 hold the root causes and the final rules).
-- `C:\Straft` is the canonical checkout. Create a worktree only when parallel isolated work genuinely needs one, and
+- `C:\Straft` is the canonical checkout (the owner renames the Windows and the local Mac folders when convenient). Create a worktree only when parallel isolated work genuinely needs one, and
   remove it as soon as its work is merged and verified. Before removal prove its commits and uncommitted work are
   preserved. Never merge or remove a worktree merely because its branch looks merged.
 - Rust `target/`, `node_modules`, packages, caches and logs are reproducible. One build folder per checkout under

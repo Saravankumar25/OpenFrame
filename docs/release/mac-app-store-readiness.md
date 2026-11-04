@@ -59,7 +59,7 @@ what a store script must do differently.
 | Requirement | Evidence | Status |
 |---|---|---|
 | Usage text for every protected resource | `NSMicrophoneUsageDescription` present in both scripts; no camera, contacts, photos, location or calendar use | Ready |
-| Bundle identifier | Internal `studio.straft.mac`; doc 38 and the StoreKit products use `app.straftstudio.studio` | Owner task (pick one; the store record and product ids must match) |
+| Bundle identifier | `app.straftstudio.studio` in internal builds, doc 38 and the StoreKit products (ADR-0042) | Owner task (register it in App Store Connect; the store record and product ids must match) |
 | `CFBundleVersion` | Internal value is `<version>.<commit>`, for example `0.1.0.6b1b25c0`. The store accepts only up to three numbers separated by dots, rising with each upload | Not built (store script must write a plain build number) |
 | `CFBundleShortVersionString` | `0.1.0` from `Cargo.toml` | Ready |
 | `LSApplicationCategoryType` | `public.app-category.productivity` | Ready; owner may pick another |

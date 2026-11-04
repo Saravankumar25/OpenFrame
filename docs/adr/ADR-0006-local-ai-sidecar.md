@@ -32,7 +32,7 @@ work, must never mutate directly, and must treat project text as untrusted data 
    signature is Ed25519, verified with a public key compiled into the app. TLS alone is not trusted. Each artifact's
    SHA-256 and size are pinned in the manifest. Downloads go to `*.partial` with HTTP range resume and a disk-space
    preflight. Activation is an atomic rename only after hash verification. The last known-good model is kept until the
-   new one passes a health check. Store: `%LOCALAPPDATA%\Straft Studio\{models,runtimes}\`. Projects never contain models.
+   new one passes a health check. Store: `%LOCALAPPDATA%\Straft\{models,runtimes}\`. Projects never contain models.
    Developers may place binaries in the gitignored `apps/desktop/src-tauri/binaries/` or `.dev-models/`.
 3. ~~**Model policy:** Qwen-family GGUF profiles (Lightweight / Recommended / High Quality), chosen automatically from
    local hardware (RAM, CPU, GPU/VRAM, free disk) with a user override by simple name.~~ *Superseded by ADR-0013

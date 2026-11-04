@@ -69,7 +69,7 @@ struct DiagnosticsSettingsView: View {
         let panel = NSSavePanel()
         panel.title = "Export Diagnostics"
         panel.allowedContentTypes = [.zip]
-        panel.nameFieldStringValue = preview?.suggestedFileName ?? "Straft Studio-diagnostics.zip"
+        panel.nameFieldStringValue = preview?.suggestedFileName ?? "Straft-Studio-diagnostics.zip"
         guard panel.runModal() == .OK, let url = panel.url else { return }
         exporting = true
         error = nil

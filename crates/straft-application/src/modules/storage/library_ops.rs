@@ -1,7 +1,7 @@
 //! The Straft Studio library (doc 40 section 1, ADR-0038): one folder that holds `library.json`,
 //! `Projects/` and `Global Idea Vault/`. The first start asks where it is; nothing is created
 //! before the person confirms. The choice is remembered in `app.sqlite` and in a pointer file
-//! outside the app data (`%APPDATA%\Straft Studio\library-pointer.json`), so a reinstall finds it.
+//! outside the app data (`%APPDATA%\Straft\library-pointer.json`), so a reinstall finds it.
 //!
 //! Operations: `library.status`, `library.inspect`, `library.use_default`, `library.create_at`,
 //! `library.connect` and `library.move`. All are direct user actions, hidden from the assistant.
@@ -42,8 +42,8 @@ const SCAN_LIMIT: usize = 2_000;
 /// Where the first start looks and what it suggests.
 #[derive(Debug, Clone)]
 pub struct LibrarySetup {
-    /// `%APPDATA%\Straft Studio\library-pointer.json`; on macOS
-    /// `~/Library/Application Support/Straft Studio Library/library-pointer.json`.
+    /// `%APPDATA%\Straft\library-pointer.json`; on macOS
+    /// `~/Library/Application Support/Straft Library/library-pointer.json`.
     pub pointer_file: PathBuf,
     /// `<home>\Straft Studio`: outside Documents, so OneDrive does not sync it.
     pub suggested_root: PathBuf,
@@ -53,24 +53,20 @@ pub struct LibrarySetup {
 }
 
 impl LibrarySetup {
-    pub fn for_current_user(app_data_dir: &Path) -> Option<Self> {
+    /// `pointer_dir` is the folder that holds the pointer in this run (see `legacy_migration`).
+    pub fn for_current_user(app_data_dir: &Path, pointer_dir: Option<&Path>) -> Option<Self> {
         use straft_platform::dirs;
         let home = dirs::home_dir()?;
-        let pointer_file = dirs::library_pointer_dir()
-            .unwrap_or_else(|| app_data_dir.to_path_buf())
+        let pointer_file = pointer_dir
+            .unwrap_or(app_data_dir)
             .join(POINTER_FILE);
-        let mut earlier: Vec<PathBuf> = dirs::documents_dir()
-            .map(|d| d.join(LIBRARY_FOLDER))
-            .into_iter()
-            .collect();
-        earlier.push(home.join("Documents").join(LIBRARY_FOLDER));
-        if let Some(onedrive) = dirs::onedrive_documents_dir(&home) {
-            earlier.push(onedrive.join(LIBRARY_FOLDER));
-        }
+        let mut documents: Vec<PathBuf> = dirs::documents_dir().into_iter().collect();
+        documents.push(home.join("Documents"));
+        documents.extend(dirs::onedrive_documents_dir(&home));
         Some(Self {
             pointer_file,
             suggested_root: home.join(LIBRARY_FOLDER),
-            earlier_roots: earlier,
+            earlier_roots: earlier_roots(&home, &documents),
         })
     }
 
@@ -79,9 +75,20 @@ impl LibrarySetup {
         Self {
             pointer_file: root.join("roaming").join(LIBRARY_FOLDER).join(POINTER_FILE),
             suggested_root: root.join("home").join(LIBRARY_FOLDER),
-            earlier_roots: vec![root.join("Documents").join(LIBRARY_FOLDER)],
+            earlier_roots: earlier_roots(&root.join("home"), &[root.join("Documents")]),
         }
     }
+}
+
+/// Where earlier versions kept the library, under this name and under the product's earlier name:
+/// `Documents` (each place it may be, OneDrive included) and the home folder. A library is the
+/// person's own folder, so it is found where it is and never moved.
+fn earlier_roots(home: &Path, documents: &[PathBuf]) -> Vec<PathBuf> {
+    let earlier_name = straft_platform::legacy_names::PRODUCT_NAME;
+    let mut roots: Vec<PathBuf> = documents.iter().map(|d| d.join(LIBRARY_FOLDER)).collect();
+    roots.extend(documents.iter().map(|d| d.join(earlier_name)));
+    roots.push(home.join(earlier_name));
+    roots
 }
 
 /// The library in use: its folder, its file and its own default folders.
@@ -523,7 +530,7 @@ pub(crate) fn inspect_dir(core: &AppCore, dir: &Path) -> AppResult<LibraryInspec
         .map(Path::to_path_buf);
     let (kind, root) = if is_library_root(dir) {
         (LibraryPick::LibraryRoot, Some(dir.to_path_buf()))
-    } else if dir.join(pf::MANIFEST_FILE).is_file() {
+    } else if pf::is_project_folder(dir) {
         let grand = dir
             .parent()
             .and_then(Path::parent)
@@ -582,11 +589,13 @@ pub(crate) fn inspect_dir(core: &AppCore, dir: &Path) -> AppResult<LibraryInspec
     Ok(out)
 }
 
-/// The one library directly inside `dir` (`Straft Studio` first), when there is exactly one.
+/// The one library directly inside `dir` (the usual names first), when there is exactly one.
 fn one_library_inside(dir: &Path) -> Option<PathBuf> {
-    let named = dir.join(LIBRARY_FOLDER);
-    if is_library_root(&named) {
-        return Some(named);
+    for name in [LIBRARY_FOLDER, straft_platform::legacy_names::PRODUCT_NAME] {
+        let named = dir.join(name);
+        if is_library_root(&named) {
+            return Some(named);
+        }
     }
     let found: Vec<PathBuf> = fs::read_dir(dir)
         .ok()?
@@ -619,7 +628,7 @@ fn count_projects(dir: &Path) -> u32 {
                 if visited > SCAN_LIMIT {
                     return count;
                 }
-                if e.path().join(pf::MANIFEST_FILE).is_file() {
+                if pf::is_project_folder(&e.path()) {
                     count += 1;
                 } else {
                     next.push(e.path());
@@ -885,15 +894,15 @@ fn set_recents(core: &AppCore, rows: &[(String, PathBuf)]) -> AppResult<()> {
 
 /// Projects in the copied tree: the folder (relative) and its id, read from the source.
 fn projects_in(source: &tree::Tree, root: &Path) -> Vec<(String, String)> {
+    let mut seen = std::collections::HashSet::new();
     source
         .files
         .iter()
         .filter_map(|f| {
-            let dir = if f.rel == pf::MANIFEST_FILE {
-                ""
-            } else {
-                f.rel.strip_suffix(&format!("/{}", pf::MANIFEST_FILE))?
-            };
+            let (dir, name) = f.rel.rsplit_once('/').unwrap_or(("", f.rel.as_str()));
+            if !pf::is_manifest_name(name) || !seen.insert(dir) {
+                return None;
+            }
             let id = pf::read_manifest(&ProjectLayout::new(root.join(dir)))
                 .ok()?
                 .project_id;

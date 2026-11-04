@@ -17,8 +17,7 @@ struct BrandMark: View {
     }
 }
 
-/// The mark and the wordmark: "Open" thin and "Frame" bold, in the theme's text colour. One word, no
-/// second line.
+/// The mark and the wordmark: "Straft" bold and "Studio" light, in the theme's text colour. One line.
 struct BrandLogo: View {
     var markSize: CGFloat = 28
     var wordSize: CGFloat = 19
@@ -27,13 +26,10 @@ struct BrandLogo: View {
     var body: some View {
         HStack(spacing: markSize * 9 / 28) {
             BrandMark(size: markSize)
-            HStack(spacing: 0) {
-                Text("Open").fontWeight(.light)
-                Text("Frame").fontWeight(.bold)
-            }
-            .font(.system(size: wordSize))
-            .tracking(-0.02 * wordSize)
-            .foregroundStyle(theme["ink"])
+            Text("\(Text("Straft").fontWeight(.bold)) \(Text("Studio").fontWeight(.light))")
+                .font(.system(size: wordSize))
+                .tracking(-0.02 * wordSize)
+                .foregroundStyle(theme["ink"])
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Straft Studio")

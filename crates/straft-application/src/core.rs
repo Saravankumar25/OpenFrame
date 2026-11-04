@@ -28,7 +28,7 @@ use crate::store::{SaveTracker, Store};
 /// Not `Clone`: it can carry the macOS shell's StoreKit bridge, which is
 /// handed to the entitlement service exactly once.
 pub struct AppConfig {
-    /// `%LOCALAPPDATA%/Straft Studio`: settings, recents, AI records, logs.
+    /// `%LOCALAPPDATA%/Straft`: settings, recents, AI records, logs.
     pub app_data_dir: PathBuf,
     /// The read-only Offline AI engine (`<app resources>/ai`, ADR-0026), named by the platform
     /// adapter. `None` when the platform cannot name it and in tests: AI then reports itself
@@ -113,11 +113,14 @@ impl AppConfig {
     /// when the system cannot name the home folder or the app data folder, instead of keeping
     /// projects and settings in a temp folder the system cleans up. The library is not chosen
     /// here: the first start asks (doc 40 section 1). The folders below are the suggestion only.
+    /// The first start after the product's rename brings the earlier folders over here, before
+    /// anything opens them, so both shells get it (`modules::storage::legacy_migration`).
     pub fn for_current_user(app_version: &str) -> AppResult<Self> {
-        let app_data_dir = straft_project_format::app_data_dir();
+        let (app_data_dir, pointer_dir) =
+            crate::modules::storage::legacy_migration::folders_for_current_user();
         let setup = app_data_dir
             .as_deref()
-            .and_then(LibrarySetup::for_current_user);
+            .and_then(|d| LibrarySetup::for_current_user(d, pointer_dir.as_deref()));
         let suggested = setup.as_ref().map(|s| s.suggested_root.clone());
         let mut config = Self::from_system_folders(
             app_data_dir,
@@ -448,6 +451,7 @@ pub struct AppCore {
 
 impl AppCore {
     pub fn new(mut config: AppConfig, events: Arc<dyn EventSink>) -> AppResult<Arc<AppCore>> {
+        crate::modules::storage::legacy_migration::log_notes();
         std::fs::create_dir_all(&config.app_data_dir)?;
         // Staging files left here by a write a crash interrupted (older than the platform's
         // stale age) are removed. Best effort.

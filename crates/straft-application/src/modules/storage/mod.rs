@@ -5,6 +5,7 @@
 //! Every operation here is a direct user action in Settings or Project Settings. None of them is
 //! offered to the assistant, which never chooses or touches file system locations.
 
+pub mod legacy_migration;
 pub mod library;
 pub mod library_ops;
 pub mod relocate;
@@ -295,8 +296,8 @@ fn refuse_inside_project(dir: &Path) -> AppResult<()> {
         for folder in place.ancestors() {
             let named = folder
                 .file_name()
-                .is_some_and(|n| n.to_string_lossy().to_lowercase().ends_with(".straft"));
-            if named || folder.join(pf::MANIFEST_FILE).is_file() {
+                .is_some_and(|n| pf::has_project_extension(&n.to_string_lossy()));
+            if named || pf::is_project_folder(folder) {
                 return Err(AppError::invalid_input(
                     "That folder is inside a project. Choose a folder outside your projects.",
                 ));
@@ -371,7 +372,7 @@ fn discover(core: &AppCore, _a: &Actor, _: Empty) -> AppResult<Vec<DiscoveredPro
                             });
                         }
                     }
-                    Err(_) if depth == 0 && !layout.manifest().exists() => next.push(path),
+                    Err(_) if depth == 0 && !layout.has_manifest() => next.push(path),
                     Err(_) => {}
                 }
             }
@@ -500,10 +501,16 @@ fn adopt_orphan_notes(
 
 // ----------------------------------------------------- interrupted work
 
-/// `<name>.straft-staging-<digits>`: the only folders start removes.
+/// `<name>.straft-staging-<digits>`, or the earlier marker on a folder an interrupted move left
+/// behind before the rename: the only folders start removes.
 fn is_staging_name(name: &str) -> bool {
-    name.rsplit_once(STAGING_MARKER)
-        .is_some_and(|(_, millis)| !millis.is_empty() && millis.bytes().all(|b| b.is_ascii_digit()))
+    [STAGING_MARKER, straft_platform::legacy_names::STAGING_MARKER]
+        .iter()
+        .any(|marker| {
+            name.rsplit_once(marker).is_some_and(|(_, millis)| {
+                !millis.is_empty() && millis.bytes().all(|b| b.is_ascii_digit())
+            })
+        })
 }
 
 /// The staging folder of the move or restore that is running, written to the app data folder

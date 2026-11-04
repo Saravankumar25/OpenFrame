@@ -1,4 +1,4 @@
--- Straft Studio application database (%LOCALAPPDATA%/Straft Studio/app.sqlite).
+-- Straft Studio application database (%LOCALAPPDATA%/Straft/app.sqlite).
 -- Holds application-level, non-project state only. Project content never lives here.
 
 CREATE TABLE sys_settings (

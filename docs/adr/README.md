@@ -50,6 +50,7 @@
 | [0039](ADR-0039-internal-builds-open-without-a-team-password.md) | Internal builds open without a team password; the team gate and all its code are removed from both apps | **Accepted 2026-10-27** | Supersedes the gate decisions of ADR-0024 and ADR-0030 decision 5 |
 | [0040](ADR-0040-offline-mac-trial-no-licence-server.md) | The Mac trial is counted offline from Apple-signed data with a Keychain clock guard; no licence server | **Accepted 2026-11-03** | Supersedes the server in ADR-0018 decision 3; amends ADR-0022 and ADR-0023 |
 | [0041](ADR-0041-section-scoped-assistant.md) | The person picks up to 3 sections before asking; code answers from those only and points to the right one otherwise | **Accepted 2026-11-03** | Supersedes ADR-0037 decisions 5 and 6; amends decision 9 |
+| [0042](ADR-0042-product-renamed-to-straft-studio.md) | The product is Straft Studio and the assistant is Straft AI; identifiers, data folder and project extension follow | **Accepted 2026-11-04** | Amends every document that names the product |
 
 ## 2. Older decisions that are no longer in force (surface the newer one)
 
@@ -102,4 +103,4 @@
 - A superseded decision is **never deleted**. It keeps its text, gets a pointer to its replacement, and appears in §2.
 - A new ADR names what it supersedes or amends and adds a row to both tables here.
 - A Proposed ADR is not a decision. Code must not assume it.
-- Numbering is permanent; the next free number is 0042. 0033 and 0034 are Mac decisions (the Metal engine helper process; the two-folder GitHub layout); the Windows tree lists them too and does not reuse the numbers, so a number means one decision in both trees.
+- Numbering is permanent; the next free number is 0043. 0033 and 0034 are Mac decisions (the Metal engine helper process; the two-folder GitHub layout); the Windows tree lists them too and does not reuse the numbers, so a number means one decision in both trees.

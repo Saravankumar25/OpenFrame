@@ -1,14 +1,20 @@
-//! Application folders. Windows: `%LOCALAPPDATA%\Straft Studio` and `Documents\Straft Studio`.
+//! Application folders. Windows: `%LOCALAPPDATA%\Straft` and `Documents\Straft Studio`.
 //! Every function returns `None` when the operating system cannot name the folder. There is no
 //! fallback to a temp folder: settings, the trial record and projects must never land somewhere
 //! the system cleans up. Callers decide what to do (refuse to start, or ask the user).
-//! macOS: `~/Library/Application Support/Straft Studio` and `~/Documents/Straft Studio`. Inside the Mac
+//! macOS: `~/Library/Application Support/Straft` and `~/Documents/Straft Studio`. Inside the Mac
 //! App Sandbox the home folder is the container, so the same calls land in the container; the
 //! security-scoped access to user-picked project folders is handled by the desktop shell.
 
 use std::path::PathBuf;
 
-const APP_FOLDER: &str = "Straft Studio";
+use crate::legacy_names;
+
+/// The app's private folder. Not the product name: a per-user Windows install puts the program in
+/// `%LOCALAPPDATA%\Straft`, and data must never share a folder with the program.
+const APP_FOLDER: &str = "Straft";
+/// The folder people see, in Documents and in their home folder.
+const USER_FOLDER: &str = "Straft Studio";
 
 /// Application-private data: settings, recents, models, logs. Never user content.
 pub fn app_data_dir() -> Option<PathBuf> {
@@ -22,7 +28,7 @@ pub fn documents_dir() -> Option<PathBuf> {
 
 /// `Documents/Straft Studio`: the root for user-visible Straft Studio content.
 pub fn user_content_dir() -> Option<PathBuf> {
-    documents_dir().map(|d| d.join(APP_FOLDER))
+    documents_dir().map(|d| d.join(USER_FOLDER))
 }
 
 /// The person's home folder (`C:\Users\<name>`, `~`). The suggested library is `<home>/Straft Studio`:
@@ -31,17 +37,17 @@ pub fn home_dir() -> Option<PathBuf> {
     directories::BaseDirs::new().map(|b| b.home_dir().to_path_buf())
 }
 
-/// `%APPDATA%\Straft Studio` (Roaming; `~/Library/Application Support/Straft Studio` on macOS): where the
+/// `%APPDATA%\Straft` (Roaming; `~/Library/Application Support/Straft` on macOS): where the
 /// pointer to the library lives. The uninstaller's "delete app data" box only removes listed items
-/// under `%LOCALAPPDATA%\Straft Studio`, so the pointer outlives a reinstall.
+/// under `%LOCALAPPDATA%\Straft`, so the pointer outlives a reinstall.
 pub fn roaming_data_dir() -> Option<PathBuf> {
     directories::BaseDirs::new().map(|b| b.data_dir().join(APP_FOLDER))
 }
 
 /// Where the pointer to the library lives, apart from the app data. Windows: the Roaming folder
-/// above. macOS: `~/Library/Application Support/Straft Studio Library`, a folder of its own, because
+/// above. macOS: `~/Library/Application Support/Straft Library`, a folder of its own, because
 /// the Roaming and local data folders are the same place there, and a person who clears
-/// `~/Library/Application Support/Straft Studio` to reset the app must not lose the pointer with it.
+/// `~/Library/Application Support/Straft` to reset the app must not lose the pointer with it.
 /// Inside the Mac App Store sandbox this lands in the app container (doc 40 section 7).
 pub fn library_pointer_dir() -> Option<PathBuf> {
     if cfg!(target_os = "macos") {
@@ -51,7 +57,22 @@ pub fn library_pointer_dir() -> Option<PathBuf> {
     }
 }
 
-const MAC_POINTER_FOLDER: &str = "Straft Studio Library";
+const MAC_POINTER_FOLDER: &str = "Straft Library";
+
+/// The app data folder of an earlier version, which the first start copies from.
+pub fn legacy_app_data_dir() -> Option<PathBuf> {
+    base_data_dir().map(|b| b.join(legacy_names::PRODUCT_NAME))
+}
+
+/// The folder of the library pointer of an earlier version.
+pub fn legacy_library_pointer_dir() -> Option<PathBuf> {
+    let base = directories::BaseDirs::new()?;
+    Some(base.data_dir().join(if cfg!(target_os = "macos") {
+        legacy_names::MAC_POINTER_FOLDER
+    } else {
+        legacy_names::PRODUCT_NAME
+    }))
+}
 
 /// The operating system's per-user local data folder without the Straft Studio suffix
 /// (`%LOCALAPPDATA%` on Windows, `~/Library/Application Support` on macOS). The desktop shell uses
@@ -128,7 +149,19 @@ mod tests {
         assert_eq!(data.file_name().unwrap(), APP_FOLDER);
         let content = user_content_dir().expect("a Documents folder exists on the test machine");
         assert!(content.is_absolute());
-        assert_eq!(content.file_name().unwrap(), APP_FOLDER);
+        assert_eq!(content.file_name().unwrap(), USER_FOLDER);
+    }
+
+    #[test]
+    fn legacy_folders_sit_beside_the_new_ones() {
+        assert_eq!(
+            legacy_app_data_dir().unwrap().parent(),
+            app_data_dir().unwrap().parent()
+        );
+        assert_eq!(
+            legacy_library_pointer_dir().unwrap().parent(),
+            library_pointer_dir().unwrap().parent()
+        );
     }
 
     #[cfg(windows)]
@@ -144,7 +177,7 @@ mod tests {
         let pointer = library_pointer_dir().unwrap();
         let data = app_data_dir().unwrap();
         assert!(
-            pointer.ends_with("Library/Application Support/Straft Studio Library"),
+            pointer.ends_with("Library/Application Support/Straft Library"),
             "{pointer:?}"
         );
         assert!(

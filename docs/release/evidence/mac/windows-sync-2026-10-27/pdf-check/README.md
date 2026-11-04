@@ -14,3 +14,5 @@ with PDFKit at 1.2x and looked at one by one.
 | Budget | page 1 | package v2 | Summary tiles, one table per category, Indian digit grouping, decimal alignment |
 
 Not done here: every page of every PDF, and a side by side with the package's own sample PDFs.
+
+The Budget, Call sheet, Day Out of Days and schedule pictures were removed on 2026-11-04 for the product rename, because they showed the old name; they stay in git history.

@@ -824,7 +824,7 @@ pub(crate) const BOTTOM_MARGIN: f32 = 66.0;
 /// Unbranded documents (the Story page manuscript) keep the page body they always had.
 const PLAIN_BOTTOM_MARGIN: f32 = 80.0;
 
-/// The official logo (699 x 163 px artwork bounds), embedded losslessly.
+/// The official logo (735 x 163 px artwork bounds), embedded losslessly.
 const LOGO_PNG: &[u8] = include_bytes!("../assets/straft-logo.png");
 const LOGO_H: f32 = 17.0;
 /// Bottom edge of the logo above the page bottom.

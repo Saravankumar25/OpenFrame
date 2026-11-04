@@ -48,8 +48,8 @@ struct StorageRulesTests {
 
     @Test func pathsAreComparedAsFolders() {
         #expect(StorageRules.inside("/Users/a/Straft Studio", "/Users/a/Straft Studio/Global Idea Vault"))
-        #expect(StorageRules.inside("/Users/a/Straft Studio/", "/users/a/straft"))
-        #expect(StorageRules.inside("/Users/a/Straft Studio", "/Users/a/Straft2") == false)
+        #expect(StorageRules.inside("/Users/a/Straft Studio/", "/users/a/straft studio"))
+        #expect(StorageRules.inside("/Users/a/Straft Studio", "/Users/a/Straft Studio2") == false)
         #expect(StorageRules.folderName("/Users/a/Films/Night.straft/") == "Night.straft")
         #expect(StorageRules.joinPath("/Volumes/Work", "Straft Studio") == "/Volumes/Work/Straft Studio")
     }
