@@ -23,7 +23,7 @@ struct AISectionPickerButton: View {
         .accessibilityHint(AIText.sectionsIntro)
         .accessibilityIdentifier("ai-section-picker")
         .popover(isPresented: $open, arrowEdge: .bottom) {
-            AISectionList(model: model)
+            AISectionList(model: model) { open = false }
                 .frame(width: 300, height: 420)
         }
     }
@@ -75,9 +75,28 @@ struct AISectionChips: View {
 /// The hierarchical list: branches, their leaves, and the instance choice under a picked leaf.
 struct AISectionList: View {
     @Bindable var model: AIAssistantModel
+    var done: () -> Void = {}
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
+        VStack(spacing: 0) {
+            sections
+            Divider()
+            HStack {
+                Spacer()
+                Button("Done", action: done)
+                    .keyboardShortcut(.cancelAction)
+                    .accessibilityIdentifier("ai-section-done")
+            }
+            .padding(8)
+            .background(theme["panel"])
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Sections")
+        .accessibilityIdentifier("ai-section-list")
+    }
+
+    private var sections: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 10) {
                 Text(AIText.sectionsIntro).font(.caption).foregroundStyle(theme["muted"])
@@ -102,9 +121,6 @@ struct AISectionList: View {
             .padding(12)
         }
         .background(theme["panel"])
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Sections")
-        .accessibilityIdentifier("ai-section-list")
     }
 
     private func row(_ leaf: AiSectionLeaf, branch: String) -> some View {

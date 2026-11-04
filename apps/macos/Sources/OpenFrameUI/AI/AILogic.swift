@@ -37,7 +37,7 @@ enum AIText {
     static let pickSection = "Pick a section"
     static let chooseScreenplay = "Choose a screenplay"
     static let sectionsAtMost = "You can pick 3 sections. Remove one to add another."
-    static let sectionsIntro = "Pick up to 3 sections. The assistant reads only these."
+    static let sectionsIntro = "Pick up to 3 sections. OpenFrame AI reads only these."
     static let allScenes = "All scenes"
     static let allDays = "All days"
     static let allCallSheets = "All call sheets"
@@ -194,7 +194,7 @@ enum AILogic {
 
     static func runtimeLabel(_ state: String) -> String? {
         switch state {
-        case "Starting", "LoadingModel": "Getting Offline AI ready on this computer\u{2026}"
+        case "Starting", "LoadingModel": "Getting OpenFrame AI ready on this computer\u{2026}"
         case "Busy": "Working on a request\u{2026}"
         case "Stopping": "Stopping\u{2026}"
         default: nil
@@ -266,7 +266,7 @@ enum AILogic {
     static func confidenceLabel(_ c: AiConfidence?) -> String? {
         switch c {
         case .exact: "Exact \u{00B7} from project data"
-        case .inferred: "Inferred \u{00B7} written by Offline AI"
+        case .inferred: "Inferred \u{00B7} written by OpenFrame AI"
         case .unavailable: "Not available in project data"
         case nil: nil
         }

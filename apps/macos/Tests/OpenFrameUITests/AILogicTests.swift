@@ -150,7 +150,7 @@ struct AILogicTests {
         #expect(AILogic.stateText(status(bundle: "Missing", problem: ("ai.runtime_missing", "x"))) == "Needs a reinstall")
         #expect(AILogic.stateText(status(bundle: "Unsupported")) == "Not available on this computer")
         #expect(AILogic.stateText(status(available: true, bundle: "Verified", runtime: "Ready")) == "AI Ready")
-        #expect(AILogic.stateText(status(available: true, bundle: "Verified", runtime: "Starting")).hasPrefix("Getting Offline AI ready"))
+        #expect(AILogic.stateText(status(available: true, bundle: "Verified", runtime: "Starting")).hasPrefix("Getting OpenFrame AI ready"))
         #expect(AILogic.stateText(status(available: true, bundle: "Verified", runtime: "Failed")).hasPrefix("Stopped after a problem"))
         #expect(AILogic.fileCheckText("Damaged") == "changed or damaged")
         #expect(AILogic.fileCheckText("Missing").contains("reinstall"))
@@ -204,7 +204,7 @@ struct AILogicTests {
 
     @Test func confidenceAndStepsWordsMatchWindows() {
         #expect(AILogic.confidenceLabel(.exact) == "Exact \u{00B7} from project data")
-        #expect(AILogic.confidenceLabel(.inferred) == "Inferred \u{00B7} written by Offline AI")
+        #expect(AILogic.confidenceLabel(.inferred) == "Inferred \u{00B7} written by OpenFrame AI")
         #expect(AILogic.confidenceLabel(.unavailable) == "Not available in project data")
         #expect(AILogic.confidenceLabel(nil) == nil)
         func step(_ label: String) -> AiStepDto { AiStepDto(index: 0, tool: "t", label: label, status: "Succeeded") }
@@ -386,7 +386,7 @@ struct AILogicTests {
         #expect(AILogic.indexNotice(index(.stale)) != nil)
         for s in [AiIndexState.current, .updating, .failed, .unavailable] { #expect(AILogic.indexNotice(index(s)) == nil) }
         #expect(AILogic.indexNotice(nil) == nil)
-        #expect(AILogic.runtimeLabel("LoadingModel") == "Getting Offline AI ready on this computer\u{2026}")
+        #expect(AILogic.runtimeLabel("LoadingModel") == "Getting OpenFrame AI ready on this computer\u{2026}")
         #expect(AILogic.runtimeLabel("Busy") == "Working on a request\u{2026}")
         #expect(AILogic.runtimeLabel("Ready") == nil)
     }

@@ -156,7 +156,7 @@ struct AIAssistantTests {
         await r.model.stopRuntime()
         #expect(r.model.error == nil)
         #expect(r.model.status != nil)
-        #expect(ToastCenter.shared.items.last?.text.hasPrefix("Offline AI stopped") == true)
+        #expect(ToastCenter.shared.items.last?.text.hasPrefix("OpenFrame AI stopped") == true)
     }
 
     // MARK: The section picker (ADR-0041)
@@ -511,10 +511,10 @@ struct AIConversationTests {
         await r.model.cancel()
         #expect(stub.count("ai.cancel") == 2)
         // A failed stop says why and leaves Cancel usable.
-        stub.fail("ai.cancel", CoreFailure(code: "ai.x", message: "The assistant could not be reached."))
+        stub.fail("ai.cancel", CoreFailure(code: "ai.x", message: "OpenFrame AI could not be reached."))
         await r.model.cancel()
         #expect(!r.model.stopping)
-        #expect(r.model.error == "The assistant could not be reached.")
+        #expect(r.model.error == "OpenFrame AI could not be reached.")
         stub.fail("ai.ask", CoreFailure(code: "ai.x", message: "Stopped"))
         stub.release("ai.ask")
         await r.model.waitForAnswer()

@@ -695,7 +695,7 @@ struct ScreenplayWorkspace: View {
                 Label("Scenes", systemImage: "list.bullet.rectangle").labelStyle(.titleAndIcon)
             }
             .disabled(!roomForScenes)
-            .help(!roomForScenes ? "Widen the window or close the assistant to show the scene list"
+            .help(!roomForScenes ? "Widen the window or close OpenFrame AI to show the scene list"
                   : scenesHidden ? "Show the scene list" : "Hide the scene list to give the page more room")
             .accessibilityLabel(scenesShown ? "Hide Scenes" : "Show Scenes")
             .accessibilityIdentifier("scenes-toggle")

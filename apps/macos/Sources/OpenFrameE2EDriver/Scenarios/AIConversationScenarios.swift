@@ -31,7 +31,7 @@ extension UI {
     func convOpenAssistant() async throws {
         if exists(id: "ai-panel") { return }
         try await shortcut("j", code: 38)
-        _ = try await wait(id: "ai-panel", timeout: 12, "the AI Assistant panel after Command+J")
+        _ = try await wait(id: "ai-panel", timeout: 12, "OpenFrame AI panel after Command+J")
     }
 
     /// Types the question and presses Enter; does not wait for the answer.
@@ -192,9 +192,33 @@ extension Scenarios {
         },
 
         // A navigation answer opens the place: a scene in the Screenplay, a Production tab by its sub.
+        // ADR-0041: Send waits for a pick, a question that lives elsewhere gets the pointer with no
+        // content from there, and one press adds the section. The cap of three holds.
+        Scenario("77-ai-conversation/send-waits-for-a-pick-and-the-pointer-adds-the-section", timeout: 600) { ui, _, ctx in
+            try await aiStart(ui, ctx)
+            try await ui.go("Home")
+            try await ui.openAssistant()
+            try ui.expect(ui.screenText().contains("Pick a section"), "the hint says to pick a section")
+            try ui.expect(ui.query(id: "ai-send").first?.isEnabled == false, "Send waits for a pick")
+            try await ui.pickSections(["production/budget"])
+            _ = try await ui.convAsk("Who is in Scene 1?")
+            try ui.expect(ui.lastAnswerText().contains("Add it to your selection"), "the pointer: \(ui.lastAnswerText())")
+            try ui.expect(!ui.lastAnswerText().contains("Arjun"), "no content from the section that was not picked")
+            try ui.snapshot("pointer")
+            try await ui.press(id: "ai-pointer-add", timeout: 10)
+            _ = try await ui.wait(id: "ai-section-chip-screenplay/scenes", timeout: 10, "the added section")
+            _ = try await ui.convAsk("Who is in Scene 1?")
+            try ui.expect(!ui.lastAnswerText().contains("Add it to your selection"), "answered from the added section: \(ui.lastAnswerText())")
+            // A new conversation starts empty.
+            try await ui.press(id: "ai-new-conversation", timeout: 10)
+            try await ui.waitGone(id: "ai-section-chip-screenplay/scenes", timeout: 10)
+        },
+
         Scenario("77-ai-conversation/navigation-answers-open-scene-and-production-tab", timeout: 600) { ui, _, ctx in
             try await aiStart(ui, ctx)
             try await ui.go("Home")
+            try await ui.openAssistant()
+            try await ui.pickSections(["screenplay/scenes", "production/budget", "callsheets/callsheets"])
             var kind = try await ui.convAsk("Open Scene 2.")
             try ui.expect(kind == "navigate", "Open Scene 2 is a navigation: \(kind)")
             _ = try await ui.wait(id: "screenplay-editor", timeout: 20, "the Screenplay workspace")
@@ -209,6 +233,8 @@ extension Scenarios {
         // Two proposals in one conversation: the first applied, the second rejected.
         Scenario("77-ai-conversation/proposal-applied-then-another-rejected", timeout: 900) { ui, _, ctx in
             try await aiStart(ui, ctx)
+            try await ui.openAssistant()
+            try await ui.pickSections(["notes/tasks"])
             var kind = try await ui.convAsk("Create a task to scout the railway station.")
             try ui.expect(kind == "proposal", "the request is a proposal: \(kind)")
             try await ui.press(try await ui.wait(id: "ai-apply", timeout: 20, "Apply Changes"))
@@ -231,8 +257,8 @@ extension Scenarios {
         Scenario("77-ai-conversation/assistant-memory-entry-deleted", timeout: 900) { ui, _, ctx in
             try await aiStart(ui, ctx)
             try await ui.convAsk("I'm the assistant director.")
-            try await ui.openProjectSettings(page: "Offline AI")
-            _ = try await ui.wait(id: "ai-memory-card", timeout: 20, "the Assistant memory card")
+            try await ui.openProjectSettings(page: "OpenFrame AI")
+            _ = try await ui.wait(id: "ai-memory-card", timeout: 20, "the OpenFrame AI memory card")
             // The entry keeps the person's words; its Delete button names it.
             try await ui.convUntil("the remembered fact with its Delete button") { ui.convMemoryDelete("assistant director") != nil }
             try ui.expect(ui.convText("ai-memory-card").contains("Fact, saved"), "the entry says it is a fact and when it was saved")

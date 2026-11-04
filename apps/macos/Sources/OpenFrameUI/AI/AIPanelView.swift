@@ -23,7 +23,7 @@ struct AIPanelView: View {
         }
         .background(theme["panel"])
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("AI Assistant")
+        .accessibilityLabel("OpenFrame AI")
         .accessibilityIdentifier("ai-panel")
         .onAppear { makeModels() }
         .onChange(of: workspace) { _, new in model?.workspace = new }
@@ -57,7 +57,7 @@ struct AIPanelView: View {
     private var header: some View {
         HStack(spacing: 8) {
             Image(systemName: "sparkles").accessibilityHidden(true)
-            Text("AI Assistant").font(.headline)
+            Text("OpenFrame AI").font(.headline)
             Spacer()
             BDChip(text: model?.status?.mode ?? "Off", tone: model?.status?.available == true ? .green : .plain)
                 .help(model?.status?.available == true ? "Runs on this computer" : "OpenFrame AI is off")
@@ -65,8 +65,8 @@ struct AIPanelView: View {
             if model?.status != nil { settingsMenu }
             Button(action: onClose) { Label("Close", systemImage: "xmark") }
                 .buttonStyle(.borderless)
-                .help("Close AI Assistant")
-                .accessibilityLabel("Close AI Assistant")
+                .help("Close OpenFrame AI")
+                .accessibilityLabel("Close OpenFrame AI")
                 .accessibilityIdentifier("ai-close")
         }
         .padding(.horizontal, 12)
@@ -75,11 +75,11 @@ struct AIPanelView: View {
 
     private var settingsMenu: some View {
         Menu {
-            Text("Offline AI")
-            Button("Offline AI settings\u{2026}") { SettingsRouter.open(tab: .ai) }
+            Text("OpenFrame AI")
+            Button("OpenFrame AI settings\u{2026}") { SettingsRouter.open(tab: .ai) }
             .accessibilityIdentifier("ai-open-settings")
             if model?.status?.available == true {
-                Button("Stop Offline AI (free memory)") { Task { await model?.stopRuntime() } }
+                Button("Stop OpenFrame AI (free memory)") { Task { await model?.stopRuntime() } }
                     .accessibilityIdentifier("ai-stop-runtime")
             }
         } label: {
@@ -87,8 +87,8 @@ struct AIPanelView: View {
         }
         .menuStyle(.borderlessButton)
         .fixedSize()
-        .help("Offline AI settings")
-        .accessibilityLabel("Offline AI settings")
+        .help("OpenFrame AI settings")
+        .accessibilityLabel("OpenFrame AI settings")
         .accessibilityIdentifier("ai-settings-menu")
     }
 

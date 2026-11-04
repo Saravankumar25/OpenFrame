@@ -32,7 +32,7 @@ enum ShortcutCatalogue {
 
     static let commands: [ShortcutCommand] = [
         ShortcutCommand(id: "app.search", label: "Search", group: "General", scope: .project, defaults: ["Mod+K"], route: "Edit menu: Search and Commands"),
-        ShortcutCommand(id: "app.assistant", label: "Open or close the assistant", group: "General", scope: .project, defaults: ["Mod+J"], route: "Assistant button in the toolbar"),
+        ShortcutCommand(id: "app.assistant", label: "Open or close OpenFrame AI", group: "General", scope: .project, defaults: ["Mod+J"], route: "OpenFrame AI button in the toolbar"),
         ShortcutCommand(id: "app.project_settings", label: "Open Project Settings", group: "General", scope: .project, defaults: ["Mod+Shift+,"], route: "Project Settings button in the toolbar"),
         ShortcutCommand(id: "app.new_scene_card", label: "New Scene Card", group: "General", scope: .project, defaults: ["Mod+N"], route: "Story: Add"),
         ShortcutCommand(id: "app.quick_capture", label: "Quick Capture (new idea)", group: "General", scope: .project, defaults: ["Mod+Shift+N"], route: "Idea Vault: New"),

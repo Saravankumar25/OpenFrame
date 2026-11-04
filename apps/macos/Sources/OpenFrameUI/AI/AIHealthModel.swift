@@ -63,7 +63,7 @@ final class AISettingsModel {
         clearError()
         do {
             _ = try await core.aiStopRuntime()
-            ToastCenter.shared.show("Offline AI stopped. It starts again when you ask something.")
+            ToastCenter.shared.show("OpenFrame AI stopped. It starts again when you ask something.")
         } catch {
             failed(error)
         }

@@ -31,3 +31,4 @@ the shared changes below and runs its own gates. Nothing here has been run on Wi
 - `apps/desktop/src/features/licensing/`: chip wording, chip on Home, reminder on Home, and everything in package file 03.
 - `trial_ends_at_ms` for the Microsoft Store adapter (now plus `TrialTimeRemaining`).
 - TLS: `crates/openframe-ai/Cargo.toml` keeps `rustls-tls` on Windows and uses `native-tls` on the Mac.
+- The Windows screens (`apps/desktop`) need the same rename: the AI has one name, "OpenFrame AI", in every string a person can see (owner decision 2026-11-03). Replace "AI Assistant", "Offline AI", "Assistant", "the assistant" and "Assistant memory".

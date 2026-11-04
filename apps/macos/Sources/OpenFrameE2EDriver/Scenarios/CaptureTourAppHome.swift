@@ -5,7 +5,7 @@ import AppKit
 import Foundation
 
 /// Titles the Settings window takes (it is named after the page it shows).
-private let homeSettingsTitles: Set<String> = ["Settings", "General", "Appearance", "Keyboard Shortcuts", "Offline AI", "Diagnostics"]
+private let homeSettingsTitles: Set<String> = ["Settings", "General", "Appearance", "Keyboard Shortcuts", "OpenFrame AI", "Diagnostics"]
 
 fileprivate extension UI {
     /// The Settings window when it is open.
@@ -202,8 +202,8 @@ extension Scenarios {
                 if let w = ui.homeSettingsWindow() { await ui.escapeTo(w) }
             }
             await ui.step("settings offline ai") {
-                try await ui.homeSettingsPage("Offline AI")
-                await ui.capture("settings-offline-ai", title: "Settings: Offline AI", area: "Settings", from: "settings-keyboard-shortcuts", via: "Offline AI")
+                try await ui.homeSettingsPage("OpenFrame AI")
+                await ui.capture("settings-offline-ai", title: "Settings: OpenFrame AI", area: "Settings", from: "settings-keyboard-shortcuts", via: "OpenFrame AI")
             }
             await ui.step("settings diagnostics") {
                 try await ui.homeSettingsPage("Diagnostics")

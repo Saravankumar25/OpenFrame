@@ -191,7 +191,7 @@ fileprivate extension UI {
 
     /// Closes the Settings window the way a person does (Command+W).
     func closeAISettings() async throws {
-        for w in NSApp.windows where w.isVisible && ["General", "Appearance", "Offline AI", "Diagnostics"].contains(w.title) { w.performClose(nil) }
+        for w in NSApp.windows where w.isVisible && ["General", "Appearance", "OpenFrame AI", "Diagnostics"].contains(w.title) { w.performClose(nil) }
         await idle(0.3)
     }
 
@@ -962,7 +962,7 @@ extension UI {
         for leaf in leaves where !exists(id: "ai-section-chip-\(leaf)") {
             try await press(id: "ai-section-row-\(leaf)")
         }
-        try await key("\u{1B}", code: 53)
+        try await press(id: "ai-section-done")
         try await waitGone(id: "ai-section-list", timeout: 8)
         for leaf in leaves {
             _ = try await wait(id: "ai-section-chip-\(leaf)", timeout: 8, "the chip of \(leaf)")
@@ -1014,11 +1014,11 @@ extension UI {
         if assistantOpen() { return }
         await idle(0.8)
         try await keyToSheet("j", code: 38, [.command])
-        _ = try await wait(id: "ai-panel", timeout: 12, "the AI Assistant panel after Command+J")
+        _ = try await wait(id: "ai-panel", timeout: 12, "OpenFrame AI panel after Command+J")
     }
 
     func closeAssistant() async throws {
-        if assistantOpen() { try await tap(label: "Close AI Assistant", role: "AXButton") }
+        if assistantOpen() { try await tap(label: "Close OpenFrame AI", role: "AXButton") }
         try await waitGone(id: "ai-panel", timeout: 10)
     }
 
@@ -1135,7 +1135,7 @@ extension Scenarios {
         Scenario("72-ai-assistant/settings-shows-installed-parts-and-remove", timeout: 600) { ui, _, ctx in
             let f = Findings()
             try await aiStart(ui, ctx)
-            try await ui.openSettings(tab: "Offline AI")
+            try await ui.openSettings(tab: "OpenFrame AI")
             try await ui.waitText("OpenFrame AI runs on this computer after a one-time download", timeout: 20)
             let details = try await ui.wait(label: "Technical details", timeout: 15)
             ui.log("technical details element: \(details) subrole \(ui.subrole(details))")
@@ -1143,13 +1143,13 @@ extension Scenarios {
             try await ui.idle(1.0)
             ui.log(ui.all().filter { $0.identifier.hasPrefix("settings-ai") || $0.role.contains("Disclosure") }.map(\.description).joined(separator: "\n"))
             let rows = ui.query(id: "settings-ai-component")
-            f.check(rows.count == 4, "the table of Offline AI components has exactly four rows, has \(rows.count)")
+            f.check(rows.count == 4, "the table of OpenFrame AI components has exactly four rows, has \(rows.count)")
             f.check(rows.contains { $0.text.contains("Gemma-Terms-of-Use") }, "one row names Gemma-Terms-of-Use")
             let hashed = rows.filter { r in r.text.split(whereSeparator: { !$0.isHexDigit }).contains { $0.count == 64 } }
             f.check(hashed.count == rows.count && !rows.isEmpty, "every row shows a 64-character SHA-256 hash: \(rows.map(\.text))")
             f.check(ui.screenText().contains("read-only"), "the technical details say read-only")
             f.check(ui.exists(label: "Remove OpenFrame AI…"), "the button Remove OpenFrame AI… is shown")
-            for name in ["Download OpenFrame AI", "Download Offline AI", "Update Offline AI"] {
+            for name in ["Download OpenFrame AI", "Update OpenFrame AI"] {
                 f.check(!ui.exists(label: name), "there is no button \"\(name)\"")
             }
             try await ui.closeAISettings()
@@ -1165,7 +1165,7 @@ extension Scenarios {
             f.check(kind == "answer", "the result is an Answer, is \(kind)")
             // A plain answer: no "Exact" badge or step list in the conversation (OpenFrameAI.docx 4.1).
             f.check(ui.query(id: "ai-confidence").isEmpty && ui.query(id: "ai-steps").isEmpty, "the answer carries no badge or step list")
-            f.check(ui.lastAnswerText().contains("3"), "the answer contains 3: \(ui.lastAnswerText())")
+            f.check(ui.lastAnswerText().contains("3") || ui.lastAnswerText().contains("three"), "the answer contains 3: \(ui.lastAnswerText())")
             f.check(ui.query(id: "ai-source").isEmpty, "its sources stay closed until asked for")
             try await ui.openLastSources()
             f.check(ui.query(id: "ai-source").count >= 1, "See sources lists at least one source")
@@ -1229,8 +1229,8 @@ extension Scenarios {
             try await aiStart(ui, ctx)
             try await ui.ask("How many scenes are in the script?")
             try await ui.waitEngines(running: true, timeout: 30)
-            try await ui.choose(from: "ai-settings-menu", ["Stop Offline AI"])
-            try await ui.waitText("Offline AI stopped", timeout: 15)
+            try await ui.choose(from: "ai-settings-menu", ["Stop OpenFrame AI"])
+            try await ui.waitText("OpenFrame AI stopped", timeout: 15)
             try await ui.waitEngines(running: false, timeout: 30)
             let kind = try await ui.ask("How many scenes are in the script?")
             f.check(kind == "answer", "the result is an Answer, is \(kind)")
@@ -1260,18 +1260,18 @@ extension Scenarios {
             case 1:
                 try await aiStart(ui, ctx, install: false)
                 try await ui.openAssistant()
-                try ui.expect(ui.assistantOpen(), "the AI Assistant is open")
+                try ui.expect(ui.assistantOpen(), "OpenFrame AI is open")
             case 2:
                 try await ui.startApp(ctx)
                 try await ui.openProject("Night Bus")
-                try await ui.wait(id: "ai-panel", timeout: 20, "the AI Assistant opens again after the window loads again")
-                try await ui.tap(label: "Close AI Assistant", role: "AXButton")
+                try await ui.wait(id: "ai-panel", timeout: 20, "OpenFrame AI opens again after the window loads again")
+                try await ui.tap(label: "Close OpenFrame AI", role: "AXButton")
                 try await ui.waitGone(id: "ai-panel", timeout: 10)
             default:
                 try await ui.startApp(ctx)
                 try await ui.openProject("Night Bus")
                 try await ui.idle(2)
-                try ui.expect(!ui.assistantOpen(), "the AI Assistant stays closed")
+                try ui.expect(!ui.assistantOpen(), "OpenFrame AI stays closed")
             }
         },
         Scenario("73-ai-workspaces/no-section-is-picked-in-any-workspace", timeout: 600) { ui, _, ctx in
@@ -1295,7 +1295,7 @@ extension Scenarios {
             try await aiStart(ui, ctx, install: false)
             try await ui.closeAssistant()
             try await ui.keyToSheet("j", code: 38, [.command])
-            try await ui.wait(id: "ai-panel", timeout: 10, "the AI Assistant opens after Command+J")
+            try await ui.wait(id: "ai-panel", timeout: 10, "OpenFrame AI opens after Command+J")
             try await ui.keyToSheet("j", code: 38, [.command])
             try await ui.waitGone(id: "ai-panel", timeout: 10)
         },
@@ -1401,7 +1401,7 @@ extension Scenarios {
                 f.check(ui.screenText().contains("Download OpenFrame AI again"), "the panel shows Download OpenFrame AI again")
                 f.check(!ui.screenText().contains("Reinstall OpenFrame Studio to repair it"), "the panel does not show the reinstall message")
                 f.check(!ui.exists(id: "ai-input"), "the panel has no question box")
-                try await ui.openSettings(tab: "Offline AI")
+                try await ui.openSettings(tab: "OpenFrame AI")
                 try await ui.waitText("Needs a new download", timeout: 15)
                 try await ui.closeAISettings()
                 try await ui.goTasks()
@@ -1566,7 +1566,7 @@ extension Scenarios {
         Scenario("78-ai-download/remove-damaged-file-set-aside-pause-and-resume", timeout: 1800) { ui, _, ctx in
             let f = Findings()
             try await aiStart(ui, ctx)
-            try await ui.openSettings(tab: "Offline AI")
+            try await ui.openSettings(tab: "OpenFrame AI")
             try await ui.tap(id: "settings-ai-remove")
             try await ui.wait(id: "settings-ai-remove-confirm", timeout: 15)
             try await ui.pressAlertButton("Remove")

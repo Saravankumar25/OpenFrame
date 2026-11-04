@@ -105,6 +105,7 @@
 | Story page schema on the Mac | The Mac copy of `migrations/project/0017_story_page.sql` (with a length check) is replaced by the Windows bytes, so both platforms ship one schema; a Mac test project made with the old file still opens | 2026-10-27 | [Mac-only changes](../release/evidence/mac/windows-sync-2026-10-27/mac-only-changes.md) |
 | Screenplay formatting standard | Version 5 replaces version 4 as the layout standard; version 4 is in `docs/history/specs/` | 2026-10-24 | [screenplay-formatting-standard-v5.md](../specs/screenplay-formatting-standard-v5.md), [ADR-0008](../adr/ADR-0008-deterministic-pdf.md) amendment |
 | Production PDF design | The PDF design package v2 is the design source for every production PDF (footer with the lossless logo, 66 pt bottom margin, orientation per export as in the package) | 2026-10-24 | [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md), [package](../specs/pdf-design-package-v2/README.md) |
+| AI name | One name wherever a person can see it: OpenFrame AI | 2026-11-03 | owner in chat |
 
 ### How the work is done
 

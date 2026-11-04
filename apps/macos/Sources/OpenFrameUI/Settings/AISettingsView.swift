@@ -58,7 +58,7 @@ struct AISettingsView: View {
     private func statusCard(_ m: AISettingsModel) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Offline AI").font(.headline)
+                Text("OpenFrame AI").font(.headline)
                 if let s = m.status {
                     BDChip(text: AILogic.stateText(s), tone: s.available ? .green : .plain)
                         .accessibilityIdentifier("settings-ai-state")
@@ -72,7 +72,7 @@ struct AISettingsView: View {
                 if m.mode == .off { BDBanner(.err, AILogic.offReason(s)).accessibilityIdentifier("settings-ai-off-reason") }
                 if s.available {
                     HStack {
-                        Button("Stop Offline AI (free memory)") { Task { await m.stopRuntime() } }
+                        Button("Stop OpenFrame AI (free memory)") { Task { await m.stopRuntime() } }
                             .accessibilityIdentifier("settings-ai-stop")
                         Button("Remove OpenFrame AI\u{2026}") { m.removing = true }
                             .accessibilityIdentifier("settings-ai-remove")
@@ -94,7 +94,7 @@ struct AISettingsView: View {
                 .accessibilityIdentifier("settings-ai-remove-confirm")
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This frees the space the AI models use on this computer. AI stays off until you download it again. Your projects are not changed.")
+            Text("This frees the space the OpenFrame AI models use on this computer. OpenFrame AI stays off until you download it again. Your projects are not changed.")
         }
     }
 
@@ -133,7 +133,7 @@ struct AITechnicalDetails: View {
             if let x = model.diagnostics {
                 VStack(alignment: .leading, spacing: 8) {
                     if x.components.isEmpty {
-                        Text("No assistant files are installed.").foregroundStyle(theme["muted"])
+                        Text("No OpenFrame AI files are installed.").foregroundStyle(theme["muted"])
                             .accessibilityIdentifier("settings-ai-no-components")
                     }
                     ForEach(x.components, id: \.id) { part in
@@ -184,7 +184,7 @@ struct AIHealthCard: View {
             Text("AI health").font(.headline).accessibilityAddTraits(.isHeader)
             if let h = model.health {
                 if h.requests == 0 {
-                    Text("No requests yet. The figures appear after you use the AI Assistant.")
+                    Text("No requests yet. The figures appear after you use OpenFrame AI.")
                         .foregroundStyle(theme["muted"])
                         .accessibilityIdentifier("ai-health-empty")
                 } else {
