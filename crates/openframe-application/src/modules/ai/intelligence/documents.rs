@@ -20,8 +20,6 @@
 //! - Deleted (Recently Deleted) objects have no document.
 
 use std::collections::{BTreeSet, HashMap, HashSet};
-use std::io::Read as _;
-use std::path::Path;
 
 use openframe_domain::AppResult;
 use openframe_search::chunk;
@@ -33,7 +31,7 @@ use crate::registry::{Registry, SearchDoc};
 
 /// Version of these builders. Bump when document text/graph rules change:
 /// existing intelligence indexes are then rebuilt on open.
-pub const BUILDER_VERSION: u32 = 2;
+pub const BUILDER_VERSION: u32 = 1;
 
 /// Hard bounds per document (a document is a retrieval unit, not a table dump).
 const MAX_CHUNKS_PER_DOC: usize = 24;
@@ -1597,94 +1595,6 @@ fn project_file(c: &Connection, d: &mut Draft) -> AppResult<bool> {
     Ok(true)
 }
 
-/// The longest text file whose words the index takes.
-const MAX_FILE_TEXT_BYTES: u64 = 16 * 1024;
-/// The kinds of file read as plain text.
-const TEXT_FILE_EXTENSIONS: &[&str] = &["txt", "md", "csv"];
-/// Marks a chunk as the words of a file, in its metadata.
-pub const FILE_TEXT_MARK: &str = "file_text";
-
-/// The words of a small text file copied into the project. Only the indexer calls this, on its own
-/// thread: the question path never opens a file, it reads what was stored. A linked file stays out,
-/// since it lives outside the project. The path comes from the asset row and goes through `confine`,
-/// a link in its place is refused, the read stops at the limit, and anything that is not plain UTF-8
-/// text adds nothing.
-fn small_file_text(c: &Connection, root: &Path, file_id: &str) -> AppResult<Option<String>> {
-    let row: Option<(String, Option<String>, String)> = c
-        .query_row(
-            "SELECT a.storage_mode, a.rel_path, a.original_name FROM project_file f
-             JOIN asset a ON a.id = f.asset_id WHERE f.id = ?1 AND f.deleted_at IS NULL",
-            [file_id],
-            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
-        )
-        .optional()?;
-    let Some((mode, Some(rel), name)) = row else {
-        return Ok(None);
-    };
-    let extension = name.rsplit('.').next().unwrap_or("").to_lowercase();
-    if mode != "managed" || !TEXT_FILE_EXTENSIONS.contains(&extension.as_str()) {
-        return Ok(None);
-    }
-    let path = openframe_security::confine(root, &rel)?;
-    let Ok(meta) = std::fs::symlink_metadata(&path) else {
-        return Ok(None);
-    };
-    if !meta.file_type().is_file() || meta.len() > MAX_FILE_TEXT_BYTES {
-        return Ok(None);
-    }
-    let mut bytes = Vec::with_capacity(meta.len() as usize);
-    std::fs::File::open(&path)?
-        .take(MAX_FILE_TEXT_BYTES + 1)
-        .read_to_end(&mut bytes)?;
-    if bytes.len() as u64 > MAX_FILE_TEXT_BYTES || bytes.contains(&0) {
-        return Ok(None);
-    }
-    Ok(String::from_utf8(bytes)
-        .ok()
-        .map(|t| t.trim().to_string())
-        .filter(|t| !t.is_empty()))
-}
-
-/// The document of a project file, with the words of the file as chunks of their own. The canonical
-/// rows do not hold them, so these chunks live only in the index. A file that cannot be read is
-/// indexed by its name as before.
-pub fn with_file_text(mut b: Built, c: &Connection, root: &Path, file_id: &str) -> Built {
-    let text = match small_file_text(c, root, file_id) {
-        Ok(t) => t,
-        Err(e) => {
-            tracing::warn!(code = e.code_str(), "a project file could not be read for the index");
-            None
-        }
-    };
-    let Some(text) = text else {
-        return b;
-    };
-    let header = b
-        .doc
-        .chunks
-        .first()
-        .map(|c| c.text.clone())
-        .unwrap_or_default();
-    let first = b.doc.chunks.len();
-    let room = MAX_CHUNKS_PER_DOC.saturating_sub(first);
-    b.doc.chunks.extend(
-        chunk::paragraphs(&text, 1200)
-            .into_iter()
-            .take(room)
-            .enumerate()
-            .map(|(i, p)| ChunkInput {
-                text: format!("{header}\n\n{p}"),
-                metadata: json!({ "part": first + i + 1, FILE_TEXT_MARK: true }),
-            }),
-    );
-    b
-}
-
-/// The words of a file from a stored chunk: what follows the header.
-pub fn file_words_of_chunk(text: &str) -> &str {
-    text.split_once("\n\n").map_or("", |(_, words)| words)
-}
-
 /// Project overview document (title, type, genre, logline…).
 fn project_doc(c: &Connection, project_id: &str, id: &str) -> AppResult<Option<Built>> {
     let row: Option<(String, String, String, Option<String>, Option<String>, Option<String>, Option<String>)> = c
@@ -1975,86 +1885,6 @@ pub fn invalidate(
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    fn asset_db(rel: &str, name: &str, mode: &str) -> Connection {
-        let c = Connection::open_in_memory().unwrap();
-        c.execute_batch(
-            "CREATE TABLE asset(id TEXT, storage_mode TEXT, rel_path TEXT, original_name TEXT);
-             CREATE TABLE project_file(id TEXT, asset_id TEXT, deleted_at INTEGER);
-             INSERT INTO project_file VALUES ('f', 'a', NULL);",
-        )
-        .unwrap();
-        c.execute(
-            "INSERT INTO asset VALUES ('a', ?1, ?2, ?3)",
-            params![mode, rel, name],
-        )
-        .unwrap();
-        c
-    }
-
-    fn folder() -> std::path::PathBuf {
-        let dir = std::env::temp_dir().join(format!("of-file-text-{}", openframe_domain::new_id()));
-        std::fs::create_dir_all(dir.join("assets")).unwrap();
-        dir
-    }
-
-    #[test]
-    fn a_small_copied_text_file_gives_its_words() {
-        let root = folder();
-        std::fs::write(root.join("assets/a.txt"), "The mast is 42 metres.\n").unwrap();
-        let c = asset_db("assets/a.txt", "mast.txt", "managed");
-        assert_eq!(
-            small_file_text(&c, &root, "f").unwrap().as_deref(),
-            Some("The mast is 42 metres.")
-        );
-        std::fs::remove_dir_all(root).unwrap();
-    }
-
-    #[test]
-    fn what_is_not_a_small_copied_text_file_gives_nothing() {
-        let root = folder();
-        std::fs::write(root.join("assets/a.txt"), "words").unwrap();
-        std::fs::write(root.join("assets/a.png"), "words").unwrap();
-        std::fs::write(root.join("assets/big.txt"), vec![b'x'; 20 * 1024]).unwrap();
-        std::fs::write(root.join("assets/zeros.txt"), b"a\0b").unwrap();
-        std::fs::write(root.join("assets/bad.txt"), [0xff, 0xfe, 0xfd]).unwrap();
-        for (rel, name, mode) in [
-            ("assets/a.txt", "a.txt", "external"),
-            ("assets/a.png", "a.png", "managed"),
-            ("assets/big.txt", "big.txt", "managed"),
-            ("assets/zeros.txt", "zeros.txt", "managed"),
-            ("assets/bad.txt", "bad.txt", "managed"),
-            ("assets/gone.txt", "gone.txt", "managed"),
-        ] {
-            let c = asset_db(rel, name, mode);
-            assert_eq!(small_file_text(&c, &root, "f").unwrap(), None, "{rel}");
-        }
-        std::fs::remove_dir_all(root).unwrap();
-    }
-
-    #[test]
-    fn a_path_out_of_the_project_or_a_link_is_refused() {
-        let root = folder();
-        let c = asset_db("../secret.txt", "secret.txt", "managed");
-        assert!(small_file_text(&c, &root, "f").is_err());
-        #[cfg(unix)]
-        {
-            let outside = folder();
-            std::fs::write(outside.join("assets/x.txt"), "secret").unwrap();
-            std::os::unix::fs::symlink(outside.join("assets/x.txt"), root.join("assets/l.txt"))
-                .unwrap();
-            let c = asset_db("assets/l.txt", "l.txt", "managed");
-            assert!(small_file_text(&c, &root, "f").is_err());
-            std::fs::remove_dir_all(outside).unwrap();
-        }
-        std::fs::remove_dir_all(root).unwrap();
-    }
-
-    #[test]
-    fn the_words_of_a_stored_chunk_are_what_follows_its_header() {
-        assert_eq!(file_words_of_chunk("File: a\nFolder: b\n\nThe words."), "The words.");
-        assert_eq!(file_words_of_chunk("File: a"), "");
-    }
 
     #[test]
     fn keys_round_trip_and_unknown_kinds_are_refused() {

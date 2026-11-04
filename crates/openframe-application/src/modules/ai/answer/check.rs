@@ -22,6 +22,8 @@
 //! - **internal**: none of the app's own words (facts, dossier, tool, record id, JSON).
 //! - **abstain**: when the project holds nothing for the question, the answer says it could not find
 //!   it or that none is recorded.
+//! - **held back**: a row of the facts holds the words of the question, and the answer says it found
+//!   nothing.
 //! - **echo**: the lines of the data (`Kind | field: value`) are not copied.
 //! - **relationship** and **mood** (long answers, ADR-0041): a word for how two people are related, or
 //!   for what someone feels, that no text holds. Cheap and in code, and off behind
@@ -64,6 +66,7 @@ pub(crate) enum Rule {
     Relationship,
     Mood,
     SceneRef,
+    HeldBack,
 }
 
 impl Rule {
@@ -86,6 +89,7 @@ impl Rule {
             Rule::Relationship => "relationship",
             Rule::Mood => "mood",
             Rule::SceneRef => "scene_ref",
+            Rule::HeldBack => "held_back",
         }
     }
 
@@ -126,6 +130,8 @@ pub(crate) struct Expect<'a> {
     pub language: Option<&'static str>,
     /// Run the relationship and mood checks ([`NARRATIVE_WORD_CHECKS`]).
     pub narrative_words: bool,
+    /// A row of the facts holds the words of the question, so the answer must not say it found nothing.
+    pub held: bool,
 }
 
 // ------------------------------------------------------------------ normal form
@@ -527,6 +533,9 @@ pub(crate) fn check(answer: &str, m: &Material<'_>, e: &Expect<'_>) -> Vec<Offen
     {
         add(Rule::Abstain, Vec::new());
     }
+    if e.held && e.missing.is_empty() && ABSTAIN.is_match(&seen) {
+        add(Rule::HeldBack, Vec::new());
+    }
     let names = invented_names(answer, &[evidence[0], evidence[1], evidence[2], LABELS]);
     if !names.is_empty() {
         add(Rule::Names, names);
@@ -611,6 +620,9 @@ pub(crate) fn feedback(offences: &[Offence], say: &str) -> String {
             Rule::ChangeClaim => "nothing was changed; do not say that anything was renamed, added, removed or updated".to_string(),
             Rule::Relationship => format!("the project does not say this relationship: {list}; remove it"),
             Rule::Mood => format!("the project does not say anyone feels this: {list}; remove it"),
+            Rule::HeldBack => {
+                "the project does hold this, in the lines that hold the words of the question; answer from them".to_string()
+            }
         });
     }
     format!(

@@ -285,6 +285,55 @@ pub fn add_file_record(
     Ok(id)
 }
 
+/// The longest text file whose words are kept for search and the assistant.
+const MAX_SEARCH_TEXT_BYTES: u64 = 16 * 1024;
+/// The kinds of file read as plain text.
+const SEARCH_TEXT_EXTENSIONS: &[&str] = &["txt", "md", "csv"];
+
+/// The words of a small plain text file. A link in its place, a larger file, or anything that is not
+/// UTF-8 text gives nothing: the file is still added, and is found by its name.
+fn small_text_of(path: &std::path::Path) -> Option<String> {
+    use std::io::Read as _;
+    let meta = std::fs::symlink_metadata(path).ok()?;
+    if !meta.file_type().is_file() || meta.len() > MAX_SEARCH_TEXT_BYTES {
+        return None;
+    }
+    let mut bytes = Vec::with_capacity(meta.len() as usize);
+    std::fs::File::open(path)
+        .ok()?
+        .take(MAX_SEARCH_TEXT_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .ok()?;
+    if bytes.len() as u64 > MAX_SEARCH_TEXT_BYTES || bytes.contains(&0) {
+        return None;
+    }
+    let text = String::from_utf8(bytes).ok()?;
+    let text = text.trim();
+    (!text.is_empty()).then(|| text.to_string())
+}
+
+/// Keep the words of a file just copied into the project, read once here from the confined copy. From
+/// then on search and the assistant read them from the row and no file is opened for a question.
+fn store_search_text(tx: &Tx<'_>, file_id: &str, asset: &AssetInfo) -> AppResult<()> {
+    let extension = asset
+        .original_name
+        .rsplit('.')
+        .next()
+        .unwrap_or("")
+        .to_lowercase();
+    if !SEARCH_TEXT_EXTENSIONS.contains(&extension.as_str()) {
+        return Ok(());
+    }
+    let path = crate::util::asset_file_path(tx.conn(), tx.root(), &asset.id)?;
+    if let Some(text) = small_text_of(&path) {
+        tx.conn().execute(
+            "UPDATE project_file SET search_text = ?1 WHERE id = ?2",
+            params![text, file_id],
+        )?;
+    }
+    Ok(())
+}
+
 fn add(core: &AppCore, actor: &Actor, args: AddFilesArgs) -> AppResult<Vec<ProjectFileDto>> {
     if args.paths.is_empty() {
         return Ok(vec![]);
@@ -322,12 +371,11 @@ fn add(core: &AppCore, actor: &Actor, args: AddFilesArgs) -> AppResult<Vec<Proje
                 } else {
                     ingest_file(tx, &path)?
                 };
-                ids.push(add_file_record(
-                    tx,
-                    &asset,
-                    args.folder_id.as_deref(),
-                    None,
-                )?);
+                let id = add_file_record(tx, &asset, args.folder_id.as_deref(), None)?;
+                if !link {
+                    store_search_text(tx, &id, &asset)?;
+                }
+                ids.push(id);
             }
             Ok(ids)
         },
@@ -636,18 +684,25 @@ fn asset(core: &AppCore, actor: &Actor, args: AssetArgs) -> AppResult<AssetInfo>
 }
 
 fn index_file(c: &Connection, id: &str) -> AppResult<Option<SearchDoc>> {
-    let row: Option<(String, Option<String>, String, Option<i64>)> = c
+    type Row = (String, Option<String>, String, Option<String>, Option<i64>);
+    let row: Option<Row> = c
         .query_row(
-            "SELECT f.display_name, f.notes, a.original_name, f.deleted_at FROM project_file f JOIN asset a ON a.id=f.asset_id WHERE f.id=?1",
+            "SELECT f.display_name, f.notes, a.original_name, f.search_text, f.deleted_at
+             FROM project_file f JOIN asset a ON a.id=f.asset_id WHERE f.id=?1",
             [id],
-            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?)),
         )
         .optional()?;
     Ok(match row {
-        Some((name, notes, original, None)) => Some(SearchDoc {
+        Some((name, notes, original, words, None)) => Some(SearchDoc {
             entity_type: "project_file".into(),
             title: name,
-            body: format!("{} {}", original, notes.unwrap_or_default()),
+            body: format!(
+                "{} {} {}",
+                original,
+                notes.unwrap_or_default(),
+                words.unwrap_or_default()
+            ),
             context: "Files".into(),
             nav: json!({ "workspace": "files", "fileId": id }),
             owner_user_id: None,

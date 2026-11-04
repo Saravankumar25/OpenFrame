@@ -395,20 +395,21 @@ const ALLOWED: &[&str] = &[
 /// Common English words that start a sentence and are not names. Compared in lower case, and only
 /// for the first word of a sentence.
 const SENTENCE_STARTERS: &[&str] = &[
+    "firstly",
+    "secondly",
+    "thirdly",
+    "lastly",
+    "within",
+    "without",
+    "through",
     "furthermore",
     "moreover",
     "additionally",
     "alternatively",
     "simultaneously",
-    "meanwhile",
-    "however",
     "therefore",
     "thus",
-    "instead",
     "otherwise",
-    "finally",
-    "next",
-    "later",
     "afterwards",
     "the",
     "a",
@@ -677,8 +678,8 @@ fn at_sentence_start(text: &str, at: usize) -> bool {
         match c {
             '\n' | '\r' => newline = true,
             c if c.is_whitespace() => {}
-            '"' | '\'' | '“' | '‘' | '(' | '[' | '*' | '_' | '#' | '>' | '-' | '•' | '–'
-            | '\u{2014}' => {}
+            '"' | '\'' | '“' | '”' | '‘' | '’' | '(' | ')' | '[' | ']' | '*' | '_' | '#' | '>'
+            | '-' | '•' | '–' | '\u{2014}' => {}
             '.' | '!' | '?' | ':' | '。' | '！' | '？' => return true,
             _ => return newline,
         }
@@ -686,22 +687,50 @@ fn at_sentence_start(text: &str, at: usize) -> bool {
     true
 }
 
-/// A long word at the start of a sentence that reads as an adverb or a verb form, not a name:
-/// "Separately, the..." and "Applying the change...". A short word stays a candidate, and so does a
-/// word followed by anything else: "Sterling arrives" still needs its evidence.
+/// A long word at the start of a sentence that reads as an adverb before a comma, not a name:
+/// "Separately, the...". A short word stays a candidate.
 fn opens_a_clause(answer: &str, start: usize, word: &str) -> bool {
     let lower = word.to_lowercase();
-    if lower.chars().count() < 7 {
-        return false;
+    lower.chars().count() >= 7 && lower.ends_with("ly") && answer[start + word.len()..].starts_with(',')
+}
+
+/// The base forms of a word at the start of a sentence: "applying" to "apply", "requests" to "request",
+/// "deleting" to "delete".
+fn base_forms(word: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    for ending in ["ing", "ed", "es", "s", "ly"] {
+        if let Some(stem) = word.strip_suffix(ending)
+            && stem.chars().count() >= 3
+        {
+            out.push(stem.to_string());
+            out.push(format!("{stem}e"));
+        }
     }
-    let rest = &answer[start + word.len()..];
-    (lower.ends_with("ly") && rest.starts_with(','))
-        || (lower.ends_with("ing")
-            && rest.starts_with(' ')
-            && rest[1..]
-                .split_whitespace()
-                .next()
-                .is_some_and(|n| matches!(n, "the" | "a" | "an" | "this" | "that" | "these" | "those" | "your" | "my")))
+    out
+}
+
+/// A word at the start of a sentence that is another form of a word the evidence holds is that word,
+/// with the capital of its place: "Applying" beside "Apply Changes". A name mid sentence is not read
+/// this way, and a form the evidence does not hold still needs its evidence.
+fn another_form_of_evidence(
+    answer: &str,
+    name: &str,
+    word: &str,
+    sets: &[std::collections::HashSet<String>],
+) -> bool {
+    let at_start = answer
+        .match_indices(name)
+        .next()
+        .is_some_and(|(at, _)| at_sentence_start(answer, at));
+    at_start
+        && base_forms(word).iter().any(|base| {
+            sets.iter().any(|s| {
+                s.contains(base)
+                    || ["s", "es", "ed", "d", "ing"]
+                        .iter()
+                        .any(|e| s.contains(&format!("{base}{e}")))
+            })
+        })
 }
 
 /// Proper-name candidates in an answer: runs of capitalised words ("Lakshmi", "Venkat Rao",
@@ -803,6 +832,11 @@ pub fn ungrounded_names(answer: &str, evidence: &[&str]) -> Vec<String> {
                 .split_whitespace()
                 .map(|w| straight(&w.to_lowercase()))
                 .collect();
+            if let [word] = words.as_slice()
+                && another_form_of_evidence(answer, n, word, &sets)
+            {
+                return false;
+            }
             if !words.iter().all(|w| sets.iter().any(|s| s.contains(w))) {
                 return true;
             }
@@ -1086,21 +1120,41 @@ mod clause_openers {
         for answer in [
             "Furthermore, the crew is ready.",
             "Simultaneously, the lamps go out.",
-            "Alternatively, use Recently Deleted.",
-            "Applying the change is up to you.",
+            "Alternatively, use the list.",
             "Separately, the boat is booked.",
+            "Within a day it was done.",
+            "“That is the note.” It holds the boat.",
         ] {
-            assert!(candidate_names(answer).iter().all(|n| {
-                !["Furthermore", "Simultaneously", "Alternatively", "Applying", "Separately"]
-                    .contains(&n.as_str())
-            }), "{answer}");
+            assert!(
+                ungrounded_names(answer, &["the crew is ready"]).is_empty(),
+                "{answer}: {:?}",
+                ungrounded_names(answer, &["the crew is ready"])
+            );
         }
+    }
+
+    #[test]
+    fn another_form_of_a_word_of_the_evidence_at_a_sentence_start_is_that_word() {
+        let evidence = ["Choose Apply Changes to keep it. Deleted scenes and every request."];
+        for answer in [
+            "Applying the change is up to you.",
+            "Deleting a scene is safe.",
+            "Requests go to the same list.",
+        ] {
+            assert!(ungrounded_names(answer, &evidence).is_empty(), "{answer}");
+        }
+        // Mid sentence it is still a candidate.
+        assert_eq!(
+            ungrounded_names("Then Applying went home.", &evidence),
+            vec!["Applying"]
+        );
     }
 
     #[test]
     fn a_real_name_at_a_sentence_start_still_needs_its_evidence() {
         assert_eq!(ungrounded_names("Marcus arrives at dawn.", &["Anjali"]), vec!["Marcus"]);
         assert_eq!(ungrounded_names("Sterling arrives at dawn.", &["Anjali"]), vec!["Sterling"]);
+        assert_eq!(ungrounded_names("Thomas arrives at dawn.", &["Anjali"]), vec!["Thomas"]);
     }
 }
 

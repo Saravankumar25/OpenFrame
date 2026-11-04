@@ -39,6 +39,7 @@ fn run_check(
         missing: &missing,
         language: language_of(request),
         narrative_words: false,
+        held: false,
     };
     check::check(answer, &m, &e)
         .into_iter()
@@ -170,6 +171,7 @@ fn a_digit_number_the_facts_do_not_hold_is_found() {
             missing: &[],
             language: None,
             narrative_words: false,
+            held: false,
         },
     );
     assert_eq!(offence[0].items, vec!["99".to_string()]);
@@ -1077,6 +1079,7 @@ fn the_relationship_and_mood_checks_work_and_start_off() {
         missing: &[],
         language: None,
         narrative_words: true,
+        held: false,
     };
     let answer = "Mariamma is the mother of Anjali, and she feels guilty about the aunt she became over the many years here.";
     let rules: Vec<Rule> = check::check(answer, &m, &on)
@@ -1264,4 +1267,33 @@ fn a_repeated_sentence_no_longer_costs_the_first_pass() {
     assert_eq!(r.model.calls(), 1);
     assert_eq!(a.shown, Shown::Written);
     assert_eq!(a.text, "The lead cast is planned at 40,00,000 rupees in all.");
+}
+
+#[test]
+fn saying_nothing_was_found_when_a_row_holds_the_words_is_held_back() {
+    let f = fact("File", "f")
+        .f("name", "mast.txt")
+        .f("text", "The mast is 42 metres.")
+        .prio(P_PICKED);
+    let d = Dossier {
+        facts: vec![f],
+        ..Dossier::default()
+    };
+    let r = Run::new(&[
+        "I could not find the height.",
+        "The mast is 42 metres.",
+    ]);
+    let a = r.ask("how tall is the mast", AnswerType::Lookup, &d).unwrap();
+    assert_eq!(r.model.calls(), 2);
+    assert_eq!(a.text, "The mast is 42 metres.");
+    // Three times over: the abstention shows the row that holds the words first.
+    let r = Run::new(&["I could not find it.", "I could not find it.", "Not found, I could not find it."]);
+    let other = fact("File", "g").f("name", "other.txt");
+    let picked = fact("File", "f").f("name", "mast.txt").prio(P_PICKED);
+    let d = Dossier {
+        facts: vec![other, picked],
+        ..Dossier::default()
+    };
+    let a = r.ask("how tall is the mast", AnswerType::Lookup, &d).unwrap();
+    assert!(a.text.contains("mast.txt"), "{}", a.text);
 }

@@ -14,7 +14,7 @@ use std::sync::LazyLock;
 
 use regex::Regex;
 
-use super::super::dossier::{Dossier, Fact};
+use super::super::dossier::{Dossier, Fact, P_PICKED};
 use super::super::queries::truncate_chars;
 use super::check::norm;
 
@@ -191,6 +191,9 @@ pub(super) fn last_resort(d: &Dossier) -> Option<(String, Vec<Fact>)> {
     Some((text, used))
 }
 
+/// How an abstention that shows the fetched facts opens.
+pub(crate) const ABSTENTION: &str = "I could not write a reliable answer to that.";
+
 /// The abstention sentence. For a question with a single value to state (`value_asked`) that the
 /// project does not hold, it says what is missing and quotes nothing else; otherwise it also shows
 /// the first facts that were fetched.
@@ -198,7 +201,10 @@ pub(super) fn abstention(d: &Dossier, value_asked: bool) -> (String, Vec<Fact>) 
     let used: Vec<Fact> = if value_asked && !d.missing.is_empty() {
         Vec::new()
     } else {
-        real(d).take(2).cloned().collect()
+        // The rows the words of the question picked come first.
+        let mut facts: Vec<&Fact> = real(d).collect();
+        facts.sort_by_key(|f| std::cmp::Reverse(f.priority == P_PICKED));
+        facts.into_iter().take(2).cloned().collect()
     };
     if used.is_empty() {
         let text = if d.missing.is_empty() {
@@ -218,7 +224,7 @@ pub(super) fn abstention(d: &Dossier, value_asked: bool) -> (String, Vec<Fact>) 
         .collect();
     (
         format!(
-            "I could not write a reliable answer to that. This is what the project records: {}",
+            "{ABSTENTION} This is what the project records: {}",
             said.join(" ")
         ),
         used,

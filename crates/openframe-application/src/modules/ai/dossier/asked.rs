@@ -146,7 +146,9 @@ pub(crate) fn value_is_asked(f: &Fact, value: &str, message: &str) -> bool {
     }
     let v = normalize(value);
     let digits_only = v.chars().all(|c| c.is_ascii_digit() || c == ' ');
-    digits_only || !format!(" {} ", normalize(message)).contains(&format!(" {v} "))
+    // "Is it confirmed" asks for the status, so saying the word back is the answer.
+    let a_status = STATUS_WORDS.contains(&v.as_str());
+    digits_only || a_status || !format!(" {} ", normalize(message)).contains(&format!(" {v} "))
 }
 
 #[cfg(test)]
@@ -208,6 +210,7 @@ mod tests {
         assert!(!value_is_asked(&f, "Permit status", "what does the permit status note say"));
         assert!(value_is_asked(&f, "Permit status", "which note is about the beach"));
         assert!(value_is_asked(&f, "4", "how many scenes are on day 4"));
+        assert!(value_is_asked(&f, "Confirmed", "is that location confirmed"));
     }
 
     #[test]

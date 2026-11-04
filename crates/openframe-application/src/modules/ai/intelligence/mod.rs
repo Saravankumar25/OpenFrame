@@ -74,13 +74,12 @@ mod ai_embedder {
     }
 }
 
-use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use openframe_search::{Embedder, QueryEmbeddingCache, docs};
+use openframe_search::{Embedder, QueryEmbeddingCache};
 use parking_lot::{Mutex, RwLock};
 
 pub use indexer::{IndexSettings, IndexSnapshot, ProjectIndex};
@@ -196,37 +195,6 @@ pub fn service(core: &AppCore) -> Arc<IntelligenceService> {
     core.service(IntelligenceService::new)
 }
 
-/// The words of the small text files of the open project, by file id, as the indexer stored them, under
-/// the owner rule. Empty before the index has them. This opens no file: it is safe on the question path.
-pub(crate) fn file_texts(core: &AppCore, user_id: &str) -> HashMap<String, String> {
-    let ix = service(core).current.lock().clone();
-    let rows = ix
-        .and_then(|ix| {
-            ix.with_reader(|c| docs::chunks_of_type(c, "project_file", user_id))
-                .ok()
-        })
-        .unwrap_or_default();
-    let mut out: HashMap<String, String> = HashMap::new();
-    for (id, chunk) in rows {
-        if chunk.metadata[documents::FILE_TEXT_MARK] == true {
-            let words = documents::file_words_of_chunk(&chunk.text);
-            let text = out.entry(id).or_default();
-            if !text.is_empty() {
-                text.push('\n');
-            }
-            text.push_str(words);
-        }
-    }
-    out
-}
-
-/// The chunks the index stored for one document. Empty before the index has them.
-pub(crate) fn stored_chunks(core: &AppCore, doc_id: &str) -> Vec<openframe_search::ChunkInput> {
-    let ix = service(core).current.lock().clone();
-    ix.and_then(|ix| ix.with_reader(|c| docs::chunks_of_doc(c, doc_id)).ok())
-        .unwrap_or_default()
-}
-
 /// The bundled AI is available (or a local model is attached) and already in use this session:
 /// index eagerly at open.
 fn ai_available(core: &AppCore) -> bool {
@@ -257,7 +225,6 @@ pub fn session_changed(
         let ix = Arc::new(ProjectIndex::new(
             next.project_id(),
             next.store.db_path().to_path_buf(),
-            next.layout.root().to_path_buf(),
             next.layout.cache().join("intelligence.sqlite"),
         ));
         next.store

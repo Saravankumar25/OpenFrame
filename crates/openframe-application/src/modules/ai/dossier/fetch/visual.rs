@@ -2,14 +2,20 @@
 //! Reads `shot`, `storyboard`, `storyboard_panel`, `moodboard`, `moodboard_item`, `vault_item`.
 //! Items a person marked private on a mood board are never read.
 
+use std::sync::LazyLock;
+
 use openframe_domain::AppResult;
+use regex::Regex;
 
 use crate::modules::ai::dossier::asked::{best_rows, names_row, row_words};
 use crate::modules::ai::dossier::ctx::{FetchCtx, SceneRef, safe};
 use crate::modules::ai::dossier::words::{clip, numbers};
-use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
+use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID, P_PICKED};
 use crate::modules::ai::index::{Kind, Resolved, normalize};
 use crate::modules::ai::turn::{AnswerType, Group, TurnRead};
+
+static PANEL_N: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?i)\bpanel\s+#?(\d{1,3})\b").expect("valid pattern"));
 
 /// The most shots passed as rows when no scene is named.
 const SHOT_ROWS: usize = 40;
@@ -47,7 +53,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         }
     }
     if m.stem("storyboard") {
-        out.extend(storyboards(ctx, &scenes)?);
+        out.extend(storyboards(ctx, t, &scenes)?);
     }
     if m.stem("moodboard") || m.any(&["mood board", "mood boards"]) {
         out.extend(moodboards(ctx, t)?);
@@ -146,7 +152,7 @@ fn all_shots(ctx: &FetchCtx<'_>, t: AnswerType) -> AppResult<Vec<Fact>> {
             .f("movement", mv)
             .f("angle", angle)
             .f("lens", lens)
-            .prio(if hit { P_HIGH } else { P_MID });
+            .prio(if hit { P_PICKED } else { P_MID });
         if hit && hits.len() <= 3 && t != AnswerType::Count {
             f = f.require(number.map(|n| n.to_string()).unwrap_or_default());
         }
@@ -183,7 +189,8 @@ fn shots(ctx: &FetchCtx<'_>, t: AnswerType, s: &SceneRef) -> AppResult<Vec<Fact>
         .f("what", format!("shots planned for scene {}", s.number))
         .f("value", rows.len().to_string())
         .prio(P_HIGH);
-    if t == AnswerType::Count {
+    // "How many shots" beside another question is still asked for.
+    if t == AnswerType::Count || ctx.m.has("how many") {
         c = c.require(rows.len().to_string());
     }
     out.push(c);
@@ -199,14 +206,14 @@ fn shots(ctx: &FetchCtx<'_>, t: AnswerType, s: &SceneRef) -> AppResult<Vec<Fact>
                 .prio(P_MID);
         // A short list asked for as a list is told shot by shot.
         if t == AnswerType::List && rows.len() <= 6 {
-            shot = shot.require(clip(d, LONG_TEXT));
+            shot = shot.require(clip(d, LONG_TEXT)).require(mv);
         }
         out.push(shot);
     }
     Ok(out)
 }
 
-fn storyboards(ctx: &FetchCtx<'_>, scenes: &[SceneRef]) -> AppResult<Vec<Fact>> {
+fn storyboards(ctx: &FetchCtx<'_>, t: AnswerType, scenes: &[SceneRef]) -> AppResult<Vec<Fact>> {
     let mut st = ctx.conn.prepare(
         "SELECT b.id, b.name, b.scene_id, b.scene_lineage_id,
                 (SELECT count(*) FROM storyboard_panel p WHERE p.storyboard_id = b.id AND p.deleted_at IS NULL)
@@ -225,6 +232,15 @@ fn storyboards(ctx: &FetchCtx<'_>, scenes: &[SceneRef]) -> AppResult<Vec<Fact>> 
         let ids: Vec<String> = rows.iter().filter_map(|r| r.2.clone()).collect();
         let by_id = ctx.scene_numbers(&ids);
         let one_board = rows.len() <= 3;
+        let panels_counted = ctx.m.stem("panel");
+        let mut boards_counted = Fact::new("Count", "")
+            .f("what", "storyboards")
+            .f("value", rows.len().to_string())
+            .prio(P_HIGH);
+        if t == AnswerType::Count && !panels_counted {
+            boards_counted = boards_counted.require(rows.len().to_string());
+        }
+        out.push(boards_counted);
         for (id, name, scene_id, _, n) in rows.iter().take(20) {
             let number = scene_id
                 .as_deref()
@@ -244,9 +260,31 @@ fn storyboards(ctx: &FetchCtx<'_>, scenes: &[SceneRef]) -> AppResult<Vec<Fact>> 
                     [id],
                     |r| r.get(0),
                 )?;
+                let panels = panel_lines(ctx, id)?;
                 f = f
-                    .f("empty panels with no drawing", empty.to_string())
-                    .f("panel notes", clip(&numbered_panels(ctx, id)?, PANEL_CHARS));
+                    .f("panels with no drawing", format!("{empty} empty"))
+                    .f("panel notes", clip(&numbered(&panels), PANEL_CHARS));
+                // A panel the question names by its place is demanded.
+                let m = &ctx.m;
+                let asked_panel = if m.any(&["last panel", "final panel"]) {
+                    panels.last()
+                } else if m.any(&["first panel"]) {
+                    panels.first()
+                } else {
+                    PANEL_N
+                        .captures(&ctx.message)
+                        .and_then(|c| c[1].parse::<usize>().ok())
+                        .and_then(|n| panels.get(n.saturating_sub(1)))
+                };
+                if let Some(p) = asked_panel.filter(|p| p.chars().count() <= LONG_TEXT) {
+                    f = f.require(p);
+                }
+                if m.any(&["drawing", "drawings", "drawn", "image", "images", "sketch", "sketches"]) {
+                    f = f.require(format!("{empty} empty"));
+                }
+                if t == AnswerType::Count && panels_counted {
+                    f = f.require(n.to_string());
+                }
             }
             if ctx.m.without(&["storyboards", "storyboard"]).stem("scene") {
                 f = f.require(&number);
@@ -275,7 +313,7 @@ fn storyboards(ctx: &FetchCtx<'_>, scenes: &[SceneRef]) -> AppResult<Vec<Fact>> 
                     .f("name", name)
                     .f("scene", s.number.to_string())
                     .f("panels", n.to_string())
-                    .f("panel notes", clip(&numbered_panels(ctx, id)?, PANEL_CHARS))
+                    .f("panel notes", clip(&numbered(&panel_lines(ctx, id)?), PANEL_CHARS))
                     .prio(P_HIGH)
                     .require(name)
                     .require(n.to_string()),
@@ -285,8 +323,8 @@ fn storyboards(ctx: &FetchCtx<'_>, scenes: &[SceneRef]) -> AppResult<Vec<Fact>> 
     Ok(out)
 }
 
-/// The panels of a board in order: "1: Wide Lamps on the water; 2: Close the meter climbs".
-fn numbered_panels(ctx: &FetchCtx<'_>, board: &str) -> AppResult<String> {
+/// The panels of a board in order.
+fn panel_lines(ctx: &FetchCtx<'_>, board: &str) -> AppResult<Vec<String>> {
     let mut st = ctx.conn.prepare(
         "SELECT COALESCE(description, ''), COALESCE(framing, '') FROM storyboard_panel
          WHERE storyboard_id = ?1 AND deleted_at IS NULL ORDER BY position, id",
@@ -300,12 +338,17 @@ fn numbered_panels(ctx: &FetchCtx<'_>, board: &str) -> AppResult<String> {
             ))
         })?
         .collect::<Result<_, _>>()?;
-    Ok(panels
+    Ok(panels.iter().map(|p| p.trim().to_string()).collect())
+}
+
+/// The panels numbered: "1: Wide Lamps on the water; 2: Close the meter climbs".
+fn numbered(panels: &[String]) -> String {
+    panels
         .iter()
         .enumerate()
-        .map(|(i, p)| format!("{}: {}", i + 1, p.trim()))
+        .map(|(i, p)| format!("{}: {p}", i + 1))
         .collect::<Vec<_>>()
-        .join("; "))
+        .join("; ")
 }
 
 fn moodboards(ctx: &FetchCtx<'_>, t: AnswerType) -> AppResult<Vec<Fact>> {
@@ -357,14 +400,21 @@ fn moodboards(ctx: &FetchCtx<'_>, t: AnswerType) -> AppResult<Vec<Fact>> {
                 Ok((kind, [body, caption, title].join(" ").trim().to_string()))
             })?
             .collect::<Result<_, _>>()?;
-        let with_kind = |kind: &str| items.iter().filter(|(k, _)| k == kind).count();
+        let with_kind = |kind: &str, plural: &str| match items
+            .iter()
+            .filter(|(k, _)| k == kind)
+            .count()
+        {
+            0 => format!("no {plural}"),
+            n => format!("{n} {plural}"),
+        };
         f = f.f(
             "holds",
             format!(
-                "{} notes, {} images, {} links",
-                with_kind("note") + with_kind("text"),
-                with_kind("image"),
-                with_kind("link")
+                "{}, {}, {}",
+                with_kind("note", "notes"),
+                with_kind("image", "images"),
+                with_kind("link", "links")
             ),
         );
         out.push(f);
@@ -383,7 +433,7 @@ fn moodboards(ctx: &FetchCtx<'_>, t: AnswerType) -> AppResult<Vec<Fact>> {
                 .f("board", name)
                 .f("kind", kind)
                 .f("text", clip(text, 240))
-                .prio(if hits.contains(&i) { P_HIGH } else { P_MID });
+                .prio(if hits.contains(&i) { P_PICKED } else { P_MID });
             if hits.contains(&i) && text.chars().count() <= LONG_TEXT {
                 row = row.require(text);
             }
@@ -449,7 +499,13 @@ fn vault(ctx: &FetchCtx<'_>, read: &TurnRead, named: &[String]) -> AppResult<Vec
             .f("title", title)
             .f("type", vault_type(kind))
             .f("source", source)
-            .prio(if is_named || hit { P_HIGH } else { P_MID });
+            .prio(if hit {
+                P_PICKED
+            } else if is_named {
+                P_HIGH
+            } else {
+                P_MID
+            });
         if is_named || hit || narrative {
             f = f.f("text", clip(&format!("{body} {caption}"), 360));
         }

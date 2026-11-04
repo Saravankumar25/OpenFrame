@@ -598,7 +598,7 @@ pub const LEAVES: &[Leaf] = &[
         title: "Storyboards",
         aliases: &["storyboard", "panels"],
         fetchers: &[f("visual", visual::run)],
-        kinds: &["Storyboard"],
+        kinds: &["Storyboard", "Count"],
         about: &["storyboard"],
         topic: "storyboards",
         search: &[nav_sub("production", "storyboards")],

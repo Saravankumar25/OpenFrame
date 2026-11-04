@@ -367,46 +367,6 @@ pub fn chunks_by_vec_rowids(
     Ok(out)
 }
 
-/// The stored chunks of one document, in order.
-pub fn chunks_of_doc(conn: &Connection, doc_id: &str) -> SearchResult<Vec<ChunkInput>> {
-    let mut stmt = conn
-        .prepare_cached("SELECT text, metadata_json FROM semantic_chunk WHERE doc_id=?1 ORDER BY ordinal")?;
-    let rows = stmt.query_map([doc_id], |r| {
-        let meta: String = r.get(1)?;
-        Ok(ChunkInput {
-            text: r.get(0)?,
-            metadata: serde_json::from_str(&meta).unwrap_or(Value::Null),
-        })
-    })?;
-    Ok(rows.collect::<Result<_, _>>()?)
-}
-
-/// The stored chunks of every document of a type that `user` may read (a document with an owner is
-/// that owner's alone): (entity id, chunk), in order.
-pub fn chunks_of_type(
-    conn: &Connection,
-    entity_type: &str,
-    user: &str,
-) -> SearchResult<Vec<(String, ChunkInput)>> {
-    let mut stmt = conn.prepare_cached(
-        "SELECT d.entity_id, c.text, c.metadata_json FROM semantic_chunk c
-         JOIN semantic_document d ON d.doc_id = c.doc_id
-         WHERE d.entity_type = ?1 AND (d.owner_user_id IS NULL OR d.owner_user_id = ?2)
-         ORDER BY d.entity_id, c.ordinal",
-    )?;
-    let rows = stmt.query_map([entity_type, user], |r| {
-        let meta: String = r.get(2)?;
-        Ok((
-            r.get(0)?,
-            ChunkInput {
-                text: r.get(1)?,
-                metadata: serde_json::from_str(&meta).unwrap_or(Value::Null),
-            },
-        ))
-    })?;
-    Ok(rows.collect::<Result<_, _>>()?)
-}
-
 /// Chunks still waiting for an embedding by `model`: (vec_rowid, text).
 pub fn pending_chunks(
     conn: &Connection,

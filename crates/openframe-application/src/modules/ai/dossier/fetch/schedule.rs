@@ -361,11 +361,24 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
             out.push(f);
         }
     }
-    // A scene named by its place: "the sea day".
+    // A day named by a word: "the boat day". The day's own notes say it best; else the scene headings.
     if target.is_empty() && scenes.is_empty() {
         for c in WORD_DAY.captures_iter(&ctx.message) {
             let w = c[1].to_lowercase();
             if NOT_A_PLACE.contains(&w.as_str()) {
+                continue;
+            }
+            let by_notes: Vec<u32> = days
+                .iter()
+                .filter(|d| {
+                    d.notes
+                        .as_deref()
+                        .is_some_and(|n| n.to_lowercase().contains(&w))
+                })
+                .filter_map(|d| d.number.map(|n| n as u32))
+                .collect();
+            if !by_notes.is_empty() {
+                target.extend(by_notes);
                 continue;
             }
             if let Some(sp) = ctx.screenplay(r)
@@ -441,6 +454,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
             f = f.require(c);
         }
         let about_the_day = ASKS_THE_DAY.is_match(&Msg::new(&ctx.message).norm);
+        let named_by_word = named_days(ctx, r).is_empty() && scenes.is_empty();
+        if named_by_word {
+            f = f.require(format!("Day {n}"));
+        }
         if about_the_day || m.stem("scene") {
             for (n, _) in &shown {
                 f = f.require(n.to_string());

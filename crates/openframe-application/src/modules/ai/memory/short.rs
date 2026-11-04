@@ -11,6 +11,7 @@ use serde_json::Value;
 
 use super::approx_tokens;
 use super::rules;
+use crate::modules::ai::answer::ABSTENTION;
 use crate::modules::ai::index::{EntityIndex, Focus, Kind};
 use crate::modules::ai::queries::truncate_chars;
 use crate::modules::ai::sections::Selection;
@@ -215,7 +216,12 @@ pub fn load(
             continue;
         };
         let asked_cut = truncate_chars(asked, TURN_PART_TOKENS * 4);
-        let answered_cut = truncate_chars(&answer.content, TURN_PART_TOKENS * 4);
+        // A fallback says the assistant could not answer. The writer must not take its sentence up.
+        let answered_cut = if answer.content.starts_with(ABSTENTION) {
+            String::new()
+        } else {
+            truncate_chars(&answer.content, TURN_PART_TOKENS * 4)
+        };
         let cost = approx_tokens(&asked_cut) + approx_tokens(&answered_cut);
         if !recent.is_empty() && used + cost > RECENT_TOKENS {
             older_from = i;

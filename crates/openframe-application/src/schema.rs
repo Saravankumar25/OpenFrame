@@ -100,6 +100,11 @@ pub const PROJECT_MIGRATIONS: &[Migration] = &[
         "ai_request_no_scope",
         "../../../migrations/project/0020_ai_request_no_scope.sql"
     ),
+    m!(
+        21,
+        "project_file_search_text",
+        "../../../migrations/project/0021_project_file_search_text.sql"
+    ),
 ];
 
 pub const GLOBAL_MIGRATIONS: &[Migration] = &[

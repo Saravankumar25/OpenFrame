@@ -53,6 +53,8 @@ pub type FetchFn = fn(&FetchCtx<'_>, &TurnRead, &Resolved) -> Vec<Fact>;
 /// How much a fact matters when the dossier is over its cap. A fact with a required value is never
 /// cut whatever its priority.
 pub const P_HIGH: u8 = 80;
+/// A row the words of the question picked: the project holds what is asked, so "could not find" is wrong.
+pub const P_PICKED: u8 = P_HIGH + 5;
 pub const P_MID: u8 = 50;
 pub const P_LOW: u8 = 20;
 

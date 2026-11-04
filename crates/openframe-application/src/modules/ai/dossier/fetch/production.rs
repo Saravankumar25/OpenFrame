@@ -9,7 +9,7 @@ use crate::modules::ai::dossier::asked::{self, best_rows, names_row, row_words};
 use crate::modules::ai::dossier::ctx::{FetchCtx, SceneRef, safe};
 use crate::modules::ai::dossier::guard;
 use crate::modules::ai::dossier::words::{clip, date_is, date_of, dates_in};
-use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
+use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID, P_PICKED};
 use crate::modules::ai::index::Resolved;
 use crate::modules::ai::queries;
 use crate::modules::ai::turn::{AnswerType, TurnRead};
@@ -215,7 +215,13 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 let mut f = Fact::new("Location", &l.id)
                     .f("name", &l.name)
                     .f("status", &l.status)
-                    .prio(if hit { P_HIGH } else { P_MID });
+                    .prio(if by_word {
+                        P_PICKED
+                    } else if hit {
+                        P_HIGH
+                    } else {
+                        P_MID
+                    });
                 if by_word {
                     if !name_holds_a_word(&words, &l.name) {
                         f = f.f("notes", notes_text(&l.notes));
@@ -483,7 +489,13 @@ fn tasks(
             .f("status", status)
             .f("due", due.map(date_of).unwrap_or_default())
             .f("notes", clip(notes, 200))
-            .prio(if shown { P_HIGH } else { P_LOW });
+            .prio(if hit {
+                P_PICKED
+            } else if shown {
+                P_HIGH
+            } else {
+                P_LOW
+            });
         if hit {
             if !names_row(&ctx.message, title) {
                 f = f.require(title);

@@ -303,7 +303,7 @@ pub fn day_out_of_days(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec
                         if works { "yes" } else { "no" },
                     );
                     if read.answer_type == AnswerType::Lookup {
-                        f = f.require(if works { "yes" } else { "not" });
+                        f = f.require(if works { "yes" } else { "no" });
                     }
                 }
                 match read.answer_type {

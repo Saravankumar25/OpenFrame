@@ -349,6 +349,9 @@ fn scene_facts(
     if several_screenplays {
         f = f.f("screenplay", &s.screenplay_title);
     }
+    if ctx.m.has("heading") {
+        f = f.require(&s.heading);
+    }
     if narrative || asks_who {
         f = f.f("characters", names.join(", "));
         for n in &names {

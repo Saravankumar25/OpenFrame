@@ -28,12 +28,13 @@ mod tests;
 
 use std::time::Instant;
 
+pub(crate) use fallback::ABSTENTION;
 use openframe_ai::InferenceProvider;
 use openframe_ai::client::{ChatMessage, ChatRequest, SLOT_ANSWER};
 use openframe_ai_checks as checks;
 use openframe_domain::AppResult;
 
-use super::dossier::{Dossier, Fact};
+use super::dossier::{Dossier, Fact, P_PICKED};
 use super::index::{EntityIndex, Focus, Resolved};
 use super::memory::TurnMemory;
 use super::sections::Selection;
@@ -245,6 +246,7 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
         missing: &dossier.missing,
         language: language_of(i.message),
         narrative_words: check::NARRATIVE_WORD_CHECKS && group == Group::Narrative,
+        held: dossier.facts.iter().any(|f| f.priority == P_PICKED),
     };
 
     let map = prompt::section_map(i.sections);

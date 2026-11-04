@@ -8,7 +8,7 @@ use openframe_domain::AppResult;
 use crate::modules::ai::dossier::asked;
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
 use crate::modules::ai::dossier::words::{clip, relation_sentence, relation_word, title_case};
-use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
+use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID, P_PICKED};
 use crate::modules::ai::index::{Hit, Kind, Resolved, normalize};
 use crate::modules::ai::queries;
 use crate::modules::ai::turn::{AnswerType, Group, TurnRead};
@@ -573,7 +573,7 @@ fn acts_and_cards(
                     "scene heading",
                     scene.map(|s| s.1.clone()).unwrap_or_default(),
                 )
-                .prio(P_HIGH)
+                .prio(P_PICKED)
                 .require(act);
             if what.chars().count() <= 100 {
                 card = card.require(&what);
