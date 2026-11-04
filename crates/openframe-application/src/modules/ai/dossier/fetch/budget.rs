@@ -269,6 +269,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                             diff_text(l.planned - a),
                         )
                         .require(plain((l.planned - a).abs()));
+                    // "Was it over": the answer says which way it went, in the plain word.
+                    if m.any(&["over", "under"]) && a != l.planned {
+                        f = f.require(if a > l.planned { "over" } else { "under" });
+                    }
                 }
             }
             None => {

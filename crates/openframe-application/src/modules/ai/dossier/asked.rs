@@ -31,6 +31,9 @@ const STATUS_WORDS: &[&str] = &[
     "approved",
 ];
 
+/// Short answers a question may hold as a word of its own: "was it over" is answered "over".
+const VERDICTS: &[&str] = &["yes", "no", "over", "under"];
+
 /// Words that say nothing about which row is meant.
 const ROW_FILLER: &[&str] = &[
     "anything",
@@ -147,7 +150,7 @@ pub(crate) fn value_is_asked(f: &Fact, value: &str, message: &str) -> bool {
     let v = normalize(value);
     let digits_only = v.chars().all(|c| c.is_ascii_digit() || c == ' ');
     // "Is it confirmed" asks for the status, so saying the word back is the answer.
-    let a_status = STATUS_WORDS.contains(&v.as_str());
+    let a_status = STATUS_WORDS.contains(&v.as_str()) || VERDICTS.contains(&v.as_str());
     digits_only || a_status || !format!(" {} ", normalize(message)).contains(&format!(" {v} "))
 }
 

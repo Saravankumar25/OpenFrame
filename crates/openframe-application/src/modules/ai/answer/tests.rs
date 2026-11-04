@@ -1297,3 +1297,21 @@ fn saying_nothing_was_found_when_a_row_holds_the_words_is_held_back() {
     let a = r.ask("how tall is the mast", AnswerType::Lookup, &d).unwrap();
     assert!(a.text.contains("mast.txt"), "{}", a.text);
 }
+
+#[test]
+fn a_short_sentence_said_again_goes_with_the_blank_lines_around_it() {
+    assert_eq!(
+        check::repaired("The clerk is here.\n\n\nShe has a case.\n\nThe clerk is here.\n\n"),
+        "The clerk is here.\nShe has a case."
+    );
+}
+
+#[test]
+fn a_last_resort_too_thin_for_a_story_gives_the_abstention() {
+    let r = Run::new(&["Silvanus sails.", "Silvanus sails on.", "Silvanus sails away."]);
+    let a = r
+        .ask("what is the story", AnswerType::Story, &lead_cast())
+        .unwrap();
+    assert_eq!(a.shown, Shown::Abstained);
+    assert!(a.text.contains("Lead cast"), "{}", a.text);
+}

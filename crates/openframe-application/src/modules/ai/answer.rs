@@ -38,7 +38,7 @@ use super::dossier::{Dossier, Fact, P_PICKED};
 use super::index::{EntityIndex, Focus, Resolved};
 use super::memory::TurnMemory;
 use super::sections::Selection;
-use super::turn::{AnswerType, Group, TurnRead};
+use super::turn::{AnswerType, Group, LengthClass, TurnRead};
 use super::{queries, text};
 use check::{Expect, Material, Offence};
 
@@ -358,7 +358,11 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
     );
     let (text, shown, used) = match group {
         Group::Chat => (fallback::chat(), Shown::Abstained, Vec::new()),
-        _ => match fallback::last_resort(dossier) {
+        // A sentence too thin for a story ("tell me what happened") is no answer: the abstention shows
+        // what was fetched instead.
+        _ => match fallback::last_resort(dossier)
+            .filter(|(t, _)| class != LengthClass::Story || text::word_count(t) >= class.words().0)
+        {
             Some((t, facts)) => (t, Shown::LastResort, facts),
             None => {
                 let (t, used) = fallback::abstention(dossier, value_asked);

@@ -478,13 +478,22 @@ fn sentences(s: &str) -> Vec<String> {
     out
 }
 
-/// A later sentence that repeats a run of six words the text already said goes: the first saying
-/// stands, and nothing new is lost.
+/// A later sentence that says an earlier one again, or repeats a run of six words the text already
+/// said, goes: the first saying stands, and nothing new is lost. Blank lines the model left go too.
 fn without_repeated_sentences(s: &str) -> String {
     let mut kept = String::new();
+    let mut said: HashSet<String> = HashSet::new();
     for sentence in sentences(s) {
+        let plain = norm(sentence.trim());
+        if plain.is_empty() {
+            if !kept.ends_with('\n') && !kept.is_empty() {
+                kept.push('\n');
+            }
+            continue;
+        }
         let joined = format!("{kept}{sentence}");
-        if repeated_run(&joined).is_none() || kept.trim().is_empty() {
+        let new_words = said.insert(plain);
+        if new_words && (repeated_run(&joined).is_none() || kept.trim().is_empty()) {
             kept = joined;
         }
     }

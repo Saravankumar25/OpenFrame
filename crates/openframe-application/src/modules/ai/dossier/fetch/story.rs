@@ -573,10 +573,13 @@ fn acts_and_cards(
                     "scene heading",
                     scene.map(|s| s.1.clone()).unwrap_or_default(),
                 )
-                .prio(P_PICKED)
-                .require(act);
-            if what.chars().count() <= 100 {
-                card = card.require(&what);
+                .prio(P_PICKED);
+            // A told answer weaves the card in; a short one states it with its act.
+            if !narrative {
+                card = card.require(act);
+                if what.chars().count() <= 100 {
+                    card = card.require(&what);
+                }
             }
             out.push(card);
         }

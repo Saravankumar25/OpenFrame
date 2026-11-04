@@ -2713,3 +2713,57 @@ fn day_out_of_days_says_the_days_worked_and_whether_a_named_day_is_one() {
     );
     assert_eq!(d.required, vec!["no"], "{}", d.render());
 }
+
+#[test]
+fn a_list_of_locations_by_status_states_how_many_too() {
+    let f = film();
+    let d = demanded(
+        &f.env,
+        "Which locations are confirmed?",
+        "production/locations",
+        AnswerType::List,
+    );
+    assert!(d.iter().any(|v| v == "1"), "{d:?}");
+    assert!(d.iter().any(|v| v == "Police Station"), "{d:?}");
+}
+
+#[test]
+fn a_card_picked_for_a_told_answer_is_read_and_not_demanded() {
+    let f = film();
+    let told = facts_for(
+        &f.env,
+        "What happens with the folder?",
+        &[pick("story/beat-board")],
+        AnswerType::Explain,
+    );
+    assert!(told.render().contains("Meera finds the folder"), "{}", told.render());
+    assert!(told.required.is_empty(), "{:?}", told.required);
+    let d = demanded(
+        &f.env,
+        "Which card is about the folder?",
+        "story/beat-board",
+        AnswerType::Lookup,
+    );
+    assert!(d.iter().any(|v| v == "Act One"), "{d:?}");
+}
+
+#[test]
+fn was_it_over_demands_the_plain_word_for_which_way_it_went() {
+    let f = film();
+    let s = f.env.core.project().unwrap();
+    let budget: String = s
+        .store
+        .read(|c| Ok(c.query_row("SELECT id FROM budget_snapshot LIMIT 1", [], |r| r.get(0))?))
+        .unwrap();
+    f.env.ok(
+        "budget.add_line",
+        json!({ "budgetId": budget, "category": "Equipment", "description": "Generator hire", "planned": 100_000_i64, "actual": 150_000_i64 }),
+    );
+    let d = demanded(
+        &f.env,
+        "Was the generator hire over?",
+        "production/budget",
+        AnswerType::Lookup,
+    );
+    assert!(d.iter().any(|v| v == "over"), "{d:?}");
+}

@@ -72,13 +72,23 @@ Taken while building slice R7 and the security review after it:
 - Kept: `ResolvedScope` with its label, draft, scene and sections, built from the picks, because the tools and proposal builders default to them. `RetrievalRoute` with four kinds, because the tests and the performance bench measure each path alone; the assistant always asks for the widest. `Msg::with_topic`, because a picked section reads its area whatever the question says.
 - The topic words are a hint. The pointer uses them to name a section. Two checks inside a picked section also use them: a bare name with nothing else asked reads who plays it, and a money question does not lean on "that". They choose nothing to read.
 - The evaluation switch is `ai_eval_all_sections`: a request with no picks reads every section of the project through the same path, over the cap of 3. A person's picks stay capped. It stays false in the FFI.
-- With several picks, only what the question asked for is demanded of the answer: a value stays required when the words the person typed open the fact, not the section's topic, and the fact speaks of a word of the question. One pick keeps every required value.
+- With several picks, only what the question asked for is demanded of the answer: a value stays required when the words the person typed open the fact, not the section's topic, and the fact speaks of a word of the question. One pick keeps every required value. (That last sentence is superseded below: the rule now holds on every pick.)
 - What one pick does not hold is said only when the question is about it or no other pick holds anything. What a role may not see is always said.
 - With several screenplays and none chosen, a section that can choose (Scenes, only under the evaluation switch) asks which one; a section that cannot reads the one with the production data.
 - An answer's "scene N" must be given as a scene by the facts, the request or the conversation (rule `scene_ref`).
 - A day the person picked replaces any day in the message, and an off day reads only its own call sheets. A superseded call sheet cannot be picked.
 - Search tools hide contact details typed into notes from a role that may not see them. An existence pointer no longer asks for the contact role: contact fields are not in the index and a contact question is held back first.
 - The reply, the text search and the closing of a failed request use the project the question was asked in, even if the person closed it or opened another meanwhile.
+
+Taken while tuning the answers after R7 (`docs/release/evidence/ai-reharness/after-tuning/`):
+
+- Supersedes "One pick keeps every required value" above. On every pick a required value must be asked for: a section's topic words open fetchers and never a required value, each value is tested by the field that holds it, a status or a type needs its own word in the question, and a name the person typed is not demanded back.
+- A list row that holds the asked words is demanded, and "could not find" is then a failed check (rule `held_back`). A count question gets a required Count fact. A named day demands its scenes and notes when the question asks for them.
+- After three failed passes the closest attempt is kept when it says nothing wrong and only leaves out required values: code adds a sentence for each. Failing that, code states every fact that holds a required value, for every answer type. Code also says a repeated sentence once and turns a copied line of the data into a sentence before the checks run. All of this is deterministic (ADR-0028).
+- A vote for count, navigate or story needs words that back it, or it reads as a lookup. A short "and the X" or "was it X" inherits the last type, except a change. "How many" beside a second clause is not a count.
+- Settings and App Help reads the product guide as well as the project's settings. What the guide promises about data leaving the Mac is demanded in the guide's words ("never sent", "without the internet"), so a model cannot guess it.
+- The words of a small text file are kept on `project_file.search_text` (migration 0021), read once by `files.add` from the confined copy: plain UTF-8 `.txt`, `.md` or `.csv` of at most 16 KiB, never a linked file. Search and the assistant read the row: no file is opened for a question, and the semantic index, which is untrusted, holds no text that is shown. A file added before this migration is found by its name only.
+- A fallback sentence stays out of the conversation the writer is shown, so it cannot be copied into the next answer.
 
 ## Measuring
 

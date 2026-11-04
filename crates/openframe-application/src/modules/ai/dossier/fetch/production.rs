@@ -190,7 +190,8 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                     .f("what", format!("locations with status {status}"))
                     .f("value", n.to_string())
                     .prio(P_HIGH);
-                if t == AnswerType::Count && asked {
+                // A list by status says how many too, so a wrong total cannot stand beside it.
+                if asked && matches!(t, AnswerType::Count | AnswerType::List | AnswerType::Lookup) {
                     f = f.require(n.to_string());
                 }
                 out.push(f);
