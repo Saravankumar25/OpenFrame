@@ -4,7 +4,7 @@
 |---|---|
 | Export | Production reports, op `reports.export_report` (PDF; CSV and XLSX are separate projections of the same `ReportData`) |
 | Variant | **Report_Scene** — landscape, 7 columns (the only landscape report) |
-| Status | Design reference — not integrated; not validated against OpenFrame's Rust renderer |
+| Status | Design reference — not integrated; not validated against Straft Studio's Rust renderer |
 | Repo commit | `2f5a045416bd2125801329533fc47f986ccc8174` (`main`) |
 | Date | 2026-10-23 |
 | Files | `exports/production-reports/Report_Scene.html` / `.pdf` / `.md`; stress tests in `exports/production-reports/stress-test/` |
@@ -83,7 +83,7 @@ Baseline: `Production Report — Scene.pdf` (6 pages, landscape, 22 Oct 2026, pr
 | Commit | `2f5a045416bd2125801329533fc47f986ccc8174` |
 | UI entry point | `windows/apps/desktop/src/workspaces/production/tabs/reports.tsx`, component `ReportsTab` (tab id `reports`, label "Reports"); the list entry "Scene Report" in the left `vpanel` listbox; export button = `ReportExportButton` (from `windows/apps/desktop/src/features/export/buttons.tsx`) placed in the `PageHeader` actions, next to "Save snapshot". |
 | Op name | `reports.export_report` (registered in `exports/mod.rs`, `r.query("reports.export_report", reports::export)`, capability Export) |
-| Builder | `windows/crates/openframe-application/src/modules/exports/reports.rs` -> `export()` (+ helpers `report_col`, `report_cell`, `status_tone`, `is_numeric_column`) |
+| Builder | `windows/crates/straft-application/src/modules/exports/reports.rs` -> `export()` (+ helpers `report_col`, `report_cell`, `status_tone`, `is_numeric_column`) |
 | Data | `reports.generate` / `build_report` / `struct ReportData { report_type, title, source_label, generated_at, columns, rows, note, filter }` in `modules/schedule/docs.rs`; saved: `reports.save`, `reports.get`, table `production_report` (`title`, `snapshot_json`) |
 | Builder fn for this report's rows | `build_report` arm `"scene"` in `modules/schedule/docs.rs` (headers `Sc, Heading, I/E · D/N, Pages, Location, Cast, Scheduled`; `day_of` looks up the strip's day via `Board::strip_day`) and `report_cell` / `report_col` in `exports/reports.rs` |
 | Renderer blocks used (current) | `Document::new(..).landscape(columns > 5).footer(footer(project, data.title))`; `Block::Masthead` (via `production_masthead`, `title_size = 26`); `Block::Metrics(compact)` of `Metric`s; `Block::Styled(StyledTable{ header: HeaderStyle::Navy, boxed, zebra, continued: Some(data.title) })` with `Row`/`Cell`; cell items `CellItem::Tile` and `CellItem::Chips(Chip::label(.., Tone))`; `Block::Callout{Tone::Info}` for the empty state; `Block::Text` (8.4 pt slate) for `data.note` under the table; plain `Table` pushed to `Output.tables` for CSV/XLSX. |
@@ -152,7 +152,7 @@ Sum of widths = 700 pt (content width of landscape Letter minus 2 x 46 pt margin
 
 ### F.1 Shared report shell (defined once here; the other five reports reference it)
 
-All six reports (and every saved snapshot) are drawn inside the same shell. Everything below is flat fills, hairlines, rounded rects, circles and Helvetica text, i.e. inside the Rust renderer's vocabulary. Values are in pt and tokens refer to `00_SYSTEM/assets/openframe-print.css`.
+All six reports (and every saved snapshot) are drawn inside the same shell. Everything below is flat fills, hairlines, rounded rects, circles and Helvetica text, i.e. inside the Rust renderer's vocabulary. Values are in pt and tokens refer to `00_SYSTEM/assets/straft-print.css`.
 
 **1. Running header (multi-page reports only).** One line, `@top-right`, 6.8 pt regular, `--of-slate`, tracking 0.04 em, 24 pt below the page top, no rule, no logo. Text = `<PROJECT NAME UPPERCASE> · <data.title UPPERCASE>`, e.g. `LOW TIDE RADIO · SCENE REPORT` (project part omitted when the project title is blank; for a snapshot the report-type title is used, never the long snapshot title). *Decision:* the current footer printed `<project> · <report>` on every page (`footer(&project, &data.title)`); the shared brand footer has fixed content, so that page identity moves to this header. A report that fits on one page prints no header (the Location and Schedule PDFs are single-page and verify with `--no-header`; the empty and no-source stress files likewise). The renderer already computes `Page X of Y`, so it knows the page count when it decides.
 
@@ -192,7 +192,7 @@ All six reports (and every saved snapshot) are drawn inside the same shell. Ever
 
 **Scene-specific treatments:** Sc tile (`.tile`, 8.2 pt bold, navy on `--of-tint`, hairline `--of-line-strong`, radius 3.5 pt); I/E-D/N chips (`.chip`, 6.6 pt bold caps, neutral); `Unscheduled` = warn `.st` chip (hollow-ring mark) plus 3 pt orange row stripe, both readable in grayscale as a dark word-chip and a dark bar; metric `Unscheduled` value in amber text when > 0.
 
-**Colours:** `--of-navy` header and keys, `--of-panel` zebra, `--of-amber-*` for the warn chip, `--of-orange` stripe. **Footer:** shared (logo lockup, `Created using OpenFrame`, `Page X of Y`). **Running header:** yes, `LOW TIDE RADIO · SCENE REPORT` (the report spans 3 pages).
+**Colours:** `--of-navy` header and keys, `--of-panel` zebra, `--of-amber-*` for the warn chip, `--of-orange` stripe. **Footer:** shared (logo lockup, `Created using Straft Studio`, `Page X of Y`). **Running header:** yes, `LOW TIDE RADIO · SCENE REPORT` (the report spans 3 pages).
 
 ## G. Dynamic behaviour
 
@@ -230,12 +230,12 @@ Dynamic behaviour shared by all six reports (defined once here).
 - Masthead, context banners and metrics strip are `break-after: avoid`: they stay with the first table rows; page 1 must show at least 3 table rows below the metrics, otherwise the table starts on a new page together with its header.
 - Landscape page body is 500 pt high; in the sample page 1 carries 13 rows and pages 2-3 carry 17 and 15 (current output: 7 / 9 / 10 / 9 / 8 / 1 over 6 pages), depending on wraps.
 - Header row (7 columns) repeats on each page.
-- Footer and numbering: shared system — official logo (17 pt high) + `Created using OpenFrame` bottom-left, `Page X of Y` bottom-right, on every page. The old footer text `<project> · <report title>` is **not** reproduced in the footer (brand rule); that identity moves to the running header.
+- Footer and numbering: shared system — official logo (17 pt high) + `Created using Straft Studio` bottom-left, `Page X of Y` bottom-right, on every page. The old footer text `<project> · <report title>` is **not** reproduced in the footer (brand rule); that identity moves to the running header.
 - Running header: `@top-right`, `{PROJECT NAME} · SCENE REPORT`, only when the report spans more than one page.
 
 ## I. HTML/PDF correspondence
 
-- `Report_Scene.html` is the printable document: one `<div class="doc landscape">`, shared print CSS linked from `../../00_SYSTEM/assets/openframe-print.css`, shell + report CSS in one inline `<style>`, `of-preview.js` for the screen-only toolbar. Generated by `tools/build/production-reports/gen.py` from the real rows in `tools/build/production-reports/data/scene.json` (extracted from the supplied baseline PDF by `extract_real_rows.py`); the HTML and the PDF therefore contain the same content.
+- `Report_Scene.html` is the printable document: one `<div class="doc landscape">`, shared print CSS linked from `../../00_SYSTEM/assets/straft-print.css`, shell + report CSS in one inline `<style>`, `of-preview.js` for the screen-only toolbar. Generated by `tools/build/production-reports/gen.py` from the real rows in `tools/build/production-reports/data/scene.json` (extracted from the supplied baseline PDF by `extract_real_rows.py`); the HTML and the PDF therefore contain the same content.
 - **PDF captured state:** live report, no filter, not a snapshot, as the user would export it on 22 Oct 2026 from `LOW TIDE RADIO: Blue Revision (Locked)`: 44 real rows, **3 pages** (current output: 6). Rendered with `python tools/render_pdf.py Report_Scene.html Report_Scene.pdf` (Chrome 155 headless, `@page` margin boxes for the running header, logo footer and `Page X of Y`). `python tools/verify_pdf.py Report_Scene.pdf --size landscape --header "LOW TIDE RADIO · SCENE REPORT"` passes.
 - **Preview toolbar toggles (`data-toggle`):**
   - `Filter active` — shows the filter banner (sample text `coast radio`), filters the rows by substring in any cell, recounts the metrics, restarts zebra, scope reads `Filtered rows`; if nothing matches it shows the `No matching data.` callout instead of the table.
@@ -250,7 +250,7 @@ Dynamic behaviour shared by all six reports (defined once here).
 ## J. Acceptance criteria
 
 - [ ] Page size is Letter landscape; margins 46/46/46/66 pt; nothing drawn in the 66 pt footer band or outside the side margins (`tools/verify_pdf.py --size landscape` passes).
-- [ ] Footer on every page: logo lockup + `Created using OpenFrame` + `Page X of Y` with the true total.
+- [ ] Footer on every page: logo lockup + `Created using Straft Studio` + `Page X of Y` with the true total.
 - [ ] Masthead shows, in this order: eyebrow `PRODUCTION REPORT`; title; `Project: … · Source: …` (a part is omitted when blank); right panel `GENERATED` / date / scope (`All rows` | `Filtered rows` | `Saved snapshot`). There is no `Export reference` line and no second logo.
 - [ ] Metrics strip labels and counts equal the source's metrics for this report (`Scenes`, `Unscheduled`) and are recomputed from the rows actually printed (filtered rows -> filtered counts).
 - [ ] Column headers are the exact `data.columns` strings, in the order given in section E; header row repeats on every page; header text never splits mid-word.

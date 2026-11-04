@@ -2,7 +2,7 @@
 
 - **Status:** Accepted (implemented). Supersedes the "DB access: SQLx" row of ESD §2.
 - **Date:** 2026-09-30
-- **Related:** ESD §2, §6; ADR-0003, ADR-0005; `crates/openframe-persistence`
+- **Related:** ESD §2, §6; ADR-0003, ADR-0005; `crates/straft-persistence`
 
 ## Context
 
@@ -24,7 +24,7 @@ from the FSD, the Autosave/Recovery spec and the Release/Migration spec are:
 
 Use **`rusqlite` 0.37** with the features `bundled` (SQLite compiled in, FTS5 enabled, identical on every machine),
 `backup` (online backup API), `functions` and `serde_json`. Implement our own small migration runner
-(`openframe-persistence::migrate`).
+(`straft-persistence::migrate`).
 
 - Connection policy (`open_connection`): `journal_mode=WAL`, `synchronous=FULL`, `foreign_keys=ON`,
   `busy_timeout=5s`, `temp_store=MEMORY`, `recursive_triggers=OFF`, 16 MB page cache.

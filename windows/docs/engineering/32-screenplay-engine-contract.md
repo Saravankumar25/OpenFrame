@@ -14,7 +14,7 @@
 | Draft lock and revision | `status` Draft, Review, Locked, Revision; `locked_at`, `revision_label`, `revision_color`, `revision_reason`, `locked_by` | same |
 | Scene numbers | Not stored, derived from position | ADR-0011 |
 | Editor | ProseMirror-style editor with `editor/rules.ts` (next-element suggestion), `schema.ts`; browser spellcheck on | `apps/desktop/src/workspaces/screenplay/editor/` |
-| PDF layout | `layout.rs` (868 lines): pagination, MORE and CONT'D, scene numbers, headers | `crates/openframe-import-export/src/layout.rs` |
+| PDF layout | `layout.rs` (868 lines): pagination, MORE and CONT'D, scene numbers, headers | `crates/straft-import-export/src/layout.rs` |
 | Formats | `fdx.rs`, `fountain.rs`, `docx.rs`, `pdf_import.rs`, `text.rs`, `heuristics.rs`, `report.rs` | same crate |
 | Character coverage | PDF fails outside WinAnsi | ADR-0008 |
 
@@ -25,7 +25,7 @@ Unknown until verified in the first build step ("Verify editor pagination", sect
 | Part | Where | Notes |
 |---|---|---|
 | Migration | `migrations/project/0013_screenplay_engine.sql` | `screenplay_custom_element`; element rebuild with `page_break` and `custom` types, `custom_element_id`, `import_source`; `production_number(_source)` on scenes; `screenplay.page_setup_json`; `screenplay_page_preset`; `screenplay_revision`; `screenplay_lock_baseline`. Ids, revs and timestamps kept. |
-| Element rule table | `openframe-import-export/src/rules.rs` | One table for layout positions, case, spacing, keep-together and split flags, Enter progression, FDX type and Fountain form. The editor reads the generated `apps/desktop/src/workspaces/screenplay/editor/elementRules.json` (test `element_rules.rs`). |
+| Element rule table | `straft-import-export/src/rules.rs` | One table for layout positions, case, spacing, keep-together and split flags, Enter progression, FDX type and Fountain form. The editor reads the generated `apps/desktop/src/workspaces/screenplay/editor/elementRules.json` (test `element_rules.rs`). |
 | Page geometry | `layout.rs` `PageSetup`, `Geometry` | US Letter and A4 (same 1.5" to 7.5" columns; A4 gains 4 lines), Courier 10 to 14 pt, single, 1.5 or double spacing, first page number, `number_first_page` (the page number on the first script page, on by default; off leaves it unnumbered and the next page prints "2."), header (left) and footer (centred) with `{title} {draft} {revision} {date} {page}`, `header_on_first_page` (header and footer on the first script page). Defaults reproduce the earlier layout. Vertical gaps follow the v5 standard (`docs/specs/screenplay-formatting-standard-v5.md`): each gap is owned by the next element's `space_before` (a scene heading carries two blank lines, 36 pt), and transitions and shots keep with what follows. |
 | Keep-together | `layout.rs` | Heading kept with the next block's first lines (speech: cue and two lines; non-splittable blocks whole); speech split only after a dialogue line, cue and two lines before, two lines after; action split leaves two lines on each page. |
 | Continuation | `layout.rs` | `(MORE)` and `CUE (CONT'D)` for every page split of one speech, however tall (v5; a long cue wraps, imported markers are not doubled), never for typed text; the cue keeps its extension (`MEERA (V.O.) (CONT'D)`). |
@@ -130,7 +130,7 @@ application `screenplay_formats.rs`):
 | Unknown blocks and settings | unknown blocks named in a warning; layout settings reported as not used | none written | boneyard, sections and synopses mapped or reported | Word formatting is never structure | page furniture stripped | none |
 
 Embedded fonts (ADR-0016): Courier Prime and Noto Sans Devanagari, Telugu, Tamil, Malayalam and Kannada ship in
-`crates/openframe-import-export/fonts/` with `fonts.json` (version, size, SHA-256, licence; checked by
+`crates/straft-import-export/fonts/` with `fonts.json` (version, size, SHA-256, licence; checked by
 `fonts_manifest.rs`). A script written only in Windows-1252 characters prints with base-14 Courier, byte for byte
 as before; anything else switches the screenplay PDF to embedded subsets shaped with rustybuzz. Report and
 production document PDFs keep Helvetica for Windows-1252 runs and draw other runs with the bundled fonts. Noto

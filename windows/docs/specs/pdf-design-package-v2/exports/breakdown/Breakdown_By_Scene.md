@@ -4,7 +4,7 @@
 |---|---|
 | **Export** | Breakdown Report |
 | **Variant** | Breakdown by scene (`content="scenes"`, UI label “Breakdown by scene”) |
-| **Status** | Design reference — not integrated; not validated against OpenFrame's Rust renderer |
+| **Status** | Design reference — not integrated; not validated against Straft Studio's Rust renderer |
 | **Repo commit** | `2f5a045416bd2125801329533fc47f986ccc8174` (main) |
 | **Date** | 2026-10-23 |
 
@@ -20,7 +20,7 @@ A scene-by-scene breakdown sheet for the people who have to **prepare** what a s
 **This variant = `content: "scenes"`** (Contents choice "Breakdown by scene"; for CSV the "Table" choice with the same label).
 
 
-**Op:** `breakdown.export_report` — registered in `crates/openframe-application/src/modules/exports/mod.rs` (`r.query("breakdown.export_report", breakdown::export)`), implemented by `breakdown::export` in `exports/breakdown.rs`. Args struct `ExportBreakdownArgs` (`camelCase`, `deny_unknown_fields`):
+**Op:** `breakdown.export_report` — registered in `crates/straft-application/src/modules/exports/mod.rs` (`r.query("breakdown.export_report", breakdown::export)`), implemented by `breakdown::export` in `exports/breakdown.rs`. Args struct `ExportBreakdownArgs` (`camelCase`, `deny_unknown_fields`):
 
 | Arg key | Type | Meaning (from source) | Default |
 |---|---|---|---|
@@ -108,7 +108,7 @@ Order (unchanged from the current PDF): **Masthead → Metrics → Section "Brea
 ## F. Visual specification
 ### F.1 Page and furniture
 - US Letter portrait, 612 x 792 pt; margins L/R 46 pt, top 46 pt, bottom 66 pt (footer zone). Content width **520 pt**.
-- Footer (shared system, do not redraw): official logo lockup 17 pt high bottom-left, `Created using OpenFrame` below it, `Page X of Y` bottom-right (real computed values). **Implementation requirement:** the production renderer must embed the official logo PNG; today it redraws a vector mark.
+- Footer (shared system, do not redraw): official logo lockup 17 pt high bottom-left, `Created using Straft Studio` below it, `Page X of Y` bottom-right (real computed values). **Implementation requirement:** the production renderer must embed the official logo PNG; today it redraws a vector mark.
 - **Running header (decision: YES).** One compact line, top-right, 6.8 pt slate, tracked 0.04em, no rule, no logo: `LOW TIDE RADIO · BREAKDOWN REPORT` (= `footer(project, document)` text, uppercased). Reason: this is a many-page document (35-58 pages in the sample) that is torn apart on set; every sheet must say which production and document it belongs to. The masthead keeps the document identity on page 1; the header is not repeated as a second masthead.
 
 ### F.2 Typography (Helvetica regular/bold only)
@@ -175,7 +175,7 @@ Order (unchanged from the current PDF): **Masthead → Metrics → Section "Brea
 - [ ] A scene head is never the last thing on a page; a continued scene repeats its head; a continued category repeats its label with `cont.`.
 - [ ] No text clipped or ellipsised; unbroken 92-char tokens wrap; very long scene headings wrap to several lines.
 - [ ] Omitted scene prints `OMITTED`; scene with no elements prints `No breakdown elements yet.`; blank element name prints `Unnamed element`.
-- [ ] Footer logo (PNG), `Created using OpenFrame`, `Page X of Y` correct on every page; running header on every page; nothing in the footer band.
+- [ ] Footer logo (PNG), `Created using Straft Studio`, `Page X of Y` correct on every page; running header on every page; nothing in the footer band.
 - [ ] Output identical on two runs.
 
 ## K. Known issues and unresolved questions

@@ -1,4 +1,4 @@
-# OpenFrame Studio — continuous integration (docs/engineering/25-ci-cd.md).
+# Straft Studio — continuous integration (docs/engineering/25-ci-cd.md).
 # All jobs are blocking (supply-chain checks, feature status check in CI, architecture lint; 2026-10-05):
 #   rust          fmt, clippy -D warnings, tests, generated bindings and AI coverage drift
 #   web           tsc, eslint, vitest, vite build
@@ -57,7 +57,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force apps/desktop/dist | Out-Null
-          Set-Content -Path apps/desktop/dist/index.html -Value '<!doctype html><title>OpenFrame</title>'
+          Set-Content -Path apps/desktop/dist/index.html -Value '<!doctype html><title>Straft Studio</title>'
 
       - name: cargo clippy (deny warnings)
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
@@ -156,10 +156,10 @@ jobs:
       # The test build carries the Offline AI engine (build-app.mjs runs prepare-ai-assets.mjs) and
       # is compiled with the suite's local model host and a throwaway test key; the host serves the
       # pinned models from the build inputs (ADR-0026). The job fails closed until
-      # OPENFRAME_AI_ASSETS_DIR gives the runner the pinned engine and model files.
+      # STRAFT_AI_ASSETS_DIR gives the runner the pinned engine and model files.
       - name: Desktop E2E (tauri-driver + WebView2)
         env:
-          OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
+          STRAFT_AI_ASSETS_DIR: ${{ vars.STRAFT_AI_ASSETS_DIR }}
         run: npm run test:e2e
 
       - name: Failure screenshots

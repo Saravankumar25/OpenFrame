@@ -1,4 +1,4 @@
-# OpenFrame Studio: Vibe Coding Gaps and How to Cover Them
+# Straft Studio: Vibe Coding Gaps and How to Cover Them
 
 > **History (2026-10-15).** A plan of 2026-10-05 whose rules are enforced in `CONTRIBUTING.md` and the architecture lint. Where it speaks of "Done" or "Verified", the five proof levels of [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) now apply. This file moves to the archive in Windows phase W1.
 
@@ -11,14 +11,14 @@
 is developed through fast/AI-assisted/"vibe coding" workflows, and
 convert those risks into enforceable engineering controls.
 
-**Baseline:** OpenFrame `main` at
+**Baseline:** Straft Studio `main` at
 `d30b5889ab5edf9f69d60f8e6d600cb11d4921a0`.
 
 ------------------------------------------------------------------------
 
 # 1. Executive assessment
 
-OpenFrame is no longer a small prototype where "make the screen work" is
+Straft Studio is no longer a small prototype where "make the screen work" is
 enough.
 
 It has:
@@ -115,7 +115,7 @@ If those questions cannot be answered, the implementation is incomplete.
 
 ------------------------------------------------------------------------
 
-# 4. Existing OpenFrame architecture is the anti-vibe-coding safety net
+# 4. Existing Straft Studio architecture is the anti-vibe-coding safety net
 
 The repository already has excellent enforcement points.
 
@@ -392,7 +392,7 @@ If the feature is intentionally hidden, document why.
 
 Do not fine-tune the model every time a feature is added.
 
-OpenFrame's first-line adaptation mechanism should be:
+Straft Studio's first-line adaptation mechanism should be:
 
 1.  operation metadata
 2.  deterministic tools
@@ -979,7 +979,7 @@ after it.
 
 # 30. Core principle
 
-OpenFrame should be developed like this:
+Straft Studio should be developed like this:
 
 ``` text
 fast coding
@@ -1002,4 +1002,4 @@ fast AND safe
 The objective is not to eliminate AI-assisted development.
 
 The objective is to ensure that **AI-assisted development cannot
-silently redefine OpenFrame's architecture**.
+silently redefine Straft Studio's architecture**.

@@ -1,4 +1,4 @@
-// StoreKit 2 bridge for the OpenFrame Studio Mac App Store build.
+// StoreKit 2 bridge for the Straft Studio Mac App Store build.
 //
 // NOT COMPILED YET. Written on a Windows machine with no Xcode and no Apple account. build.rs
 // compiles it for every macOS build of the app, and the Mac workflow (.github/workflows/mac.yml)
@@ -11,7 +11,7 @@
 // - No entitlement decision and no comparison with the current date. The licence server decides
 //   from Apple's signed dates and its own UTC clock.
 // - Family Sharing is not used: shared transactions are skipped and counted.
-// - Only the two OpenFrame product ids are accepted.
+// - Only the two Straft Studio product ids are accepted.
 // - Each exported function returns a strdup'd JSON string that the caller frees with
 //   storekit_free. Calls block, so they refuse to run on the main thread.
 
@@ -19,8 +19,8 @@ import Foundation
 import StoreKit
 
 private let knownProductIDs: Set<String> = [
-    "com.openframe.studio.trial7",
-    "com.openframe.studio.lifetime",
+    "com.straft.studio.trial7",
+    "com.straft.studio.lifetime",
 ]
 private let maxArgumentBytes = 4096
 private let queryTimeout: TimeInterval = 30

@@ -19,9 +19,9 @@
 | D8 | **PDF fonts for Indic scripts.** Revised spec makes Telugu, Hindi, Tamil, Malayalam, Kannada P0 including PDF. ADR-0008 allows Latin-1 only. | Milestone M2 | Embedded subset fonts (OFL) with shaping, deterministic output kept. | [ADR-0016](../adr/ADR-0016-pdf-embedded-fonts-and-shaping.md) | Open |
 | D9 | **AI runtime packaging in the Store build.** Downloading an executable after install is a certification risk. | Milestones M9, M11 | Bundle the tested `llama.cpp` runtime in the MSIX; download model weights only. Choose the model host. | [ADR-0020](../adr/ADR-0020-ai-runtime-packaging-per-channel.md) | Open |
 | D10 | **Crash-safe AI Change Set apply.** Multi-operation apply is not crash-atomic today. | Milestone M1 | Durable apply journal with recovery on open. | [ADR-0019](../adr/ADR-0019-crash-safe-change-set-apply.md) | **Decided 2026-10-05**: recommendation accepted (owner delegated to the recommendation) |
-| D11 | **Publisher and product identity.** Legal entity/umbrella company, publisher display name, product name rights, brand. | Partner Center, MSIX identity, license, policies | Reserve "OpenFrame Studio" in Partner Center early. | ADR-0018 | Open |
+| D11 | **Publisher and product identity.** Legal entity/umbrella company, publisher display name, product name rights, brand. | Partner Center, MSIX identity, license, policies | Reserve "Straft Studio" in Partner Center early. | ADR-0018 | Open |
 | D12 | **Template inventory.** Repo has 7 built-ins; revised spec recommends 8 (adds Feature, Short, Episodic screenplay templates; drops the daily-report template). | Milestone M7 | Adopt the revised 8 and keep the report layout as a report type. | none (spec) | Open |
-| D13 | **Sample scripts.** OpenFrame-authored, public domain or licensed only. Who writes them. | Milestone M7 | Commission or write 4 fictional samples. | none | Open |
+| D13 | **Sample scripts.** Straft Studio-authored, public domain or licensed only. Who writes them. | Milestone M7 | Commission or write 4 fictional samples. | none | Open |
 | D14 | **Support model.** Channel, owner, response targets, second operator. | Milestone M12 | One company-owned address plus a public KB. | none | Open |
 | D15 | **Direct-download channel in v1.** Needs an Authenticode certificate and updater key. | Milestone M16 | Store first. Direct channel after the Store listing is live. | ADR-0018 | Open |
 | D16 | **Target dates and capacity.** Launch date, who builds, how many agents/people in parallel. | Schedule only | Provide so milestones can be dated. | none | Open |
@@ -40,11 +40,11 @@ Lead times are typical, not guaranteed. Start the long ones in milestone M0.
 |---|---|---|---|---|
 | X1 | Register the legal entity/umbrella company, or confirm which entity publishes. | M0 | days to weeks | Blocks Partner Center, license, policies. |
 | X2 | Create Microsoft Partner Center developer account for that entity, verify it, add a **second administrator**. | M0 | days to weeks | Store account loss is a continuity risk. |
-| X3 | Reserve the product name "OpenFrame Studio" and copy Product Identity (Name, Publisher, PublisherDisplayName) into `packaging/msix/store.config.json`. | M0 | hours after X2 | Placeholders currently block Store builds. |
+| X3 | Reserve the product name "Straft Studio" and copy Product Identity (Name, Publisher, PublisherDisplayName) into `packaging/msix/store.config.json`. | M0 | hours after X2 | Placeholders currently block Store builds. |
 | X4 | Choose and add the license (D1). Delete `LICENSE-PENDING.md`. | M0 | decision | Release gate fails closed until done. |
 | X5 | Trademark and name clearance, domain, social handles, logo ownership, font licenses. | M0 | days to weeks | Do before spending on brand. |
 | X6 | Buy the domain; set up company-owned email, SPF, DKIM, DMARC; HTTPS hosting. | M12 | days | Needed for privacy and support URLs. |
-| X7 | Choose and provision the production model-distribution host (HTTPS). Generate the production Ed25519 manifest key, store the private key offline, set `OPENFRAME_MANIFEST_PUBLIC_KEY` and `MODEL_DISTRIBUTION_BASE_URL`. | M9 | days | Release gate fails if the dev key is used. |
+| X7 | Choose and provision the production model-distribution host (HTTPS). Generate the production Ed25519 manifest key, store the private key offline, set `STRAFT_MANIFEST_PUBLIC_KEY` and `MODEL_DISTRIBUTION_BASE_URL`. | M9 | days | Release gate fails if the dev key is used. |
 | X8 | Gemma Terms of Use review and recorded owner confirmation (redistribution on your host). | M9 | days | `docs/engineering/23-release-migration.md` §7. |
 | X9 | Qualified counsel review of Privacy Policy, Terms/EULA, refund text, AI disclosures. | M12 | 1 to 3 weeks | Required for the policy pages the Store links to. |
 | X10 | Test hardware: minimum-spec Windows 11 PC (8 GB RAM), a recommended-spec PC, a discrete-GPU PC, clean Windows 11 VMs, high-DPI and multi-monitor setups. | M9, M10 | procurement | Needed for AI benchmark gate and clean-machine tests. |

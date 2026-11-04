@@ -82,7 +82,7 @@ CREATE INDEX idx_storyboard_scene ON storyboard(scene_lineage_id);
 CREATE TABLE storyboard_panel (
     id                  TEXT PRIMARY KEY,
     storyboard_id       TEXT NOT NULL REFERENCES storyboard(id),
-    -- Visual: 'placeholder' (blank), 'image' (imported) or 'sketch' (drawn in OpenFrame).
+    -- Visual: 'placeholder' (blank), 'image' (imported) or 'sketch' (drawn in Straft Studio).
     visual_kind         TEXT NOT NULL DEFAULT 'placeholder' CHECK (visual_kind IN ('placeholder','image','sketch')),
     asset_id            TEXT REFERENCES asset(id),
     description         TEXT NOT NULL DEFAULT '',

@@ -60,12 +60,12 @@ describe("project pages", () => {
       await (await browser.$("#project-settings-page-logline")).setValue(LOGLINE);
       await click(browser, "Save");
       await waitForText(browser, "Updated project settings");
-      await browser.waitUntil(async () => (await windowTitle()) === "Tide Line Revised - OpenFrame Studio", { timeout: 10_000, timeoutMsg: "window title not updated" });
+      await browser.waitUntil(async () => (await windowTitle()) === "Tide Line Revised - Straft Studio", { timeout: 10_000, timeoutMsg: "window title not updated" });
       await undo(browser);
-      await browser.waitUntil(async () => (await windowTitle()) === "Tide Line - OpenFrame Studio", { timeout: 10_000, timeoutMsg: "undo did not restore the title" });
+      await browser.waitUntil(async () => (await windowTitle()) === "Tide Line - Straft Studio", { timeout: 10_000, timeoutMsg: "undo did not restore the title" });
       await browser.waitUntil(async () => (await value("project-settings-page-logline")) === "", { timeout: 10_000, timeoutMsg: "undo did not clear the logline" });
       await redo(browser);
-      await browser.waitUntil(async () => (await windowTitle()) === "Tide Line Revised - OpenFrame Studio", { timeout: 10_000, timeoutMsg: "redo did not reapply the title" });
+      await browser.waitUntil(async () => (await windowTitle()) === "Tide Line Revised - Straft Studio", { timeout: 10_000, timeoutMsg: "redo did not reapply the title" });
       await browser.waitUntil(async () => (await value("project-settings-page-logline")) === LOGLINE, { timeout: 10_000, timeoutMsg: "redo did not reapply the logline" });
       await assertQuiet(browser, "project settings");
     });

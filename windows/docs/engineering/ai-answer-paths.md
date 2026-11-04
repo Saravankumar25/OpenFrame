@@ -4,7 +4,7 @@
 > slices S3 to S8 of [ai-conversational-harness.md](../specs/ai-conversational-harness.md) (the design, the measurements and
 > the reasons). The five lanes it replaced are history:
 > [2026-10-26-ai-answer-paths-five-lanes.md](../history/2026-10-26-ai-answer-paths-five-lanes.md). Code is the source of
-> truth; this page names the files under `crates/openframe-application/src/modules/ai/`.
+> truth; this page names the files under `crates/straft-application/src/modules/ai/`.
 
 ## 1. One turn
 
@@ -26,12 +26,12 @@ errors, "the model is not ready", progress and Cancel.
 
 ## 2. Engine
 
-`crates/openframe-ai/`: llama.cpp b11259, Gemma 3 1B, one slot, `cache_prompt` on every call, a 512 MB prompt store.
+`crates/straft-ai/`: llama.cpp b11259, Gemma 3 1B, one slot, `cache_prompt` on every call, a 512 MB prompt store.
 Warm-up on project open builds the index and embeds the example messages in the background. Progress lines only, no token
 streaming (owner decision 2026-10-24).
 
 ## 3. How it is measured
 
-`crates/openframe-ai-eval`: `ai-eval` on the gold sets (`--only lt-` for the Low Tide fixtures), `--turn-only` for the
+`crates/straft-ai-eval`: `ai-eval` on the gold sets (`--only lt-` for the Low Tide fixtures), `--turn-only` for the
 answer type, `--dossier-only` for fact recall, and a latency section on every run. Results and bars: spec sections 7.5 and
 13, and the evidence folders `docs/release/evidence/ai-conversational-*-2026-10-26/`.

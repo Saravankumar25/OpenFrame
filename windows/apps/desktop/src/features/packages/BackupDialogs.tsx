@@ -36,7 +36,7 @@ export function BackupDialog({ onClose }: { onClose: () => void }) {
     const chosen = await saveDialog({
       title: "Save backup to",
       defaultPath: dest ?? joinPath(p.defaultDir, name),
-      filters: packageFilter(["backup"], "OpenFrame backup"),
+      filters: packageFilter(["backup"], "Straft Studio backup"),
     });
     if (typeof chosen === "string") setDest(chosen);
   };
@@ -135,7 +135,7 @@ export function ExportProjectDialog({ onClose }: { onClose: () => void }) {
     const chosen = await saveDialog({
       title: "Export Project Package",
       defaultPath: joinPath(p.defaultDir.replace(/[\\/]Backups$/, ""), `${p.projectTitle}.ofproject`),
-      filters: packageFilter(["project"], "OpenFrame project package"),
+      filters: packageFilter(["project"], "Straft Studio project package"),
     });
     if (typeof chosen !== "string") return;
     try {

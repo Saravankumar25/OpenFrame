@@ -20,8 +20,8 @@ export const CHANNEL_LABEL: Record<Channel, string> = {
   directInstaller: "Internal build",
 };
 
-const LOAD_FAILED = "OpenFrame could not show your licence right now. Everything keeps working.";
-const RESTORE_FAILED = "OpenFrame could not restore your purchase right now. Everything keeps working. Try again later.";
+const LOAD_FAILED = "Straft Studio could not show your licence right now. Everything keeps working.";
+const RESTORE_FAILED = "Straft Studio could not restore your purchase right now. Everything keeps working. Try again later.";
 
 function plainMessage(e: unknown, fallback: string): string {
   if (e instanceof OpError) return e.message;

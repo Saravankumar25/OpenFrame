@@ -1,4 +1,4 @@
--- Global Idea Vault store (Documents/OpenFrame/Global Idea Vault/vault.sqlite).
+-- Global Idea Vault store (Documents/Straft Studio/Global Idea Vault/vault.sqlite).
 -- Infrastructure shared with the project store so the same command pipeline
 -- (undo, activity, recoverable delete, search, assets) works unchanged.
 -- Vault item tables are added by migration 0002.

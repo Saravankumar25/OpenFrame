@@ -1,7 +1,7 @@
 # 16 — Search & Retrieval
 
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned.
-> Source: `crates/openframe-application/src/modules/search.rs`, `store.rs` (`reindex_rows`,
+> Source: `crates/straft-application/src/modules/search.rs`, `store.rs` (`reindex_rows`,
 > `rebuild_search_index`), `migrations/project/0001_core.sql` (`search_doc`, `search_fts`),
 > `apps/desktop/src/app/shell/SearchOverlay.tsx`.
 
@@ -76,7 +76,7 @@ snippets, global merge) has no dedicated measurement yet; that belongs to the pl
   hybrid retrieval, queried with an OR query of the question's significant terms (Global Search keeps its AND query).
   Semantic (embedding) search — sqlite-vec over vectors from the Offline AI embedding model (BGE small English v1.5,
   computed on this computer) — and the context graph live in the separate, rebuildable `cache/intelligence.sqlite`
-  (crate `openframe-search`): never canonical, no vector or graph server. Global Search (Ctrl+K) stays exact and
+  (crate `straft-search`): never canonical, no vector or graph server. Global Search (Ctrl+K) stays exact and
   keyword-based and does not use embeddings. Retrieved text is passed to the model as *data*.
 - Non-Latin tokenization: `unicode61` handles most scripts word-by-word. CJK text has no word boundaries, so CJK
   search quality is a known limitation until a dedicated tokenizer is chosen.

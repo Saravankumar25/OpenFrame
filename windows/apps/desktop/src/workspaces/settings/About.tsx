@@ -14,7 +14,7 @@ export function AboutSection() {
   const internal = licence.data?.channel === "directInstaller";
   return (
     <section className="card pad" style={{ maxWidth: 720, marginTop: 16 }} aria-labelledby="about-heading">
-      <h2 id="about-heading" className="h4">About OpenFrame Studio</h2>
+      <h2 id="about-heading" className="h4">About Straft Studio</h2>
       <p className="sm" style={{ margin: "0 0 4px" }}>
         Version {info.data ? info.data.appVersion : "…"}
       </p>

@@ -1,5 +1,5 @@
 /*
- * C interface of the OpenFrame StoreKit 2 bridge (Mac App Store build only).
+ * C interface of the Straft Studio StoreKit 2 bridge (Mac App Store build only).
  *
  * NOT COMPILED YET: written on Windows. build.rs compiles the package on macOS. See Package.swift.
  *
@@ -14,8 +14,8 @@
  * in "unverifiedCount" and never passed on. No function compares dates or decides entitlement.
  */
 
-#ifndef OPENFRAME_STOREKIT_BRIDGE_H
-#define OPENFRAME_STOREKIT_BRIDGE_H
+#ifndef STRAFT_STOREKIT_BRIDGE_H
+#define STRAFT_STOREKIT_BRIDGE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,7 +26,7 @@ extern "C" {
  *               "revocationDateMs"?,"environment","jwsRepresentation"} */
 char *storekit_current_entitlements(void);
 
-/* product_id must be one of the two OpenFrame product ids (at most 4096 bytes).
+/* product_id must be one of the two Straft Studio product ids (at most 4096 bytes).
  * {"ok":true,"outcome":"purchased","transaction":Transaction}
  * {"ok":true,"outcome":"pending"}     Ask to Buy or another deferred step
  * {"ok":true,"outcome":"cancelled"}   the user closed the sheet
@@ -60,4 +60,4 @@ void storekit_free(char *ptr);
 }
 #endif
 
-#endif /* OPENFRAME_STOREKIT_BRIDGE_H */
+#endif /* STRAFT_STOREKIT_BRIDGE_H */

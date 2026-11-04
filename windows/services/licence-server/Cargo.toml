@@ -1,17 +1,17 @@
-# OpenFrame licence server: validates Mac App Store StoreKit 2 transactions and returns a signed
+# Straft Studio licence server: validates Mac App Store StoreKit 2 transactions and returns a signed
 # trial and lifetime answer. Design: docs/engineering/38-mac-app-store-trial.md.
 #
 # This is a separate Cargo project. It is not a member of the root workspace. The empty
 # [workspace] table below stops Cargo from attaching it to the workspace in the repository root.
 
 [package]
-name = "openframe-licence-server"
+name = "straft-licence-server"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
 publish = false
-license = "LicenseRef-OpenFrame-Pending"
-description = "Validates Mac App Store transactions for OpenFrame Studio and signs the answer."
+license = "LicenseRef-Straft-Pending"
+description = "Validates Mac App Store transactions for Straft Studio and signs the answer."
 
 [workspace]
 

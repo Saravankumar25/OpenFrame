@@ -166,7 +166,7 @@ export function Templates() {
         <EmptyState title="Templates couldn't be loaded." actions={<Button onClick={reload}>Try Again</Button>}>{listing.error?.message}</EmptyState>
       ) : (
         <>
-          {section("Built-in", "Starting points that come with OpenFrame. Use one to copy it into this project.", listing.data.builtin, "")}
+          {section("Built-in", "Starting points that come with Straft Studio. Use one to copy it into this project.", listing.data.builtin, "")}
           {section("Yours", "Kept on this computer and available in every project.", listing.data.global, "Save a project template to My Templates, or create one, to reuse it in every project.")}
           {section("This project", "Copies kept inside this project. Changing a template never changes anything already made from it.", listing.data.project, "No templates in this project yet. Use a built-in template or one of yours, or create one.")}
           <p className="xs muted">Templates are optional. Every document can also start blank.</p>

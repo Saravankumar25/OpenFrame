@@ -11,7 +11,7 @@
   file), ADR-0020 decision 4 (Report AI output), ADR-0006 decisions 1 and 4 to 7, ADR-0013 except decision 2.
 - **Related:** [ADR-0017](ADR-0017-cross-platform-windows-and-macos.md), [ADR-0021](ADR-0021-diagnostics-telemetry-analytics-policy.md)
   (nothing sent automatically), [ADR-0024](ADR-0024-internal-team-builds.md) (release files);
-  `crates/openframe-ai/`; `docs/specs/OpenFrame_Local_AI_Runtime_Model_Management_Specification.md`;
+  `crates/straft-ai/`; `docs/specs/Straft_Local_AI_Runtime_Model_Management_Specification.md`;
   `docs/implementation/masterplan.md` area 8; `docs/implementation/owner-decisions.md`.
 
 ## Context
@@ -31,7 +31,7 @@ and the store listings and privacy policy must describe the one network use.
 2. **The AI models are downloaded after install.** The Gemma 3 1B Instruct chat model (Q8_0, about 1,069 MB), the BGE
    small English embedding model (about 37 MB) and their tokenizer data are not in the package. They download as one
    combined, resumable set.
-3. **Download happens only after an explicit user click.** The first run and the AI settings show **Download OpenFrame
+3. **Download happens only after an explicit user click.** The first run and the AI settings show **Download Straft Studio
    AI** with the size, the free space needed and a plain statement that the download uses the internet. The app never
    starts a download on its own, never downloads as a repair, and never downloads at install time.
 4. **Superseded 2026-10-16 by [ADR-0032](ADR-0032-models-from-hugging-face.md) (the sizes and SHA-256 in the app are the
@@ -42,15 +42,15 @@ and the store listings and privacy policy must describe the one network use.
    download starts. A file becomes usable only after its size and SHA-256 match, by an atomic rename. The last
    known-good model is kept until the new one passes a health check. A bad file is quarantined and the user is told in
    plain words.
-6. **Storage.** Models live in `%LOCALAPPDATA%\OpenFrame\models\` (Windows) and the platform app-data folder on the Mac,
+6. **Storage.** Models live in `%LOCALAPPDATA%\Straft Studio\models\` (Windows) and the platform app-data folder on the Mac,
    once per user, never per project. Projects never contain models. The Mac App Store build keeps the models in its
    container, inside App Sandbox.
-7. **Without the AI.** Before the download, and if it is removed, OpenFrame works fully. AI features show "not installed"
+7. **Without the AI.** Before the download, and if it is removed, Straft Studio works fully. AI features show "not installed"
    with the download button. Nothing else changes (ADR-0006 decision 7).
 8. **Superseded 2026-10-16 by [ADR-0032](ADR-0032-models-from-hugging-face.md) (the files come from Hugging Face; no owner
    host, no key).** **Model host and keys.** The owner chooses and runs the HTTPS model host. The owner generates the production Ed25519
    manifest key and keeps the private key offline. The build sets `MODEL_DISTRIBUTION_BASE_URL` and
-   `OPENFRAME_MANIFEST_PUBLIC_KEY`, and the release build fails if either is missing. The host serves the file list and
+   `STRAFT_MANIFEST_PUBLIC_KEY`, and the release build fails if either is missing. The host serves the file list and
    the model files only; it receives no project data.
 9. **Licensing.** The Gemma terms still apply. Hosting the weights for download is distribution. Before the host goes
    live, the owner confirms the redistribution terms, the Gemma notice ships in the app and in the third-party notices
@@ -113,11 +113,11 @@ How the code meets the decisions above. None of this changes a decision; each po
    delete them meanwhile. Only the newest quarantined item is kept, and Remove deletes the quarantine too. Names the
    models folder uses itself (`staging`, `quarantine`, `active.json`, `set.json`, `*.partial`, `*.bad`) and every
    Windows device name are refused in a signed list. A release build that names the loopback test host fails unless
-   `OPENFRAME_TEST_BUILD=1` (set only by the test scripts). A pause takes effect within a quarter second; Remove and
+   `STRAFT_TEST_BUILD=1` (set only by the test scripts). A pause takes effect within a quarter second; Remove and
    a download cannot run at the same time.
 7. **Test support.** Development tools that need the real models without the network (the AI evaluation harness, the
    ignored real-model tests) install the pinned files the way a finished download leaves them, with a key that lives
-   only in that process (`openframe-ai` feature `test-support`, never enabled by the app).
+   only in that process (`straft-ai` feature `test-support`, never enabled by the app).
 
 ## Alternatives rejected
 

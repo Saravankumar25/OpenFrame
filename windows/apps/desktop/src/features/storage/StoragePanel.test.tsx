@@ -23,15 +23,15 @@ const callMock = vi.mocked(call);
 const calls: { op: string; args: Record<string, unknown> }[] = [];
 
 const INFO: StorageInfo = {
-  appDataDir: "C:\\Users\\me\\AppData\\Local\\OpenFrame",
-  libraryDir: "C:\\Users\\me\\Documents\\OpenFrame",
-  libraryFile: "C:\\Users\\me\\Documents\\OpenFrame\\library.json",
-  projectsDir: "C:\\Users\\me\\Documents\\OpenFrame\\Projects",
+  appDataDir: "C:\\Users\\me\\AppData\\Local\\Straft Studio",
+  libraryDir: "C:\\Users\\me\\Documents\\Straft Studio",
+  libraryFile: "C:\\Users\\me\\Documents\\Straft Studio\\library.json",
+  projectsDir: "C:\\Users\\me\\Documents\\Straft Studio\\Projects",
   projectsDirIsDefault: true,
-  vaultDir: "C:\\Users\\me\\Documents\\OpenFrame\\Global Idea Vault",
+  vaultDir: "C:\\Users\\me\\Documents\\Straft Studio\\Global Idea Vault",
   vaultDirIsDefault: true,
   vaultExists: true,
-  projectDir: "D:\\Films\\Night Bus.openframe",
+  projectDir: "D:\\Films\\Night Bus.straft",
 };
 
 function answer(table: OpTable) {
@@ -52,7 +52,7 @@ describe("Settings > Storage", () => {
   it("shows the library, the folder for new projects, the vault, this project and the app data", async () => {
     answer({ "storage.info": INFO, "project.orphan_notes": [] });
     renderWithClient(<StoragePanel />);
-    for (const title of ["Your OpenFrame library", "Folder for new projects", "Global Idea Vault", "This project", "App data"]) {
+    for (const title of ["Your Straft Studio library", "Folder for new projects", "Global Idea Vault", "This project", "App data"]) {
       expect(await screen.findByRole("region", { name: title })).toBeInTheDocument();
     }
     expect(screen.getByText(/Changing it does not move the projects you already have/)).toBeInTheDocument();
@@ -109,14 +109,14 @@ describe("Home: found on this PC", () => {
   it("lists projects in the projects folder that are not in the list, and opens one", async () => {
     const opened = vi.fn();
     answer({
-      "project.discover": [{ path: "C:\\P\\Lost.openframe", title: "Lost Film", projectId: "p9", modifiedAt: 1_700_000_000_000 }],
+      "project.discover": [{ path: "C:\\P\\Lost.straft", title: "Lost Film", projectId: "p9", modifiedAt: 1_700_000_000_000 }],
       "project.open": {},
     });
     renderWithClient(<FoundProjects onOpened={opened} />);
     expect(await screen.findByText("Lost Film")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Open Lost Film" }));
     await waitFor(() => expect(opened).toHaveBeenCalled());
-    expect(calls.find((c) => c.op === "project.open")?.args).toEqual({ path: "C:\\P\\Lost.openframe" });
+    expect(calls.find((c) => c.op === "project.open")?.args).toEqual({ path: "C:\\P\\Lost.straft" });
   });
 
   it("shows nothing when every project is already listed", async () => {

@@ -8,7 +8,7 @@
 
 ## Context
 
-OpenFrame is a local-first desktop application for Windows 11 first, with macOS-ready boundaries. It must:
+Straft Studio is a local-first desktop application for Windows 11 first, with macOS-ready boundaries. It must:
 
 - start fast and use little memory when idle;
 - run heavy structured editing (Story Board, screenplay, stripboard);
@@ -22,13 +22,13 @@ domain logic and React is presentation and input only.
 ## Decision
 
 - **Shell:** Tauri v2 (`apps/desktop/src-tauri`). It uses the OS WebView2 on Windows and a single Rust process.
-- **UI:** React 19 + TypeScript + Vite 7, Tailwind CSS v4 with OpenFrame design tokens (`styles/openframe.css`
+- **UI:** React 19 + TypeScript + Vite 7, Tailwind CSS v4 with Straft Studio design tokens (`styles/straft.css`
   reuses mock-up classes), Radix primitives for accessible menus and dialogs, Zustand for view/session state
   only, TanStack Query as an IPC cache (never truth), TanStack Virtual, dnd-kit and ProseMirror.
 - **Core:** a Rust workspace (edition 2024, MSRV 1.85). Tauri is an adapter only (`src-tauri/src/lib.rs`, ~200
-  lines). All behavior lives in the `openframe-*` crates, which do not depend on Tauri. The whole application
-  layer can therefore be tested headless through `openframe-test-support::TestEnv`.
-- **Dependency direction:** `openframe-domain` (no I/O) ← `persistence` / `project-format` / `security` ←
+  lines). All behavior lives in the `straft-*` crates, which do not depend on Tauri. The whole application
+  layer can therefore be tested headless through `straft-test-support::TestEnv`.
+- **Dependency direction:** `straft-domain` (no I/O) ← `persistence` / `project-format` / `security` ←
   `application` ← `src-tauri`. React talks only to `of_invoke` (ADR-0004).
 - **Types across the boundary:** generated from Rust with `ts-rs` into `apps/desktop/src/ipc/generated`.
 

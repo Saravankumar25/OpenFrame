@@ -1,75 +1,75 @@
 
-> openframe-studio@0.1.0 verify
+> straft-studio@0.1.0 verify
 > npm run format:check && npm run lint && npm run typecheck && npm run check:governance && npm run test
 
 
-> openframe-studio@0.1.0 format:check
+> straft-studio@0.1.0 format:check
 > cargo fmt --all -- --check
 
 
-> openframe-studio@0.1.0 lint
+> straft-studio@0.1.0 lint
 > cargo clippy --workspace --all-targets -- -D warnings && npm --workspace apps/desktop run lint
 
     Blocking waiting for file lock on package cache
     Blocking waiting for file lock on package cache
     Blocking waiting for file lock on package cache
     Blocking waiting for file lock on package cache
-    Checking openframe-platform v0.1.0 (C:\OpenFrame\crates\openframe-platform)
-    Checking openframe-search v0.1.0 (C:\OpenFrame\crates\openframe-search)
-    Checking openframe-domain v0.1.0 (C:\OpenFrame\crates\openframe-domain)
-    Checking openframe-security v0.1.0 (C:\OpenFrame\crates\openframe-security)
-    Checking openframe-persistence v0.1.0 (C:\OpenFrame\crates\openframe-persistence)
-    Checking openframe-entitlement v0.1.0 (C:\OpenFrame\crates\openframe-entitlement)
-    Checking openframe-import-export v0.1.0 (C:\OpenFrame\crates\openframe-import-export)
-    Checking openframe-ai v0.1.0 (C:\OpenFrame\crates\openframe-ai)
-    Checking openframe-project-format v0.1.0 (C:\OpenFrame\crates\openframe-project-format)
-    Checking openframe-application v0.1.0 (C:\OpenFrame\crates\openframe-application)
-    Checking openframe-test-support v0.1.0 (C:\OpenFrame\crates\openframe-test-support)
-    Checking openframe-desktop v0.1.0 (C:\OpenFrame\apps\desktop\src-tauri)
+    Checking straft-platform v0.1.0 (C:\Straft\crates\straft-platform)
+    Checking straft-search v0.1.0 (C:\Straft\crates\straft-search)
+    Checking straft-domain v0.1.0 (C:\Straft\crates\straft-domain)
+    Checking straft-security v0.1.0 (C:\Straft\crates\straft-security)
+    Checking straft-persistence v0.1.0 (C:\Straft\crates\straft-persistence)
+    Checking straft-entitlement v0.1.0 (C:\Straft\crates\straft-entitlement)
+    Checking straft-import-export v0.1.0 (C:\Straft\crates\straft-import-export)
+    Checking straft-ai v0.1.0 (C:\Straft\crates\straft-ai)
+    Checking straft-project-format v0.1.0 (C:\Straft\crates\straft-project-format)
+    Checking straft-application v0.1.0 (C:\Straft\crates\straft-application)
+    Checking straft-test-support v0.1.0 (C:\Straft\crates\straft-test-support)
+    Checking straft-desktop v0.1.0 (C:\Straft\apps\desktop\src-tauri)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 31s
 
-> @openframe/desktop@0.1.0 lint
+> @straft/desktop@0.1.0 lint
 > eslint src --max-warnings 0
 
 
-> openframe-studio@0.1.0 typecheck
+> straft-studio@0.1.0 typecheck
 > npm --workspace apps/desktop run typecheck
 
 
-> @openframe/desktop@0.1.0 typecheck
+> @straft/desktop@0.1.0 typecheck
 > tsc --noEmit -p .
 
 
-> openframe-studio@0.1.0 check:governance
+> straft-studio@0.1.0 check:governance
 > npm run check:architecture && npm run check:migrations && npm run check:feature-status && npm run check:reachability && npm run check:writing && npm run check:links && node scripts/plan-status.mjs --check && node --test scripts/tests/governance.test.mjs
 
 
-> openframe-studio@0.1.0 check:architecture
+> straft-studio@0.1.0 check:architecture
 > node scripts/architecture-lint.mjs
 
 architecture-lint: OK (98 allow-listed sites)
 
-> openframe-studio@0.1.0 check:migrations
+> straft-studio@0.1.0 check:migrations
 > node scripts/check-migrations.mjs
 
 check-migrations: OK (project 11, global 3, app 1; not frozen yet)
 
-> openframe-studio@0.1.0 check:feature-status
+> straft-studio@0.1.0 check:feature-status
 > node scripts/check-feature-status.mjs
 
 check-feature-status: OK (168 rows; Specified 42, Designed 38, Built 29, Reachable 55, Verified 1, Process 2)
 
-> openframe-studio@0.1.0 check:reachability
+> straft-studio@0.1.0 check:reachability
 > node scripts/check-reachability.mjs
 
 check-reachability: OK (30 canonical routes from the feature status file)
 
-> openframe-studio@0.1.0 check:writing
+> straft-studio@0.1.0 check:writing
 > node scripts/check-writing-standard.mjs
 
 check-writing-standard: OK (app 305, crates 535, scripts-and-ci 87, root-documents 0, mockups 1311, living-docs 671)
 
-> openframe-studio@0.1.0 check:links
+> straft-studio@0.1.0 check:links
 > node scripts/check-links.mjs
 
 check-links: OK (94 documents)
@@ -176,22 +176,22 @@ extern "system" {} (201.8441ms)
 ℹ todo 0
 ℹ duration_ms 12806.6434
 
-> openframe-studio@0.1.0 test
+> straft-studio@0.1.0 test
 > npm run test:rust && npm run test:web
 
 
-> openframe-studio@0.1.0 test:rust
+> straft-studio@0.1.0 test:rust
 > cargo test --workspace
 
-   Compiling openframe-security v0.1.0 (C:\OpenFrame\crates\openframe-security)
-   Compiling openframe-import-export v0.1.0 (C:\OpenFrame\crates\openframe-import-export)
-   Compiling openframe-ai v0.1.0 (C:\OpenFrame\crates\openframe-ai)
-   Compiling openframe-project-format v0.1.0 (C:\OpenFrame\crates\openframe-project-format)
-   Compiling openframe-application v0.1.0 (C:\OpenFrame\crates\openframe-application)
-   Compiling openframe-test-support v0.1.0 (C:\OpenFrame\crates\openframe-test-support)
-   Compiling openframe-desktop v0.1.0 (C:\OpenFrame\apps\desktop\src-tauri)
+   Compiling straft-security v0.1.0 (C:\Straft\crates\straft-security)
+   Compiling straft-import-export v0.1.0 (C:\Straft\crates\straft-import-export)
+   Compiling straft-ai v0.1.0 (C:\Straft\crates\straft-ai)
+   Compiling straft-project-format v0.1.0 (C:\Straft\crates\straft-project-format)
+   Compiling straft-application v0.1.0 (C:\Straft\crates\straft-application)
+   Compiling straft-test-support v0.1.0 (C:\Straft\crates\straft-test-support)
+   Compiling straft-desktop v0.1.0 (C:\Straft\apps\desktop\src-tauri)
     Finished `test` profile [unoptimized + debuginfo] target(s) in 4m 34s
-     Running unittests src\lib.rs (target\debug\deps\openframe_ai-442354158ee7fc08.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_ai-442354158ee7fc08.exe)
 
 running 21 tests
 test manager::tests::embedding_inputs_are_bounded_and_never_empty ... ok
@@ -284,7 +284,7 @@ test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; fini
      Running tests\soak_sidecar.rs (target\debug\deps\soak_sidecar-7ebae148f8a09ec6.exe)
 
 running 4 tests
-test m1_08_sidecar_soak_long ... ignored, long soak: OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-ai --test soak_sidecar -- --ignored --nocapture m1_08_sidecar_soak_long
+test m1_08_sidecar_soak_long ... ignored, long soak: STRAFT_SOAK_SECS=1800 cargo test -p straft-ai --test soak_sidecar -- --ignored --nocapture m1_08_sidecar_soak_long
 test fake_llama_server_entry ... ok
 test m1_11_sleep_and_resume_during_the_download ... ok
 test m1_08_sidecar_crash_restart_and_cancel_loop ... ok
@@ -305,7 +305,7 @@ test m1_10_sidecar_port_retries_are_bounded_and_reset_on_an_explicit_start ... o
 
 test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.40s
 
-     Running unittests src\lib.rs (target\debug\deps\openframe_application-ea655e6657bc1a40.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_application-ea655e6657bc1a40.exe)
 
 running 732 tests
 test modules::ai::catalog::kit::tests::dates_parse_strictly ... ok
@@ -1060,7 +1060,7 @@ test ai_ac_005_navigation_runs_directly_and_changes_nothing ... ok
 test malformed_model_output_is_retried_once_then_rejected ... ok
 test ai_ac_006_breakdown_suggestions_create_nothing ... ok
 test deleted_target_makes_the_change_set_a_conflict ... ok
-test fsd_ai_001_openframe_works_fully_without_offline_ai ... ok
+test fsd_ai_001_straft_works_fully_without_offline_ai ... ok
 test ai_ac_007_to_010_proposal_requires_explicit_acceptance_and_is_one_undo_step ... ok
 test ai_spec_20_4_change_set_applies_all_operations_or_none ... ok
 test ai_ac_020_unavailable_runtime_leaves_the_project_unchanged ... ok
@@ -1237,7 +1237,7 @@ test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fin
 
 running 9 tests
 test core_015_operations_are_hidden_from_the_assistant_and_declare_their_effects ... ok
-test core_015_destination_must_be_a_real_location_outside_openframe_folders ... ok
+test core_015_destination_must_be_a_real_location_outside_straft_folders ... ok
 test core_015_a_users_file_with_the_staging_name_is_never_touched ... ok
 test core_015_works_without_an_open_project_and_without_logs ... ok
 test core_015_read_only_roles_cannot_preview_or_export ... ok
@@ -1393,7 +1393,7 @@ test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fin
      Running tests\migration_failures.rs (target\debug\deps\migration_failures-e9f181b851cc8f78.exe)
 
 running 5 tests
-test m1_05_database_from_a_newer_openframe_is_refused_byte_for_byte_untouched ... ok
+test m1_05_database_from_a_newer_straft_is_refused_byte_for_byte_untouched ... ok
 test m1_05_read_only_database_is_refused_untouched_and_opens_once_writable ... ok
 test m1_05_safety_backup_that_cannot_be_written_stops_the_migration ... ok
 test m1_05_damaged_database_needing_migration_is_refused_before_any_backup_or_write ... ok
@@ -1579,7 +1579,7 @@ test pn_01_private_note_undo_restore_and_purge_write_no_activity_pn_02_purge_scr
 test pkg_01_stored_network_paths_are_never_probed_or_opened ... ok
 test ipc_01_oversized_argument_lists_are_refused_before_deserialization ... ok
 test pkg_03_projects_carrying_foreign_triggers_are_refused_unchanged ... ok
-test path_02_file_copies_never_land_in_openframe_folders ... ok
+test path_02_file_copies_never_land_in_straft_folders ... ok
 test ai_02_concurrent_accepts_apply_a_change_set_exactly_once ... ok
 test pn_02_full_project_packages_carry_only_the_exporters_private_notes ... ok
 
@@ -1588,7 +1588,7 @@ test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fin
      Running tests\soak.rs (target\debug\deps\soak-d3c85066c5125908.exe)
 
 running 2 tests
-test m1_08_soak_long ... ignored, long soak: OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-application --test soak -- --ignored --nocapture m1_08_soak_long
+test m1_08_soak_long ... ignored, long soak: STRAFT_SOAK_SECS=1800 cargo test -p straft-application --test soak -- --ignored --nocapture m1_08_soak_long
 test m1_08_soak_short has been running for over 60 seconds
 test m1_08_soak_short ... ok
 
@@ -1661,7 +1661,7 @@ test visual_planning_persists_across_restart ... ok
 
 test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.29s
 
-     Running unittests src\lib.rs (target\debug\deps\openframe_desktop_lib-1543f5eff185b4ee.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_desktop_lib-1543f5eff185b4ee.exe)
 
 running 13 tests
 test distribution::tests::unpackaged_direct_builds_may_update_in_app ... ok
@@ -1670,7 +1670,7 @@ test distribution::tests::packaged_data_dir_is_the_package_local_state_folder ..
 test distribution::tests::store_builds_never_allow_in_app_updates ... ok
 test distribution::tests::channel_matches_build_flag ... ok
 test distribution::tests::packaged_direct_builds_never_allow_in_app_updates ... ok
-test tests::development_builds_use_openframe_log_as_written ... ok
+test tests::development_builds_use_straft_log_as_written ... ok
 test distribution::tests::family_name_check_is_the_platform_rule ... ok
 test tests::release_builds_cap_third_party_targets_at_info ... ok
 test distribution::tests::malformed_family_names_are_rejected ... ok
@@ -1680,13 +1680,13 @@ test tests::real_operations_never_write_content_to_the_log ... ok
 
 test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
 
-     Running unittests src\main.rs (target\debug\deps\openframe_desktop-e1d3569974e8fc35.exe)
+     Running unittests src\main.rs (target\debug\deps\straft_desktop-e1d3569974e8fc35.exe)
 
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-     Running unittests src\lib.rs (target\debug\deps\openframe_domain-8b523cfa109b047a.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_domain-8b523cfa109b047a.exe)
 
 running 26 tests
 test auth::tests::export_only_can_export_but_not_edit ... ok
@@ -1718,7 +1718,7 @@ test auth::export_bindings_actor ... ok
 
 test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
 
-     Running unittests src\lib.rs (target\debug\deps\openframe_entitlement-bda0211e37092ca1.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_entitlement-bda0211e37092ca1.exe)
 
 running 29 tests
 test adapters::tests::store_stubs_answer_unknown_and_explain_themselves ... ok
@@ -1753,7 +1753,7 @@ test adapters::tests::direct_adapter_checks_the_signed_file_offline ... ok
 
 test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
 
-     Running unittests src\lib.rs (target\debug\deps\openframe_import_export-36eecfac6ab79030.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_import_export-36eecfac6ab79030.exe)
 
 running 25 tests
 test docx::tests::style_names_map_to_elements ... ok
@@ -1907,7 +1907,7 @@ test indented_plain_text_uses_layout ... ok
 
 test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
 
-     Running unittests src\lib.rs (target\debug\deps\openframe_persistence-c833c2fbefa85196.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_persistence-c833c2fbefa85196.exe)
 
 running 22 tests
 test migrate::tests::non_contiguous_list_rejected ... ok
@@ -1935,7 +1935,7 @@ test tests::failed_rename_leaves_no_staging_file ... ok
 
 test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
 
-     Running unittests src\lib.rs (target\debug\deps\openframe_platform-07ce13b9a5a7286f.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_platform-07ce13b9a5a7286f.exe)
 
 running 23 tests
 test identity::tests::family_name_validation ... ok
@@ -1949,7 +1949,7 @@ test dirs::tests::windows_data_folder_is_under_local_app_data ... ok
 test atomic::tests::a_folder_as_destination_is_refused_without_side_effects ... ok
 test atomic::tests::a_failing_writer_keeps_the_old_file_and_cleans_up ... ok
 test exists::tests::files_folders_and_missing_paths ... ok
-test dirs::tests::folders_end_with_openframe_and_are_absolute ... ok
+test dirs::tests::folders_end_with_straft_and_are_absolute ... ok
 test atomic::tests::creates_a_missing_destination ... ok
 test atomic::tests::a_panicking_writer_keeps_the_old_file_and_cleans_up ... ok
 test atomic::tests::large_write_is_complete_or_absent ... ok
@@ -1964,7 +1964,7 @@ test atomic::tests::read_only_destination_keeps_the_old_file_and_reports_the_err
 
 test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
 
-     Running unittests src\lib.rs (target\debug\deps\openframe_project_format-fdf9f15b6e194525.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_project_format-fdf9f15b6e194525.exe)
 
 running 9 tests
 test tests::network_paths_detected ... ok
@@ -1979,7 +1979,7 @@ test tests::manifest_round_trip_and_validation ... ok
 
 test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
 
-     Running unittests src\lib.rs (target\debug\deps\openframe_search-0b86890822e38aea.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_search-0b86890822e38aea.exe)
 
 running 23 tests
 test chunk::tests::helpers ... ok
@@ -2008,7 +2008,7 @@ test db::tests::creates_then_reuses_then_rebuilds_on_identity_change ... ok
 
 test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
 
-     Running unittests src\lib.rs (target\debug\deps\openframe_security-3506c82bcd5e7d77.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_security-3506c82bcd5e7d77.exe)
 
 running 20 tests
 test tests::relative_paths_cannot_escape ... ok
@@ -2065,99 +2065,99 @@ test archives_declaring_too_many_entries_are_refused_before_parsing ... ok
 
 test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
 
-     Running unittests src\lib.rs (target\debug\deps\openframe_test_support-93f20e194d34c2f0.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_test_support-93f20e194d34c2f0.exe)
 
 running 1 test
 test embedder::tests::concept_words_are_close_and_deterministic ... ok
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-   Doc-tests openframe_ai
+   Doc-tests straft_ai
 
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-   Doc-tests openframe_application
+   Doc-tests straft_application
 
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-   Doc-tests openframe_desktop_lib
+   Doc-tests straft_desktop_lib
 
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-   Doc-tests openframe_domain
+   Doc-tests straft_domain
 
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-   Doc-tests openframe_entitlement
+   Doc-tests straft_entitlement
 
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-   Doc-tests openframe_import_export
+   Doc-tests straft_import_export
 
 running 1 test
-test crates\openframe-import-export\src\report.rs - report (line 4) ... ignored
+test crates\straft-import-export\src\report.rs - report (line 4) ... ignored
 
 test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
 all doctests ran in 0.75s; merged doctests compilation took 0.74s
-   Doc-tests openframe_persistence
+   Doc-tests straft_persistence
 
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-   Doc-tests openframe_platform
+   Doc-tests straft_platform
 
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-   Doc-tests openframe_project_format
+   Doc-tests straft_project_format
 
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-   Doc-tests openframe_search
+   Doc-tests straft_search
 
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-   Doc-tests openframe_security
+   Doc-tests straft_security
 
 running 0 tests
 
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
-   Doc-tests openframe_test_support
+   Doc-tests straft_test_support
 
 running 1 test
-test crates\openframe-test-support\src\lib.rs - (line 3) ... ignored
+test crates\straft-test-support\src\lib.rs - (line 3) ... ignored
 
 test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
 all doctests ran in 0.40s; merged doctests compilation took 0.39s
 
-> openframe-studio@0.1.0 test:web
+> straft-studio@0.1.0 test:web
 > npm --workspace apps/desktop run test
 
 
-> @openframe/desktop@0.1.0 test
+> @straft/desktop@0.1.0 test
 > vitest run
 
 
- RUN  v3.2.7 C:/OpenFrame/apps/desktop
+ RUN  v3.2.7 C:/Straft/apps/desktop
 
  ✓ src/ai/AiPanel.test.tsx (10 tests) 1262ms
  ✓ src/workspaces/settings/SupportDiagnostics.test.tsx (7 tests) 1536ms

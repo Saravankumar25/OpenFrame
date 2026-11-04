@@ -1,6 +1,6 @@
 # WindowsHTML
 
-Every screen and state of OpenFrame Studio for Windows, captured from the running app as standalone HTML pages,
+Every screen and state of Straft Studio for Windows, captured from the running app as standalone HTML pages,
 in Light and Dark mode of the default theme. It is the source for the website's screen recreations (Chapter 2).
 
 - **819 screens and states**, each in `light/` and `dark/` under the same `NNN-name.html`.
@@ -36,7 +36,7 @@ node scripts/windows-html/parallel.mjs
 The whole tour in one data root, one section after another (about 2.5 hours), gives the same pages:
 
 ```bash
-E2E_CAPTURE=1 OPENFRAME_LIBRARY_SETUP=1 node tests/e2e/run.mjs --only=zz-capture --no-build
+E2E_CAPTURE=1 STRAFT_LIBRARY_SETUP=1 node tests/e2e/run.mjs --only=zz-capture --no-build
 ```
 
 The run replaces `light/`, `dark/`, `assets/`, `index.html` and this file. Raw screenshots stay in
@@ -924,7 +924,7 @@ States the tour recorded as unreachable:
 - **sp-export-complete** (40-screenplay): The Export complete screen comes only after the native Save dialog is answered.
 - **sp-import-file-picker** (40-screenplay): Browse… in Import Screenplay opens the native file dialog (Choose a screenplay to import).
 - **ai-scope-options-open** (85-ai-packages): The Scope list is a native select; its drop-down is drawn by Windows outside the page and does not appear in a page capture. Each scope is captured as the chosen value instead
-- **ai-offline-download-states** (85-ai-packages): The download, paused, failed, not enough space and damaged states of OpenFrame AI need the model host steered through a failed or interrupted download; this tour runs with the models installed
+- **ai-offline-download-states** (85-ai-packages): The download, paused, failed, not enough space and damaged states of Straft AI need the model host steered through a failed or interrupted download; this tour runs with the models installed
 - **ai-offline-not-downloaded** (85-ai-packages): Needs a run without the AI models installed; this tour runs with them
 - **ai-export-report** (85-ai-packages): Export AI report opens the native save dialog; the saved toast needs a file chosen there
 - **ai-runtime-failed** (85-ai-packages): The runtime failed banner needs the AI engine to crash mid-answer (covered by the crash-safe apply spec, not by a capture)

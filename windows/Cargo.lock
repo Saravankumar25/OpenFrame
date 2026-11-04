@@ -2962,14 +2962,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
-name = "openframe-ai"
+name = "straft-ai"
 version = "0.1.0"
 dependencies = [
  "hex",
- "openframe-ai",
- "openframe-domain",
- "openframe-platform",
- "openframe-security",
+ "straft-ai",
+ "straft-domain",
+ "straft-platform",
+ "straft-security",
  "parking_lot",
  "rand 0.8.8",
  "reqwest 0.12.28",
@@ -2983,7 +2983,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "openframe-ai-checks"
+name = "straft-ai-checks"
 version = "0.1.0"
 dependencies = [
  "regex",
@@ -2991,13 +2991,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "openframe-ai-eval"
+name = "straft-ai-eval"
 version = "0.1.0"
 dependencies = [
- "openframe-ai",
- "openframe-ai-checks",
- "openframe-application",
- "openframe-domain",
+ "straft-ai",
+ "straft-ai-checks",
+ "straft-application",
+ "straft-domain",
  "rusqlite",
  "serde",
  "serde_json",
@@ -3006,23 +3006,23 @@ dependencies = [
 ]
 
 [[package]]
-name = "openframe-application"
+name = "straft-application"
 version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
  "image",
  "lopdf",
- "openframe-ai",
- "openframe-ai-checks",
- "openframe-domain",
- "openframe-entitlement",
- "openframe-import-export",
- "openframe-persistence",
- "openframe-platform",
- "openframe-project-format",
- "openframe-search",
- "openframe-security",
- "openframe-test-support",
+ "straft-ai",
+ "straft-ai-checks",
+ "straft-domain",
+ "straft-entitlement",
+ "straft-import-export",
+ "straft-persistence",
+ "straft-platform",
+ "straft-project-format",
+ "straft-search",
+ "straft-security",
+ "straft-test-support",
  "parking_lot",
  "regex",
  "rusqlite",
@@ -3041,18 +3041,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "openframe-desktop"
+name = "straft-desktop"
 version = "0.1.0"
 dependencies = [
  "argon2",
  "ed25519-dalek",
  "getrandom 0.3.4",
  "hex",
- "openframe-application",
- "openframe-domain",
- "openframe-entitlement",
- "openframe-platform",
- "openframe-security",
+ "straft-application",
+ "straft-domain",
+ "straft-entitlement",
+ "straft-platform",
+ "straft-security",
  "parking_lot",
  "rand 0.8.8",
  "reqwest 0.12.28",
@@ -3069,7 +3069,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "openframe-domain"
+name = "straft-domain"
 version = "0.1.0"
 dependencies = [
  "rusqlite",
@@ -3082,14 +3082,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "openframe-entitlement"
+name = "straft-entitlement"
 version = "0.1.0"
 dependencies = [
  "argon2",
  "base64 0.22.1",
  "ed25519-dalek",
  "hex",
- "openframe-platform",
+ "straft-platform",
  "parking_lot",
  "rand 0.8.8",
  "serde",
@@ -3101,16 +3101,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "openframe-import-export"
+name = "straft-import-export"
 version = "0.1.0"
 dependencies = [
  "csv",
  "flate2",
  "image",
  "lopdf",
- "openframe-domain",
- "openframe-platform",
- "openframe-security",
+ "straft-domain",
+ "straft-platform",
+ "straft-security",
  "pdf-writer",
  "quick-xml",
  "regex",
@@ -3126,12 +3126,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "openframe-persistence"
+name = "straft-persistence"
 version = "0.1.0"
 dependencies = [
  "hex",
- "openframe-domain",
- "openframe-platform",
+ "straft-domain",
+ "straft-platform",
  "rusqlite",
  "serde",
  "serde_json",
@@ -3141,7 +3141,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "openframe-platform"
+name = "straft-platform"
 version = "0.1.0"
 dependencies = [
  "directories",
@@ -3153,13 +3153,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "openframe-project-format"
+name = "straft-project-format"
 version = "0.1.0"
 dependencies = [
  "fs4",
- "openframe-domain",
- "openframe-platform",
- "openframe-security",
+ "straft-domain",
+ "straft-platform",
+ "straft-security",
  "serde",
  "serde_json",
  "tempfile",
@@ -3168,7 +3168,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "openframe-search"
+name = "straft-search"
 version = "0.1.0"
 dependencies = [
  "hex",
@@ -3183,12 +3183,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "openframe-security"
+name = "straft-security"
 version = "0.1.0"
 dependencies = [
  "hex",
- "openframe-domain",
- "openframe-platform",
+ "straft-domain",
+ "straft-platform",
  "regex",
  "serde",
  "serde_json",
@@ -3198,13 +3198,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "openframe-test-support"
+name = "straft-test-support"
 version = "0.1.0"
 dependencies = [
  "base64 0.22.1",
- "openframe-application",
- "openframe-domain",
- "openframe-search",
+ "straft-application",
+ "straft-domain",
+ "straft-search",
  "serde_json",
  "tempfile",
 ]

@@ -134,7 +134,7 @@ export function NewProjectDialog({ onClose }: { onClose: () => void }) {
           </div>
           <Field label="Saved in">
             <div className="row">
-              <span className="sm muted grow selectable-text" style={{ wordBreak: "break-all" }}>{parentDir ?? info.data?.projectsDir ?? "Documents\\OpenFrame\\Projects"}</span>
+              <span className="sm muted grow selectable-text" style={{ wordBreak: "break-all" }}>{parentDir ?? info.data?.projectsDir ?? "Documents\\Straft Studio\\Projects"}</span>
               <Button size="sm" icon={<FolderOpen size={14} />} onClick={() => void chooseFolder()}>Change…</Button>
             </div>
           </Field>

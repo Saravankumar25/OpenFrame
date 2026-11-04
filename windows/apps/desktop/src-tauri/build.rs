@@ -1,19 +1,19 @@
 //! Build script for the Tauri adapter.
 //!
-//! `OPENFRAME_DISTRIBUTION` selects the distribution channel at build time
+//! `STRAFT_DISTRIBUTION` selects the distribution channel at build time
 //! (docs/engineering/27-microsoft-store.md §5):
 //!
 //! * unset / `direct`: the internal team builds (Windows installer, Mac disk image; ADR-0023,
 //!   ADR-0024), and every development build;
-//! * `store`: the Microsoft Store and Mac App Store packages. Sets `cfg(openframe_store)` so code
+//! * `store`: the Microsoft Store and Mac App Store packages. Sets `cfg(straft_store)` so code
 //!   that must never ship in store builds (the in-app updater, the team password gate) can be
 //!   compiled out entirely.
 //!
-//! The value is re-exported to the crate as `env!("OPENFRAME_DISTRIBUTION")`.
+//! The value is re-exported to the crate as `env!("STRAFT_DISTRIBUTION")`.
 //!
-//! **Team password (ADR-0024).** An internal build reads `OPENFRAME_TEAM_PASSWORD` on the build
+//! **Team password (ADR-0024).** An internal build reads `STRAFT_TEAM_PASSWORD` on the build
 //! machine, hashes it with Argon2id and a random salt, and writes only the hash to
-//! `OUT_DIR/team_gate_hash.txt`, which the crate embeds under `cfg(openframe_team_gate)`. An
+//! `OUT_DIR/team_gate_hash.txt`, which the crate embeds under `cfg(straft_team_gate)`. An
 //! internal release build without the variable fails. A store build never reads the variable and
 //! embeds nothing. The password is never printed: errors name the variable, not its value. While
 //! the variable is set, the script reruns on every build instead of asking Cargo to watch the
@@ -21,9 +21,9 @@
 //!
 //! **Model source (ADR-0032).** Every build downloads the models from Hugging Face at the
 //! revisions pinned in `packaging/ai/ai-assets.lock.json`; nothing needs setting. Only the test
-//! suite sets `OPENFRAME_TEST_MODEL_SOURCE` to its loopback host (`http://127.0.0.1:<port>/`),
+//! suite sets `STRAFT_TEST_MODEL_SOURCE` to its loopback host (`http://127.0.0.1:<port>/`),
 //! read by the crate with `option_env!`. A build of any profile accepts it only with
-//! `OPENFRAME_TEST_BUILD=1`, which only the test scripts set, so a team or store build can never
+//! `STRAFT_TEST_BUILD=1`, which only the test scripts set, so a team or store build can never
 //! carry it by accident.
 //!
 //! On a macOS target the script also builds the Swift StoreKit 2 bridge
@@ -34,23 +34,23 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// The rules and the hash, shared with the check in the app so the two never disagree.
-#[path = "../../../crates/openframe-entitlement/src/team_gate/build_hash.rs"]
+#[path = "../../../crates/straft-entitlement/src/team_gate/build_hash.rs"]
 #[allow(dead_code)]
 mod team_gate_hash;
 
 fn main() {
-    println!("cargo:rerun-if-env-changed=OPENFRAME_DISTRIBUTION");
-    println!("cargo::rustc-check-cfg=cfg(openframe_store)");
-    let raw = std::env::var("OPENFRAME_DISTRIBUTION").unwrap_or_default();
+    println!("cargo:rerun-if-env-changed=STRAFT_DISTRIBUTION");
+    println!("cargo::rustc-check-cfg=cfg(straft_store)");
+    let raw = std::env::var("STRAFT_DISTRIBUTION").unwrap_or_default();
     let channel = match raw.trim().to_ascii_lowercase().as_str() {
         "" | "direct" => "direct",
         "store" => "store",
-        other => panic!("OPENFRAME_DISTRIBUTION must be `direct` or `store`, got `{other}`"),
+        other => panic!("STRAFT_DISTRIBUTION must be `direct` or `store`, got `{other}`"),
     };
     if channel == "store" {
-        println!("cargo:rustc-cfg=openframe_store");
+        println!("cargo:rustc-cfg=straft_store");
     }
-    println!("cargo:rustc-env=OPENFRAME_DISTRIBUTION={channel}");
+    println!("cargo:rustc-env=STRAFT_DISTRIBUTION={channel}");
     embed_team_gate(channel);
     check_model_source();
     // The target, not the machine running this script.
@@ -78,7 +78,7 @@ const APP_COMMANDS: &[&str] = &[
 /// module notes). Panics, which fails the build, when an internal release build has no password.
 fn embed_team_gate(channel: &str) {
     use team_gate_hash::{GatePlan, SALT_BYTES, TEAM_PASSWORD_ENV, build_plan, hash_for_build};
-    println!("cargo::rustc-check-cfg=cfg(openframe_team_gate)");
+    println!("cargo::rustc-check-cfg=cfg(straft_team_gate)");
     let out =
         PathBuf::from(std::env::var("OUT_DIR").expect("set by Cargo")).join("team_gate_hash.txt");
     let _ = std::fs::remove_file(&out);
@@ -101,17 +101,17 @@ fn embed_team_gate(channel: &str) {
             getrandom::fill(&mut salt).expect("the build machine's secure random generator");
             let hash = hash_for_build(&password, &salt).unwrap_or_else(|m| panic!("{m}"));
             std::fs::write(&out, hash).expect("write the team password hash");
-            println!("cargo:rustc-cfg=openframe_team_gate");
+            println!("cargo:rustc-cfg=straft_team_gate");
         }
     }
 }
 
 /// Panics, which fails the build, when the test model source is not a loopback http address, or
-/// a build names it without `OPENFRAME_TEST_BUILD=1` (module notes).
+/// a build names it without `STRAFT_TEST_BUILD=1` (module notes).
 fn check_model_source() {
-    const SRC: &str = "OPENFRAME_TEST_MODEL_SOURCE";
+    const SRC: &str = "STRAFT_TEST_MODEL_SOURCE";
     println!("cargo:rerun-if-env-changed={SRC}");
-    println!("cargo:rerun-if-env-changed=OPENFRAME_TEST_BUILD");
+    println!("cargo:rerun-if-env-changed=STRAFT_TEST_BUILD");
     let Ok(url) = std::env::var(SRC) else {
         return; // every build for people: Hugging Face
     };
@@ -128,13 +128,13 @@ fn check_model_source() {
         panic!("{SRC} must be the local test host, http://127.0.0.1:<port>/.");
     }
     // Every profile: a debug build handed to someone must not carry the test host either.
-    if std::env::var("OPENFRAME_TEST_BUILD").as_deref() != Ok("1") {
+    if std::env::var("STRAFT_TEST_BUILD").as_deref() != Ok("1") {
         panic!(
-            "{SRC} names the local test host; only a test build (OPENFRAME_TEST_BUILD=1) may use it."
+            "{SRC} names the local test host; only a test build (STRAFT_TEST_BUILD=1) may use it."
         );
     }
     println!(
-        "cargo:warning=This build downloads OpenFrame AI from the local test host {url}: a test build, never for the team."
+        "cargo:warning=This build downloads Straft AI from the local test host {url}: a test build, never for the team."
     );
 }
 

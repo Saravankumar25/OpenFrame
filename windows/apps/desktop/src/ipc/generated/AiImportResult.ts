@@ -2,7 +2,7 @@
 
 export type AiImportResult = { 
 /**
- * Every pinned file is in place and OpenFrame AI passed its health check. False: the file
+ * Every pinned file is in place and Straft AI passed its health check. False: the file
  * was kept and another pinned file is still needed.
  */
 complete: boolean, };

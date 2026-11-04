@@ -62,7 +62,7 @@ const codes = process.env.WH_MERGE_ONLY === "1" ? [] : await Promise.all(
         E2E_CAPTURE_OUT: partDirs[i],
         E2E_CAPTURE_NO_SEED_SHOTS: i === 0 ? "0" : "1",
         // Start like a new computer so the seed passes (and part 1 records) the library setup screen.
-        OPENFRAME_LIBRARY_SETUP: "1",
+        STRAFT_LIBRARY_SETUP: "1",
       },
       join(CACHE, `wh-part-${i + 1}.log`),
     );

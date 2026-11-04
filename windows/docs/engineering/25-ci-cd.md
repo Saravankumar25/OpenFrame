@@ -14,7 +14,7 @@
 | `rust` | `windows-latest` | stable toolchain (rustfmt, clippy) → rust-cache → `cargo fmt --all -- --check` → placeholder `apps/desktop/dist` (needed by `tauri::generate_context!`) → `cargo clippy --workspace --all-targets --locked -- -D warnings` → `cargo test --workspace --locked` → **no drift** in `apps/desktop/src/ipc/generated` (ts-rs regenerates the types during tests) and in `docs/engineering/ai-tool-coverage.md` (regenerated from the Registry) | Blocking |
 | `web` | `windows-latest` | Node 20 + npm cache → `npm ci` → `npm run typecheck` (tsc) → ESLint `--max-warnings 0` → Vitest → `npm --workspace apps/desktop run build:web` | Blocking |
 | `governance` | `windows-latest` | Node 20 → `scripts/architecture-lint.mjs --list` (webview imports, single IPC, no webview network, capabilities, CSP, command allow-list, SQLite write sites, AI apply boundary, listeners, `unsafe`, process spawn) → `scripts/check-migrations.mjs` (linear numbering, embedded list, freeze checksums) → `scripts/check-feature-status.mjs` (every in-scope row has a source, a build area, a UI route, tests, a status and an ADR-0030 proof level its evidence supports) → reachability, plan evidence, writing standard → `scripts/check-links.mjs` (document links, and every web address in the shipped app source on the allow-list `scripts/app-addresses.json`) → `scripts/check-secrets.mjs` (secret patterns and secret files in the working tree and every commit) → `node --test scripts/tests/governance.test.mjs` (each check catches a planted violation) | **Blocking** (build plan: feature status check in CI, architecture lint, migration policy) |
-| `e2e` | `windows-latest` | rust toolchain + cache → Node + `npm ci` → `npm run test:e2e` (verifies and stages the bundled Offline AI from `OPENFRAME_AI_ASSETS_DIR`, builds the real debug app with it, installs msedgedriver matching the runner's WebView2 and tauri-driver, runs `tests/e2e/specs`: lifecycle journey, relaunch, the AI specs with the real model, reachability generated from the feature status file) → failure screenshots uploaded. Fails closed until the runner has the pinned AI files for today's bundled build; after the download flow is rebuilt, CI tests the download against a test manifest and host (ADR-0026) | **Blocking**; the same job runs on the release tag in `release.yml` and `build` / `store` need it (build plan: end-to-end tests in CI) |
+| `e2e` | `windows-latest` | rust toolchain + cache → Node + `npm ci` → `npm run test:e2e` (verifies and stages the bundled Offline AI from `STRAFT_AI_ASSETS_DIR`, builds the real debug app with it, installs msedgedriver matching the runner's WebView2 and tauri-driver, runs `tests/e2e/specs`: lifecycle journey, relaunch, the AI specs with the real model, reachability generated from the feature status file) → failure screenshots uploaded. Fails closed until the runner has the pinned AI files for today's bundled build; after the download flow is rebuilt, CI tests the download against a test manifest and host (ADR-0026) | **Blocking**; the same job runs on the release tag in `release.yml` and `build` / `store` need it (build plan: end-to-end tests in CI) |
 | `supply-chain` | `windows-latest` | `cargo install cargo-deny` → `cargo deny --locked check` (advisories, licenses, bans, sources) → `cargo install cargo-audit` → `cargo audit` → `npm ci` → `npm audit --omit=dev --audit-level=moderate` → `license-inventory --check` + `THIRD_PARTY_LICENSES.md` must be current | **Blocking** since 2026-10-05 (build plan: supply-chain checks); also a hard gate in releases. An advisory may be ignored only in `deny.toml` with id, reason and tracking reference. |
 
 Locally, `npm run verify` runs format, lint, typecheck, `npm run check:governance` and tests. On a 16 GB machine set
@@ -24,13 +24,13 @@ Concurrency cancels superseded runs per ref. Permissions are `contents: read`.
 
 ### `mac.yml` (written 2026-10-06, has not run yet)
 
-Triggered by a pull request or a push to `main` that changes `apps/desktop/src-tauri/**`, `crates/openframe-platform/**`,
-`crates/openframe-entitlement/**` or the workflow itself, and by hand. macOS runner minutes cost ten times Windows minutes, hence the
+Triggered by a pull request or a push to `main` that changes `apps/desktop/src-tauri/**`, `crates/straft-platform/**`,
+`crates/straft-entitlement/**` or the workflow itself, and by hand. macOS runner minutes cost ten times Windows minutes, hence the
 path filter.
 
 | Job | Runner | Steps | Gating |
 |---|---|---|---|
-| `mac-build` | `macos-latest` (Apple silicon), 30 minute timeout | Rust 1.98.1 with `aarch64-apple-darwin`, rust-cache (same pinned actions as `ci.yml`) → `swift build -c release --product StoreKitBridge` → placeholder `apps/desktop/dist` → `cargo check -p openframe-desktop --target aarch64-apple-darwin --locked` → `cargo test -p openframe-platform -p openframe-entitlement --target aarch64-apple-darwin --locked` → `cargo test -p openframe-desktop --lib --target aarch64-apple-darwin --locked` (links a binary against the Swift bridge, which `cargo check` does not) | Not a required check yet: make it required once it has passed (doc 37 section 8) |
+| `mac-build` | `macos-latest` (Apple silicon), 30 minute timeout | Rust 1.98.1 with `aarch64-apple-darwin`, rust-cache (same pinned actions as `ci.yml`) → `swift build -c release --product StoreKitBridge` → placeholder `apps/desktop/dist` → `cargo check -p straft-desktop --target aarch64-apple-darwin --locked` → `cargo test -p straft-platform -p straft-entitlement --target aarch64-apple-darwin --locked` → `cargo test -p straft-desktop --lib --target aarch64-apple-darwin --locked` (links a binary against the Swift bridge, which `cargo check` does not) | Not a required check yet: make it required once it has passed (doc 37 section 8) |
 
 It compiles and links the macOS shell (doc 37 section 8) and runs the crate and shell unit tests on macOS. It does not sign, package
 or start the app and never talks to StoreKit or the App Store.
@@ -50,16 +50,16 @@ or start the app and never talks to StoreKit or the App Store.
 3. **validate-store → store** (Microsoft Store channel, doc 27): `release-validate.mjs --store` (Partner Center
    identity, `X.Y.Z.0` version, MSIX assets, manifest capabilities, privacy policy URL, no updater in Store builds)
    + `cargo deny` → full verification → `prepare-ai-assets.mjs` → `tauri build --no-bundle` with the bundled-AI overlay
-   and `OPENFRAME_DISTRIBUTION=store` → `build-msix.mjs --store` (verifies and copies the bundled AI into the layout, makepri
-   + makeappx, unsigned) → artifact `openframe-<tag>-msstore-x64`. It uses no
+   and `STRAFT_DISTRIBUTION=store` → `build-msix.mjs --store` (verifies and copies the bundled AI into the layout, makepri
+   + makeappx, unsigned) → artifact `straft-<tag>-msstore-x64`. It uses no
    secrets. Variables: `MSIX_IDENTITY_NAME`, `MSIX_PUBLISHER`, `MSIX_PUBLISHER_DISPLAY_NAME`, `STORE_PRIVACY_POLICY_URL`
    (or commit them in `packaging/msix/store.config.json`). `RELEASE_CHANNELS` (`direct,store` by default) or the
    `channels` dispatch input selects which channels a run builds.
 
 Required secrets (direct channel): `WINDOWS_CERTIFICATE`, `WINDOWS_CERTIFICATE_PASSWORD`, `TAURI_SIGNING_PRIVATE_KEY`,
-`TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. Variables: `WINDOWS_TIMESTAMP_URL`, `OPENFRAME_AI_ASSETS_DIR` (folder on the runner
+`TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. Variables: `WINDOWS_TIMESTAMP_URL`, `STRAFT_AI_ASSETS_DIR` (folder on the runner
 holding the pinned Offline AI files for today's bundled build; also used by `e2e` and `store`). `MODEL_DISTRIBUTION_BASE_URL`
-and `OPENFRAME_MANIFEST_PUBLIC_KEY` are gone with the download flow.
+and `STRAFT_MANIFEST_PUBLIC_KEY` are gone with the download flow.
 **None are configured today, so a tag push fails at `validate` by design.**
 
 ## 2. Local equivalents
@@ -70,7 +70,7 @@ and `OPENFRAME_MANIFEST_PUBLIC_KEY` are gone with the download flow.
 | Supply chain | `cargo install cargo-deny --locked; cargo deny check; npm audit --omit=dev; npm run licenses` |
 | Release gate | `node scripts/release-validate.mjs --report-only` (Store: add `--store`) |
 | Bundled AI inputs | `npm run ai:assets` (verify `.ai-assets` against the lock and stage it; `-- --check` verifies only) |
-| Store package | `$env:OPENFRAME_DISTRIBUTION='store'; npm run build -- --no-bundle; node scripts/build-msix.mjs --store` (local test: `--dev`) |
+| Store package | `$env:STRAFT_DISTRIBUTION='store'; npm run build -- --no-bundle; node scripts/build-msix.mjs --store` (local test: `--dev`) |
 | Prerequisites | `npm run setup` / `node scripts/setup.mjs --check-only` |
 
 ## 3. Reproducibility

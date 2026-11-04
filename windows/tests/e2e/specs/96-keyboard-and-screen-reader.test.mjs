@@ -135,7 +135,7 @@ describe("keyboard and screen reader pass", () => {
           }
           last = f.desc;
         }
-        const app = appProcesses().find((p) => p.name.toLowerCase() === "openframe-desktop.exe");
+        const app = appProcesses().find((p) => p.name.toLowerCase() === "straft-desktop.exe");
         // Windows builds the web view's accessibility tree only once a reader asks, so the first
         // query of a session can see an empty tree: ask again, a few times, before judging.
         let found;

@@ -8,7 +8,7 @@
 // `entitlement.debug_set`, which exists only in a debug build on an isolated test data root, and
 // the About card shows the version only. No screen here names a price.
 //
-// The team password screen itself shows only in internal builds made with OPENFRAME_TEAM_PASSWORD;
+// The team password screen itself shows only in internal builds made with STRAFT_TEAM_PASSWORD;
 // the end-to-end build never sees that variable (scripts/build-app.mjs). It is covered by the Rust
 // tests (team_gate/tests.rs, tests/team_gate.rs) and by TeamGate.test.tsx.
 
@@ -58,7 +58,7 @@ describe("about", () => {
       assert.match(appVersion, /^\d+\.\d+\.\d+/);
       await projectMenu(browser, "Project settings");
       const text = await aboutText();
-      assert.ok(text.includes("About OpenFrame Studio"), text);
+      assert.ok(text.includes("About Straft Studio"), text);
       assert.ok(text.includes(`Version ${appVersion}`), `About shows another version: ${text}`);
       assert.ok(text.includes("Internal build, not for sale."), `the internal build is not marked: ${text}`);
       assert.doesNotMatch(text, NO_PRICE, "no price in About");
@@ -75,7 +75,7 @@ describe("about", () => {
       await setLicence("microsoftStore", { state: "trialActive", days_left: 7 });
       await projectMenu(browser, "Project settings");
       const text = await aboutText();
-      assert.ok(text.includes("About OpenFrame Studio"), text);
+      assert.ok(text.includes("About Straft Studio"), text);
       assert.ok(!text.includes("Internal build"), `a store build is marked internal: ${text}`);
       assert.doesNotMatch(text, NO_PRICE, "no price in About");
       await assertQuiet(browser, "about store");

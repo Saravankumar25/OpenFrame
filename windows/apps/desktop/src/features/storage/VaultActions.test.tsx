@@ -23,12 +23,12 @@ vi.mock("../../app/toast", () => ({ toast: { success: vi.fn(), error: vi.fn(), i
 const calls: { op: string; args: Record<string, unknown> }[] = [];
 
 const INFO: StorageInfo = {
-  appDataDir: "C:\\Users\\me\\AppData\\Local\\OpenFrame",
-  libraryDir: "C:\\Users\\me\\Documents\\OpenFrame",
-  libraryFile: "C:\\Users\\me\\Documents\\OpenFrame\\library.json",
-  projectsDir: "C:\\Users\\me\\Documents\\OpenFrame\\Projects",
+  appDataDir: "C:\\Users\\me\\AppData\\Local\\Straft Studio",
+  libraryDir: "C:\\Users\\me\\Documents\\Straft Studio",
+  libraryFile: "C:\\Users\\me\\Documents\\Straft Studio\\library.json",
+  projectsDir: "C:\\Users\\me\\Documents\\Straft Studio\\Projects",
   projectsDirIsDefault: true,
-  vaultDir: "C:\\Users\\me\\Documents\\OpenFrame\\Global Idea Vault",
+  vaultDir: "C:\\Users\\me\\Documents\\Straft Studio\\Global Idea Vault",
   vaultDirIsDefault: true,
   vaultExists: true,
   projectDir: null,
@@ -36,7 +36,7 @@ const INFO: StorageInfo = {
 
 const FOUND: VaultFolderInspection = {
   kind: "parentOfVault",
-  vaultDir: "D:\\OneDrive\\Documents\\OpenFrame\\Global Idea Vault",
+  vaultDir: "D:\\OneDrive\\Documents\\Straft Studio\\Global Idea Vault",
   ideas: 42,
   filesPresent: 17,
   filesMissing: 0,
@@ -53,7 +53,7 @@ function answer(table: OpTable) {
 
 async function pickFolder(found: VaultFolderInspection) {
   answer({ "vault.inspect_folder": found, "vault.locate": INFO, "storage.info": INFO });
-  vi.mocked(openDialog).mockResolvedValue("D:\\OneDrive\\Documents\\OpenFrame");
+  vi.mocked(openDialog).mockResolvedValue("D:\\OneDrive\\Documents\\Straft Studio");
   renderWithClient(<VaultActions info={INFO} />);
   fireEvent.click(screen.getByRole("button", { name: "Locate Existing Vault…" }));
   await waitFor(() => expect(calls.some((c) => c.op === "vault.inspect_folder")).toBe(true));
@@ -69,7 +69,7 @@ beforeEach(() => {
 describe("Global Idea Vault actions", () => {
   it("says what Locate found and connects the vault inside the chosen folder", async () => {
     await pickFolder(FOUND);
-    expect(await screen.findByText(/Found a vault at D:\\OneDrive\\Documents\\OpenFrame\\Global Idea Vault with 42 ideas and 17 files\./)).toBeInTheDocument();
+    expect(await screen.findByText(/Found a vault at D:\\OneDrive\\Documents\\Straft Studio\\Global Idea Vault with 42 ideas and 17 files\./)).toBeInTheDocument();
     expect(calls.some((c) => c.op === "vault.locate")).toBe(false);
     fireEvent.click(screen.getByRole("button", { name: "Connect Vault" }));
     await waitFor(() => expect(calls.find((c) => c.op === "vault.locate")?.args).toEqual({ dir: FOUND.vaultDir }));

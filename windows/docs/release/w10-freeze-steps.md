@@ -19,7 +19,7 @@ Tag the commit of the final tested build. Its short hash is in the installer nam
 
 ## 3. Freeze the lists
 
-- **Operation list.** Operations are registered in `crates/openframe-application/src/registry.rs`; `op_names()` returns
+- **Operation list.** Operations are registered in `crates/straft-application/src/registry.rs`; `op_names()` returns
   them. No command prints the list yet. Write the names with one run of a small test or example that calls
   `op_names()` (as `tests/platform/permission_matrix.rs` does), save the output as
   `docs/release/evidence/w10/operations.txt` and commit it. Later changes to the list need an owner decision.

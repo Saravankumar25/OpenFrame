@@ -4,7 +4,7 @@
 > call whose text holds an SQL keyword in non-test Rust code under `crates/` and `apps/desktop/src-tauri/src` (154 sites);
 > a read-only security review then traced every interpolated value to its origin and searched for SQL built by
 > concatenation, `push_str`, `.join(` and `.replace(`, and for non-literal `prepare`, `query_row` and `execute_batch`
-> arguments (5 more sites). Fixes for the findings are listed at the end with their tests. Results after the fixes: `--test ai` 102 passed, `--test writing` 218, `--lib` 962, `--test production` 145, `openframe-persistence` 25; clippy clean.
+> arguments (5 more sites). Fixes for the findings are listed at the end with their tests. Results after the fixes: `--test ai` 102 passed, `--test writing` 218, `--lib` 962, `--test production` 145, `straft-persistence` 25; clippy clean.
 
 ## Result
 
@@ -21,11 +21,11 @@ none an injection, all fixed in this branch.
 | USER_VALUE | 0 |
 | UNCLEAR | 0 |
 
-Defence in depth already in place: both connections set `PRAGMA trusted_schema=OFF` (`openframe-persistence/src/lib.rs`,
-`openframe-search/src/db.rs`); a received project's schema names are screened by `safe_schema_name` and
+Defence in depth already in place: both connections set `PRAGMA trusted_schema=OFF` (`straft-persistence/src/lib.rs`,
+`straft-search/src/db.rs`); a received project's schema names are screened by `safe_schema_name` and
 `untrusted_schema_problems` before use. There is no SQL in `apps/desktop/src-tauri/src`.
 
-## Values that are not constants (paths under `crates/openframe-application/src/modules/` unless named)
+## Values that are not constants (paths under `crates/straft-application/src/modules/` unless named)
 
 | Site | Value | Class | Origin and check |
 |---|---|---|---|
@@ -44,8 +44,8 @@ Defence in depth already in place: both connections set `PRAGMA trusted_schema=O
 | story/index.rs:630, 639 | t | IDENT_SCHEMA | `sqlite_master` names |
 | ai/toolbox/resolve.rs:241, 363 | entity fields, col, table | CONST, IDENT_FIXED | `&'static str` from the `entity!` macro |
 | visual/common.rs:213, 252 | title, alive | CONST | `&'static` literals in `VaultQuery` |
-| openframe-persistence/src/rows.rs, undo.rs | t, sets, names, lit, new, old | IDENT_SCHEMA, PLACEHOLDERS | `quote_ident` doubles quotes; column names from the schema |
-| openframe-search/src/vector.rs:143 | dim | PLACEHOLDERS | a `usize` |
+| straft-persistence/src/rows.rs, undo.rs | t, sets, names, lit, new, old | IDENT_SCHEMA, PLACEHOLDERS | `quote_ident` doubles quotes; column names from the schema |
+| straft-search/src/vector.rs:143 | dim | PLACEHOLDERS | a `usize` |
 
 The remaining 130 values are constants (`*_COLS`, `PRODUCTION_STATES`, `DRAFT_SQL`, `LIVE_SCENE`, `VEC_TABLE` and
 similar) or literal if/else fragments.
@@ -59,7 +59,7 @@ similar) or literal if/else fragments.
 | ai/tools.rs:1431 | local `fts_query` | split on every non-alphanumeric; letters and digits only; at most 8 terms |
 | ai/toolbox/reads.rs:564 | `lexical_hits` | split on non-alphanumeric, terms of 3 or more characters, at most 10 |
 | ai/intelligence/retriever.rs:152 | `fts_or_query` | `"` doubled, every term quoted; unit test covers `NEAR("x" OR y)` |
-| openframe-search/src/vector.rs:127 | n/a | sqlite-vec `MATCH` with a bound vector, not FTS5 |
+| straft-search/src/vector.rs:127 | n/a | sqlite-vec `MATCH` with a bound vector, not FTS5 |
 
 There is no `GLOB` in non-test code.
 

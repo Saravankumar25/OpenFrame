@@ -28,7 +28,7 @@ mod revalidation;
 #[cfg(any(target_os = "macos", test))]
 mod storekit;
 
-use openframe_entitlement::mac::MacInputs;
+use straft_entitlement::mac::MacInputs;
 
 #[cfg(target_os = "macos")]
 pub use revalidation::{on_run_event, on_window_event, start_entitlement_checks};
@@ -54,7 +54,7 @@ pub use no_store::{on_run_event, on_window_event, start_entitlement_checks};
 mod no_store {
     use std::sync::Arc;
 
-    use openframe_application::AppCore;
+    use straft_application::AppCore;
     use tauri::{AppHandle, RunEvent, WindowEvent};
 
     pub fn start_entitlement_checks(_core: &Arc<AppCore>) {}

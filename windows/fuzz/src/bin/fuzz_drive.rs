@@ -11,7 +11,7 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
-use openframe_fuzz::{TARGETS, seeds};
+use straft_fuzz::{TARGETS, seeds};
 
 const HANG: Duration = Duration::from_secs(5);
 const MAX_LEN: usize = 1 << 20;

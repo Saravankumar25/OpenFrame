@@ -30,4 +30,4 @@ words.
 
 ## For the owner
 
-The app keeps its logs in `%LOCALAPPDATA%\OpenFrame\logs`. Ask a tester to look there only if the export buttons fail.
+The app keeps its logs in `%LOCALAPPDATA%\Straft Studio\logs`. Ask a tester to look there only if the export buttons fail.

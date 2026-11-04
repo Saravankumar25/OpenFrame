@@ -15,7 +15,7 @@ use std::ffi::{CString, c_char, c_int};
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use openframe_entitlement::mac as ent;
+use straft_entitlement::mac as ent;
 use serde::de::DeserializeOwned;
 
 use super::storekit::convert;

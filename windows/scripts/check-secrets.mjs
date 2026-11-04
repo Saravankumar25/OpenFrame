@@ -14,8 +14,8 @@ import readline from "node:readline";
 import url from "node:url";
 import { isSecretFile, lineHits } from "./lib/secret-rules.mjs";
 
-const ROOT = process.env.OPENFRAME_CHECK_ROOT
-  ? path.resolve(process.env.OPENFRAME_CHECK_ROOT)
+const ROOT = process.env.STRAFT_CHECK_ROOT
+  ? path.resolve(process.env.STRAFT_CHECK_ROOT)
   : path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
 const MAX_BYTES = 5 * 1024 * 1024;
 const hits = [];

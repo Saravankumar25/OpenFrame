@@ -7,7 +7,7 @@ frontend, dependencies and secrets.
 **Method:** manual code review across all crates and the frontend, with focused sweeps per area, then a fix and a
 regression test for every finding. The full findings table is in
 [`20-security-threat-model.md` §5](20-security-threat-model.md#5-internal-review-2026-09-30-findings).
-**Model:** OpenFrame is a local-first single-user app with no listening sockets. The review treats the **webview as
+**Model:** Straft Studio is a local-first single-user app with no listening sockets. The review treats the **webview as
 untrusted** (threat T1). **Imported documents and received packages are treated as hostile**, because they come from
 other people. A local attacker running as the same Windows user is out of scope (§1 of the threat model).
 
@@ -18,23 +18,23 @@ other people. A local attacker running as the same Windows user is out of scope 
 - **Low:** DES-01, AI-05, WEB-04, PKG-05 and the two SUP-01 warnings are accepted with justification. The rest are
   fixed.
 - **Regression tests added:**
-  - `crates/openframe-security/tests/security_paths.rs`
-  - `crates/openframe-import-export/tests/security_parsers.rs`
-  - `crates/openframe-ai/tests/security_ai.rs`
-  - `crates/openframe-application/tests/security_review.rs`
+  - `crates/straft-security/tests/security_paths.rs`
+  - `crates/straft-import-export/tests/security_parsers.rs`
+  - `crates/straft-ai/tests/security_ai.rs`
+  - `crates/straft-application/tests/security_review.rs`
   - `apps/desktop/src/workspaces/screenplay/lock.security.test.ts`
-  - new unit tests in `openframe-ai::manifest`
+  - new unit tests in `straft-ai::manifest`
 
 ### High (all fixed)
 
 | ID | What an attacker could do | Fix |
 |---|---|---|
-| PKG-01 | A received project package makes OpenFrame connect to `\\attacker\share` when it is only inspected (NTLM hash leak), or launch an executable disguised as a picture when the user clicks "Open" | Linked paths are only touched when they are on a local disk; executable types are revealed in Explorer instead of launched; links to network shares are refused |
+| PKG-01 | A received project package makes Straft Studio connect to `\\attacker\share` when it is only inspected (NTLM hash leak), or launch an executable disguised as a picture when the user clicks "Open" | Linked paths are only touched when they are on a local disk; executable types are revealed in Explorer instead of launched; links to network shares are refused |
 | PKG-03 | A received project database runs its own triggers/views, or injects SQL through a crafted table name, including `ATTACH` to drop files anywhere | Schema screening on open and on import; `trusted_schema=OFF`; `SQLITE_LIMIT_ATTACHED=0`; identifiers always quoted |
 | AI-03 | `ai.remove_model("C:")` recursively deletes the process's current directory | Ids must be safe single components directly under `models/` |
-| REL-01 | Public releases would trust the development manifest-signing key | The release gate requires a distinct `OPENFRAME_MANIFEST_PUBLIC_KEY`; the workflow passes it; an untrusted embedded manifest is never used. *(Superseded 2026-10-08: no manifest or key exists since ADR-0025; the bundled files are pinned in a lock compiled into the app.)* |
+| REL-01 | Public releases would trust the development manifest-signing key | The release gate requires a distinct `STRAFT_MANIFEST_PUBLIC_KEY`; the workflow passes it; an untrusted embedded manifest is never used. *(Superseded 2026-10-08: no manifest or key exists since ADR-0025; the bundled files are pinned in a lock compiled into the app.)* |
 | PARSE-01 | One DOCX/FDX tag with millions of attributes hangs the import | quick-xml 0.42 (RUSTSEC-2026-0194/0195); O(n²) duplicate check off; ≤ 128 attributes per element |
-| PARSE-02 | A small PDF crashes the app: a decompression bomb, `[[[[…` stack overflow, or content amplification | lopdf 0.45 (RUSTSEC-2026-0187) with a per-stream decompression limit; pre-flight nesting/inflation limits; OpenFrame-controlled page-content decompression with a budget; large-stack parse thread |
+| PARSE-02 | A small PDF crashes the app: a decompression bomb, `[[[[…` stack overflow, or content amplification | lopdf 0.45 (RUSTSEC-2026-0187) with a per-stream decompression limit; pre-flight nesting/inflation limits; Straft Studio-controlled page-content decompression with a budget; large-stack parse thread |
 
 ### Accepted risks (justification)
 
@@ -101,7 +101,7 @@ other people. A local attacker running as the same Windows user is out of scope 
 - **Logs:** operation names, codes and timings only. Panics are now redacted and truncated.
 - **Updater / Store:**
   - No in-app updater is compiled in.
-  - `build.rs` sets `cfg(openframe_store)`.
+  - `build.rs` sets `cfg(straft_store)`.
   - The release gate fails closed: license, versions, signing material, updater configuration, Store identity and
     assets, AI distribution URL, and now the manifest key. *(2026-10-08: the AI checks are now the bundled AI build
     inputs against the lock, ADR-0025.)*
@@ -113,7 +113,7 @@ other people. A local attacker running as the same Windows user is out of scope 
   - **Before:** 3 vulnerabilities. RUSTSEC-2026-0187 is a lopdf stack overflow on nested objects.
     RUSTSEC-2026-0194 is quadratic quick-xml duplicate-attribute checking, and RUSTSEC-2026-0195 is unbounded
     quick-xml `NsReader` namespace allocation. These are the same issues as PARSE-01/02, found independently.
-  - **Fix:** quick-xml was upgraded 0.38 → 0.42 and lopdf 0.36 → 0.45. Only `openframe-import-export` uses them.
+  - **Fix:** quick-xml was upgraded 0.38 → 0.42 and lopdf 0.36 → 0.45. Only `straft-import-export` uses them.
     `THIRD_PARTY_LICENSES.md` was regenerated; every new crate has a permissive license (brotli-decompressor, weezl,
     RustCrypto 0.11 crates).
   - **After:** 0 vulnerabilities, with 2 accepted warnings (see above).
@@ -123,12 +123,12 @@ other people. A local attacker running as the same Windows user is out of scope 
     tokens, `sk-` keys and `password|secret|token|api_key = "…"` literals.
   - No `.pfx/.p12/.pem/.key/.env` file is tracked now or was ever added.
   - **Nothing found.** The only key material is the development manifest *public* key
-    (`crates/openframe-ai/keys/manifest-dev.pub`).
+    (`crates/straft-ai/keys/manifest-dev.pub`).
 
 ## Verification
 
-- `cargo test -j 2 --workspace --exclude openframe-desktop`: green (1,156 tests).
-- `cargo clippy --all-targets -- -D warnings`: clean on every touched crate, including `openframe-desktop`.
+- `cargo test -j 2 --workspace --exclude straft-desktop`: green (1,156 tests).
+- `cargo clippy --all-targets -- -D warnings`: clean on every touched crate, including `straft-desktop`.
 - `cargo fmt --check`: clean.
 - `tsc --noEmit`, `eslint src --max-warnings 0` and `vitest run`: clean.
 - `node scripts/release-validate.mjs --report-only`, checked three ways:

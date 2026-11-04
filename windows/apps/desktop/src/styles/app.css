@@ -1,9 +1,9 @@
-/* OpenFrame Studio application styles.
-   Base visual language: openframe.css (the UX mock design system, tokens verbatim).
+/* Straft Studio application styles.
+   Base visual language: straft.css (the UX mock design system, tokens verbatim).
    This file adapts it from static mockups to a live, resizable, accessible app. */
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/utilities" layer(utilities);
-@import "./openframe.css";
+@import "./straft.css";
 
 html, body, #root { height: 100%; }
 /* Clip, never hide: a hidden overflow can still be scrolled by script, and the editor's scroll-into-view

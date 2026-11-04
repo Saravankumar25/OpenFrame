@@ -1,6 +1,6 @@
 M1.10 sidecar loopback bind retry: evidence (2026-10-05, Windows 11, debug test profile)
 Command (run 3 times, all passed):
-  cargo test --locked -p openframe-ai --test supervisor
+  cargo test --locked -p straft-ai --test supervisor
 Mutation check: START_BIND_ATTEMPTS=1 makes both m1_10 tests fail (restored to 3).
 node scripts/architecture-lint.mjs: no R3/R5 findings for supervisor.rs.
 

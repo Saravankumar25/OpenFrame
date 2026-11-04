@@ -51,7 +51,7 @@ export async function unlockTeamGate(browser, password) {
   const input = await browser.$("#team-password");
   await input.waitForDisplayed({ timeout: 30_000, timeoutMsg: "The team password screen did not show on the gated build" });
   await input.setValue(password);
-  await click(browser, "Open OpenFrame Studio");
+  await click(browser, "Open Straft Studio");
   await input.waitForExist({ reverse: true, timeout: 30_000, timeoutMsg: "The team password screen did not close" });
 }
 

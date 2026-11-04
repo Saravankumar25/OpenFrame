@@ -1,6 +1,6 @@
-# OpenFrame Studio — Module Engineering Brief (read fully before coding)
+# Straft Studio — Module Engineering Brief (read fully before coding)
 
-You are implementing one vertical module of OpenFrame Studio, a local-first Windows 11 desktop app
+You are implementing one vertical module of Straft Studio, a local-first Windows 11 desktop app
 (Tauri v2 + React 19/TypeScript + Rust + SQLite). The foundation already exists and is tested. Your
 job: build your module **end-to-end** (schema → Rust commands/queries → search/trash/undo → TS UI →
 tests) to production quality, following the specs. No mocks, no fake data, no buttons that do nothing,
@@ -23,29 +23,29 @@ the specs. DTO `rev`/`position`/count fields that are i64 need `#[ts(type = "num
 - You work in your OWN git worktree/branch. Commit your work to your branch when done (clear message,
   end with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`). Do not push, do not merge.
 - A "GateGuard" hook blocks the FIRST Write of any new file until you state: who imports/calls it, API,
-  data schema, and the user's instruction ("Build OpenFrame Studio into a production-grade Windows 11
+  data schema, and the user's instruction ("Build Straft Studio into a production-grade Windows 11
   desktop application."). Just state those facts in your message and retry the same Write. Tip: for a
   big new file, first Write a one-line placeholder (gate), then Write the full content.
-- Build Rust only for the crates you need: `cargo test -p openframe-application` (does NOT compile Tauri).
+- Build Rust only for the crates you need: `cargo test -p straft-application` (does NOT compile Tauri).
   Frontend: `cd apps/desktop; npx tsc --noEmit -p .; npx eslint src --max-warnings 0; npx vitest run`.
   Run `npm install` at repo root first if `node_modules` is missing in your worktree.
-- Regenerate TS types after changing Rust DTOs: `cargo test -p openframe-application export_bindings`
+- Regenerate TS types after changing Rust DTOs: `cargo test -p straft-application export_bindings`
   (writes `apps/desktop/src/ipc/generated/*.ts`; commit them).
-- Storage: your worktree is temporary. Build into the shared `CARGO_TARGET_DIR` (`C:\OpenFrame\.build-cache\target`, a user-level variable; set it in your shell if it is missing) instead of a private `target/`, and do not run a full install or compile you do not need. When your work is committed, tell the lead; the lead removes the worktree with `git worktree remove` and prunes. Never delete source, branches or commits. Full rules: `docs/development-storage-policy.md`.
+- Storage: your worktree is temporary. Build into the shared `CARGO_TARGET_DIR` (`C:\Straft\.build-cache\target`, a user-level variable; set it in your shell if it is missing) instead of a private `target/`, and do not run a full install or compile you do not need. When your work is committed, tell the lead; the lead removes the worktree with `git worktree remove` and prunes. Never delete source, branches or commits. Full rules: `docs/development-storage-policy.md`.
 
 ## 2. Files you OWN (create/edit freely)
-- `crates/openframe-application/src/modules/<your_module>/` (dir with `mod.rs` + submodules) — or the
+- `crates/straft-application/src/modules/<your_module>/` (dir with `mod.rs` + submodules) — or the
   specific crate named in your assignment.
 - Your migration file(s) under `migrations/` (listed in your assignment). Pre-release: you may edit them.
   HUB TABLE columns (see §5) are contracts: add columns/tables, never rename/remove contract columns.
-- `crates/openframe-application/tests/<your_module>*.rs`
+- `crates/straft-application/tests/<your_module>*.rs`
 - `apps/desktop/src/workspaces/<your-dir>/` (default export from `index.tsx` = workspace root; discovered
   automatically by `app/routes.tsx` via glob — do NOT edit routes.tsx).
 - `apps/desktop/src/api/<your_module>.ts` (typed wrappers, optional).
 
 ## 3. Files you may touch minimally (expect merge by lead)
-- `crates/openframe-application/src/modules/mod.rs`: add exactly `pub mod <m>;` and `<m>::register(r);`.
-- `crates/openframe-application/Cargo.toml` / workspace `Cargo.toml`: only if you truly need a new dep
+- `crates/straft-application/src/modules/mod.rs`: add exactly `pub mod <m>;` and `<m>::register(r);`.
+- `crates/straft-application/Cargo.toml` / workspace `Cargo.toml`: only if you truly need a new dep
   (prefer existing workspace deps: rusqlite, serde, regex, similar, quick-xml, zip, image, pdf-writer,
   lopdf, csv, rust_xlsxwriter, sha2, reqwest, tokio, sysinfo, time…). Justify any new dependency
   (maintained, permissive license MIT/Apache/BSD/ISC/Zlib, small).
@@ -53,7 +53,7 @@ Everything else (store.rs, core.rs, registry.rs, util.rs, shell, design-system, 
 edit. If you believe a foundation change is required, implement a local workaround and describe the
 needed change in your final report.
 
-## 4. Backend conventions (crates/openframe-application)
+## 4. Backend conventions (crates/straft-application)
 - Every op = `fn(&AppCore, &Actor, Args) -> AppResult<R>`; register with `r.query("mod.action", f)` or
   `r.command(...)`. Args structs: `#[derive(Deserialize, TS)] #[ts(export)] #[serde(rename_all="camelCase",
   deny_unknown_fields)]`. DTOs: `#[derive(Serialize, TS)] #[ts(export)] #[serde(rename_all="camelCase")]`;
@@ -63,10 +63,10 @@ needed change in your final report.
   .target("type", &id) [.coalesce(key) for typing]`, |tx| { ... })`. Inside, use `tx.conn()` SQL.
   The pipeline gives you transaction + permission + generic undo/redo + activity + search reindex + events.
   Undo is automatic (row images captured by triggers) — never write inverse logic.
-- Identity: `openframe_domain::new_id()` (UUIDv7). Timestamps `now_ms()`. Canonical tables: `id TEXT PK,
+- Identity: `straft_domain::new_id()` (UUIDv7). Timestamps `now_ms()`. Canonical tables: `id TEXT PK,
   created_at, updated_at, rev INTEGER DEFAULT 1, deleted_at` (+`position` for user order). NO BLOB
   columns, NO `ON DELETE CASCADE`. Infra tables prefixed `sys_`/`search_` are not undo-tracked.
-- Updates: `openframe_persistence::rows::update_fields(conn, table, id, &[(col, val)], ALLOWED_COLS,
+- Updates: `straft_persistence::rows::update_fields(conn, table, id, &[(col, val)], ALLOWED_COLS,
   expected_rev, "what")` (bumps rev/updated_at; optional optimistic `expected_rev` → `conflict.stale`).
   Ordering: `rows::{sibling_ids, next_position, place_at, renumber}`.
 - Delete: `store::soft_delete(tx, DeleteSpec{..})` (recoverable, appears in Recently Deleted) + register
@@ -92,7 +92,7 @@ needed change in your final report.
 - Source-of-truth rules are absolute: no hidden sync between Vault/Story/Screenplay/Production/Schedule/
   Call Sheet. Copies create new identities. Production never rewrites screenplay text. Call sheet edits
   never rewrite the schedule. AI never mutates directly.
-- Tests: `crates/openframe-application/tests/<module>.rs` using `openframe_test_support::TestEnv`
+- Tests: `crates/straft-application/tests/<module>.rs` using `straft_test_support::TestEnv`
   (`TestEnv::with_project(title, "Feature Film")`, `env.ok(op, json!)`, `env.err(op, json!) -> code`,
   `env.undo()`, `env.redo()`, `env.actor_with_role(Role::Viewer)`, `env.restart()`,
   `env.crash_and_restart()`, `env.write_file(name, bytes)`). Cover: happy paths, validation, undo/redo,
@@ -124,7 +124,7 @@ needed change in your final report.
   beyond editing buffers. Types from `../../ipc/generated/*`.
 - UI kit: `design-system/index.tsx` (Button, IconButton, Field, TextInput, TextArea, Select, Segmented,
   Checkbox, Chip, Banner, Dot, EmptyState, Skeleton, PageHeader, Dialog, ConfirmDialog, Drawer, Menu,
-  ContextMenu) + mock CSS classes from `styles/openframe.css` (.card, .h4, .row, .grid, .tbl, .banner,
+  ContextMenu) + mock CSS classes from `styles/straft.css` (.card, .h4, .row, .grid, .tbl, .banner,
   .chip, .toolbar, .subnav, .vcard, .board, .actband, .seq, .sc, .beat, .strip, .daycol, .paper…).
   Reuse exact labels/texts from the UX spec + mockups. Icons: lucide-react.
 - Navigation: `useNav()` → `route {workspace, sub?, params?}`; workspaces read `route.sub`/`route.params`
@@ -140,7 +140,7 @@ needed change in your final report.
 - Frontend tests (vitest + @testing-library/react) for non-trivial pure logic/components.
 
 ## 7. Definition of done for your module
-All FSD behaviours for your module implemented through all layers; `cargo test -p openframe-application`
+All FSD behaviours for your module implemented through all layers; `cargo test -p straft-application`
 green (all tests, not just yours); `npx tsc --noEmit -p .` and `npx eslint src --max-warnings 0` clean;
 bindings regenerated; committed on your branch. Final report (concise): what's implemented (by FSD
 section/ID), ops added, tables added, tests added, anything NOT done and why, any foundation changes needed.

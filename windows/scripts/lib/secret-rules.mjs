@@ -22,7 +22,7 @@ export const RULES = [
   // `NAME=value` (shell, .env), `$env:NAME = "value"` (PowerShell) or `NAME: value` (YAML, JSON). A reference
   // such as `${{ secrets.X }}`, `$X` or `%X%` is not a value. A line that names the variable on purpose (a test)
   // carries the allow marker.
-  { id: "team-password-value", re: /OPENFRAME_TEAM_PASSWORD["']?\s*[=:]\s*["']?(?![$%{(<])[^\s"']{4,}/ },
+  { id: "team-password-value", re: /STRAFT_TEAM_PASSWORD["']?\s*[=:]\s*["']?(?![$%{(<])[^\s"']{4,}/ },
 ];
 
 /** Files that must never be committed, whatever they contain. */

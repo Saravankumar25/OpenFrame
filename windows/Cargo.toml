@@ -2,19 +2,19 @@
 resolver = "3"
 members = [
     "apps/desktop/src-tauri",
-    "crates/openframe-domain",
-    "crates/openframe-persistence",
-    "crates/openframe-security",
-    "crates/openframe-platform",
-    "crates/openframe-entitlement",
-    "crates/openframe-project-format",
-    "crates/openframe-import-export",
-    "crates/openframe-ai",
-    "crates/openframe-search",
-    "crates/openframe-application",
-    "crates/openframe-ai-checks",
-    "crates/openframe-ai-eval",
-    "crates/openframe-test-support",
+    "crates/straft-domain",
+    "crates/straft-persistence",
+    "crates/straft-security",
+    "crates/straft-platform",
+    "crates/straft-entitlement",
+    "crates/straft-project-format",
+    "crates/straft-import-export",
+    "crates/straft-ai",
+    "crates/straft-search",
+    "crates/straft-application",
+    "crates/straft-ai-checks",
+    "crates/straft-ai-eval",
+    "crates/straft-test-support",
 ]
 
 [workspace.package]
@@ -22,22 +22,22 @@ version = "0.1.0"
 edition = "2024"
 rust-version = "1.85"
 # The final open-source license identifier has not been selected yet (see LICENSE-PENDING.md).
-license = "LicenseRef-OpenFrame-Pending"
+license = "LicenseRef-Straft-Pending"
 publish = false
-authors = ["OpenFrame Studio contributors"]
+authors = ["Straft Studio contributors"]
 
 [workspace.dependencies]
-openframe-domain = { path = "crates/openframe-domain" }
-openframe-persistence = { path = "crates/openframe-persistence" }
-openframe-project-format = { path = "crates/openframe-project-format" }
-openframe-security = { path = "crates/openframe-security" }
-openframe-platform = { path = "crates/openframe-platform" }
-openframe-entitlement = { path = "crates/openframe-entitlement" }
-openframe-search = { path = "crates/openframe-search" }
-openframe-import-export = { path = "crates/openframe-import-export" }
-openframe-ai = { path = "crates/openframe-ai" }
-openframe-application = { path = "crates/openframe-application" }
-openframe-test-support = { path = "crates/openframe-test-support" }
+straft-domain = { path = "crates/straft-domain" }
+straft-persistence = { path = "crates/straft-persistence" }
+straft-project-format = { path = "crates/straft-project-format" }
+straft-security = { path = "crates/straft-security" }
+straft-platform = { path = "crates/straft-platform" }
+straft-entitlement = { path = "crates/straft-entitlement" }
+straft-search = { path = "crates/straft-search" }
+straft-import-export = { path = "crates/straft-import-export" }
+straft-ai = { path = "crates/straft-ai" }
+straft-application = { path = "crates/straft-application" }
+straft-test-support = { path = "crates/straft-test-support" }
 
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

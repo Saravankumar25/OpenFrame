@@ -10,11 +10,11 @@ import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
 
-const ROOT = process.env.OPENFRAME_CHECK_ROOT
-  ? path.resolve(process.env.OPENFRAME_CHECK_ROOT)
+const ROOT = process.env.STRAFT_CHECK_ROOT
+  ? path.resolve(process.env.STRAFT_CHECK_ROOT)
   : path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
-// OpenFrameMac and changes are local, uncommitted reference folders the owner supplies (listed in .git/info/exclude).
-const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", ".claude", ".build-cache", "dist", "gen", "OpenFrameMac", "changes"]);
+// StraftMac and changes are local, uncommitted reference folders the owner supplies (listed in .git/info/exclude).
+const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", ".claude", ".build-cache", "dist", "gen", "StraftMac", "changes"]);
 const RECORD_PREFIXES = ["docs/audits/", "docs/history/", "docs/release/evidence/"];
 // Documents whose older sections are kept as written; links after the marker line are not checked.
 const HISTORY_MARKERS = {

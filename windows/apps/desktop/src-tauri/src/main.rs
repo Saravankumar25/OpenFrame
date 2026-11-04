@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    openframe_desktop_lib::run()
+    straft_desktop_lib::run()
 }

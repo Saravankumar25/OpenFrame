@@ -1,6 +1,6 @@
 # ADR-0011: UUIDv7 identities and no stored display numbers
 
-- **Status:** Accepted (implemented: `crates/openframe-domain/src/ids.rs`, all migrations, `persistence::rows`)
+- **Status:** Accepted (implemented: `crates/straft-domain/src/ids.rs`, all migrations, `persistence::rows`)
 - **Date:** 2026-09-30
 - **Related:** Domain spec §2 (stable identity); invariant 5; PRD N-1, N-3, N-10; FSD-STORY-003
 - **Amendment pending:** [ADR-0015](ADR-0015-screenplay-production-numbering.md) (Proposed) adds a stored `production_number`
@@ -15,7 +15,7 @@ Using numbers or database rowids as identity would break references on every reo
 
 ## Decision
 
-1. **Every canonical row's primary key is a UUIDv7 string** (`openframe_domain::new_id()`), stored as `TEXT` in the
+1. **Every canonical row's primary key is a UUIDv7 string** (`straft_domain::new_id()`), stored as `TEXT` in the
    canonical hyphenated form. v7 is globally unique (safe across packages and machines) and **time-sortable**,
    giving a stable tie-breaker and index locality.
 2. Ids are **opaque**. Nothing parses meaning from them except `is_valid_id`, which validates ids arriving over IPC or

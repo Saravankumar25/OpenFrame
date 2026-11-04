@@ -6,12 +6,12 @@
 
 | Item | Value |
 |---|---|
-| Installer | `release-out\OpenFrame-Studio-0.1.0-internal-028d8b6.exe`, 27,016,597 bytes, SHA-256 `97b712214109e5812ce87cf226a4bd234f25b3fac65b68735e97fea0d787d50f` |
-| Install | Per user, to `%LOCALAPPDATA%\Programs\OpenFrame Studio` |
-| Installed `openframe-desktop.exe` SHA-256 | `91bac2bccf38eaffe811eea9aa24bea2952330ca9b94c4119e66d7af1f5306c2` |
+| Installer | `release-out\Straft-Studio-0.1.0-internal-028d8b6.exe`, 27,016,597 bytes, SHA-256 `97b712214109e5812ce87cf226a4bd234f25b3fac65b68735e97fea0d787d50f` |
+| Install | Per user, to `%LOCALAPPDATA%\Programs\Straft Studio` |
+| Installed `straft-desktop.exe` SHA-256 | `91bac2bccf38eaffe811eea9aa24bea2952330ca9b94c4119e66d7af1f5306c2` |
 | Plain release build | `0d380442...` |
 | Difference | 3 bytes at Tauri's `__TAURI_BUNDLE_TYPE` marker (UNK becomes NSS). Byte comparison done. The installer sets the marker; the code is the same |
-| Uninstall of an earlier copy | Silent uninstall kept `Documents\OpenFrame` (projects kept: True) |
+| Uninstall of an earlier copy | Silent uninstall kept `Documents\Straft Studio` (projects kept: True) |
 | Reinstall | Worked |
 
 ## The suite

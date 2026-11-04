@@ -4,7 +4,7 @@ Spec: `tests/e2e/specs/90-visual-baseline.test.mjs`
 
 Tags: none (shared journey data).
 
-Before: `01-journey` and `02-restart` have run on the shared journey data. The app starts on that data. The window is made 1440 by 900 pixels. The appearance is set to Light mode with the OpenFrame Default theme, through the same operations Settings, Appearance uses, so every run captures the same look whatever the computer's own setting is. At the end the appearance is set back to System mode with OpenFrame Default.
+Before: `01-journey` and `02-restart` have run on the shared journey data. The app starts on that data. The window is made 1440 by 900 pixels. The appearance is set to Light mode with the Straft Default theme, through the same operations Settings, Appearance uses, so every run captures the same look whatever the computer's own setting is. At the end the appearance is set back to System mode with Straft Default.
 
 "Capture S" means:
 

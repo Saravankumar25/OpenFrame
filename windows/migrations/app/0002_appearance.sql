@@ -2,7 +2,7 @@
 -- Personal preferences of the person at this computer. Never stored in a project.
 
 -- 'mode' is light, dark or system; 'theme' is the active theme id. A missing row means the default
--- (System mode, OpenFrame Default), so an installation that never opens Appearance keeps today's look.
+-- (System mode, Straft Default), so an installation that never opens Appearance keeps today's look.
 CREATE TABLE sys_appearance_pref (
     key         TEXT PRIMARY KEY CHECK (key IN ('mode', 'theme')),
     value       TEXT NOT NULL,

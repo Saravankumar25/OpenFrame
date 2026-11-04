@@ -245,10 +245,10 @@ describe(`visual ${MODE === "compare" ? "regression against the visual baseline 
     await browser.setWindowSize(1440, 900);
     // The default mode is System, which follows this computer's Windows setting; the baseline is
     // the default theme in Light mode, so every run captures that, whatever the machine uses.
-    await setAppearance("light", "openframe-default");
+    await setAppearance("light", "straft-default");
   });
   after(async () => {
-    if (browser) await setAppearance("system", "openframe-default").catch(() => undefined);
+    if (browser) await setAppearance("system", "straft-default").catch(() => undefined);
     await browser?.deleteSession().catch(() => undefined);
   });
 

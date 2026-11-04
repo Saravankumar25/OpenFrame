@@ -4,9 +4,9 @@ Spec: `tests/e2e/specs/91-appearance-themes.test.mjs`
 
 Tags: none (shared journey data).
 
-Before: `90-visual-baseline` has run on the shared journey data (the demo project "Night Bus"). The app starts on that data and the window is made 1440 by 900 pixels. At the end the appearance is set to OpenFrame Default, Light, and then to System mode, so later scenarios see the default look.
+Before: `90-visual-baseline` has run on the shared journey data (the demo project "Night Bus"). The app starts on that data and the window is made 1440 by 900 pixels. At the end the appearance is set to Straft Default, Light, and then to System mode, so later scenarios see the default look.
 
-The 16 built-in themes (from the app's theme list): OpenFrame Default, Studio Amber, Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain, Sunset Boulevard, Arctic Frame, Neon Reel, Location Scout, Desert Dune, Colorist Neutral, Silver Screen, High Contrast.
+The 16 built-in themes (from the app's theme list): Straft Default, Studio Amber, Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain, Sunset Boulevard, Arctic Frame, Neon Reel, Location Scout, Desert Dune, Colorist Neutral, Silver Screen, High Contrast.
 
 "Set the appearance to T, M" means: set theme T and mode M through the same operations Settings, Appearance uses, then check the app root reports theme T and mode M.
 
@@ -32,7 +32,7 @@ The 16 built-in themes (from the app's theme list): OpenFrame Default, Studio Am
    1. Set the appearance to that theme and mode.
    2. Walk the 15 screens. On each screen, check the screen is readable.
 2. Check: 480 screens were checked (16 themes, 2 modes, 15 screens).
-3. Check: no readability problem was found, apart from the known exceptions of OpenFrame Default in Light mode: muted text, accent buttons and accent text (the owner chose to keep the default look as it is). Those exceptions are allowed only for that theme and mode.
+3. Check: no readability problem was found, apart from the known exceptions of Straft Default in Light mode: muted text, accent buttons and accent text (the owner chose to keep the default look as it is). Those exceptions are allowed only for that theme and mode.
 
 ## The theme and mode come back after a relaunch
 

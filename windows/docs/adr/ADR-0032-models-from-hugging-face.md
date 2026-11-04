@@ -6,7 +6,7 @@
   licensing before release.")
 - **Date:** 2026-10-16
 - **Amends:** [ADR-0026](ADR-0026-offline-ai-download-after-install.md). Supersedes its decision 4 (signed manifest) and
-  decision 8 (owner's model host and keys, `MODEL_DISTRIBUTION_BASE_URL`, `OPENFRAME_MANIFEST_PUBLIC_KEY`). Every other
+  decision 8 (owner's model host and keys, `MODEL_DISTRIBUTION_BASE_URL`, `STRAFT_MANIFEST_PUBLIC_KEY`). Every other
   decision of ADR-0026 stands: the runtime in the package, download only on the person's click, `.partial` with resume,
   preflight, atomic activation, quarantine, last good set kept until the health check passes, the models in app data, the
   validation per format.
@@ -22,13 +22,13 @@ commit and size, and redirect to Hugging Face's own download servers on `*.hf.co
 ## Decision
 
 1. **Source.** The app downloads each model from its Hugging Face `resolve` address at the commit revision pinned in the
-   lock. No server of OpenFrame's own, no storage bucket, no cloud backend, no Ollama.
+   lock. No server of Straft Studio's own, no storage bucket, no cloud backend, no Ollama.
 2. **Trust.** The sizes and SHA-256 hashes compiled into the app (the lock) are the trust root. A file is used only when it
    matches them exactly. There is no signed list and no signing key: the app itself is the signed, shipped artifact (signing
    at Chapter 3).
 3. **Network rules.** HTTPS only. The first address must be `huggingface.co`; redirects are followed only to
    `huggingface.co` or a host under `hf.co`, at most five. No cookie, no token, no account. A test build may name a loopback
-   test host instead (build value `OPENFRAME_TEST_MODEL_SOURCE`); a release build accepts it only with `OPENFRAME_TEST_BUILD=1`.
+   test host instead (build value `STRAFT_TEST_MODEL_SOURCE`); a release build accepts it only with `STRAFT_TEST_BUILD=1`.
 4. **Resume and cache.** Unchanged from ADR-0026: `.partial` files with range resume, kept across sessions, checked before
    use, activated by one rename into `<app data>/models/<version>/`.
 5. **Manual import.** Settings, Offline AI offers "Import a model file…": the person picks a file (for example one copied

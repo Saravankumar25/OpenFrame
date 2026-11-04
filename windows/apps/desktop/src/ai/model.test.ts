@@ -82,15 +82,15 @@ describe("Offline AI", () => {
     expect(panelMode(status({ available: true, mode: "AI Ready", bundleState: "Verified", runtimeState: "Ready" }))).toBe("ready");
     const damaged = status({
       bundleState: "Damaged",
-      problem: { code: "ai.assets_damaged", message: "Offline AI files in this installation were changed or damaged, so OpenFrame did not start them. Reinstall OpenFrame Studio to repair it. Your projects were not changed.", retryable: false },
+      problem: { code: "ai.assets_damaged", message: "Offline AI files in this installation were changed or damaged, so Straft Studio did not start them. Reinstall Straft Studio to repair it. Your projects were not changed.", retryable: false },
     });
     expect(panelMode(damaged)).toBe("off");
-    expect(offReason(damaged)).toContain("Reinstall OpenFrame Studio");
-    expect(offReason(status({}))).toBe("AI is currently unavailable. OpenFrame's core workflows continue to work normally.");
-    expect(panelMode(status({ bundleState: "NotInstalled", problem: { code: "ai.not_installed", message: "OpenFrame AI is not downloaded yet.", retryable: false } }))).toBe("download");
-    const models = status({ bundleState: "Damaged", problem: { code: "ai.models_damaged", message: "An OpenFrame AI file is missing or damaged.", retryable: false } });
+    expect(offReason(damaged)).toContain("Reinstall Straft Studio");
+    expect(offReason(status({}))).toBe("AI is currently unavailable. Straft Studio's core workflows continue to work normally.");
+    expect(panelMode(status({ bundleState: "NotInstalled", problem: { code: "ai.not_installed", message: "Straft AI is not downloaded yet.", retryable: false } }))).toBe("download");
+    const models = status({ bundleState: "Damaged", problem: { code: "ai.models_damaged", message: "A Straft AI file is missing or damaged.", retryable: false } });
     expect(panelMode(models)).toBe("download");
-    expect(damagedModels(models)).toBe("An OpenFrame AI file is missing or damaged.");
+    expect(damagedModels(models)).toBe("A Straft AI file is missing or damaged.");
     expect(damagedModels(damaged)).toBeUndefined();
   });
 });

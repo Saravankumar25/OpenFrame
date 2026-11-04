@@ -9,7 +9,7 @@ processor and Vulkan builds. Chat model: Gemma 3 1B Instruct Q8_0 (the pinned fi
 1. `ai-eval` ran 30 tool cases of the approved gold sets through the real assistant pipeline on a release build and
    recorded every request body the assistant sent and the engine's own numbers per case
    ([record-results.jsonl](record-results.jsonl); the bodies stay in the git-ignored build cache).
-2. `engine-bench` (`crates/openframe-ai-eval/src/bin/engine-bench.rs`) replayed those exact requests against
+2. `engine-bench` (`crates/straft-ai-eval/src/bin/engine-bench.rs`) replayed those exact requests against
    `llama-server`, one setting changed at a time, after one warm-up request, and wrote medians, quartiles and ranges
    from the engine's `timings` (prompt and generation separately) plus the wall time. Each JSON file below is the raw
    output; every run can be repeated with the command in the tool's header.

@@ -89,7 +89,7 @@ export function OpenProjectDialog({ onClose, currentTitle }: { onClose: () => vo
         <DoneBanner title={report.identityKept ? "Project opened." : "Opened as a copy."}>
           <div className="row sm"><Check size={13} aria-hidden /> Validated · {report.message}</div>
           {report.safetyBackup && <div className="xs muted selectable-text">Safety backup: {report.safetyBackup}</div>}
-          {report.migratedFrom != null && <div className="xs muted">The project was upgraded from an older OpenFrame version; a safety copy was kept.</div>}
+          {report.migratedFrom != null && <div className="xs muted">The project was upgraded from an older Straft Studio version; a safety copy was kept.</div>}
           <LinkedFiles files={report.missingExternal} />
         </DoneBanner>
       ) : taskId ? (

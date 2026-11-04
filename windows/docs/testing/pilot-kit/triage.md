@@ -32,6 +32,6 @@ Installation warnings (SmartScreen) and ideas are logged but are not defects.
 
 | id | reporter | severity | area | build | status | fixed in | rechecked by |
 |---|---|---|---|---|---|---|---|
-| P-001 | | blocking / major / minor / cosmetic | | OpenFrame-<n> | open / fixed / rechecked / wont-fix | OpenFrame-<n> | |
+| P-001 | | blocking / major / minor / cosmetic | | Straft-<n> | open / fixed / rechecked / wont-fix | Straft-<n> | |
 
 Status words: open, fixed (waiting for re-check), rechecked (closed), wont-fix (needs an owner decision, written down).

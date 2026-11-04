@@ -6,10 +6,10 @@
 // script: it takes one lock shared by all worktrees, runs cargo with a capped job count, and releases
 // the lock when cargo ends, on Ctrl+C, or when the holder dies (a stale lock is recovered).
 //
-//   node C:/OpenFrame/scripts/cargo-queued.mjs <cargo args...>
-//   e.g. node C:/OpenFrame/scripts/cargo-queued.mjs test -p openframe-application --test production schedule_depth::
+//   node C:/Straft/scripts/cargo-queued.mjs <cargo args...>
+//   e.g. node C:/Straft/scripts/cargo-queued.mjs test -p straft-application --test production schedule_depth::
 //
-// OPENFRAME_CARGO_JOBS sets the job count (default 4); RUST_TEST_THREADS defaults to 4.
+// STRAFT_CARGO_JOBS sets the job count (default 4); RUST_TEST_THREADS defaults to 4.
 // docs/development-storage-policy.md describes the rules.
 
 import { spawn } from "node:child_process";
@@ -23,8 +23,8 @@ import {
 import { join } from "node:path";
 
 const LOCK_DIR =
-  process.env.OPENFRAME_CARGO_LOCK ??
-  "C:/OpenFrame/.build-cache/cargo-queue.lock";
+  process.env.STRAFT_CARGO_LOCK ??
+  "C:/Straft/.build-cache/cargo-queue.lock";
 const OWNER = join(LOCK_DIR, "owner.json");
 const POLL_MS = 2000;
 const args = process.argv.slice(2);
@@ -145,7 +145,7 @@ delete env.CARGO_TARGET_DIR;
 delete env.CARGO_BUILD_JOBS;
 env.RUST_TEST_THREADS ??= "4";
 env.CARGO_INCREMENTAL ??= "0";
-const jobs = process.env.OPENFRAME_CARGO_JOBS ?? "4";
+const jobs = process.env.STRAFT_CARGO_JOBS ?? "4";
 const [sub, ...rest] = args;
 const cargoArgs = BUILD_LIKE.has(sub)
   ? [

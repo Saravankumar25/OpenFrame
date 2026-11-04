@@ -94,7 +94,7 @@ export async function retype(browser, el, text) {
 
 /** First launch in a fresh data root: name the user, create a project, land on Project Home. */
 export async function firstLaunchProject(browser, title, { type } = {}) {
-  await waitForText(browser, "Welcome to OpenFrame Studio", 30_000);
+  await waitForText(browser, "Welcome to Straft Studio", 30_000);
   const name = await browser.$("#dn-name");
   await retype(browser, name, "E2E Tester");
   await inDialog(browser, "Continue");
@@ -107,7 +107,7 @@ export async function createProject(browser, title, { type, first = false } = {}
   if (type) await click(browser, type, { within: '//*[@role="dialog"]' });
   await inDialog(browser, "Create");
   await browser.$('//nav[@aria-label="Workspaces"]').waitForExist({ timeout: 20_000 });
-  await browser.waitUntil(async () => (await browser.execute(() => document.title)) === `${title} - OpenFrame Studio`, {
+  await browser.waitUntil(async () => (await browser.execute(() => document.title)) === `${title} - Straft Studio`, {
     timeout: 15_000,
     timeoutMsg: `the window title does not name "${title}"`,
   });

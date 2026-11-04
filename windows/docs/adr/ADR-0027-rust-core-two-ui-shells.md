@@ -11,7 +11,7 @@
 
 ## Context
 
-OpenFrame was built as React screens inside a Tauri shell over a large Rust core (about 195,000 lines of Rust, 41,000
+Straft Studio was built as React screens inside a Tauri shell over a large Rust core (about 195,000 lines of Rust, 41,000
 lines of screens). The owner wants the Mac application to be a native SwiftUI application that can use Apple's own
 on-device model, and wants the Windows application finished completely first.
 

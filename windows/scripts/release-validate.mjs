@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Release gate for OpenFrame Studio. FAILS CLOSED: any missing legal or operational
+// Release gate for Straft Studio. FAILS CLOSED: any missing legal or operational
 // prerequisite stops the release (Engineering Package Index §7).
 //
 //   node scripts/release-validate.mjs --tag v0.1.0            (direct NSIS/MSI release)
@@ -16,8 +16,8 @@
 //   6. the Offline AI build inputs match packaging/ai/ai-assets.lock.json (ADR-0026: every package
 //      carries the engine; the models download after install);
 //   6a. every model in the lock is pinned to a Hugging Face file at a full commit (ADR-0032), and
-//      the test model source of the test suite is not set (OPENFRAME_TEST_MODEL_SOURCE,
-//      OPENFRAME_TEST_BUILD).
+//      the test model source of the test suite is not set (STRAFT_TEST_MODEL_SOURCE,
+//      STRAFT_TEST_BUILD).
 // Direct channel only
 //   3a. signing material is present in the environment (never printed):
 //      WINDOWS_CERTIFICATE, WINDOWS_CERTIFICATE_PASSWORD, TAURI_SIGNING_PRIVATE_KEY,
@@ -98,7 +98,7 @@ if (tag !== undefined) {
   if (exists("LICENSE-PENDING.md")) problems.push("LICENSE-PENDING.md is still present (no end-user license agreement yet)");
   if (licenseFiles.length === 0) problems.push("no LICENSE file");
   try {
-    if (/LicenseRef-OpenFrame-Pending/.test(read("Cargo.toml"))) problems.push("Cargo.toml license is the pending placeholder");
+    if (/LicenseRef-Straft-Pending/.test(read("Cargo.toml"))) problems.push("Cargo.toml license is the pending placeholder");
     for (const pj of ["package.json", "apps/desktop/package.json"]) {
       if (/LICENSE-PENDING/.test(JSON.parse(read(pj)).license ?? "")) problems.push(`${pj} license points at LICENSE-PENDING.md`);
     }
@@ -205,8 +205,8 @@ try {
     // already reported
   } else if (!models.length) failCheck("Model source", "the lock lists no models");
   else if (loose.length) failCheck("Model source", `not pinned to a Hugging Face commit: ${loose.join(", ")}`);
-  else if ((process.env.OPENFRAME_TEST_MODEL_SOURCE ?? "").trim()) failCheck("Model source", "OPENFRAME_TEST_MODEL_SOURCE is set; it belongs to the test suite only");
-  else if (process.env.OPENFRAME_TEST_BUILD) failCheck("Model source", "OPENFRAME_TEST_BUILD is set; it belongs to the test suite only");
+  else if ((process.env.STRAFT_TEST_MODEL_SOURCE ?? "").trim()) failCheck("Model source", "STRAFT_TEST_MODEL_SOURCE is set; it belongs to the test suite only");
+  else if (process.env.STRAFT_TEST_BUILD) failCheck("Model source", "STRAFT_TEST_BUILD is set; it belongs to the test suite only");
   else pass("Model source", `${models.length} models pinned to Hugging Face commits`);
 }
 
@@ -215,7 +215,7 @@ try {
 try {
   const frozen = JSON.parse(read("migrations/frozen.json"));
   const env = { ...process.env };
-  delete env.OPENFRAME_CHECK_ROOT; // always check this repository, never a tree named by the environment
+  delete env.STRAFT_CHECK_ROOT; // always check this repository, never a tree named by the environment
   const check = spawnSync(process.execPath, [path.join(ROOT, "scripts/check-migrations.mjs")], { encoding: "utf8", env });
   if (frozen.frozen !== true) failCheck("Migration freeze", 'migrations/frozen.json has "frozen": false; set it to true in the release change (doc 23 §4)');
   else if (check.status !== 0) failCheck("Migration freeze", (check.stderr || check.stdout).trim().split("\n").slice(0, 3).join(" "));
@@ -268,10 +268,10 @@ if (STORE) {
       const lib = read("apps/desktop/src-tauri/src/lib.rs");
       const build = read("apps/desktop/src-tauri/build.rs");
       const problems = [];
-      if (!/rustc-cfg=openframe_store/.test(build)) problems.push("build.rs no longer sets cfg(openframe_store) for OPENFRAME_DISTRIBUTION=store");
-      if (/tauri_plugin_updater/.test(lib) && !/cfg\(not\(openframe_store\)\)/.test(lib)) problems.push("lib.rs registers tauri_plugin_updater without #[cfg(not(openframe_store))]");
+      if (!/rustc-cfg=straft_store/.test(build)) problems.push("build.rs no longer sets cfg(straft_store) for STRAFT_DISTRIBUTION=store");
+      if (/tauri_plugin_updater/.test(lib) && !/cfg\(not\(straft_store\)\)/.test(lib)) problems.push("lib.rs registers tauri_plugin_updater without #[cfg(not(straft_store))]");
       if (problems.length) failCheck("No in-app updater in Store builds", problems.join("; "));
-      else pass("No in-app updater in Store builds", /tauri_plugin_updater/.test(lib) ? "updater compiled out by cfg(openframe_store)" : "no updater plugin integrated");
+      else pass("No in-app updater in Store builds", /tauri_plugin_updater/.test(lib) ? "updater compiled out by cfg(straft_store)" : "no updater plugin integrated");
     } catch (e) {
       failCheck("No in-app updater in Store builds", e.message);
     }
@@ -284,7 +284,7 @@ if (STORE) {
 }
 
 // report -------------------------------------------------------------------------------------
-console.log(`\nOpenFrame Studio — release validation (${STORE ? "Microsoft Store MSIX" : "direct NSIS/MSI"})\n`);
+console.log(`\nStraft Studio — release validation (${STORE ? "Microsoft Store MSIX" : "direct NSIS/MSI"})\n`);
 for (const c of checks) console.log(`  [${c.ok ? "PASS" : "FAIL"}] ${c.name}${c.detail ? ` — ${c.detail}` : ""}`);
 const failures = checks.filter((c) => !c.ok);
 console.log("");

@@ -13,22 +13,22 @@ const EVIDENCE = join(REPO, "docs", "release", "evidence", "w9", "vm");
 const E2E = join(REPO, "tests", "e2e");
 const RELEASE_OUT = join(REPO, "release-out");
 const VBOX = String.raw`C:\Program Files\Oracle\VirtualBox\VBoxManage.exe`;
-const VM = "OpenFrame-W9-Clean";
+const VM = "Straft-W9-Clean";
 const SNAPSHOT = "clean";
 const USER = "tester";
 const PW_FILE = String.raw`C:\w9-vm\guest-account.txt`;
 const HOST_STASH = String.raw`C:\w9-vm`;
-const PREVIOUS = "OpenFrame-Studio-0.1.0-internal-d271894";
-const FINAL = "OpenFrame-Studio-0.1.0-internal-995bfac";
+const PREVIOUS = "Straft-Studio-0.1.0-internal-d271894";
+const FINAL = "Straft-Studio-0.1.0-internal-995bfac";
 const PROJECT = "Clean Machine Test";
 const PORT_HOST = 14444; // host side of the NAT forward; the guest portproxy sends it on to tauri-driver (4444)
 const T = String.raw`C:\w9tools`;
 const HOME = String.raw`C:\Users\tester`;
-const INSTALL_DIR = String.raw`${HOME}\AppData\Local\Programs\OpenFrame Studio`;
-const APP_EXE = String.raw`${INSTALL_DIR}\openframe-desktop.exe`;
-const APPDATA = String.raw`${HOME}\AppData\Local\OpenFrame`;
+const INSTALL_DIR = String.raw`${HOME}\AppData\Local\Programs\Straft Studio`;
+const APP_EXE = String.raw`${INSTALL_DIR}\straft-desktop.exe`;
+const APPDATA = String.raw`${HOME}\AppData\Local\Straft Studio`;
 const OUT_DIR = String.raw`${HOME}\Documents\w9out`;
-const DOCS_OF = String.raw`${HOME}\Documents\OpenFrame`;
+const DOCS_OF = String.raw`${HOME}\Documents\Straft Studio`;
 const WEBVIEW2_KEY = String.raw`HKLM\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}`;
 
 const argv = process.argv.slice(2);
@@ -51,12 +51,12 @@ const guestPw = () => {
 let _teamPw;
 const teamPw = () => {
   if (_teamPw) return _teamPw;
-  let v = process.env.OPENFRAME_TEAM_PASSWORD;
+  let v = process.env.STRAFT_TEAM_PASSWORD;
   if (!v) {
-    const r = spawnSync("powershell", ["-NoProfile", "-Command", "[Environment]::GetEnvironmentVariable('OPENFRAME_TEAM_PASSWORD','User')"], { encoding: "utf8" });
+    const r = spawnSync("powershell", ["-NoProfile", "-Command", "[Environment]::GetEnvironmentVariable('STRAFT_TEAM_PASSWORD','User')"], { encoding: "utf8" });
     v = (r.stdout ?? "").trim();
   }
-  if (!v) throw new Error("The team password is not set (env OPENFRAME_TEAM_PASSWORD or the Windows User variable).");
+  if (!v) throw new Error("The team password is not set (env STRAFT_TEAM_PASSWORD or the Windows User variable).");
   return (_teamPw = v);
 };
 const redact = (s) => {
@@ -237,7 +237,7 @@ async function stopDriver() {
   cmd("taskkill /f /im tauri-driver.exe /im msedgedriver.exe");
   _driverUp = false;
 }
-const killApp = () => cmd("taskkill /f /im openframe-desktop.exe /im llama-server.exe");
+const killApp = () => cmd("taskkill /f /im straft-desktop.exe /im llama-server.exe");
 
 /** Start the installed app through the guest's tauri-driver. Same capabilities shape as tests/e2e/lib/app.mjs. */
 async function connect(appPath = APP_EXE) {
@@ -404,8 +404,8 @@ step("install-previous", [
   assert(ai.some((f) => /\.exe$/i.test(f)), "no engine executable in ai\\");
   notes.vcDllsNextToEngine = ai.filter((f) => /^(vcruntime|msvcp|concrt|vcomp).*\.dll$/i.test(f));
   assert(notes.vcDllsNextToEngine.length > 0, "the VC++ DLLs are not next to the engine in ai\\");
-  notes.hklmUninstall = cmd(String.raw`reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall /s /f "OpenFrame"`).stdout.includes("OpenFrame") ? "present (unexpected)" : "none";
-  notes.hkcuUninstall = cmd(String.raw`reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall /s /f "OpenFrame"`).stdout.includes("OpenFrame") ? "present" : "none";
+  notes.hklmUninstall = cmd(String.raw`reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall /s /f "Straft Studio"`).stdout.includes("Straft Studio") ? "present (unexpected)" : "none";
+  notes.hkcuUninstall = cmd(String.raw`reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall /s /f "Straft Studio"`).stdout.includes("Straft Studio") ? "present" : "none";
   assert(notes.hklmUninstall === "none", "the installer wrote a machine-wide uninstall entry");
   shot("install-previous");
 });
@@ -424,7 +424,7 @@ step("gate-and-journey", [
     const alertText = () => b.execute(() => document.querySelector("#team-password-message")?.innerText ?? "");
     for (let i = 1; i <= 5; i++) {
       await b.$("#team-password").setValue(`not-the-password-${i}`);
-      await app.click(b, "Open OpenFrame Studio");
+      await app.click(b, "Open Straft Studio");
       await b.waitUntil(async () => /not right/i.test(await alertText()), { timeout: 30_000, timeoutMsg: `try ${i}: no refusal message` });
       notes[`wrong${i}`] = (await alertText()).trim();
       if (i < 5) await b.waitUntil(async () => b.$("#team-password").isEnabled(), { timeout: 30_000 });
@@ -476,7 +476,7 @@ step("upgrade", [
 
 const TAMPER_PS = String.raw`
 param([string]$Mode)
-$root = Join-Path $env:LOCALAPPDATA 'OpenFrame'
+$root = Join-Path $env:LOCALAPPDATA 'Straft Studio'
 $bak = 'C:\w9tools\bypass-backup'
 $rx = 'gate|team|lock|password|unlock|verified|entitle|licen|trial'
 $script:count = 0
@@ -494,7 +494,7 @@ function Files { Get-ChildItem $root -Recurse -File -ErrorAction SilentlyContinu
 switch ($Mode) {
   'list' { Files | ForEach-Object { $_.FullName.Substring($root.Length) + '  ' + $_.Length } }
   'backup' { robocopy $root $bak /MIR /XD models | Out-Null; 'backup done' }
-  'restore' { robocopy $bak $root /MIR /XD models | Out-Null; foreach ($k in 'HKCU:\Software\studio.openframe.desktop','HKCU:\Software\OpenFrame Studio') { Remove-Item $k -Recurse -Force -ErrorAction SilentlyContinue }; 'restored' }
+  'restore' { robocopy $bak $root /MIR /XD models | Out-Null; foreach ($k in 'HKCU:\Software\studio.straft.desktop','HKCU:\Software\Straft Studio') { Remove-Item $k -Recurse -Force -ErrorAction SilentlyContinue }; 'restored' }
   { $_ -in 'flipTrue','flipFalse' } {
     foreach ($f in (Files | Where-Object { $_.Extension -eq '.json' -and $_.Length -lt 1MB })) {
       $before = $script:count
@@ -503,12 +503,12 @@ switch ($Mode) {
     'flags changed: ' + $script:count
   }
   'deleteMatching' { Files | Where-Object { $_.Name -match $rx } | ForEach-Object { 'deleted ' + $_.FullName; Remove-Item $_.FullName -Force } }
-  'regSet' { foreach ($k in 'HKCU:\Software\studio.openframe.desktop','HKCU:\Software\OpenFrame Studio') { New-Item $k -Force | Out-Null; foreach ($n in 'unlocked','teamGateUnlocked','gateOk','passwordOk') { New-ItemProperty $k -Name $n -Value 1 -PropertyType DWord -Force | Out-Null } }; 'registry keys written' }
+  'regSet' { foreach ($k in 'HKCU:\Software\studio.straft.desktop','HKCU:\Software\Straft Studio') { New-Item $k -Force | Out-Null; foreach ($n in 'unlocked','teamGateUnlocked','gateOk','passwordOk') { New-ItemProperty $k -Name $n -Value 1 -PropertyType DWord -Force | Out-Null } }; 'registry keys written' }
 }
 `;
 
 step("gate-bypass", [
-  "app closed: list %LOCALAPPDATA%\\OpenFrame, back it up (without models) to C:\\w9tools\\bypass-backup",
+  "app closed: list %LOCALAPPDATA%\\Straft Studio, back it up (without models) to C:\\w9tools\\bypass-backup",
   "variants: gate/team/lock/password booleans flipped to true; to false; files named like gate/team/lock deleted (incl. the wrong-try record); HKCU keys named like the app; all three together",
   "after each variant launch and assert the password screen still shows and Home is not reachable; restore after each variant and at the end",
 ], async (notes) => {
@@ -538,8 +538,8 @@ step("gate-bypass", [
 });
 
 step("ai-download", [
-  "launch, password, open the project, open the AI Assistant, click Download OpenFrame AI",
-  "poll the card every 20 s until the question box appears (up to 90 min); record the time and the size of %LOCALAPPDATA%\\OpenFrame\\models",
+  "launch, password, open the project, open the AI Assistant, click Download Straft AI",
+  "poll the card every 20 s until the question box appears (up to 90 min); record the time and the size of %LOCALAPPDATA%\\Straft Studio\\models",
   "setNetwork(false): controlvm setlinkstate1 off (guest firewall block if the driver stops answering); assert huggingface.co is unreachable",
   "ask 'Summarise this project in one sentence.' (CPU only, up to 10 min); record the time to the first answer; network stays off",
 ], async (notes) => {
@@ -548,12 +548,12 @@ step("ai-download", [
     await unlock(b);
     await openFromHome(b, PROJECT);
     await ai.openAssistant(b);
-    const card = () => b.execute(() => document.querySelector('section[aria-label="Download OpenFrame AI"]')?.textContent?.replace(/\s+/g, " ").trim() ?? "");
-    await b.waitUntil(async () => /Download OpenFrame AI/.test(await card()), { timeout: 30_000, timeoutMsg: "no download card (is the AI already installed?)" });
+    const card = () => b.execute(() => document.querySelector('section[aria-label="Download Straft AI"]')?.textContent?.replace(/\s+/g, " ").trim() ?? "");
+    await b.waitUntil(async () => /Download Straft AI/.test(await card()), { timeout: 30_000, timeoutMsg: "no download card (is the AI already installed?)" });
     notes.cardBefore = (await card()).slice(0, 300);
     shot("ai-before-download");
     const box = '//aside[@aria-label="AI Assistant"]//textarea[@aria-label="Ask or command"]';
-    await app.click(b, "Download OpenFrame AI");
+    await app.click(b, "Download Straft AI");
     const t0 = Date.now();
     let lastLog = 0;
     await b.waitUntil(
@@ -566,7 +566,7 @@ step("ai-download", [
         if (!ready && /stopped|damaged|not enough/i.test(await card())) throw new Error(`the download card reports a problem: ${(await card()).slice(0, 300)}`);
         return ready;
       },
-      { timeout: 90 * 60_000, interval: 20_000, timeoutMsg: "OpenFrame AI was not ready after 90 minutes" },
+      { timeout: 90 * 60_000, interval: 20_000, timeoutMsg: "Straft AI was not ready after 90 minutes" },
     );
     notes.downloadSeconds = Math.round((Date.now() - t0) / 1000);
     shot("ai-ready");
@@ -647,7 +647,7 @@ step("offline-export-backup", [
     await flows.inDialog(b, "Open as Copy");
     await app.waitForText(b, "Opened as a copy.", 90_000);
     await flows.inDialog(b, "Close");
-    await b.waitUntil(async () => (await b.execute(() => document.title)) === `${PROJECT} (copy) - OpenFrame Studio`, { timeout: 30_000, timeoutMsg: "the restored copy did not open" });
+    await b.waitUntil(async () => (await b.execute(() => document.title)) === `${PROJECT} (copy) - Straft Studio`, { timeout: 30_000, timeoutMsg: "the restored copy did not open" });
     await assertLine(b, unique);
     shot("restored-copy-open");
     notes.restored = "opened as a copy with the typed line";
@@ -700,13 +700,13 @@ step("power-loss", [
 step("uninstall-keeps-projects", [
   "run uninstall.exe (not silent) through an interactive task",
   "screenshot every 5 s; press Enter on the pages (confirm page, the message box saying projects are kept, finish); the 'delete app data' box is left at its default",
-  "assert the program is gone and every entry of Documents\\OpenFrame is still there; list what remains in %LOCALAPPDATA%\\OpenFrame",
+  "assert the program is gone and every entry of Documents\\Straft Studio is still there; list what remains in %LOCALAPPDATA%\\Straft Studio",
 ], async (notes) => {
   killApp();
   await stopDriver();
   const before = cmd(`dir /b "${DOCS_OF}"`).stdout.trim().split(/\r?\n/).filter(Boolean);
   notes.documentsBefore = before;
-  assert(before.length > 0, "Documents\\OpenFrame is empty before the uninstall (nothing to keep)");
+  assert(before.length > 0, "Documents\\Straft Studio is empty before the uninstall (nothing to keep)");
   await task("uninstall", `"${INSTALL_DIR}\\uninstall.exe"`, { wait: false });
   const gone = () => !cmd(`if exist "${APP_EXE}" echo yes`).stdout.includes("yes");
   let presses = 0;
@@ -724,7 +724,7 @@ step("uninstall-keeps-projects", [
   assert(gone(), "the program is still installed after the uninstaller ran (see the uninstall screenshots)");
   const after = cmd(`dir /b "${DOCS_OF}"`).stdout.trim().split(/\r?\n/).filter(Boolean);
   notes.documentsAfter = after;
-  assert(before.every((f) => after.includes(f)), `Documents\\OpenFrame lost entries: ${before.filter((f) => !after.includes(f)).join(", ")}`);
+  assert(before.every((f) => after.includes(f)), `Documents\\Straft Studio lost entries: ${before.filter((f) => !after.includes(f)).join(", ")}`);
   notes.appDataRemaining = cmd(`dir /b "${APPDATA}"`).stdout.trim().split(/\r?\n/);
   notes.installFolderRemaining = cmd(`dir /b "${INSTALL_DIR}"`).stdout.trim() || "gone";
   shot("uninstall-done");

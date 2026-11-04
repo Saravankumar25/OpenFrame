@@ -1,10 +1,10 @@
 # Sample scripts
 
-OpenFrame ships four fictional sample scripts. OpenFrame Studio wrote them and owns them (owner decision 2026-10-07,
+Straft Studio ships four fictional sample scripts. Straft Studio wrote them and owns them (owner decision 2026-10-07,
 recorded in `docs/implementation/owner-decisions.md`). They serve two purposes: new users open them to learn the app,
 and the test suites use them as regression fixtures.
 
-Copyright 2026 OpenFrame Studio. Fictional sample written for OpenFrame; you may use it to learn the app.
+Copyright 2026 Straft Studio. Fictional sample written for Straft Studio; you may use it to learn the app.
 
 Every person, place, organisation and story in these files is invented. No text is taken from an existing script,
 book, song or brand. The same copyright note appears inside each file: on the Fountain title page (`Copyright:`
@@ -19,7 +19,7 @@ key), and in an XML comment and the title page of the FDX file.
 
 ## Rules for these files
 
-- Keep them fictional and OpenFrame-authored. Do not paste text from any other script.
+- Keep them fictional and Straft Studio-authored. Do not paste text from any other script.
 - Follow the writing standard (`docs/engineering/35-writing-standard.md`): no em dashes or en dashes anywhere, including
   the script prose. Scene headings use a hyphen between location and time of day.
 - Scene counts above are counted from the files. If you edit a sample, update the count here and the regression

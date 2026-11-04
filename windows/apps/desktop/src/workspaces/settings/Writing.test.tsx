@@ -97,7 +97,7 @@ describe("Settings > Writing", () => {
     expect(screen.getByRole("option", { name: "Telugu (India), not installed on this computer" })).toBeInTheDocument();
   });
 
-  it("explains a computer without dictionaries and one without the OpenFrame adapter", async () => {
+  it("explains a computer without dictionaries and one without the Straft Studio adapter", async () => {
     installed = [];
     const { unmount } = render(<WritingSettings />);
     expect(await screen.findByText(/No spelling dictionaries are installed/)).toBeInTheDocument();

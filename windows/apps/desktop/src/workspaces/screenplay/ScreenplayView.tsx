@@ -80,7 +80,7 @@ const SAVE_LABEL: Record<SyncStatus, string> = {
   error: "Not saved yet. Retrying",
 };
 
-const ZOOM_KEY = "openframe.screenplay.zoom";
+const ZOOM_KEY = "straft.screenplay.zoom";
 const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 2;
 
@@ -260,7 +260,7 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onImpor
   const proofing = useMemo((): ProofingMode => {
     const p = proofingState.data;
     if (!p || !p.settings.enabled) return { mode: "off", lang: p?.settings.mainLanguage ?? "en-US" };
-    return { mode: p.adapterAvailable ? "openframe" : "native", lang: p.settings.mainLanguage };
+    return { mode: p.adapterAvailable ? "straft" : "native", lang: p.settings.mainLanguage };
   }, [proofingState.data]);
 
   const setSpelling = (enabled: boolean) =>

@@ -7,7 +7,7 @@
   stay in force.
 - **Date:** 2026-10-05, accepted 2026-10-08
 - **Related:** ADR-0006, ADR-0013; `docs/engineering/27-microsoft-store.md` §§5.4, 10;
-  `docs/engineering/23-release-migration.md` §7; `crates/openframe-ai/`
+  `docs/engineering/23-release-migration.md` §7; `crates/straft-ai/`
 
 ## Context
 

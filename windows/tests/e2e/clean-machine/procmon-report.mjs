@@ -1,5 +1,5 @@
 // Reads the Process Monitor CSV from the clean-machine run and writes the summary the release
-// evidence keeps: where the OpenFrame processes talked to the network, which files and registry
+// evidence keeps: where the Straft Studio processes talked to the network, which files and registry
 // keys they wrote, and everything outside the places the app is allowed to use.
 //   node procmon-report.mjs [session.csv] [--out file.md]      --self-test runs it on a tiny CSV
 
@@ -10,20 +10,20 @@ import { createInterface } from "node:readline";
 const REPO = join(import.meta.dirname, "..", "..", "..");
 const EVIDENCE = join(REPO, "docs", "release", "evidence", "w9", "vm");
 
-const OPENFRAME = /^(openframe-desktop|llama-server|llama-[\w-]+)\.exe$/i;
+const STRAFT = /^(straft-desktop|llama-server|llama-[\w-]+)\.exe$/i;
 const WEBVIEW = /^msedgewebview2\.exe$/i;
 const HF_HOST = /(^|\.)(huggingface\.co|hf\.co)$|^cdn-lfs/i;
 const LOOPBACK = /^(localhost|127\.\d+\.\d+\.\d+|::1|\[::1\]|0\.0\.0\.0)$/i;
 
 const ALLOWED_FILES = [
-  [/^%USERPROFILE%\\AppData\\Local\\OpenFrame\\/i, "app data"],
-  [/^%USERPROFILE%\\AppData\\Local\\Programs\\OpenFrame Studio\\/i, "install folder"],
-  [/^%USERPROFILE%\\AppData\\Local\\studio\.openframe\.desktop\\/i, "WebView2 data"],
-  [/^%USERPROFILE%\\Documents\\OpenFrame\\/i, "projects"],
+  [/^%USERPROFILE%\\AppData\\Local\\Straft Studio\\/i, "app data"],
+  [/^%USERPROFILE%\\AppData\\Local\\Programs\\Straft Studio\\/i, "install folder"],
+  [/^%USERPROFILE%\\AppData\\Local\\studio\.straft\.desktop\\/i, "WebView2 data"],
+  [/^%USERPROFILE%\\Documents\\Straft Studio\\/i, "projects"],
   [/^%USERPROFILE%\\Documents\\w9out\\/i, "test output folder"],
   [/^%USERPROFILE%\\AppData\\Local\\Temp\\/i, "temp"],
 ];
-const ALLOWED_REG = /OpenFrame|studio\.openframe|WebView2|EdgeWebView|Edge\\(BLBeacon|PreferenceMACs)|Microsoft\\Windows\\CurrentVersion\\(Explorer|Internet Settings)/i;
+const ALLOWED_REG = /Straft Studio|studio\.straft|WebView2|EdgeWebView|Edge\\(BLBeacon|PreferenceMACs)|Microsoft\\Windows\\CurrentVersion\\(Explorer|Internet Settings)/i;
 
 /** One CSV line with quoted fields ("" is an escaped quote). Procmon writes one record per line. */
 export function parseCsvLine(line) {
@@ -73,7 +73,7 @@ export async function summarize(lines) {
     }
     rows++;
     const [, name, , op, path, result, detail] = f.length >= 7 ? f : [...f, "", "", "", "", "", ""];
-    const own = OPENFRAME.test(name);
+    const own = STRAFT.test(name);
     if (!own && !WEBVIEW.test(name)) continue;
     const p = procs.get(name) ?? { own, net: new Map(), files: new Map(), reg: new Map() };
     procs.set(name, p);
@@ -91,7 +91,7 @@ export async function summarize(lines) {
 }
 
 export function render(s, defender = "") {
-  const out = [`# Clean-machine network, file and registry activity`, "", `Source: Process Monitor session from the clean Windows 11 guest (${s.rows} events read). OpenFrame processes are exact; \`msedgewebview2.exe\` cannot be tied to the app by name alone (it is the shared WebView2 runtime) and is listed separately.`, ""];
+  const out = [`# Clean-machine network, file and registry activity`, "", `Source: Process Monitor session from the clean Windows 11 guest (${s.rows} events read). Straft Studio processes are exact; \`msedgewebview2.exe\` cannot be tied to the app by name alone (it is the shared WebView2 runtime) and is listed separately.`, ""];
   const flagged = [];
   for (const [name, p] of [...s.procs].sort((a, b) => Number(b[1].own) - Number(a[1].own) || a[0].localeCompare(b[0]))) {
     out.push(`## ${name}${p.own ? "" : " (not attributable to the app by name)"}`, "");
@@ -136,7 +136,7 @@ export function render(s, defender = "") {
   }
   out.push("## Flagged (outside the allowed places)", "");
   out.push(flagged.length ? flagged.map((f) => `- ${f}`).join("\n") : "Nothing flagged.", "");
-  out.push("Allowed: `%LOCALAPPDATA%\\OpenFrame`, `%LOCALAPPDATA%\\Programs\\OpenFrame Studio`, `%LOCALAPPDATA%\\studio.openframe.desktop`, `Documents\\OpenFrame`, the w9out folder, Temp; network only to loopback and Hugging Face (huggingface.co, *.hf.co, cdn-lfs*).", "");
+  out.push("Allowed: `%LOCALAPPDATA%\\Straft Studio`, `%LOCALAPPDATA%\\Programs\\Straft Studio`, `%LOCALAPPDATA%\\studio.straft.desktop`, `Documents\\Straft Studio`, the w9out folder, Temp; network only to loopback and Hugging Face (huggingface.co, *.hf.co, cdn-lfs*).", "");
   if (defender) out.push("## Microsoft Defender scans of the installers", "", defender, "");
   return { text: out.join("\n"), flagged };
 }
@@ -155,16 +155,16 @@ function defenderSection() {
 async function selfTest() {
   const csv = [
     '"Time of Day","Process Name","PID","Operation","Path","Result","Detail"',
-    '"1:00:00 PM","openframe-desktop.exe","10","TCP Connect","vm.local:50000 -> localhost:4445","SUCCESS",""',
+    '"1:00:00 PM","straft-desktop.exe","10","TCP Connect","vm.local:50000 -> localhost:4445","SUCCESS",""',
     '"1:00:01 PM","llama-server.exe","11","TCP Send","vm.local:50001 -> cdn-lfs.hf.co:https","SUCCESS",""',
-    '"1:00:02 PM","openframe-desktop.exe","10","TCP Connect","vm.local:50002 -> evil.example.com:443","SUCCESS",""',
-    '"1:00:03 PM","openframe-desktop.exe","10","WriteFile","C:\\Users\\tester\\AppData\\Local\\OpenFrame\\settings.json","SUCCESS","Offset: 0"',
-    '"1:00:04 PM","openframe-desktop.exe","10","WriteFile","C:\\Users\\tester\\Desktop\\oops.txt","SUCCESS","Offset: 0"',
-    '"1:00:05 PM","openframe-desktop.exe","10","CreateFile","C:\\Users\\tester\\Documents\\OpenFrame\\Night, Bus\\db.sqlite","SUCCESS","Desired Access: Generic Write, Read Attributes, Disposition: OpenIf"',
-    '"1:00:06 PM","openframe-desktop.exe","10","RegSetValue","HKCU\\Software\\studio.openframe.desktop\\x","SUCCESS","Type: REG_DWORD"',
-    '"1:00:07 PM","openframe-desktop.exe","10","RegSetValue","HKCU\\Software\\Other\\y","SUCCESS","Type: REG_DWORD"',
+    '"1:00:02 PM","straft-desktop.exe","10","TCP Connect","vm.local:50002 -> evil.example.com:443","SUCCESS",""',
+    '"1:00:03 PM","straft-desktop.exe","10","WriteFile","C:\\Users\\tester\\AppData\\Local\\Straft Studio\\settings.json","SUCCESS","Offset: 0"',
+    '"1:00:04 PM","straft-desktop.exe","10","WriteFile","C:\\Users\\tester\\Desktop\\oops.txt","SUCCESS","Offset: 0"',
+    '"1:00:05 PM","straft-desktop.exe","10","CreateFile","C:\\Users\\tester\\Documents\\Straft Studio\\Night, Bus\\db.sqlite","SUCCESS","Desired Access: Generic Write, Read Attributes, Disposition: OpenIf"',
+    '"1:00:06 PM","straft-desktop.exe","10","RegSetValue","HKCU\\Software\\studio.straft.desktop\\x","SUCCESS","Type: REG_DWORD"',
+    '"1:00:07 PM","straft-desktop.exe","10","RegSetValue","HKCU\\Software\\Other\\y","SUCCESS","Type: REG_DWORD"',
     '"1:00:08 PM","notepad.exe","12","TCP Connect","vm.local:1 -> bad.example.org:80","SUCCESS",""',
-    '"1:00:09 PM","msedgewebview2.exe","13","WriteFile","C:\\Users\\tester\\AppData\\Local\\studio.openframe.desktop\\EBWebView\\Cache","SUCCESS",""',
+    '"1:00:09 PM","msedgewebview2.exe","13","WriteFile","C:\\Users\\tester\\AppData\\Local\\studio.straft.desktop\\EBWebView\\Cache","SUCCESS",""',
   ];
   const s = await summarize(csv);
   const { text, flagged } = render(s);
@@ -175,7 +175,7 @@ async function selfTest() {
   must(flagged.some((f) => f.includes("evil.example.com")), "evil host not flagged");
   must(!flagged.some((f) => f.includes("hf.co")), "hugging face flagged");
   must(!flagged.some((f) => f.includes("localhost")), "loopback flagged");
-  must(!flagged.some((f) => f.includes("bad.example.org")), "a non-OpenFrame process was reported");
+  must(!flagged.some((f) => f.includes("bad.example.org")), "a non-Straft Studio process was reported");
   must(flagged.some((f) => f.includes("Desktop\\oops.txt")), "stray file not flagged");
   must(flagged.some((f) => f.includes("Software\\Other")), "stray registry key not flagged");
   must(!flagged.some((f) => f.includes("db.sqlite") || f.includes("settings.json") || f.includes("EBWebView")), "allowed path flagged");

@@ -47,7 +47,7 @@ def main():
         words = p.get_text("words")
         text = p.get_text()
         foot_top = h - MARGIN_BOTTOM
-        if "Created using OpenFrame" not in text:
+        if "Created using Straft Studio" not in text:
             fails.append(f"p{i}: brand line missing")
         m = re.search(r"Page\s+(\d+)\s+of\s+(\d+)", text)
         if not m:

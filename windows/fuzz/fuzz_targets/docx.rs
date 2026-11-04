@@ -2,4 +2,4 @@
 #![no_main]
 use libfuzzer_sys::fuzz_target;
 
-fuzz_target!(|data: &[u8]| openframe_fuzz::docx(data));
+fuzz_target!(|data: &[u8]| straft_fuzz::docx(data));

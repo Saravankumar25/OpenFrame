@@ -25,7 +25,7 @@ prices (not final): 3,000 rupees in India, 89 US dollars in the USA and the rest
 
 ## 3. Built, but only tested with fakes
 
-- `crates/openframe-entitlement`: eight licence states, the 7-day rules, reminders, the Microsoft Store and Mac adapters
+- `crates/straft-entitlement`: eight licence states, the 7-day rules, reminders, the Microsoft Store and Mac adapters
   over fake sources; the store lock inside the Rust dispatcher; the trial chip, reminders and Buy routing in the screens.
 - `services/licence-server`: a small Rust server for the Mac channel; the Mac app needs a network call during the trial, so
   the Mac store channel is not fully offline while a trial runs.

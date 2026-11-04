@@ -11,7 +11,7 @@
 
 use serde::Deserialize;
 
-pub use openframe_entitlement::mac::{LIFETIME_PRODUCT_ID, TRIAL_PRODUCT_ID};
+pub use straft_entitlement::mac::{LIFETIME_PRODUCT_ID, TRIAL_PRODUCT_ID};
 
 /// Largest answer the bridge may return. A larger answer is refused, not parsed.
 pub const MAX_JSON_BYTES: usize = 256 * 1024;
@@ -221,7 +221,7 @@ pub(crate) mod parse {
 /// [`BridgeError`](ent::BridgeError) that carries no user data.
 pub(crate) mod convert {
     use super::*;
-    use openframe_entitlement::mac as ent;
+    use straft_entitlement::mac as ent;
 
     /// StoreKit's `Environment.rawValue`.
     pub(crate) fn env_from_name(raw: &str) -> Option<ent::StoreEnvironment> {
@@ -356,7 +356,7 @@ mod tests {
     use super::parse::*;
     use super::*;
 
-    const TX: &str = r#"{"productID":"com.openframe.studio.trial7","id":"2","originalID":"1",
+    const TX: &str = r#"{"productID":"com.straft.studio.trial7","id":"2","originalID":"1",
         "appTransactionID":"7","purchaseDateMs":1790000000000,"environment":"Sandbox",
         "jwsRepresentation":"a.b.c"}"#;
 
@@ -459,12 +459,12 @@ mod tests {
     fn only_the_two_products_are_known() {
         assert!(is_known_product(TRIAL_PRODUCT_ID));
         assert!(is_known_product(LIFETIME_PRODUCT_ID));
-        assert!(!is_known_product("com.openframe.studio.other"));
+        assert!(!is_known_product("com.straft.studio.other"));
     }
 
     // ---------------------------------------------------------------- mapping onto the crate
 
-    use openframe_entitlement::mac as ent;
+    use straft_entitlement::mac as ent;
 
     fn store_tx(product: &str, app_id: Option<&str>) -> StoreTransaction {
         StoreTransaction {

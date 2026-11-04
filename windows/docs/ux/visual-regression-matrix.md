@@ -25,5 +25,5 @@ reason is written in the progress log.
 ## Not automated
 
 - Reading PDF exports: sample files are written to `release-out/pdf-samples/` for the owner; the PDF golden tests in
-  `crates/openframe-import-export/tests/pdf_golden.rs` compare page images.
+  `crates/straft-import-export/tests/pdf_golden.rs` compare page images.
 - Hand review of the installed build by the team (Chapter 1 exit criterion).

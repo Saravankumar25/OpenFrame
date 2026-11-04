@@ -29,11 +29,11 @@ use serde::{Deserialize, Serialize};
 use x509_parser::prelude::*;
 
 /// The app's bundle identifier. Every transaction must name it.
-pub const BUNDLE_ID: &str = "com.openframe.studio";
+pub const BUNDLE_ID: &str = "com.straft.studio";
 /// Zero-price non-consumable that starts the 7-day trial.
-pub const TRIAL_PRODUCT_ID: &str = "com.openframe.studio.trial7";
+pub const TRIAL_PRODUCT_ID: &str = "com.straft.studio.trial7";
 /// Paid non-consumable that unlocks the app for good.
-pub const LIFETIME_PRODUCT_ID: &str = "com.openframe.studio.lifetime";
+pub const LIFETIME_PRODUCT_ID: &str = "com.straft.studio.lifetime";
 
 /// Upper bound for one JWS. Real StoreKit transactions are about 4 KiB.
 pub const MAX_JWS_BYTES: usize = 16 * 1024;
@@ -95,7 +95,7 @@ pub enum Environment {
 }
 
 impl Environment {
-    /// Apple's spelling, as in a signed payload and in `OPENFRAME_APPLE_ENVIRONMENT`.
+    /// Apple's spelling, as in a signed payload and in `STRAFT_APPLE_ENVIRONMENT`.
     pub fn as_str(self) -> &'static str {
         match self {
             Environment::Sandbox => "Sandbox",

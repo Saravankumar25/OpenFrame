@@ -16,8 +16,8 @@ use std::sync::OnceLock;
 use std::time::Duration;
 
 use ed25519_dalek::VerifyingKey;
-use openframe_entitlement::mac::server::NONCE_BYTES;
-use openframe_entitlement::mac::{
+use straft_entitlement::mac::server::NONCE_BYTES;
+use straft_entitlement::mac::{
     InstantClock, LicenceServer, MacInputs, NonceSource, ServerError, StoreEnvironment,
     ValidateRequest, ValidateResponse,
 };
@@ -28,11 +28,11 @@ use super::macos_storekit::StoreKitChannel;
 /// The production licence server's validate endpoint. PLACEHOLDER: the owner replaces it with
 /// the deployed address (docs/engineering/38-mac-app-store-trial.md section 10). A `.invalid`
 /// host never resolves, and no request is sent to it.
-pub const LICENCE_SERVER_URL: &str = "https://licence.openframe.invalid/v1/mac/validate";
+pub const LICENCE_SERVER_URL: &str = "https://licence.straft.invalid/v1/mac/validate";
 
 /// The sandbox deployment, for TestFlight, App Review and sandbox testers. PLACEHOLDER as above.
 pub const LICENCE_SERVER_SANDBOX_URL: &str =
-    "https://licence-sandbox.openframe.invalid/v1/mac/validate";
+    "https://licence-sandbox.straft.invalid/v1/mac/validate";
 
 /// The licence server's Ed25519 response public key, 64 lowercase hex characters. PLACEHOLDER:
 /// empty until the owner creates the key. With no valid key the adapter never sends a request
@@ -90,7 +90,7 @@ impl HttpLicenceServer {
                     .redirect(reqwest::redirect::Policy::none())
                     .timeout(TIMEOUT)
                     .connect_timeout(TIMEOUT)
-                    .user_agent(concat!("OpenFrameStudio/", env!("CARGO_PKG_VERSION")))
+                    .user_agent(concat!("StraftStudio/", env!("CARGO_PKG_VERSION")))
                     .build()
                     .map_err(|_| tracing::warn!("the licence server client could not be built"))
                     .ok()

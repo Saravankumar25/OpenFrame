@@ -86,7 +86,7 @@ export function ProjectStorage({ path }: { path: string }) {
         <div style={{ marginTop: 12 }}>
           <div className="sm" style={{ fontWeight: 600 }}>Private notes of a former owner</div>
           <div className="xs muted" style={{ marginBottom: 6 }}>
-            These private notes belong to someone who is no longer a member of this project, often you under an earlier setup of OpenFrame. Only
+            These private notes belong to someone who is no longer a member of this project, often you under an earlier setup of Straft Studio. Only
             take them over if they are yours.
           </div>
           {owners.map((o) => (

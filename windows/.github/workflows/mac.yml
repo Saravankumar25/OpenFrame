@@ -1,4 +1,4 @@
-# OpenFrame Studio: Mac build check (docs/engineering/25-ci-cd.md, docs/engineering/37-platform-boundary.md).
+# Straft Studio: Mac build check (docs/engineering/25-ci-cd.md, docs/engineering/37-platform-boundary.md).
 #
 # Compiles the macOS desktop shell on Apple silicon: the Swift StoreKit 2 bridge, the Rust code
 # behind cfg(target_os = "macos") (platform/macos_storekit.rs, mac_inputs.rs, the revalidation
@@ -15,14 +15,14 @@ on:
     branches: [main]
     paths:
       - "apps/desktop/src-tauri/**"
-      - "crates/openframe-platform/**"
-      - "crates/openframe-entitlement/**"
+      - "crates/straft-platform/**"
+      - "crates/straft-entitlement/**"
       - ".github/workflows/mac.yml"
   pull_request:
     paths:
       - "apps/desktop/src-tauri/**"
-      - "crates/openframe-platform/**"
-      - "crates/openframe-entitlement/**"
+      - "crates/straft-platform/**"
+      - "crates/straft-entitlement/**"
       - ".github/workflows/mac.yml"
   workflow_dispatch:
 
@@ -71,16 +71,16 @@ jobs:
       - name: Placeholder frontend bundle for Rust compilation
         run: |
           mkdir -p apps/desktop/dist
-          printf '<!doctype html><title>OpenFrame</title>\n' > apps/desktop/dist/index.html
+          printf '<!doctype html><title>Straft Studio</title>\n' > apps/desktop/dist/index.html
 
       - name: cargo check (desktop shell, macOS)
-        run: cargo check -p openframe-desktop --target aarch64-apple-darwin --locked
+        run: cargo check -p straft-desktop --target aarch64-apple-darwin --locked
 
       - name: cargo test (platform and entitlement crates, macOS)
-        run: cargo test -p openframe-platform -p openframe-entitlement --target aarch64-apple-darwin --locked
+        run: cargo test -p straft-platform -p straft-entitlement --target aarch64-apple-darwin --locked
 
       # cargo check does not link. The desktop unit tests link a binary against the Swift bridge,
       # the StoreKit and Foundation frameworks and the Swift runtime, then run the StoreKit JSON
       # and revalidation tests on macOS.
       - name: cargo test (desktop shell unit tests, links the bridge)
-        run: cargo test -p openframe-desktop --lib --target aarch64-apple-darwin --locked
+        run: cargo test -p straft-desktop --lib --target aarch64-apple-darwin --locked

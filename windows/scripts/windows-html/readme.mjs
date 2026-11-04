@@ -36,7 +36,7 @@ export function writeReadme({ manifest, results, commit, threshold, maxRatio, wi
   const sections = [...bySection].map(([k, v]) => `| ${k} | ${v} |`).join("\n");
   const text = `# WindowsHTML
 
-Every screen and state of OpenFrame Studio for Windows, captured from the running app as standalone HTML pages,
+Every screen and state of Straft Studio for Windows, captured from the running app as standalone HTML pages,
 in Light and Dark mode of the default theme. It is the source for the website's screen recreations (Chapter 2).
 
 - **${manifest.screens.length} screens and states**, each in \`light/\` and \`dark/\` under the same \`NNN-name.html\`.
@@ -72,7 +72,7 @@ node scripts/windows-html/parallel.mjs
 The whole tour in one data root, one section after another (about 2.5 hours), gives the same pages:
 
 \`\`\`bash
-E2E_CAPTURE=1 OPENFRAME_LIBRARY_SETUP=1 node tests/e2e/run.mjs --only=zz-capture --no-build
+E2E_CAPTURE=1 STRAFT_LIBRARY_SETUP=1 node tests/e2e/run.mjs --only=zz-capture --no-build
 \`\`\`
 
 The run replaces \`light/\`, \`dark/\`, \`assets/\`, \`index.html\` and this file. Raw screenshots stay in

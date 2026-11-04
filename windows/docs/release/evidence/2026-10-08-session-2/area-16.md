@@ -2,8 +2,8 @@
 
 Branch `area/16-packages` in the worktree `agent-a9f39a60d18bcbf69`, with `session-2` merged in (first `79a660a`,
 then `c6d3ee8`). Windows 11 machine of the owner. The first run used the shared Cargo target
-`C:\OpenFrame\.build-cache\target`; the follow-up run (section 6) used this worktree's own build folder
-`C:\OpenFrame\.build-cache\target-area16` with sccache, and its results replace those of section 4. The E2E spec was
+`C:\Straft\.build-cache\target`; the follow-up run (section 6) used this worktree's own build folder
+`C:\Straft\.build-cache\target-area16` with sccache, and its results replace those of section 4. The E2E spec was
 written and extended but not run here; the lead runs E2E one spec at a time.
 
 ## 1. Boxes
@@ -57,9 +57,9 @@ restoring it the owner of the private notes it contains. Implemented in the foll
 |---|---|
 | `cargo fmt --all -- --check` | PASS |
 | `cargo clippy --workspace --all-targets -- -D warnings` | PASS, no warnings |
-| `cargo test --workspace --no-fail-fast` | PASS: 1891 passed, 0 failed, 10 ignored, 90 test binaries. The first attempt could not link `openframe-ai` test `lifecycle` (LNK1104) because another agent was running the same binary in the shared target; the retry passed. |
-| `cargo test -p openframe-application --test packages` | PASS: 32 passed, 1 ignored (the fixture writer) |
-| `cargo test -p openframe-application --lib packages` | PASS: 69 passed |
+| `cargo test --workspace --no-fail-fast` | PASS: 1891 passed, 0 failed, 10 ignored, 90 test binaries. The first attempt could not link `straft-ai` test `lifecycle` (LNK1104) because another agent was running the same binary in the shared target; the retry passed. |
+| `cargo test -p straft-application --test packages` | PASS: 32 passed, 1 ignored (the fixture writer) |
+| `cargo test -p straft-application --lib packages` | PASS: 69 passed |
 | `npm run typecheck` | PASS |
 | `npm run lint` (ESLint part, `--max-warnings 0`) | PASS |
 | `npm run test:web` | PASS: 45 files, 497 tests |
@@ -68,7 +68,7 @@ restoring it the owner of the private notes it contains. Implemented in the foll
 
 Shared target warning for the lead: crates of different worktrees share one Cargo unit in the shared target (the
 unit hash does not include the worktree path), and Cargo decides freshness by file times. A build in one worktree can
-reuse a crate compiled from another worktree's source. This session saw `openframe-domain` from another worktree
+reuse a crate compiled from another worktree's source. This session saw `straft-domain` from another worktree
 (without `OLDEST_PACKAGE_FORMAT_VERSION`) and worked around it by touching its own `.rs` files before each build.
 
 ## 5. Proposed feature status changes (for the lead to apply)
@@ -116,7 +116,7 @@ needs the E2E run and the manual drill.
 
 ### Commands and results
 
-Every cargo command ran with `CARGO_TARGET_DIR=C:\OpenFrame\.build-cache\target-area16` and
+Every cargo command ran with `CARGO_TARGET_DIR=C:\Straft\.build-cache\target-area16` and
 `RUSTC_WRAPPER=sccache`; the workspace tests and the second lint run also had `CARGO_BUILD_JOBS=3`,
 `CARGO_INCREMENTAL=0` and `--test-threads=4` because the machine was short of memory.
 
@@ -124,8 +124,8 @@ Every cargo command ran with `CARGO_TARGET_DIR=C:\OpenFrame\.build-cache\target-
 |---|---|
 | `cargo fmt --all -- --check` | PASS |
 | `cargo clippy --workspace --all-targets -- -D warnings` | PASS, no warnings |
-| `cargo test -p openframe-application --test packages` | PASS: 33 passed, 1 ignored (the fixture writer) |
-| `cargo test --workspace --no-fail-fast -- --test-threads=4` | 1891 passed, 1 failed, 10 ignored, 90 test binaries. The failure is `openframe-ai` `soak_sidecar::m1_08_sidecar_crash_restart_and_cancel_loop` ("no fake sidecar process survives the loop"), which counts live processes of its own image right after stopping the supervisor. It failed again when run alone. Area 16 does not change `openframe-ai` (no diff against `c6d3ee8`), no process of that binary was left afterwards, and the machine was swapping with five workspace builds at once; it should be rerun on a quiet machine. |
+| `cargo test -p straft-application --test packages` | PASS: 33 passed, 1 ignored (the fixture writer) |
+| `cargo test --workspace --no-fail-fast -- --test-threads=4` | 1891 passed, 1 failed, 10 ignored, 90 test binaries. The failure is `straft-ai` `soak_sidecar::m1_08_sidecar_crash_restart_and_cancel_loop` ("no fake sidecar process survives the loop"), which counts live processes of its own image right after stopping the supervisor. It failed again when run alone. Area 16 does not change `straft-ai` (no diff against `c6d3ee8`), no process of that binary was left afterwards, and the machine was swapping with five workspace builds at once; it should be rerun on a quiet machine. |
 | `npm run typecheck` | PASS |
 | `npm run lint` (clippy, then ESLint `--max-warnings 0`) | PASS. A first run picked up the user-level `CARGO_TARGET_DIR` (the shared target) for its clippy step by mistake; it was rerun in `target-area16` and only that run counts. |
 | `npm run test:web` | PASS: 45 files, 498 tests |

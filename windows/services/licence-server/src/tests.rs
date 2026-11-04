@@ -6,7 +6,7 @@
 //!
 //! The shared fixture `tests/fixtures/mac-validate-v1.json` holds one request and the response this
 //! server signs for it with [`TEST_RESPONSE_SEED`]. The entitlement crate parses and verifies the
-//! same bytes (`crates/openframe-entitlement/src/mac/tests.rs`), so the app and the server are
+//! same bytes (`crates/straft-entitlement/src/mac/tests.rs`), so the app and the server are
 //! proven against one wire format. Regenerate it with
 //! `cargo test -- --ignored write_the_shared_wire_fixture`.
 
@@ -41,7 +41,7 @@ const NONCE: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789a
 const APP_TX_ID: &str = "705000000001";
 
 /// The server's response key in tests and in the shared fixture. Test only: never deployed.
-const TEST_RESPONSE_SEED: [u8; 32] = *b"openframe-test-only-response-key";
+const TEST_RESPONSE_SEED: [u8; 32] = *b"straft-test-only-response-key";
 
 const FIXTURE_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -610,7 +610,7 @@ async fn family_shared_unknown_products_and_other_algorithms_are_refused() {
     assert_eq!(
         refused(
             &server,
-            &[jws(&pki, &tx("com.openframe.studio.other", NOW_MS))]
+            &[jws(&pki, &tx("com.straft.studio.other", NOW_MS))]
         )
         .await
         .1,

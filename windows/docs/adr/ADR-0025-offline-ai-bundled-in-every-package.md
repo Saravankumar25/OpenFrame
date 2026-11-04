@@ -13,7 +13,7 @@
 - **Keeps:** ADR-0020 decision 1 for the runtime (the `llama.cpp` runtime ships inside every package), decision 4
   (Report AI output); ADR-0006 decisions 1 and 4 to 7; ADR-0013 except decision 2.
 - **Related:** [ADR-0017](ADR-0017-cross-platform-windows-and-macos.md) (supported platforms, Linux not a target);
-  [ADR-0024](ADR-0024-internal-team-builds.md) (four release files); `crates/openframe-ai/`;
+  [ADR-0024](ADR-0024-internal-team-builds.md) (four release files); `crates/straft-ai/`;
   `docs/implementation/masterplan.md` area 8; `docs/implementation/owner-decisions.md`
 
 ## Context
@@ -61,7 +61,7 @@ format, now and in the future.
 - **Clean as you go.** The change that bundles the weights must also remove, in the same change: the **Download
   Offline AI** flow and its screens, the download code (partial files, resume, disk-space preflight for downloads,
   quarantine of bad downloads), the model host setting (`MODEL_DISTRIBUTION_BASE_URL`), the manifest signing key items
-  (`OPENFRAME_MANIFEST_PUBLIC_KEY`, the offline Ed25519 key, the release check that requires it), and their tests. The
+  (`STRAFT_MANIFEST_PUBLIC_KEY`, the offline Ed25519 key, the release check that requires it), and their tests. The
   repository must not carry the download path and the bundled path side by side.
 - The owner tasks "choose the model host" and "generate the production manifest key" are no longer needed.
 - Store listings and certification notes no longer describe an optional AI download. The privacy policy no longer

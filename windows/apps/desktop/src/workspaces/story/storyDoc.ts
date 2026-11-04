@@ -2,7 +2,7 @@
 // marks (bold, italic, underline, highlight, size; underline and highlight carry a colour from a
 // small palette), and the mapping to what the project stores:
 // the plain text plus a formatting that lists the runs of each line (Rust:
-// crates/openframe-import-export/src/prose.rs). The runs of a line joined together are exactly that
+// crates/straft-import-export/src/prose.rs). The runs of a line joined together are exactly that
 // line, so the plain text never depends on the formatting.
 
 import { Schema, type Mark, type Node as PMNode } from "prosemirror-model";

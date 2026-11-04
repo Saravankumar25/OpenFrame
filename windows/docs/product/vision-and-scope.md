@@ -1,15 +1,15 @@
 # Product vision and scope
 
-> Rewritten 2026-10-15 from the owner's statements in chat. This is the one place that says who OpenFrame is for, what the
+> Rewritten 2026-10-15 from the owner's statements in chat. This is the one place that says who Straft Studio is for, what the
 > chapters of the work are, and what the product will and will not claim. Detailed behaviour stays in the
 > specifications ([specs/](../specs)); decisions stay in the [decision register](../adr/README.md); open owner questions
 > stay in [owner-decisions.md](../implementation/owner-decisions.md). Where this page and an older document disagree on
 > audience, chapters or order of work, this page wins and the older text is history. The earlier version is in
 > [history](../history/2026-10-15-vision-and-scope-before-restructure.md).
 
-## 1. What OpenFrame is
+## 1. What Straft Studio is
 
-OpenFrame Studio is a desktop application for writers, screenwriters and production teams. Everyone uses the same
+Straft Studio is a desktop application for writers, screenwriters and production teams. Everyone uses the same
 application. There are no separate editions for different kinds of user.
 
 A person can go from a first idea to a shoot day inside one project folder on their own computer:
@@ -89,7 +89,7 @@ price and refund rules are open, and [ADR-0023](../adr/ADR-0023-store-trial-and-
 shows a price: the store's own purchase window shows it. Neither store's rules are assumed to allow this model. Chapter 3
 checks them before anything is built.
 
-## 6. What OpenFrame does not do, and must not claim
+## 6. What Straft Studio does not do, and must not claim
 
 - No live network collaboration. Live LAN collaboration was removed ([ADR-0007](../adr/ADR-0007-lan-collaboration-removed.md)).
   The mock-ups 164 to 168 still show it. They must not be used for the website.

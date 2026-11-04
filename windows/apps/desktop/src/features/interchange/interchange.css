@@ -1,4 +1,4 @@
-/* Screenplay import/export dialogs (mocks 091–096). Reuses openframe.css
+/* Screenplay import/export dialogs (mocks 091–096). Reuses straft.css
    primitives; only layout specific to these dialogs lives here. */
 
 .ix-steps { list-style: none; padding: 0; margin: 0 0 10px; gap: 6px; }

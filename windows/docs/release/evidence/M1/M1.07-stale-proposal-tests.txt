@@ -1,6 +1,6 @@
 M1.07 stale-proposal tests per domain: evidence (2026-10-05, Windows 11, debug test profile)
 Command (run 3 times, all passed):
-  cargo test --locked -p openframe-application --test ai_stale_proposals
+  cargo test --locked -p straft-application --test ai_stale_proposals
 Domains: screenplay, story, breakdown, schedule, call sheet, cast and crew, budget, notes (edit + delete/Conflict), visual.
 
 === run 1

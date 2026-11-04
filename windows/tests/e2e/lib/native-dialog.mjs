@@ -81,7 +81,7 @@ throw "The file dialog '$title' did not take the path $path."
 let file = "";
 function scriptFile() {
   if (!file) {
-    file = join(mkdtempSync(join(tmpdir(), "openframe-e2e-dialog-")), "choose-file.ps1");
+    file = join(mkdtempSync(join(tmpdir(), "straft-e2e-dialog-")), "choose-file.ps1");
     writeFileSync(file, SCRIPT, "utf8");
   }
   return file;

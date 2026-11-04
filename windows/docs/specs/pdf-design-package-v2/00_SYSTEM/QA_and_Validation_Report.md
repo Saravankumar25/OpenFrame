@@ -1,7 +1,7 @@
 # QA and Validation Report (v2)
 
-Date of work: 2026-10-23. Source of truth: `Saravankumar25/OpenFrame` `main` @ `2f5a045416bd2125801329533fc47f986ccc8174`.
-This report states what was actually run and looked at, and what was not. Nothing here claims validation against OpenFrame's Rust renderer — none of these designs has been rendered by it.
+Date of work: 2026-10-23. Source of truth: `Saravankumar25/StraftStudio` `main` @ `2f5a045416bd2125801329533fc47f986ccc8174`.
+This report states what was actually run and looked at, and what was not. Nothing here claims validation against Straft Studio's Rust renderer — none of these designs has been rendered by it.
 
 ## 1. Scope check
 
@@ -48,7 +48,7 @@ For every PDF: page size is US Letter (portrait or landscape as designed); every
 ## 5. Defects found in the CURRENT application output (verified in the supplied PDFs and/or source)
 
 Cross-cutting
-* The footer redraws the logo mark as vector lines with typed "OpenFrame STUDIO" text (`design::draw_footer` / `lockup`) instead of the official artwork; footer text carries project/document and `Page n / N`.
+* The footer redraws the logo mark as vector lines with typed "Straft Studio STUDIO" text (`design::draw_footer` / `lockup`) instead of the official artwork; footer text carries project/document and `Page n / N`.
 * `ReportImage::decode` converts every image to JPEG q85 (lossy for logos).
 * Table titles are separate `Section` blocks followed by a "(CONTINUED)" band: headings are orphaned at page foot (Call Sheet p1, Beat Board board p2/p4, Breakdown scene 2 head) and "(CONTINUED)" is printed on a table's first page (Call Sheet p2, Breakdown p55/p58).
 * Tiny text: chips/labels at 5.8 pt in several exports; `pal::FAINT` (#8792A5, 3.1 : 1) used for readable text (Moodboard notes, Storyboard notes).

@@ -296,7 +296,7 @@ function FinalizeDialog({ detail, onClose, onMissingCrewCall }: { detail: CallSh
 
 type Edit = (fn: (d: Doc) => void) => void;
 
-// The sheet follows the exported PDF heading by heading (crates/openframe-application/src/modules/
+// The sheet follows the exported PDF heading by heading (crates/straft-application/src/modules/
 // exports/callsheet.rs; owner, 2026-10-27): masthead, the time callout, Production, Locations,
 // Scene schedule, then the "People on the day" group (Talent / Cast, Extras, Crew, Department
 // notes) and the "Day-of logistics" group (Practical / Safety information, Weather, Advance
@@ -618,7 +618,7 @@ function OptionalSections({
     <>
       {logistics && o.weather !== null && (
         <Section title="Weather" disabled={ro} onRemove={() => edit((x) => void (x.optional.weather = null))}>
-          <div className="hint xs">Type the forecast, sunrise and sunset. OpenFrame never looks them up online.</div>
+          <div className="hint xs">Type the forecast, sunrise and sunset. Straft Studio never looks them up online.</div>
           <Fld label="Forecast" value={o.weather} onChange={(v) => edit((x) => void (x.optional.weather = v))} need disabled={ro} />
           <div className="grid g2" style={{ gap: "0 16px" }}>
             <Fld label="Sunrise" value={o.sunrise} onChange={(v) => edit((x) => void (x.optional.sunrise = v))} need disabled={ro} />

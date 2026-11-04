@@ -1,5 +1,5 @@
-/* Schedule / call-sheet additions on top of the mock design system (openframe.css).
-   Only layout adaptations for the live app; visual tokens come from openframe.css. */
+/* Schedule / call-sheet additions on top of the mock design system (straft.css).
+   Only layout adaptations for the live app; visual tokens come from straft.css. */
 
 .strip { cursor: pointer; }
 .strip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }

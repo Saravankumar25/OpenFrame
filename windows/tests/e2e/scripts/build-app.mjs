@@ -7,7 +7,7 @@
 //     scripts/with-msvc-linker.mjs. Never an installer or bundle. "gated" is the internal team build
 //     with the team password screen, made with a throwaway password that exists only in this run's
 //     memory (never the real team password); "open" is the same executable built as the store
-//     channel, which has no team password screen. Both honour OPENFRAME_DATA_ROOT for file
+//     channel, which has no team password screen. Both honour STRAFT_DATA_ROOT for file
 //     locations only (ADR-0031).
 //
 // Every build goes through the machine-wide build queue (scripts/cargo-queued.cmd as Tauri's cargo
@@ -16,7 +16,7 @@
 // packaging/ai/ai-assets.lock.json and stages them, and the Tauri overlay config copies them to
 // `ai/` next to the executable. A missing or altered file stops the build (fail closed). The models
 // are not in the build (ADR-0026): every test build is compiled with the local test host
-// (lib/model-host.mjs, OPENFRAME_TEST_MODEL_SOURCE) in place of Hugging Face (ADR-0032).
+// (lib/model-host.mjs, STRAFT_TEST_MODEL_SOURCE) in place of Hugging Face (ADR-0032).
 
 import { spawnSync } from "node:child_process";
 import { existsSync, rmSync } from "node:fs";
@@ -33,7 +33,7 @@ const QUEUE_RUNNER = join(REPO_ROOT, "scripts", "cargo-queued.cmd");
 
 /** The executable a build of this kind produces. */
 export function appBinary(release = false) {
-  return join(TARGET_DIR, release ? "release" : "debug", "openframe-desktop.exe");
+  return join(TARGET_DIR, release ? "release" : "debug", "straft-desktop.exe");
 }
 /** The Offline AI engine next to the test build (the app's resource folder). */
 export function appAiDir(release = false) {
@@ -48,17 +48,17 @@ export const APP_AI_DIR = appAiDir(false);
  */
 export function buildApp({ release = false, gatePassword } = {}) {
   prepare();
-  console.log(`Building OpenFrame Studio (${release ? `release, ${release}` : "debug"}, embedded UI, Offline AI engine, test model host)…`);
-  // OPENFRAME_TEST_BUILD lets the release profile accept the loopback test host (build.rs).
-  const env = { ...process.env, OPENFRAME_TEST_MODEL_SOURCE: MODEL_HOST_URL, OPENFRAME_TEST_BUILD: "1" };
+  console.log(`Building Straft Studio (${release ? `release, ${release}` : "debug"}, embedded UI, Offline AI engine, test model host)…`);
+  // STRAFT_TEST_BUILD lets the release profile accept the loopback test host (build.rs).
+  const env = { ...process.env, STRAFT_TEST_MODEL_SOURCE: MODEL_HOST_URL, STRAFT_TEST_BUILD: "1" };
   // The debug and open builds never see the build machine's team password, even when it is set.
-  delete env.OPENFRAME_TEAM_PASSWORD;
-  delete env.OPENFRAME_DISTRIBUTION;
+  delete env.STRAFT_TEAM_PASSWORD;
+  delete env.STRAFT_DISTRIBUTION;
   if (release === "gated") {
     if (!gatePassword) throw new Error("A gated release build needs its throwaway test password.");
-    env.OPENFRAME_TEAM_PASSWORD = gatePassword; // secret-scan: allow (a random value made in run.mjs for this run only)
+    env.STRAFT_TEAM_PASSWORD = gatePassword; // secret-scan: allow (a random value made in run.mjs for this run only)
   } else if (release === "open") {
-    env.OPENFRAME_DISTRIBUTION = "store";
+    env.STRAFT_DISTRIBUTION = "store";
   }
   // Models from builds before ADR-0026 would linger next to the executable; the package has none.
   rmSync(join(appAiDir(Boolean(release)), "models"), { recursive: true, force: true });
