@@ -118,6 +118,25 @@ impl AppConfig {
     pub fn for_current_user(app_version: &str) -> AppResult<Self> {
         let (app_data_dir, pointer_dir) =
             crate::modules::storage::legacy_migration::folders_for_current_user();
+        Self::at_user_folders(app_data_dir, pointer_dir, app_version)
+    }
+
+    /// [`AppConfig::for_current_user`] for a store build: never looks for an earlier version's
+    /// folders. A store package keeps its data in its own place (MSIX `LocalState`, the Mac sandbox
+    /// container), and no store build of the earlier name ever shipped.
+    pub fn for_store_build(app_version: &str) -> AppResult<Self> {
+        Self::at_user_folders(
+            straft_platform::dirs::app_data_dir(),
+            straft_platform::dirs::library_pointer_dir(),
+            app_version,
+        )
+    }
+
+    fn at_user_folders(
+        app_data_dir: Option<PathBuf>,
+        pointer_dir: Option<PathBuf>,
+        app_version: &str,
+    ) -> AppResult<Self> {
         let setup = app_data_dir
             .as_deref()
             .and_then(|d| LibrarySetup::for_current_user(d, pointer_dir.as_deref()));

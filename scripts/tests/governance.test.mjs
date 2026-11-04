@@ -633,12 +633,12 @@ test("the uninstaller clears the earlier data folder by the same rules and marks
   const legacyFolder = "OpenFrame"; // LEGACY: Open Frame name kept for migration
   const list = (verb, base) =>
     code.map((l) => l.match(new RegExp(`^\\s*${verb}\\s+"\\$LOCALAPPDATA\\\\${base}\\\\([^"\\\\]+)"`, "i"))).filter(Boolean).map((m) => m[1]);
-  assert.ok(list("RMDir /r", "Straft Studio").length > 0);
-  assert.deepEqual(list("RMDir /r", legacyFolder), list("RMDir /r", "Straft Studio"), "same folders in both places");
-  assert.deepEqual(list("Delete", legacyFolder), list("Delete", "Straft Studio"), "same files in both places");
+  assert.ok(list("RMDir /r", "Straft").length > 0);
+  assert.deepEqual(list("RMDir /r", legacyFolder), list("RMDir /r", "Straft"), "same folders in both places");
+  assert.deepEqual(list("Delete", legacyFolder), list("Delete", "Straft"), "same files in both places");
   assert.ok(!code.some((l) => new RegExp(`RMDir\\s+/r\\s+"\\$LOCALAPPDATA\\\\${legacyFolder}"`, "i").test(l)), "recursive delete of the earlier root");
   assert.ok(code.some((l) => new RegExp(`^\\s*RMDir\\s+"\\$LOCALAPPDATA\\\\${legacyFolder}"`, "i").test(l)), "final non-recursive RMDir of the earlier root");
-  // The folder name has a space, so an unquoted path would remove the wrong thing.
+  // A path with a space in it, unquoted, would remove the wrong thing.
   for (const l of code.filter((x) => /^\s*(RMDir|Delete)\b/.test(x))) {
     assert.match(l, /^\s*(RMDir|Delete)(\s+\/r)?\s+"[^"]+"/, `unquoted path: ${l}`);
   }

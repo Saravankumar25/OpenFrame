@@ -146,6 +146,7 @@ fn build_config(config: &CoreConfig) -> Result<(AppConfig, bool), CoreError> {
                 ..base
             }
         }
+        None if cfg!(straft_store) => AppConfig::for_store_build(&config.app_version)?,
         None => AppConfig::for_current_user(&config.app_version)?,
     };
     app.channel = channel_for(cfg!(straft_store));

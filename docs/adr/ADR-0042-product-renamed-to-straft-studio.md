@@ -25,8 +25,8 @@ so the window to do this closes at the first release.
    - Windows application id `studio.straft.desktop`.
    - MSIX identity name `Straft.Studio`.
    - Project folder extension `.straft` and manifest file `straft.json`.
-   - Data folder and library folder name `Straft Studio` (`%LOCALAPPDATA%\Straft Studio`, `Documents\Straft Studio`,
-     `~/Straft Studio` on the Mac).
+   - App data folder `Straft` (`%LOCALAPPDATA%\Straft`, `~/Library/Application Support/Straft`), because the per-user
+     program folder takes the product name, as before. Default library folder `Straft Studio` (`<home>\Straft Studio`).
    - Default theme id `straft-default`.
 4. The repository is renamed to `Saravankumar25/StraftStudio` when it is next pushed. The local Mac and Windows checkout
    folders are renamed by the owner when convenient.

@@ -58,13 +58,16 @@ fn task(env: &TestEnv, started: &Value) -> (String, Value) {
 /// The text an earlier version ran: the rename only changed these words in comments.
 fn earlier_text(sql: &str) -> String {
     let earlier = legacy_names::PRODUCT_NAME;
-    sql.replace("%LOCALAPPDATA%/Straft/", &format!("%LOCALAPPDATA%/{earlier}/"))
-        .replace("Straft Studio", earlier)
-        .replace("Straft Default", &format!("{earlier} Default"))
-        .replace(
-            "crates/straft-",
-            &format!("crates/{}-", legacy_names::PROJECT_EXTENSION),
-        )
+    sql.replace(
+        "%LOCALAPPDATA%/Straft/",
+        &format!("%LOCALAPPDATA%/{earlier}/"),
+    )
+    .replace("Straft Studio", earlier)
+    .replace("Straft Default", &format!("{earlier} Default"))
+    .replace(
+        "crates/straft-",
+        &format!("crates/{}-", legacy_names::PROJECT_EXTENSION),
+    )
 }
 
 fn earlier_list(list: &[Migration]) -> Vec<Migration> {
@@ -88,7 +91,11 @@ fn every_database_that_ran_the_earlier_migrations_has_no_mismatch() {
             .count();
         let mut conn = straft_persistence::open_in_memory().unwrap();
         migrate::apply(&mut conn, &earlier).unwrap();
-        assert!(migrate::checksum_mismatches(&conn, &earlier).unwrap().is_empty());
+        assert!(
+            migrate::checksum_mismatches(&conn, &earlier)
+                .unwrap()
+                .is_empty()
+        );
         assert_eq!(
             migrate::checksum_mismatches(&conn, list).unwrap(),
             Vec::<u32>::new(),
@@ -183,11 +190,7 @@ fn an_earlier_installation_starts_with_everything_it_had() {
             .is_empty()
     );
     drop(conn);
-    let env = TestEnv {
-        dir,
-        core,
-        sink,
-    };
+    let env = TestEnv { dir, core, sink };
     let profile = env.core.profile();
     assert_eq!(profile.user_id, user, "the same person");
     assert_eq!(profile.display_name, "Meera");
@@ -208,7 +211,7 @@ fn an_earlier_installation_starts_with_everything_it_had() {
     assert!(!old.join("models").exists());
 }
 
-/// Changes still in the write-ahead log (the earlier version crashed) are not lost.
+/// Changes still in the write-ahead log (the earlier version is running or crashed) are not lost.
 #[test]
 fn unfolded_changes_of_a_crashed_session_come_across() {
     let dir = tempfile::tempdir().unwrap();
@@ -225,9 +228,19 @@ fn unfolded_changes_of_a_crashed_session_come_across() {
         "the change is only in the log"
     );
     let new = dir.path().join("New App Data");
-    // `conn` stays open: this is the state a crash leaves.
+    // `conn` stays open: the earlier version is still running.
     assert_eq!(bring_over(&old, &new, &Plan::APP_DATA), Outcome::Copied);
+    assert!(
+        fs::metadata(old.join("app.sqlite-wal")).unwrap().len() > 0,
+        "its log was not folded"
+    );
+    conn.execute(
+        "INSERT INTO sys_settings(key, value_json, updated_at) VALUES ('still.running', 'true', 1)",
+        [],
+    )
+    .expect("the earlier version keeps working");
     drop(conn);
+    assert!(!new.join("app.sqlite-wal").exists(), "taken as one file");
     let back = straft_persistence::open_connection(&new.join("app.sqlite"), false).unwrap();
     let found: i64 = back
         .query_row(
@@ -251,7 +264,10 @@ fn a_new_folder_with_only_logs_still_gets_the_data() {
     let core = AppCore::new(at_app_data(dir.path(), &new), sink).unwrap();
     assert_eq!(core.profile().user_id, user);
     core.shutdown();
-    assert_eq!(bring_over(&old, &new, &Plan::APP_DATA), Outcome::AlreadyThere);
+    assert_eq!(
+        bring_over(&old, &new, &Plan::APP_DATA),
+        Outcome::AlreadyThere
+    );
 }
 
 /// When the copy cannot be made the run uses the old folder, and it starts with all its data.
@@ -264,7 +280,10 @@ fn the_app_starts_on_the_old_folder_when_the_copy_failed() {
     fs::write(&blocked, "a file, not a folder").unwrap();
     let new = blocked.join("New App Data");
     let outcome = bring_over(&old, &new, &Plan::APP_DATA);
-    assert!(matches!(outcome, Outcome::UseEarlierFolder { .. }), "{outcome:?}");
+    assert!(
+        matches!(outcome, Outcome::UseEarlierFolder { .. }),
+        "{outcome:?}"
+    );
     assert!(old.join("models").join("m-abc").join("chat.gguf").is_file());
     let sink = Arc::new(RecordingSink::default());
     let core = AppCore::new(at_app_data(dir.path(), &old), sink).unwrap();
@@ -288,7 +307,11 @@ fn found_and_connected(place: impl Fn(&Path) -> PathBuf) {
         json!({ "title": "Salt Road", "projectType": "Feature Film" }),
     );
     let user = source.core.profile().user_id;
-    let made = PathBuf::from(source.ok("library.status", json!({}))["root"].as_str().unwrap());
+    let made = PathBuf::from(
+        source.ok("library.status", json!({}))["root"]
+            .as_str()
+            .unwrap(),
+    );
     source.core.shutdown();
 
     let dir = tempfile::tempdir().unwrap();
@@ -326,7 +349,10 @@ fn a_library_in_the_home_folder_under_the_earlier_name_is_found() {
 #[test]
 fn the_library_pointer_folder_comes_across_and_still_points_at_the_persons_folder() {
     let dir = tempfile::tempdir().unwrap();
-    let library = dir.path().join("Documents").join(legacy_names::PRODUCT_NAME);
+    let library = dir
+        .path()
+        .join("Documents")
+        .join(legacy_names::PRODUCT_NAME);
     fs::create_dir_all(library.join(library_ops::PROJECTS_FOLDER)).unwrap();
     fs::create_dir_all(library.join(library_ops::VAULT_FOLDER)).unwrap();
     let old = dir.path().join("roaming").join(legacy_names::PRODUCT_NAME);
@@ -435,10 +461,7 @@ fn an_earlier_project_folder_works_as_before() {
     assert_eq!(state, "completed");
     let copy = env.ok("project.duplicate", json!({ "projectId": id }));
     assert_ne!(copy["projectId"], id.as_str());
-    env.ok(
-        "project.open",
-        json!({ "path": folder.to_string_lossy() }),
-    );
+    env.ok("project.open", json!({ "path": folder.to_string_lossy() }));
     env.ok("project.close", json!({}));
     env.ok(
         "project.set_archived",
@@ -469,10 +492,7 @@ fn a_duplicate_of_an_earlier_project_has_only_the_new_manifest() {
     let copy_folder = PathBuf::from(copy["path"].as_str().unwrap());
     assert!(copy_folder.join("straft.json").is_file());
     assert!(!copy_folder.join(legacy_names::MANIFEST_FILE).exists());
-    assert_eq!(
-        copy_folder.extension().unwrap().to_string_lossy(),
-        "straft"
-    );
+    assert_eq!(copy_folder.extension().unwrap().to_string_lossy(), "straft");
 }
 
 /// The folder a person's project lives in may not hold a new projects folder.
@@ -489,10 +509,10 @@ fn a_folder_inside_an_earlier_project_is_refused_as_a_home_for_projects() {
         .unwrap_err();
     assert!(refused.message.contains("inside a project"), "{refused:?}");
     // By its name alone, too, before it holds a manifest.
-    let named = env.dir.path().join(format!(
-        "Unfinished.{}",
-        legacy_names::PROJECT_EXTENSION
-    ));
+    let named = env
+        .dir
+        .path()
+        .join(format!("Unfinished.{}", legacy_names::PROJECT_EXTENSION));
     fs::create_dir_all(named.join("assets")).unwrap();
     let refused = env
         .call(
@@ -507,10 +527,10 @@ fn a_folder_inside_an_earlier_project_is_refused_as_a_home_for_projects() {
 #[test]
 fn the_release_1_project_folder_opens_and_gets_the_new_manifest() {
     let env = TestEnv::new();
-    let folder = env.dir.path().join(format!(
-        "Harbour Light.{}",
-        legacy_names::PROJECT_EXTENSION
-    ));
+    let folder = env
+        .dir
+        .path()
+        .join(format!("Harbour Light.{}", legacy_names::PROJECT_EXTENSION));
     copy_folder(&fixtures().join("release-1/project"), &folder);
     assert!(folder.join(legacy_names::MANIFEST_FILE).is_file());
     let opened = env.ok("project.open", json!({ "path": folder.to_string_lossy() }));
