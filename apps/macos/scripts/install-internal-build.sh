@@ -17,7 +17,7 @@ echo "== Packing the disk image"
 BUILT="$(ls -t "$ROOT"/release-out/mac/*-internal-*.dmg | head -1)"
 [[ -f "$BUILT" ]] || { echo "The disk image was not made." >&2; exit 1; }
 # The team's name for this build, as on Windows (Straft-5.exe): Straft-<n>.dmg.
-DMG="$ROOT/release-out/mac/${STRAFT_DMG_NAME:-Straft-5}.dmg"
+DMG="$ROOT/release-out/mac/${STRAFT_DMG_NAME:-Straft-7}.dmg"
 cp "$BUILT" "$DMG"
 (cd "$(dirname "$DMG")" && shasum -a 256 "$(basename "$DMG")" > "$(basename "$DMG").sha256")
 
