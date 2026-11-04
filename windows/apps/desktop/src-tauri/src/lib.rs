@@ -480,7 +480,11 @@ pub fn run() {
                 AppConfig::isolated(root)
             }
         },
-        None => match AppConfig::for_current_user(env!("CARGO_PKG_VERSION")) {
+        None => match if cfg!(straft_store) {
+            AppConfig::for_store_build(env!("CARGO_PKG_VERSION"))
+        } else {
+            AppConfig::for_current_user(env!("CARGO_PKG_VERSION"))
+        } {
             Ok(config) => config,
             // No Documents or app data folder: say so plainly and stop, never use a temp folder (W2).
             Err(e) => {

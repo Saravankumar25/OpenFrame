@@ -170,6 +170,36 @@ pub fn copied_database_is_sound(path: &Path) -> AppResult<bool> {
     Ok(integrity_problems(&conn, false).is_ok_and(|p| p.is_empty()))
 }
 
+/// How long [`snapshot_database`] waits for a source that another program holds locked.
+const SNAPSHOT_WAIT: Duration = Duration::from_secs(30);
+
+/// Copy a database another program may be writing into a new file at `dest`: one consistent snapshot,
+/// changes still in its write-ahead log included. The source is opened read-only, so nothing here can
+/// write to it, fold its log or delete it. A source that stays locked past [`SNAPSHOT_WAIT`] is an
+/// error, never a hang.
+pub fn snapshot_database(source: &Path, dest: &Path) -> AppResult<()> {
+    let from = open_sqlite(
+        source,
+        OpenFlags::SQLITE_OPEN_READ_ONLY | OpenFlags::SQLITE_OPEN_NO_MUTEX | OpenFlags::SQLITE_OPEN_URI,
+    )?;
+    from.busy_timeout(Duration::from_secs(5))?;
+    let mut to = open_sqlite(dest, OpenFlags::default())?;
+    let backup = rusqlite::backup::Backup::new(&from, &mut to)?;
+    let started = std::time::Instant::now();
+    loop {
+        // Every page in one step, under one read lock: another writer cannot make it start over.
+        match backup.step(-1)? {
+            rusqlite::backup::StepResult::Done => return Ok(()),
+            _ if started.elapsed() > SNAPSHOT_WAIT => {
+                return Err(AppError::storage(
+                    "the database stayed locked while it was being copied",
+                ));
+            }
+            _ => std::thread::sleep(Duration::from_millis(100)),
+        }
+    }
+}
+
 /// Foreign-key violations as `table:rowid` strings (empty = healthy).
 pub fn foreign_key_problems(conn: &Connection) -> AppResult<Vec<String>> {
     let mut stmt = conn.prepare("PRAGMA foreign_key_check")?;
@@ -254,6 +284,90 @@ pub fn checkpoint(conn: &Connection) -> AppResult<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn wal_database(dir: &Path) -> (Connection, std::path::PathBuf) {
+        let path = dir.join("source.sqlite");
+        let conn = open_connection(&path, true).unwrap();
+        conn.execute_batch("PRAGMA wal_autocheckpoint=0; CREATE TABLE t(a INTEGER, b INTEGER); INSERT INTO t VALUES (1, 1);")
+            .unwrap();
+        (conn, path)
+    }
+
+    fn side(path: &Path, suffix: &str) -> std::path::PathBuf {
+        let mut name = path.as_os_str().to_owned();
+        name.push(suffix);
+        std::path::PathBuf::from(name)
+    }
+
+    /// The state a crashed program leaves: a database and a log with changes, and no connection.
+    #[test]
+    fn a_snapshot_holds_the_log_and_leaves_the_source_log_as_it_was() {
+        let dir = tempfile::tempdir().unwrap();
+        let (conn, path) = wal_database(dir.path());
+        let crashed = dir.path().join("crashed.sqlite");
+        std::fs::copy(&path, &crashed).unwrap();
+        std::fs::copy(side(&path, "-wal"), side(&crashed, "-wal")).unwrap();
+        drop(conn);
+        let log = std::fs::read(side(&crashed, "-wal")).unwrap();
+        assert!(!log.is_empty());
+        let main = std::fs::read(&crashed).unwrap();
+
+        let dest = dir.path().join("copy.sqlite");
+        snapshot_database(&crashed, &dest).unwrap();
+
+        assert_eq!(std::fs::read(side(&crashed, "-wal")).unwrap(), log, "not folded");
+        assert_eq!(std::fs::read(&crashed).unwrap(), main, "not written");
+        let copy = open_connection(&dest, false).unwrap();
+        let n: i64 = copy.query_row("SELECT count(*) FROM t", [], |r| r.get(0)).unwrap();
+        assert_eq!(n, 1, "the row only in the log came along");
+    }
+
+    /// Another program keeps writing, and checkpointing, during the copy. Each transaction keeps
+    /// a and b equal, so a torn copy shows.
+    #[test]
+    fn a_snapshot_taken_during_writes_is_consistent() {
+        let dir = tempfile::tempdir().unwrap();
+        let (conn, path) = wal_database(dir.path());
+        conn.execute_batch("PRAGMA wal_autocheckpoint=2;").unwrap();
+        for i in 0..2000 {
+            conn.execute("INSERT INTO t VALUES (?1, ?1)", [i]).unwrap();
+        }
+        let stop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let writer = {
+            let stop = stop.clone();
+            std::thread::spawn(move || {
+                let mut i = 0i64;
+                while !stop.load(std::sync::atomic::Ordering::SeqCst) {
+                    i += 1;
+                    conn.execute_batch(&format!(
+                        "BEGIN; UPDATE t SET a = {i}; UPDATE t SET b = {i}; COMMIT;"
+                    ))
+                    .unwrap();
+                }
+                i
+            })
+        };
+        for round in 0..5 {
+            let dest = dir.path().join(format!("copy-{round}.sqlite"));
+            snapshot_database(&path, &dest).unwrap();
+            let copy = open_connection(&dest, false).unwrap();
+            let torn: i64 = copy
+                .query_row("SELECT count(*) FROM t WHERE a <> b", [], |r| r.get(0))
+                .unwrap();
+            assert_eq!(torn, 0, "round {round}");
+            assert!(integrity_problems(&copy, false).unwrap().is_empty());
+        }
+        stop.store(true, std::sync::atomic::Ordering::SeqCst);
+        assert!(writer.join().unwrap() > 0, "the writer really ran");
+    }
+
+    #[test]
+    fn a_file_that_is_not_a_database_gives_an_error_when_snapshotted() {
+        let dir = tempfile::tempdir().unwrap();
+        let bad = dir.path().join("bad.sqlite");
+        std::fs::write(&bad, vec![0x5a; 8192]).unwrap();
+        assert!(snapshot_database(&bad, &dir.path().join("copy.sqlite")).is_err());
+    }
 
     /// No staging file (current or legacy name) or SQLite side file is left in `dir`.
     fn assert_no_staging(dir: &Path) {

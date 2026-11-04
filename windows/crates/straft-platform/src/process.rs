@@ -88,6 +88,11 @@ pub fn stamp(child: &Child) -> Option<ProcessStamp> {
     imp::start_time(pid).map(|started| ProcessStamp { pid, started })
 }
 
+/// True when a process with this pid is running now, whoever it is (a pid can be reused).
+pub fn is_running(pid: u32) -> bool {
+    imp::start_time(pid).is_some()
+}
+
 /// What [`stop_if_same`] found.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SweepOutcome {

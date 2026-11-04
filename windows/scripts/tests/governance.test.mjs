@@ -649,7 +649,7 @@ test("the uninstaller clears the earlier data folder by the same rules and marks
   assert.deepEqual(list("Delete", legacyFolder), list("Delete", "Straft"), "same files in both places");
   assert.ok(!code.some((l) => new RegExp(`RMDir\\s+/r\\s+"\\$LOCALAPPDATA\\\\${legacyFolder}"`, "i").test(l)), "recursive delete of the earlier root");
   assert.ok(code.some((l) => new RegExp(`^\\s*RMDir\\s+"\\$LOCALAPPDATA\\\\${legacyFolder}"`, "i").test(l)), "final non-recursive RMDir of the earlier root");
-  // The folder name has a space, so an unquoted path would remove the wrong thing.
+  // A path with a space in it, unquoted, would remove the wrong thing.
   for (const l of code.filter((x) => /^\s*(RMDir|Delete)\b/.test(x))) {
     assert.match(l, /^\s*(RMDir|Delete)(\s+\/r)?\s+"[^"]+"/, `unquoted path: ${l}`);
   }

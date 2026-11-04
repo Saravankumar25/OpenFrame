@@ -10,8 +10,8 @@ use std::path::PathBuf;
 
 use crate::legacy_names;
 
-/// The app's private folder. Not the product name: a per-user Windows install puts the program in
-/// `%LOCALAPPDATA%\Straft Studio`, and data must never share a folder with the program.
+/// The data folder is `Straft` because the per-user Windows program folder uses the product name
+/// `Straft Studio` (`%LOCALAPPDATA%\Straft Studio`), and data must never share a folder with the program.
 const APP_FOLDER: &str = "Straft";
 /// The folder people see, in Documents and in their home folder.
 const USER_FOLDER: &str = "Straft Studio";
