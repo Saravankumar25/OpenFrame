@@ -9,14 +9,14 @@
 //! | Channel | Adapter | State |
 //! |---|---|---|
 //! | Microsoft Store (`.msix`) | [`adapters::MicrosoftStoreAdapter`] | stub: waits for the Partner Center account |
-//! | Mac App Store (`.pkg`) | [`mac::MacAppStoreAdapter`] | StoreKit 2 trial and lifetime unlock, built and tested with fakes; the Swift bridge and the licensing server are not connected yet |
+//! | Mac App Store (`.pkg`) | [`mac::MacAppStoreAdapter`] | StoreKit 2 trial and lifetime unlock counted offline (ADR-0040), built and tested with fakes; real purchases wait for the owner's App Store Connect record |
 //! | Internal team builds (`.exe`, `.dmg`) | none | never sold: no trial, no purchase, no lock (ADR-0023, ADR-0024) |
 //!
 //! Rules that hold in every channel (see `docs/engineering/36-entitlement-and-trial.md`):
 //!
 //! - **Unknown never blocks.** When a store cannot be reached or an adapter is not wired, the
 //!   state is [`EntitlementState::Unknown`] and the user can open, edit and export. A paid app
-//!   must never hold a writer's work hostage to a licence server.
+//!   must never hold a writer's work hostage to a store outage.
 //! - **Expiry never loses data.** Nothing is ever deleted. In the two store builds (Mac App Store
 //!   and Microsoft Store) an ended trial or a refunded purchase locks opening, editing and
 //!   exporting until a purchase or a restore (owner decisions 2026-10-07, ADR-0022 and ADR-0023);
@@ -25,8 +25,9 @@
 //! - **The internal builds are never sold.** The Windows installer and the Mac disk image are
 //!   builds for the owner's team: no trial, no purchase, no lock
 //!   ([`EntitlementState::InternalBuild`], ADR-0023 and ADR-0024).
-//! - **The stores keep the trial clock.** OpenFrame keeps no trial timer of its own, so a clock
-//!   turned back on this computer gives no days back.
+//! - **Who keeps the trial clock.** The Microsoft Store runs its own trial. On the Mac the trial is
+//!   counted on this Mac from Apple-signed data and the Mac's clock, with a clock guard, so a clock
+//!   turned back gives no days back (ADR-0040).
 //! - **No project data in any check.** Adapters receive nothing but the channel's own proof of
 //!   purchase.
 
@@ -40,8 +41,7 @@ use ts_rs::TS;
 pub use adapters::{ChannelAdapter, PurchaseFailure};
 pub use notices::{CalendarDay, Notice, NoticeRecord, NoticeStore};
 
-/// Length of the free trial in both stores, in days. The stores run the trial clock (ADR-0022,
-/// ADR-0023); OpenFrame keeps no trial timer of its own.
+/// Length of the free trial in both stores, in days.
 pub const TRIAL_DAYS: u32 = 7;
 
 /// The release channel this build was made for. Set once at build time by the desktop shell.
@@ -90,6 +90,10 @@ pub enum EntitlementState {
     /// Mac App Store only: no trial has been started from the App Store yet
     /// (`mac::MacState::TrialNotStarted`). Open and Export only until the user starts it.
     TrialNotStarted,
+    /// Mac App Store only: the Mac's clock is behind a date the app already trusted
+    /// (`mac::MacState::ClockChanged`). The whole app locks until the clock is right, and the
+    /// screen checks again by itself. Nothing is deleted.
+    ClockChanged,
     /// The internal team builds (Windows installer, Mac disk image), never sold (ADR-0023,
     /// ADR-0024).
     /// Everything is allowed and no trial, reminder or purchase screen ever shows.
@@ -110,7 +114,7 @@ pub enum Permission {
 impl EntitlementState {
     /// Whether `perm` is allowed in this state on `channel`.
     ///
-    /// - **A store build, TrialEnded or Revoked:** nothing. Opening, editing and exporting all
+    /// - **A store build, TrialEnded, Revoked or ClockChanged:** nothing. Opening, editing and exporting all
     ///   wait for a purchase or a restore (ADR-0022 for the Mac, ADR-0023 for the Microsoft
     ///   Store). The application core refuses every project operation in this case, see
     ///   [`Self::locks_the_app`].
@@ -134,19 +138,26 @@ impl EntitlementState {
 
     /// True when the whole app waits for a purchase or a restore: a store build (Mac App Store,
     /// ADR-0022; Microsoft Store, ADR-0023) after the trial ended without a purchase, or after a
-    /// refund or revocation. The internal installer build never locks. NeedsOnlineCheck never
-    /// locks either: a failed check keeps opening and exporting (ADR-0018 decision 6).
+    /// refund or revocation, or (Mac, ADR-0040) with a clock behind a date it already trusted. The
+    /// internal installer build never locks. NeedsOnlineCheck never locks either: a failed check
+    /// keeps opening and exporting (ADR-0018 decision 6).
     pub const fn locks_the_app(self, channel: Channel) -> bool {
         matches!(channel, Channel::MacAppStore | Channel::MicrosoftStore)
             && matches!(
                 self,
-                EntitlementState::TrialEnded | EntitlementState::Revoked
+                EntitlementState::TrialEnded
+                    | EntitlementState::Revoked
+                    | EntitlementState::ClockChanged
             )
     }
 
     /// Plain words for the Settings screen and the trial banner.
     pub fn summary(self, channel: Channel) -> String {
         if self.locks_the_app(channel) {
+            if self == EntitlementState::ClockChanged {
+                return "Your Mac's clock looks wrong. Turn on Set time and date automatically in System Settings, then choose Check again. Your projects are safe."
+                    .to_string();
+            }
             let first = if self == EntitlementState::Revoked {
                 "This purchase was refunded or revoked."
             } else {
@@ -157,9 +168,9 @@ impl EntitlementState {
             );
         }
         match self {
-            EntitlementState::TrialActive { days_left: 1 } => "Free trial: 1 day left.".to_string(),
+            EntitlementState::TrialActive { days_left: 1 } => "Trial ends in 1 day.".to_string(),
             EntitlementState::TrialActive { days_left } => {
-                format!("Free trial: {days_left} days left.")
+                format!("Trial ends in {days_left} days.")
             }
             EntitlementState::TrialEnded => {
                 "Your free trial has ended. You can still open and export your projects. Buy OpenFrame Studio to keep editing."
@@ -188,6 +199,10 @@ impl EntitlementState {
                 "Start your free 7-day trial from the App Store to begin editing. Your projects can be opened and exported."
                     .to_string()
             }
+            EntitlementState::ClockChanged => {
+                "Your Mac's clock looks wrong. Set the correct time to keep using OpenFrame Studio."
+                    .to_string()
+            }
             EntitlementState::InternalBuild => "Internal build, not for sale.".to_string(),
         }
     }
@@ -210,7 +225,7 @@ pub enum PurchaseStatus {
 mod tests {
     use super::*;
 
-    const ALL: [EntitlementState; 8] = [
+    const ALL: [EntitlementState; 9] = [
         EntitlementState::TrialActive { days_left: 3 },
         EntitlementState::TrialEnded,
         EntitlementState::Purchased,
@@ -218,6 +233,7 @@ mod tests {
         EntitlementState::Unknown,
         EntitlementState::NeedsOnlineCheck,
         EntitlementState::TrialNotStarted,
+        EntitlementState::ClockChanged,
         EntitlementState::InternalBuild,
     ];
 
@@ -248,7 +264,12 @@ mod tests {
     fn both_stores_lock_everything_only_after_the_trial_ended_or_a_refund() {
         for store in [Channel::MacAppStore, Channel::MicrosoftStore] {
             for s in ALL {
-                let locked = matches!(s, EntitlementState::TrialEnded | EntitlementState::Revoked);
+                let locked = matches!(
+                    s,
+                    EntitlementState::TrialEnded
+                        | EntitlementState::Revoked
+                        | EntitlementState::ClockChanged
+                );
                 assert_eq!(s.locks_the_app(store), locked, "{store:?} {s:?}");
                 for perm in [Permission::Open, Permission::Export] {
                     assert_eq!(s.permits(store, perm), !locked, "{store:?} {s:?} {perm:?}");
@@ -276,6 +297,7 @@ mod tests {
             assert!(!edit(EntitlementState::Revoked));
             assert!(!edit(EntitlementState::NeedsOnlineCheck));
             assert!(!edit(EntitlementState::TrialNotStarted));
+            assert!(!edit(EntitlementState::ClockChanged));
             assert!(edit(EntitlementState::InternalBuild));
         }
     }
@@ -296,7 +318,7 @@ mod tests {
         }
         assert_eq!(
             EntitlementState::TrialActive { days_left: 1 }.summary(win),
-            "Free trial: 1 day left."
+            "Trial ends in 1 day."
         );
         // The lock in either store says how to get back in; the price is never named.
         assert_eq!(
@@ -315,6 +337,11 @@ mod tests {
         assert_eq!(
             EntitlementState::Revoked.summary(mac),
             "This purchase was refunded or revoked. Buy OpenFrame Studio or restore your purchase to open your projects again. Nothing is deleted."
+        );
+        assert!(
+            EntitlementState::ClockChanged
+                .summary(mac)
+                .contains("clock looks wrong")
         );
         assert_eq!(
             EntitlementState::NeedsOnlineCheck.summary(mac),

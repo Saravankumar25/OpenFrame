@@ -11,13 +11,11 @@
 //!   fake source. The real calls need the Partner Center product identity (owner task); until the
 //!   shell supplies them, [`for_channel`] builds [`MicrosoftStoreAdapter::unavailable`] and the
 //!   state is NeedsOnlineCheck.
-//! - [`crate::mac::MacAppStoreAdapter`]: StoreKit 2 trial and lifetime unlock, decided by the
-//!   licensing server's signed verdict. Built and tested with a fake bridge and a fake server.
-//!   Until the desktop shell supplies the Swift bridge and the HTTPS client ([`MacInputs`]),
-//!   [`for_channel`] builds it over [`crate::mac::UnavailableBridge`], so the state is
-//!   NeedsOnlineCheck: opening and exporting work, editing is locked, nothing is granted.
-
-use std::path::Path;
+//! - [`crate::mac::MacAppStoreAdapter`]: StoreKit 2 trial and lifetime unlock, counted offline on
+//!   this Mac (ADR-0040). Built and tested with a fake bridge. Until the desktop shell supplies the
+//!   Swift bridge ([`MacInputs`]), [`for_channel`] builds it over
+//!   [`crate::mac::UnavailableBridge`], so the state is NeedsOnlineCheck: opening and exporting
+//!   work, editing is locked, nothing is granted.
 
 use crate::mac::{MacAppStoreAdapter, MacInputs};
 use crate::{Channel, EntitlementState, PurchaseStatus};
@@ -54,7 +52,7 @@ pub trait ChannelAdapter: Send + Sync {
     }
 
     /// Like [`Self::channel_state`], after the shell asked for a new check (resume, a StoreKit
-    /// change, the end of a lease). It must not do what "Restore purchase" does when that can
+    /// change, a timer). It must not do what "Restore purchase" does when that can
     /// show the user a window. The default is the restore check, for a channel without a
     /// distinction.
     fn revalidate_channel_state(
@@ -78,6 +76,24 @@ pub trait ChannelAdapter: Send + Sync {
     /// zero-price trial product). `None`, the default, means the trial starts by itself at first
     /// launch.
     fn start_trial(&self) -> Option<Result<EntitlementState, PurchaseFailure>> {
+        None
+    }
+
+    /// The moment a running trial ends, Unix milliseconds UTC, for the reminder's end line. `None`
+    /// when no trial runs or the channel cannot tell.
+    fn trial_ends_at_ms(&self) -> Option<i64> {
+        None
+    }
+
+    /// How long a running trial still has, by the adapter's own clock. `None` when no trial runs or
+    /// the channel cannot tell.
+    fn trial_time_left(&self) -> Option<std::time::Duration> {
+        None
+    }
+
+    /// The price of the full version as the store formats it, for the Mac's trial disclosure
+    /// (Apple Guideline 3.1.1). Read at run time, never typed in code. `None` everywhere else.
+    fn lifetime_price(&self) -> Option<String> {
         None
     }
 }
@@ -254,10 +270,9 @@ impl ChannelAdapter for MicrosoftStoreAdapter {
 
 /// The adapter for a channel, with the production inputs the desktop shell supplies.
 ///
-/// `mac` carries the StoreKit bridge, the licensing server client, the nonce source and the
-/// monotonic clock for the Mac App Store channel. `None` (a Windows build, or a Mac shell without
-/// the StoreKit bridge yet) builds the Mac adapter over [`crate::mac::UnavailableBridge`] and
-/// [`crate::mac::UnavailableServer`]: the state is NeedsOnlineCheck and neither the trial nor the
+/// `mac` carries the StoreKit bridge and the clocks for the Mac App Store channel. `None` (a Windows
+/// build, or a Mac shell without the StoreKit bridge) builds the Mac adapter over
+/// [`crate::mac::UnavailableBridge`]: the state is NeedsOnlineCheck and neither the trial nor the
 /// lifetime unlock is ever granted that way. `store` carries the Microsoft Store calls; `None`
 /// builds [`MicrosoftStoreAdapter::unavailable`]. Both `None` cases are gaps in the build, not
 /// states a user of a finished store build sees.
@@ -266,7 +281,6 @@ impl ChannelAdapter for MicrosoftStoreAdapter {
 /// there is no channel to ask (ADR-0023, ADR-0024).
 pub fn for_channel(
     channel: Channel,
-    app_data_dir: &Path,
     mac: Option<MacInputs>,
     store: Option<Box<dyn StoreLicenceSource>>,
 ) -> Option<Box<dyn ChannelAdapter>> {
@@ -276,8 +290,8 @@ pub fn for_channel(
             None => MicrosoftStoreAdapter::unavailable(),
         })),
         Channel::MacAppStore => Some(match mac {
-            Some(inputs) => Box::new(MacAppStoreAdapter::from_inputs(inputs, app_data_dir)),
-            None => Box::new(MacAppStoreAdapter::unavailable(app_data_dir)),
+            Some(inputs) => Box::new(MacAppStoreAdapter::from_inputs(inputs)),
+            None => Box::new(MacAppStoreAdapter::unavailable()),
         }),
         Channel::DirectInstaller => None,
     }
@@ -373,13 +387,7 @@ mod tests {
     #[test]
     fn microsoft_store_reads_the_store_licence_and_buys_through_the_store_dialog() {
         let store = std::sync::Arc::new(FakeStore::new(Ok(lic(true, true, 3 * DAY_SECONDS))));
-        let a = for_channel(
-            Channel::MicrosoftStore,
-            Path::new("unused"),
-            None,
-            Some(Box::new(store.clone())),
-        )
-        .unwrap();
+        let a = for_channel(Channel::MicrosoftStore, None, Some(Box::new(store.clone()))).unwrap();
         assert_eq!(a.channel(), Channel::MicrosoftStore);
         assert_eq!(a.limitation(), None);
         assert_eq!(
@@ -425,7 +433,7 @@ mod tests {
 
     #[test]
     fn microsoft_store_without_the_store_calls_needs_a_check_and_cannot_sell() {
-        let a = for_channel(Channel::MicrosoftStore, Path::new("unused"), None, None).unwrap();
+        let a = for_channel(Channel::MicrosoftStore, None, None).unwrap();
         assert_eq!(a.channel_state(), Some(EntitlementState::NeedsOnlineCheck));
         assert_eq!(
             a.restore_channel_state(),
@@ -442,8 +450,7 @@ mod tests {
 
     #[test]
     fn mac_channel_without_inputs_needs_an_online_check_and_grants_nothing() {
-        let dir = tempfile::tempdir().unwrap();
-        let a = for_channel(Channel::MacAppStore, dir.path(), None, None).unwrap();
+        let a = for_channel(Channel::MacAppStore, None, None).unwrap();
         assert_eq!(a.channel(), Channel::MacAppStore);
         assert_eq!(a.channel_state(), Some(EntitlementState::NeedsOnlineCheck));
         assert_eq!(
@@ -456,16 +463,10 @@ mod tests {
             a.limitation(),
             Some("The App Store connection is not available in this build.")
         );
-        assert!(
-            !dir.path().join("entitlement").exists(),
-            "nothing learned, nothing cached"
-        );
     }
 
     #[test]
     fn the_internal_builds_have_no_channel_to_ask() {
-        let dir = tempfile::tempdir().unwrap();
-        assert!(for_channel(Channel::DirectInstaller, dir.path(), None, None).is_none());
-        assert!(!dir.path().join("entitlement").exists(), "nothing written");
+        assert!(for_channel(Channel::DirectInstaller, None, None).is_none());
     }
 }

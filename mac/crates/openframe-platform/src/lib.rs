@@ -22,6 +22,7 @@
 
 pub mod atomic;
 pub mod cloud;
+pub mod code_signature;
 pub mod dirs;
 pub mod drives;
 pub mod exists;

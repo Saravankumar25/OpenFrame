@@ -4,7 +4,7 @@
 {"id":"export-04","msg":"can you explain the relationship between Mariamma and Varghese and explain their bond","prev":"I asked you How many characters are there in LOW TIDE RADIO","want":"relation"}
 {"id":"export-05","msg":"That is the question I am asking you bro","prev":"can you explain the relationship between Mariamma and Varghese and explain their bond","want":"relation"}
 {"id":"export-06","msg":"Broooo I fucking asked you that can you explain the relationship between Mariamma and Varghese and explain their bond","prev":"That is the question I am asking you bro","want":"relation"}
-{"id":"export-07","msg":"Explain the story of LOW TIDE RADIO in brief","prev":"Broooo I fucking asked you that can you explain the relationship between Mariamma and Varghese and explain their bond","want":"explain"}
+{"id":"export-07","msg":"Explain the story of LOW TIDE RADIO in brief","prev":"Broooo I fucking asked you that can you explain the relationship between Mariamma and Varghese and explain their bond","want":"story"}
 {"id":"export-08","msg":"I mean bro, explain at least one long paragraph","prev":"Explain the story of LOW TIDE RADIO in brief","want":"explain"}
 {"id":"export-09","msg":"Open Scene 42","prev":"I mean bro, explain at least one long paragraph","want":"navigate"}
 {"id":"export-10","msg":"scene 42 of LOW TIDE RADIO","prev":"Open Scene 42","want":"navigate"}

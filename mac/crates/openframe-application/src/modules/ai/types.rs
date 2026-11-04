@@ -393,8 +393,23 @@ pub struct AiResultDto {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub lane: Option<String>,
+    /// The section this reply says to add (ADR-0041): the screens show an Add button for it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub pointer: Option<AiPointerDto>,
     #[ts(type = "number")]
     pub created_at: i64,
+}
+
+/// The section a reply points at.
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub struct AiPointerDto {
+    /// The leaf id, as the picks use it.
+    pub leaf: String,
+    /// "Production > Budget".
+    pub label: String,
 }
 
 /// One audited tool step of an agent run (agentic spec §5).

@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **521** (164 queries, 357 commands)
-- Exposed to the assistant through tools: **308**; not AI-accessible: **213**
+- Registered operations: **523** (165 queries, 358 commands)
+- Exposed to the assistant through tools: **308**; not AI-accessible: **215**
 - Tools: **254** (61 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -261,23 +261,24 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
 |---|---|---|---|---|---|---|---|
 | `entitlement.buy`: Buy the full version through the store's own purchase window: Apple's payment sheet on the Mac, the Microsoft Store purchase dialog on Windows. The internal installer build never sells. | command | Mutate | app level | P | `BuyArgs` → `BuyOutcome` | hidden | none |
+| `entitlement.lock_ready`: The shell finished saving what was pending, so the lock now refuses every project operation. | command | Mutate | app level |  | `LockReadyArgs` → `EntitlementStatus` | hidden | none |
 | `entitlement.notice`: Which trial reminder or first-run screen to show now: a reminder in the last 3 trial days, the data note, the file safety tutorial and the welcome after a purchase, or the store screens (the lock after the trial, the licence check, the Mac first launch). | query | Read | app level |  | `EntitlementNoticeArgs` → `EntitlementNotice` | hidden | none |
 | `entitlement.record_notice`: Remember that a trial reminder was shown today, or that the data note, the tutorial or the welcome was finished. | command | Mutate | app level | P | `RecordNoticeArgs` → `EntitlementNotice` | hidden | none |
 | `entitlement.restore_purchase`: Ask the release channel to restore a purchase, then check the licence and trial again. | command | Mutate | app level | P | `RestorePurchaseArgs` → `EntitlementStatus` | hidden | none |
 | `entitlement.start_trial`: Start the free 7-day trial from the App Store on the Mac. Other channels start the trial by themselves. | command | Mutate | app level | P | `StartTrialArgs` → `BuyOutcome` | hidden | none |
 | `entitlement.status`: Licence and free-trial status for Settings: channel, days left and whether editing is allowed. | query | Read | app level |  | `EntitlementStatusArgs` → `EntitlementStatus` | hidden | none |
 
-### Offline AI
+### OpenFrame AI
 
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
 |---|---|---|---|---|---|---|---|
-| `ai.ask`: Ask the assistant (one request, one AI Result). | command | Mutate | UseAi |  | `AskArgs` → `AiExchange` | hidden | none |
-| `ai.cancel`: Stop the assistant request that is running in a conversation (nothing is changed). | command | Mutate | UseAi |  | `AiCancelArgs` → `AiCancelDto` | hidden | none |
+| `ai.ask`: Ask OpenFrame AI (one request, one AI Result). | command | Mutate | UseAi |  | `AskArgs` → `AiExchange` | hidden | none |
+| `ai.cancel`: Stop OpenFrame AI request that is running in a conversation (nothing is changed). | command | Mutate | UseAi |  | `AiCancelArgs` → `AiCancelDto` | hidden | none |
 | `ai.change_set.accept`: Apply a proposal after explicit human approval. | command | Mutate | ApplyChangeSet |  | `AcceptArgs` → `ChangeSetDto` | hidden | none |
 | `ai.change_set.get`: One prepared Change Set (proposal) of the requesting user. | query | Read | View |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
 | `ai.change_set.recheck`: Re-check a stale proposal against the current project. | command | Mutate | UseAi |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
 | `ai.change_set.reject`: Reject a proposal (project unchanged). | command | Mutate | UseAi |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
-| `ai.diagnostics`: Offline AI technical details for Settings (versions, licences, hashes, paths). | query | Read | app level |  | `AiEmptyArgs` → `AiDiagnosticsDto` | hidden | none |
+| `ai.diagnostics`: OpenFrame AI technical details for Settings (versions, licences, hashes, paths). | query | Read | app level |  | `AiEmptyArgs` → `AiDiagnosticsDto` | hidden | none |
 | `ai.download.import`: Use a model file the person already has; it is copied and used only when it matches a pinned file. | command | Mutate | app level |  | `AiImportArgs` → `AiImportResult` | hidden | none |
 | `ai.download.pause`: Pause the OpenFrame AI download; it resumes where it stopped. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 | `ai.download.remove`: Remove the downloaded OpenFrame AI models; projects are not touched. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
@@ -285,14 +286,15 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `ai.download.status`: The Download OpenFrame AI screen: size, free space, progress. | query | Read | app level |  | `AiEmptyArgs` → `AiDownloadDto` | hidden | none |
 | `ai.export_conversation`: Write one of the person's own conversations (their questions, the answers and the sources) to a file they chose. | command | Mutate | UseAi |  | `AiConversationExportArgs` → `AiReportResult` | hidden | none |
 | `ai.export_report`: Write the local AI trace (numbers and ids only) and the health figures to a file the person chose. | command | Mutate | app level |  | `AiReportArgs` → `AiReportResult` | hidden | none |
-| `ai.graphics.set`: Settings, Offline AI, Graphics card: Automatic or Off. | command | Mutate | app level |  | `AiGraphicsArgs` → `()` | hidden | none |
-| `ai.health`: The AI health card: medians, apply rate, passes and the weakest tool, from the local numbers-only trace. | query | Read | app level |  | `AiHealthArgs` → `AiHealthDto` | hidden | none |
-| `ai.history`: The user's own assistant conversation history. | query | Read | UseAi |  | `AiHistoryArgs` → `AiHistoryDto` | hidden | none |
+| `ai.graphics.set`: Settings, OpenFrame AI, Graphics card: Automatic or Off. | command | Mutate | app level |  | `AiGraphicsArgs` → `()` | hidden | none |
+| `ai.health`: The OpenFrame AI health card: medians, apply rate, passes and the weakest tool, from the local numbers-only trace. | query | Read | app level |  | `AiHealthArgs` → `AiHealthDto` | hidden | none |
+| `ai.history`: The user's own OpenFrame AI conversation history. | query | Read | UseAi |  | `AiHistoryArgs` → `AiHistoryDto` | hidden | none |
 | `ai.index_rebuild`: Rebuild the derived project-context index in the background. | command | Mutate | UseAi | L | `AiIndexArgs` → `IndexRebuildStarted` | hidden | none |
 | `ai.index_status`: State of the derived project-context index (current, updating, rebuilding…). | query | Read | View |  | `AiIndexArgs` → `IndexStatusDto` | hidden | none |
-| `ai.memory_delete`: Make the assistant forget one of the user's remembered entries; the words are erased. | command | Mutate | UseAi | DI | `AiMemoryDeleteArgs` → `AiMemoryDeleteDto` | hidden | none |
-| `ai.memory_list`: What the assistant remembers about the user in this project (their own entries only). | query | Read | UseAi |  | `AiEmptyArgs` → `AiMemoryListDto` | hidden | none |
-| `ai.status`: Offline AI status: available, downloaded models check, engine state. | query | Read | app level |  | `AiEmptyArgs` → `AiStatusDto` | hidden | none |
+| `ai.memory_delete`: Make OpenFrame AI forget one of the user's remembered entries; the words are erased. | command | Mutate | UseAi | DI | `AiMemoryDeleteArgs` → `AiMemoryDeleteDto` | hidden | none |
+| `ai.memory_list`: What OpenFrame AI remembers about the user in this project (their own entries only). | query | Read | UseAi |  | `AiEmptyArgs` → `AiMemoryListDto` | hidden | none |
+| `ai.sections`: The sections OpenFrame AI can read, and the drafts, scenes, days and call sheets their pickers list. | query | Read | UseAi |  | `SectionsArgs` → `SectionsDto` | hidden | none |
+| `ai.status`: OpenFrame AI status: available, downloaded models check, engine state. | query | Read | app level |  | `AiEmptyArgs` → `AiStatusDto` | hidden | none |
 | `ai.stop_runtime`: Stop the local AI engine. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 
 ### Packages
@@ -682,27 +684,27 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 
 ## Not AI-accessible, and why
 
-- **A manual Day Out of Days correction records what the user knows about holds, travel, fittings and rehearsals; the assistant reads the derived report instead.**
+- **A manual Day Out of Days correction records what the user knows about holds, travel, fittings and rehearsals; OpenFrame AI reads the derived report instead.**
   `schedule.set_dood_override`
-- **A research verification flag records the user's own judgement of a source (FSD 107.5, 107.6); the assistant never marks research as checked.**
+- **A research verification flag records the user's own judgement of a source (FSD 107.5, 107.6); OpenFrame AI never marks research as checked.**
   `vault.set_research_flag`
-- **Adds media the user supplies (picked image files or pasted image data); the assistant cannot supply media.**
+- **Adds media the user supplies (picked image files or pasted image data); OpenFrame AI cannot supply media.**
   `cast.set_photo`, `catalog.set_image`, `locations.add_photos`, `moodboard.add_image_data`, `moodboard.add_images`, `shot.set_reference_image`, `story.set_character_image`, `storyboard.set_panel_visual`, `vault.ingest_bytes`
-- **Alternative UI entry point for a change the assistant already prepares through an equivalent operation.**
+- **Alternative UI entry point for a change OpenFrame AI already prepares through an equivalent operation.**
   `breakdown.accept`, `breakdown.reuse`, `shot.attach_panel`, `shot.detach_panel`, `templates.apply`, `vault.restore`, `vault.trash_list`
-- **Application-level project lifecycle (create, open, close, locate, duplicate, archive or delete projects on disk, recent-project list); the assistant works inside the one open project.**
+- **Application-level project lifecycle (create, open, close, locate, duplicate, archive or delete projects on disk, recent-project list); OpenFrame AI works inside the one open project.**
   `project.clear_cover`, `project.close`, `project.create`, `project.current`, `project.discover`, `project.duplicate`, `project.list_recent`, `project.move`, `project.open`, `project.recovery_state`, `project.remove_recent`, `project.rename`, `project.resolve_recovery`, `project.set_archived`, `project.set_pinned`
-- **Changing appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; the assistant reads how the app looks but never changes it.**
+- **Changing appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; OpenFrame AI reads how the app looks but never changes it.**
   `appearance.check_theme`, `appearance.delete_theme`, `appearance.export_theme`, `appearance.import_theme`, `appearance.rename_theme`, `appearance.set_mode`, `appearance.set_theme`
-- **Crosses the project boundary (Global Idea Vault or another project); the assistant is scoped to the open project.**
+- **Crosses the project boundary (Global Idea Vault or another project); no tool crosses it. The Global Idea Vault reaches OpenFrame AI only when the person picks its section for that question (ADR-0041).**
   `templates.copy`, `vault.copy_to_store`
-- **Data for an interactive dialog or editor preview; the assistant reads the same facts through its own bounded tools.**
-  `app.save_state`, `breakdown.quick_reuse`, `breakdown.source_anchor`, `history.info`, `interchange.draft_scenes`, `interchange.export_preview`, `interchange.sources`, `moodboard.suggestions`, `packages.backup_preview`, `packages.exchange_preview`, `packages.exchange_scenes`, `packages.exchange_sources`, `production.references`, `screenplay.page_view`, `screenplay.samples`, `screenplay.title_page_preview`, `tasks.relatable_types`, `vault.story_targets`, `visual.vault_images`, `writing.check_spelling`, `writing.navigator_columns`, `writing.spelling_suggestions`, `writing.suggestion_sources`
-- **Deleting a whole screenplay (every draft, locked draft and production number in it) stays a deliberate human action (owner decision 2026-10-08); the assistant can propose deleting one draft or restoring a screenplay from Recently Deleted.**
+- **Data for an interactive dialog or editor preview; OpenFrame AI reads the same facts through its own bounded tools.**
+  `ai.sections`, `app.save_state`, `breakdown.quick_reuse`, `breakdown.source_anchor`, `history.info`, `interchange.draft_scenes`, `interchange.export_preview`, `interchange.sources`, `moodboard.suggestions`, `packages.backup_preview`, `packages.exchange_preview`, `packages.exchange_scenes`, `packages.exchange_sources`, `production.references`, `screenplay.page_view`, `screenplay.samples`, `screenplay.title_page_preview`, `tasks.relatable_types`, `vault.story_targets`, `visual.vault_images`, `writing.check_spelling`, `writing.navigator_columns`, `writing.spelling_suggestions`, `writing.suggestion_sources`
+- **Deleting a whole screenplay (every draft, locked draft and production number in it) stays a deliberate human action (owner decision 2026-10-08); OpenFrame AI can propose deleting one draft or restoring a screenplay from Recently Deleted.**
   `screenplay.delete`
 - **Display appearance (category colours and icons) with no content meaning; the user customises it in Settings.**
   `breakdown.categories`, `breakdown.reset_category_styles`, `breakdown.set_category_style`
-- **Edited in a structured form (date ranges) the user fills in directly; the assistant reads these facts through its production read tools and records availability as notes through the cast and crew proposals.**
+- **Edited in a structured form (date ranges) the user fills in directly; OpenFrame AI reads these facts through its production read tools and records availability as notes through the cast and crew proposals.**
   `availability.set`
 - **Exchange and review packages bring other people's changes in from package files; opening, reviewing and applying them stays a human workflow.**
   `packages.apply_import`, `packages.cancel_import`, `packages.open_exchange`, `packages.queue_attach`, `packages.record_view`, `packages.review_comment`, `packages.review_delete_comment`, `packages.review_get`, `packages.review_list`, `packages.session`, `packages.session_view`, `packages.undo_import`
@@ -714,37 +716,37 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
   `ai.index_rebuild`, `ai.index_status`, `search.rebuild`, `vault.orphan_files`, `vault.recover_files`
 - **Keeping or dismissing a schedule warning is the user's own judgement in the warning dialog ("Keep Anyway"); proposals never pre-accept warnings.**
   `schedule.decide_warning`
-- **Keystroke-level screenplay editor primitive (batched typing, element moves/splits); the assistant proposes scene-level changes instead.**
+- **Keystroke-level screenplay editor primitive (batched typing, element moves/splits); OpenFrame AI proposes scene-level changes instead.**
   `screenplay.apply_edits`, `screenplay.merge_scene`, `screenplay.move_element`, `screenplay.split_scene`
-- **Licence and free-trial status belong to the person at this computer and the release channel; the assistant never reads, restores or changes them.**
-  `entitlement.buy`, `entitlement.notice`, `entitlement.record_notice`, `entitlement.restore_purchase`, `entitlement.start_trial`, `entitlement.status`
+- **Licence and free-trial status belong to the person at this computer and the release channel; OpenFrame AI never reads, restores or changes them.**
+  `entitlement.buy`, `entitlement.lock_ready`, `entitlement.notice`, `entitlement.record_notice`, `entitlement.restore_purchase`, `entitlement.start_trial`, `entitlement.status`
 - **Manual visual arrangement (drag position, size, stacking order) with no content meaning; the user arranges directly.**
   `locations.move_photo`, `moodboard.arrange_item`, `moodboard.move_items`, `moodboard.reorder`, `moodboard.resize_item`
-- **Offline AI status and engine control belong to the user in Settings, not to the assistant itself.**
+- **OpenFrame AI status and engine control belong to the user in Settings, not to OpenFrame AI itself.**
   `ai.diagnostics`, `ai.download.import`, `ai.download.pause`, `ai.download.remove`, `ai.download.start`, `ai.download.status`, `ai.export_report`, `ai.graphics.set`, `ai.health`, `ai.status`, `ai.stop_runtime`
+- **OpenFrame AI's own entry point and conversation history; a tool calling it would recurse.**
+  `ai.ask`, `ai.cancel`, `ai.history`, `ai.memory_delete`, `ai.memory_list`
 - **Owner-only override of a lock or finalization; it stays a deliberate human action.**
   `screenplay.unlock_draft`
 - **Per-user view state (collapsed rows, remembered positions, current episode); not project content.**
   `project.set_last_location`, `screenplay.set_view_state`, `screenplay.view_state`, `story.card_display`, `story.set_card_display`, `story.set_collapsed`, `story.set_current_episode`, `story.view_state`
-- **Permanent deletion ('Delete forever') is never offered to the assistant (spec §28); items stay in Recently Deleted.**
+- **Permanent deletion ('Delete forever') is never offered to OpenFrame AI (spec §28); items stay in Recently Deleted.**
   `packages.record_delete`, `project.delete`, `trash.purge`, `vault.purge`
-- **Personal writing preference (keyboard shortcuts, personal dictionary, spell checking switch and languages); a direct user choice in Settings or the editor, not project content the assistant changes.**
+- **Personal writing preference (keyboard shortcuts, personal dictionary, spell checking switch and languages); a direct user choice in Settings or the editor, not project content OpenFrame AI changes.**
   `app.reset_shortcuts`, `app.set_shortcuts`, `writing.dictionary`, `writing.dictionary_add`, `writing.dictionary_remove`, `writing.set_proofing`
-- **Production scene number overrides and renumbering stay a human decision (ADR-0015, contract doc 32 §2.5); the assistant reads the numbers.**
+- **Production scene number overrides and renumbering stay a human decision (ADR-0015, contract doc 32 §2.5); OpenFrame AI reads the numbers.**
   `screenplay.renumber_scenes`, `screenplay.restore_omitted_scene`, `screenplay.set_scene_number`
-- **Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).**
+- **Reads or writes a file-system location the user picks in a file dialog; OpenFrame AI never chooses or touches file-system paths (spec §3).**
   `ai.export_conversation`, `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `library.connect`, `library.create_at`, `library.inspect`, `library.move`, `library.status`, `library.use_default`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `project.set_cover`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `storage.set_projects_dir`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.backup`, `vault.export_package`, `vault.inspect`, `vault.inspect_folder`, `vault.locate`, `vault.move`, `vault.relink`, `vault.restore_backup`
-- **Returns local file paths of managed media; the assistant never receives file-system paths.**
+- **Returns local file paths of managed media; OpenFrame AI never receives file-system paths.**
   `app.info`, `files.asset`, `storage.info`
-- **Screenplay page layout settings (paper, font, spacing, header and footer, page breaks, custom element looks) stay a human decision (screenplay engine contract doc 32 §2.5); the assistant reads the resulting page facts.**
+- **Screenplay page layout settings (paper, font, spacing, header and footer, page breaks, custom element looks) stay a human decision (screenplay engine contract doc 32 §2.5); OpenFrame AI reads the resulting page facts.**
   `screenplay.create_custom_element`, `screenplay.delete_custom_element`, `screenplay.delete_page_preset`, `screenplay.save_page_preset`, `screenplay.update_custom_element`, `screenplay.update_page_setup`
-- **Support diagnostics are user-initiated only (ADR-0021): the user reviews the bundle and saves it to a location they pick; the assistant never gathers, exports or sends diagnostics.**
+- **Support diagnostics are user-initiated only (ADR-0021): the user reviews the bundle and saves it to a location they pick; OpenFrame AI never gathers, exports or sends diagnostics.**
   `diagnostics.export_bundle`, `diagnostics.preview`
-- **The assistant's own entry point and conversation history; a tool calling it would recurse.**
-  `ai.ask`, `ai.cancel`, `ai.history`, `ai.memory_delete`, `ai.memory_list`
-- **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so the assistant neither reads nor changes it.**
+- **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so no tool reads or changes it. Its text reaches OpenFrame AI only when the person picks the Story Page section for that question (ADR-0041).**
   `story.page.get`, `story.page.save`
-- **Would move content across the private/shared boundary; the assistant only reads private notes of their owner.**
+- **Would move content across the private/shared boundary; OpenFrame AI only reads private notes of their owner.**
   `project.adopt_orphan_notes`, `project.orphan_notes`
 
 ## Tools

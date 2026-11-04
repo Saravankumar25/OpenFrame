@@ -70,7 +70,7 @@ fn no_example_is_a_gold_request_or_a_spike_message() {
         );
         n += 1;
     }
-    assert_eq!(n, 275);
+    assert_eq!(n, 347);
 }
 
 /// Read every measured turn with the rules alone: (labelled type, read type, how, message).

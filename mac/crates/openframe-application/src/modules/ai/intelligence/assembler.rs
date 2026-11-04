@@ -5,23 +5,20 @@
 //! only used to find candidates), which enforces, independently of index state:
 //! - existence / not deleted (Recently Deleted content never leaks);
 //! - private-note ownership (only the owner) and project boundaries;
-//! - draft boundaries (a specific-draft scope never receives another draft's scenes);
+//! - draft boundaries (a picked draft never receives another draft's scenes);
 //! - revision validity (the text is always the current text).
 //!
-//! Budgets: `CONTEXT_CHARS` in total (explicit scope included), `ITEM_CHARS`
+//! Budgets: `CONTEXT_CHARS` in total, `ITEM_CHARS`
 //! per item, graph-related entities as short one-block summaries.
 
 use std::collections::HashSet;
 
 use openframe_domain::{Actor, AppResult};
-use serde_json::json;
 
 use super::documents::{self, Built};
 use super::retriever::{Gathered, RankedHit, query_terms};
 use crate::core::{AppCore, ProjectSession};
-use crate::modules::ai::knowledge;
-use crate::modules::ai::retrieval::{ContextSource, RetrievalRoute, RetrieveRequest};
-use crate::modules::ai::scope::ContextItem;
+use crate::modules::ai::retrieval::{ContextItem, ContextSource, RetrieveRequest};
 use crate::modules::ai::types::Provenance;
 
 /// Total characters of project text in one packet (≈1.5k tokens for Gemma 3 1B).
@@ -103,7 +100,6 @@ pub fn assemble(
     session: &ProjectSession,
     actor: &Actor,
     req: &RetrieveRequest,
-    route: RetrievalRoute,
     gathered: &Gathered,
     limit: usize,
 ) -> AppResult<Assembled> {
@@ -111,62 +107,8 @@ pub fn assemble(
     let mut seen: HashSet<String> = HashSet::new();
     let mut seen_text: HashSet<String> = HashSet::new();
 
-    // 1. The user's explicit scope (already resolved and budgeted by scope.rs).
-    if let Some(scope) = &req.scope {
-        for item in &scope.context {
-            let src = ContextSource {
-                entity_type: "scope".into(),
-                entity_id: String::new(),
-                module: scope.kind.label().into(),
-                nav: serde_json::Value::Null,
-                via: "scope".into(),
-                relation: None,
-            };
-            if out.push(
-                item.source.clone(),
-                item.text.clone(),
-                Provenance::new("Scope", item.source.clone()),
-                src,
-                ITEM_CHARS * 2,
-            ) {
-                seen_text.insert(item.text.trim().to_string());
-            }
-        }
-        if let Some(s) = &scope.scene {
-            seen.insert(format!("screenplay_scene:{}", s.id));
-        }
-        for id in &scope.selection {
-            seen.insert(format!("*:{id}"));
-        }
-    }
-
-    // 2. Product help: curated guide sections (deterministic, versioned).
-    if route == RetrievalRoute::ProductHelp {
-        for (title, body) in knowledge::relevant(&req.query, 3) {
-            out.push(
-                format!("{}: {title}", knowledge::GUIDE_LABEL),
-                body.to_string(),
-                Provenance::new("Product guide", knowledge::GUIDE_LABEL),
-                ContextSource {
-                    entity_type: "product_guide".into(),
-                    entity_id: title.to_string(),
-                    module: "Help".into(),
-                    nav: json!({ "workspace": "help" }),
-                    via: "guide".into(),
-                    relation: None,
-                },
-                ITEM_CHARS,
-            );
-        }
-        return Ok(out);
-    }
-
-    // 3. Retrieved project context, re-validated against canonical data.
+    // Project context, re-validated against canonical data.
     let terms = query_terms(&req.query);
-    let scope_draft = req
-        .scope
-        .as_ref()
-        .and_then(|s| s.draft.as_ref().map(|d| d.id.clone()));
     let project_id = session.project_id();
     let registry = core.registry.clone();
     let mut related = 0usize;
@@ -178,7 +120,6 @@ pub fn assemble(
     let is_graph_only = |h: &RankedHit| {
         h.evidence.graph_score > 0.0
             && h.evidence.lexical_rank.is_none()
-            && !h.evidence.scope
             && h.evidence.vector_rank.is_none_or(|r| r >= WEAK_VECTOR_RANK)
     };
     let graph_only_count = gathered.ranked.iter().filter(|h| is_graph_only(h)).count();
@@ -198,7 +139,7 @@ pub fn assemble(
             continue;
         }
         let doc_id = hit.key.doc_id();
-        if seen.contains(&doc_id) || seen.contains(&format!("*:{}", hit.key.id)) {
+        if seen.contains(&doc_id) {
             continue;
         }
         let graph_only = is_graph_only(hit);
@@ -220,8 +161,15 @@ pub fn assemble(
             dropped += 1;
             continue;
         }
-        if let (Some(d), Some(k)) = (&scope_draft, &b.doc.scope_key)
+        if let (Some(d), Some(k)) = (&req.draft, &b.doc.scope_key)
             && d != k
+        {
+            continue;
+        }
+        // Held to a section: the canonical navigation target decides, whatever the index said.
+        if req
+            .nav
+            .is_some_and(|n| !n.iter().any(|r| r.matches(&b.nav)))
         {
             continue;
         }
@@ -239,9 +187,7 @@ pub fn assemble(
             continue;
         }
         let info = documents::kind_info(&b.doc.entity_type);
-        let via = if hit.evidence.scope {
-            "scope"
-        } else if graph_only {
+        let via = if graph_only {
             "graph"
         } else if hit.evidence.vector_rank.is_some() && hit.evidence.lexical_rank.is_none() {
             "semantic"

@@ -4,10 +4,9 @@
 //
 // The bridge contract, kept here and checked again by the core:
 // 1. Only `.verified` results cross. Every `.unverified` result is dropped and counted.
-// 2. Apple's dates (purchase and revocation) in Unix milliseconds UTC, never the Mac's clock.
-// 3. The signed JWS travels with every transaction, for the licensing server.
-// 4. The environment is reported on every transaction, so test and real purchases never mix.
-// 5. `appTransactionID` is optional (macOS 15.4 and later) and never a date. The date the app was
+// 2. Apple's dates (purchase, original purchase, signed and revocation) in Unix milliseconds UTC.
+// 3. The environment is reported on every transaction, so test and real purchases never mix.
+// 4. `appTransactionID` is optional (macOS 15.4 and later) and never a date. The date the app was
 //    first downloaded (`AppTransaction.originalPurchaseDate`) is not read at all.
 // Only the two OpenFrame products pass, and only transactions bought by this Apple Account
 // (Family Sharing is off).
@@ -17,6 +16,8 @@ import OpenFrameCore
 
 public final class StoreKitBridgeImpl: StoreKitCallbacks, @unchecked Sendable {
     private let source: StoreKitSource
+    private let keychain: GuardKeychain
+    private let clock: @Sendable () -> Date
     private let lock = NSLock()
     private var unverified: UInt64 = 0
     private var knownEnvironment: StoreEnvironmentName?
@@ -26,8 +27,13 @@ public final class StoreKitBridgeImpl: StoreKitCallbacks, @unchecked Sendable {
     /// The payment sheet waits for a person, so it gets longer.
     static let purchaseTimeout: TimeInterval = 600
 
-    public init(source: StoreKitSource = LiveStoreKitSource()) {
+    public init(
+        source: StoreKitSource = LiveStoreKitSource(), keychain: GuardKeychain = LiveGuardKeychain(),
+        clock: @escaping @Sendable () -> Date = { Date() }
+    ) {
         self.source = source
+        self.keychain = keychain
+        self.clock = clock
     }
 
     // MARK: StoreKitCallbacks
@@ -84,7 +90,7 @@ public final class StoreKitBridgeImpl: StoreKitCallbacks, @unchecked Sendable {
                 switch try await source.appTransaction() {
                 case let .verified(app):
                     remember(app.environment)
-                    return Self.encode(AppAnswer(appTransactionId: app.appTransactionId, environment: app.environment.rawValue, signedJws: app.signedJws))
+                    return Self.encode(AppAnswer(appTransactionId: app.appTransactionId, environment: app.environment.rawValue))
                 case .unverified:
                     countUnverified()
                     return Self.fail("unverified")
@@ -112,12 +118,10 @@ public final class StoreKitBridgeImpl: StoreKitCallbacks, @unchecked Sendable {
         }
     }
 
-    public func productInfo(productId: String) -> String {
-        guard Self.knownProducts.contains(productId) else { return Self.fail("productNotFound") }
-        return blocking(timeout: Self.queryTimeout) { [self] in
+    public func loadProducts() -> String {
+        blocking(timeout: Self.queryTimeout) { [self] in
             do {
-                let price = try await source.displayPrice(productId: productId)
-                return Self.encode(ProductAnswer(productId: productId, displayPrice: price))
+                return Self.encode(ProductsAnswer(lifetimeDisplayPrice: try await source.lifetimeDisplayPrice()))
             } catch {
                 return Self.failure(error)
             }
@@ -127,13 +131,32 @@ public final class StoreKitBridgeImpl: StoreKitCallbacks, @unchecked Sendable {
     public func sync() -> String {
         blocking(timeout: Self.queryTimeout) { [self] in
             do {
-                try await source.sync()
-                return Self.encode(OkAnswer())
+                let signed = try await source.sync()
+                return Self.encode(SyncAnswer(signedDateMs: signed.map(Self.unixMs)))
             } catch {
                 return Self.failure(error)
             }
         }
     }
+
+    public func loadGuard() -> String {
+        do {
+            return Self.encode(GuardAnswer(record: try keychain.load()))
+        } catch {
+            return Self.fail("other")
+        }
+    }
+
+    public func saveGuard(recordJson: String) -> String {
+        do {
+            try keychain.save(recordJson)
+            return Self.encode(OkAnswer())
+        } catch {
+            return Self.fail("other")
+        }
+    }
+
+    public func wallClockMs() -> Int64 { Self.unixMs(clock()) }
 
     public func unverifiedDropped() -> UInt64 { droppedCount }
 
@@ -162,9 +185,10 @@ public final class StoreKitBridgeImpl: StoreKitCallbacks, @unchecked Sendable {
         var originalTransactionId: String
         var appTransactionId: String?
         var purchaseDateMs: Int64
+        var originalPurchaseDateMs: Int64
+        var signedDateMs: Int64
         var revocationDateMs: Int64?
         var environment: String
-        var signedJws: String
 
         init(_ t: StoreTransactionRecord) {
             productId = t.productId
@@ -172,9 +196,10 @@ public final class StoreKitBridgeImpl: StoreKitCallbacks, @unchecked Sendable {
             originalTransactionId = t.originalTransactionId
             appTransactionId = t.appTransactionId.flatMap { $0.isEmpty ? nil : $0 }
             purchaseDateMs = StoreKitBridgeImpl.unixMs(t.purchaseDate)
+            originalPurchaseDateMs = StoreKitBridgeImpl.unixMs(t.originalPurchaseDate)
+            signedDateMs = StoreKitBridgeImpl.unixMs(t.signedDate)
             revocationDateMs = t.revocationDate.map(StoreKitBridgeImpl.unixMs)
             environment = t.environment.rawValue
-            signedJws = t.signedJws
         }
     }
 
@@ -194,7 +219,6 @@ public final class StoreKitBridgeImpl: StoreKitCallbacks, @unchecked Sendable {
         let ok = true
         var appTransactionId: String?
         var environment: String
-        var signedJws: String
     }
 
     private struct EnvironmentAnswer: Encodable {
@@ -202,10 +226,19 @@ public final class StoreKitBridgeImpl: StoreKitCallbacks, @unchecked Sendable {
         var environment: String
     }
 
-    private struct ProductAnswer: Encodable {
+    private struct ProductsAnswer: Encodable {
         let ok = true
-        var productId: String
-        var displayPrice: String
+        var lifetimeDisplayPrice: String
+    }
+
+    private struct SyncAnswer: Encodable {
+        let ok = true
+        var signedDateMs: Int64?
+    }
+
+    private struct GuardAnswer: Encodable {
+        let ok = true
+        var record: String?
     }
 
     private struct OkAnswer: Encodable { let ok = true }
@@ -215,7 +248,7 @@ public final class StoreKitBridgeImpl: StoreKitCallbacks, @unchecked Sendable {
         var error: String
     }
 
-    /// Unix milliseconds. A conversion for the server, never a comparison with the Mac's clock.
+    /// Unix milliseconds. A conversion only; the core does the comparing.
     static func unixMs(_ date: Date) -> Int64 {
         Int64((date.timeIntervalSince1970 * 1000).rounded())
     }

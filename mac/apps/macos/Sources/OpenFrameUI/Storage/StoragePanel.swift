@@ -158,7 +158,7 @@ struct StoragePanelContent: View {
         }
         StoragePlace(
             title: "App data", path: s.appDataDir, id: "app-data",
-            note: "Settings, the recent project list, the assistant's files and logs. Not your work: uninstalling may remove it, and your library stays."
+            note: "Settings, the recent project list, OpenFrame AI's files and logs. Not your work: uninstalling may remove it, and your library stays."
         ) {
             folderButton("storage-app-data-open") { await model.reveal("appData") }
         }

@@ -26,8 +26,8 @@ Status words:
 | Old comment said bookmarks also reopen projects | The store entitlements comment now says linked files only | Fixed now |
 | Microphone (`device.audio-input`) | `AVAudioRecorder` and `AVCaptureDevice.requestAccess(for: .audio)` in `IdeaVault/VoiceRecording.swift`, only on Record | Ready |
 | Printing (`print`) | `NSPrintOperation` in `Interchange/PrintPreviewModel.swift`. A sandboxed app without `com.apple.security.print` cannot print | Fixed now (key added) |
-| Outgoing network (`network.client`) | Model download with `reqwest` to `huggingface.co` and `hf.co` only (`openframe-ai/src/fetch.rs`), started by the person; trial check with `URLSession` to the licence server (`Store/LicenceServerClient.swift`, store build only); the core's calls to the engine on 127.0.0.1 | Ready; comment now names all three |
-| Licence server address | Both addresses are `.invalid` placeholders (`licenceServerURL`, `licenceServerSandboxURL`) | Owner task (deploy and set) |
+| Outgoing network (`network.client`) | Model download with `reqwest` to `huggingface.co` and `hf.co` only (`openframe-ai/src/fetch.rs`), started by the person; the core's calls to the engine on 127.0.0.1 | Ready. The trial check makes no network call of its own (ADR-0040) |
+| Licence server | None (ADR-0040). Trial counted offline with a Keychain clock guard | Done, removed |
 | Loopback listener for the engine (`network.server`) | `llama-server --host 127.0.0.1 --port <free port>` with a random API key (`openframe-ai/src/supervisor.rs`) | Ready. Optional hardening: a Unix socket inside the container would remove this key |
 | Helper inherits the sandbox | `llama-server-store.entitlements` has only `app-sandbox` and `inherit`, as Apple requires | Ready |
 | Internal build entitlements | Hardened runtime plus `device.audio-input` only, no DYLD or library-validation exception | Ready |
@@ -48,8 +48,7 @@ Apple's required-reason APIs were checked in the shipped Swift targets and in th
 | System boot time: `35F9.1` | The core links `sysinfo`, which imports `mach_absolute_time` and reads the boot time sysctl | Fixed now (category added) |
 | User defaults: `CA92.1` | `@AppStorage` and `UserDefaults.standard` for the app's own settings and bookmarks | Ready |
 | Active keyboards | Not used | Ready |
-| Collected data | The licence server logs Apple original transaction ids per check (`services/licence-server/src/http.rs`). Declared as purchase history, linked, app functionality, no tracking | Fixed now; owner confirms or drops the ids from the log |
-| Old comment said no server except the model download | Comment now names the licence check | Fixed now |
+| Collected data | None. No server logs anything; the privacy manifest declares no collected data (ADR-0040) | Ready; owner confirms the App Privacy answers |
 | Third-party SDK manifests | No SDK from Apple's list is used | Ready |
 
 ## 3. Info.plist
@@ -60,7 +59,7 @@ what a store script must do differently.
 | Requirement | Evidence | Status |
 |---|---|---|
 | Usage text for every protected resource | `NSMicrophoneUsageDescription` present in both scripts; no camera, contacts, photos, location or calendar use | Ready |
-| Bundle identifier | Internal `studio.openframe.mac`; doc 38 and the StoreKit products use `com.openframe.studio` | Owner task (pick one; the store record and product ids must match) |
+| Bundle identifier | Internal `studio.openframe.mac`; doc 38 and the StoreKit products use `app.openframestudio.studio` | Owner task (pick one; the store record and product ids must match) |
 | `CFBundleVersion` | Internal value is `<version>.<commit>`, for example `0.1.0.6b1b25c0`. The store accepts only up to three numbers separated by dots, rising with each upload | Not built (store script must write a plain build number) |
 | `CFBundleShortVersionString` | `0.1.0` from `Cargo.toml` | Ready |
 | `LSApplicationCategoryType` | `public.app-category.productivity` | Ready; owner may pick another |
@@ -94,40 +93,42 @@ what a store script must do differently.
 | Requirement | Evidence | Status |
 |---|---|---|
 | Every Mach-O signed with the team identity, sandbox and `inherit` on `llama-server` | The internal build seals the engine as resources and never signs it; the libraries carry only upstream ad hoc signatures (ADR-0033 decision 6) | Not built |
-| Code in a code location | The engine sits in `Contents/Resources/ai/runtimes/<id>/`. Apple wants executables in `Contents/MacOS` or `Contents/Helpers` and libraries in `Contents/Frameworks`; upload checks scan every executable for the sandbox key | Not built (move it, update `app_resources_dir` users and the lock file layout) |
-| Byte hashes against signing | The core re-hashes every engine file before each launch against `packaging/ai/ai-assets.lock.json`. Signing changes the bytes, and Apple signs again for distribution, so the pinned hashes will fail and the AI will refuse to start | Not built: on the store build check the helper by its code signature (team identifier and designated requirement) and keep byte hashes for non-code files only |
+| Code in a code location | Apple wants executables in `Contents/MacOS` or `Contents/Helpers` and libraries in `Contents/Frameworks`; upload checks scan every executable for the sandbox key. The store build places the engine under `Contents/Helpers/ai` | Ready in the plan: the store build places the engine under `Contents/Helpers/ai` (the internal build keeps `Contents/Resources/ai`) |
+| Byte hashes against signing | The core re-hashed every engine file against `packaging/ai/ai-assets.lock.json` before each launch, which signing breaks. On the store build (`AppConfig.ai_engine_store_signed`, set from `openframe_store`) each code file (`llama-server`, `.dylib`) must instead pass `openframe_platform::code_signature::is_apple_signed` (Security framework, strict check, requirement `anchor apple generic`). Non-code files keep byte hashes, and unexpected program files and missing files are still refused. The check is never cached | Ready: signature check built and unit tested; not yet run on a real signed build |
 | Library validation | With the hardened runtime on the helper, every dylib must carry the same team identifier. Signing all eleven files with one identity meets it; no `disable-library-validation` exception is needed | Not built (comes with the signing step) |
 | Unused RPC backend | `libggml-rpc.0.dylib` ships with the engine; the core never passes `--rpc` | Ready; dropping it is optional |
 
 ## 6. Export compliance
 
-The app uses: TLS through `rustls` (in `reqwest`, for the model download), TLS through `URLSession` (licence check), SHA-256
-for file integrity, Ed25519 signature checks on licence answers. No algorithm is proprietary. No user data is encrypted by OpenFrame.
+What the Mac build does with encryption, as of 2026-11-03:
 
-- Signatures, hashes and password checks are authentication and integrity, which are exempt.
-- `rustls` is standard encryption shipped in the app, not the operating system's. The cautious App Store Connect answer is
-  therefore "standard encryption algorithms instead of, or in addition to, Apple's operating system", mass market, with the
-  France question answered as Apple asks.
-- Simpler path: switch `reqwest` on macOS from `rustls-tls` to `native-tls` (Apple's Security framework). Then all
-  encryption is Apple's or exempt, and `ITSAppUsesNonExemptEncryption` can be `NO`.
+- TLS for the model download goes through Apple's Security framework. `reqwest` uses `native-tls` on macOS and `rustls-tls`
+  on every other system (`crates/openframe-ai/Cargo.toml`). On the Mac, `cargo tree -p openframe-ffi -e normal -i rustls`
+  and `-i ring` print nothing. The app ships no TLS code of its own there.
+- SHA-256 is used to check file integrity (models, the engine lock, project files). Hashing is exempt.
+- There is no licence server and no Ed25519 check. The licence comes from StoreKit, which is Apple's.
+- OpenFrame encrypts no user data and offers no encryption feature.
+- `aes` is in the Mac dependency tree only through `lopdf`, the PDF reader. It is compiled in because `lopdf` cannot leave
+  it out, and it is used only to read a password-protected PDF the person chose to import. OpenFrame never encrypts with it.
+  This is the one item the owner should read twice before answering Apple.
 
-Which answer applies is the owner's to confirm, with legal advice if in doubt. Status: Owner task.
+Recommended answer: `ITSAppUsesNonExemptEncryption` set to `false` (encryption is Apple's or exempt). The owner confirms
+this in App Store Connect, with legal advice if in doubt. Status: Owner task.
 
 ## 7. Owner checklist to publish
 
 1. Enrol in the Apple Developer Program as the company (Account Holder). Accept the Paid Apps agreement and finish tax and
    banking.
 2. Install a released Xcode. Create the certificates Apple Distribution and Mac Installer Distribution.
-3. Register the bundle identifier (decide `com.openframe.studio` or `studio.openframe.mac`, section 3) and create a Mac App
+3. Register the bundle identifier (`app.openframestudio.studio`, section 3) and create a Mac App
    Store provisioning profile for it.
 4. Create the App Store Connect record: macOS, price Free, category, age rating answers, support and privacy policy
    addresses, and the in-app purchases from doc 38 section 10 (product ids must match `OpenFrameStudio.storekit`).
-5. Deploy the two licence servers (Production and Sandbox) and replace the two `.invalid` addresses and the public keys.
+5. (Removed: no licence server, ADR-0040.)
 6. Approve the store build work in sections 3 to 5 (build number, Xcode archive, helper location, helper signing, signature
    check instead of byte hashes, `NSWorkspace` for open and reveal), then the build itself.
 7. Screenshots: at least one, at 1280 x 800, 1440 x 900, 2560 x 1600 or 2880 x 1800, from real screens.
-8. App Privacy answers: no tracking; purchase history collected for app functionality and linked, unless the licence server
-   stops logging transaction ids, in which case "no data collected". Audio from voice notes stays on the Mac and is not
+8. App Privacy answers: no tracking; "no data collected" (no server logs anything, ADR-0040). Audio from voice notes stays on the Mac and is not
    collected.
 9. Export compliance answer from section 6, and `ITSAppUsesNonExemptEncryption` set to match.
 10. Decide the trial sheet wording against guideline 3.1.1 (doc 38 section 10 item 5).
@@ -136,8 +137,8 @@ Which answer applies is the owner's to confirm, with legal advice if in doubt. S
     identity and the App Sandbox with `com.apple.security.inherit`. The app starts it as a child process that listens only on
     127.0.0.1 with a random key and ends it when the app quits. When the reviewer chooses to download the assistant, the app
     fetches model weights (GGUF data files, no executable code) from huggingface.co at a pinned commit and checks each file's
-    SHA-256. Everything else in the app works without the download. The 7-day trial is a zero-price non-consumable; the app
-    checks it with our server, sending only Apple's signed transaction records." Add sandbox tester details and how long the
+    SHA-256. Everything else in the app works without the download. The 7-day trial is a zero-price non-consumable, counted on the
+    Mac from StoreKit's signed records; the app contacts no server of ours." Add sandbox tester details and how long the
     download takes.
 12. Upload through Xcode Organizer or Transporter, test in TestFlight with the sandbox testers, then submit the build and both
     in-app purchases together.
@@ -147,4 +148,4 @@ Which answer applies is the owner's to confirm, with legal advice if in doubt. S
 - No sandboxed build was made, so no claim above was proven on a running sandboxed app.
 - Apple's guideline text was checked from current knowledge, not fetched on the day. Read the live guidelines before
   submission.
-- The licence server and the trial sheet were not reviewed beyond what this table names.
+- The trial sheet was not reviewed beyond what this table names.

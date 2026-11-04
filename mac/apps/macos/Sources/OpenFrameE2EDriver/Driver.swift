@@ -260,6 +260,12 @@ final class UI {
         let e = try await wait(id: id, label: label, timeout: timeout)
         log("type into \(id ?? label ?? "?"): \(text.count) characters")
         try await focus(e)
+        // A page that just opened may still take the focus back: a person would click again.
+        let until = Date().addingTimeInterval(5)
+        while firstResponderText() == nil, Date() < until {
+            await idle(0.3)
+            try await focus(e)
+        }
         guard let target = firstResponderText() else { throw DriverError("no text input took focus: \(e)") }
         if replace { target.selectAll(nil) }
         target.insertText(text, replacementRange: target.selectedRange())
@@ -268,6 +274,9 @@ final class UI {
 
     /// Types into whatever has keyboard focus now (the screenplay editor, for example).
     func typeHere(_ text: String) async throws {
+        // A page that takes focus when it appears does so a moment later on a busy machine.
+        let until = Date().addingTimeInterval(5)
+        while firstResponderText() == nil, Date() < until { await idle(0.2) }
         guard let target = firstResponderText() else { throw DriverError("nothing has keyboard focus") }
         target.insertText(text, replacementRange: target.selectedRange())
         await idle()

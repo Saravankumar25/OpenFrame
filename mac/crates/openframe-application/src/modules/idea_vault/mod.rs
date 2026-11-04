@@ -80,7 +80,7 @@ pub fn register(r: &mut Registry) {
         .meta(M::edit("Pin or unpin Idea Vault items."));
     r.command("vault.set_research_flag", items::set_research_flag).meta(
         M::edit("Set or clear the verification flag on Idea Vault research items.").hidden(
-            "A research verification flag records the user's own judgement of a source (FSD 107.5, 107.6); the assistant never marks research as checked.",
+            "A research verification flag records the user's own judgement of a source (FSD 107.5, 107.6); OpenFrame AI never marks research as checked.",
         ),
     );
     r.command("vault.move_to_folder", items::move_to_folder)

@@ -67,7 +67,7 @@ struct ProjectSettingsView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             Divider()
             HStack {
-                Text("Offline AI, Appearance and Keyboard shortcuts apply to every project on this Mac.")
+                Text("OpenFrame AI, Appearance and Keyboard shortcuts apply to every project on this Mac.")
                     .font(.caption).foregroundStyle(.secondary)
                 Spacer()
                 Button("App Settings\u{2026}") { SettingsRouter.open() }

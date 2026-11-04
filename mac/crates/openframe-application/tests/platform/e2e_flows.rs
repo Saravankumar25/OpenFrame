@@ -714,7 +714,7 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
     model.reply(&format!("The script has {} scenes.", sc.len()));
     let a = env.ok(
         "ai.ask",
-        json!({ "text": "How many scenes are in the script?", "scope": { "kind": "CurrentScreenplay" } }),
+        json!({ "text": "How many scenes are in the script?", "sections": [{ "leaf": "screenplay/scenes" }] }),
     );
     assert_eq!(a["result"]["kind"], "Answer", "{a}");
     assert_eq!(a["result"]["confidence"], "Inferred");
@@ -726,7 +726,7 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
     }
     let a = env.ok(
         "ai.ask",
-        json!({ "text": "How many scenes are in the script?", "scope": { "kind": "CurrentScreenplay" } }),
+        json!({ "text": "How many scenes are in the script?", "sections": [{ "leaf": "screenplay/scenes" }] }),
     );
     assert_eq!(a["result"]["confidence"], "Exact", "{a}");
     let content = a["result"]["content"].as_str().unwrap();
@@ -741,7 +741,7 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
     }
     let a = env.ok(
         "ai.ask",
-        json!({ "text": "Which scenes are not scheduled?", "scope": { "kind": "WholeProject" } }),
+        json!({ "text": "Which scenes are not scheduled?" }),
     );
     assert_eq!(a["result"]["kind"], "Answer", "{a}");
     // AI never mutated anything.

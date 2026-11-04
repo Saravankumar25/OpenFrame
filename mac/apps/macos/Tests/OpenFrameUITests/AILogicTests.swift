@@ -1,4 +1,4 @@
-// AI screens: the pure view logic (scopes per workspace, panel mode, texts, states). Scenarios 72,
+// AI screens: the pure view logic (sections, panel mode, texts, states). Scenarios 72,
 // 73, 74, 76 and 78 are about these decisions; the core-backed ones are in AIAssistantTests and
 // AIDownloadTests.
 
@@ -26,52 +26,106 @@ private func changeSet(state: String, ops: Double = 1, applied: Double = 0, conf
 
 @Suite("AI logic")
 struct AILogicTests {
-    // MARK: Scenario 73: the scope of each workspace
+    // MARK: The section picker (ADR-0041)
 
-    @Test func theAssistantTakesTheScopeOfEachWorkspace() {
-        func scope(_ ws: Workspace, scene: String? = nil) -> AiScopeKind {
-            AILogic.defaultScope(AIScopeContext(workspace: ws, sceneId: scene))
-        }
-        #expect(scope(.home) == .wholeProject)
-        #expect(scope(.ideaVault) == .wholeProject)
-        #expect(scope(.story) == .storyBoard)
-        #expect(scope(.breakdown) == .production)
-        #expect(scope(.production) == .production)
-        #expect(scope(.callSheets) == .production)
-        #expect(scope(.screenplay) == .currentScreenplay)
-        #expect(scope(.screenplay, scene: "s1") == .currentScene)
-        #expect(scope(.notes) == .wholeProject)
-        #expect(scope(.files) == .wholeProject)
-        #expect(AiScopeKind.wholeProject.label == "Whole Project")
-        #expect(AiScopeKind.storyBoard.label == "Beat Board")
-        #expect(AiScopeKind.production.label == "Production Workspace")
+    private static func leaf(_ id: String, picker: AiSectionPicker? = nil, available: Bool = true, title: String? = nil) -> AiSectionLeaf {
+        AiSectionLeaf(id: id, branch: "B", label: id, title: title ?? id, picker: picker, available: available)
     }
 
-    @Test func aScopeThatNeedsATargetIsOfferedOnlyWhenThereIsOne() {
-        let plain = AILogic.scopeOptions(AIScopeContext(workspace: .home))
-        #expect(plain == [.currentScreenplay, .storyBoard, .production, .wholeProject])
-        let rich = AILogic.scopeOptions(
-            AIScopeContext(workspace: .screenplay, draftId: "d", sceneId: "s", selectionIds: ["c1"], shootingDayId: "sd", callSheetId: "cs"))
-        #expect(rich == [.currentSelection, .currentScene, .currentScreenplay, .specificDraft, .storyBoard, .production, .shootingDay, .callSheet, .wholeProject])
-        let vault = AILogic.scopeOptions(AIScopeContext(workspace: .ideaVault, selectionIds: ["i1"]))
-        #expect(vault.first == .ideaVaultSelection)
-        #expect(AILogic.defaultScope(AIScopeContext(workspace: .ideaVault, selectionIds: ["i1"])) == .ideaVaultSelection)
-        #expect(AILogic.defaultScope(AIScopeContext(workspace: .callSheets, callSheetId: "cs")) == .callSheet)
+    private static func tree(drafts: [AiSectionDraft] = []) -> AiSections {
+        AiSections(
+            branches: [
+                AiSectionBranch(label: "Screenplay", leaves: [leaf("screenplay/scenes", picker: .screenplay, title: "Screenplay")]),
+                AiSectionBranch(label: "Production", leaves: [
+                    leaf("production/cast-crew", title: "Cast & Crew"),
+                    leaf("production/schedule", picker: .day, title: "Schedule"),
+                ]),
+                AiSectionBranch(label: "Breakdown", leaves: [leaf("breakdown/breakdown", picker: .scene, title: "Breakdown")]),
+                AiSectionBranch(label: "Call Sheets", leaves: [leaf("callsheets/callsheets", picker: .callSheet, title: "Call Sheets")]),
+            ],
+            drafts: drafts,
+            scenes: [AiSectionInstance(id: "s4", label: "Scene 4: INT. HOUSE - DAY")],
+            days: [AiSectionInstance(id: "d3", label: "Day 3 (2026-12-01)")],
+            callSheets: [AiSectionInstance(id: "cs", label: "Day 3 call sheet")],
+            maxPicks: 3)
     }
 
-    @Test func scopeArgumentsAreReferencesOnly() {
-        let c = AIScopeContext(workspace: .screenplay, draftId: "d1", sceneId: "s1", selectionIds: ["a", "b"])
-        let scene = AILogic.scopeArgs(.currentScene, c)
-        #expect(scene.sceneId == "s1" && scene.draftId == nil && scene.selection.isEmpty)
-        let sel = AILogic.scopeArgs(.currentSelection, c)
-        #expect(sel.selection.map(\.id) == ["a", "b"])
-        let play = AILogic.scopeArgs(.currentScreenplay, c)
-        #expect(play.draftId == "d1")
-        // The open draft is used only in the Screenplay workspace, never guessed elsewhere.
-        let bare = AIScopeContext(workspace: .screenplay)
-        #expect(AILogic.scopeArgs(.currentScreenplay, bare, fallbackDraftId: "open").draftId == "open")
-        #expect(AILogic.scopeArgs(.currentScreenplay, AIScopeContext(workspace: .home), fallbackDraftId: "open").draftId == nil)
-        #expect(AILogic.scopeArgs(.wholeProject, c).draftId == nil)
+    private static func draft(_ id: String, _ name: String, screenplay: String = "sp", current: Bool = false) -> AiSectionDraft {
+        AiSectionDraft(id: id, screenplayId: screenplay, screenplayTitle: screenplay, name: name, isCurrent: current)
+    }
+
+    @Test func theAddButtonOfAPointerAddsOnlyWhenThereIsRoom() {
+        let picks = ["a", "b"].map { AISectionChoice(leaf: $0) }
+        #expect(AILogic.pointerAction("c", picks: picks) == .add)
+        #expect(AILogic.pointerAction("a", picks: picks) == .picked)
+        let full = picks + [AISectionChoice(leaf: "c")]
+        #expect(AILogic.pointerAction("d", picks: full) == .full)
+        #expect(AILogic.pointerAction("c", picks: full) == .picked)
+    }
+
+    @Test func aSectionIsAddedAndTakenAwayAndNeverMoreThanThree() {
+        var picks: [AISectionChoice] = []
+        for id in ["a", "b", "c"] { picks = AILogic.togglingSection(picks, leaf: id) }
+        #expect(picks.map(\.leaf) == ["a", "b", "c"])
+        picks = AILogic.togglingSection(picks, leaf: "d")
+        #expect(picks.map(\.leaf) == ["a", "b", "c"], "a fourth is not added")
+        picks = AILogic.togglingSection(picks, leaf: "b")
+        #expect(picks.map(\.leaf) == ["a", "c"])
+    }
+
+    @Test func aFullListSaysWhyInPlainWordsAndAPickedRowCanStillBeRemoved() {
+        let picks = ["a", "b", "c"].map { AISectionChoice(leaf: $0) }
+        let other = Self.leaf("d")
+        #expect(!AILogic.sectionRowEnabled(other, picks: picks))
+        #expect(AILogic.sectionRowNote(other, picks: picks) == AIText.sectionsAtMost)
+        let mine = Self.leaf("a")
+        #expect(AILogic.sectionRowEnabled(mine, picks: picks))
+        #expect(AILogic.sectionRowNote(mine, picks: picks) == nil)
+    }
+
+    @Test func episodesCannotBePickedInAProjectWithout() {
+        let episodes = Self.leaf("story/episodes", available: false)
+        #expect(!AILogic.sectionRowEnabled(episodes, picks: []))
+        #expect(AILogic.sectionRowNote(episodes, picks: []) == AIText.noEpisodes)
+    }
+
+    @Test func nothingPickedHoldsSendWithTheHint() {
+        #expect(AILogic.sendHint([], sections: nil) == "Pick a section")
+        #expect(AILogic.sendHint([AISectionChoice(leaf: "a")], sections: nil) == nil)
+        #expect(AILogic.usingLine([], sections: nil, scenes: []) == "Pick a section")
+    }
+
+    @Test func severalScreenplaysAskWhichOneFirst() {
+        let two = Self.tree(drafts: [Self.draft("d1", "Draft 1", screenplay: "a"), Self.draft("d2", "Draft 1", screenplay: "b")])
+        let scenes = AISectionChoice(leaf: "screenplay/scenes")
+        #expect(AILogic.sendHint([scenes], sections: two) == AIText.chooseScreenplay)
+        var chosen = scenes
+        chosen.screenplayId = "a"
+        #expect(AILogic.sendHint([chosen], sections: two) == nil)
+        #expect(AILogic.drafts(two, screenplay: "a").map(\.id) == ["d1"])
+        #expect(AILogic.screenplays(two).map(\.screenplayId) == ["a", "b"])
+        let one = Self.tree(drafts: [Self.draft("d1", "Draft 1"), Self.draft("d2", "Draft 2", current: true)])
+        #expect(AILogic.sendHint([scenes], sections: one) == nil)
+    }
+
+    @Test func aChipNamesTheInstanceThatWasChosen() {
+        let tree = Self.tree(drafts: [Self.draft("d1", "Draft 1"), Self.draft("d2", "Draft 2", current: true)])
+        let scenes = tree.scenes
+        func label(_ c: AISectionChoice) -> String { AILogic.sectionLabel(c, sections: tree, scenes: scenes) }
+        #expect(label(AISectionChoice(leaf: "screenplay/scenes")) == "Screenplay (Draft 2, all scenes)")
+        #expect(label(AISectionChoice(leaf: "screenplay/scenes", draftId: "d1", sceneId: "s4")) == "Screenplay (Draft 1, Scene 4)")
+        #expect(label(AISectionChoice(leaf: "production/cast-crew")) == "Cast & Crew")
+        #expect(label(AISectionChoice(leaf: "breakdown/breakdown", sceneId: "s4")) == "Breakdown (Scene 4)")
+        #expect(label(AISectionChoice(leaf: "production/schedule", shootingDayId: "d3")) == "Schedule (Day 3)")
+        #expect(label(AISectionChoice(leaf: "callsheets/callsheets", callSheetId: "cs")) == "Call Sheets (Day 3 call sheet)")
+        let line = AILogic.usingLine(
+            [AISectionChoice(leaf: "screenplay/scenes"), AISectionChoice(leaf: "production/cast-crew")], sections: tree, scenes: scenes)
+        #expect(line == "Using: Screenplay (Draft 2, all scenes) + Cast & Crew")
+    }
+
+    @Test func aPickSendsOnlyTheIdsTheCoreChecks() {
+        let c = AISectionChoice(leaf: "screenplay/scenes", draftId: "d1", sceneId: "s4")
+        #expect(c.pick == AiSectionPick(leaf: "screenplay/scenes", draftId: "d1", sceneId: "s4"))
     }
 
     // MARK: Scenarios 76 and 78: what the panel shows for each state of the files
@@ -96,7 +150,7 @@ struct AILogicTests {
         #expect(AILogic.stateText(status(bundle: "Missing", problem: ("ai.runtime_missing", "x"))) == "Needs a reinstall")
         #expect(AILogic.stateText(status(bundle: "Unsupported")) == "Not available on this computer")
         #expect(AILogic.stateText(status(available: true, bundle: "Verified", runtime: "Ready")) == "AI Ready")
-        #expect(AILogic.stateText(status(available: true, bundle: "Verified", runtime: "Starting")).hasPrefix("Getting Offline AI ready"))
+        #expect(AILogic.stateText(status(available: true, bundle: "Verified", runtime: "Starting")).hasPrefix("Getting OpenFrame AI ready"))
         #expect(AILogic.stateText(status(available: true, bundle: "Verified", runtime: "Failed")).hasPrefix("Stopped after a problem"))
         #expect(AILogic.fileCheckText("Damaged") == "changed or damaged")
         #expect(AILogic.fileCheckText("Missing").contains("reinstall"))
@@ -150,7 +204,7 @@ struct AILogicTests {
 
     @Test func confidenceAndStepsWordsMatchWindows() {
         #expect(AILogic.confidenceLabel(.exact) == "Exact \u{00B7} from project data")
-        #expect(AILogic.confidenceLabel(.inferred) == "Inferred \u{00B7} written by Offline AI")
+        #expect(AILogic.confidenceLabel(.inferred) == "Inferred \u{00B7} written by OpenFrame AI")
         #expect(AILogic.confidenceLabel(.unavailable) == "Not available in project data")
         #expect(AILogic.confidenceLabel(nil) == nil)
         func step(_ label: String) -> AiStepDto { AiStepDto(index: 0, tool: "t", label: label, status: "Succeeded") }
@@ -332,7 +386,7 @@ struct AILogicTests {
         #expect(AILogic.indexNotice(index(.stale)) != nil)
         for s in [AiIndexState.current, .updating, .failed, .unavailable] { #expect(AILogic.indexNotice(index(s)) == nil) }
         #expect(AILogic.indexNotice(nil) == nil)
-        #expect(AILogic.runtimeLabel("LoadingModel") == "Getting Offline AI ready on this computer\u{2026}")
+        #expect(AILogic.runtimeLabel("LoadingModel") == "Getting OpenFrame AI ready on this computer\u{2026}")
         #expect(AILogic.runtimeLabel("Busy") == "Working on a request\u{2026}")
         #expect(AILogic.runtimeLabel("Ready") == nil)
     }

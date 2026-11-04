@@ -642,7 +642,15 @@ fn overview(
     actor.require(Capability::View, "view production")?;
     let s = core.project()?;
     let root = s.layout.root().to_path_buf();
-    s.store.read(|c| {
+    s.store.read(|c| read_overview(c, &root))
+}
+
+/// The Production Overview read. The screen and the assistant both call it, so they say the same.
+pub(crate) fn read_overview(
+    c: &Connection,
+    root: &std::path::Path,
+) -> AppResult<ProductionOverview> {
+    {
         let info = source_info(c)?;
         let active = active_source(c)?;
         let scenes = SourceScenes::load(c, active.as_ref().map(|a| a.draft_id.as_str()))?;
@@ -660,7 +668,9 @@ fn overview(
             let mut stmt = c.prepare(&format!(
                 "SELECT scene_id FROM breakdown_element WHERE deleted_at IS NULL AND archived = 0 AND confirmation_state IN {PRODUCTION_STATES}"
             ))?;
-            let ids: Vec<String> = stmt.query_map([], |r| r.get(0))?.collect::<Result<_, _>>()?;
+            let ids: Vec<String> = stmt
+                .query_map([], |r| r.get(0))?
+                .collect::<Result<_, _>>()?;
             ids.iter().filter(|id| scenes.get(id).is_none()).count() as i64
         };
         let (location_count, unresolved_locations): (i64, i64) = c.query_row(
@@ -668,9 +678,12 @@ fn overview(
             [],
             |r| Ok((r.get(0)?, r.get(1)?)),
         )?;
-        let catalog_count: i64 =
-            c.query_row("SELECT count(*) FROM catalog_item WHERE deleted_at IS NULL AND archived = 0", [], |r| r.get(0))?;
-        let dir = super::people::directory(c, &root, false)?;
+        let catalog_count: i64 = c.query_row(
+            "SELECT count(*) FROM catalog_item WHERE deleted_at IS NULL AND archived = 0",
+            [],
+            |r| r.get(0),
+        )?;
+        let dir = super::people::directory(c, root, false)?;
         Ok(ProductionOverview {
             source: info,
             scene_count: statuses.len() as i64,
@@ -678,15 +691,24 @@ fn overview(
             planned_count: statuses.iter().filter(|s| s.confirmed > 0).count() as i64,
             pending_suggestions: statuses.iter().map(|s| s.suggested).sum(),
             needs_review: statuses.iter().filter(|s| s.needs_review).map(r).collect(),
-            needs_breakdown: statuses.iter().filter(|s| s.needs_breakdown).map(r).collect(),
+            needs_breakdown: statuses
+                .iter()
+                .filter(|s| s.needs_breakdown)
+                .map(r)
+                .collect(),
             historical_elements,
             location_count,
             unresolved_locations,
             character_count: dir.characters.len() as i64,
-            unresolved_characters: dir.characters.iter().filter(|ch| ch.primary_cast_id.is_none()).map(|ch| ch.name.clone()).collect(),
+            unresolved_characters: dir
+                .characters
+                .iter()
+                .filter(|ch| ch.primary_cast_id.is_none())
+                .map(|ch| ch.name.clone())
+                .collect(),
             catalog_count,
         })
-    })
+    }
 }
 
 #[cfg(test)]

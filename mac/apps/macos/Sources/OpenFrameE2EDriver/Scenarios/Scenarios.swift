@@ -3,7 +3,7 @@
 
 enum Scenarios {
     static var all: [Scenario] {
-        releaseSmoke + storyPage + forcedKill + writingGroup + productionGroup + interchangeGroup + captureGroup + windowFitGroup + goldGroup + aiConversationGroup + storageGroup + quitGroup + interchangeFixGroup + accessibilityGroup
+        releaseSmoke + storyPage + forcedKill + writingGroup + productionGroup + interchangeGroup + captureGroup + windowFitGroup + goldGroup + aiConversationGroup + storageGroup + quitGroup + interchangeFixGroup + accessibilityGroup + storeGroup
     }
 }
 

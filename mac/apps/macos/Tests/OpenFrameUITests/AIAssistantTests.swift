@@ -1,7 +1,7 @@
 // AI assistant: the model driven exactly as the view drives it. Most tests use a real core on a
 // temporary folder with no engine and no model files: every state the core reports without a model
 // (engine missing, nothing downloaded), that a failed request never loses the typed question, the
-// scope line of each workspace (scenario 73) and the change set review calls (scenario 74). The
+// section picker (ADR-0041) and the change set review calls (scenario 74). The
 // conversation tests (one id per conversation, progress, Cancel, Save conversation for review)
 // answer the core calls with a stand-in (AITestSupport.swift), as the Windows Vitest files do.
 // Questions that need a real model run in the Mac end-to-end scenarios (AIConversationScenarios).
@@ -24,7 +24,9 @@ private struct Rig {
         let app = Fixture.model(root)
         await app.start()
         if let project { _ = await app.createProject(CreateProjectArgs(title: project, projectType: .featureFilm)) }
-        return Rig(root: root, app: app, model: AIAssistantModel(app: app))
+        let model = AIAssistantModel(app: app)
+        model.picks = [AISectionChoice(leaf: "screenplay/scenes")]
+        return Rig(root: root, app: app, model: model)
     }
 
     /// The model with its core calls answered by `stub`, on an app with no core (no project needed).
@@ -32,6 +34,7 @@ private struct Rig {
         let root = try Fixture.root()
         let app = Fixture.model(root)
         let model = AIAssistantModel(app: app)
+        model.picks = [AISectionChoice(leaf: "screenplay/scenes")]
         model.invoker = stub
         stub.reply("ai.history", AiHistoryDto(conversationId: nil, exchanges: []))
         stub.reply("ai.status", AiStatusDto(available: true, mode: "AI Ready", bundleState: "Verified", problem: nil, runtimeState: "Ready", runtimeMessage: nil, localOnly: true))
@@ -153,70 +156,161 @@ struct AIAssistantTests {
         await r.model.stopRuntime()
         #expect(r.model.error == nil)
         #expect(r.model.status != nil)
-        #expect(ToastCenter.shared.items.last?.text.hasPrefix("Offline AI stopped") == true)
+        #expect(ToastCenter.shared.items.last?.text.hasPrefix("OpenFrame AI stopped") == true)
     }
 
-    // MARK: Scenario 73: the scope line of each workspace
+    // MARK: The section picker (ADR-0041)
 
-    @Test func theScopeLineFollowsTheWorkspace() async throws {
+    private func answered(_ stub: AIStubCore, _ x: AiExchange) {
+        stub.reply("ai.ask", x)
+        stub.reply("ai.history", AiHistoryDto(conversationId: x.conversationId, exchanges: [x]))
+    }
+
+    private func labelled(_ label: String) -> AiExchange {
+        var x = AIFixtures.exchange("What is the total?", conversation: "c1")
+        x.scopeLabel = label
+        return x
+    }
+
+    @Test func nothingIsPickedAtFirstAndSendWaitsForAPick() async throws {
         let r = try await Rig.make()
         defer { r.close() }
-        let expected: [(Workspace, String)] = [
-            (.home, "Using: Whole Project"), (.ideaVault, "Using: Whole Project"), (.story, "Using: Beat Board"),
-            (.breakdown, "Using: Production Workspace"), (.production, "Using: Production Workspace"),
-            (.callSheets, "Using: Production Workspace"), (.screenplay, "Using: Current Screenplay"), (.notes, "Using: Whole Project"),
-        ]
-        for (ws, line) in expected {
-            r.model.setContext(AIScopeContext(workspace: ws))
-            #expect(r.model.usingLabel == line, "\(ws)")
+        r.model.picks = []
+        r.model.text = "How many scenes?"
+        #expect(!r.model.canSend)
+        #expect(!r.model.canAskNow)
+        #expect(r.model.sendHint == "Pick a section")
+        #expect(r.model.usingLabel == "Pick a section")
+        await r.model.sendAndWait()
+        #expect(r.model.pending == nil)
+        #expect(r.model.text == "How many scenes?", "the question stays in the box")
+        r.model.toggleSection("production/budget")
+        #expect(r.model.canSend)
+    }
+
+    @Test func theWorkspaceNeverPicksASection() async throws {
+        let r = try await Rig.make()
+        defer { r.close() }
+        r.model.picks = []
+        for ws in [Workspace.home, .story, .screenplay, .production, .callSheets] {
+            r.model.workspace = ws
+            #expect(r.model.picks.isEmpty, "\(ws)")
         }
-        r.model.setContext(AIScopeContext(workspace: .screenplay, sceneId: "s1"))
-        #expect(r.model.usingLabel == "Using: Current Scene")
     }
 
-    @Test func aChosenScopeSticksUntilTheWorkspaceChanges() async throws {
+    @Test func theTreeComesFromTheCoreWithEverySection() async throws {
         let r = try await Rig.make()
         defer { r.close() }
-        r.model.setContext(AIScopeContext(workspace: .screenplay))
-        r.model.chosenScope = .wholeProject
-        #expect(r.model.usingLabel == "Using: Whole Project")
-        r.model.setContext(AIScopeContext(workspace: .screenplay, sceneId: "s1"))
-        #expect(r.model.usingLabel == "Using: Whole Project")
-        r.model.setContext(AIScopeContext(workspace: .story))
-        #expect(r.model.usingLabel == "Using: Beat Board")
-        // A scope the place does not offer is dropped, not used.
-        r.model.chosenScope = .callSheet
-        #expect(r.model.effectiveScope == .storyBoard)
+        await r.model.loadSections()
+        let sections = try #require(r.model.sections)
+        #expect(sections.branches.first?.label == "Idea Vault")
+        #expect(sections.maxPicks == 3)
+        let leaves = sections.branches.flatMap(\.leaves)
+        #expect(leaves.contains { $0.id == "production/cast-crew" && $0.title == "Cast & Crew" })
+        #expect(leaves.first { $0.id == "story/episodes" }?.available == false, "a feature film has no episodes")
+        #expect(leaves.first { $0.id == "screenplay/scenes" }?.picker == .screenplay)
     }
 
-    @Test func theScreenplayScopeUsesTheDraftTheCoreHas() async throws {
-        let r = try await Rig.make()
+    @Test func thePicksGoWithEveryQuestionOfAConversationAndANewOneStartsEmpty() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
         defer { r.close() }
-        let core = r.app.core!
-        _ = try await core.screenplayCreate(CreateScreenplayArgs())
-        let overview = try await core.screenplayOverview(ScreenplayOverviewArgs())
-        let draft = try #require(overview.screenplay?.currentDraftId ?? overview.drafts.first?.id)
-        r.model.setContext(AIScopeContext(workspace: .screenplay))
-        let args = await r.model.resolvedScopeArgs()
-        #expect(args.kind == .currentScreenplay)
-        #expect(args.draftId == draft)
-        // Outside the Screenplay workspace nothing is guessed.
-        r.model.setContext(AIScopeContext(workspace: .home))
-        r.model.chosenScope = .currentScreenplay
-        #expect(await r.model.resolvedScopeArgs().draftId == nil)
+        answered(stub, labelled("Using: Budget"))
+        r.model.picks = [AISectionChoice(leaf: "production/budget")]
+        r.model.text = "What is the total?"
+        await r.model.sendAndWait()
+        r.model.text = "And the camera?"
+        await r.model.sendAndWait()
+        let asks = stub.args("ai.ask")
+        #expect(asks.count == 2)
+        for a in asks {
+            let sections = try #require(a["sections"] as? [[String: Any]])
+            #expect(sections.map { $0["leaf"] as? String } == ["production/budget"])
+            #expect(a["scope"] == nil, "the picks are all the core is sent")
+        }
+        #expect(r.model.picks.map(\.leaf) == ["production/budget"], "kept for the follow-up")
+        r.model.newConversation()
+        #expect(r.model.picks.isEmpty, "a new conversation starts empty")
+        #expect(!r.model.canAskNow)
     }
 
-    @Test func workspacesHandTheirOpenSceneToTheAssistant() async throws {
-        let hints = AIScopeHints.shared
-        hints.sceneId = "scene-9"
-        hints.draftId = "draft-2"
-        defer { hints.sceneId = nil; hints.draftId = nil }
-        let screenplay = hints.context(for: .screenplay)
-        #expect(screenplay.sceneId == "scene-9" && screenplay.draftId == "draft-2")
-        #expect(AILogic.defaultScope(screenplay) == .currentScene)
-        // Another workspace does not inherit the screenplay's scene.
-        let story = hints.context(for: .story)
-        #expect(story.sceneId == nil && story.draftId == nil)
+    @Test func theAddButtonOfAPointerAddsTheSectionAndNeverTakesOneAway() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        r.model.picks = [AISectionChoice(leaf: "production/budget")]
+        r.model.addPointedSection("production/cast-crew")
+        #expect(r.model.picks.map(\.leaf) == ["production/budget", "production/cast-crew"])
+        r.model.addPointedSection("production/cast-crew")
+        #expect(r.model.picks.count == 2, "already picked: pressing it again does not remove it")
+        r.model.addPointedSection("files/files")
+        r.model.addPointedSection("notes/notes")
+        #expect(r.model.picks.count == 3, "at three sections nothing is added")
+        #expect(!r.model.picks.contains { $0.leaf == "notes/notes" })
+    }
+
+    @Test func aChosenInstanceGoesToTheCoreAndChangingTheDraftDropsTheScene() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        let tree = AiSections(
+            branches: [], drafts: [], scenes: [AiSectionInstance(id: "old", label: "Scene 1")], days: [], callSheets: [], maxPicks: 3)
+        stub.reply("ai.sections", tree)
+        answered(stub, labelled("Using: Screenplay (Draft 1, Scene 1)"))
+        r.model.picks = [AISectionChoice(leaf: "screenplay/scenes", sceneId: "gone")]
+        await r.model.chooseDraft("d1", for: "screenplay/scenes")
+        #expect(r.model.picks[0].sceneId == nil)
+        #expect(r.model.draftScenes?.map(\.id) == ["old"])
+        r.model.chooseScene("old", for: "screenplay/scenes")
+        r.model.toggleSection("production/schedule")
+        r.model.chooseDay("day3", for: "production/schedule")
+        r.model.text = "What happens?"
+        await r.model.sendAndWait()
+        let sections = try #require(stub.args("ai.ask").first?["sections"] as? [[String: Any]])
+        #expect(sections[0]["draftId"] as? String == "d1")
+        #expect(sections[0]["sceneId"] as? String == "old")
+        #expect(sections[1]["shootingDayId"] as? String == "day3")
+        // A call sheet and a day of it are one choice.
+        r.model.toggleSection("callsheets/callsheets")
+        r.model.chooseDay("day3", for: "callsheets/callsheets")
+        r.model.chooseCallSheet("cs", for: "callsheets/callsheets")
+        let sheet = try #require(r.model.picks.first { $0.leaf == "callsheets/callsheets" })
+        #expect(sheet.callSheetId == "cs" && sheet.shootingDayId == nil)
+        r.model.removeSection("screenplay/scenes")
+        #expect(r.model.draftScenes == nil, "the chosen draft's scenes go with its section")
+    }
+
+    @Test func theScenesOfAChosenScreenplayStayWhenAnotherSectionChanges() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        let drafts = [AiSectionDraft(id: "d2", screenplayId: "sp2", screenplayTitle: "Second", name: "Draft 1", isCurrent: true)]
+        r.model.sections = AiSections(
+            branches: [], drafts: drafts, scenes: [AiSectionInstance(id: "current", label: "Scene 1")], days: [], callSheets: [], maxPicks: 3)
+        stub.reply("ai.sections", AiSections(
+            branches: [], drafts: drafts, scenes: [AiSectionInstance(id: "second", label: "Scene 1")], days: [], callSheets: [], maxPicks: 3))
+        r.model.picks = [AISectionChoice(leaf: "screenplay/scenes")]
+        await r.model.chooseScreenplay("sp2", for: "screenplay/scenes")
+        #expect(r.model.picks[0].draftId == nil, "a chosen screenplay has no draft id")
+        #expect(r.model.draftScenes?.map(\.id) == ["second"])
+        r.model.toggleSection("files/files")
+        r.model.removeSection("files/files")
+        #expect(r.model.draftScenes?.map(\.id) == ["second"], "the list of the chosen screenplay stays")
+        r.model.removeSection("screenplay/scenes")
+        #expect(r.model.draftScenes == nil)
+    }
+
+    @Test func theLineShowsTheStoredLabelUntilThePicksChange() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        answered(stub, labelled("Using: Budget (from the core)"))
+        r.model.picks = [AISectionChoice(leaf: "production/budget")]
+        r.model.text = "What is the total?"
+        await r.model.sendAndWait()
+        #expect(r.model.usingLabel == "Using: Budget (from the core)")
+        r.model.toggleSection("files/files")
+        #expect(r.model.usingLabel.hasPrefix("Using: production/budget"), "the picks changed: \(r.model.usingLabel)")
     }
 
     // MARK: Scenario 74: reviewing a change set
@@ -417,10 +511,10 @@ struct AIConversationTests {
         await r.model.cancel()
         #expect(stub.count("ai.cancel") == 2)
         // A failed stop says why and leaves Cancel usable.
-        stub.fail("ai.cancel", CoreFailure(code: "ai.x", message: "The assistant could not be reached."))
+        stub.fail("ai.cancel", CoreFailure(code: "ai.x", message: "OpenFrame AI could not be reached."))
         await r.model.cancel()
         #expect(!r.model.stopping)
-        #expect(r.model.error == "The assistant could not be reached.")
+        #expect(r.model.error == "OpenFrame AI could not be reached.")
         stub.fail("ai.ask", CoreFailure(code: "ai.x", message: "Stopped"))
         stub.release("ai.ask")
         await r.model.waitForAnswer()

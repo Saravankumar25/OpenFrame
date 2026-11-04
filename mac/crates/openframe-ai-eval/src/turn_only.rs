@@ -139,7 +139,6 @@ pub fn run(
             "{}",
             json!({ "set": r.set, "family": r.family, "id": r.id, "message": r.message,
                 "want": r.want.map(|w| w.code()), "reads": reads,
-                "domains": r.reads.last().map(|t| t.domain_codes()),
                 "lengthClass": r.reads.last().map(|t| t.length_class.code()) })
         );
     }

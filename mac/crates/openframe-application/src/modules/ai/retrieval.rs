@@ -1,33 +1,31 @@
 //! Retrieval API for the AI agent — contract C2 (AI/RAG spec §10, §18–§21, §33, §42).
 //!
-//! `retrieve` turns a question (+ the user's explicit scope) into a bounded,
-//! permission-filtered [`ContextPacket`] with provenance:
+//! `retrieve` turns a question into a bounded, permission-filtered [`ContextPacket`] with provenance.
+//! The assistant always searches with [`RetrievalRoute::HybridGraph`] and holds the search to the
+//! sections the person picked (ADR-0041); the narrower routes are there to measure each path alone:
 //!
 //! ```text
-//! route_for(query) ─► Structured  : explicit scope only (facts come from SQL tools)
-//!                  ├► ProductHelp : product guide sections
-//!                  ├► Lexical     : FTS5/BM25 over the canonical search index
-//!                  ├► Semantic    : vector KNN (falls back to Lexical)
-//!                  ├► Hybrid      : RRF(FTS, vector) + boosts
-//!                  └► HybridGraph : Hybrid + 1–2 hop context-graph expansion
+//! Lexical     : FTS5/BM25 over the canonical search index
+//! Semantic    : vector KNN (falls back to Lexical)
+//! Hybrid      : RRF(FTS, vector) + boosts
+//! HybridGraph : Hybrid + 1–2 hop context-graph expansion
 //! ```
 //!
-//! Fallbacks (§33): hybrid → FTS + SQL → SQL + explicit scope; `degraded` is set
-//! whenever a path the route wanted was unavailable. Every item's text is
-//! rebuilt from canonical rows at read time, so deleted, non-current-draft,
-//! other-users'-private or out-of-scope content can never be returned, even if
-//! the derived index is stale or tampered with. Retrieved text is DATA: the
-//! orchestrator places it inside the untrusted-data boundary.
+//! Fallback (§33): hybrid → FTS; `degraded` is set whenever a path the route wanted was unavailable.
+//! Every item's text is rebuilt from canonical rows at read time, so deleted, non-current-draft,
+//! other-users'-private or out-of-section content can never be returned, even if the derived index is
+//! stale or tampered with. Retrieved text is DATA: the prompt places it inside the untrusted-data
+//! boundary.
 
 use openframe_domain::{Actor, AppError, AppResult, Capability};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use ts_rs::TS;
 
-use super::intelligence::{self, assembler, retriever, router};
-use super::scope::{ContextItem, ResolvedScope};
+use super::intelligence::{self, assembler, retriever};
+use super::sections::NavRule;
 use super::types::{NavTarget, Provenance};
-use crate::core::AppCore;
+use crate::core::{AppCore, ProjectSession};
 use crate::registry::Registry;
 
 /// Upper bound on returned items (contract: `limit ≤ 24`).
@@ -42,7 +40,7 @@ pub const PREPARING_NOTICE: &str = "Preparing project context…";
 
 pub fn register(r: &mut Registry) {
     use crate::registry::{OperationMetadata as M, hidden as h};
-    r.module("Offline AI");
+    r.module("OpenFrame AI");
     r.query("ai.index_status", index_status_op).meta(
         M::read("State of the derived project-context index (current, updating, rebuilding…).")
             .hidden(h::MAINTENANCE),
@@ -57,26 +55,32 @@ pub fn register(r: &mut Registry) {
     );
 }
 
+/// One piece of project text given to the model, always marked as untrusted data.
+#[derive(Debug, Clone)]
+pub struct ContextItem {
+    pub source: String,
+    pub text: String,
+}
+
 #[derive(Debug, Clone)]
 pub struct RetrieveRequest {
     pub query: String,
-    pub scope: Option<ResolvedScope>,
+    /// Look only in this draft (a draft the person picked).
+    pub draft: Option<String>,
     /// Maximum items (clamped to 1..=24; 0 = default 8).
     pub limit: usize,
-    /// Force a route; `None` = deterministic router.
-    pub route: Option<RetrievalRoute>,
+    pub route: RetrievalRoute,
+    /// Look only where these rules allow (the search filter of a picked section, ADR-0041).
+    pub nav: Option<&'static [NavRule]>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[ts(rename = "AiRetrievalRoute")]
+/// How far a search reaches.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RetrievalRoute {
-    Structured,
     Lexical,
     Semantic,
     Hybrid,
     HybridGraph,
-    ProductHelp,
 }
 
 impl RetrievalRoute {
@@ -111,19 +115,15 @@ pub enum IndexState {
 }
 
 /// Where one context item came from (index-aligned with `items`/`provenance`).
-#[derive(Debug, Clone, PartialEq, Serialize, TS)]
-#[ts(export)]
-#[ts(rename = "AiContextSource")]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ContextSource {
-    /// Canonical entity type (table), e.g. "screenplay_scene"; "product_guide" for help.
+    /// Canonical entity type (table), e.g. "screenplay_scene".
     pub entity_type: String,
     pub entity_id: String,
     pub module: String,
     /// Navigation target (same shape as Global Search results).
-    #[ts(type = "unknown")]
     pub nav: Value,
-    /// "scope" | "lexical" | "semantic" | "graph" | "guide"
+    /// "lexical" | "semantic" | "graph"
     pub via: String,
     /// For graph-expanded items: the relation that led here (e.g. "appears_in").
     pub relation: Option<String>,
@@ -136,7 +136,6 @@ pub struct ContextPacket {
     /// `provenance[i]` labels `items[i]` ("Scene", "Scene 12: INT. …").
     pub provenance: Vec<Provenance>,
     pub index_state: IndexState,
-    pub route: RetrievalRoute,
     /// A retrieval path the route wanted was unavailable (fallback used).
     pub degraded: bool,
     /// `sources[i]` identifies `items[i]` (entity ref + navigation).
@@ -162,10 +161,6 @@ pub fn nav_target(v: &Value) -> Option<NavTarget> {
     Some(nav)
 }
 
-pub fn route_for(query: &str) -> RetrievalRoute {
-    router::route_for(query)
-}
-
 /// Current index state of the open project (does not start indexing).
 pub fn index_status(core: &AppCore) -> IndexState {
     if core.project_opt().is_none() {
@@ -177,10 +172,17 @@ pub fn index_status(core: &AppCore) -> IndexState {
     }
 }
 
-pub fn retrieve(core: &AppCore, actor: &Actor, req: &RetrieveRequest) -> AppResult<ContextPacket> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+/// Search `session`, the project the question was asked in. If the person closed it or opened another
+/// meanwhile the search still reads this one: the index of the project open now is left out, and the
+/// answer says the context is still being prepared.
+pub fn retrieve(
+    core: &AppCore,
+    session: &ProjectSession,
+    actor: &Actor,
+    req: &RetrieveRequest,
+) -> AppResult<ContextPacket> {
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     actor.require(Capability::View, "view this project")?;
-    let session = core.project()?;
     if req.query.chars().count() > MAX_QUERY_CHARS {
         return Err(AppError::invalid_input("That question is too long."));
     }
@@ -188,8 +190,7 @@ pub fn retrieve(core: &AppCore, actor: &Actor, req: &RetrieveRequest) -> AppResu
         0 => DEFAULT_ITEMS,
         n => n.min(MAX_ITEMS),
     };
-    let route = req.route.unwrap_or_else(|| route_for(&req.query));
-    let ix = intelligence::activate(core);
+    let ix = intelligence::activate(core).filter(|ix| ix.project_id == session.project_id());
     let snapshot = ix.as_ref().map(|i| i.snapshot());
     let index_state = snapshot
         .as_ref()
@@ -197,21 +198,19 @@ pub fn retrieve(core: &AppCore, actor: &Actor, req: &RetrieveRequest) -> AppResu
         .unwrap_or(IndexState::Unavailable);
     let gathered = retriever::gather(
         core,
-        &session,
+        session,
         actor,
         ix.as_deref(),
         snapshot.as_ref(),
         req,
-        route,
         limit,
     )?;
-    let assembled = assembler::assemble(core, &session, actor, req, route, &gathered, limit)?;
+    let assembled = assembler::assemble(core, session, actor, req, &gathered, limit)?;
     let degraded = gathered.degraded || assembled.degraded;
     Ok(ContextPacket {
         items: assembled.items,
         provenance: assembled.provenance,
         index_state,
-        route,
         degraded,
         sources: assembled.sources,
         notice: degraded.then(|| DEGRADED_NOTICE.to_string()),
@@ -328,7 +327,7 @@ fn index_rebuild_op(
     actor: &Actor,
     _: AiIndexArgs,
 ) -> AppResult<IndexRebuildStarted> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     actor.require(Capability::View, "view this project")?;
     core.project()?;
     let ix = intelligence::activate(core).ok_or_else(AppError::no_project_open)?;

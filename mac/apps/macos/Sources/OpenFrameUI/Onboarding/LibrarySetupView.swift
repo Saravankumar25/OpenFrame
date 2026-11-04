@@ -12,7 +12,7 @@ struct LibrarySetupView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                BrandMark(size: 48)
+                BrandLogo(markSize: 40, wordSize: 28)
                 Text("Set up your OpenFrame library")
                     .font(.system(size: 24, weight: .semibold)).tracking(-0.3)
                     .accessibilityAddTraits(.isHeader)

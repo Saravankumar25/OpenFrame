@@ -227,7 +227,7 @@ pub async fn chat(
         .await
         .map_err(|e| {
             if e.is_timeout() {
-                AppError::ai("timeout", "Offline AI took too long to answer. Nothing was changed. Try a shorter or more specific request.")
+                AppError::ai("timeout", "OpenFrame AI took too long to answer. Nothing was changed. Try a shorter or more specific request.")
                     .retryable()
             } else {
                 unavailable(e.to_string())
@@ -346,13 +346,13 @@ pub async fn embed(
 pub fn embedding_rejected(detail: impl Into<String>) -> AppError {
     AppError::ai(
         "embedding_rejected",
-        "Offline AI couldn't process some project text for search. Search still works.",
+        "OpenFrame AI couldn't process some project text for search. Search still works.",
     )
     .with_detail(detail)
 }
 
 pub fn malformed(detail: impl Into<String>) -> AppError {
-    AppError::ai("malformed", "Offline AI returned an answer OpenFrame couldn't use. Nothing was changed. Please try again.")
+    AppError::ai("malformed", "OpenFrame AI returned an answer OpenFrame couldn't use. Nothing was changed. Please try again.")
         .with_detail(detail)
         .retryable()
 }

@@ -8,9 +8,23 @@ use super::{TurnMemory, approx_tokens, counts_in, ids_for};
 use crate::modules::ai::index::{
     Entity, EntityIndex, Focus, Kind as EntityKind, Relation, ScreenplayInfo,
 };
+use crate::modules::ai::sections::Selection;
 
 fn db() -> Connection {
     crate::modules::ai::test_script::project()
+}
+
+fn every() -> Selection {
+    Selection::every(false)
+}
+
+/// A turn is kept only with a record of its sections; a test that is not about them reads none.
+fn stored_scope(scope: &str) -> String {
+    let mut v: serde_json::Value = serde_json::from_str(scope).unwrap();
+    if v.get("sections").is_none() {
+        v["sections"] = serde_json::json!([]);
+    }
+    v.to_string()
 }
 
 fn kind_of(message: &str) -> Option<Kind> {
@@ -297,9 +311,9 @@ fn request(
 ) {
     let id = format!("{user}-{conv}-{n:03}");
     c.execute(
-        "INSERT INTO ai_request(id, user_id, session_id, scope_kind, scope_json, scope_label, request_text, status, created_at, updated_at)
-         VALUES (?1, ?2, ?3, 'WholeProject', ?4, 'Project', ?5, 'Completed', ?6, ?6)",
-        params![id, user, conv, scope, asked, n],
+        "INSERT INTO ai_request(id, user_id, session_id, scope_json, scope_label, request_text, status, created_at, updated_at)
+         VALUES (?1, ?2, ?3, ?4, 'Project', ?5, 'Completed', ?6, ?6)",
+        params![id, user, conv, stored_scope(scope), asked, n],
     )
     .unwrap();
     c.execute(
@@ -340,7 +354,7 @@ fn the_last_eight_turns_are_kept_word_for_word_oldest_dropped_first() {
         "Answer",
         "{}",
     );
-    let m = short::load(&c, &actor("u1"), "conv", &Focus::default(), None).unwrap();
+    let m = short::load(&c, &actor("u1"), "conv", &Focus::default(), None, &every()).unwrap();
     assert!(m.recent.len() <= RECENT_TURNS);
     let used: usize = m
         .recent
@@ -381,7 +395,7 @@ fn eight_short_turns_all_fit() {
             "{}",
         );
     }
-    let m = short::load(&c, &actor("u1"), "conv", &Focus::default(), None).unwrap();
+    let m = short::load(&c, &actor("u1"), "conv", &Focus::default(), None, &every()).unwrap();
     assert_eq!(m.recent.len(), RECENT_TURNS);
     assert_eq!(m.recent[0].asked, "Question 2");
     assert_eq!(
@@ -449,7 +463,15 @@ fn older_turns_become_summary_lines_written_by_code() {
         );
     }
     let ix = index();
-    let m = short::load(&c, &actor("u1"), "conv", &Focus::default(), Some(&ix)).unwrap();
+    let m = short::load(
+        &c,
+        &actor("u1"),
+        "conv",
+        &Focus::default(),
+        Some(&ix),
+        &every(),
+    )
+    .unwrap();
     assert_eq!(m.recent.len(), RECENT_TURNS);
     assert_eq!(
         m.summary_lines,
@@ -462,7 +484,7 @@ fn older_turns_become_summary_lines_written_by_code() {
     );
     assert!(m.summary_text().starts_with("Earlier: looked something up"));
     // No names, no summary; a conversation with nothing older has none either.
-    let none = short::load(&c, &actor("u1"), "conv", &Focus::default(), None).unwrap();
+    let none = short::load(&c, &actor("u1"), "conv", &Focus::default(), None, &every()).unwrap();
     assert!(none.summary_lines.is_empty());
 }
 
@@ -491,7 +513,7 @@ fn only_a_plain_short_answer_can_be_confirmed() {
     );
     request(&c, "u1", "c", 1, "q", &"long ".repeat(100), "Answer", "{}");
     let ok = |conv| {
-        short::load(&c, &actor("u1"), conv, &Focus::default(), None)
+        short::load(&c, &actor("u1"), conv, &Focus::default(), None, &every())
             .unwrap()
             .recent[0]
             .confirmable
@@ -522,4 +544,27 @@ fn ids_combine_the_message_and_the_focus() {
         ids,
         vec!["c1".to_string(), "loc9".to_string(), "sp1".to_string()]
     );
+}
+
+#[test]
+fn a_message_that_says_something_of_its_own_does_not_confirm_the_last_answer() {
+    let answer = "There are 10 scenes.";
+    for m in [
+        "Remember that my email is raj@example.com",
+        "Save the file as draft two, right",
+        "That is right about the ending of the film",
+    ] {
+        assert_eq!(candidate(m, Some(answer)).map(|c| c.text), None, "{m}");
+    }
+    for m in [
+        "Yes, that's right",
+        "correct, remember that",
+        "Right, save this",
+    ] {
+        assert_eq!(
+            candidate(m, Some(answer)).map(|c| c.text),
+            Some(answer.to_string()),
+            "{m}"
+        );
+    }
 }

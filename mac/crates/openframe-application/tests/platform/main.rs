@@ -4,6 +4,7 @@
 //! crate, so fewer binaries build faster and use less disk (Windows phase W1, storage hygiene).
 //! Run one file with `cargo test -p openframe-application --test platform <file>::`.
 
+mod config_files;
 mod core_pipeline;
 mod diagnostics;
 mod e2e_flows;
@@ -20,4 +21,5 @@ mod security_review;
 mod soak;
 mod storage;
 mod trial_first_run;
+mod update_simulation;
 mod vault_recover;

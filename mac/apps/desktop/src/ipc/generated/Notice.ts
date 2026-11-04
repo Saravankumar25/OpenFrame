@@ -3,4 +3,4 @@
 /**
  * The screen the app shows now. At most one at a time, in the order of [`due`].
  */
-export type Notice = { "kind": "none" } | { "kind": "reminder", daysLeft: number, } | { "kind": "dataNote" } | { "kind": "tutorial" } | { "kind": "welcome" } | { "kind": "macFirstLaunch" } | { "kind": "locked" } | { "kind": "checkNeeded" };
+export type Notice = { "kind": "none" } | { "kind": "reminder", daysLeft: number, } | { "kind": "dataNote" } | { "kind": "tutorial" } | { "kind": "welcome" } | { "kind": "macFirstLaunch" } | { "kind": "locked" } | { "kind": "clockLocked" } | { "kind": "checkNeeded" };

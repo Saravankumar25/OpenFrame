@@ -62,13 +62,16 @@ const APP_SOURCES = [
   "apps/desktop/src",
   "apps/desktop/src-tauri/src",
   "apps/desktop/src-tauri/capabilities",
+  "apps/macos/Sources/OpenFrameUI",
+  "apps/macos/Sources/OpenFrameCore",
+  "apps/macos/Sources/OpenFrameStudio",
   // The gold project builder is a development tool, never shipped: its addresses are film research links in project data.
   ...(fs.existsSync(path.join(ROOT, "crates"))
     ? fs.readdirSync(path.join(ROOT, "crates")).filter((c) => c !== "openframe-gold-project").map((c) => `crates/${c}/src`)
     : []),
 ];
 const APP_FILES = ["apps/desktop/src-tauri/tauri.conf.json", "apps/desktop/index.html"];
-const SOURCE_EXT = /\.(ts|tsx|rs|json|html)$/;
+const SOURCE_EXT = /\.(ts|tsx|rs|json|html|swift)$/;
 const NOT_SHIPPED = /(\.test\.tsx?$|\/tests?\/|\/tests\.rs$|\/test_[^/]*\.rs$|\/ipc\/generated\/|\/benches\/|\/fuzz\/)/;
 const normalize = (a) => a.replace(/[./]+$/, "");
 

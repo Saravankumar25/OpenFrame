@@ -46,6 +46,7 @@ import {
   validateStoreIdentity,
 } from "./build-msix.mjs";
 import { prepare as prepareAiAssets } from "./prepare-ai-assets.mjs";
+import { findPlaceholders } from "./check-release-placeholders.mjs";
 
 const ROOT = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
 const argv = process.argv.slice(2);
@@ -262,6 +263,11 @@ if (STORE) {
     } catch (e) {
       failCheck("MSIX manifest template", e.message);
     }
+
+    // Every value only the stores can give (docs/release/mac-store-placeholders.md).
+    const placeholders = findPlaceholders();
+    if (placeholders.length) failCheck("Store placeholders", placeholders.map((f) => `${f.file}: ${f.name}`).join("; "));
+    else pass("Store placeholders", "none remain");
 
     // The Store updates the app; an in-app updater must be compiled out of Store builds.
     try {

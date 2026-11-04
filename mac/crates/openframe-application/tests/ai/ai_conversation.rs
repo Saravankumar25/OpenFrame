@@ -144,15 +144,12 @@ fn world() -> (TestEnv, Arc<Scripted>) {
 fn ask_in(env: &TestEnv, text: &str, conversation: &str) -> Value {
     env.ok(
         "ai.ask",
-        json!({ "text": text, "scope": { "kind": "WholeProject" }, "conversationId": conversation }),
+        json!({ "text": text, "conversationId": conversation }),
     )
 }
 
 fn ask(env: &TestEnv, text: &str) -> Value {
-    env.ok(
-        "ai.ask",
-        json!({ "text": text, "scope": { "kind": "WholeProject" } }),
-    )
+    env.ok("ai.ask", json!({ "text": text }))
 }
 
 fn content(x: &Value) -> String {
@@ -422,7 +419,7 @@ fn a_viewer_gets_no_contact_in_the_prompt_or_the_answer_and_an_owner_does() {
         .call_as(
             &viewer,
             "ai.ask",
-            json!({ "text": "What is Maya Rao's phone number?", "scope": { "kind": "WholeProject" } }),
+            json!({ "text": "What is Maya Rao's phone number?" }),
         )
         .unwrap();
     assert!(!content(&x).contains("90000"), "{}", content(&x));
@@ -464,10 +461,11 @@ fn the_start_of_the_prompt_is_the_same_bytes_on_every_turn() {
     let second = m.request(1).messages[0].content.clone();
     assert_eq!(
         first, second,
-        "policy and project map do not change between turns"
+        "policy and section map do not change between turns"
     );
-    assert!(first.contains("\u{201C}Lost Property\u{201D} (10 scenes)"));
-    assert!(first.contains("\u{201C}Night Shift\u{201D} (10 scenes)"));
+    // The map lists sections: a title or a scene count would be a fact from the Screenplay.
+    assert!(first.contains("the person chose to read"), "{first}");
+    assert!(!first.contains("Lost Property") && !first.contains("Night Shift"));
 }
 
 #[test]

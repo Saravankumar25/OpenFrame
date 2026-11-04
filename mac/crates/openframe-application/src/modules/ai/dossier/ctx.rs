@@ -4,8 +4,10 @@
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::rc::Rc;
+use std::sync::LazyLock;
 
 use openframe_domain::{Actor, AppResult};
+use regex::Regex;
 use rusqlite::{Connection, OptionalExtension};
 
 use super::guard::Guard;
@@ -14,6 +16,7 @@ use super::{Fact, Input};
 use crate::core::AppCore;
 use crate::modules::ai::index::{EntityIndex, Kind, Resolved, ScreenplayInfo, normalize};
 use crate::modules::ai::queries;
+use crate::modules::ai::sections::PickedLeaf;
 use crate::modules::ai::turn::ReadHow;
 use crate::modules::schedule::board::{self, DayRow};
 
@@ -44,7 +47,11 @@ pub struct FetchCtx<'a> {
     /// The message; a correction ("I asked you ...") carries the message it corrects too.
     pub message: String,
     pub m: Msg,
+    /// The person's previous message in this conversation, for a follow-up that names nothing.
+    pub previous: Option<String>,
     pub guard: Guard,
+    /// The section this fetcher reads for. `None` only for the names stage, which reads no section.
+    pub picked: Option<&'a PickedLeaf>,
     drafts: RefCell<HashMap<String, Option<queries::DraftRef>>>,
     presence: RefCell<HashMap<String, Rc<Presence>>>,
     days: RefCell<Option<Rc<Vec<DayRow>>>>,
@@ -53,7 +60,9 @@ pub struct FetchCtx<'a> {
 impl<'a> FetchCtx<'a> {
     pub fn new(input: &Input<'a>) -> Self {
         let message = match (input.read.how, input.previous_message) {
-            (ReadHow::Repair, Some(p)) => format!("{p} {}", input.message),
+            (ReadHow::Repair, Some(p)) => {
+                format!("{} {}", replaced_by(p, input.message), input.message)
+            }
             _ => input.message.to_string(),
         };
         Self {
@@ -63,11 +72,43 @@ impl<'a> FetchCtx<'a> {
             core: input.core,
             m: Msg::new(&message),
             message,
+            previous: input.previous_message.map(str::to_string),
             guard: Guard::for_actor(input.actor),
+            picked: None,
             drafts: RefCell::new(HashMap::new()),
             presence: RefCell::new(HashMap::new()),
             days: RefCell::new(None),
         }
+    }
+
+    /// The context of one picked section: its topic words open the fetchers, its draft is the draft
+    /// every read of that screenplay uses, and its role rule can only take contact data away.
+    pub fn for_leaf(input: &Input<'a>, picked: &'a PickedLeaf) -> Self {
+        let mut ctx = Self::new(input);
+        ctx.m = Msg::with_topic(&ctx.message, picked.leaf.topic);
+        ctx.picked = Some(picked);
+        ctx.guard.contacts =
+            ctx.guard.contacts && picked.leaf.min_role.allows_contacts(input.actor);
+        if let Some(d) = &picked.draft {
+            ctx.drafts
+                .borrow_mut()
+                .insert(d.screenplay_id.clone(), Some(d.clone()));
+        }
+        ctx
+    }
+
+    /// The same section read with the words the person typed alone.
+    pub fn typed_for_leaf(input: &Input<'a>, picked: &'a PickedLeaf) -> Self {
+        let mut ctx = Self::for_leaf(input, picked);
+        ctx.m = Msg::new(&ctx.message);
+        ctx
+    }
+
+    /// The day this section was narrowed to, when the person chose one.
+    pub fn picked_day(&self) -> Option<&str> {
+        self.picked
+            .and_then(|p| p.day.as_ref())
+            .map(|d| d.id.as_str())
     }
 
     /// The screenplay a message without a title is about: the named one, the only one, else the
@@ -152,7 +193,9 @@ impl<'a> FetchCtx<'a> {
                 add(&mut out, self.scene_by_id(&id));
             }
         }
+        // "Varghese's last scene" is his, not the screenplay's: the fetchers read it from his scenes.
         if out.is_empty()
+            && r.characters.is_empty()
             && let Some(sp) = self.screenplay(r)
         {
             if self
@@ -280,23 +323,23 @@ impl<'a> FetchCtx<'a> {
         *self.days.borrow_mut() = Some(days.clone());
         days
     }
+}
 
-    /// Day number and date of the shooting day of a scene, when the scene is scheduled.
-    pub fn day_of_scene(&self, scene_id: &str) -> Option<(u32, Option<String>)> {
-        let day_id: String = self
-            .conn
-            .query_row(
-                "SELECT day_id FROM schedule_strip
-                 WHERE scene_id = ?1 AND deleted_at IS NULL AND archived = 0 AND day_id IS NOT NULL LIMIT 1",
-                [scene_id],
-                |r| r.get(0),
-            )
-            .optional()
-            .ok()??;
-        let d = self.days();
-        let d = d.iter().find(|d| d.id == day_id)?;
-        Some((d.number? as u32, d.date.clone()))
+static DAY_WORDS: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?i)\b(?:shoot\s+)?day\s+#?\d{1,3}\b").expect("valid pattern"));
+static SCENE_WORDS: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?i)\bscenes?\s+#?\d{1,4}\b").expect("valid pattern"));
+
+/// The earlier message a follow-up is read with: "and day 5" after "what is on day 4" reads day 5 alone,
+/// and the same for a scene.
+fn replaced_by(previous: &str, message: &str) -> String {
+    let mut p = previous.to_string();
+    for words in [&*DAY_WORDS, &*SCENE_WORDS] {
+        if words.is_match(message) {
+            p = words.replace_all(&p, " ").into_owned();
+        }
     }
+    p
 }
 
 /// Run a read that may fail; a failure adds no facts and is logged, never shown.
@@ -309,4 +352,25 @@ pub fn safe(name: &str, f: impl FnOnce() -> AppResult<Vec<Fact>>) -> Vec<Fact> {
         );
         Vec::new()
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::replaced_by;
+
+    #[test]
+    fn a_day_or_scene_in_a_follow_up_replaces_the_earlier_one() {
+        assert_eq!(
+            replaced_by("what is on day 4", "and day 5").trim(),
+            "what is on"
+        );
+        assert_eq!(
+            replaced_by("props for scene 3", "and the vehicles"),
+            "props for scene 3"
+        );
+        assert_eq!(
+            replaced_by("props for scene 3", "and scene 9").trim(),
+            "props for"
+        );
+    }
 }

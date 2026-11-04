@@ -1,7 +1,8 @@
 // The corner chip and "Buy full version" button in the top bar (Windows: TrialCorner.tsx, owner
-// mocks 183 and 188). Shown on every screen from trial day 1 until the purchase; amber in the last
-// 3 days, always with the days in words; gone after the purchase. No price is ever shown. The
-// internal disk image build shows nothing.
+// mocks 188 and 200). One component on the root view's toolbar, so it shows on Application Home and
+// on every project screen from trial day 1 until the purchase; amber in the last 3 days, always with
+// the days in words; gone after the purchase. No price is ever shown here. The internal disk image
+// build shows nothing.
 //
 // After "Not now" on the "Checking your purchase" screen the bar shows "Check purchase" to open it
 // again, so the way to check is never lost for the session.
@@ -29,7 +30,9 @@ struct TrialCorner: View {
                     .accessibilityElement()
                     .accessibilityLabel(chip.spoken)
                     .accessibilityIdentifier("trial-chip")
-                Button { Task { await licence.buy() } } label: { Label("Buy full version", systemImage: "bolt.fill") }
+                Button { Task { await licence.buy() } } label: {
+                    Label("Buy full version", systemImage: "bolt.fill").labelStyle(.titleAndIcon)
+                }
                     .buttonStyle(.ofProminent).controlSize(.small).disabled(licence.busy)
                     .accessibilityIdentifier("trial-buy")
             }

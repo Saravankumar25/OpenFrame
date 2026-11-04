@@ -4,7 +4,7 @@
 > Spec: `openframe_ai_agentic_rag_spec_prompt.md` §8–§22, §31–§34, §42.
 > Source: `crates/openframe-search/` (derived index library),
 > `crates/openframe-application/src/modules/ai/intelligence/` (documents, graph builders, indexer, retriever,
-> assembler, router), `crates/openframe-application/src/modules/ai/retrieval.rs` (contract C2 + ops),
+> assembler), `crates/openframe-application/src/modules/ai/retrieval.rs` (contract C2 + ops),
 > post-commit hook `Store::set_commit_observer` (`store.rs`) and `AppCore::set_project` (`core.rs`).
 > Tests: `crates/openframe-search/src/**` (unit), `crates/openframe-application/tests/ai_retrieval.rs`,
 > `crates/openframe-application/tests/ai_retrieval_perf.rs` (§34 measurements).
@@ -140,11 +140,11 @@ started), `Rebuilding` (fresh/recreated/explicit rebuild), `Failed` (last pass f
 `modules/ai/retrieval.rs`:
 
 ```rust
-pub struct RetrieveRequest { query, scope: Option<ResolvedScope>, limit /* ≤ 24 */, route: Option<RetrievalRoute> }
-pub enum RetrievalRoute { Structured, Lexical, Semantic, Hybrid, HybridGraph, ProductHelp }
-pub struct ContextPacket { items: Vec<ContextItem>, provenance: Vec<Provenance>, index_state, route, degraded,
+pub struct RetrieveRequest { query, draft: Option<String>, limit /* ≤ 24 */, route: RetrievalRoute, nav: Option<&[NavRule]> }
+pub enum RetrievalRoute { Lexical, Semantic, Hybrid, HybridGraph }   // the assistant always asks for HybridGraph
+pub struct ContextPacket { items: Vec<ContextItem>, provenance: Vec<Provenance>, index_state, degraded,
                            sources: Vec<ContextSource> /* entity ref + nav + via */, notice: Option<String> }
-pub fn route_for(query) -> RetrievalRoute;  pub fn retrieve(core, actor, req) -> AppResult<ContextPacket>;
+pub fn retrieve(core, session, actor, req) -> AppResult<ContextPacket>;  // reads `session`, the project the question was asked in
 pub fn index_status(core) -> IndexState;
 ```
 
@@ -155,27 +155,23 @@ with state, "Preparing project context…" / degraded wording, counts, progress)
 Pipeline:
 
 1. `UseAi` + `View` required (AI authority ≤ the user's); query ≤ 2,000 chars; limit clamped to 1..=24.
-2. **Router** (`router.rs`, deterministic): product how-to → `ProductHelp` (curated guide, `knowledge.rs` unchanged,
-   §22); counts/lists/status/assignee/"open scene" → `Structured` (explicit scope only — exact facts come from SQL
-   tools, §43); two or more product areas or relationship wording → `HybridGraph`; meaning/theme questions and
-   mutation requests → `Hybrid`; short lookups / quoted text → `Lexical`.
+2. **Route**: the caller says how far the search reaches. The assistant always asks for `HybridGraph` and holds the search
+   to the picked sections with `nav` (ADR-0041); the narrower routes are there to measure each path alone.
 3. **Lexical**: the canonical FTS5 index with an OR query of the question's significant terms (quoted, prefix,
    stop-words removed; Global Search keeps its AND query), owner-filtered, BM25 (title 4×).
 4. **Semantic**: query embedding (LRU cache of 64) → vec0 KNN k=48 → chunks → documents; owner and draft filters.
 5. **Graph** (HybridGraph): expand from the top 5 fused entities (§5 limits).
-6. **Rank** (`openframe_search::rank`): RRF (k=60) over lexical + vector ranks, + scope 0.02, exact-name 0.016,
+6. **Rank** (`openframe_search::rank`): RRF (k=60) over lexical + vector ranks, + exact-name 0.016,
    graph ≤ 0.012 × score, current draft 0.004. No LLM reranker.
-7. **Assemble** (`assembler.rs`): explicit scope items first; then each candidate is **rebuilt from canonical rows**
-   (drops deleted, non-current-draft, other users' private and out-of-scope items), the semantic chunk or the chunk
+7. **Assemble** (`assembler.rs`): each candidate is **rebuilt from canonical rows**
+   (drops deleted, non-current-draft, other users' private and out-of-section items), the semantic chunk or the chunk
    sharing most query terms is chosen, duplicates dropped, labels added ("Screenplay · Scene 12: INT. …").
    Budgets: 6,000 chars total, 1,500 per item, graph-related entities as ≤ 320-char summaries (≤ 6).
 
-Agent integration ✅: `orchestrator::run_agent` calls `retrieve` once per request (route from the router, scope =
-the resolved scope, 8 items) and `orchestrator::assemble_context` appends the packet's items after the explicit
-scope under the same `CONTEXT_BUDGET`, de-duplicated, inside `<project_data trust="untrusted">`. A model-written
-answer cites up to 6 retrieved sources as provenance chips (`Provenance.nav` opens the source). Retrieval errors
-never fail the request (the scope alone is used). The model can also call the `retrieve_context` tool during the
-loop for a further, differently worded retrieval (toolbox, `run_tool_unlocked`).
+Assistant integration (ADR-0041): `sections::retrieve` runs one search per picked section, 4 passages each, and the passages
+join the section's facts at the lowest priority. A section narrowed to one scene, day or call sheet reads through its fetchers
+and runs no search. Retrieval errors never fail the request. In a change request the model can also call the `retrieve_context`
+tool, which reads only what the picks hold (toolbox, `run_tool_unlocked`).
 
 Fallbacks (§33): no embedder / vectors not ready / vector error → FTS + SQL, `degraded = true` and `notice` = "AI can
 still answer some questions while project context is being prepared."; FTS error → SQL tools + explicit scope; index

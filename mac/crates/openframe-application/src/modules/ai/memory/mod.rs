@@ -26,6 +26,7 @@ use ts_rs::TS;
 use crate::core::{AppCore, ProjectSession};
 use crate::modules::ai::index::{EntityIndex, Focus, Resolved};
 use crate::modules::ai::records::ai_meta;
+use crate::modules::ai::sections::Selection;
 use crate::registry::Registry;
 
 pub use long::{MAX_ENTRIES, MemoryEntry, RETRIEVE_COUNT, RETRIEVE_TOKENS, Saved};
@@ -68,20 +69,32 @@ pub struct Input<'a> {
     pub entity_ids: &'a [String],
     /// Names for the summary; without it older turns are left out of the summary.
     pub names: Option<&'a EntityIndex>,
+    /// The sections of this request (ADR-0041). Memory that belongs to a section that is not picked
+    /// stays out of the turn; the focus keeps its ids, which are never text.
+    pub sections: &'a Selection,
 }
 
 /// Stage "prepare" (section 5.1, steps 2 and 3). Memory that cannot be read leaves the turn without
 /// it: the long-term part is a help, never a reason to fail a request.
 pub fn prepare(i: &Input<'_>) -> AppResult<TurnMemory> {
-    let conversation = short::load(i.conn, i.actor, i.conversation, i.focus, i.names)?;
-    let entries =
-        long::retrieve(i.conn, &i.actor.user_id, i.message, i.entity_ids).unwrap_or_else(|e| {
-            tracing::warn!(
-                code = e.code_str(),
-                "the assistant's memory could not be read"
-            );
-            Vec::new()
-        });
+    let conversation = short::load(
+        i.conn,
+        i.actor,
+        i.conversation,
+        i.focus,
+        i.names,
+        i.sections,
+    )?;
+    let entries = long::retrieve_where(i.conn, &i.actor.user_id, i.message, i.entity_ids, |e| {
+        long::homed_in(e, i.sections, i.names)
+    })
+    .unwrap_or_else(|e| {
+        tracing::warn!(
+            code = e.code_str(),
+            "OpenFrame AI's memory could not be read"
+        );
+        Vec::new()
+    });
     Ok(TurnMemory {
         conversation,
         entries,
@@ -163,7 +176,7 @@ pub fn remember(
             request_id,
         )
     }) {
-        tracing::warn!(code = e.code_str(), "the assistant could not save a memory");
+        tracing::warn!(code = e.code_str(), "OpenFrame AI could not save a memory");
     }
 }
 
@@ -192,7 +205,7 @@ pub struct AiMemoryDeleteDto {
 }
 
 fn memory_list(core: &AppCore, actor: &Actor, _: super::AiEmptyArgs) -> AppResult<AiMemoryListDto> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     let s = core.project()?;
     Ok(AiMemoryListDto {
         entries: s.store.read(|c| long::list(c, &actor.user_id))?,
@@ -216,14 +229,14 @@ pub fn register(r: &mut Registry) {
     r.query("ai.memory_list", memory_list).meta(
         M::query(
             Capability::UseAi,
-            "What the assistant remembers about the user in this project (their own entries only).",
+            "What OpenFrame AI remembers about the user in this project (their own entries only).",
         )
         .hidden(h::AI_SELF),
     );
     r.command("ai.memory_delete", memory_delete).meta(
         M::command(
             Capability::UseAi,
-            "Make the assistant forget one of the user's remembered entries; the words are erased.",
+            "Make OpenFrame AI forget one of the user's remembered entries; the words are erased.",
         )
         .destructive()
         .irreversible()

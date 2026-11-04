@@ -639,7 +639,7 @@ pub fn execute(ctx: &ToolCtx<'_>, name: &str, args: &Value) -> AppResult<ToolOut
         }
         other => Err(AppError::ai(
             "unknown_tool",
-            "That isn't something the assistant can do yet.",
+            "That isn't something OpenFrame AI can do yet.",
         )
         .with_detail(format!("tool {other}"))),
     }
@@ -700,7 +700,7 @@ fn project_overview(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
             plural(locs as usize, "Location record", "Location records")
         ))
         .detail(format!("Open tasks: {open_tasks}."))
-        .prov("Scope", "Whole Project");
+        .prov("Scope", ctx.scope.basis());
     Ok(o)
 }
 
@@ -998,7 +998,7 @@ fn scene_fact(ctx: &ToolCtx<'_>, a: &SceneFactArgs) -> AppResult<ToolOutput> {
         other => {
             return Err(AppError::ai(
                 "unknown_tool",
-                "That isn't something the assistant can do yet.",
+                "That isn't something OpenFrame AI can do yet.",
             )
             .with_detail(format!("scene fact {other}")));
         }
@@ -1127,7 +1127,7 @@ fn dialogue_fact(ctx: &ToolCtx<'_>, a: &DialogueFactArgs) -> AppResult<ToolOutpu
                 other => {
                     return Err(AppError::ai(
                         "unknown_tool",
-                        "That isn't something the assistant can do yet.",
+                        "That isn't something OpenFrame AI can do yet.",
                     )
                     .with_detail(format!("dialogue fact {other}")));
                 }
@@ -1942,22 +1942,24 @@ fn category_query(text: &str) -> Option<&'static str> {
 }
 
 fn search_project(ctx: &ToolCtx<'_>, text: &str) -> AppResult<ToolOutput> {
+    let inside = |tool: &str| super::toolbox::homes::offered(tool, &ctx.scope.sections);
     let by_category = match category_query(text) {
-        Some("scenes") => count_scenes(ctx, None).ok(),
-        Some("characters") => count_characters(ctx, None).ok(),
-        Some("locations") => location_statistics(ctx, None).ok(),
+        Some("scenes") if inside("count_scenes") => count_scenes(ctx, None).ok(),
+        Some("characters") if inside("count_characters") => count_characters(ctx, None).ok(),
+        Some("locations") if inside("location_statistics") => location_statistics(ctx, None).ok(),
         _ => None,
     };
     if let Some(o) = by_category {
         return Ok(o);
     }
-    let hits = search_hits(ctx.conn, ctx.actor, text, 50)?;
+    let mut hits = search_hits(ctx.conn, ctx.actor, text, 50)?;
+    hits.retain(|h| ctx.scope.reads(&h.3));
     if hits.is_empty() {
         return Ok(ToolOutput::exact(format!(
             "Nothing in this project mentions “{}”.",
             text.trim()
         ))
-        .prov("Scope", "Whole Project"));
+        .prov("Scope", ctx.scope.basis()));
     }
     let mut groups: BTreeMap<String, usize> = BTreeMap::new();
     for (_, _, context, _) in &hits {
@@ -2024,7 +2026,7 @@ fn search_project(ctx: &ToolCtx<'_>, text: &str) -> AppResult<ToolOutput> {
         })
         .collect();
     o.nav = Some(NavTarget::to("home").with("search", text.trim()));
-    Ok(o.prov("Scope", "Whole Project")
+    Ok(o.prov("Scope", ctx.scope.basis())
         .prov("Basis", "project search index"))
 }
 
@@ -2089,7 +2091,10 @@ fn open_workspace(ws: &str, sub: Option<&str>) -> AppResult<ToolOutput> {
 }
 
 fn open_object(ctx: &ToolCtx<'_>, text: &str) -> AppResult<ToolOutput> {
-    let hits = search_hits(ctx.conn, ctx.actor, text, 5)?;
+    // Over-read, then hold to the picks.
+    let mut hits = search_hits(ctx.conn, ctx.actor, text, 50)?;
+    hits.retain(|h| ctx.scope.reads(&h.3));
+    hits.truncate(5);
     let Some((etype, title, context, nav)) = hits.first() else {
         return Ok(ToolOutput::exact(format!(
             "I couldn't find anything called “{}” in this project.",

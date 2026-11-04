@@ -48,6 +48,8 @@
 | [0037](ADR-0037-conversational-assistant-focus-and-dossiers.md) | Conversational assistant: one answer path for questions, a project index over every object type, focus, short-term and long-term memory, per-turn dossiers with progressive fetch, intent-based answer length, sources behind a button; model unchanged (Gemma 3 1B) | **Accepted 2026-10-26** (design; build follows in slices S0 to S9) | Amends ADR-0035 decision 1, ADR-0013 decision 6, ADR-0028 decision 8 |
 | [0038](ADR-0038-library-file-and-durable-identity.md) | Library file in the user's folder keeps the local user id and the chosen projects and vault folders; lazy vault; explicit re-owning of former owners' private notes | **Accepted 2026-10-27** | Amends ADR-0011 (where the id lives) and ADR-0003 (projects can be moved by the app) |
 | [0039](ADR-0039-internal-builds-open-without-a-team-password.md) | Internal builds open without a team password; the team gate and all its code are removed from both apps | **Accepted 2026-10-27** | Supersedes the gate decisions of ADR-0024 and ADR-0030 decision 5 |
+| [0040](ADR-0040-offline-mac-trial-no-licence-server.md) | The Mac trial is counted offline from Apple-signed data with a Keychain clock guard; no licence server | **Accepted 2026-11-03** | Supersedes the server in ADR-0018 decision 3; amends ADR-0022 and ADR-0023 |
+| [0041](ADR-0041-section-scoped-assistant.md) | The person picks up to 3 sections before asking; code answers from those only and points to the right one otherwise | **Accepted 2026-11-03** | Supersedes ADR-0037 decisions 5 and 6; amends decision 9 |
 
 ## 2. Older decisions that are no longer in force (surface the newer one)
 
@@ -91,10 +93,13 @@
 | Assistant text is never saved; only numbers | ADR-0028 decision 8 | **Amended 2026-10-24** | A tester may press Save conversation for review; nothing is saved or sent on its own | ADR-0028 decision 8 |
 | Screenplay formatting standard v4 | `docs/history/specs/screenplay-formatting-standard-v4.md` | **Superseded 2026-10-24** | Version 5: 36 pt before scene headings, keep rules for transitions and shots, speech continuation at every split, first-page numbering setting, title page gutter | [screenplay-formatting-standard-v5.md](../specs/screenplay-formatting-standard-v5.md), ADR-0008 note |
 | Production PDF footer: hairline rule, vector lockup, bold tracked footer text, 80 pt bottom clearance | Report renderer (`report.rs`, `design.rs`) | **Superseded 2026-10-24** (design accepted; renderer slice follows) | Lossless logo footer, 66 pt bottom margin | ADR-0036 |
+| Licence server decides the Mac trial; the wall clock is never an input | ADR-0018 decision 3, `docs/engineering/38-mac-app-store-trial.md` | **Superseded 2026-11-03** | The trial is counted offline on the Mac from Apple-signed data, with a Keychain clock guard | ADR-0040 |
+| The app never shows a price | ADR-0023 | **Amended 2026-11-03 for the Mac** | The first-launch and lock screens show the StoreKit-supplied price (Apple Guideline 3.1.1). Never typed | ADR-0040 |
+| Code picks the topic of a question from keywords; the Scope dropdown | ADR-0037 decisions 5 and 6 | **Superseded 2026-11-03** | The person picks up to 3 sections; a code-built pointer names a section that was not picked | ADR-0041 |
 
 ## 3. Rules
 
 - A superseded decision is **never deleted**. It keeps its text, gets a pointer to its replacement, and appears in §2.
 - A new ADR names what it supersedes or amends and adds a row to both tables here.
 - A Proposed ADR is not a decision. Code must not assume it.
-- Numbering is permanent; the next free number is 0039. 0033 and 0034 are Mac decisions (the Metal engine helper process; the two-folder GitHub layout); the Windows tree lists them too and does not reuse the numbers, so a number means one decision in both trees.
+- Numbering is permanent; the next free number is 0042. 0033 and 0034 are Mac decisions (the Metal engine helper process; the two-folder GitHub layout); the Windows tree lists them too and does not reuse the numbers, so a number means one decision in both trees.

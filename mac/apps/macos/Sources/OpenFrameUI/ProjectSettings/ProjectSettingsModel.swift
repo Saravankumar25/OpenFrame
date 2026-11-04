@@ -17,7 +17,7 @@ enum ProjectSettingsTab: String, CaseIterable, Identifiable, Hashable {
         case .writing: "Writing"
         case .shortcuts: "Keyboard shortcuts"
         case .templates: "Templates"
-        case .offlineAI: "Offline AI"
+        case .offlineAI: "OpenFrame AI"
         case .advanced: "Advanced"
         case .appearance: "Appearance"
         case .storage: "Storage"

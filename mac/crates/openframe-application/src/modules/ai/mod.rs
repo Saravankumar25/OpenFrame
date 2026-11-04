@@ -29,11 +29,13 @@ pub mod knowledge;
 pub mod memory;
 pub mod offline;
 pub mod orchestrator;
+pub mod pointer;
 pub mod queries;
 pub mod records;
 pub mod retrieval;
 mod sanitize;
 pub mod scope;
+pub mod sections;
 pub mod service;
 #[cfg(test)]
 mod test_script;
@@ -64,15 +66,15 @@ pub use types::*;
 
 pub fn register(r: &mut Registry) {
     use crate::registry::{OperationMetadata as M, hidden as h};
-    r.module("Offline AI");
+    r.module("OpenFrame AI");
     r.query("ai.status", status).meta(
-        M::app_query("Offline AI status: available, downloaded models check, engine state.")
+        M::app_query("OpenFrame AI status: available, downloaded models check, engine state.")
             .hidden(h::AI_RUNTIME),
     );
     r.command("ai.stop_runtime", stop_runtime)
         .meta(M::app_command("Stop the local AI engine.").hidden(h::AI_RUNTIME));
     r.command("ai.graphics.set", set_graphics).meta(
-        M::app_command("Settings, Offline AI, Graphics card: Automatic or Off.")
+        M::app_command("Settings, OpenFrame AI, Graphics card: Automatic or Off.")
             .hidden(h::AI_RUNTIME),
     );
     r.query("ai.download.status", download_status).meta(
@@ -96,7 +98,7 @@ pub fn register(r: &mut Registry) {
             .hidden(h::AI_RUNTIME),
     );
     r.query("ai.health", trace::health).meta(
-        M::app_query("The AI health card: medians, apply rate, passes and the weakest tool, from the local numbers-only trace.")
+        M::app_query("The OpenFrame AI health card: medians, apply rate, passes and the weakest tool, from the local numbers-only trace.")
             .hidden(h::AI_RUNTIME),
     );
     r.command("ai.export_report", trace::export_report).meta(
@@ -113,28 +115,35 @@ pub fn register(r: &mut Registry) {
         );
     r.query("ai.diagnostics", diagnostics).meta(
         M::app_query(
-            "Offline AI technical details for Settings (versions, licences, hashes, paths).",
+            "OpenFrame AI technical details for Settings (versions, licences, hashes, paths).",
         )
         .hidden(h::AI_RUNTIME),
     );
     r.command("ai.ask", ask).meta(
         M::command(
             Capability::UseAi,
-            "Ask the assistant (one request, one AI Result).",
+            "Ask OpenFrame AI (one request, one AI Result).",
         )
         .hidden(h::AI_SELF),
+    );
+    r.query("ai.sections", sections::sections_op).meta(
+        M::query(
+            Capability::UseAi,
+            "The sections OpenFrame AI can read, and the drafts, scenes, days and call sheets their pickers list.",
+        )
+        .hidden(h::UI_FLOW),
     );
     r.command("ai.cancel", cancel_request).meta(
         M::command(
             Capability::UseAi,
-            "Stop the assistant request that is running in a conversation (nothing is changed).",
+            "Stop OpenFrame AI request that is running in a conversation (nothing is changed).",
         )
         .hidden(h::AI_SELF),
     );
     r.query("ai.history", history).meta(
         M::query(
             Capability::UseAi,
-            "The user's own assistant conversation history.",
+            "The user's own OpenFrame AI conversation history.",
         )
         .hidden(h::AI_SELF),
     );
@@ -219,14 +228,14 @@ fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange> {
 }
 
 fn cancel_request(_core: &AppCore, actor: &Actor, args: AiCancelArgs) -> AppResult<AiCancelDto> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     Ok(AiCancelDto {
         stopping: cancel::stop(&actor.user_id, &args.conversation_id),
     })
 }
 
 fn history(core: &AppCore, actor: &Actor, args: AiHistoryArgs) -> AppResult<AiHistoryDto> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     let s = core.project()?;
     let limit = args.limit.unwrap_or(50).clamp(1, 200) as usize;
     s.store.read(|c| {

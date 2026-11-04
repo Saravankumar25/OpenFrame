@@ -337,7 +337,7 @@ extension UI {
         NSApp.windows.filter { $0.isVisible && $0.identifier?.rawValue.hasPrefix(id) == true }.forEach { $0.performClose(nil) }
     }
 
-    static let settingsPages = ["General", "Appearance", "Keyboard Shortcuts", "Offline AI", "Diagnostics"]
+    static let settingsPages = ["General", "Appearance", "Keyboard Shortcuts", "OpenFrame AI", "Diagnostics"]
 
     func fitSettings(_ report: inout FitReport) async throws {
         // The Settings button on Home, as a person opens it (the menu item worked while the button
@@ -482,10 +482,10 @@ extension UI {
         }
         if assistant == true {
             if let panel = query(id: "ai-panel").first(where: { $0.frame.width > 1 }) {
-                if !w.frame.holds(panel.frame) { report.add(place, "the AI Assistant panel \(panel.frame.short) is outside the window \(w.frame.short)") }
-                if panel.frame.width < 240 { report.add(place, "the AI Assistant panel is only \(Int(panel.frame.width)) points wide") }
+                if !w.frame.holds(panel.frame) { report.add(place, "OpenFrame AI panel \(panel.frame.short) is outside the window \(w.frame.short)") }
+                if panel.frame.width < 240 { report.add(place, "OpenFrame AI panel is only \(Int(panel.frame.width)) points wide") }
             } else {
-                report.add(place, "the AI Assistant panel is missing")
+                report.add(place, "OpenFrame AI panel is missing")
             }
         }
     }

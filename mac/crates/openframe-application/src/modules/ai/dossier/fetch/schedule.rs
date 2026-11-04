@@ -8,8 +8,9 @@ use std::sync::LazyLock;
 use openframe_domain::AppResult;
 use regex::Regex;
 
-use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
-use crate::modules::ai::dossier::words::{clip, clock, numbers};
+use crate::modules::ai::dossier::asked;
+use crate::modules::ai::dossier::ctx::{FetchCtx, SceneRef, safe};
+use crate::modules::ai::dossier::words::{Msg, clip, clock, numbers};
 use crate::modules::ai::dossier::{Fact, P_HIGH, P_MID};
 use crate::modules::ai::index::Resolved;
 use crate::modules::ai::queries;
@@ -29,12 +30,121 @@ const NOT_A_PLACE: &[&str] = &[
     "wrap", "pickup", "pick", "rest", "our", "your",
 ];
 
+/// Words that do not narrow a question about where and when a character appears.
+const WHERE_WORDS: &[&str] = &[
+    "day",
+    "days",
+    "date",
+    "dates",
+    "scene",
+    "scenes",
+    "shoot",
+    "shooting",
+    "shot",
+    "schedule",
+    "scheduled",
+    "when",
+    "work",
+    "working",
+    "works",
+    "appear",
+    "appears",
+    "last",
+    "first",
+    "final",
+    "plays",
+    "play",
+    "free",
+];
+
+/// "What is on Day 4", "what was planned", "which scenes are on it": the question asks what a named
+/// day holds, not one of its times.
+static ASKS_THE_DAY: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"\b(?:what(?:s| is| are| was| were)? (?:on|planned|scheduled|happening|shooting)|scheduled|planned|(?:which|what) scenes?|scenes? (?:are|is|on))\b")
+        .expect("valid pattern")
+});
+
+/// Status words of a call sheet a question can filter by.
+const SHEET_STATUS: &[(&str, &[&str])] = &[
+    ("final", &["final", "finals", "finalised", "finalized"]),
+    ("draft", &["draft", "drafts"]),
+    ("stale", &["stale", "out of date", "outdated"]),
+];
+
 pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
     safe("schedule", || fetch(ctx, read, r))
 }
 
-/// The shooting days a message names: the resolved ones and "day 4".
+/// The scenes of the days a message names, in running order.
+pub fn scenes_of_days(ctx: &FetchCtx<'_>, want: &[u32]) -> AppResult<Vec<SceneRef>> {
+    if want.is_empty() {
+        return Ok(Vec::new());
+    }
+    let strips = strips(ctx)?;
+    let mut out = Vec::new();
+    for d in ctx.days().iter() {
+        if d.number.is_none_or(|n| !want.contains(&(n as u32))) {
+            continue;
+        }
+        for id in strips.get(&d.id).into_iter().flatten() {
+            out.extend(ctx.scene_by_id(id));
+        }
+    }
+    Ok(out)
+}
+
+/// The Call Sheets section (ADR-0041): all of them, the ones of a chosen day, or the chosen sheet.
+pub fn call_sheets_section(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    safe("call sheets", || {
+        let sheet = ctx
+            .picked
+            .and_then(|p| p.call_sheet.as_ref())
+            .map(|s| s.id.as_str());
+        let day = ctx.picked.and_then(|p| p.day.as_ref());
+        let mut want = named_days(ctx, r);
+        // A question about a call or a time with no day takes the day the conversation was on.
+        let times = Msg::new(&ctx.message).without(&["call sheet", "call sheets"]);
+        if want.is_empty()
+            && day.is_none()
+            && times.any(&["call", "calls", "earliest", "latest", "time", "times"])
+            && let Some(previous) = &ctx.previous
+        {
+            want = DAY_N
+                .captures_iter(previous)
+                .filter_map(|c| c[1].parse().ok())
+                .collect();
+        }
+        let narrowed = sheet.is_some() || day.is_some() || !want.is_empty();
+        let mut facts = call_sheets(ctx, read, &want, narrowed)?;
+        if let Some(id) = sheet {
+            facts.retain(|f| f.record_id == id);
+        }
+        if let Some(day) = day.filter(|d| d.number.is_none()) {
+            let on_that_day = sheets_of_day(ctx, &day.id)?;
+            facts.retain(|f| on_that_day.contains(&f.record_id));
+        }
+        Ok(facts)
+    })
+}
+
+/// The current call sheets of one day.
+fn sheets_of_day(ctx: &FetchCtx<'_>, day_id: &str) -> AppResult<Vec<String>> {
+    let mut st = ctx.conn.prepare(
+        "SELECT id FROM call_sheet
+         WHERE shoot_day_id = ?1 AND deleted_at IS NULL AND superseded_by IS NULL",
+    )?;
+    Ok(st
+        .query_map([day_id], |r| r.get(0))?
+        .collect::<Result<_, _>>()?)
+}
+
+/// The shooting days a message names: the resolved ones and "day 4". A day the person picked replaces
+/// them: "Day 4" in the message does not widen a pick of Day 3. An off day has no number, so a pick of
+/// one names no day here and [`call_sheets_section`] holds it by its id.
 pub fn named_days(ctx: &FetchCtx<'_>, r: &Resolved) -> Vec<u32> {
+    if let Some(day) = ctx.picked.and_then(|p| p.day.as_ref()) {
+        return day.number.into_iter().collect();
+    }
     let mut out: Vec<u32> = r
         .days
         .iter()
@@ -154,6 +264,11 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         }
     }
 
+    // ---- scenes with no day
+    if m.any(&["unscheduled", "not scheduled", "unassigned", "no day"]) {
+        out.extend(unscheduled(ctx, t)?);
+    }
+
     // ---- the days to show
     let mut target: BTreeSet<u32> = named_days(ctx, r).into_iter().collect();
     let by_scene = |scene_id: &str| -> Option<&DayRow> {
@@ -244,17 +359,43 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                         .join("; "),
                 )
                 .prio(P_HIGH);
-            for d in per_day.keys() {
+            // "Varghese's last scene" is his last day alone. A question that says more than who and
+            // when ("the scene where Jose confesses") leaves the days as reading.
+            let narrowed =
+                asked::asks_more_than(&ctx.message, std::slice::from_ref(&name), WHERE_WORDS);
+            let wanted: Vec<u32> = if m.any(&["last scene", "final scene", "last day"]) {
+                per_day.keys().next_back().copied().into_iter().collect()
+            } else if m.any(&["first scene", "first day"]) {
+                per_day.keys().next().copied().into_iter().collect()
+            } else if narrowed {
+                Vec::new()
+            } else {
+                per_day.keys().copied().collect()
+            };
+            for d in wanted {
                 f = f.require(format!("Day {d}"));
             }
             out.push(f);
         }
     }
-    // A scene named by its place: "the sea day".
+    // A day named by a word: "the boat day". The day's own notes say it best; else the scene headings.
     if target.is_empty() && scenes.is_empty() {
         for c in WORD_DAY.captures_iter(&ctx.message) {
             let w = c[1].to_lowercase();
             if NOT_A_PLACE.contains(&w.as_str()) {
+                continue;
+            }
+            let by_notes: Vec<u32> = days
+                .iter()
+                .filter(|d| {
+                    d.notes
+                        .as_deref()
+                        .is_some_and(|n| n.to_lowercase().contains(&w))
+                })
+                .filter_map(|d| d.number.map(|n| n as u32))
+                .collect();
+            if !by_notes.is_empty() {
+                target.extend(by_notes);
                 continue;
             }
             if let Some(sp) = ctx.screenplay(r)
@@ -322,10 +463,31 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 .f("lunch", &sh.times.lunch)
                 .f("estimated wrap", &sh.times.estimated_wrap);
         }
-        if m.any(&["call", "call time", "crew call", "calls"])
+        // "Call sheet" names a document; it does not ask for a call time.
+        let times = m.without(&["call sheet", "call sheets", "callsheet", "callsheets"]);
+        if times.any(&["call", "call time", "crew call", "calls"])
             && let Some(c) = crew_call
         {
             f = f.require(c);
+        }
+        let typed = Msg::new(&ctx.message);
+        let about_the_day = ASKS_THE_DAY.is_match(&typed.norm);
+        let counted = t == AnswerType::Count || typed.has("how many");
+        f = f.f("scene count", shown.len().to_string());
+        let named_by_word = named_days(ctx, r).is_empty() && scenes.is_empty();
+        if named_by_word {
+            f = f.require(format!("Day {n}"));
+        }
+        // "How many scenes" states the number; the list of them is only reading.
+        if counted && typed.stem("scene") {
+            f = f.require(shown.len().to_string());
+        } else if about_the_day || m.stem("scene") {
+            for (n, _) in &shown {
+                f = f.require(n.to_string());
+            }
+        }
+        if m.stem("note") {
+            f = f.require(clip(d.notes.as_deref().unwrap_or(""), 160));
         }
         out.push(f);
     }
@@ -374,6 +536,27 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         )?);
     }
     Ok(out)
+}
+
+/// How many scenes of the board have no shooting day.
+fn unscheduled(ctx: &FetchCtx<'_>, t: AnswerType) -> AppResult<Vec<Fact>> {
+    let Some(sched) = board::current_schedule(ctx.conn)? else {
+        return Ok(Vec::new());
+    };
+    let n: i64 = ctx.conn.query_row(
+        "SELECT count(*) FROM schedule_strip WHERE schedule_id = ?1
+         AND deleted_at IS NULL AND archived = 0 AND day_id IS NULL",
+        [&sched.id],
+        |r| r.get(0),
+    )?;
+    let mut f = Fact::new("Count", "")
+        .f("what", "unscheduled scenes")
+        .f("value", n.to_string())
+        .prio(P_HIGH);
+    if t == AnswerType::Count {
+        f = f.require(n.to_string());
+    }
+    Ok(vec![f])
 }
 
 /// The place in a scene heading: `EXT. COAST RADIO STATION - NIGHT` to `COAST RADIO STATION`.
@@ -526,6 +709,21 @@ pub fn call_sheets(
         return Ok(out);
     }
     let mut shown = 0;
+    // A status the question filters by: its sheets are the answer, by their day.
+    let filter: Option<&str> = SHEET_STATUS
+        .iter()
+        .find(|(_, words)| ctx.m.any(words))
+        .map(|(s, _)| *s);
+    let night = ctx.m.has("night");
+    if t == AnswerType::Count && want.is_empty() && filter.is_none() {
+        out.push(
+            Fact::new("Count", "")
+                .f("what", "call sheets")
+                .f("value", rows.len().to_string())
+                .require(rows.len().to_string())
+                .prio(P_HIGH),
+        );
+    }
     for (id, title, status, rev, refresh, day_id, doc) in &rows {
         let day = label_of(day_id);
         if !want.is_empty() && day.as_ref().is_none_or(|(n, _)| !want.contains(n)) {
@@ -533,27 +731,43 @@ pub fn call_sheets(
         }
         shown += 1;
         let status = board::effective_status(status, *refresh);
+        let label = day
+            .as_ref()
+            .map(|(n, _)| format!("Day {n}"))
+            .unwrap_or_default();
+        let document = serde_json::from_str::<CallSheetDocument>(doc).ok();
+        let crew_call = document.as_ref().map_or("", |d| d.crew_call.trim());
         let mut f = Fact::new("Call sheet", id)
             .f("title", title)
-            .f(
-                "day",
-                day.as_ref()
-                    .map(|(n, _)| format!("Day {n}"))
-                    .unwrap_or_default(),
-            )
+            .f("day", &label)
             .f(
                 "date",
                 day.as_ref().map(|(_, d)| d.clone()).unwrap_or_default(),
             )
             .f("status", &status)
             .f("revision", rev.to_string())
+            .f("crew call", crew_call)
             .prio(P_HIGH);
-        if t == AnswerType::List || t == AnswerType::Lookup {
+        let is_filtered = filter.is_some_and(|w| status.to_lowercase().contains(w));
+        if want.is_empty() && is_filtered && matches!(t, AnswerType::List | AnswerType::Lookup) {
+            f = f.require(&label);
+        }
+        // A day the question names: its status, when a word asks for it.
+        if !want.is_empty() && matches!(t, AnswerType::List | AnswerType::Lookup) {
             f = f.require(&status);
         }
+        // A night shoot is written in the day's notes, or shows as a call in the afternoon.
+        if night
+            && want.is_empty()
+            && document.as_ref().is_some_and(|d| {
+                d.day_notes.to_lowercase().contains("night") || late_call(&d.crew_call)
+            })
+        {
+            f = f.require(&label).require(crew_call);
+        }
         out.push(f);
-        if detailed && let Ok(d) = serde_json::from_str::<CallSheetDocument>(doc) {
-            out.extend(sheet_facts(ctx, id, day.as_ref().map(|(n, _)| *n), &d));
+        if detailed && let Some(d) = &document {
+            out.extend(sheet_facts(ctx, id, day.as_ref().map(|(n, _)| *n), d));
         }
     }
     if shown == 0 && !want.is_empty() && asked {
@@ -571,22 +785,49 @@ pub fn call_sheets(
     Ok(out)
 }
 
+/// A crew call in the afternoon or later: the shoot runs into the night.
+fn late_call(call: &str) -> bool {
+    call.split(':')
+        .next()
+        .and_then(|h| h.trim().parse::<u32>().ok())
+        .is_some_and(|h| h >= 14)
+}
+
 /// The words of a call sheet document that answer questions: times, who is called when, where, and
 /// the practical notes. Contact fields are named `contact` so the guard can take them out.
 fn sheet_facts(ctx: &FetchCtx<'_>, id: &str, day: Option<u32>, d: &CallSheetDocument) -> Vec<Fact> {
     let label = day.map(|n| format!("Day {n}")).unwrap_or_default();
     let base = |kind: &'static str| Fact::new(kind, id).f("day", &label).prio(P_MID);
-    let mut out = vec![
-        base("Call sheet times")
-            .f("crew call", &d.crew_call)
-            .f("general call", &d.times.general_call)
-            .f("shooting call", &d.times.shooting_call)
-            .f("breakfast", &d.times.breakfast)
-            .f("lunch", &d.times.lunch)
-            .f("estimated wrap", &d.times.estimated_wrap)
-            .f("day notes", clip(&d.day_notes, 240))
-            .prio(P_HIGH),
-    ];
+    // The time a question names is demanded, and "the call" means the crew call.
+    let m = ctx
+        .m
+        .without(&["call sheet", "call sheets", "callsheet", "callsheets"]);
+    let plain_call = m.any(&["call", "calls", "call time"])
+        && !m.any(&["general call", "shooting call", "makeup", "make up"]);
+    let mut times = base("Call sheet times")
+        .f("crew call", &d.crew_call)
+        .f("general call", &d.times.general_call)
+        .f("shooting call", &d.times.shooting_call)
+        .f("breakfast", &d.times.breakfast)
+        .f("lunch", &d.times.lunch)
+        .f("estimated wrap", &d.times.estimated_wrap)
+        .f("day notes", clip(&d.day_notes, 240))
+        .prio(P_HIGH);
+    for (name, value) in [
+        ("general call", &d.times.general_call),
+        ("shooting call", &d.times.shooting_call),
+        ("breakfast", &d.times.breakfast),
+        ("lunch", &d.times.lunch),
+        ("wrap", &d.times.estimated_wrap),
+    ] {
+        if m.has(name) {
+            times = times.require(value);
+        }
+    }
+    if plain_call {
+        times = times.require(&d.crew_call);
+    }
+    let mut out = vec![times];
     let cast: Vec<String> = d
         .cast
         .iter()
@@ -615,11 +856,31 @@ fn sheet_facts(ctx: &FetchCtx<'_>, id: &str, day: Option<u32>, d: &CallSheetDocu
             })
             .collect();
         if !crew.is_empty() {
-            out.push(
-                base("Crew calls")
-                    .f("calls", clip(&crew.join("; "), 800))
-                    .prio(P_HIGH),
-            );
+            // A job the question names ("the makeup call"): that person's call is demanded.
+            let mut calls = base("Crew calls")
+                .f("calls", clip(&crew.join("; "), 800))
+                .prio(P_HIGH);
+            if m.any(&["earliest", "first call"])
+                && let Some(c) = d
+                    .optional
+                    .crew
+                    .iter()
+                    .flatten()
+                    .filter(|c| !c.call_time.trim().is_empty())
+                    .min_by_key(|c| c.call_time.trim().to_string())
+            {
+                calls = calls.require(&c.name).require(&c.call_time);
+            }
+            for c in d.optional.crew.iter().flatten() {
+                let job = c.role.to_lowercase();
+                let named = job
+                    .split(|x: char| !x.is_alphanumeric())
+                    .any(|w| w.len() >= 4 && m.has(w));
+                if named && m.any(&["call", "calls", "time"]) {
+                    calls = calls.require(&c.call_time);
+                }
+            }
+            out.push(calls);
         }
     }
     for l in &d.locations {

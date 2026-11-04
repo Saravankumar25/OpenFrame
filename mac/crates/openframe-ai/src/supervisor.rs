@@ -451,7 +451,7 @@ impl Supervisor {
             {
                 return Err(AppError::ai(
                     "timeout",
-                    "Offline AI is taking too long to get ready. Nothing was changed. Please try again in a moment.",
+                    "OpenFrame AI is taking too long to get ready. Nothing was changed. Please try again in a moment.",
                 )
                 .retryable());
             }
@@ -643,19 +643,19 @@ fn spawn_locked(shared: &Arc<Shared>, inner: &mut Inner) -> AppResult<()> {
         // programs. Where the operating system enforces that (Windows Job Object), the child was
         // stopped before it ran and OpenFrame refuses to run it.
         Err(SpawnError::Unguarded | SpawnError::Resume) => {
-            inner.last_error = Some("Offline AI could not start safely on this computer.".into());
+            inner.last_error = Some("OpenFrame AI could not start safely on this computer.".into());
             set_state(shared, inner, RuntimeState::Failed);
             return Err(unavailable("kill-on-close job unavailable"));
         }
         Err(SpawnError::Spawn(e)) => {
-            inner.last_error = Some("Offline AI could not start on this computer.".into());
+            inner.last_error = Some("OpenFrame AI could not start on this computer.".into());
             set_state(shared, inner, RuntimeState::Failed);
             return Err(unavailable(format!("spawn failed: {e}")));
         }
     };
     if job.is_none() {
         // macOS: the guard is best effort; the explicit stop and the startup sweep still run.
-        tracing::warn!("offline AI runtime could not be placed in a kill-on-close guard");
+        tracing::warn!("OpenFrame AI runtime could not be placed in a kill-on-close guard");
     }
     let registry = shared.registry.lock().clone();
     let recorded = registry.and_then(|r| r.record(&child, &spec.program));
@@ -699,9 +699,9 @@ fn forget(shared: &Shared, p: &Proc) {
 /// that claims to be starting or serving without a process).
 fn relaunch(shared: &Arc<Shared>, inner: &mut Inner) {
     if spawn_locked(shared, inner).is_err() {
-        tracing::error!("offline AI runtime could not be restarted");
+        tracing::error!("OpenFrame AI runtime could not be restarted");
         if inner.state != RuntimeState::Failed {
-            inner.last_error = Some("Offline AI could not start on this computer.".into());
+            inner.last_error = Some("OpenFrame AI could not start on this computer.".into());
             set_state(shared, inner, RuntimeState::Failed);
         }
     }
@@ -783,7 +783,7 @@ fn monitor(weak: Weak<Shared>, generation: u64) {
                     inner.endpoint = None;
                     inner.bind_retries += 1;
                     tracing::warn!(
-                        "offline AI runtime could not use its loopback port; starting again on a new port"
+                        "OpenFrame AI runtime could not use its loopback port; starting again on a new port"
                     );
                     relaunch(&shared, &mut inner);
                     return;
@@ -805,16 +805,16 @@ fn monitor(weak: Weak<Shared>, generation: u64) {
                 inner.crashes.pop_front();
             }
             if was_serving && inner.crashes.len() <= shared.cfg.max_restarts {
-                tracing::warn!("offline AI runtime exited unexpectedly; restarting");
+                tracing::warn!("OpenFrame AI runtime exited unexpectedly; restarting");
                 relaunch(&shared, &mut inner);
             } else {
                 tracing::error!(
-                    "offline AI runtime exited and will not be restarted automatically"
+                    "OpenFrame AI runtime exited and will not be restarted automatically"
                 );
                 inner.last_error = Some(if was_serving {
-                    "Offline AI stopped unexpectedly. Your project was not changed.".into()
+                    "OpenFrame AI stopped unexpectedly. Your project was not changed.".into()
                 } else {
-                    "Offline AI could not start on this computer.".into()
+                    "OpenFrame AI could not start on this computer.".into()
                 });
                 set_state(&shared, &mut inner, RuntimeState::Failed);
             }
@@ -835,7 +835,7 @@ fn monitor(weak: Weak<Shared>, generation: u64) {
                     }
                     inner.endpoint = None;
                     inner.last_error =
-                        Some("Offline AI took too long to start on this computer.".into());
+                        Some("OpenFrame AI took too long to start on this computer.".into());
                     set_state(&shared, &mut inner, RuntimeState::Failed);
                     return;
                 }
@@ -882,7 +882,7 @@ fn monitor(weak: Weak<Shared>, generation: u64) {
                     && inner.busy == 0
                     && inner.last_used.elapsed() > idle
                 {
-                    tracing::info!("unloading offline AI model after inactivity");
+                    tracing::info!("unloading OpenFrame AI model after inactivity");
                     stop_locked(&shared, &mut inner);
                     return;
                 }

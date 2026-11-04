@@ -45,7 +45,7 @@ public final class AppModel {
     public private(set) var core: Core?
     /// The Mac App Store build's licence and trial screens. Inert in the internal build.
     public let licence = LicenceModel()
-    /// The StoreKit bridge and the licensing server client handed to the core, set by the app.
+    /// The StoreKit bridge handed to the core, set by the app.
     public var storeRuntime: StoreRuntime?
     private var eventTask: Task<Void, Never>?
     private let options: CoreStartOptions
@@ -92,6 +92,10 @@ public final class AppModel {
             return
         }
         info = try await core.appInfo()
+        // Text the editors still hold is stored before a lock takes hold (the same path as closing a
+        // project), so a trial that ends while the app is open never loses work.
+        licence.flushBeforeLock = { await ScreenplayWorkspaceModel.flushAll() }
+        licence.onLockLifted = { [changes] in changes.bumpAll() }
         await licence.attach(core: core, runtime: storeRuntime)
         if let current = try await core.projectCurrent() {
             phase = .project(current)
@@ -227,7 +231,10 @@ public final class AppModel {
     // MARK: Errors
 
     public func show(_ title: String, _ error: Error) {
-        alert = .error(title: title, failure: CoreFailure(asCore: error))
+        let failure = CoreFailure(asCore: error)
+        // The lock screen already says why: a screen reloading behind it adds no alert.
+        if failure.code == "permission.licence_required" { return }
+        alert = .error(title: title, failure: failure)
     }
 
     // MARK: Events

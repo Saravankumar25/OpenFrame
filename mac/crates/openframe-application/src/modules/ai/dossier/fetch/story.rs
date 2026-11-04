@@ -5,12 +5,50 @@ use std::collections::HashMap;
 
 use openframe_domain::AppResult;
 
+use crate::modules::ai::dossier::asked;
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
 use crate::modules::ai::dossier::words::{clip, relation_sentence, relation_word, title_case};
-use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
+use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID, P_PICKED};
 use crate::modules::ai::index::{Hit, Kind, Resolved, normalize};
 use crate::modules::ai::queries;
 use crate::modules::ai::turn::{AnswerType, Group, TurnRead};
+
+/// Words that only name the story's board.
+const CARD_WORDS: &[&str] = &[
+    "card", "cards", "beat", "beats", "board", "story", "act", "acts", "outline", "first", "last",
+    "final", "show", "shows", "about", "scene",
+];
+/// Words that do not narrow a question about the whole story.
+const ACT_WORDS: &[&str] = &[
+    "act",
+    "acts",
+    "story",
+    "film",
+    "movie",
+    "plot",
+    "script",
+    "screenplay",
+    "beat",
+    "board",
+    "outline",
+    "explain",
+    "happen",
+    "happens",
+    "summary",
+    "summarise",
+    "summarize",
+    "recap",
+    "brief",
+    "briefly",
+    "tell",
+    "walk",
+    "through",
+    "go",
+    "end",
+    "begin",
+    "start",
+    "structure",
+];
 
 pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
     safe("story", || fetch(ctx, read, r))
@@ -86,7 +124,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     let wants_description = narrative
         || asks_names
         || m.any(&["who is", "what is", "about", "describe", "like", "tell"])
-        || matches!(t, AnswerType::Explain);
+        || t.tells();
     for ch in &named {
         let mut f = Fact::new("Character", &ch.id)
             .f("name", &ch.name)
@@ -104,7 +142,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 f = f.require(n);
             }
         }
-        if narrative || m.any(&["plays", "played", "actor", "actress", "cast"]) {
+        // Who plays a character is a fact of Cast & Crew: only that section says it.
+        let may_name_actors = ctx.picked.is_some_and(|p| p.leaf.takes(Kind::Person));
+        if may_name_actors && (narrative || m.any(&["plays", "played", "actor", "actress", "cast"]))
+        {
             let who: Vec<String> = ctx
                 .index
                 .played_by(&ch.id)
@@ -119,19 +160,14 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     // ---- relationships
     let general_relations = r.characters.is_empty()
         && m.stem("relationship")
-        && matches!(
-            t,
-            AnswerType::Relation | AnswerType::Explain | AnswerType::List
-        );
+        && (t.tells() || matches!(t, AnswerType::Relation | AnswerType::List));
     let asks_relations = !named.is_empty()
-        && (matches!(
-            t,
-            AnswerType::Relation
-                | AnswerType::Explain
-                | AnswerType::Lookup
-                | AnswerType::List
-                | AnswerType::Compare
-        ) || narrative
+        && (t.tells()
+            || matches!(
+                t,
+                AnswerType::Relation | AnswerType::Lookup | AnswerType::List | AnswerType::Compare
+            )
+            || narrative
             || m.stem("relat")
             || m.stem("connect"));
     if asks_relations || general_relations {
@@ -162,11 +198,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                     .require(all.len().to_string())
                     .prio(P_HIGH),
             );
-        } else if matches!(
-            t,
-            AnswerType::List | AnswerType::Explain | AnswerType::Lookup
-        ) || narrative
-        {
+        } else if t.tells() || matches!(t, AnswerType::List | AnswerType::Lookup) || narrative {
             let few = all.len() <= 14;
             for ch in all
                 .iter()
@@ -203,16 +235,6 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         }
     }
 
-    // ---- a name asked about that the project does not have
-    if let Some(who) = unknown_name(&ctx.message, r)
-        && named.is_empty()
-    {
-        out.push(Fact::absent(
-            format!("a character called {who}"),
-            "the screenplays, the Story characters and Cast and Crew",
-        ));
-    }
-
     // ---- acts and cards
     out.extend(acts_and_cards(ctx, read, r, narrative)?);
 
@@ -223,7 +245,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     if narrative
         && named.is_empty()
         && r.scenes.is_empty()
-        && matches!(t, AnswerType::Explain | AnswerType::Brainstorm)
+        && (t.tells() || t == AnswerType::Brainstorm)
     {
         out.extend(project_line(ctx)?);
     }
@@ -410,7 +432,14 @@ fn acts_and_cards(
         out.push(Fact::absent("any acts", "the Story Board"));
         return Ok(out);
     }
-    let want: Vec<&str> = r.acts.iter().map(|h| h.id.as_str()).collect();
+    let mut want: Vec<&str> = r.acts.iter().map(|h| h.id.as_str()).collect();
+    // "Act Three" names "Act Three: The Signal" by the words before the colon.
+    for (id, title, _) in &acts {
+        let head = normalize(title.split(':').next().unwrap_or(title));
+        if head.split(' ').count() >= 2 && m.has(&head) && !want.contains(&id.as_str()) {
+            want.push(id);
+        }
+    }
     let whole = want.is_empty();
     let show_cards = !whole
         || !named_cards.is_empty()
@@ -498,7 +527,11 @@ fn acts_and_cards(
             .f("note", clip(note, 220))
             .f("cards", count.to_string())
             .prio(P_HIGH);
-        if whole && narrative {
+        // The act titles are the shape of the story when the story is what is asked, not when the
+        // question is about a person or one thing in it.
+        let about_all =
+            r.characters.is_empty() && !asked::asks_more_than(&ctx.message, &[], ACT_WORDS);
+        if whole && narrative && about_all {
             f = f.require(title);
         }
         out.push(f);
@@ -512,7 +545,7 @@ fn acts_and_cards(
             let scene = c.4.as_ref().and_then(|s| numbers.get(s));
             out.push(
                 Fact::new("Card", &c.0)
-                    .f("act", n.to_string())
+                    .f("act", title)
                     .f("what", clip(&c.2, 200))
                     .f("detail", clip(&c.5, 200))
                     .f("heading", &c.3)
@@ -533,29 +566,47 @@ fn acts_and_cards(
             );
         }
     }
-    // A card found by a word of the message ("the card about the batteries").
-    if m.stem("card") && whole && named_cards.is_empty() {
-        let words = m.keywords();
-        for c in &cards {
-            let hay = format!("{} {} {}", c.2, c.5, c.6).to_lowercase();
-            if words
-                .iter()
-                .filter(|w| w.as_str() != "card" && w.as_str() != "cards")
-                .any(|w| hay.contains(w.trim_end_matches('s')))
-            {
-                let scene = c.4.as_ref().and_then(|s| numbers.get(s));
-                out.push(
-                    Fact::new("Card", &c.0)
-                        .f("what", clip(&c.2, 200))
-                        .f("heading", &c.3)
-                        .f("scene", scene.map(|s| s.0.to_string()).unwrap_or_default())
-                        .f(
-                            "scene heading",
-                            scene.map(|s| s.1.clone()).unwrap_or_default(),
-                        )
-                        .prio(P_HIGH),
-                );
+    // A card found by the words of the message ("the card about the batteries", "which beat shows
+    // Salim's log"), or by its place on the board. Those are demanded with their act.
+    if whole && named_cards.is_empty() {
+        let words = asked::row_words(&ctx.message, CARD_WORDS);
+        let texts: Vec<String> = cards
+            .iter()
+            .map(|c| format!("{} {} {}", c.2, c.5, c.6))
+            .collect();
+        let mut picked = asked::best_rows(&words, &texts, 3);
+        if m.any(&["last card", "final card", "last beat"]) {
+            picked = cards.len().checked_sub(1).into_iter().collect();
+        } else if m.any(&["first card", "first beat"]) && !cards.is_empty() {
+            picked = vec![0];
+        }
+        for i in picked {
+            let c = &cards[i];
+            let scene = c.4.as_ref().and_then(|s| numbers.get(s));
+            let act =
+                c.1.as_deref()
+                    .and_then(|p| acts.iter().find(|(id, _, _)| id == p))
+                    .map_or("", |(_, t, _)| t.as_str());
+            let what = clip(&c.2, 200);
+            let mut card = Fact::new("Card", &c.0)
+                .f("act", act)
+                .f("what", &what)
+                .f("detail", clip(&c.5, 200))
+                .f("heading", &c.3)
+                .f("scene", scene.map(|s| s.0.to_string()).unwrap_or_default())
+                .f(
+                    "scene heading",
+                    scene.map(|s| s.1.clone()).unwrap_or_default(),
+                )
+                .prio(P_PICKED);
+            // A told answer weaves the card in; a short one states it with its act.
+            if !narrative {
+                card = card.require(act);
+                if what.chars().count() <= 100 {
+                    card = card.require(&what);
+                }
             }
+            out.push(card);
         }
     }
     Ok(out)

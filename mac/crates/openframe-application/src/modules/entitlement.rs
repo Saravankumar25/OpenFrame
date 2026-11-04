@@ -14,25 +14,30 @@
 //! internal build for the owner's team, never sold: its state is InternalBuild and nothing is
 //! ever asked, shown or locked.
 //!
-//! On the Mac, StoreKit and the licensing server decide the trial.
-//! When the macOS shell supplies the StoreKit bridge and the licence server client
-//! ([`AppConfig::mac_inputs`]), the service does not ask them at startup, because both block and
+//! On the Mac the trial is counted offline from Apple-signed StoreKit data and the Mac's clock, with
+//! a clock guard (ADR-0040). When the macOS shell supplies the StoreKit bridge
+//! ([`AppConfig::mac_inputs`]), the service does not ask it at startup, because it blocks and
 //! startup runs on the main thread. The state starts as NeedsOnlineCheck and the shell runs
-//! [`EntitlementService::revalidate`] on a background thread: at launch, after resume or wake,
-//! when StoreKit reports a change, and when the lease ([`EntitlementService::lease`]) runs out.
+//! [`EntitlementService::revalidate`] on a background thread: at launch, when the app comes to the
+//! front, after a wake, when StoreKit reports a change, every 5 minutes while a trial runs and at
+//! the moment it ends ([`EntitlementService::next_check`]).
 //! Without the inputs (a Windows build, or a Mac build without the bridge) the Mac adapter runs
 //! over the "unavailable" bridge and the state is NeedsOnlineCheck: open and export only, nothing
 //! granted. A Mac build without the bridge is a gap in the build (the Swift bridge is not wired
 //! yet), not a state a user of a finished build is meant to see.
 //!
 //! **The store lock (ADR-0022 for the Mac, ADR-0023 for the Microsoft Store).** In either store
-//! build, when the trial ended without a purchase or the purchase was refunded or revoked, the
-//! whole app waits for a purchase or a restore: [`EntitlementService::check_operation`] refuses every operation except
+//! build, when the trial ended without a purchase or the purchase was refunded or revoked (on the
+//! Mac also when the clock is behind a date the app trusted, ADR-0040), the whole app waits for a purchase or a restore: [`EntitlementService::check_operation`] refuses every operation except
 //! the few the lock screen itself needs ([`ALLOWED_WHILE_LOCKED`] and `entitlement.*`). It runs in
 //! [`crate::registry::Registry::dispatch`], the one path every operation takes (the interface, the
 //! assistant's change sets and package imports), so the webview cannot get around it. The
 //! projects stay on disk untouched. The internal installer build never locks, and
-//! NeedsOnlineCheck never locks (ADR-0018 decision 6). Editing alone is not yet gated in the
+//! NeedsOnlineCheck never locks (ADR-0018 decision 6), but on the Mac it and TrialNotStarted refuse
+//! changes to a project ([`EntitlementService::check_edit`]). Work never gets lost to the lock: when the
+//! state turns to a lock while the app is open, [`EntitlementService::check_operation`] lets the
+//! shell's last saves through until it says it has flushed (`entitlement.lock_ready`), with
+//! [`LOCK_FLUSH_GRACE`] as the upper bound. Editing alone is not yet gated in the
 //! other states (NeedsOnlineCheck, TrialNotStarted): the status reports whether editing would be
 //! allowed (`can_edit`), and gating it per operation is the open plan item "Enforce
 //! Permission::Edit in the Rust operation path".
@@ -45,9 +50,8 @@
 //! never names a price, ADR-0023) and `entitlement.start_trial` starts the Mac trial. The notice record is held in memory too, so a
 //! disk that cannot be written never traps the user on a mandatory screen.
 
-use std::path::PathBuf;
 use std::sync::OnceLock;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use openframe_domain::auth::ActorOrigin;
 use openframe_domain::{Actor, AppError, AppResult};
@@ -65,7 +69,7 @@ use crate::core::{AppConfig, AppCore};
 use crate::registry::Registry;
 
 /// Why the assistant never sees these operations (published in the AI tool coverage matrix).
-pub const HIDDEN_REASON: &str = "Licence and free-trial status belong to the person at this computer and the release channel; the assistant never reads, restores or changes them.";
+pub const HIDDEN_REASON: &str = "Licence and free-trial status belong to the person at this computer and the release channel; OpenFrame AI never reads, restores or changes them.";
 
 pub fn register(r: &mut Registry) {
     use crate::registry::{FsEffect as Fs, OperationMetadata as M};
@@ -104,6 +108,13 @@ pub fn register(r: &mut Registry) {
             "Buy the full version through the store's own purchase window: Apple's payment sheet on the Mac, the Microsoft Store purchase dialog on Windows. The internal installer build never sells.",
         )
         .fs(Fs::ProjectStorage)
+        .hidden(HIDDEN_REASON),
+    );
+    // Ends the short window that lets pending saves through when the app locks while open.
+    r.command("entitlement.lock_ready", lock_ready).meta(
+        M::app_command(
+            "The shell finished saving what was pending, so the lock now refuses every project operation.",
+        )
         .hidden(HIDDEN_REASON),
     );
     r.command("entitlement.start_trial", start_trial).meta(
@@ -156,6 +167,14 @@ pub struct EntitlementStatus {
     pub trial_days: u32,
     /// Whether the state permits editing. Nothing is locked on it yet.
     pub can_edit: bool,
+    /// The moment a running trial ends, Unix milliseconds UTC, for the reminder's end line. The
+    /// shell formats it in local time. Serialised as a number in JSON.
+    #[ts(type = "number | null")]
+    pub trial_ends_at_ms: Option<i64>,
+    /// The full version's price as the store formats it for this person (Mac only, read at run
+    /// time, Apple Guideline 3.1.1). `None` until the store's products loaded, and always on
+    /// Windows, which shows no price.
+    pub lifetime_price: Option<String>,
 }
 
 #[derive(Debug, Deserialize, TS)]
@@ -201,6 +220,11 @@ pub struct BuyArgs {}
 #[ts(export)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct StartTrialArgs {}
+
+#[derive(Debug, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LockReadyArgs {}
 
 #[derive(Debug, Deserialize, TS)]
 #[ts(export)]
@@ -259,6 +283,7 @@ const fn state_name(state: EntitlementState) -> &'static str {
         EntitlementState::Unknown => "unknown",
         EntitlementState::NeedsOnlineCheck => "needsOnlineCheck",
         EntitlementState::TrialNotStarted => "trialNotStarted",
+        EntitlementState::ClockChanged => "clockChanged",
         EntitlementState::InternalBuild => "internalBuild",
     }
 }
@@ -266,13 +291,12 @@ const fn state_name(state: EntitlementState) -> &'static str {
 /// The entitlement state owned by [`AppCore`].
 pub struct EntitlementService {
     channel: Channel,
-    app_data_dir: PathBuf,
     /// The channel adapter (none for the internal team builds, which are never sold). Built at
     /// startup, except for the Mac App Store with the shell's inputs: building that one asks
     /// StoreKit for the environment, which blocks, so it is built by the first check, which the
     /// shell runs off the main thread.
     adapter: OnceLock<Option<Box<dyn ChannelAdapter>>>,
-    /// The shell's StoreKit bridge and licence server client, until the adapter is built.
+    /// The shell's StoreKit bridge, until the adapter is built.
     mac_inputs: Mutex<Option<MacInputs>>,
     /// The shell's Microsoft Store calls, until the adapter is built.
     microsoft_store: Mutex<Option<Box<dyn StoreLicenceSource>>>,
@@ -288,7 +312,14 @@ pub struct EntitlementService {
     /// `entitlement.debug_set` only (never set in a release build): the channel and state to
     /// report instead of the real ones.
     forced: Mutex<Option<(Channel, EntitlementState)>>,
+    /// Set when the state turned to a lock while the app was open: until this moment, or until the
+    /// shell says it has flushed, the shell's last saves still go through.
+    flush_until: Mutex<Option<Instant>>,
 }
+
+/// How long the lock waits for the shell's last saves. A shell that says nothing cannot hold the
+/// lock open any longer than this.
+pub const LOCK_FLUSH_GRACE: Duration = Duration::from_secs(30);
 
 /// Plain words when a store build cannot reach its store from this build (no store connection
 /// wired, or a state set by hand for testing).
@@ -320,7 +351,6 @@ impl EntitlementService {
         let notices = notice_store.load().record;
         let service = Self {
             channel: config.channel,
-            app_data_dir: config.app_data_dir.clone(),
             adapter: OnceLock::new(),
             mac_inputs: Mutex::new(mac_inputs),
             microsoft_store: Mutex::new(microsoft_store),
@@ -333,6 +363,7 @@ impl EntitlementService {
             notices: Mutex::new(notices),
             notice_store,
             forced: Mutex::new(None),
+            flush_until: Mutex::new(None),
         };
         if deferred {
             tracing::info!("the App Store check runs in the background after startup");
@@ -348,7 +379,7 @@ impl EntitlementService {
             .get_or_init(|| {
                 let mac = self.mac_inputs.lock().take();
                 let store = self.microsoft_store.lock().take();
-                adapters::for_channel(self.channel, &self.app_data_dir, mac, store)
+                adapters::for_channel(self.channel, mac, store)
             })
             .as_deref()
     }
@@ -380,13 +411,13 @@ impl EntitlementService {
     }
 
     /// Check again because something changed (see [`RevalidateReason`]). Blocks while StoreKit
-    /// and the licence server answer, so the shell calls it from a background thread only.
+    /// answers, so the shell calls it from a background thread only.
     ///
-    /// On the Mac this asks StoreKit's `currentEntitlements` and, during a trial, the licence
-    /// server (`MacAppStoreAdapter::revalidate`), and never `AppStore.sync()`.
+    /// On the Mac this asks StoreKit for the products and `currentEntitlements`
+    /// (`MacAppStoreAdapter::revalidate`), and never `AppStore.sync()`.
     pub fn revalidate(&self, reason: RevalidateReason) -> EntitlementState {
         let state = self.evaluate(Check::Revalidate(reason));
-        tracing::info!(
+        tracing::debug!(
             reason = ?reason,
             state = state_name(state),
             "licence and trial checked again"
@@ -394,28 +425,34 @@ impl EntitlementService {
         state
     }
 
-    /// How long the last answer may be used before the shell checks again. `None` for the
-    /// Windows channels, which check at startup and on "Restore purchase" only.
-    ///
-    /// Fixed intervals by state until `ChannelAdapter` exposes the Mac adapter's
-    /// `time_until_check` (the licence server's own lease): a running trial is confirmed hourly (so its end and a refund are seen within the
-    /// hour), a failed check is retried every 15 minutes, a lifetime purchase daily, and every
-    /// other state every 6 hours. StoreKit changes and resume trigger a check sooner.
-    pub fn lease(&self) -> Option<Duration> {
+    /// How long until the worker should look again, and how. `None` for the Windows channels and in
+    /// a state with no timer. A running trial is looked at every 5 minutes and at the moment it
+    /// ends. The clock lock looks at the clock every 5 seconds and asks StoreKit nothing, so it
+    /// clears as soon as the clock is right. A store that did not answer is asked again every 15
+    /// minutes. A wake, the app coming to the front and StoreKit changes all ask sooner.
+    pub fn next_check(&self) -> Option<(Duration, RevalidateReason)> {
         if self.channel != Channel::MacAppStore {
             return None;
         }
-        const MINUTE: u64 = 60;
-        let secs = match self.state() {
-            EntitlementState::TrialActive { .. } => 60 * MINUTE,
-            EntitlementState::NeedsOnlineCheck | EntitlementState::Unknown => 15 * MINUTE,
-            EntitlementState::Purchased => 24 * 60 * MINUTE,
-            EntitlementState::TrialEnded
-            | EntitlementState::TrialNotStarted
-            | EntitlementState::Revoked
-            | EntitlementState::InternalBuild => 6 * 60 * MINUTE,
-        };
-        Some(Duration::from_secs(secs))
+        const FIVE_MINUTES: Duration = Duration::from_secs(5 * 60);
+        match self.state() {
+            EntitlementState::ClockChanged => {
+                Some((Duration::from_secs(5), RevalidateReason::ClockTick))
+            }
+            EntitlementState::TrialActive { .. } => {
+                // Past the end there is no time left, so the check is due now.
+                let until_end = self
+                    .adapter
+                    .get()
+                    .and_then(|a| a.as_deref().and_then(ChannelAdapter::trial_time_left))
+                    .unwrap_or(Duration::ZERO);
+                Some((until_end.min(FIVE_MINUTES), RevalidateReason::Timer))
+            }
+            EntitlementState::NeedsOnlineCheck | EntitlementState::Unknown => {
+                Some((Duration::from_secs(15 * 60), RevalidateReason::Timer))
+            }
+            _ => None,
+        }
     }
 
     fn evaluate(&self, check: Check) -> EntitlementState {
@@ -432,7 +469,7 @@ impl EntitlementService {
             let Some(adapter) = self.adapter() else {
                 return EntitlementState::Unknown;
             };
-            // The store decides the whole state; OpenFrame keeps no trial timer of its own.
+            // The channel's adapter decides the whole state.
             let channel_state = match check {
                 Check::Launch => adapter.channel_state(),
                 Check::Restore => adapter.restore_channel_state(),
@@ -444,14 +481,42 @@ impl EntitlementService {
             tracing::warn!("the licence check failed unexpectedly; the licence state is unknown");
             EntitlementState::Unknown
         });
-        *self.state.lock() = computed;
+        self.store_state(computed);
         computed
+    }
+
+    /// Keep a new state. Turning to a lock while the app is open opens the flush window, so nothing
+    /// typed is lost to the lock.
+    fn store_state(&self, next: EntitlementState) {
+        let was_locked = self.state.lock().locks_the_app(self.channel);
+        let locks_now = next.locks_the_app(self.channel);
+        // The Mac shell says when it has flushed. The Windows shell does not yet, so it gets no
+        // window (the Windows tree adds both together).
+        if locks_now && !was_locked && self.channel == Channel::MacAppStore {
+            *self.flush_until.lock() = Some(Instant::now() + LOCK_FLUSH_GRACE);
+        } else if !locks_now {
+            *self.flush_until.lock() = None;
+        }
+        *self.state.lock() = next;
     }
 
     /// The Settings view of the current state. Never waits for a check that is running.
     pub fn status(&self) -> EntitlementStatus {
         let state = self.state();
+        let adapter = self.adapter.get().and_then(|a| a.as_deref());
+        let forced = self.forced.lock().is_some();
         EntitlementStatus {
+            trial_ends_at_ms: match state {
+                EntitlementState::TrialActive { .. } if !forced => {
+                    adapter.and_then(ChannelAdapter::trial_ends_at_ms)
+                }
+                _ => None,
+            },
+            lifetime_price: if forced {
+                None
+            } else {
+                adapter.and_then(ChannelAdapter::lifetime_price)
+            },
             channel: self.channel(),
             state,
             summary: state.summary(self.channel()),
@@ -474,6 +539,18 @@ impl EntitlementService {
 /// None of them reads or writes a project.
 pub const ALLOWED_WHILE_LOCKED: &[&str] = &["app.info", "appearance.get"];
 
+/// Plain words for a change refused while the Mac App Store build waits for a purchase check or for
+/// the trial to start (package file 02, section 2). Opening and exporting keep working.
+pub const EDIT_LOCKED_MESSAGE: &str = "OpenFrame Studio needs to check your purchase before you can change anything. Your projects can still be opened and exported.";
+
+/// Commands that keep working while editing waits for a check: opening and closing a project and
+/// settling a recovery, because Open must work.
+pub const COMMANDS_ALLOWED_WITHOUT_EDIT: &[&str] =
+    &["project.open", "project.close", "project.resolve_recovery"];
+
+/// App-level commands that bring a new project into being, which wait with the other changes.
+pub const NEW_PROJECT_COMMANDS: &[&str] = &["project.create", "project.duplicate"];
+
 /// Plain words for an operation refused by the Mac lock.
 pub const LOCKED_MESSAGE: &str = "Buy OpenFrame Studio or restore your purchase to open your projects again. Nothing is deleted.";
 
@@ -490,15 +567,48 @@ impl EntitlementService {
         if !self.locks_the_app()
             || op.starts_with("entitlement.")
             || ALLOWED_WHILE_LOCKED.contains(&op)
+            || self.flushing()
         {
             return Ok(());
         }
         Err(AppError::new("permission.licence_required", LOCKED_MESSAGE)
             .with_detail(format!("{op} refused: {}", state_name(self.state()))))
     }
+
+    /// The Mac App Store build while it waits for a purchase check or for the trial to start: an
+    /// operation that changes a project is refused, opening and exporting are not. Called with what
+    /// the registry knows about the operation, because only the registry can tell.
+    pub fn check_edit(&self, op: &str, changes_project: bool) -> AppResult<()> {
+        // A lock is `check_operation`'s to judge: its flush window lets the last saves through.
+        if self.locks_the_app()
+            || self.channel() != Channel::MacAppStore
+            || !(changes_project || NEW_PROJECT_COMMANDS.contains(&op))
+            || self.state().permits(self.channel(), Permission::Edit)
+            || op.starts_with("entitlement.")
+            || COMMANDS_ALLOWED_WITHOUT_EDIT.contains(&op)
+        {
+            return Ok(());
+        }
+        Err(
+            AppError::new("permission.licence_required", EDIT_LOCKED_MESSAGE)
+                .with_detail(format!("{op} refused: {}", state_name(self.state()))),
+        )
+    }
 }
 
 impl EntitlementService {
+    /// The lock has just arrived and the shell may still be saving.
+    fn flushing(&self) -> bool {
+        self.flush_until
+            .lock()
+            .is_some_and(|until| Instant::now() < until)
+    }
+
+    /// The shell saved what was pending. From here the lock refuses every project operation.
+    pub fn lock_ready(&self) {
+        *self.flush_until.lock() = None;
+    }
+
     /// The screen due now for the user's local calendar day (see [`notices::due`]).
     pub fn notice(&self, today: Option<&CalendarDay>) -> Notice {
         let record = self.notices.lock().clone();
@@ -604,7 +714,7 @@ impl EntitlementService {
         });
         match answer {
             Some(Ok(state)) => {
-                *self.state.lock() = state;
+                self.store_state(state);
                 tracing::info!(
                     state = state_name(state),
                     "purchase or trial start finished"
@@ -622,6 +732,7 @@ impl EntitlementService {
     /// `entitlement.debug_set` only: report `channel` and `state` until the app closes.
     fn force(&self, channel: Channel, state: EntitlementState, reset_notices: bool) {
         *self.forced.lock() = Some((channel, state));
+        *self.flush_until.lock() = None;
         if reset_notices {
             let mut record = self.notices.lock();
             *record = NoticeRecord::default();
@@ -639,7 +750,7 @@ enum Check {
     Launch,
     /// "Restore purchase".
     Restore,
-    /// A check the shell asked for (resume, StoreKit change, lease). It never asks the store to
+    /// A check the shell or the worker asked for (resume, StoreKit change, timer). It never asks the store to
     /// sync: `AppStore.sync()` can show Apple's sign-in window, so only "Restore purchase" runs it.
     Revalidate(RevalidateReason),
 }
@@ -733,6 +844,12 @@ fn start_trial(core: &AppCore, actor: &Actor, _args: StartTrialArgs) -> AppResul
         status: core.entitlement.status(),
         message,
     })
+}
+
+fn lock_ready(core: &AppCore, actor: &Actor, _args: LockReadyArgs) -> AppResult<EntitlementStatus> {
+    require_local(actor, "Only the person using this computer can do this.")?;
+    core.entitlement.lock_ready();
+    Ok(core.entitlement.status())
 }
 
 fn debug_set(core: &AppCore, actor: &Actor, args: DebugSetArgs) -> AppResult<EntitlementStatus> {

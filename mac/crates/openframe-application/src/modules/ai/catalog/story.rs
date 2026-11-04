@@ -1113,7 +1113,7 @@ fn update_card(ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResul
     {
         return Err(AppError::ai(
             "too_long",
-            "This card's long description is too long for the assistant to rewrite safely. Edit it in the card instead.",
+            "This card's long description is too long for OpenFrame AI to rewrite safely. Edit it in the card instead.",
         ));
     }
     let mut d = Draft::new(spec, args, "Proposed Scene Card edit");

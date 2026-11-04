@@ -28,6 +28,7 @@
 //! data; only the user's own words are an instruction. A tool can only be one the loop offered.
 
 use std::collections::BTreeSet;
+use std::sync::Arc;
 
 use openframe_ai::InferenceProvider;
 use openframe_ai::client::{ChatMessage, ChatRequest, SLOT_ANSWER, malformed};
@@ -40,12 +41,13 @@ use super::orchestrator::{
     TOOL_CATALOG_CHARS, escape_untrusted, failure, from_tool_error, mark_stopped, path,
     push_unique_provenance, stopped_output,
 };
-use super::scope::{ContextItem, ResolvedScope};
+use super::retrieval::ContextItem;
+use super::scope::ResolvedScope;
 use super::toolbox::{self, ToolDef, ToolStep};
 use super::tools::{Generation, ToolOutput};
 use super::types::*;
 use super::{change_set, queries, text};
-use crate::core::AppCore;
+use crate::core::{AppCore, ProjectSession};
 use crate::events::AppEvent;
 
 /// Errors that mean the model could not run at all (the answer is "AI is unavailable").
@@ -68,7 +70,7 @@ const OBSERVATION_ITEMS: usize = 15;
 const OBSERVATION_SHORT_CHARS: usize = 200;
 const MAX_RESULT_ITEMS: usize = 50;
 
-const POLICY: &str = "You are the assistant inside OpenFrame Studio, a filmmaking application. You run locally on the user's computer.
+const POLICY: &str = "You are OpenFrame AI inside OpenFrame Studio, a filmmaking application. You run locally on the user's computer.
 The person asked for a change. You work in steps. At each step reply with ONE JSON object choosing the next tool: {\"action\": <tool name>, \"arguments\": {...}, \"done\": <true|false>}.
 Set \"done\" to true when that tool's result will fully answer the request; set it to false when you need to see the result before the next step.
 When the results you received are enough, or the request cannot be done with the tools, use \"final_answer\" with one short plain sentence in the user's language.
@@ -83,7 +85,7 @@ const NEXT_STEP: &str = "Choose the next step: another tool, or \"final_answer\"
 const REPEATED_NOTE: &str =
     "I stopped because the same step was requested twice. This is what I found so far.";
 const MODEL_STOPPED_NOTE: &str =
-    "Offline AI stopped before finishing. This is what I found so far.";
+    "OpenFrame AI stopped before finishing. This is what I found so far.";
 
 /// The arguments of a tool as one readable list: `query: string, limit?: integer, kind: "a"|"b"`.
 /// Required arguments come first, then the optional ones by name (`?` marks them). The step grammar
@@ -542,10 +544,7 @@ impl Run {
     }
 
     fn scope_provenance(scope: &ResolvedScope) -> Provenance {
-        Provenance::new(
-            "Scope",
-            scope.label.trim_start_matches("Using: ").to_string(),
-        )
+        Provenance::new("Scope", scope.basis().to_string())
     }
 
     /// The proposals of this request as ONE composite Change Set.
@@ -694,6 +693,8 @@ impl Run {
 /// What the action path needs from the request.
 pub(super) struct Cx<'a> {
     pub core: &'a AppCore,
+    /// The project the request was asked in.
+    pub session: &'a Arc<ProjectSession>,
     pub actor: &'a Actor,
     pub scope: &'a ResolvedScope,
     pub model: &'a dyn InferenceProvider,
@@ -913,6 +914,19 @@ fn run_steps(cx: &Cx<'_>, mut direct: Option<StepCall>, menu: &Menu) -> Outcome 
             }
             transcript.push(&call, step, observe_error(&e));
             continue;
+        }
+        // A tool reads the project open now. If the person closed the one this request belongs to or
+        // opened another meanwhile, it must not read or propose from that one.
+        if !cx
+            .core
+            .project_opt()
+            .is_some_and(|open| Arc::ptr_eq(&open, cx.session))
+        {
+            let e = AppError::ai(
+                "unavailable",
+                "The project was closed while this was running. Nothing was changed.",
+            );
+            return run.finish_error(cx.scope, &e);
         }
         // The toolbox takes the read lock itself, so retrieval can run outside it.
         let executed = toolbox::run_tool_unlocked(

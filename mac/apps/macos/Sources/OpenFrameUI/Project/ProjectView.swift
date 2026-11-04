@@ -296,9 +296,9 @@ struct ProjectView: View {
             .focusable()
             .onKeyPress(.leftArrow) { assistantPreferred = Double(Self.assistantWidth(for: detail, preferred: current + 24)); return .handled }
             .onKeyPress(.rightArrow) { assistantPreferred = Double(Self.assistantWidth(for: detail, preferred: current - 24)); return .handled }
-            .help("Drag to resize the AI Assistant. Double-click for the usual width.")
+            .help("Drag to resize OpenFrame AI. Double-click for the usual width.")
             .accessibilityElement()
-            .accessibilityLabel("Resize the AI Assistant")
+            .accessibilityLabel("Resize OpenFrame AI")
             .accessibilityValue("\(Int(current)) points")
             .accessibilityAdjustableAction { direction in
                 let step: CGFloat = direction == .increment ? 24 : -24
@@ -401,11 +401,11 @@ struct ProjectView: View {
         Button {
             toggleAssistant()
         } label: {
-            Label("Assistant", systemImage: "sparkles").labelStyle(.titleAndIcon)
+            Label("OpenFrame AI", systemImage: "sparkles").labelStyle(.titleAndIcon)
         }
         .keyboardShortcut("j", modifiers: .command)
-        .help(assistantOpen ? "Close AI Assistant (Command+J)" : "Open AI Assistant (Command+J)")
-        .accessibilityLabel(assistantOpen ? "Close AI Assistant" : "Open AI Assistant")
+        .help(assistantOpen ? "Close OpenFrame AI (Command+J)" : "Open OpenFrame AI (Command+J)")
+        .accessibilityLabel(assistantOpen ? "Close OpenFrame AI" : "Open OpenFrame AI")
         .accessibilityIdentifier("ai-toggle")
     }
 

@@ -6,7 +6,7 @@
 //!   Specification §50): every step a Final Draft user takes, except reopening the export in a
 //!   licensed copy of Final Draft, which is a manual check.
 
-use openframe_application::modules::ai::scope::{self, AiScopeArgs, AiScopeKind};
+use openframe_application::modules::ai::scope::ResolvedScope;
 use openframe_application::modules::ai::toolbox::{self, ToolStep};
 use openframe_domain::new_id;
 use openframe_test_support::TestEnv;
@@ -91,20 +91,7 @@ fn retrieve(env: &TestEnv, query: &str) -> String {
         .project()
         .unwrap()
         .store
-        .read(|c| {
-            scope::resolve(
-                c,
-                &actor,
-                &AiScopeArgs {
-                    kind: AiScopeKind::WholeProject,
-                    draft_id: None,
-                    scene_id: None,
-                    selection: Vec::new(),
-                    shooting_day_id: None,
-                    call_sheet_id: None,
-                },
-            )
-        })
+        .read(ResolvedScope::on_current_draft)
         .unwrap();
     match toolbox::run_tool_unlocked(
         &env.core,

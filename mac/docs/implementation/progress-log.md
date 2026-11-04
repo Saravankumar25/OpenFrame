@@ -7,7 +7,7 @@
 
 ## Dashboard (update every session from `npm run plan:status`)
 
-**Overall: 133 of 307 boxes (43.3%).** **Current goal** (boxes without the "Later: store publishing" tag): **132 of 224 (58.9%)**. Numbers unchanged on 2026-10-28 (MacHTML recapture and three Mac UI fixes; no box ticked). Last changed 2026-10-27 after the Mac sync with Windows.
+**Overall: 133 of 307 boxes (43.3%).** **Current goal** (boxes without the "Later: store publishing" tag): **132 of 224 (58.9%)**. Numbers unchanged on 2026-11-03 (MacHTML recapture and three Mac UI fixes; no box ticked). Last changed 2026-10-27 after the Mac sync with Windows.
 
 | # | Area | Done |
 |---|---|---|
@@ -56,6 +56,55 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ```
 
 ## Entries
+
+### 2026-11-03, Release package finished on the Mac: rename, review fixes, installer, update check
+- **Areas and items worked:** Mac App Store package, payment and free trial, AI assistant quality; the owner's "OpenFrame AI" naming instruction.
+- **Done:** The product is called OpenFrame AI on every screen, message, prompt, Settings tab and in the review notes and test cases
+  (`e82646bb`, `58380df7`, `4bbf7150`). Seven findings of the file reading review fixed (`bd07d1af`). Internal build 225 built and installed from `OpenFrame-6.dmg`.
+- **Evidence:** `cargo test --workspace` excluding the desktop crate 2861 passed, clippy clean. Swift 803 of 803 (two tests fixed: a bin check that raced and a day count that broke after a clock change). Section set on the final code 322 of 336, length 39 of 40 (`docs/release/evidence/ai-reharness/final-build/`). Final E2E on the dev build: 99-store 7/7,
+  98-quit 4/4, 72-ai-assistant 9/9, 77-ai-conversation 6/6, 17-internal 1/1, 26-forced 3/3, 03-story-page 1/2 then the failed one 3 of 3 alone (a driver
+  focus wait fixed it, `a46790ac`), 16-about 1/1, 10-home delete 1/1. Update check 4 of 4, real data app schema 9 to 11 (`docs/release/update-safety.md`). Older
+  gold sets `docs/release/evidence/ai-reharness/legacy-after-tuning/`. Text of mocks 187, 188, 189, 190, 192, 200 and 201 compared with the source: every string of the
+  sheets is in the code; the status bar labels behind the sheets (Trial ended, Checking purchase, Clock check) are mock chrome and not built.
+- **Features moved:** none. Store rows wait for real StoreKit.
+- **Docs updated:** handoff, this log, evidence README, `update-safety.md`, `mac-app-review-notes.md`, the manual test cases, `mac-parity-matrix.md`, `owner-decisions.md` (the stale licence server task).
+- **Decisions made or needed:** owner: the AI tool bar (58.5% against 90%, missed before this work) and the falls on the older sets through the all-sections road.
+- **Blocked / risks:** the push to `mac/` was refused (403, read access only for `udarshmarthala`), so nothing of this reached GitHub; branch `mac/sync-2026-11-03` waits locally. GitHub reports the repository as public, against `CLAUDE.md`. Real StoreKit, G4 in the sandbox, the signed package and TestFlight need Xcode and the developer account. The internal build changed bundle identifier, so preferences macOS keeps per identifier start fresh once.
+- **Next:** the owner's store steps, the spot check, the Windows port.
+- **Checks run:** writing, migrations, links, feature status, architecture, secrets, reachability, governance, store identity tests, typecheck: OK. `release-validate --report-only --store` fails 6 on purpose (licence agreement, migration freeze, store identity, placeholders, privacy URL, Windows engine inputs). Not run: the full regular E2E, by the owner's instruction.
+
+### 2026-11-03, Section-scoped assistant, tuning the answers on the real model
+- **Areas and items worked:** AI assistant quality and hardening (ADR-0041): the 121 failing answers of run r6, by cause.
+- **Done:** A required value must be asked for, on every pick and field by field; a section's topic words never open one. A row that holds the asked words, a count and a named day's scenes and notes are demanded. Answer type votes need the words that back them, and a short "and the X" inherits. Settings reads the product guide and its promise on data leaving the Mac is demanded in its words. Small copied text files keep their words on `project_file.search_text` (project migration 0021) and no file is opened for a question. Storyboards and shots with no scene carry scene numbers and numbered panels. After three passes the closest answer is kept and code adds what it left out. Day Out of Days gives the days. A "could not find" is refused when a row holds the words (rule `held_back`). Six gold lines corrected.
+- **Evidence:** `docs/release/evidence/ai-reharness/after-tuning/`, answer facts 215 of 336 to 324 of 336, length 40 of 40, pointer 59 of 59 with recall 59 of 60, false pointers 0 of 333, median 2.3 s. `cargo test -p openframe-application --all-targets`.
+- **Features moved:** none
+- **Docs updated:** ADR-0041, `docs/engineering/ai-answer-paths.md`, `11-physical-database.md`, `23-release-migration.md`, `modules/ai/knowledge.md`, the evidence README.
+- **Decisions made or needed:** the owner may want to read the 16 KiB limit and the file types for kept file words. Files added before migration 0021 are found by name only.
+- **Blocked / risks:** the briefs still invent detail (`NARRATIVE_WORD_CHECKS` stays off, not measured). Writer quality on three scene briefs and on four two-part questions is the model. No Swift or E2E run: new FFI-facing field `shown` value `written_added` is in the request record only.
+- **Next:** the Windows picker; a person spot-checks one case in ten of the section set (ADR-0028 decision 9).
+- **Checks run:** the tests above, `-p openframe-ai-eval -p openframe-ai-checks -p openframe-search`, clippy with warnings as errors, writing, architecture lint, migrations, links, graphify. Not run: E2E, Swift, the older gold sets on the real model, `ecc:security-review` as an agent (the file read in `files.add` was reviewed by hand and has tests for traversal by `confine`, links, size and encoding).
+
+### 2026-11-03, Section-scoped assistant, slice R7 and the security review
+- **Areas and items worked:** AI assistant quality and hardening (ADR-0041, slice R7 of the release package); security review fixes.
+- **Done:** One road for a question. Deleted `AskArgs.scope`, the scope kinds, the context budget, the domain table, the fetcher table with its automatic domains, the wide passages round, the retrieval router, the project map and the scope boost in search. Migrations: project 0020, app 0011. A request with no picks under `ai_eval_all_sections` reads every section through the same path. Gold cases name sections. Swift and the web shell stop sending a scope. Review fixes: spelling note escaped, gaps of empty sections, scene reference rule, contact details in tool results, superseded call sheets, picked and off days, existence pointer for viewers, session held through a request (also in the change path), tidy Using line, search results name the picks, scenes of a chosen screenplay stay. Also: a message that says something of its own no longer confirms the last answer for memory.
+- **Evidence:** `cargo test -p openframe-application` (1234 lib, 209 ai, 186 platform, 251 production, 240 writing, 5 perf, 5 forced kill), `-p openframe-ai-eval -p openframe-ffi -p openframe-search -p openframe-entitlement` (180), Swift AI filter 92, web AI tests 60. Pointer bench with rules alone: precision 98.3 (59/60), recall 98.3 (59/60), false pointers 0 of 333.
+- **Features moved:** none
+- **Docs updated:** ADR-0041, `docs/engineering/ai-answer-paths.md`, `docs/engineering/18-retrieval-intelligence-index.md`, `docs/specs/ai-conversational-harness.md`, the AI specification, `docs/release/windows-port-2026-11-03.md`, `gold/README.md`, manual test case TC-8.174-05, reconciliation log, handoff.
+- **Decisions made or needed:** defaults taken are listed in ADR-0041. A second run of the required-value rule is in the same section.
+- **Blocked / risks:** no real-model run of R7: the older gold sets now read every section, so their numbers will move. `sec-neg-021` still points at the Screenplay, which does hold "a tall steel mast"; a rule for it would fit one case. The Windows panel has no picker.
+- **Next:** the full evaluation with the real model; the Windows picker.
+- **Checks run:** the tests above, clippy with warnings as errors, writing, architecture lint, migrations, links, web typecheck, E2E driver compiles, graphify. Not run: E2E, a real model, `security-guidance` on the new code.
+
+### 2026-11-03, Section-scoped assistant, slices R4 to R6 and the memory gap
+- **Areas and items worked:** AI assistant quality and hardening (ADR-0041).
+- **Done:** Memory, focus and the map held to the picks; the out-of-section pointer (`modules/ai/pointer.rs`) with the Mac Add button; types describe, brief and story with their writer policy and briefing fetcher; the agent's tool list by section (`toolbox/homes.rs`); the m1_04 schema test waits for the background search rebuild.
+- **Evidence:** `crates/openframe-ai-eval/tests/pointer_gold.rs` on the 395 section cases with rules alone and no model: precision 98.3, recall 96.7, false pointers 0 of 333.
+- **Features moved:** none
+- **Docs updated:** ADR-0041, `docs/engineering/ai-answer-paths.md`, `docs/specs/ai-conversational-harness.md`, `modules/ai/knowledge.md`, `crates/openframe-ai-eval/gold/README.md`
+- **Decisions made or needed:** defaults taken are listed in ADR-0041.
+- **Blocked / risks:** no real-model run of these slices; the relationship and mood checks stay off until measured; the Windows panel still has no picker.
+- **Next:** the full evaluation with the real model against the saved baseline; slice R7 (delete the wide path).
+- **Checks run:** `cargo test -p openframe-application`, `-p openframe-ai-eval -p openframe-ffi`, Swift AI filter, writing, architecture lint, migrations, web typecheck.
 
 ### 2026-10-28, MacHTML recaptured from the real app, three Mac UI fixes
 - **Areas and items worked:** Appearance and themes (Screening Room capture in Light and Dark); Beat Board and Idea Vault; Call sheets, budget, templates, samples and exports; Test infrastructure (capture driver)

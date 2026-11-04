@@ -88,6 +88,8 @@ const LISTENER_ALLOW = {
 
 const UNSAFE_ALLOW = {
   "crates/openframe-platform/src/graphics.rs": "DXGI adapter enumeration (COM) and GetSystemDirectoryW for the graphics-card decision (platform boundary, ADR-0029); SAFETY comments in place.",
+  "crates/openframe-platform/src/code_signature.rs":
+    "Security.framework and CoreFoundation calls that check an engine file's code signature on the Mac store build (platform boundary); every created object is released by one guard; SAFETY comments in place.",
   "crates/openframe-platform/src/exists.rs": "GetFileAttributesW fast existence check (platform boundary); SAFETY comment in place.",
   "crates/openframe-platform/src/identity.rs": "GetCurrentPackageFamilyName (platform boundary); SAFETY comment in place.",
   "apps/desktop/src-tauri/src/platform/macos_storekit.rs":

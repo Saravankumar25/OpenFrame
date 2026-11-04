@@ -23,20 +23,18 @@ struct AIConversationView: View {
             input
         }
         .task(id: app.changes.key(["ai_request", "ai_result", "change_set"])) { await model.loadHistory() }
+        .task(id: app.changes.key(["project", "screenplay", "screenplay_draft", "screenplay_scene", "shooting_day", "call_sheet"])) {
+            await model.loadSections()
+        }
     }
 
-    // MARK: Scope and state lines
+    // MARK: Sections and state lines
 
     private var controls: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text("Scope").font(.caption).foregroundStyle(theme["muted"])
-                Picker("Scope", selection: Binding(get: { model.effectiveScope }, set: { model.chosenScope = $0 })) {
-                    ForEach(model.scopeOptions, id: \.self) { Text($0.label).tag($0) }
-                }
-                .labelsHidden()
-                .accessibilityLabel("Scope")
-                .accessibilityIdentifier("ai-scope")
+                AISectionPickerButton(model: model)
+                Spacer(minLength: 4)
                 Button { Task { await model.saveForReview() } } label: {
                     Label(AIText.saveConversation, systemImage: "square.and.arrow.down").labelStyle(.iconOnly)
                 }
@@ -51,7 +49,9 @@ struct AIConversationView: View {
                     .disabled(model.pending != nil)
                     .accessibilityIdentifier("ai-new-conversation")
             }
+            AISectionChips(model: model)
             Text(model.usingLabel).font(.caption).foregroundStyle(theme["muted"])
+                .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("ai-scope-line")
             if let status = model.status, status.runtimeState == "Failed" {
                 BDBanner(.warn, "\(status.runtimeMessage ?? AIText.unavailable) Ask again to restart it.")
@@ -86,7 +86,7 @@ struct AIConversationView: View {
                         // Questions to start with, for this page: one click asks them.
                         Text("Try asking").font(.caption.weight(.semibold)).foregroundStyle(theme["ink2"])
                         VStack(alignment: .leading, spacing: 6) {
-                            ForEach(AIText.starterQuestions(for: model.context.workspace), id: \.self) { q in
+                            ForEach(AIText.starterQuestions(for: model.workspace), id: \.self) { q in
                                 Button {
                                     model.text = q
                                     model.send()
@@ -139,6 +139,10 @@ struct AIConversationView: View {
             if let error = model.error {
                 BDBanner(.err, error).accessibilityIdentifier("ai-error")
             }
+            if let hint = model.sendHint {
+                Text(hint).font(.caption).foregroundStyle(theme["muted"])
+                    .accessibilityIdentifier("ai-section-hint")
+            }
             HStack(alignment: .bottom, spacing: 8) {
                 TextField("Ask or command\u{2026} e.g. \u{201C}Open Scene 42.\u{201D}", text: $model.text, axis: .vertical)
                     .lineLimit(2...6)
@@ -154,6 +158,7 @@ struct AIConversationView: View {
                 Button("Send") { model.send() }
                     .buttonStyle(.ofProminent)
                     .disabled(!model.canSend)
+                    .help(model.sendHint ?? "Send this question")
                     .accessibilityIdentifier("ai-send")
             }
         }
@@ -230,6 +235,9 @@ struct AIResultView: View {
                     .controlSize(.small)
                     .accessibilityIdentifier("ai-open")
             }
+            if let pointer = r.pointer {
+                pointerAction(pointer)
+            }
             if layout.hasSources {
                 seeSources(layout)
             }
@@ -257,6 +265,26 @@ struct AIResultView: View {
 
     /// Sources, how sure the answer is, rows that back the text and the steps: closed until asked
     /// for. Each source that has a place in OpenFrame opens it.
+    /// The reply names a section that is not picked: one press adds it, unless three are picked.
+    @ViewBuilder
+    private func pointerAction(_ pointer: AiPointerDto) -> some View {
+        switch AILogic.pointerAction(pointer.leaf, picks: model.picks) {
+        case .add:
+            Button("Add \(pointer.label)") { model.addPointedSection(pointer.leaf) }
+                .controlSize(.small)
+                .disabled(model.pending != nil)
+                .accessibilityIdentifier("ai-pointer-add")
+        case .full:
+            Text(AIText.sectionsAtMost)
+                .font(.caption)
+                .foregroundStyle(theme["muted"])
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("ai-pointer-full")
+        case .picked:
+            EmptyView()
+        }
+    }
+
     private func seeSources(_ layout: AILogic.ResultLayout) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Button {

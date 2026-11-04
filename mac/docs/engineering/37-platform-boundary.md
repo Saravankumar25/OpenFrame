@@ -31,7 +31,7 @@ its reason.
 | `crates/openframe-application/src/modules/diagnostics.rs` | Fallback OS label in the diagnostics report. Data only, no OS branch. To call `current_os()` instead. |
 | `crates/openframe-application/src/modules/project.rs` | Reports the platform name to the interface. Data only, no OS branch. To call `current_os()` instead. |
 | `crates/openframe-persistence/src/lib.rs` | Opens SQLite through the `win32-longpath` VFS with a `\\?\` path so projects in deep folders work. The VFS name is Windows-only. |
-| `apps/desktop/src-tauri/src/platform/` | Desktop shell macOS adapter: the StoreKit 2 bridge and the licence server client (section 8). `lib.rs` calls it without any `cfg`; Windows builds get no-op twins. |
+| `apps/desktop/src-tauri/src/platform/` | Removed (ADR-0040, ADR-0027). The StoreKit bridge now lives in `apps/macos/Sources/OpenFrameUI/Store/` (section 8). |
 
 The security, persistence and the three label entries are exceptions. Each one is listed in section 6 as work that still has to move.
 

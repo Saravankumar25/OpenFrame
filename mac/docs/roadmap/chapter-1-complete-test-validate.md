@@ -66,6 +66,6 @@ word to build (W4, W9, W10, M9, M10); the borrowed laptops (W7, W9); the team fo
 ## 6. What moves to later chapters
 
 - **Chapter 2:** the website, its domain and mailboxes, support pages, the Privacy Policy and Terms pages.
-- **Chapter 3:** store packaging, accounts, payment and trial, the licence server, signing and notarization, the updater,
+- **Chapter 3:** store packaging, accounts, payment and trial, signing and notarization, the updater,
   the end-user licence agreement, counsel review, "Report AI output", encryption of
   projects at rest, and the first 90 days after launch. The 83 build plan boxes tagged "Later: store publishing" belong here.

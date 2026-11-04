@@ -749,6 +749,7 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
     // A page break holds no text; a line break or paste that touches the script's structure
     // makes the cached suggestion values stale.
     public override func shouldChangeText(in affectedCharRange: NSRange, replacementString: String?) -> Bool {
+        if LicenceGate.editingWaits { return false }
         if !isLoading {
             let now = Date()
             if now.timeIntervalSince(lastEditAt) > Self.undoPauseSeconds { breakUndoCoalescing() }

@@ -377,3 +377,128 @@ fn start_up_removes_cover_files_no_project_names_and_nothing_else() {
     );
     assert!(!recent(&env)[0]["cover"].is_null());
 }
+
+// ------------------------------------------------------------- search index after open
+
+fn search_hits(env: &TestEnv, text: &str) -> usize {
+    env.ok("search.query", json!({ "text": text }))
+        .as_array()
+        .map_or(0, Vec::len)
+}
+
+fn indexer_version(env: &TestEnv, project_id: &str) -> Option<u64> {
+    env.core
+        .with_app_db(|c| {
+            use rusqlite::OptionalExtension;
+            Ok(c.query_row(
+                "SELECT value_json FROM sys_settings WHERE key=?1",
+                [format!("search.index_version.{project_id}")],
+                |r| r.get::<_, String>(0),
+            )
+            .optional()?)
+        })
+        .unwrap()
+        .and_then(|v| v.parse().ok())
+}
+
+fn wait_until(what: &str, mut done: impl FnMut() -> bool) {
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(20);
+    while !done() {
+        assert!(
+            std::time::Instant::now() < deadline,
+            "never happened: {what}"
+        );
+        std::thread::sleep(std::time::Duration::from_millis(20));
+    }
+}
+
+/// The search index is derived data. Opening starts its rebuild in the background; a different
+/// indexer version, an empty index or a migration all trigger it; closing right away is safe.
+#[test]
+fn the_search_index_rebuilds_after_open_when_the_indexer_version_changes() {
+    let env = TestEnv::with_project("Film", "Feature Film");
+    env.ok(
+        "notes.create",
+        json!({ "body": "A zebrafinch on the roof." }),
+    );
+    let id = env.core.project().unwrap().project_id();
+    let path = PathBuf::from(env.project_path());
+    let current = u64::from(openframe_application::modules::project::SEARCH_INDEX_VERSION);
+    env.ok("project.close", json!({}));
+
+    // An index built by an older indexer: a stale document and no recorded version.
+    {
+        let conn = rusqlite::Connection::open(path.join("project.sqlite")).unwrap();
+        conn.execute(
+            "INSERT INTO search_doc(source_table, entity_id, entity_type, title, updated_at)
+             VALUES ('note', 'ghost', 'note', 'ghostword', 0)",
+            [],
+        )
+        .unwrap();
+    }
+    env.core
+        .with_app_db(|c| {
+            c.execute(
+                "DELETE FROM sys_settings WHERE key=?1",
+                [format!("search.index_version.{id}")],
+            )?;
+            Ok(())
+        })
+        .unwrap();
+
+    // Closing at once is safe: the close waits for the rebuild, nothing panics or is left open.
+    env.reopen_project(&path.to_string_lossy());
+    env.ok("project.close", json!({}));
+
+    // Open again and let it finish: the stale document is gone, real content is found, and the
+    // version is recorded so the next open does not rebuild.
+    env.reopen_project(&path.to_string_lossy());
+    wait_until("the index is rebuilt", || {
+        indexer_version(&env, &id) == Some(current) && search_hits(&env, "ghostword") == 0
+    });
+    assert!(search_hits(&env, "zebrafinch") >= 1);
+
+    // An older recorded version triggers the same rebuild.
+    env.ok("project.close", json!({}));
+    {
+        let conn = rusqlite::Connection::open(path.join("project.sqlite")).unwrap();
+        conn.execute(
+            "INSERT INTO search_doc(source_table, entity_id, entity_type, title, updated_at)
+             VALUES ('note', 'ghost2', 'note', 'ghosttwo', 0)",
+            [],
+        )
+        .unwrap();
+    }
+    env.core
+        .with_app_db(|c| {
+            c.execute(
+                "UPDATE sys_settings SET value_json='0' WHERE key=?1",
+                [format!("search.index_version.{id}")],
+            )?;
+            Ok(())
+        })
+        .unwrap();
+    env.reopen_project(&path.to_string_lossy());
+    wait_until("the old version is rebuilt", || {
+        indexer_version(&env, &id) == Some(current) && search_hits(&env, "ghosttwo") == 0
+    });
+    assert!(search_hits(&env, "zebrafinch") >= 1);
+
+    // With the version current and the index filled, opening starts no rebuild.
+    env.ok("project.close", json!({}));
+    {
+        let conn = rusqlite::Connection::open(path.join("project.sqlite")).unwrap();
+        conn.execute(
+            "INSERT INTO search_doc(source_table, entity_id, entity_type, title, updated_at)
+             VALUES ('note', 'ghost3', 'note', 'ghostthree', 0)",
+            [],
+        )
+        .unwrap();
+    }
+    env.reopen_project(&path.to_string_lossy());
+    assert_eq!(
+        search_hits(&env, "ghostthree"),
+        1,
+        "no rebuild without a reason"
+    );
+}

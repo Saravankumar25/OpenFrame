@@ -124,10 +124,16 @@ pub struct ProjectManifest {
     pub title: String,
     #[ts(type = "number")]
     pub created_at: i64,
-    /// App version that last wrote this project.
+    /// App version that last wrote this project. Missing in a hand-edited or damaged file: empty,
+    /// and the next open writes the real one.
+    #[serde(default)]
     pub app_version: String,
-    /// Database schema version (mirrors `PRAGMA user_version`).
+    /// Database schema version (mirrors `PRAGMA user_version`). The database decides which
+    /// migrations run, never this field, so a missing value (0) skips nothing; the next open
+    /// writes the real one.
+    #[serde(default)]
     pub schema_version: u32,
+    #[serde(default)]
     pub ai_compatibility_version: u32,
 }
 
@@ -510,5 +516,26 @@ mod tests {
         assert!(!is_network_path(
             &dir.path().join("New").join("Film.openframe")
         ));
+    }
+
+    /// A manifest missing the version fields still opens; they are filled in on the next write.
+    #[test]
+    fn a_manifest_without_version_fields_still_reads() {
+        let dir = tempfile::tempdir().unwrap();
+        let layout = ProjectLayout::new(dir.path().join("Film.openframe"));
+        layout.create_dirs().unwrap();
+        let id = openframe_domain::new_id();
+        let mut json = serde_json::to_value(ProjectManifest::new(&id, "Film", "0.1.0", 7)).unwrap();
+        for key in ["appVersion", "schemaVersion", "aiCompatibilityVersion"] {
+            assert!(json.as_object_mut().unwrap().remove(key).is_some(), "{key}");
+        }
+        fs::write(layout.manifest(), serde_json::to_vec(&json).unwrap()).unwrap();
+        let m = read_manifest(&layout).unwrap();
+        assert_eq!((m.project_id.as_str(), m.schema_version), (id.as_str(), 0));
+        assert!(m.app_version.is_empty());
+        // The identity fields stay required: a manifest without them is damaged.
+        json.as_object_mut().unwrap().remove("projectId");
+        fs::write(layout.manifest(), serde_json::to_vec(&json).unwrap()).unwrap();
+        assert!(read_manifest(&layout).unwrap_err().is("project_format"));
     }
 }

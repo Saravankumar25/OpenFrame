@@ -17,9 +17,11 @@
 | Scope of the first release | The whole product | 2026-10-06 | none |
 | Business model | Paid app with a 7-day free trial, no credit card to start | 2026-10-06 | [ADR-0018](../adr/ADR-0018-distribution-licensing-commerce.md) |
 | Target prices | Target, not final: 3,000 rupees in India (an earlier message said 2,999), 89 US dollars elsewhere, 89 euros in Europe. The stores' rules are checked first | 2026-10-09 | [Chapter 3](../roadmap/chapter-3-commercial-distribution.md) |
-| Price in the app | Never shown; Buy opens the store's own purchase window | 2026-10-07 | [ADR-0023](../adr/ADR-0023-store-trial-and-internal-installer.md) |
+| Price in the app | Never typed. Windows shows none. The Mac shows the StoreKit-supplied price on the first-launch and lock screens, because Apple Guideline 3.1.1 asks for the later charge to be disclosed before a trial starts | 2026-11-03 | [ADR-0023](../adr/ADR-0023-store-trial-and-internal-installer.md), [ADR-0040](../adr/ADR-0040-offline-mac-trial-no-licence-server.md) |
 | Microsoft Store trial and lock | The Store runs the 7-day trial; ended and not bought gives a full block except Buy and Restore | 2026-10-07 | ADR-0023 |
-| Mac App Store trial and lock | Zero-price "7-day Trial" and paid "Lifetime Access" non-consumables, server-checked expiry; full block at expiry; confirmed 2026-10-08 | 2026-10-06 | [ADR-0018](../adr/ADR-0018-distribution-licensing-commerce.md), [ADR-0022](../adr/ADR-0022-mac-trial-end-lock.md) |
+| Mac App Store trial and lock | Zero-price "7-day Trial" and paid "Lifetime Access" non-consumables, counted offline on the Mac from Apple-signed data with a Keychain clock guard. No licence server, no device binding. Full block at expiry, on a refund and on a clock behind a trusted date | 2026-11-03 | [ADR-0040](../adr/ADR-0040-offline-mac-trial-no-licence-server.md), [ADR-0022](../adr/ADR-0022-mac-trial-end-lock.md) |
+| Chapter 3 started | The owner started commercial distribution with the release package of 2026-11-03 (`OpenFrame_Release_Package/`, which overrides earlier decisions where they differ). Trial, licensing, update safety and store readiness first, then the section-scoped assistant. Partner Center and Apple Developer enrolment are still under verification, so every store-only value is a `REPLACE_WITH_` placeholder | 2026-11-03 | [Chapter 3](../roadmap/chapter-3-commercial-distribution.md), [mac-store-placeholders.md](../release/mac-store-placeholders.md) |
+| Contact and support | One in-app "Contact us" link to `https://openframestudio.app/contact/`, no form, nothing sent. Social handles are placeholders and are hidden in release builds until real addresses exist | 2026-11-03 | [ADR-0040](../adr/ADR-0040-offline-mac-trial-no-licence-server.md) |
 | Diagnostics, telemetry and analytics | The app sends nothing automatically; the user can export an inspectable, redacted diagnostics file and an AI report | 2026-10-05 | [ADR-0021](../adr/ADR-0021-diagnostics-telemetry-analytics-policy.md) |
 | App screen language | English only; the AI answers in the language of the request | 2026-10-15 | [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) |
 | Website | Purchased domain with company email; hosting proposed on Cloudflare Pages; built from faithful recreations of the real screens; "built manually" to be clarified when the Chapter 2 plan is written | 2026-10-15 | [Chapter 2](../roadmap/chapter-2-website.md) |
@@ -103,6 +105,7 @@
 | Story page schema on the Mac | The Mac copy of `migrations/project/0017_story_page.sql` (with a length check) is replaced by the Windows bytes, so both platforms ship one schema; a Mac test project made with the old file still opens | 2026-10-27 | [Mac-only changes](../release/evidence/mac/windows-sync-2026-10-27/mac-only-changes.md) |
 | Screenplay formatting standard | Version 5 replaces version 4 as the layout standard; version 4 is in `docs/history/specs/` | 2026-10-24 | [screenplay-formatting-standard-v5.md](../specs/screenplay-formatting-standard-v5.md), [ADR-0008](../adr/ADR-0008-deterministic-pdf.md) amendment |
 | Production PDF design | The PDF design package v2 is the design source for every production PDF (footer with the lossless logo, 66 pt bottom margin, orientation per export as in the package) | 2026-10-24 | [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md), [package](../specs/pdf-design-package-v2/README.md) |
+| AI name | One name wherever a person can see it: OpenFrame AI | 2026-11-03 | owner in chat |
 
 ### How the work is done
 
@@ -179,7 +182,7 @@ Lead times are typical, not guaranteed. Start the long ones early.
 | Counsel review of the privacy policy, terms, refund text and AI disclosures | Chapter 2 and 3 | 1 to 3 weeks | Required for the policy pages the stores link to |
 | Support setup: inbox, help centre, second operator, escalation, security disclosure address | Chapter 2 | days | Also the destination for "Report AI output" |
 | Run the Windows App Certification Kit on the exact Store package | Chapter 3 | hours | Needs the SDK |
-| Create the two in-app purchases in App Store Connect, turn Family Sharing off, add sandbox testers; stand up the licence server and its signing key; confirm Apple's Root CA fingerprint | Chapter 3 | days | Private keys never go in the app |
+| Create the two in-app purchases in App Store Connect, turn Family Sharing off, add sandbox testers (no licence server, ADR-0040) | Chapter 3 | days | Private keys never go in the app |
 | Run the Apple validation and TestFlight on the exact Mac package | Chapter 3 | hours to days | |
 | Store listings, marketing assets, continuity (password manager, recovery codes, key backups) | Chapter 3 | days to weeks | Claims must match shipped behaviour |
 | Final go or no-go signature; press Submit in each store console | Chapter 3 | hours to days | Do not automate |

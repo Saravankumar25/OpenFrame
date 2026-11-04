@@ -1500,7 +1500,7 @@ extension Scenarios {
             try await ui.waitUntil("the card is back") { ui.card("Bus stop reunion in the rain") != nil }
             try await ui.quiet()
         case 13:
-            try await ui.button("Assistant")
+            try await ui.button("OpenFrame AI")
             // On the Mac the AI is downloaded after install (ADR-0026): the first time, press the
             // card's Download button and wait for the real download from the model host.
             if ui.exists(id: "ai-download-start") {
@@ -1520,7 +1520,7 @@ extension Scenarios {
                 try await ui.quiet()
             }
             try await ui.shortcutKey("j", code: 38, modifiers: [.command])
-            try await ui.waitUntil("the AI Assistant closes") { !ui.exists(label: "Ask or command") }
+            try await ui.waitUntil("OpenFrame AI closes") { !ui.exists(label: "Ask or command") }
             try await ui.quiet()
         default:
             try await ui.closeProject()

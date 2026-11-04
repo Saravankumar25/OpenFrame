@@ -10,28 +10,25 @@
 //!    `VerificationResult`. The bridge passes on `.verified` results only. Every `.unverified`
 //!    result is dropped and counted, never passed on in any form. [`keep_verified`] is the one
 //!    function the shell uses to apply this rule, so the Rust side and the tests agree on it.
-//! 2. **Apple's dates, never the Mac's.** `purchase_date_ms` and `revocation_date_ms` are the
-//!    dates Apple recorded in the signed transaction, converted to Unix milliseconds in UTC.
-//! 3. **The signed JWS travels with every transaction** so the licensing server can check Apple's
-//!    signature itself. The app never holds an Apple private key.
-//! 4. **The environment is reported on every transaction** (Sandbox, Production, Xcode) so test
+//! 2. **Apple's dates.** `purchase_date_ms`, `original_purchase_date_ms`, `signed_date_ms` and
+//!    `revocation_date_ms` are the dates Apple recorded in the signed transaction, converted to Unix
+//!    milliseconds in UTC. `signed_date_ms` is the time Apple signed the record, so the real time is
+//!    never earlier than it (the clock guard's floor).
+//! 3. **The environment is reported on every transaction** (Sandbox, Production, Xcode) so test
 //!    purchases and real purchases are never mixed.
-//! 5. **`appTransactionID` is optional.** Apple provides it on macOS 15.4 and later only. It links
+//! 4. **`appTransactionID` is optional.** Apple provides it on macOS 15.4 and later only. It links
 //!    an Apple Account to this app and nothing else; it is never a trial date. The trial starts at
-//!    the trial transaction's own Apple purchase date. `AppTransaction.originalPurchaseDate` (the
-//!    date the app was first downloaded) is never carried across the bridge and never used.
+//!    the trial transaction's own Apple date. `AppTransaction.originalPurchaseDate` (the date the
+//!    app was first downloaded) is never carried across the bridge and never used.
 
 use serde::{Deserialize, Serialize};
 
-/// The zero-price non-consumable that starts the 7-day trial.
-pub const TRIAL_PRODUCT_ID: &str = "com.openframe.studio.trial7";
+/// The zero-price non-consumable that starts the 7-day trial. Never change this after the first
+/// release: a new id is a different product with no purchases.
+pub const TRIAL_PRODUCT_ID: &str = "app.openframestudio.studio.trial7";
 
-/// The paid non-consumable that unlocks the app for good.
-pub const LIFETIME_PRODUCT_ID: &str = "com.openframe.studio.lifetime";
-
-/// Upper bound for one signed JWS string. Apple's transaction JWS carries a certificate chain in
-/// its header and is a few kilobytes; anything far larger is refused.
-pub const MAX_JWS_BYTES: usize = 16 * 1024;
+/// The paid non-consumable that unlocks the app for good. Never change this after the first release.
+pub const LIFETIME_PRODUCT_ID: &str = "app.openframestudio.studio.lifetime";
 
 /// Upper bound for an identifier field (transaction ids, app transaction id, product id).
 pub const MAX_ID_BYTES: usize = 128;
@@ -40,7 +37,7 @@ pub const MAX_ID_BYTES: usize = 128;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum StoreEnvironment {
-    /// App Store sandbox, including TestFlight.
+    /// App Store sandbox, including TestFlight and Apple's own App Review.
     Sandbox,
     /// The real App Store.
     Production,
@@ -61,19 +58,20 @@ pub struct VerifiedTransaction {
     pub app_transaction_id: Option<String>,
     /// The purchase date Apple recorded, Unix milliseconds UTC.
     pub purchase_date_ms: i64,
+    /// The original purchase date Apple recorded for this transaction, Unix milliseconds UTC.
+    pub original_purchase_date_ms: i64,
+    /// The time Apple signed this record, Unix milliseconds UTC.
+    pub signed_date_ms: i64,
     /// Set when Apple refunded or revoked the transaction, Unix milliseconds UTC.
     pub revocation_date_ms: Option<i64>,
     pub environment: StoreEnvironment,
-    /// The JWS exactly as StoreKit returned it, for the licensing server.
-    pub signed_jws: String,
 }
 
 impl VerifiedTransaction {
     /// Whether the transaction has the shape the core accepts: one of OpenFrame's two products,
-    /// bounded non-empty identifiers (the optional `appTransactionID` too, when present), a
-    /// positive Apple purchase date, a revocation date that is
-    /// not before the purchase, and a compact JWS of bounded size. A transaction that fails this
-    /// is treated as corrupt and never reaches the policy.
+    /// bounded non-empty identifiers (the optional `appTransactionID` too, when present), positive
+    /// Apple dates and a revocation date that is not before the purchase. A transaction that fails
+    /// this is treated as corrupt and never reaches the policy.
     pub fn is_well_formed(&self) -> bool {
         let id_ok = |s: &str| !s.is_empty() && s.len() <= MAX_ID_BYTES && s.is_ascii();
         (self.product_id == TRIAL_PRODUCT_ID || self.product_id == LIFETIME_PRODUCT_ID)
@@ -81,10 +79,11 @@ impl VerifiedTransaction {
             && id_ok(&self.original_transaction_id)
             && self.app_transaction_id.as_deref().is_none_or(id_ok)
             && self.purchase_date_ms > 0
+            && self.original_purchase_date_ms > 0
+            && self.signed_date_ms > 0
             && self
                 .revocation_date_ms
                 .is_none_or(|r| r >= self.purchase_date_ms)
-            && is_compact_jws(&self.signed_jws)
     }
 
     pub fn is_trial(&self) -> bool {
@@ -100,27 +99,6 @@ impl VerifiedTransaction {
     }
 }
 
-/// Whether `s` looks like a compact JWS: three non-empty base64url segments joined by dots,
-/// within [`MAX_JWS_BYTES`]. This is a shape check only; the signature is checked by StoreKit on
-/// the Mac and by the licensing server.
-pub fn is_compact_jws(s: &str) -> bool {
-    if s.is_empty() || s.len() > MAX_JWS_BYTES {
-        return false;
-    }
-    let mut parts = 0;
-    for part in s.split('.') {
-        parts += 1;
-        if part.is_empty()
-            || !part
-                .bytes()
-                .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
-        {
-            return false;
-        }
-    }
-    parts == 3
-}
-
 /// What StoreKit's `AppTransaction.shared` returned, already verified by StoreKit.
 ///
 /// It carries no date on purpose: the app's first download date is not the trial start.
@@ -131,15 +109,15 @@ pub struct AppTransactionInfo {
     #[serde(default)]
     pub app_transaction_id: Option<String>,
     pub environment: StoreEnvironment,
-    pub signed_jws: String,
 }
 
-/// Price and name of a product as the App Store shows them in the user's storefront.
+/// `Product.products(for:)` returned both products, which is the signal that the App Store is
+/// reachable in this evaluation.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ProductInfo {
-    pub product_id: String,
-    /// StoreKit's `displayPrice`, already formatted for the user's storefront and currency.
-    pub display_price: String,
+pub struct StoreProducts {
+    /// StoreKit's `displayPrice` of the lifetime product, already formatted for the user's
+    /// storefront and currency. Read at run time, never typed in code.
+    pub lifetime_display_price: String,
 }
 
 /// What a purchase attempt ended with.
@@ -172,12 +150,14 @@ pub enum BridgeError {
     Other,
 }
 
-/// The StoreKit 2 calls the core needs. The Swift side implements this through the desktop shell.
+/// The StoreKit 2 and Keychain calls the core needs. The Swift side implements this through the
+/// desktop shell.
 ///
 /// Every method must return within a bounded time and must never pass on an unverified
 /// transaction (see the module notes).
 pub trait StoreKitBridge: Send + Sync {
-    /// `Transaction.currentEntitlements`, verified results only.
+    /// `Transaction.currentEntitlements`, plus the latest record of each product so a refund shows
+    /// up, verified results only.
     fn current_entitlements(&self) -> Result<Vec<VerifiedTransaction>, BridgeError>;
 
     /// `Product.purchase()` for `product_id`.
@@ -186,17 +166,30 @@ pub trait StoreKitBridge: Send + Sync {
     /// `AppTransaction.shared`, verified.
     fn app_transaction(&self) -> Result<AppTransactionInfo, BridgeError>;
 
-    /// The environment this build talks to.
+    /// The environment this build talks to, from the verified `AppTransaction`. Production when it
+    /// cannot be read, so transactions from another environment are refused.
     fn environment(&self) -> StoreEnvironment;
 
-    /// `Product.products(for:)` for one product, for its storefront price.
-    fn product_info(&self, product_id: &str) -> Result<ProductInfo, BridgeError>;
-
-    /// `AppStore.sync()`, used only when the user presses "Restore purchases". The default does
-    /// nothing, because `currentEntitlements` already restores purchases on a new Mac.
-    fn sync(&self) -> Result<(), BridgeError> {
-        Ok(())
+    /// The environment when it was really read, `None` when [`Self::environment`] is only a guess.
+    fn known_environment(&self) -> Option<StoreEnvironment> {
+        Some(self.environment())
     }
+
+    /// `Product.products(for:)` for both products. An error, or fewer than two products, means the
+    /// App Store is not reachable in this evaluation.
+    fn load_products(&self) -> Result<StoreProducts, BridgeError>;
+
+    /// `AppStore.sync()`, used only for "Restore purchase" and "Check again". Answers the time
+    /// Apple signed a freshly fetched record, when the store gave one, for the clock guard.
+    fn sync(&self) -> Result<Option<i64>, BridgeError> {
+        Ok(None)
+    }
+
+    /// The guard record text from the Keychain, `None` when there is none yet.
+    fn load_guard(&self) -> Result<Option<String>, BridgeError>;
+
+    /// Store the guard record text in the Keychain.
+    fn save_guard(&self, record_json: &str) -> Result<(), BridgeError>;
 
     /// How many unverified results this bridge has dropped since launch (contract rule 1).
     fn unverified_dropped(&self) -> u64 {
@@ -218,11 +211,20 @@ impl<T: StoreKitBridge + ?Sized> StoreKitBridge for Box<T> {
     fn environment(&self) -> StoreEnvironment {
         (**self).environment()
     }
-    fn product_info(&self, product_id: &str) -> Result<ProductInfo, BridgeError> {
-        (**self).product_info(product_id)
+    fn known_environment(&self) -> Option<StoreEnvironment> {
+        (**self).known_environment()
     }
-    fn sync(&self) -> Result<(), BridgeError> {
+    fn load_products(&self) -> Result<StoreProducts, BridgeError> {
+        (**self).load_products()
+    }
+    fn sync(&self) -> Result<Option<i64>, BridgeError> {
         (**self).sync()
+    }
+    fn load_guard(&self) -> Result<Option<String>, BridgeError> {
+        (**self).load_guard()
+    }
+    fn save_guard(&self, record_json: &str) -> Result<(), BridgeError> {
+        (**self).save_guard(record_json)
     }
     fn unverified_dropped(&self) -> u64 {
         (**self).unverified_dropped()
@@ -273,24 +275,17 @@ mod tests {
             original_transaction_id: "2000000001".to_string(),
             app_transaction_id: Some("705000000001".to_string()),
             purchase_date_ms: 1_791_244_800_000,
+            original_purchase_date_ms: 1_791_244_800_000,
+            signed_date_ms: 1_791_244_800_000,
             revocation_date_ms: None,
             environment: StoreEnvironment::Production,
-            signed_jws: "aGVhZA.Ym9keQ.c2ln".to_string(),
         }
     }
 
     #[test]
-    fn a_compact_jws_needs_three_base64url_segments_and_a_size_cap() {
-        assert!(is_compact_jws("a.b.c"));
-        assert!(is_compact_jws("aZ0-_.b.c"));
-        assert!(!is_compact_jws(""));
-        assert!(!is_compact_jws("a.b"));
-        assert!(!is_compact_jws("a.b.c.d"));
-        assert!(!is_compact_jws("a..c"));
-        assert!(!is_compact_jws("a.b+/.c"));
-        assert!(!is_compact_jws("a.b.c="));
-        let big = format!("a.{}.c", "b".repeat(MAX_JWS_BYTES));
-        assert!(!is_compact_jws(&big));
+    fn the_store_identity_never_changes_after_the_first_release() {
+        assert_eq!(TRIAL_PRODUCT_ID, "app.openframestudio.studio.trial7");
+        assert_eq!(LIFETIME_PRODUCT_ID, "app.openframestudio.studio.lifetime");
     }
 
     #[test]
@@ -312,10 +307,13 @@ mod tests {
         t.purchase_date_ms = 0;
         assert!(!t.is_well_formed());
         let mut t = tx();
-        t.revocation_date_ms = Some(t.purchase_date_ms - 1);
+        t.original_purchase_date_ms = 0;
         assert!(!t.is_well_formed());
         let mut t = tx();
-        t.signed_jws = "not a jws".to_string();
+        t.signed_date_ms = -1;
+        assert!(!t.is_well_formed());
+        let mut t = tx();
+        t.revocation_date_ms = Some(t.purchase_date_ms - 1);
         assert!(!t.is_well_formed());
     }
 
@@ -331,7 +329,14 @@ mod tests {
         assert_eq!(parsed.app_transaction_id, None);
         assert!(parsed.is_well_formed());
         let app: AppTransactionInfo =
-            serde_json::from_str(r#"{"environment":"production","signedJws":"a.b.c"}"#).unwrap();
+            serde_json::from_str(r#"{"environment":"production"}"#).unwrap();
         assert_eq!(app.app_transaction_id, None);
+    }
+
+    #[test]
+    fn a_transaction_without_a_signed_date_does_not_parse() {
+        let mut json = serde_json::to_value(tx()).unwrap();
+        json.as_object_mut().unwrap().remove("signedDateMs");
+        assert!(serde_json::from_value::<VerifiedTransaction>(json).is_err());
     }
 }
