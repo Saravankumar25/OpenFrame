@@ -7,7 +7,7 @@
 
 ## Dashboard (update every session from `npm run plan:status`)
 
-**Overall: 133 of 307 boxes (43.3%).** **Current goal** (boxes without the "Later: store publishing" tag): **132 of 224 (58.9%)**. Numbers unchanged on 2026-10-28 (MacHTML recapture and three Mac UI fixes; no box ticked). Last changed 2026-10-27 after the Mac sync with Windows.
+**Overall: 133 of 307 boxes (43.3%).** **Current goal** (boxes without the "Later: store publishing" tag): **132 of 224 (58.9%)**. Numbers unchanged on 2026-11-03 (MacHTML recapture and three Mac UI fixes; no box ticked). Last changed 2026-10-27 after the Mac sync with Windows.
 
 | # | Area | Done |
 |---|---|---|
@@ -56,6 +56,22 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ```
 
 ## Entries
+
+### 2026-11-03, Release package finished on the Mac: rename, review fixes, installer, update check
+- **Areas and items worked:** Mac App Store package, payment and free trial, AI assistant quality; the owner's "OpenFrame AI" naming instruction.
+- **Done:** The product is called OpenFrame AI on every screen, message, prompt, Settings tab and in the review notes and test cases
+  (`e82646bb`, `58380df7`, `4bbf7150`). Seven findings of the file reading review fixed (`bd07d1af`). Internal build 225 built and installed from `OpenFrame-6.dmg`.
+- **Evidence:** `cargo test --workspace` excluding the desktop crate 2861 passed, clippy clean. Swift 803 of 803 (two tests fixed: a bin check that raced and a day count that broke after a clock change). Section set on the final code 322 of 336, length 39 of 40 (`docs/release/evidence/ai-reharness/final-build/`). Final E2E on the dev build: 99-store 7/7,
+  98-quit 4/4, 72-ai-assistant 9/9, 77-ai-conversation 6/6, 17-internal 1/1, 26-forced 3/3, 03-story-page 1/2 then the failed one 3 of 3 alone (a driver
+  focus wait fixed it, `a46790ac`), 16-about 1/1, 10-home delete 1/1. Update check 4 of 4, real data app schema 9 to 11 (`docs/release/update-safety.md`). Older
+  gold sets `docs/release/evidence/ai-reharness/legacy-after-tuning/`. Text of mocks 187, 188, 189, 190, 192, 200 and 201 compared with the source: every string of the
+  sheets is in the code; the status bar labels behind the sheets (Trial ended, Checking purchase, Clock check) are mock chrome and not built.
+- **Features moved:** none. Store rows wait for real StoreKit.
+- **Docs updated:** handoff, this log, evidence README, `update-safety.md`, `mac-app-review-notes.md`, the manual test cases, `mac-parity-matrix.md`, `owner-decisions.md` (the stale licence server task).
+- **Decisions made or needed:** owner: the AI tool bar (58.5% against 90%, missed before this work) and the falls on the older sets through the all-sections road.
+- **Blocked / risks:** real StoreKit, G4 in the sandbox, the signed package and TestFlight need Xcode and the developer account. The internal build changed bundle identifier, so preferences macOS keeps per identifier start fresh once.
+- **Next:** the owner's store steps, the spot check, the Windows port.
+- **Checks run:** writing, migrations, links, feature status, architecture, secrets, reachability, governance, store identity tests, typecheck: OK. `release-validate --report-only --store` fails 6 on purpose (licence agreement, migration freeze, store identity, placeholders, privacy URL, Windows engine inputs). Not run: the full regular E2E, by the owner's instruction.
 
 ### 2026-11-03, Section-scoped assistant, tuning the answers on the real model
 - **Areas and items worked:** AI assistant quality and hardening (ADR-0041): the 121 failing answers of run r6, by cause.

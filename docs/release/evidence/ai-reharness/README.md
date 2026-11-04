@@ -68,3 +68,44 @@ Still failing, 12 cases: the writer gets the facts and tells them wrongly on 9 (
 pair-08-2, narr-brief-002, 003 and 004, of which the three briefs invent detail the checks do not catch), and follow-013 keeps to one
 sentence and drops the fish stall. triple-1-2 needs a join from a scene's speakers to their actors and their availability on the day,
 which no fetcher makes. triple-2-1 tells the scene without the word roof.
+
+## The older gold sets on the tuned build
+
+Same 844 English cases as the baseline, on the tuned binary from before the last review fixes and the rename (the rename changed the words of
+the prompts, so these numbers could move a little), 90.5 minutes with builds and E2E sharing the machine. They run through `ai_eval_all_sections`, which reads every
+section, a road no person can take: the app always has picks. `legacy-after-tuning/report.md` and `summary.json`.
+
+| Measure | Baseline | Tuned | Bar |
+|---|---|---|---|
+| Correct tool and arguments | 59.0% (113) | 58.5% (111) | 90%, **still missed**, as before this work |
+| Correct end state | 89.5% (77 of 86) | 89.5% (77 of 86) | 85%, met |
+| Conversation answer facts | 64.6% (124 of 192) | 58.9% (113 of 192) | none, **went down** |
+| Paraphrase answer facts | 40.0% (16 of 40) | 25.0% (10 of 40) | none, **went down** |
+| Tool kind answer facts | 54.8% (17 of 31) | 71.0% (22 of 31) | none, went up |
+| Conversation length | 71.7% (43 of 60) | 65.0% (39 of 60) | none, went down |
+| Writing length | 46.7% (28 of 60) | 45.0% (27 of 60) | none |
+| Repeated four-word run, conversation | 2 | 11 | none, **worse** |
+| Retrieval Recall@5 | 99.4% | 99.4% | none |
+| Safety | 100% (46 of 46) | 100% (46 of 46) | none |
+
+Reading it: no bar was lowered. The tool bar was missed before this work and this work did not address it, so it stays an owner item.
+A likely cause of the fall in answer facts, not proven: every section now feeds one budget, with more grounding per answer (3,568 against
+2,040 in conversation), and the rules were tuned for picked sections. The section set is the road the app uses and scores 96.4%, but it is a smaller set
+written at development time and no person has spot-checked it. Neither number proves the other wrong: the owner should read both.
+
+## The section set on the final code
+
+After the review fixes and the rename, which changed the words of the prompts: 20.1 minutes, same fixture and model. `final-build/report.md` and `summary.json`.
+
+| Measure | Tune 3 | Final code |
+|---|---|---|
+| Answer facts | 96.4% (324 of 336) | **95.8% (322 of 336)** |
+| Length | 100% (40 of 40) | 97.5% (39 of 40) |
+| Pointer precision and recall | 59 of 59, 59 of 60 | 59 of 59, 59 of 60 |
+| False pointers | 0 of 333 | 0 of 333 |
+| Repeated four-word run | 8 of 393 | 7 of 393 |
+
+Eleven answers moved, both ways, with no change to the rules that read the project: the model's wording shifts when its prompt shifts. Examples a
+person would see: `sec-triple-4-1` says "Babu's Boat Yard charges 9,00,000 rupees for shoot days", which joins two real figures wrongly;
+`sec-narr-story-002` says it found no plot when the facts hold one; `sec-leaf-settings-001` answers with the raw line of the guide. These stay open.
+

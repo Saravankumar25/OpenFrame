@@ -2,34 +2,30 @@
 
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-11-03, after tuning the section answers on the real model.
+> entry, trust the log and fix this page first. Last rewritten: 2026-11-03, after the release package was applied to the Mac app.
 
 ## State
 
-1. **Branch `release/trial-offline-and-store-readiness`** (local, not pushed). Chapter 3 started with the release package
-   (`OpenFrame_Release_Package/`, untracked on purpose). The offline Mac trial, the store readiness work and the section-scoped
-   assistant (ADR-0041, slices R0 to R7) are committed here.
-2. **The assistant has one road.** The person picks up to 3 sections and only those are read. `AskArgs.scope`, the scope
-   kinds, the domain table, the fetcher table, the wide passages round, the retrieval router and the project map are deleted.
-   Project migration 0020 and app migration 0011 drop their columns. A request with no picks gets a fixed sentence; under
-   `AppConfig.ai_eval_all_sections` (tests and evaluation only, false in the FFI) it reads every section through the same path.
-3. **Measured with the real model on this build:** the section set scores 324 of 336 answer facts, length 40 of 40, pointer
-   precision 59 of 59 and recall 59 of 60, false pointers 0 of 333, median 2.3 s. `docs/release/evidence/ai-reharness/README.md` holds
-   the runs and what still fails. **Not measured:** the older gold sets on this build, and the relationship and mood checks, which
-   stay off.
+1. **The release package is applied to the Mac app** on `release/trial-offline-and-store-readiness`, in GitHub `mac/` by the owner's
+   instruction. Offline trial with the Keychain clock guard (ADR-0040), section-scoped assistant with one road (ADR-0041), store
+   packaging with placeholders, one product name "OpenFrame AI" on every screen and message.
+2. **Installed here:** internal build 225, `release-out/mac/OpenFrame-6.dmg`. The update check from build 183 passed 4 of 4 and the owner's
+   real data moved to app schema 11 with recents and models kept (`docs/release/update-safety.md`).
+3. **Measured with the real model:** section set on the final code 322 of 336 answer facts (95.8%), length 39 of 40, pointer 59 of 59 and recall 59 of 60. Older gold
+   sets through the eval-only all-sections road, on the binary before the rename: tool and arguments 58.5% against the 90% bar (59.0% before this work), end state 89.5%,
+   conversation facts down from 64.6% to 58.9%, repetition up from 2 to 11. `docs/release/evidence/ai-reharness/README.md`.
+4. **Not proved on this Mac:** real StoreKit, the G4 check in the App Store sandbox, the signed store build, TestFlight, the Windows tree
+   (`docs/release/windows-port-2026-11-03.md`). No Xcode here, so `apps/macos/scripts/build-release-app.sh --store` has not produced a package.
 
 ## Next items
 
-1. **The older gold sets on the real model** against the saved baseline, then the false alarms of the relationship and mood checks
-   (the scene reference check showed none). The older sets now read every section, so their numbers will move: compare by family,
-   show the owner, never lower a bar quietly. A person spot-checks one section case in ten.
-2. **Windows:** copy the shared Rust and build the picker (`docs/release/windows-port-2026-11-03.md`).
-3. **Items from before:** the full regular E2E on the Mac, the snapshot spinner in sides and reports, and the items that need Xcode and the
-   developer account (`docs/release/mac-app-store-readiness.md`).
+1. **Owner:** read the AI numbers above and decide about the tool bar. Spot-check one section case in ten (ADR-0028 decision 9).
+2. **Owner:** the store steps in `docs/release/mac-store-test.md`, then the placeholders in `docs/release/mac-store-placeholders.md`.
+3. **Windows:** copy the shared Rust and build the picker. Then the full regular E2E on the Mac.
 
 ## Owner decisions open
 
-- AI bars: read the real-model numbers when the run above is done.
+- AI tool bar missed (58.5% against 90%), and whether the older sets still count now that no person can reach that road.
 - Identity in `library.json` is not authentication (doc 40 section 2): keep or change.
 
 ## Do not

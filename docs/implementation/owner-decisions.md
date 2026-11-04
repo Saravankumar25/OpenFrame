@@ -182,7 +182,7 @@ Lead times are typical, not guaranteed. Start the long ones early.
 | Counsel review of the privacy policy, terms, refund text and AI disclosures | Chapter 2 and 3 | 1 to 3 weeks | Required for the policy pages the stores link to |
 | Support setup: inbox, help centre, second operator, escalation, security disclosure address | Chapter 2 | days | Also the destination for "Report AI output" |
 | Run the Windows App Certification Kit on the exact Store package | Chapter 3 | hours | Needs the SDK |
-| Create the two in-app purchases in App Store Connect, turn Family Sharing off, add sandbox testers; stand up the licence server and its signing key; confirm Apple's Root CA fingerprint | Chapter 3 | days | Private keys never go in the app |
+| Create the two in-app purchases in App Store Connect, turn Family Sharing off, add sandbox testers (no licence server, ADR-0040) | Chapter 3 | days | Private keys never go in the app |
 | Run the Apple validation and TestFlight on the exact Mac package | Chapter 3 | hours to days | |
 | Store listings, marketing assets, continuity (password manager, recovery codes, key backups) | Chapter 3 | days to weeks | Claims must match shipped behaviour |
 | Final go or no-go signature; press Submit in each store console | Chapter 3 | hours to days | Do not automate |
