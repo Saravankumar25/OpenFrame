@@ -1,11 +1,12 @@
 // Screen catalog: one record per captured app screen, read from the real mockups.
 // Windows: loads every WindowsHTML page in Chromium and reads the visible controls of the active layer (the open
 // dialog or menu, else the window). Mac: MacHTML ships pages.json with the accessibility text of every screen.
-// Output: research/screens-win.json, research/screens-mac.json. Run: node scripts/extract-screens.mjs [win|mac]
+// Output: research/screens-win.json, research/screens-mac.json, with the product name as on the website (src/lib/brand.mjs). Run: node scripts/extract-screens.mjs [win|mac]
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
+import { rebrandDeep } from '../src/lib/brand.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 export const SRC = { win: path.join(ROOT, 'research', 'WindowsHTML-src'), mac: path.join(ROOT, 'research', 'MacHTML-src') };
@@ -94,7 +95,9 @@ function extractMac() {
 }
 
 for (const plat of only ? [only] : ['win', 'mac']) {
-  const list = plat === 'win' ? await extractWin() : extractMac();
+  // the apps still carry the old product name: every string in the records gets the website name (src/lib/brand.mjs)
+  // (file and picture name source files, so they stay as they are)
+  const list = (plat === 'win' ? await extractWin() : extractMac()).map((r) => ({ ...rebrandDeep(r), file: r.file, ...(r.picture ? { picture: r.picture } : {}) }));
   const dark = fs.readdirSync(path.join(SRC[plat], 'dark')).filter((f) => f.endsWith('.html'));
   const missingDark = list.filter((s) => !dark.includes(s.file)).map((s) => s.file);
   if (missingDark.length) throw new Error(`${plat}: no dark page for ${missingDark.join(', ')}`);
