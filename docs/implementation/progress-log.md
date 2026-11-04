@@ -69,7 +69,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Features moved:** none. Store rows wait for real StoreKit.
 - **Docs updated:** handoff, this log, evidence README, `update-safety.md`, `mac-app-review-notes.md`, the manual test cases, `mac-parity-matrix.md`, `owner-decisions.md` (the stale licence server task).
 - **Decisions made or needed:** owner: the AI tool bar (58.5% against 90%, missed before this work) and the falls on the older sets through the all-sections road.
-- **Blocked / risks:** real StoreKit, G4 in the sandbox, the signed package and TestFlight need Xcode and the developer account. The internal build changed bundle identifier, so preferences macOS keeps per identifier start fresh once.
+- **Blocked / risks:** the push to `mac/` was refused (403, read access only for `udarshmarthala`), so nothing of this reached GitHub; branch `mac/sync-2026-11-03` waits locally. GitHub reports the repository as public, against `CLAUDE.md`. Real StoreKit, G4 in the sandbox, the signed package and TestFlight need Xcode and the developer account. The internal build changed bundle identifier, so preferences macOS keeps per identifier start fresh once.
 - **Next:** the owner's store steps, the spot check, the Windows port.
 - **Checks run:** writing, migrations, links, feature status, architecture, secrets, reachability, governance, store identity tests, typecheck: OK. `release-validate --report-only --store` fails 6 on purpose (licence agreement, migration freeze, store identity, placeholders, privacy URL, Windows engine inputs). Not run: the full regular E2E, by the owner's instruction.
 
