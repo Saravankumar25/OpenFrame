@@ -63,7 +63,7 @@ export function useCommand<A extends object, R = unknown>(
 function asOpError(e: unknown): OpError {
   return e instanceof OpError ? e : new OpError("unknown", {
     code: "internal.unexpected",
-    message: "Something went wrong inside OpenFrame. Your project was not changed.",
+    message: "Something went wrong inside Straft Studio. Your project was not changed.",
     retryable: false,
   });
 }

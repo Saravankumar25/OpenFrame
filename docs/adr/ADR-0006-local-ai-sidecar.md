@@ -11,7 +11,7 @@
   signed manifest. The "Bundling the model in the installer" rejection stays rejected.
 - **Date:** 2026-09-30
 - **Related:** Engineering Index locked decisions (Offline AI, Local AI only, no Ollama); ESD §3, §10;
-  OpenFrame_Local_AI_Runtime_Model_Management_Specification.md; ADR-0012 (resolution of external-AI passages)
+  Straft_Local_AI_Runtime_Model_Management_Specification.md; ADR-0012 (resolution of external-AI passages)
 
 ## Context
 
@@ -22,17 +22,17 @@ work, must never mutate directly, and must treat project text as untrusted data 
 
 ## Decision
 
-1. **Runtime:** an OpenFrame-managed `llama.cpp` server sidecar, launched only by OpenFrame. It binds to
+1. **Runtime:** a Straft Studio-managed `llama.cpp` server sidecar, launched only by Straft Studio. It binds to
    **127.0.0.1 on a random free port**, requires a random per-launch bearer token, and never binds `0.0.0.0`. Its
    generic file and shell agent features are disabled. The sidecar process is placed in a Windows **Job Object** with
-   kill-on-close, so it cannot outlive OpenFrame. It is started on demand, never at app startup.
+   kill-on-close, so it cannot outlive Straft Studio. It is started on demand, never at app startup.
 2. **Reinstated 2026-10-15 by [ADR-0026](ADR-0026-offline-ai-download-after-install.md)** (it was superseded 2026-10-08 by
-   ADR-0025). **Delivery:** the runtime and the model are delivered by **Download Offline AI** from the OpenFrame-controlled
+   ADR-0025). **Delivery:** the runtime and the model are delivered by **Download Offline AI** from the Straft Studio-controlled
    distribution base URL (build-time `MODEL_DISTRIBUTION_BASE_URL`), described by a **signed manifest**. The manifest
    signature is Ed25519, verified with a public key compiled into the app. TLS alone is not trusted. Each artifact's
    SHA-256 and size are pinned in the manifest. Downloads go to `*.partial` with HTTP range resume and a disk-space
    preflight. Activation is an atomic rename only after hash verification. The last known-good model is kept until the
-   new one passes a health check. Store: `%LOCALAPPDATA%\OpenFrame\{models,runtimes}\`. Projects never contain models.
+   new one passes a health check. Store: `%LOCALAPPDATA%\Straft Studio\{models,runtimes}\`. Projects never contain models.
    Developers may place binaries in the gitignored `apps/desktop/src-tauri/binaries/` or `.dev-models/`.
 3. ~~**Model policy:** Qwen-family GGUF profiles (Lightweight / Recommended / High Quality), chosen automatically from
    local hardware (RAM, CPU, GPU/VRAM, free disk) with a user override by simple name.~~ *Superseded by ADR-0013

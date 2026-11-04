@@ -31,7 +31,7 @@ export function webview2Version() {
     const m = r.status === 0 ? /pv\s+REG_SZ\s+([\d.]+)/.exec(r.stdout) : null;
     if (m && m[1] !== "0.0.0.0") return m[1];
   }
-  throw new Error("The Microsoft Edge WebView2 Runtime is not installed (required by OpenFrame Studio and the E2E suite).");
+  throw new Error("The Microsoft Edge WebView2 Runtime is not installed (required by Straft Studio and the E2E suite).");
 }
 
 function installedEdgeDriverVersion() {

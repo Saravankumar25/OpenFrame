@@ -39,7 +39,7 @@ export async function setMode(browser, mode) {
     (m) => {
       const invoke = window.__TAURI_INTERNALS__.invoke;
       return invoke("of_invoke", { op: "appearance.set_mode", args: { mode: m } })
-        .then(() => invoke("of_invoke", { op: "appearance.set_theme", args: { themeId: "openframe-default" } }))
+        .then(() => invoke("of_invoke", { op: "appearance.set_theme", args: { themeId: "straft-default" } }))
         .then(() => ({ ok: true }), (e) => ({ err: JSON.stringify(e) }));
     },
     mode,

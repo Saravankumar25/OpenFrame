@@ -7,7 +7,7 @@
 // this spec's own app data; the engine is changed in this spec's own copy of the build (the
 // executable and its `ai/` folder, launched in place of the build).
 //
-// Covers: a missing model file turns AI off and offers the download again, and the rest of OpenFrame
+// Covers: a missing model file turns AI off and offers the download again, and the rest of Straft Studio
 // works; "Download again" restores it from the host; an altered model of the right size is caught
 // by the hash check before any engine starts; an altered engine library is caught before launch
 // and asks for a reinstall, never a download.
@@ -28,8 +28,8 @@ let browser;
 const step = stepper(() => browser, "ai-files");
 const BUILD_APP = process.env.E2E_APP;
 
-const DOWNLOAD_AGAIN = /An OpenFrame AI file is missing or damaged/;
-const REINSTALL = /Reinstall OpenFrame Studio to repair it/;
+const DOWNLOAD_AGAIN = /A Straft AI file is missing or damaged/;
+const REINSTALL = /Reinstall Straft Studio to repair it/;
 const panel = '//aside[@aria-label="AI Assistant"]';
 const engines = () => appProcesses().filter((p) => p.name.toLowerCase() === "llama-server.exe");
 
@@ -60,20 +60,20 @@ describe("Offline AI files: missing, damaged, whole again", () => {
     await browser?.deleteSession().catch(() => undefined);
   });
 
-  test("a missing model file turns AI off and offers the download again; the rest of OpenFrame works", async () => {
+  test("a missing model file turns AI off and offers the download again; the rest of Straft Studio works", async () => {
     await step("missing", async () => {
       await firstLaunchProject(browser, "Night Bus");
       await openAssistant(browser);
       await browser.waitUntil(async () => DOWNLOAD_AGAIN.test(await panelText(browser)), { timeout: 15_000, timeoutMsg: "no download-again message" });
       const text = await panelText(browser);
-      assert.match(text, /Download OpenFrame AI again/i); // the heading is shown in capitals
+      assert.match(text, /Download Straft AI again/i); // the heading is shown in capitals
       assert.doesNotMatch(text, REINSTALL, "a model problem never asks for a reinstall");
       assert.equal(await (await browser.$(`${panel}//textarea`)).isExisting(), false, "no question box while AI is off");
       // Settings says the same.
       await click(browser, "Offline AI settings");
       await menuItem(browser, "Offline AI settings");
       await waitForText(browser, "Needs a new download");
-      // The rest of OpenFrame is unaffected.
+      // The rest of Straft Studio is unaffected.
       await goToTasks(browser);
       await click(browser, "New Task");
       const t = await browser.$("#te-title");
@@ -131,7 +131,7 @@ describe("Offline AI files: missing, damaged, whole again", () => {
         timeout: ANSWER_TIMEOUT,
         timeoutMsg: "no reinstall message after the engine check",
       });
-      assert.doesNotMatch(await panelText(browser), /Download OpenFrame AI/, "an engine problem never offers a download");
+      assert.doesNotMatch(await panelText(browser), /Download Straft AI/, "an engine problem never offers a download");
       assert.equal(engines().length, 0, "the altered engine was never launched");
     });
   });

@@ -1,4 +1,4 @@
-# 34: UX laws checklist for OpenFrame UI work
+# 34: UX laws checklist for Straft Studio UI work
 
 > Created 2026-10-05 from the 20 "UX laws" list the owner supplied. Use it as a **review checklist** for any new or changed
 > screen, together with the UX/UI specification (which wins on labels and layout; `WindowsHTML/` on Windows and `MacHTML/` on the Mac show the shipped screens) and the accessibility
@@ -6,9 +6,9 @@
 > The supplied image numbered "Postel's law" twice (16 and 17); it is listed once here, so 19 distinct entries are below plus the
 > non-law item 8.
 
-Each row: the rule, then what it means in OpenFrame. Cite the law in the pull request when a design choice relies on it.
+Each row: the rule, then what it means in Straft Studio. Cite the law in the pull request when a design choice relies on it.
 
-| # | Law | Rule | In OpenFrame |
+| # | Law | Rule | In Straft Studio |
 |---|---|---|---|
 | 1 | Hick's law | More choices, slower decisions | Keep menus short; progressive disclosure (Advanced for custom elements, page setup, shortcuts); six default call-sheet sections, the rest behind + Add Section |
 | 2 | Fitts's law | Big, near targets are quick to hit | Primary actions large and near the work; no tiny icon-only targets; keyboard route for every command |

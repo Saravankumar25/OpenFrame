@@ -59,7 +59,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ### 2026-11-04, Release package pushed to `mac/` on GitHub
 - **Areas and items worked:** the owner's instruction to push from `Saravankumar25`.
-- **Done:** `Saravankumar25` signed in by device code on the owner's approval. Branch `mac/sync-2026-11-03` (`c58d7bcd`) pushed, [pull request 6](https://github.com/Saravankumar25/OpenFrame/pull/6) opened and merged as `fb4be22e` with a merge commit. The active `gh` login was set back to `udarshmarthala`.
+- **Done:** `Saravankumar25` signed in by device code on the owner's approval. Branch `mac/sync-2026-11-03` (`c58d7bcd`) pushed, [pull request 6](https://github.com/Saravankumar25/StraftStudio/pull/6) opened and merged as `fb4be22e` with a merge commit. The active `gh` login was set back to `udarshmarthala`.
 - **Evidence:** GitGuardian passed, the only check that ran on the pull request. `git diff` between `mac/` on main and local HEAD is empty outside `release/`; no change outside `mac/`. A scan of the pushed tree found no key files, access tokens or private keys.
 - **Features moved:** none.
 - **Docs updated:** handoff, this log.
@@ -69,9 +69,9 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Checks run:** no code changed; `npm run verify` not run.
 
 ### 2026-11-03, Release package finished on the Mac: rename, review fixes, installer, update check
-- **Areas and items worked:** Mac App Store package, payment and free trial, AI assistant quality; the owner's "OpenFrame AI" naming instruction.
-- **Done:** The product is called OpenFrame AI on every screen, message, prompt, Settings tab and in the review notes and test cases
-  (`e82646bb`, `58380df7`, `4bbf7150`). Seven findings of the file reading review fixed (`bd07d1af`). Internal build 225 built and installed from `OpenFrame-6.dmg`.
+- **Areas and items worked:** Mac App Store package, payment and free trial, AI assistant quality; the owner's "Straft AI" naming instruction.
+- **Done:** The product is called Straft AI on every screen, message, prompt, Settings tab and in the review notes and test cases
+  (`e82646bb`, `58380df7`, `4bbf7150`). Seven findings of the file reading review fixed (`bd07d1af`). Internal build 225 built and installed from `Straft-6.dmg`.
 - **Evidence:** `cargo test --workspace` excluding the desktop crate 2861 passed, clippy clean. Swift 803 of 803 (two tests fixed: a bin check that raced and a day count that broke after a clock change). Section set on the final code 322 of 336, length 39 of 40 (`docs/release/evidence/ai-reharness/final-build/`). Final E2E on the dev build: 99-store 7/7,
   98-quit 4/4, 72-ai-assistant 9/9, 77-ai-conversation 6/6, 17-internal 1/1, 26-forced 3/3, 03-story-page 1/2 then the failed one 3 of 3 alone (a driver
   focus wait fixed it, `a46790ac`), 16-about 1/1, 10-home delete 1/1. Update check 4 of 4, real data app schema 9 to 11 (`docs/release/update-safety.md`). Older
@@ -87,18 +87,18 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ### 2026-11-03, Section-scoped assistant, tuning the answers on the real model
 - **Areas and items worked:** AI assistant quality and hardening (ADR-0041): the 121 failing answers of run r6, by cause.
 - **Done:** A required value must be asked for, on every pick and field by field; a section's topic words never open one. A row that holds the asked words, a count and a named day's scenes and notes are demanded. Answer type votes need the words that back them, and a short "and the X" inherits. Settings reads the product guide and its promise on data leaving the Mac is demanded in its words. Small copied text files keep their words on `project_file.search_text` (project migration 0021) and no file is opened for a question. Storyboards and shots with no scene carry scene numbers and numbered panels. After three passes the closest answer is kept and code adds what it left out. Day Out of Days gives the days. A "could not find" is refused when a row holds the words (rule `held_back`). Six gold lines corrected.
-- **Evidence:** `docs/release/evidence/ai-reharness/after-tuning/`, answer facts 215 of 336 to 324 of 336, length 40 of 40, pointer 59 of 59 with recall 59 of 60, false pointers 0 of 333, median 2.3 s. `cargo test -p openframe-application --all-targets`.
+- **Evidence:** `docs/release/evidence/ai-reharness/after-tuning/`, answer facts 215 of 336 to 324 of 336, length 40 of 40, pointer 59 of 59 with recall 59 of 60, false pointers 0 of 333, median 2.3 s. `cargo test -p straft-application --all-targets`.
 - **Features moved:** none
 - **Docs updated:** ADR-0041, `docs/engineering/ai-answer-paths.md`, `11-physical-database.md`, `23-release-migration.md`, `modules/ai/knowledge.md`, the evidence README.
 - **Decisions made or needed:** the owner may want to read the 16 KiB limit and the file types for kept file words. Files added before migration 0021 are found by name only.
 - **Blocked / risks:** the briefs still invent detail (`NARRATIVE_WORD_CHECKS` stays off, not measured). Writer quality on three scene briefs and on four two-part questions is the model. No Swift or E2E run: new FFI-facing field `shown` value `written_added` is in the request record only.
 - **Next:** the Windows picker; a person spot-checks one case in ten of the section set (ADR-0028 decision 9).
-- **Checks run:** the tests above, `-p openframe-ai-eval -p openframe-ai-checks -p openframe-search`, clippy with warnings as errors, writing, architecture lint, migrations, links, graphify. Not run: E2E, Swift, the older gold sets on the real model, `ecc:security-review` as an agent (the file read in `files.add` was reviewed by hand and has tests for traversal by `confine`, links, size and encoding).
+- **Checks run:** the tests above, `-p straft-ai-eval -p straft-ai-checks -p straft-search`, clippy with warnings as errors, writing, architecture lint, migrations, links, graphify. Not run: E2E, Swift, the older gold sets on the real model, `ecc:security-review` as an agent (the file read in `files.add` was reviewed by hand and has tests for traversal by `confine`, links, size and encoding).
 
 ### 2026-11-03, Section-scoped assistant, slice R7 and the security review
 - **Areas and items worked:** AI assistant quality and hardening (ADR-0041, slice R7 of the release package); security review fixes.
 - **Done:** One road for a question. Deleted `AskArgs.scope`, the scope kinds, the context budget, the domain table, the fetcher table with its automatic domains, the wide passages round, the retrieval router, the project map and the scope boost in search. Migrations: project 0020, app 0011. A request with no picks under `ai_eval_all_sections` reads every section through the same path. Gold cases name sections. Swift and the web shell stop sending a scope. Review fixes: spelling note escaped, gaps of empty sections, scene reference rule, contact details in tool results, superseded call sheets, picked and off days, existence pointer for viewers, session held through a request (also in the change path), tidy Using line, search results name the picks, scenes of a chosen screenplay stay. Also: a message that says something of its own no longer confirms the last answer for memory.
-- **Evidence:** `cargo test -p openframe-application` (1234 lib, 209 ai, 186 platform, 251 production, 240 writing, 5 perf, 5 forced kill), `-p openframe-ai-eval -p openframe-ffi -p openframe-search -p openframe-entitlement` (180), Swift AI filter 92, web AI tests 60. Pointer bench with rules alone: precision 98.3 (59/60), recall 98.3 (59/60), false pointers 0 of 333.
+- **Evidence:** `cargo test -p straft-application` (1234 lib, 209 ai, 186 platform, 251 production, 240 writing, 5 perf, 5 forced kill), `-p straft-ai-eval -p straft-ffi -p straft-search -p straft-entitlement` (180), Swift AI filter 92, web AI tests 60. Pointer bench with rules alone: precision 98.3 (59/60), recall 98.3 (59/60), false pointers 0 of 333.
 - **Features moved:** none
 - **Docs updated:** ADR-0041, `docs/engineering/ai-answer-paths.md`, `docs/engineering/18-retrieval-intelligence-index.md`, `docs/specs/ai-conversational-harness.md`, the AI specification, `docs/release/windows-port-2026-11-03.md`, `gold/README.md`, manual test case TC-8.174-05, reconciliation log, handoff.
 - **Decisions made or needed:** defaults taken are listed in ADR-0041. A second run of the required-value rule is in the same section.
@@ -109,17 +109,17 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ### 2026-11-03, Section-scoped assistant, slices R4 to R6 and the memory gap
 - **Areas and items worked:** AI assistant quality and hardening (ADR-0041).
 - **Done:** Memory, focus and the map held to the picks; the out-of-section pointer (`modules/ai/pointer.rs`) with the Mac Add button; types describe, brief and story with their writer policy and briefing fetcher; the agent's tool list by section (`toolbox/homes.rs`); the m1_04 schema test waits for the background search rebuild.
-- **Evidence:** `crates/openframe-ai-eval/tests/pointer_gold.rs` on the 395 section cases with rules alone and no model: precision 98.3, recall 96.7, false pointers 0 of 333.
+- **Evidence:** `crates/straft-ai-eval/tests/pointer_gold.rs` on the 395 section cases with rules alone and no model: precision 98.3, recall 96.7, false pointers 0 of 333.
 - **Features moved:** none
-- **Docs updated:** ADR-0041, `docs/engineering/ai-answer-paths.md`, `docs/specs/ai-conversational-harness.md`, `modules/ai/knowledge.md`, `crates/openframe-ai-eval/gold/README.md`
+- **Docs updated:** ADR-0041, `docs/engineering/ai-answer-paths.md`, `docs/specs/ai-conversational-harness.md`, `modules/ai/knowledge.md`, `crates/straft-ai-eval/gold/README.md`
 - **Decisions made or needed:** defaults taken are listed in ADR-0041.
 - **Blocked / risks:** no real-model run of these slices; the relationship and mood checks stay off until measured; the Windows panel still has no picker.
 - **Next:** the full evaluation with the real model against the saved baseline; slice R7 (delete the wide path).
-- **Checks run:** `cargo test -p openframe-application`, `-p openframe-ai-eval -p openframe-ffi`, Swift AI filter, writing, architecture lint, migrations, web typecheck.
+- **Checks run:** `cargo test -p straft-application`, `-p straft-ai-eval -p straft-ffi`, Swift AI filter, writing, architecture lint, migrations, web typecheck.
 
 ### 2026-10-28, MacHTML recaptured from the real app, three Mac UI fixes
 - **Areas and items worked:** Appearance and themes (Screening Room capture in Light and Dark); Beat Board and Idea Vault; Call sheets, budget, templates, samples and exports; Test infrastructure (capture driver)
-- **Done:** Three Mac fixes from owner screenshots of 2026-10-28: budget row Edit and Delete are icon buttons with tooltips and accessibility labels (`BudgetWorkspace.swift`); the Global Idea Vault sheet from Home has a Done button and closes on Escape (`IdeaVaultWorkspace.swift`, `HomeView.swift`); the Story page placeholder disappears on the first typed character (`StoryPageTextView.swift`). MacHTML rebuilt from the development build at the full visible screen (1280 x 628 points), window frontmost and active, Screening Room in Light and Dark, 760 screens (1520 pages), every page passing the pixel and text check in both modes, including the screens added on 2026-10-27. Driver fixes: pop-up menus opened and closed with AppKit menu tracking notifications; `UI.click` posts to the event queue (fixes a vault deadlock); checked `capHideSidebar` helper; `menuButton` reuses the capture helper. `MacHTML/README.md` documents the result. The last 17 skipped tour steps were fixed (Characters map found by ids, a crew call before Finalize since the core refuses a call sheet without one, Templates reached through Project Settings, and others), so every step captures. Finished plans, a session prompt and the retired five-lane AI evidence moved to `docs/history/`. The branch went into `mac/` on GitHub `main` by pull request (ADR-0034 subtree merge), with `mac/release/` now holding `OpenFrame-5.dmg`.
+- **Done:** Three Mac fixes from owner screenshots of 2026-10-28: budget row Edit and Delete are icon buttons with tooltips and accessibility labels (`BudgetWorkspace.swift`); the Global Idea Vault sheet from Home has a Done button and closes on Escape (`IdeaVaultWorkspace.swift`, `HomeView.swift`); the Story page placeholder disappears on the first typed character (`StoryPageTextView.swift`). MacHTML rebuilt from the development build at the full visible screen (1280 x 628 points), window frontmost and active, Screening Room in Light and Dark, 760 screens (1520 pages), every page passing the pixel and text check in both modes, including the screens added on 2026-10-27. Driver fixes: pop-up menus opened and closed with AppKit menu tracking notifications; `UI.click` posts to the event queue (fixes a vault deadlock); checked `capHideSidebar` helper; `menuButton` reuses the capture helper. `MacHTML/README.md` documents the result. The last 17 skipped tour steps were fixed (Characters map found by ids, a crew call before Finalize since the core refuses a call sheet without one, Templates reached through Project Settings, and others), so every step captures. Finished plans, a session prompt and the retired five-lane AI evidence moved to `docs/history/`. The branch went into `mac/` on GitHub `main` by pull request (ADR-0034 subtree merge), with `mac/release/` now holding `Straft-5.dmg`.
 - **Evidence:** `release-out/capture/full-20261028-030147` (git-ignored) with reruns merged in; `MacHTML/README.md` verification tables; the three UI fixes confirmed in real captures.
 - **Features moved:** none
 - **Docs updated:** `docs/implementation/handoff.md`, this log, `MacHTML/README.md`
@@ -128,10 +128,10 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Next:** rerun the full regular E2E with one runner; fix the snapshot spinner in the app; a new disk image with the UI fixes on the owner's word.
 - **Checks run:** capture tour full run in Light and Dark: 31 of 40 scenarios passed first; the 9 failures were quit hangs caused by the driver, and all 14 affected or changed scenarios then passed in both modes. MacHTML page check: see `MacHTML/README.md` verification tables. Swift unit tests 784 pass (`apps/macos/scripts/test.sh`). Regular E2E not rerun. `npm run check:writing` OK.
 
-### 2026-10-28, Mac release round: security, store readiness, password removal, OpenFrame-5.dmg installed
+### 2026-10-28, Mac release round: security, store readiness, password removal, Straft-5.dmg installed
 
 - **Areas and items worked:** owner requests: store-quality Mac app, finish the end-to-end run and fix it, remove the
-  team password (owner decision 2026-10-27, ADR-0039), build `OpenFrame-5.dmg` and install it on this Mac.
+  team password (owner decision 2026-10-27, ADR-0039), build `Straft-5.dmg` and install it on this Mac.
 - **Done:** security review of the port and its fixes (Story page paste could read local files: fixed; macOS
   network volumes refused; Finder-file rule cannot delete user files; AI export, prompt, guard and memory hardening);
   Mac App Store readiness report with entitlements and privacy manifest fixed; Mac free-memory reading fixed and the
@@ -144,7 +144,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   navigation on (owner setting, off on this Mac), 91 sixteen themes (readability findings to settle), 86 moodboard
   drag and two panel-order scenarios, 75 one crash scenario (Cmd+J after relaunch), 78 remove, 01-journey 13 and 15,
   95 window fit at the minimum size (Screenplay with the sidebar, Search palette). Swift 784, Rust 2664, web 735
-  tests pass. `OpenFrame-5.dmg` (build 183, commit `be2431eb`) installed as `/Applications/OpenFrame Studio.app`.
+  tests pass. `Straft-5.dmg` (build 183, commit `be2431eb`) installed as `/Applications/Straft Studio.app`.
 - **Features moved:** none.
 - **Docs updated:** ADR-0039, owner decisions, CLAUDE.md, doc 37 and 40, store readiness report, handoff, the
   next-session prompt `docs/implementation/next-session-prompt-machtml.md`.
@@ -169,7 +169,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   Found on this Mac, first-start library setup, Settings > Storage, Make Them Mine, Add Them Back. An independent review
   found 7 defects (2 could lose Story page text), all fixed with regression tests. Also fixed: read-only `-wal`/`-shm`
   blocking a writable project (core), Project Settings hiding its buttons' ids, the AI panel forgetting open or closed
-  after Quit, Command+Q ignored with a sheet open. Mac storage: library `~/OpenFrame`, pointer outside the app data,
+  after Quit, Command+Q ignored with a sheet open. Mac storage: library `~/Straft Studio`, pointer outside the app data,
   Finder files skipped in moves, store build hides relocation. Docs level with Windows (ADR-0035 to 0038, doc 40 with a
   Mac section, specs v5 and PDF v2).
 - **Evidence:** `docs/release/evidence/mac/windows-sync-2026-10-27/` (AI baseline before the sync, four after-port
@@ -186,7 +186,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   the folder above.
 - **Docs updated:** handoff, this entry, the change list, the eval READMEs, doc 40 section 7, AI answer paths "On the
   Mac", reconciliation log (doc sync), ADR register.
-- **Decisions made or needed:** made on the owner's word: 0017 from Windows, `~/OpenFrame`, pointer folder, store
+- **Decisions made or needed:** made on the owner's word: 0017 from Windows, `~/Straft Studio`, pointer folder, store
   build hides relocation. Needed: the AI tool bar (90%) is missed on both platforms after the conversational rebuild
   (Windows 69.6%, Mac 73.9% on Low Tide); the other spec 7.5 bars missed on both are listed in the eval README.
 - **Blocked / risks:** App Store sandbox, security-scoped bookmarks and a real reinstall not tested; some E2E
@@ -200,14 +200,14 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Areas and items worked:** owner request outside the plan: "the default theme is very bad", options as HTML
   previews, then the chosen one in the Mac app (area 12, Appearance and themes).
 - **Done:** four options (Native, Paper, Screening Room, Ink) in `docs/design/theme-options/default-theme-options.html`;
-  owner chose Screening Room for the Mac only. `macDefaultTheme.json` is laid over OpenFrame Default by
+  owner chose Screening Room for the Mac only. `macDefaultTheme.json` is laid over Straft Default by
   `ThemeCatalog.withMacDefault`; Windows and the other 16 themes are unchanged. The window-wide accent tint painted every
   push button label orange: ordinary buttons are now neutral (`.ofStandard`, also inside every sheet through
   `themedSheet`), the prominent button is amber with dark text (`.ofProminent`, 89 uses), and controls macOS draws with
   white text use the Mac-only `control-tint`. The scene list is a plain list on the theme surface with the current scene
   marked (was the grey sidebar material). Bug fixed: in Dark the find bar's dimming layer covered the page and left white
   boxes; the page now has its own `NSTextFinder` without dimming.
-- **Evidence:** `ThemeEngineTests.macPaletteChangesOnlyOpenFrameDefaultAndStaysReadable` (contrast pairs in both modes);
+- **Evidence:** `ThemeEngineTests.macPaletteChangesOnlyStraftDefaultAndStaysReadable` (contrast pairs in both modes);
   capture tour scenarios `zz-capture/01-home`, `02-screenplay-find`, `10-settings` pass in Light and Dark on the dev
   build, pictures checked by eye.
 - **Features moved:** none.
@@ -225,7 +225,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   with a file-ownership map; elements now record subrole, selected, focused and pop-up choices; the tour fixes its
   window size and retakes blank pictures; `build-mac-html.mjs` writes standalone pages (picture cut into container
   regions, real HTML per accessibility element, CSS-only HTML only and Light or Dark switches, no script, no network);
-  `check-pages.swift` checks pixels and the HTML layer; `run.sh` takes `OPENFRAME_E2E_ID_SUFFIX`. Commits `0605b0f`,
+  `check-pages.swift` checks pixels and the HTML layer; `run.sh` takes `STRAFT_E2E_ID_SUFFIX`. Commits `0605b0f`,
   `8d40f4e` and this one on `mac/machtml-rebuild`. Old `release-out/MacHTML/` (179 screens) deleted.
 - **Evidence:** final run, 4 runners per mode side by side: 37 of 37 tour scenarios pass in Light and in Dark; 692
   states; check 692 of 692 pages pass in each mode, 0 HTML misses (`MacHTML/README.md`).
@@ -256,7 +256,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   column's outer view (a first launch opened it 142 points wide); a route for "Add a relationship: A is B's
   granddaughter." E2E runner: the app under test gets its own bundle identifier and empty preferences per scenario
   (the owner's own use leaked in and failed 22 scenarios). Stale scenarios updated to the Windows decisions: brand line
-  "Created using OpenFrame", Home "Create your first project.", Moodboards and Storyboards as Production tabs, Breakdown
+  "Created using Straft Studio", Home "Create your first project.", Moodboards and Storyboards as Production tabs, Breakdown
   Export, new projects are films (Episodic scenario replaced by `new-projects-are-films`), Project Home without counts.
 - **Evidence:** Windows on the Mac: `tsc --noEmit` clean, `eslint` clean, `vitest` 611 of 611. Swift 615 of 615. Mac
   E2E full run on a 1280 by 720 screen (`release-out/e2e/20261020-124940`, before the fixes) 114 passed, 86 failed;
@@ -272,7 +272,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   possibly microphone permission for the new test identifier). The full suite was not rerun after the fixes.
   `check:supply-chain` not run (`cargo-deny` and `cargo-audit` not installed).
 - **Next:** owner looks at the Mac app, then merge on the owner's word; the drags and the import field focus.
-- **Checks run:** see Evidence; `cargo test -p openframe-application` earlier this session; governance 90 of 90,
+- **Checks run:** see Evidence; `cargo test -p straft-application` earlier this session; governance 90 of 90,
   writing, links and feature status checks OK; rustfmt applied.
 
 ### 2026-10-20 (evening), Mac labels and Home as on Windows, room on small screens, AI routes measured
@@ -300,7 +300,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   overflow menu; the menu bar has each of them.
 - **Blocked / risks:** Windows TypeScript for the Story page and Beat Board not compiled here.
 - **Next:** owner looks at the Mac build; merge into `mac/m1-toolchain` on the owner's word; Windows verify run.
-- **Checks run:** `cargo test -p openframe-application` (all pass; one timing test failed once under evaluation load
+- **Checks run:** `cargo test -p straft-application` (all pass; one timing test failed once under evaluation load
   and passed twice alone), `apps/macos/scripts/test.sh` 613 of 615 before the stale toolbar test was updated (the
   other was the typing-latency test under load), the E2E scenarios above. `npm run verify` not run.
 
@@ -334,11 +334,11 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   licence are not caught). The spec 04 close helper now sends the close from compiled code after the go signal, so no
   interpreted PowerShell line sits in the timed 100 ms window.
 - **Evidence:** AI unit 94, AI integration 114 (new: licence request refused, no tool ran). Real model: safety-en-023
-  passes (`.build-cache/ai-eval-safety9`, empty steps, the refusal text). Spec 04 on the installed `OpenFrame-3.exe`,
+  passes (`.build-cache/ai-eval-safety9`, empty steps, the refusal text). Spec 04 on the installed `Straft-3.exe`,
   gated: 20 rounds by the close button and 20 by Alt+F4 all within 100 ms, no text lost.
 - **Not run:** the full safety set on the new build (an earlier run of cases 020 to 029 used a stale binary and does not
-  count); the app with this AI change is not yet in an installer (`OpenFrame-3.exe` predates it).
-- **Next:** the next installer (`OpenFrame-4.exe`) when the owner asks; full `--only safety-en` then.
+  count); the app with this AI change is not yet in an installer (`Straft-3.exe` predates it).
+- **Next:** the next installer (`Straft-4.exe`) when the owner asks; full `--only safety-en` then.
 
 ### 2026-10-20 (morning), AI follow-ups: project notes read directly, short writing kept to length, installer rebuilt
 - **Areas and items worked:** owner work outside the plan, the two AI follow-ups named at the end of the final polish
@@ -351,7 +351,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   writing 30, a paragraph 90). With no Story Board, the whole-project writer reads the opening of every scene. Passages
   the model wrote from are cited as sources, not listed under the answer.
 - **Evidence:** AI unit 93 and AI integration 113 (two new: writing from the screenplay without a Story Board; notes
-  summary without the model), clippy `-D warnings` clean on `openframe-application`, fmt clean, writing standard OK.
+  summary without the model), clippy `-D warnings` clean on `straft-application`, fmt clean, writing standard OK.
   Real-model evaluation, English (`ai-eval --only`): writing (`.build-cache/ai-eval-writing4`, 60 cases) within length
   100.0 percent (was 56.7), not empty 100.0 percent (was 91.7), tool chosen 46.7 percent (was 25.0), grounding 67.9
   percent (was 70.0), median 3.4 s (was 17.6 s). Safety (`.build-cache/ai-eval-safety4`, 41 cases) 40 of 41: safety-en-006
@@ -359,7 +359,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   did before this change. After the last prompt wording change ("You help a writer with their own story", replacing
   "a filmmaker", which the model echoed into loglines), writing on the shipped build (`.build-cache/ai-eval-writing6`):
   within length 100.0 percent, not empty 100.0 percent, grounding 67.6 percent, median 3.2 s.
-  Internal installer `release-out/OpenFrame-Studio-0.1.0-internal-3fa5433.exe` (27,141,213 bytes, SHA-256
+  Internal installer `release-out/Straft-Studio-0.1.0-internal-3fa5433.exe` (27,141,213 bytes, SHA-256
   5d5bcdfed99c88c3145d205498fad59807fdeadd1b751aa31f5d38d095993cd5, clean tree, installer scan OK), installed with `/S`
   (exit 0). E2E on the installed build, gated (`run.mjs --release=gated --app=...`): 35 of 38 spec files passed in the
   full run. Reruns: spec 30 passes after a test fix (it compared the cards before the new card's text had rendered);
@@ -367,8 +367,8 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   other desktop apps were busy); spec 04 still misses its own precondition on the installed program (close sent 114 to
   115 ms after the last key, limit 100), the same deviation as the 2026-10-18 installed run, no text lost. Skipped as
   before: specs 15 and 16 (debug only), 76 and 78 (test model host). Installers in `release-out/` are now numbered in
-  build order (owner, 2026-10-20): `OpenFrame-1.exe` (028d8b6), `OpenFrame-2.exe` (ebc23fb), `OpenFrame-3.exe` (3fa5433);
-  the build script names the next one `OpenFrame-4.exe`.
+  build order (owner, 2026-10-20): `Straft-1.exe` (028d8b6), `Straft-2.exe` (ebc23fb), `Straft-3.exe` (3fa5433);
+  the build script names the next one `Straft-4.exe`.
 - **Features moved:** none.
 - **Docs updated:** `docs/engineering/ai-answer-paths.md` (short writing family, decisions 6 and 7), this log, handoff.
 - **Decisions made or needed:** none.
@@ -380,13 +380,13 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ### 2026-10-19 to 2026-10-20, Windows final polish: owner change lists, AI repair, PDF redesign, UX audit, internal installer
 - **Areas and items worked:** owner work outside the plan, all in `docs/implementation/final-polish-plan.md`: the change
   list (`changes/all_changes.docx`, items 1 to 21), the 2026-10-20 change document (stripboard colours, Story Board
-  columns), the AI repair brief (`OpenFrameAI.docx`) and the AI context engineering brief, the PDF change specs 01 to 05,
+  columns), the AI repair brief (`StraftAI.docx`) and the AI context engineering brief, the PDF change specs 01 to 05,
   and the UX audit brief. The Windows UI keeps its own design (owner, 2026-10-19).
 - **Done:** branch `windows/final-polish` (1114758 to the last commit of this entry). Shell: logo opens all projects, Back
   and Forward, Settings gear, collapsible navigation rail, focus mode, window and page zoom, the route kept on reload,
   the stuck top bar fixed (`overflow: clip`). Features: relationship text and map, Tab cycle, scene list and Breakdown
   panels that hide, Shot List grid, Daily View export, Episodic and Series removed for new projects, four package types
-  and the screenplay Review section removed, OpenFrame Default dark palette, a new Black and White theme. AI: counts,
+  and the screenplay Review section removed, Straft Default dark palette, a new Black and White theme. AI: counts,
   scene facts, dialogue facts, character descriptions from that character's scenes, follow-ups, plain project questions
   routed to their read tool, writing kept to the asked length, clean answers with details behind "Details", a resizable
   panel. PDF: every export in the new design (samples in `release-out/pdf-samples`, not committed). UX: layout geometry
@@ -403,7 +403,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   as fast (median 17.6 s, was 35.5 s); safety 43 of 46 (was 44): in safety-en-006 the model proposed a harmless project
   note for "Summarise my project notes." (nothing applied; the case expects no proposal). Routing that wording to the
   notes reader is the fix for the next session.
-  Internal installer `release-out/OpenFrame-Studio-0.1.0-internal-ebc23fb.exe` (27,159,511 bytes, SHA-256 d6b93511f0bb5d27386cabeaea0cece34a3f4bbbb3c1e56a2b4eb6dc4502a3eb, clean tree, installer scan OK), installed over the 2026-10-18 build with `/S` (exit 0); E2E on the installed release build, gated: 38 spec files pass (`run.mjs --release=gated --app=...`).
+  Internal installer `release-out/Straft-Studio-0.1.0-internal-ebc23fb.exe` (27,159,511 bytes, SHA-256 d6b93511f0bb5d27386cabeaea0cece34a3f4bbbb3c1e56a2b4eb6dc4502a3eb, clean tree, installer scan OK), installed over the 2026-10-18 build with `/S` (exit 0); E2E on the installed release build, gated: 38 spec files pass (`run.mjs --release=gated --app=...`).
 - **Features moved:** none by status level; rows corrected for the theme count and the Episodic and Series change.
 - **Docs updated:** `docs/ux/` (audit, layout and scroll contract, feature preservation and visual regression matrices,
   change log), `docs/engineering/ai-answer-paths.md`, `docs/engineering/30-appearance-themes.md`,
@@ -451,12 +451,12 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Decisions made or needed:** the editor is built on TextKit 2 provisionally under the owner's instruction to decide while away; the owner confirms (ADR-0027 open item 1). Owner task: install full Xcode.
 - **Blocked / risks:** no full Xcode (window-level UI tests, `.dmg`); screen tests share process-wide notifications, so suites run serially.
 - **Next:** close the partly built M3 to M5 rows; M6 or M8; Xcode-based UI tests in M9.
-- **Checks run:** `cargo test --workspace --exclude openframe-desktop` (macOS), `cargo clippy -p openframe-ffi`, `apps/macos/scripts/test.sh` (229 pass), check-writing-standard, check-links, check-secrets. `npm run verify` and `npm run check:governance` not run (no `node_modules` on this Mac).
+- **Checks run:** `cargo test --workspace --exclude straft-desktop` (macOS), `cargo clippy -p straft-ffi`, `apps/macos/scripts/test.sh` (229 pass), check-writing-standard, check-links, check-secrets. `npm run verify` and `npm run check:governance` not run (no `node_modules` on this Mac).
 ### 2026-10-18 (after the W9 merge), Manual Testing Guide written (owner request outside the plan)
 - **Areas and items worked:** Windows pilot preparation (W10 input). Not a plan item: the owner asked for it directly.
-- **Done:** `docs/manual/OpenFrame_Studio_Manual_Testing_Guide.docx`: 181 figures (one per HTML mock-up), 1,496 numbered
+- **Done:** `docs/manual/Straft_Studio_Manual_Testing_Guide.docx`: 181 figures (one per HTML mock-up), 1,496 numbered
   markers, 1,889 test cases, 8 chapters, 8 end-to-end journeys, appendices A to M. Companion
-  `OpenFrame_Studio_Manual_Testing_Guide_TestCases.csv` (same IDs) and `docs/manual/test-data/` (valid, empty, corrupt,
+  `Straft_Studio_Manual_Testing_Guide_TestCases.csv` (same IDs) and `docs/manual/test-data/` (valid, empty, corrupt,
   wrong-type and special-character files plus a script for the oversized files). Each figure was compared with the specs
   and with the app source; 802 findings (486 mismatches, 316 spec gaps) are in appendix K.
 - **Evidence:** converted to PDF with Word (1,341 pages); all 181 figure bookmarks and 5,421 internal links resolve; no em
@@ -477,13 +477,13 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ### 2026-10-18 (last stretch of the endgame session), W9 closed: final installer rebuilt, gate has no Open row
 - **Areas and items worked:** Windows installer (area 20); security hardening (area 6); test infrastructure (area 5);
   AI assistant quality (English rerun); storage; Mac handoff.
-- **Done:** a security review found a medium issue in the uninstaller (it removed the whole `%LOCALAPPDATA%\OpenFrame`
+- **Done:** a security review found a medium issue in the uninstaller (it removed the whole `%LOCALAPPDATA%\Straft Studio`
   folder when the app data box was ticked). Fixed in 6f9a280: it removes only the app's own items, then the folder only
-  if empty; a governance test guards it. Final installer rebuilt at 028d8b6: `OpenFrame-Studio-0.1.0-internal-028d8b6.exe`,
+  if empty; a governance test guards it. Final installer rebuilt at 028d8b6: `Straft-Studio-0.1.0-internal-028d8b6.exe`,
   27,016,597 bytes, SHA-256 `97b71221...d50f`, clean tree, gate on, scan-installer OK (53 files), check-binary OK,
   Defender no threats. It replaces 995bfac; the 995bfac and d271894 files must not be shared. Installed per user and
   driven by the release suite (`--release=gated`, commit 7e11775). Memory soak on the installed program. T39 test added.
-  Pilot kit simplified for non-technical writers (9c354ad). Mac handoff package `openframe-dmg.zip` built. Disk freed
+  Pilot kit simplified for non-technical writers (9c354ad). Mac handoff package `straft-dmg.zip` built. Disk freed
   from about 110 GB to 12 GB.
 - **Evidence:** [installed-run.md](../release/evidence/w9/installed-run.md): 179 tests, 178 passed, 1 failed (spec 04
   helper precondition, no text lost). [memory-soak.md](../release/evidence/w9/memory-soak.md): 2 hour run, core 9.1 MB an
@@ -508,7 +508,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Done:** endgame plan and release gate; dependency upgrades to clear audit findings; SQL audit (LIKE escaping, stored
   table names); Tauri access list; installer pipeline; AI role and no-HTML tests; CET compatible binary and SHA-256
   hashing; poisoned set (60 cases, 12 languages); W10 pilot kit and freeze steps; webdriverio kept on 9. Internal
-  installer `OpenFrame-Studio-0.1.0-internal-995bfac.exe`, 27,025,974 bytes, SHA-256 `d057d115...2f3f`, from a clean tree
+  installer `Straft-Studio-0.1.0-internal-995bfac.exe`, 27,025,974 bytes, SHA-256 `d057d115...2f3f`, from a clean tree
   at 995bfac, team gate on. Commits 746be09 to 8f92cbb and the documentation commit on `windows/w9-endgame`.
 - **Evidence:** [w9 evidence](../release/evidence/w9/README.md); final release run 39 spec files, 188 tests, 0 failures
   ([e2e-release-runs.md](../release/evidence/w9/e2e-release-runs.md)); poisoned set 60 of 60 safe; Defender: no threats.
@@ -535,7 +535,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   ai-eval end-state checks that could never pass fixed (requests and expected results unchanged). Commits c51e7c8 to the
   commit of this entry on `windows/w8-download`.
 - **Evidence:** [w6](../release/evidence/w6/README.md): English correct tool 96.7 percent (bar 90), correct end state 71 of
-  80, 88.8 percent (bar 85), on the release build. openframe-application tests and clippy green.
+  80, 88.8 percent (bar 85), on the release build. straft-application tests and clippy green.
 - **Features moved:** none.
 - **Docs updated:** W6 evidence, handoff, reconciliation log.
 - **Decisions made or needed:** needed from the owner: accept W6 on the bar or ask for the remaining W6 items (memory v1,
@@ -608,7 +608,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   d996d6c (handoff and plan corrections).
 - **Evidence:** `scripts/tests/governance.test.mjs` 86 of 86 passing (new cases for proof levels, planted secrets in
   history and working tree, app addresses, installer strings); `team_gate::tests::store_builds_carry_no_gate_and_internal_release_builds_need_the_variable`
-  failed first on "use at least 12 characters", then 77 of 77 `openframe-entitlement` tests pass;
+  failed first on "use at least 12 characters", then 77 of 77 `straft-entitlement` tests pass;
   `check-secrets: OK (2048 files, 6 commits)`; `check-links: OK (130 documents; 10 app addresses)`, also with `--online`.
 - **Features moved:** none. The 65 Verified rows are now labelled proof level 2.
 - **Docs updated:** `feature-status.md`, ADR-0024, `docs/adr/README.md`, `36-entitlement-and-trial.md`, `25-ci-cd.md`,
@@ -618,7 +618,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Blocked / risks:** the debug executable holds 2,271 personal paths (W3 fixes, W9 gate refuses). No box ticked until
   the reviewers run at the end of W1.
 - **Next:** archive moves; conflict sweep and wording; storage hygiene and the worktree table.
-- **Checks run:** `npm run check:governance` passes; `cargo test -p openframe-entitlement` passes. `npm run verify`, the
+- **Checks run:** `npm run check:governance` passes; `cargo test -p straft-entitlement` passes. `npm run verify`, the
   full Rust suite and the end-to-end suite were not run this session.
 
 ### 2026-10-15 (later), documentation restructure after the owner's 25 decisions (no source code changed)

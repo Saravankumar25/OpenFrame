@@ -1,7 +1,7 @@
 # Layout and scroll contract (Windows)
 
 > Written 2026-10-20 for the owner's UX audit brief. It states the layout rules the Windows app now follows and the test
-> that measures them. Code is the source of truth: `apps/desktop/src/styles/app.css`, `openframe.css` and each
+> that measures them. Code is the source of truth: `apps/desktop/src/styles/app.css`, `straft.css` and each
 > workspace stylesheet. The measuring test is `tests/e2e/specs/98-layout-geometry.test.mjs`.
 
 ## 1. The frame never scrolls

@@ -2,7 +2,7 @@
 // Appearance in the real app (build plan area "Appearance and themes"; features THEME-001 to THEME-006):
 // Settings > Appearance from the project menu and from Home, Light / Dark / System, a built-in theme, a
 // pasted theme that is checked, previewed, saved and applied, a hostile theme that changes nothing,
-// rename, a relaunch that keeps the choice, and deleting the active theme (falls back to OpenFrame Default).
+// rename, a relaunch that keeps the choice, and deleting the active theme (falls back to Straft Default).
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
@@ -58,13 +58,13 @@ describe("appearance", () => {
   });
 
   test("mode, theme, import, rename, restart and delete", async () => {
-    await step("first start shows OpenFrame Default in System mode", async () => {
+    await step("first start shows Straft Default in System mode", async () => {
       await firstLaunchProject(browser, "Harbour Lights");
       const a = await attrs();
-      assert.equal(a.theme, "openframe-default");
+      assert.equal(a.theme, "straft-default");
       assert.equal(a.pref, "system");
-      const logo = await browser.$('//header//*[@role="img"][@aria-label="OpenFrame"]');
-      assert.ok(await logo.isDisplayed(), "the OpenFrame logo is in the top bar");
+      const logo = await browser.$('//header//*[@role="img"][@aria-label="Straft Studio"]');
+      assert.ok(await logo.isDisplayed(), "the Straft Studio logo is in the top bar");
     });
 
     await step("Settings > Appearance from the project menu; Light and Dark switch at once", async () => {
@@ -76,7 +76,7 @@ describe("appearance", () => {
       assert.ok(dark.every((v) => v < 80), `dark background ${dark}`);
       await click(browser, "Light");
       await until((a) => a.mode === "light", "Light was not applied");
-      assert.deepEqual(await bgColour(), [0xf3, 0xf1, 0xec], "OpenFrame Default Light is today's background");
+      assert.deepEqual(await bgColour(), [0xf3, 0xf1, 0xec], "Straft Default Light is today's background");
       await assertQuiet(browser, "Settings > Appearance");
     });
 
@@ -124,13 +124,13 @@ describe("appearance", () => {
       await until((a) => a.theme === "harbour-night" && a.mode === "dark", "theme or mode not restored after the relaunch");
     });
 
-    await step("Home > Appearance: deleting the active theme falls back to OpenFrame Default at once", async () => {
+    await step("Home > Appearance: deleting the active theme falls back to Straft Default at once", async () => {
       // Appearance is the first tab of Settings on Home (owner change list item 6).
       await click(browser, "Settings");
       await browser.$('//*[@role="dialog"]//*[@role="radiogroup"][@aria-label="Theme"]').waitForDisplayed({ timeout: 10_000 });
       await click(browser, "Delete Harbour Lamps");
       await inDialog(browser, "Delete Theme");
-      await until((a) => a.theme === "openframe-default", "no fallback after deleting the active theme");
+      await until((a) => a.theme === "straft-default", "no fallback after deleting the active theme");
       await click(browser, "System");
       await until((a) => a.pref === "system", "System was not applied");
       await inDialog(browser, "Done");

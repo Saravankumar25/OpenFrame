@@ -4,13 +4,13 @@
 > slices S3 to S8 of [ai-conversational-harness.md](../specs/ai-conversational-harness.md) (the design, the measurements and
 > the reasons). The five lanes it replaced are history:
 > [2026-10-26-ai-answer-paths-five-lanes.md](../history/2026-10-26-ai-answer-paths-five-lanes.md). Code is the source of
-> truth; this page names the files under `crates/openframe-application/src/modules/ai/`.
+> truth; this page names the files under `crates/straft-application/src/modules/ai/`.
 
 ## 1. One turn
 
 | Stage | Code | What it does |
 |---|---|---|
-| Ask | `apps/macos/Sources/OpenFrameUI/AI/AIAssistantModel.swift`, `orchestrator.rs` | The message, the picked sections and the conversation id reach `ai.ask`. The Windows panel sends no picks until its picker exists, so it gets the fixed "pick a section" sentence. Progress lines and Cancel run for the whole turn. |
+| Ask | `apps/macos/Sources/StraftUI/AI/AIAssistantModel.swift`, `orchestrator.rs` | The message, the picked sections and the conversation id reach `ai.ask`. The Windows panel sends no picks until its picker exists, so it gets the fixed "pick a section" sentence. Progress lines and Cancel run for the whole turn. |
 | Memory | `memory/` | The last 8 turns in full within about 1,200 tokens, summary lines for older turns, and up to 5 long-term entries of this user and project that match the message. |
 | Resolve | `index/` | An in-memory index of everything a user can name (screenplays, scenes, characters and aliases, relationships, cast, crew, locations, acts, cards, vault items, files, budget lines, shoot days, call sheets), rebuilt when content changes. Titles, scene numbers, names, typos and pronouns are matched against it and the conversation focus. With several screenplays, the title, the focus, a scene number only one screenplay has, or the current draft decides; only when none can does the turn ask one question, and the answer is kept in the focus. |
 | Answer type | `turn.rs`, `turn/` | One of lookup, list, count, explain, describe, brief, story, relation, compare, brainstorm, navigate, change, help, chat, plus its group and the length class. Code rules first, then a correction takes the previous type, then a nearest-neighbour vote over `turn_examples.jsonl` with the bundled multilingual embedding model, and the 1B model only when the vote is weak. |
@@ -44,13 +44,13 @@ errors, "the model is not ready", progress and Cancel.
 
 ## 2. Engine
 
-`crates/openframe-ai/`: llama.cpp b11259, Gemma 3 1B, one slot, `cache_prompt` on every call, a 512 MB prompt store.
+`crates/straft-ai/`: llama.cpp b11259, Gemma 3 1B, one slot, `cache_prompt` on every call, a 512 MB prompt store.
 Warm-up on project open builds the index and embeds the example messages in the background. Progress lines only, no token
 streaming (owner decision 2026-10-24).
 
 ## 3. How it is measured
 
-`crates/openframe-ai-eval`: `ai-eval` on the gold sets (`--only lt-` for the Low Tide fixtures), `--turn-only` for the
+`crates/straft-ai-eval`: `ai-eval` on the gold sets (`--only lt-` for the Low Tide fixtures), `--turn-only` for the
 answer type, `--dossier-only` for fact recall, and a latency section on every run. Results and bars: spec sections 7.5 and
 13, and the evidence folders `docs/release/evidence/ai-conversational-*-2026-10-26/`.
 
@@ -59,13 +59,13 @@ answer type, `--dossier-only` for fact recall, and a latency section on every ru
 The Mac runs the same core path; only the shell and the engine placement differ (the shared core was synced with Windows
 `114dff50` on 2026-10-27).
 
-- **Ask and progress.** The SwiftUI AI panel sends `ai.ask` through the FFI `invoke` call of `crates/openframe-ffi`. Core
+- **Ask and progress.** The SwiftUI AI panel sends `ai.ask` through the FFI `invoke` call of `crates/straft-ffi`. Core
   events reach the shell through the FFI event listener as the same JSON the Windows screens receive; `ai.progress` is
-  forwarded unchanged and the panel shows it as its progress line (`apps/macos/Sources/OpenFrameUI/AI/AILogic.swift`).
+  forwarded unchanged and the panel shows it as its progress line (`apps/macos/Sources/StraftUI/AI/AILogic.swift`).
   Cancel goes through the same core call as on Windows.
 - **Engine.** `llama-server` runs as a helper process with the pinned Apple silicon build that uses Metal
   ([ADR-0033](../adr/ADR-0033-mac-ai-engine-helper-process-metal.md)): `-ngl 999 --device MTL0`, and the processor
   (`-ngl 0`) when Metal fails, a failure the app remembers. The Windows engine settings apply on top: `--parallel 1`,
-  `--cache-ram 512`, `cache_prompt` on every call and the answer slot (`crates/openframe-ai/src/supervisor.rs`,
+  `--cache-ram 512`, `cache_prompt` on every call and the answer slot (`crates/straft-ai/src/supervisor.rs`,
   `client.rs`, `gpu.rs`).
 - **Timings.** Mac numbers: see `docs/release/evidence/mac/windows-sync-2026-10-27/` (filled after the measured run).

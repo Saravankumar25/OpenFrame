@@ -29,7 +29,7 @@ function fixture(files) {
 function run(name, root, args = []) {
   const r = spawnSync(process.execPath, [script(name), ...args], {
     encoding: "utf8",
-    env: { ...process.env, OPENFRAME_CHECK_ROOT: root },
+    env: { ...process.env, STRAFT_CHECK_ROOT: root },
   });
   return { status: r.status, out: `${r.stdout}${r.stderr}` };
 }
@@ -47,9 +47,9 @@ const edit = (root, rel, fn) => {
 // ---------------------------------------------------------------------------- architecture lint
 
 const ARCH_FILES = [
-  "crates/openframe-application/src/modules/ai/toolbox.rs",
-  "crates/openframe-ai/Cargo.toml",
-  "crates/openframe-ai/src/supervisor.rs",
+  "crates/straft-application/src/modules/ai/toolbox.rs",
+  "crates/straft-ai/Cargo.toml",
+  "crates/straft-ai/src/supervisor.rs",
   "apps/desktop/src-tauri/tauri.conf.json",
   "apps/desktop/src-tauri/Cargo.toml",
   "apps/desktop/src-tauri/src/lib.rs",
@@ -82,23 +82,23 @@ const archCases = [
   ["W3", "apps/desktop/src/workspaces/x/index.tsx", "const f = fetch;\nexport const g = () => f('x');\n"],
   ["W4", "apps/desktop/src/workspaces/x/index.tsx", "export const g = (s: string) => window.eval(s);\n"],
   ["W4", "apps/desktop/src/workspaces/x/index.tsx", 'export const g = Function("return 1");\n'],
-  ["R5", "crates/openframe-application/src/x.rs", 'use std::process::Command as C;\nfn f() { C::new("cmd"); }\n'],
-  ["R5", "crates/openframe-application/src/x.rs", "fn f() { unsafe { ShellExecuteExW(std::ptr::null_mut()); } }\n"],
-  ["R1", "crates/openframe-application/src/x.rs", 'use rusqlite::Connection as Db;\nfn f() { let _ = Db::open("x"); }\n'],
-  ["R1", "crates/openframe-application/src/modules/story/x.rs", 'fn f(c: &rusqlite::Connection) { c.execute_batch("BEGIN IMMEDIATE").unwrap(); }\n'],
-  ["R2", "crates/openframe-application/src/modules/ai/agent_x.rs", "fn f() { crate::modules::ai::change_set::accept(core, actor, id); }\n"],
-  ["R3", "crates/openframe-application/src/modules/x.rs", 'fn f() { std::net::TcpListener::bind("0.0.0.0:80").unwrap(); }\n'],
-  ["R4", "crates/openframe-domain/src/x.rs", "fn f() { unsafe { std::hint::unreachable_unchecked() } }\n"],
-  ["R5", "crates/openframe-application/src/x.rs", 'fn f() { std::process::Command::new("cmd").spawn().unwrap(); }\n'],
-  ["R6", "crates/openframe-application/src/modules/x.rs", "#[cfg(windows)]\nfn f() {}\n"],
-  ["R6", "crates/openframe-application/src/modules/x.rs", "fn f() { let _ = windows::Win32::Foundation::HANDLE::default(); }\n"],
-  ["R6", "crates/openframe-project-format/src/x.rs", "use std::os::windows::ffi::OsStrExt;\nfn f() {}\n"],
-  ["R6", "crates/openframe-application/src/x.rs", '#[cfg(target_os = "macos")]\nfn f() {}\n'],
-  ["R6", "crates/openframe-application/src/x.rs", "fn f() -> bool { cfg!(windows) }\n"],
-  ["R6", "crates/openframe-application/src/x.rs", '#[cfg(all(windows, target_env = "msvc"))]\nfn f() {}\n'],
-  ["R6", "crates/openframe-application/src/x.rs", "fn f() -> &'static str { std::env::consts::OS }\n"],
-  ["R6", "crates/openframe-application/src/x.rs", "#[cfg_attr(windows, derive(Debug))]\nstruct S;\n"],
-  ["R6", "crates/openframe-application/src/x.rs", '#[link(name = "kernel32")]\nextern "system" {}\n'],
+  ["R5", "crates/straft-application/src/x.rs", 'use std::process::Command as C;\nfn f() { C::new("cmd"); }\n'],
+  ["R5", "crates/straft-application/src/x.rs", "fn f() { unsafe { ShellExecuteExW(std::ptr::null_mut()); } }\n"],
+  ["R1", "crates/straft-application/src/x.rs", 'use rusqlite::Connection as Db;\nfn f() { let _ = Db::open("x"); }\n'],
+  ["R1", "crates/straft-application/src/modules/story/x.rs", 'fn f(c: &rusqlite::Connection) { c.execute_batch("BEGIN IMMEDIATE").unwrap(); }\n'],
+  ["R2", "crates/straft-application/src/modules/ai/agent_x.rs", "fn f() { crate::modules::ai::change_set::accept(core, actor, id); }\n"],
+  ["R3", "crates/straft-application/src/modules/x.rs", 'fn f() { std::net::TcpListener::bind("0.0.0.0:80").unwrap(); }\n'],
+  ["R4", "crates/straft-domain/src/x.rs", "fn f() { unsafe { std::hint::unreachable_unchecked() } }\n"],
+  ["R5", "crates/straft-application/src/x.rs", 'fn f() { std::process::Command::new("cmd").spawn().unwrap(); }\n'],
+  ["R6", "crates/straft-application/src/modules/x.rs", "#[cfg(windows)]\nfn f() {}\n"],
+  ["R6", "crates/straft-application/src/modules/x.rs", "fn f() { let _ = windows::Win32::Foundation::HANDLE::default(); }\n"],
+  ["R6", "crates/straft-project-format/src/x.rs", "use std::os::windows::ffi::OsStrExt;\nfn f() {}\n"],
+  ["R6", "crates/straft-application/src/x.rs", '#[cfg(target_os = "macos")]\nfn f() {}\n'],
+  ["R6", "crates/straft-application/src/x.rs", "fn f() -> bool { cfg!(windows) }\n"],
+  ["R6", "crates/straft-application/src/x.rs", '#[cfg(all(windows, target_env = "msvc"))]\nfn f() {}\n'],
+  ["R6", "crates/straft-application/src/x.rs", "fn f() -> &'static str { std::env::consts::OS }\n"],
+  ["R6", "crates/straft-application/src/x.rs", "#[cfg_attr(windows, derive(Debug))]\nstruct S;\n"],
+  ["R6", "crates/straft-application/src/x.rs", '#[link(name = "kernel32")]\nextern "system" {}\n'],
   ["R6", "apps/desktop/src-tauri/build.rs", 'fn main() { if cfg!(target_os = "windows") {} }\n'],
   // Theme colours (ADR-0014): literals need a token or a written classification.
   ["T1", "apps/desktop/src/workspaces/x/x.css", ".card { background: #fff; }\n"],
@@ -141,7 +141,7 @@ test("architecture lint ignores patterns in comments, strings and test modules",
   const root = fixture(ARCH_FILES);
   write(
     root,
-    "crates/openframe-application/src/modules/x.rs",
+    "crates/straft-application/src/modules/x.rs",
     [
       "// unsafe { } and Command::new in a comment",
       // SQL patterns (R1) are matched inside strings on purpose: SQL only ever appears in strings.
@@ -228,7 +228,7 @@ test("architecture lint catches a filesystem capability for the webview", () => 
 
 // ---------------------------------------------------------------------------- migrations
 
-const MIG_FILES = ["migrations", "crates/openframe-application/src/schema.rs"];
+const MIG_FILES = ["migrations", "crates/straft-application/src/schema.rs"];
 
 test("migration check passes on the repository", () => {
   const r = run("check-migrations.mjs", fixture(MIG_FILES));
@@ -540,14 +540,14 @@ function scan(files) {
   }
   const r = spawnSync(process.execPath, [script("scan-installer.mjs"), dir], {
     encoding: "utf8",
-    env: { ...process.env, OPENFRAME_SCAN_USER: "builderperson" },
+    env: { ...process.env, STRAFT_SCAN_USER: "builderperson" },
   });
   return { status: r.status, out: `${r.stdout}${r.stderr}` };
 }
 const binary = (...parts) => Buffer.concat([Buffer.from([0, 1, 2, 0]), ...parts, Buffer.from([0, 0, 3])]);
 
 test("installer scan passes a clean file", () => {
-  const r = scan({ "app.exe": binary(Buffer.from("OpenFrame Studio release build")) });
+  const r = scan({ "app.exe": binary(Buffer.from("Straft Studio release build")) });
   assert.equal(r.status, 0, r.out);
 });
 
@@ -567,7 +567,7 @@ test("installer scan finds a personal path in UTF-16, a secret and the user name
 
 test("release builds get control-flow guard, the Microsoft linker and no personal paths (W3)", async () => {
   const { hardenedEnv } = await import(url.pathToFileURL(script("with-msvc-linker.mjs")).href);
-  const env = hardenedEnv({ RUSTFLAGS: "-C target-cpu=x86-64-v2" }, { platform: "win32", repo: "D:/work/OpenFrame", home: "C:/Users/Some One" });
+  const env = hardenedEnv({ RUSTFLAGS: "-C target-cpu=x86-64-v2" }, { platform: "win32", repo: "D:/work/Straft Studio", home: "C:/Users/Some One" });
   const flags = env.CARGO_ENCODED_RUSTFLAGS.split("\x1f");
   assert.equal(env.CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER, "link.exe");
   assert.deepEqual(flags.slice(0, 2), ["-C", "target-cpu=x86-64-v2"], "flags set by the builder are kept");
@@ -575,7 +575,7 @@ test("release builds get control-flow guard, the Microsoft linker and no persona
   assert.ok(flags.includes("link-arg=/CETCOMPAT"));
   assert.equal(env.CFLAGS_x86_64_pc_windows_msvc, "/ZH:SHA_256");
   assert.equal(hardenedEnv({ CFLAGS: "/O2" }, { platform: "win32" }).CFLAGS_x86_64_pc_windows_msvc, "/O2 /ZH:SHA_256");
-  for (const where of ["D:/work/OpenFrame=openframe", "Some One", ".cargo=cargo", ".rustup=rustup"]) {
+  for (const where of ["D:/work/Straft Studio=straft", "Some One", ".cargo=cargo", ".rustup=rustup"]) {
     assert.ok(flags.some((f) => f.startsWith("--remap-path-prefix=") && f.includes(where)), `${where} is remapped: ${flags}`);
   }
   assert.equal(env.RUSTFLAGS, undefined, "one source of flags, the encoded one, which allows spaces in paths");
@@ -616,13 +616,13 @@ test("every end-to-end spec has its plain-step scenario file, and every scenario
 
 test("the uninstaller never deletes the app data root recursively and removes only folders the app creates", () => {
   const hook = fs.readFileSync(path.join(REPO, "apps/desktop/src-tauri/windows/installer-hooks.nsh"), "utf8");
-  assert.ok(!/RMDir\s+\/r\s+"\$LOCALAPPDATA\\OpenFrame"/i.test(hook), "recursive delete of the app data root");
-  // Folders the code creates under app_data_dir: models (openframe-ai/src/model_download.rs), ai (store.rs),
-  // logs (apps/desktop/src-tauri/src/lib.rs), entitlement (openframe-entitlement), tmp and reviews
-  // (openframe-application/src/modules/packages).
+  assert.ok(!/RMDir\s+\/r\s+"\$LOCALAPPDATA\\Straft Studio"/i.test(hook), "recursive delete of the app data root");
+  // Folders the code creates under app_data_dir: models (straft-ai/src/model_download.rs), ai (store.rs),
+  // logs (apps/desktop/src-tauri/src/lib.rs), entitlement (straft-entitlement), tmp and reviews
+  // (straft-application/src/modules/packages).
   const known = ["models", "ai", "logs", "entitlement", "tmp", "reviews"];
-  const removed = [...hook.matchAll(/^\s*RMDir\s+\/r\s+"\$LOCALAPPDATA\\OpenFrame\\([^"\\]+)"/gim)].map((m) => m[1]);
+  const removed = [...hook.matchAll(/^\s*RMDir\s+\/r\s+"\$LOCALAPPDATA\\Straft Studio\\([^"\\]+)"/gim)].map((m) => m[1]);
   assert.deepEqual(removed.filter((n) => !known.includes(n)), [], "hook removes a folder the app does not create");
   assert.deepEqual(known.filter((n) => !removed.includes(n)), [], "hook leaves a known folder behind");
-  assert.match(hook, /^\s*RMDir\s+"\$LOCALAPPDATA\\OpenFrame"\s*$/m, "final non-recursive RMDir of the root");
+  assert.match(hook, /^\s*RMDir\s+"\$LOCALAPPDATA\\Straft Studio"\s*$/m, "final non-recursive RMDir of the root");
 });

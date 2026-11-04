@@ -93,7 +93,7 @@ export function SaveErrorDialog({ state }: { state: SaveState | undefined }) {
     <Dialog
       open
       onOpenChange={(v) => !v && setDismissed(failureKey)}
-      title="OpenFrame could not save the latest changes to the project."
+      title="Straft Studio could not save the latest changes to the project."
       size="md"
       footer={
         <>
@@ -194,7 +194,7 @@ export function LeaveGuardDialog() {
       }
     >
       <p style={{ marginTop: 0 }}>
-        OpenFrame is still trying to save <b>{pending.title}</b>. If you leave now you may lose your latest edits.
+        Straft Studio is still trying to save <b>{pending.title}</b>. If you leave now you may lose your latest edits.
       </p>
     </Dialog>
   );

@@ -74,10 +74,10 @@ export function RecoveryOffer({ project, state: s }: { project: ProjectSummary |
   const changes = s.changesSinceCheckpoint;
   const { recoveryAt, newer } = describeRecovery(s);
   const lead = !s.hasCheckpoint
-    ? "OpenFrame kept an automatic recovery state of your work."
+    ? "Straft Studio kept an automatic recovery state of your work."
     : newer
-      ? "OpenFrame kept a more recent automatic recovery state than your last confirmed save."
-      : "The automatic recovery state OpenFrame kept matches your last confirmed save.";
+      ? "Straft Studio kept a more recent automatic recovery state than your last confirmed save."
+      : "The automatic recovery state Straft Studio kept matches your last confirmed save.";
   return (
     <Dialog
       open

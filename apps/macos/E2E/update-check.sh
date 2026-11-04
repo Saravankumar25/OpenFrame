@@ -10,7 +10,7 @@ set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../../.." && pwd)"
 OLD_APP="${1:?old app}"; OLD_DRIVER="${2:?old driver}"; NEW_APP="${3:?new app}"; NEW_DRIVER="${4:?new driver}"
-WORK="$(mktemp -d "${TMPDIR:-/tmp}/openframe-update.XXXXXX")"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/straft-update.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 RUN="$ROOT/release-out/update-check/run-$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$RUN"
@@ -18,18 +18,18 @@ mkdir -p "$RUN"
 private_copy() {
   ditto "$1" "$WORK/$2/$(basename "$1")"
   local app="$WORK/$2/$(basename "$1")"
-  /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier app.openframestudio.updatecheck.$2" "$app/Contents/Info.plist"
+  /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier app.straftstudio.updatecheck.$2" "$app/Contents/Info.plist"
   codesign --force --sign - --timestamp=none "$app" >/dev/null 2>&1
   echo "$app/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Contents/Info.plist")"
 }
 OLD_EXE="$(private_copy "$OLD_APP" old)"
 NEW_EXE="$(private_copy "$NEW_APP" new)"
-export OPENFRAME_E2E_FIXTURES="$ROOT/tests/fixtures"
+export STRAFT_E2E_FIXTURES="$ROOT/tests/fixtures"
 
 run_phase() { # exe driver scenario phase data out end
   local exe="$1" driver="$2" name="$3" phase="$4" data="$5" out="$6" end="$7"
-  OPENFRAME_DATA_ROOT="$data" OPENFRAME_E2E_WORK="$WORK" OPENFRAME_E2E_SCENARIO="$name" OPENFRAME_E2E_PHASE="$phase" \
-    OPENFRAME_E2E_OUT="$out" DYLD_INSERT_LIBRARIES="$driver" "$exe" >"$out/app-$phase.log" 2>&1 &
+  STRAFT_DATA_ROOT="$data" STRAFT_E2E_WORK="$WORK" STRAFT_E2E_SCENARIO="$name" STRAFT_E2E_PHASE="$phase" \
+    STRAFT_E2E_OUT="$out" DYLD_INSERT_LIBRARIES="$driver" "$exe" >"$out/app-$phase.log" 2>&1 &
   local pid=$! t=0
   while [[ ! -f "$out/result-$phase.json" ]] && kill -0 "$pid" 2>/dev/null && (( t < 1500 )); do sleep 0.2; t=$((t + 1)); done
   if [[ ! -f "$out/result-$phase.json" ]]; then

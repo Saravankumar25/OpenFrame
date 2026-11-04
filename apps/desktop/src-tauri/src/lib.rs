@@ -12,9 +12,9 @@ mod distribution;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use openframe_application::events::{AppEvent, EventSink};
-use openframe_application::{AppConfig, AppCore};
-use openframe_domain::AppError;
+use straft_application::events::{AppEvent, EventSink};
+use straft_application::{AppConfig, AppCore};
+use straft_domain::AppError;
 use serde_json::Value;
 use tauri::{AppHandle, Emitter, Manager, State};
 
@@ -54,7 +54,7 @@ struct CoreState(Arc<AppCore>);
 
 /// Keeps the sleep and wake notification registered while the app runs.
 struct PowerState(
-    #[allow(dead_code)] parking_lot::Mutex<Option<openframe_platform::power::PowerSubscription>>,
+    #[allow(dead_code)] parking_lot::Mutex<Option<straft_platform::power::PowerSubscription>>,
 );
 
 /// The folders the `ofasset` protocol may read: only managed media, the open project's
@@ -125,15 +125,15 @@ async fn of_open_asset(
     // The store lock (ADR-0022, ADR-0023) refuses project files here too, not only operations.
     core.entitlement.check_operation("shell.open_asset")?;
     let kind = if global.unwrap_or(false) {
-        openframe_application::StoreKind::Global
+        straft_application::StoreKind::Global
     } else {
-        openframe_application::StoreKind::Project
+        straft_application::StoreKind::Project
     };
     let path: PathBuf = core.with_store(kind, |s| {
         let root = s.root().to_path_buf();
-        s.read(|c| openframe_application::util::asset_file_path(c, &root, &asset_id))
+        s.read(|c| straft_application::util::asset_file_path(c, &root, &asset_id))
     })?;
-    if !openframe_security::is_local_disk_path(&path) || !path.exists() {
+    if !straft_security::is_local_disk_path(&path) || !path.exists() {
         return Err(AppError::new(
             "not_found.file",
             "This file isn't available right now. If it's on an external drive, reconnect it or relink the file.",
@@ -141,12 +141,12 @@ async fn of_open_asset(
     }
     // Files can arrive in received packages with attacker-chosen names: anything Windows
     // would *execute* is shown in File Explorer instead of being launched (PKG-01).
-    let reveal = reveal.unwrap_or(false) || openframe_security::is_dangerous_to_open(&path);
+    let reveal = reveal.unwrap_or(false) || straft_security::is_dangerous_to_open(&path);
     open_path(&path, reveal)
 }
 
 /// Reveal a known location (project folder, export result, backup) in Explorer.
-/// Only paths that OpenFrame itself produced or registered are accepted.
+/// Only paths that Straft Studio itself produced or registered are accepted.
 #[tauri::command]
 async fn of_reveal_path(
     state: State<'_, CoreState>,
@@ -179,14 +179,14 @@ async fn of_reveal_path(
             if !core.library_ready() {
                 return Err(AppError::new(
                     "library.setup_required",
-                    "Choose where OpenFrame keeps your work first.",
+                    "Choose where Straft Studio keeps your work first.",
                 ));
             }
             let dir = core.data_root();
             std::fs::create_dir_all(&dir).map_err(|e| {
                 AppError::new(
                     "internal.open_failed",
-                    "OpenFrame couldn't open that folder.",
+                    "Straft Studio couldn't open that folder.",
                 )
                 .with_detail(e.to_string())
             })?;
@@ -199,30 +199,30 @@ async fn of_reveal_path(
         "assetFolder" | "globalAssetFolder" => {
             let asset_id = id.unwrap_or_default();
             let store = if kind == "globalAssetFolder" {
-                openframe_application::StoreKind::Global
+                straft_application::StoreKind::Global
             } else {
-                openframe_application::StoreKind::Project
+                straft_application::StoreKind::Project
             };
             let file: PathBuf = core.with_store(store, |s| {
                 let root = s.root().to_path_buf();
-                s.read(|c| openframe_application::util::asset_file_path(c, &root, &asset_id))
+                s.read(|c| straft_application::util::asset_file_path(c, &root, &asset_id))
             })?;
             let dir = file
                 .parent()
-                .filter(|d| openframe_security::is_local_disk_path(d) && d.is_dir())
+                .filter(|d| straft_security::is_local_disk_path(d) && d.is_dir())
                 .ok_or_else(|| AppError::not_found("folder"))?;
             return open_path(dir, false);
         }
         "logs" => core.config.app_data_dir.join("logs"),
-        // Only files OpenFrame itself wrote this session to a location the user chose in a
+        // Only files Straft Studio itself wrote this session to a location the user chose in a
         // save dialog (recorded server-side by the export/package/copy operations). An
         // arbitrary path from the webview (for example a UNC path that would leak credentials)
         // is refused before the filesystem is touched (PATH-01).
         "exported" => {
             let raw = path.unwrap_or_default();
-            let p = openframe_security::user_path(&raw, openframe_security::NetworkPaths::Allow)
+            let p = straft_security::user_path(&raw, straft_security::NetworkPaths::Allow)
                 .map_err(|_| AppError::not_found("file"))?;
-            if !openframe_application::util::is_remembered_output(&core, &p) || !p.exists() {
+            if !straft_application::util::is_remembered_output(&core, &p) || !p.exists() {
                 return Err(AppError::not_found("file"));
             }
             p
@@ -235,10 +235,10 @@ async fn of_reveal_path(
 /// Open a web link from an Idea Vault URL item in the user's browser (explicit user action).
 #[tauri::command]
 async fn of_open_url(url: String) -> Result<(), AppError> {
-    let url = openframe_security::web_link(&url)
+    let url = straft_security::web_link(&url)
         .ok_or_else(|| AppError::invalid_input("Only web links (http or https) can be opened."))?;
-    openframe_platform::shell::open_url(url).map_err(|e| {
-        AppError::new("internal.open_failed", "OpenFrame couldn't open that link.")
+    straft_platform::shell::open_url(url).map_err(|e| {
+        AppError::new("internal.open_failed", "Straft Studio couldn't open that link.")
             .with_detail(e.to_string())
     })
 }
@@ -262,7 +262,7 @@ async fn of_close_window(
                 gate.unrelease();
                 return Err(AppError::new(
                     "internal.close_failed",
-                    "OpenFrame couldn't close the window.",
+                    "Straft Studio couldn't close the window.",
                 )
                 .with_detail(e.to_string()));
             }
@@ -273,15 +273,15 @@ async fn of_close_window(
 }
 
 /// Open a file with its default program, or show it in the file manager, through the platform
-/// boundary (`openframe_platform::shell`).
+/// boundary (`straft_platform::shell`).
 fn open_path(path: &std::path::Path, reveal: bool) -> Result<(), AppError> {
     let r = if reveal {
-        openframe_platform::shell::reveal_path(path)
+        straft_platform::shell::reveal_path(path)
     } else {
-        openframe_platform::shell::open_path(path)
+        straft_platform::shell::open_path(path)
     };
     r.map_err(|e| {
-        AppError::new("internal.open_failed", "OpenFrame couldn't open that file.")
+        AppError::new("internal.open_failed", "Straft Studio couldn't open that file.")
             .with_detail(e.to_string())
     })
 }
@@ -301,10 +301,10 @@ where
         .finish()
 }
 
-/// Log filter from `OPENFRAME_LOG` (Security baseline E7, log redaction test / P13).
+/// Log filter from `STRAFT_LOG` (Security baseline E7, log redaction test / P13).
 ///
 /// Development builds use the variable as written. Release builds accept only plain
-/// `level` and `target=level` directives: OpenFrame's own targets (`openframe*`, which never
+/// `level` and `target=level` directives: Straft Studio's own targets (`straft*`, which never
 /// log content) may go up to `trace`, every other crate is capped at `info`, because
 /// third-party debug output can quote paths, request bodies or prompts. Span and field
 /// filters are dropped. The asset protocol's refusal message (it contains the requested
@@ -331,7 +331,7 @@ fn log_filter_directives(requested: Option<&str>, release: bool) -> String {
             None => {
                 out.push(capped.to_string());
                 if rank > INFO {
-                    out.push(format!("openframe={}", LEVELS[rank]));
+                    out.push(format!("straft={}", LEVELS[rank]));
                 }
             }
             Some(t)
@@ -343,7 +343,7 @@ fn log_filter_directives(requested: Option<&str>, release: bool) -> String {
             {
                 continue;
             }
-            Some(t) if t.starts_with("openframe") => out.push(format!("{t}={}", LEVELS[rank])),
+            Some(t) if t.starts_with("straft") => out.push(format!("{t}={}", LEVELS[rank])),
             Some(t) => out.push(format!("{t}={capped}")),
         }
     }
@@ -360,13 +360,13 @@ fn init_logging(config: &AppConfig) -> Option<tracing_appender::non_blocking::Wo
     std::fs::create_dir_all(&dir).ok()?;
     let appender = tracing_appender::rolling::Builder::new()
         .rotation(tracing_appender::rolling::Rotation::DAILY)
-        .filename_prefix("openframe")
+        .filename_prefix("straft")
         .filename_suffix("log")
         .max_log_files(14)
         .build(&dir)
         .ok()?;
     let (writer, guard) = tracing_appender::non_blocking(appender);
-    let requested = std::env::var("OPENFRAME_LOG").ok();
+    let requested = std::env::var("STRAFT_LOG").ok();
     let directives = log_filter_directives(requested.as_deref(), !cfg!(debug_assertions));
     let _ = log_subscriber(&directives, writer).try_init();
     // Panics are logged (without project content) before the default hook runs.
@@ -382,39 +382,39 @@ fn init_logging(config: &AppConfig) -> Option<tracing_appender::non_blocking::Wo
             .map(|s| s.to_string())
             .or_else(|| info.payload().downcast_ref::<String>().cloned())
             .unwrap_or_default();
-        tracing::error!("{}", openframe_security::panic_summary(&message, &location));
+        tracing::error!("{}", straft_security::panic_summary(&message, &location));
         default_hook(info);
     }));
     Some(guard)
 }
 
-/// `OPENFRAME_DATA_ROOT=<dir>` runs the app fully isolated in `<dir>` (app data, projects, Global
+/// `STRAFT_DATA_ROOT=<dir>` runs the app fully isolated in `<dir>` (app data, projects, Global
 /// Idea Vault, deleted projects). Used by the desktop end-to-end suite (`tests/e2e`) so it never
 /// touches the user's data. The release build honours it too, for file locations only (ADR-0031),
 /// so the suite can drive the artifact; every other test switch below stays debug-only.
 fn isolated_data_root() -> Option<PathBuf> {
-    let root = std::env::var_os("OPENFRAME_DATA_ROOT")?;
+    let root = std::env::var_os("STRAFT_DATA_ROOT")?;
     let root = PathBuf::from(root);
     if root.is_absolute() && std::fs::create_dir_all(&root).is_ok() {
         return Some(root);
     }
     // A test folder was asked for but cannot be used: never fall back to the person's real data.
     eprintln!(
-        "OPENFRAME_DATA_ROOT is set but is not an absolute folder that can be created; OpenFrame Studio stops."
+        "STRAFT_DATA_ROOT is set but is not an absolute folder that can be created; Straft Studio stops."
     );
     std::process::exit(2);
 }
 
 /// The end-to-end suite starts an isolated debug build like a new computer, with the library not
-/// set up yet, when `OPENFRAME_LIBRARY_SETUP=1`. Every folder stays inside the test data root.
+/// set up yet, when `STRAFT_LIBRARY_SETUP=1`. Every folder stays inside the test data root.
 fn library_setup_test(release: bool) -> bool {
-    !release && std::env::var_os("OPENFRAME_LIBRARY_SETUP").is_some_and(|v| v == "1")
+    !release && std::env::var_os("STRAFT_LIBRARY_SETUP").is_some_and(|v| v == "1")
 }
 
 /// Deterministic Offline AI answers (temperature 0, fixed seed) for the end-to-end suite: only a
-/// debug build on an isolated test data root with `OPENFRAME_AI_DETERMINISTIC=1`.
+/// debug build on an isolated test data root with `STRAFT_AI_DETERMINISTIC=1`.
 fn ai_deterministic(release: bool, isolated: bool) -> bool {
-    !release && isolated && std::env::var_os("OPENFRAME_AI_DETERMINISTIC").is_some_and(|v| v == "1")
+    !release && isolated && std::env::var_os("STRAFT_AI_DETERMINISTIC").is_some_and(|v| v == "1")
 }
 
 /// Whether the hand-set licence state for tests (`entitlement.debug_set`) is available: only in a
@@ -425,19 +425,19 @@ fn entitlement_debug_controls(release: bool, isolated: bool) -> bool {
 }
 
 /// The release channel for the licence and trial check: a process running from an MSIX package is
-/// the Microsoft Store build, a Mac store build (`OPENFRAME_DISTRIBUTION=store`) is the Mac App
+/// the Microsoft Store build, a Mac store build (`STRAFT_DISTRIBUTION=store`) is the Mac App
 /// Store build, and anything else is an internal team build: the Windows installer or the Mac
 /// disk image (ADR-0023, ADR-0024).
-fn entitlement_channel() -> openframe_entitlement::Channel {
+fn entitlement_channel() -> straft_entitlement::Channel {
     channel_for(
-        openframe_platform::identity::package_family_name().is_some(),
-        openframe_platform::current_os() == openframe_platform::Os::MacOs,
+        straft_platform::identity::package_family_name().is_some(),
+        straft_platform::current_os() == straft_platform::Os::MacOs,
         distribution::Channel::current() == distribution::Channel::Store,
     )
 }
 
-fn channel_for(packaged: bool, mac: bool, store_build: bool) -> openframe_entitlement::Channel {
-    use openframe_entitlement::Channel;
+fn channel_for(packaged: bool, mac: bool, store_build: bool) -> straft_entitlement::Channel {
+    use straft_entitlement::Channel;
     if packaged {
         Channel::MicrosoftStore
     } else if mac && store_build {
@@ -454,7 +454,7 @@ pub fn run() {
     // An isolated (automated-test) root keeps deleted projects in its own folder, never the
     // computer's Recycle Bin. A file location, so the release build honours it too (ADR-0031).
     if let Some(root) = &isolated_root {
-        openframe_application::modules::project::fault::trash_into(root.join("recycle-bin"));
+        straft_application::modules::project::fault::trash_into(root.join("recycle-bin"));
     }
     let mut config = match &isolated_root {
         Some(root) => AppConfig {
@@ -483,7 +483,7 @@ pub fn run() {
     // Fixed at build time (build.rs; ADR-0032): Hugging Face at the pinned revisions, or the local
     // test host a test build names. Nothing at run time can change it.
     config.ai_model_source =
-        openframe_application::ModelSource::from_build(option_env!("OPENFRAME_TEST_MODEL_SOURCE"));
+        straft_application::ModelSource::from_build(option_env!("STRAFT_TEST_MODEL_SOURCE"));
     config.ai_deterministic = ai_deterministic(!cfg!(debug_assertions), isolated_root.is_some());
     // The Microsoft Store build's Store calls (GetAppLicenseAsync, RequestPurchaseAsync with the
     // window handle, and a refresh on OfflineLicensesChanged) need the Partner Center product
@@ -496,8 +496,8 @@ pub fn run() {
     if config.ai_model_source.is_none() {
         // The value is a loopback test address, never a secret: it says what was wrong.
         tracing::error!(
-            value = option_env!("OPENFRAME_TEST_MODEL_SOURCE").unwrap_or(""),
-            "the test model source this build was made with is not valid; OpenFrame AI cannot be downloaded"
+            value = option_env!("STRAFT_TEST_MODEL_SOURCE").unwrap_or(""),
+            "the test model source this build was made with is not valid; Straft AI cannot be downloaded"
         );
     }
     tracing::info!(
@@ -506,19 +506,19 @@ pub fn run() {
         channel = distribution.channel.as_str(),
         packaged = distribution.is_packaged(),
         in_app_updates = distribution.in_app_updates_allowed(),
-        "OpenFrame Studio starting"
+        "Straft Studio starting"
     );
     if !distribution::ensure_webview2() {
         drop(log_guard);
         return;
     }
     // No in-app updater is integrated yet (docs/engineering/24 §3). When it is, compile it only
-    // under `#[cfg(not(openframe_store))]` and register it only if
+    // under `#[cfg(not(straft_store))]` and register it only if
     // `distribution.in_app_updates_allowed()`: Store builds are updated by the Microsoft Store.
 
     let mut builder = tauri::Builder::default();
     // An isolated (automated-test) instance must not hand over to, or be
-    // blocked by, the user's own running OpenFrame Studio.
+    // blocked by, the user's own running Straft Studio.
     if isolated_root.is_none() {
         builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(w) = app.get_webview_window("main") {
@@ -541,14 +541,14 @@ pub fn run() {
         .setup(move |app| {
             let sink = Arc::new(TauriSink { app: app.handle().clone() });
             let core = AppCore::new(config, sink).map_err(|e| {
-                tracing::error!(code = e.code_str(), detail = %openframe_security::redact(e.detail.as_deref().unwrap_or("")), "failed to start application core");
+                tracing::error!(code = e.code_str(), detail = %straft_security::redact(e.detail.as_deref().unwrap_or("")), "failed to start application core");
                 Box::<dyn std::error::Error>::from(e.message.clone())
             })?;
             sync_asset_scope(&assets, &core);
             app.manage(assets.clone());
             // Sleep and wake: the open project's data is folded into its file before sleep.
             let power_core = Arc::downgrade(&core);
-            let power = openframe_platform::power::subscribe(Arc::new(move |event| {
+            let power = straft_platform::power::subscribe(Arc::new(move |event| {
                 if let Some(core) = power_core.upgrade() {
                     core.on_power_event(event);
                 }
@@ -625,7 +625,7 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![of_invoke, of_open_asset, of_reveal_path, of_open_url, of_close_window])
         .build(tauri::generate_context!())
-        .expect("error while running OpenFrame Studio")
+        .expect("error while running Straft Studio")
         .run(|_app, _event| {});
     drop(log_guard);
 }
@@ -648,7 +648,7 @@ mod tests {
 
     #[test]
     fn store_packages_are_store_channels_and_everything_else_is_an_internal_build() {
-        use openframe_entitlement::Channel;
+        use straft_entitlement::Channel;
         assert_eq!(channel_for(true, false, true), Channel::MicrosoftStore);
         assert_eq!(channel_for(true, false, false), Channel::MicrosoftStore);
         assert_eq!(channel_for(false, true, true), Channel::MacAppStore);
@@ -679,20 +679,20 @@ mod tests {
         let f = |r: &str| log_filter_directives(Some(r), true);
         assert_eq!(
             f("trace"),
-            "info,openframe=trace,tauri::protocol::asset=off"
+            "info,straft=trace,tauri::protocol::asset=off"
         );
         assert_eq!(
             f("debug"),
-            "info,openframe=debug,tauri::protocol::asset=off"
+            "info,straft=debug,tauri::protocol::asset=off"
         );
         assert_eq!(
-            f("warn,reqwest=trace,hyper=debug,openframe_ai=trace"),
-            "warn,reqwest=info,hyper=info,openframe_ai=trace,tauri::protocol::asset=off"
+            f("warn,reqwest=trace,hyper=debug,straft_ai=trace"),
+            "warn,reqwest=info,hyper=info,straft_ai=trace,tauri::protocol::asset=off"
         );
         // Span/field filters and junk are dropped; the asset protocol cannot be re-enabled.
         assert_eq!(
             f(
-                "tauri[cmd{path}]=trace,=debug,x y=info,tauri::protocol::asset=trace,openframe=bogus"
+                "tauri[cmd{path}]=trace,=debug,x y=info,tauri::protocol::asset=trace,straft=bogus"
             ),
             "info,tauri::protocol::asset=off"
         );
@@ -706,7 +706,7 @@ mod tests {
     }
 
     #[test]
-    fn development_builds_use_openframe_log_as_written() {
+    fn development_builds_use_straft_log_as_written() {
         assert_eq!(
             log_filter_directives(Some("hyper=trace"), false),
             "hyper=trace"
@@ -722,7 +722,7 @@ mod tests {
                 .expect("valid directives");
         let sub = tracing_subscriber::registry().with(filter);
         tracing::subscriber::with_default(sub, || {
-            assert!(tracing::enabled!(target: "openframe_application", tracing::Level::TRACE));
+            assert!(tracing::enabled!(target: "straft_application", tracing::Level::TRACE));
             assert!(!tracing::enabled!(target: "reqwest", tracing::Level::DEBUG));
             assert!(tracing::enabled!(target: "reqwest", tracing::Level::INFO));
             assert!(!tracing::enabled!(target: "tauri::protocol::asset", tracing::Level::ERROR));
@@ -735,7 +735,7 @@ mod tests {
     /// the `ofasset` protocol may read: the project that was left is refused at once.
     #[test]
     fn asset_scope_follows_project_open_switch_and_close() {
-        use openframe_application::events::RecordingSink;
+        use straft_application::events::RecordingSink;
         use serde_json::json;
         let base = tempfile::tempdir().unwrap();
         let core = AppCore::new(
@@ -842,12 +842,12 @@ mod tests {
     }
 
     /// Real operations with distinctive content, logged through the production subscriber with
-    /// OpenFrame's own targets at `trace` (the most a release build allows): no marker may
+    /// Straft Studio's own targets at `trace` (the most a release build allows): no marker may
     /// reach the log. Covers screenplay text, notes, contacts, AI prompts, project paths and
     /// key-like values (CORE-014, log redaction test).
     #[test]
     fn real_operations_never_write_content_to_the_log() {
-        use openframe_application::events::RecordingSink;
+        use straft_application::events::RecordingSink;
         use serde_json::json;
         use tracing_subscriber::util::SubscriberInitExt;
 
@@ -933,7 +933,7 @@ mod tests {
         // Failures carry the markers in their arguments too.
         let _ = call(
             "project.open",
-            json!({ "path": parent.join(format!("{}.openframe", MARKERS[1])).join("missing") }),
+            json!({ "path": parent.join(format!("{}.straft", MARKERS[1])).join("missing") }),
         );
         let _ = call(
             "notes.create",
@@ -949,10 +949,10 @@ mod tests {
 
         let log = String::from_utf8_lossy(&capture.0.lock()).into_owned();
         let _ = std::fs::remove_dir_all(&base);
-        // Positive control: OpenFrame's own debug output was captured.
+        // Positive control: Straft Studio's own debug output was captured.
         assert!(
             log.contains("project lock released"),
-            "the capture saw OpenFrame's debug output:\n{log}"
+            "the capture saw Straft Studio's debug output:\n{log}"
         );
         let lower = log.to_lowercase();
         for marker in MARKERS {

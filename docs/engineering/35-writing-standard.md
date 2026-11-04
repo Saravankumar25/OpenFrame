@@ -19,9 +19,9 @@ manual, documents in `docs/`, code comments, commit messages and pull request te
 4. **No decorative labels.** Plans, status files and logs use plain headings that say what the work is. Do not name a section
    "Phase 2", "Wave 3" or "M1.04". A reader must know what a heading means without a lookup table.
 
-## Labels OpenFrame builds (owner decision 2026-10-08)
+## Labels Straft Studio builds (owner decision 2026-10-08)
 
-Labels that OpenFrame puts together itself never join their parts with a dash:
+Labels that Straft Studio puts together itself never join their parts with a dash:
 
 - A kind and number before a name take a colon: "Scene 12: INT. HOSPITAL - DAY", "Shot 2B: Medium",
   "Panel 1: Bike skids", "Act 1: The Return", "Draft 2: blackrain (imported)", "Note: Wool, never leather".
@@ -35,7 +35,7 @@ Labels that OpenFrame puts together itself never join their parts with a dash:
 
 - Say the thing. Lead with the action or the answer. Cut the opening sentence that announces what the next sentence will say.
 - Prefer short, concrete sentences with one idea each. Use the same word for the same thing every time.
-- Use active voice. Name who does what: "OpenFrame saves your work" and not "your work will be saved".
+- Use active voice. Name who does what: "Straft Studio saves your work" and not "your work will be saved".
 - No hedging stacks ("may potentially help to"). State what is true, or state what is not known.
 - No triplet padding ("fast, reliable and secure") unless each word is a tested claim.
 - No marketing claims the product cannot prove. Every claim in a listing or on the website maps to a feature that is Verified in
@@ -48,8 +48,8 @@ Labels that OpenFrame puts together itself never join their parts with a dash:
 ## What is exempt
 
 - Quoted text from other people's documents, audits and archived material. Do not edit `docs/history/`.
-- User content. OpenFrame never rewrites what a person writes in their own screenplay, notes or imports. The rule applies to text
-  that OpenFrame itself produces. When OpenFrame writes an export, any em dash in the export comes only from user content.
+- User content. Straft Studio never rewrites what a person writes in their own screenplay, notes or imports. The rule applies to text
+  that Straft Studio itself produces. When Straft Studio writes an export, any em dash in the export comes only from user content.
 - Standards that require the character, for example a test fixture that checks dash handling. Put such fixtures in
   `tests/fixtures/` and allow-list the path in the check.
 

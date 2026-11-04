@@ -1,4 +1,4 @@
-# Security review of openframe-platform and openframe-entitlement, 2026-10-06
+# Security review of straft-platform and straft-entitlement, 2026-10-06
 
 > Read-only review by `ecc:security-reviewer` at commit `d30b588+dirty`, before the fixes. Findings are recorded as
 > observed. The fixes applied the same day are listed in [INDEX.md](INDEX.md) row F-18; items that need the owner are in
@@ -11,7 +11,7 @@
 
 ## Medium
 
-3. Canonical bytes were a re-serialisation of the parsed struct; a field or serde change would invalidate issued licences; no domain separation. **Fixed:** the signature covers the stored payload bytes verbatim with the prefix `openframe-licence-v1\0`.
+3. Canonical bytes were a re-serialisation of the parsed struct; a field or serde change would invalidate issued licences; no domain separation. **Fixed:** the signature covers the stored payload bytes verbatim with the prefix `straft-licence-v1\0`.
 4. Use `verify_strict`. **Fixed.**
 5. Unbounded reads before the size checks in `trial.rs` and `adapters.rs`. **Fixed:** `take(cap + 1)`.
 6. A transient read error destroyed the trial record (treated as tampering and overwritten). **Fixed:** IO errors are returned and never overwrite.
@@ -23,7 +23,7 @@
 12. `replace_from_staged` did not sync and deleted any path on a lexical parent mismatch. **Fixed:** pattern check, canonical parent compare, sync before rename, foreign files never deleted.
 13. No retry on a Windows rename sharing violation. **Fixed:** 5 attempts with backoff on error 32, 33 and PermissionDenied.
 14. `remove_stale_temps` deleted live temps and had no callers. **Fixed:** exact pattern and 10-minute age; called at project open and app start.
-15. Silent fallback to the temp folder in `dirs.rs`. **Fixed in the crate** (returns `Option`); the `openframe-project-format` wrappers keep the old fallback. **Open: owner decision** (refuse to start or ask).
+15. Silent fallback to the temp folder in `dirs.rs`. **Fixed in the crate** (returns `Option`); the `straft-project-format` wrappers keep the old fallback. **Open: owner decision** (refuse to start or ask).
 16. The trial checksum is a keyless hash: editing, deleting or a new user account restarts the trial. **Documented honestly** in `trial.rs`; store channels use their own licence service. **Open: owner decision** for the installer channel.
 
 ## Low

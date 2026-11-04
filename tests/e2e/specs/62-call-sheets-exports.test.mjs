@@ -6,7 +6,7 @@
 // input", change the schedule and review the update, finalize (a frozen snapshot), start a new
 // revision; budget Planned and Actual; a call sheet made from the Indie Call Sheet template;
 // sides (pages of the script, no brand), a production report, the moodboard, storyboard sheet and
-// shot list exports with the OpenFrame brand line; notes and tasks; then quit, relaunch and find everything again.
+// shot list exports with the Straft Studio brand line; notes and tasks; then quit, relaunch and find everything again.
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
@@ -32,8 +32,8 @@ import {
 } from "../lib/flows.mjs";
 
 const PROJECT = "Lost Property Unit";
-const OUT = mkdtempSync(join(tmpdir(), "openframe-e2e-callsheets-"));
-const BRAND = "Created using OpenFrame";
+const OUT = mkdtempSync(join(tmpdir(), "straft-e2e-callsheets-"));
+const BRAND = "Created using Straft Studio";
 
 let browser;
 const step = stepper(() => browser, "callsheets");

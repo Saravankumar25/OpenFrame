@@ -1,13 +1,13 @@
 //! Distribution channel and MSIX packaging context
 //! (docs/engineering/27-microsoft-store.md §5, docs/engineering/24-windows-packaging-updater.md §3).
 //!
-//! OpenFrame ships through two channels:
+//! Straft Studio ships through two channels:
 //!
-//! * **direct**: NSIS/MSI installers from the OpenFrame release host (the default build);
+//! * **direct**: NSIS/MSI installers from the Straft Studio release host (the default build);
 //! * **store**: an MSIX package that the Microsoft Store distributes, signs and updates.
 //!
-//! The channel is fixed at build time with `OPENFRAME_DISTRIBUTION=store|direct`. `build.rs`
-//! also sets `cfg(openframe_store)`, so code that must never ship in Store builds (the in-app
+//! The channel is fixed at build time with `STRAFT_DISTRIBUTION=store|direct`. `build.rs`
+//! also sets `cfg(straft_store)`, so code that must never ship in Store builds (the in-app
 //! updater) can be compiled out. Independently of the build flag, the process detects at runtime
 //! whether it runs with MSIX package identity. A packaged process is always updated by Windows
 //! (Store or App Installer) and never by an in-app updater: its install folder is read-only, and an
@@ -23,8 +23,8 @@ pub const WEBVIEW2_DOWNLOAD_URL: &str =
 /// `scripts/build-msix.mjs --store` refuses to package an executable that doesn't contain the
 /// `store` marker.
 pub const CHANNEL_MARKER: &str = concat!(
-    "openframe-distribution-channel:",
-    env!("OPENFRAME_DISTRIBUTION")
+    "straft-distribution-channel:",
+    env!("STRAFT_DISTRIBUTION")
 );
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -34,9 +34,9 @@ pub enum Channel {
 }
 
 impl Channel {
-    /// The channel this binary was built for (`OPENFRAME_DISTRIBUTION`, see `build.rs`).
+    /// The channel this binary was built for (`STRAFT_DISTRIBUTION`, see `build.rs`).
     pub const fn current() -> Self {
-        if cfg!(openframe_store) {
+        if cfg!(straft_store) {
             Channel::Store
         } else {
             Channel::Direct
@@ -72,7 +72,7 @@ impl Distribution {
 
     /// Whether an in-app updater may run at all. It may run only in direct builds that are not
     /// running from an MSIX package. Store builds are updated exclusively by the Microsoft Store.
-    /// Any future updater plugin must be compiled under `#[cfg(not(openframe_store))]` and
+    /// Any future updater plugin must be compiled under `#[cfg(not(straft_store))]` and
     /// registered only when this returns `true`.
     pub fn in_app_updates_allowed(&self) -> bool {
         self.channel == Channel::Direct && !self.is_packaged()
@@ -81,12 +81,12 @@ impl Distribution {
     /// Resolve the app-private data folder (settings, recents, logs, downloaded AI runtime and
     /// models).
     ///
-    /// Unpackaged builds use `%LOCALAPPDATA%\OpenFrame`. A packaged process uses the package's own
-    /// data folder (`%LOCALAPPDATA%\Packages\<family>\LocalState\OpenFrame`, the Win32 path of
+    /// Unpackaged builds use `%LOCALAPPDATA%\Straft Studio`. A packaged process uses the package's own
+    /// data folder (`%LOCALAPPDATA%\Packages\<family>\LocalState\Straft Studio`, the Win32 path of
     /// `ApplicationData.Current.LocalFolder`). The path is real and not virtualized, so Explorer
     /// ("Open logs folder") and child processes (the local AI runtime) see exactly the same files,
     /// and Windows removes the folder when the app is uninstalled. Without this, MSIX would silently
-    /// redirect new files under `%LOCALAPPDATA%\OpenFrame` to a private location that other
+    /// redirect new files under `%LOCALAPPDATA%\Straft Studio` to a private location that other
     /// processes cannot see at the original path.
     ///
     /// Projects and the Global Idea Vault live in Documents and are unaffected: MSIX does not
@@ -94,7 +94,7 @@ impl Distribution {
     pub fn app_data_dir(&self, unpackaged_default: PathBuf) -> PathBuf {
         match (
             &self.package_family_name,
-            openframe_platform::dirs::base_data_dir(),
+            straft_platform::dirs::base_data_dir(),
         ) {
             (Some(family), Some(local)) => {
                 packaged_app_data_dir(&local, family).unwrap_or(unpackaged_default)
@@ -104,16 +104,16 @@ impl Distribution {
     }
 }
 
-/// `<local_app_data>\Packages\<family>\LocalState\OpenFrame`, or `None` when `family` is not a
+/// `<local_app_data>\Packages\<family>\LocalState\Straft Studio`, or `None` when `family` is not a
 /// well-formed package family name (never build a path from unexpected input). The check is the
 /// platform boundary's `is_valid_package_family_name`.
 pub fn packaged_app_data_dir(local_app_data: &Path, family: &str) -> Option<PathBuf> {
-    openframe_platform::identity::is_valid_package_family_name(family).then(|| {
+    straft_platform::identity::is_valid_package_family_name(family).then(|| {
         local_app_data
             .join("Packages")
             .join(family)
             .join("LocalState")
-            .join("OpenFrame")
+            .join("Straft Studio")
     })
 }
 
@@ -130,11 +130,11 @@ pub fn ensure_webview2() -> bool {
         Err(e) => {
             tracing::error!(error = %e, "WebView2 runtime not available");
             let open = ask_yes_no(
-                "OpenFrame Studio",
-                "OpenFrame Studio needs the Microsoft Edge WebView2 Runtime, which isn't installed on this PC.\n\n\
-                 Open Microsoft's download page now? Install the \"Evergreen Bootstrapper\", then start OpenFrame Studio again.",
+                "Straft Studio",
+                "Straft Studio needs the Microsoft Edge WebView2 Runtime, which isn't installed on this PC.\n\n\
+                 Open Microsoft's download page now? Install the \"Evergreen Bootstrapper\", then start Straft Studio again.",
             );
-            if open && let Err(e) = openframe_platform::shell::open_url(WEBVIEW2_DOWNLOAD_URL) {
+            if open && let Err(e) = straft_platform::shell::open_url(WEBVIEW2_DOWNLOAD_URL) {
                 tracing::warn!(error = %e, "could not open the WebView2 download page");
             }
             false
@@ -168,9 +168,9 @@ mod win {
 }
 
 /// The MSIX package family name of this process, or `None` when it runs unpackaged (platform
-/// boundary: `openframe_platform::identity`).
+/// boundary: `straft_platform::identity`).
 pub fn current_package_family_name() -> Option<String> {
-    openframe_platform::identity::package_family_name()
+    straft_platform::identity::package_family_name()
 }
 
 /// A message box before any window exists (release builds have no console). Returns the button.
@@ -199,10 +199,10 @@ fn ask_yes_no(_title: &str, text: &str) -> bool {
     false
 }
 
-/// Tell the user, in plain words, why OpenFrame cannot start (no window can open yet).
+/// Tell the user, in plain words, why Straft Studio cannot start (no window can open yet).
 pub fn show_startup_error(text: &str) {
     #[cfg(windows)]
-    message_box("OpenFrame Studio", text, win::MB_OK);
+    message_box("Straft Studio", text, win::MB_OK);
     #[cfg(not(windows))]
     eprintln!("{text}");
 }
@@ -222,15 +222,15 @@ mod tests {
     fn store_builds_never_allow_in_app_updates() {
         assert!(!dist(Channel::Store, None).in_app_updates_allowed());
         assert!(
-            !dist(Channel::Store, Some("OpenFrame.Studio_8wekyb3d8bbwe")).in_app_updates_allowed()
+            !dist(Channel::Store, Some("Straft.Studio_8wekyb3d8bbwe")).in_app_updates_allowed()
         );
     }
 
     #[test]
     fn packaged_direct_builds_never_allow_in_app_updates() {
-        // e.g. a sideloaded MSIX built without OPENFRAME_DISTRIBUTION=store
+        // e.g. a sideloaded MSIX built without STRAFT_DISTRIBUTION=store
         assert!(
-            !dist(Channel::Direct, Some("OpenFrame.Studio_8wekyb3d8bbwe")).in_app_updates_allowed()
+            !dist(Channel::Direct, Some("Straft.Studio_8wekyb3d8bbwe")).in_app_updates_allowed()
         );
     }
 
@@ -243,12 +243,12 @@ mod tests {
     fn packaged_data_dir_is_the_package_local_state_folder() {
         let local = Path::new(r"C:\Users\A\AppData\Local");
         assert_eq!(
-            packaged_app_data_dir(local, "OpenFrame.Studio_8wekyb3d8bbwe").unwrap(),
+            packaged_app_data_dir(local, "Straft.Studio_8wekyb3d8bbwe").unwrap(),
             local
                 .join("Packages")
-                .join("OpenFrame.Studio_8wekyb3d8bbwe")
+                .join("Straft.Studio_8wekyb3d8bbwe")
                 .join("LocalState")
-                .join("OpenFrame")
+                .join("Straft Studio")
         );
     }
 
@@ -262,7 +262,7 @@ mod tests {
 
     #[test]
     fn unpackaged_process_keeps_default_data_dir() {
-        let default = PathBuf::from(r"C:\Users\A\AppData\Local\OpenFrame");
+        let default = PathBuf::from(r"C:\Users\A\AppData\Local\Straft Studio");
         assert_eq!(
             dist(Channel::Store, None).app_data_dir(default.clone()),
             default
@@ -271,8 +271,8 @@ mod tests {
 
     #[test]
     fn channel_matches_build_flag() {
-        // build.rs exports the channel as a compile-time env var and as cfg(openframe_store).
-        assert_eq!(env!("OPENFRAME_DISTRIBUTION"), Channel::current().as_str());
+        // build.rs exports the channel as a compile-time env var and as cfg(straft_store).
+        assert_eq!(env!("STRAFT_DISTRIBUTION"), Channel::current().as_str());
         assert!(CHANNEL_MARKER.ends_with(Channel::current().as_str()));
     }
 
@@ -280,7 +280,7 @@ mod tests {
     fn family_name_check_is_the_platform_rule() {
         let local = Path::new(r"C:\Users\A\AppData\Local");
         for name in [
-            "OpenFrame.Studio_8wekyb3d8bbwe",
+            "Straft.Studio_8wekyb3d8bbwe",
             "",
             ".hidden_x",
             r"..\..\escape_x",
@@ -289,7 +289,7 @@ mod tests {
         ] {
             assert_eq!(
                 packaged_app_data_dir(local, name).is_some(),
-                openframe_platform::identity::is_valid_package_family_name(name),
+                straft_platform::identity::is_valid_package_family_name(name),
                 "{name}"
             );
         }

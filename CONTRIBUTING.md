@@ -1,6 +1,6 @@
-# Contributing to OpenFrame Studio
+# Contributing to Straft Studio
 
-OpenFrame holds the only copy of the work of writers, screenwriters and production teams. Contributions are judged first on **not losing or corrupting
+Straft Studio holds the only copy of the work of writers, screenwriters and production teams. Contributions are judged first on **not losing or corrupting
 user data**, second on **matching the approved product behavior exactly**, and only then on everything else.
 
 > **Licensing notice.** No open-source license has been selected yet ([LICENSE-PENDING.md](LICENSE-PENDING.md)).
@@ -40,14 +40,14 @@ From the Engineering Package Index §5. Reviewers reject any change that violate
 | 3 | Every persistent project mutation is a Rust application command. | `Registry::command` + `Store::mutate` is the only write path. Nothing else opens a write transaction. |
 | 4 | Every command that mutates canonical state executes in a transaction. | `Store::mutate` uses `BEGIN IMMEDIATE`, and all side effects are rolled back together. |
 | 5 | Every persistent object uses a stable opaque identity; display numbers are not identity. | UUIDv7 `id TEXT PRIMARY KEY`, `position` for order, numbers derived at read time (ADR-0011). |
-| 6 | Filesystem assets are referenced through project-managed records and validated paths. | `asset` rows + `openframe_security::confine`; the UI opens files by asset id only. |
-| 7 | Project import is validate → preview → Change Set → apply. | Module contract: import ops parse into a preview, and applying uses `Capability::Import`/`ApplyChangeSet` through the pipeline. Archive intake uses `openframe_security::archive`. (The import modules are in development.) |
+| 6 | Filesystem assets are referenced through project-managed records and validated paths. | `asset` rows + `straft_security::confine`; the UI opens files by asset id only. |
+| 7 | Project import is validate → preview → Change Set → apply. | Module contract: import ops parse into a preview, and applying uses `Capability::Import`/`ApplyChangeSet` through the pipeline. Archive intake uses `straft_security::archive`. (The import modules are in development.) |
 | 8 | Historical snapshots and issued exports are immutable snapshots. | Module contract: snapshot rows are written once and never updated, and exports are written files that are never re-read as truth. (The snapshot/export modules are in development.) |
 | 9 | LAN participants never open the host SQLite file over a network share. | LAN collaboration is removed (ADR-0007), so there are no participants. Projects on network shares are still refused (`project_format.network_location`), and sharing happens by copy or exchange package. Do not add network listeners. |
 | 10 | Core operation does not depend on an account, internet, cloud database or cloud AI. | There is no account or cloud code. Network use is limited to explicit, user-approved downloads. |
 | 11 | Local AI failure never blocks core editing. | AI runs in an optional sidecar process started on demand. The core never waits on it. |
 | 12 | Preserve recoverable state on write failure wherever technically possible. | WAL + `synchronous=FULL`, atomic file writes, safety backups before migration/replace, crash marker + checkpoint. |
-| 13 | Model/runtime downloads are untrusted until integrity verification succeeds. | Primitives implemented: `openframe_security::{sha256_file, verify_ed25519}`. The download manager must verify before the atomic `.partial` → final rename (ADR-0006). |
+| 13 | Model/runtime downloads are untrusted until integrity verification succeeds. | Primitives implemented: `straft_security::{sha256_file, verify_ed25519}`. The download manager must verify before the atomic `.partial` → final rename (ADR-0006). |
 | 14 | Private Notes are a distinct authorization boundary. | Every query filters `owner_user_id = actor.user_id`; search filters owner-only documents. |
 | 15 | New work requires tests and traceability to approved behavior. | See §4. Tests are named after the requirement (`fsd_story_003_…`). |
 
@@ -95,7 +95,7 @@ Reviewers block a PR for any unaddressed item. "Works on my machine" is not evid
 | Layer | Tooling | Required for |
 |---|---|---|
 | Domain/persistence/security unit tests | `cargo test -p <crate>` (in-module `#[cfg(test)]`) | Pure logic, SQL helpers, parsers, path/zip safety |
-| Application integration tests | `crates/openframe-application/tests/<area>/*.rs` (one binary per area: `ai`, `writing`, `production`, `platform`; `perf` and `forced_kill` stand alone) with `openframe_test_support::TestEnv` | **Every op**: happy path, validation, undo/redo, delete/restore/purge, permissions (Viewer/Commenter denied), search hits, persistence across `env.restart()`, crash via `env.crash_and_restart()`, and every FSD acceptance criterion of the module |
+| Application integration tests | `crates/straft-application/tests/<area>/*.rs` (one binary per area: `ai`, `writing`, `production`, `platform`; `perf` and `forced_kill` stand alone) with `straft_test_support::TestEnv` | **Every op**: happy path, validation, undo/redo, delete/restore/purge, permissions (Viewer/Commenter denied), search hits, persistence across `env.restart()`, crash via `env.crash_and_restart()`, and every FSD acceptance criterion of the module |
 | Frontend unit/component tests | Vitest + Testing Library (`apps/desktop/src/**/*.test.ts(x)`) | Non-trivial pure logic, and components with behavior (keyboard, focus, error states) |
 | Golden/fixture tests | Rust tests with fixtures under the test crate | Import parsers, PDF/FDX/Fountain output determinism |
 

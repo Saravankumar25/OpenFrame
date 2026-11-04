@@ -2,7 +2,7 @@
 
 Paste into App Store Connect, App Review Information, Notes.
 
-OpenFrame Studio is an offline desktop app for screenwriters and production teams. It has no account, no server of its
+Straft Studio is an offline desktop app for screenwriters and production teams. It has no account, no server of its
 own, no analytics and no web payment. All purchases go through Apple.
 
 **How the trial works.** A free in-app purchase named "7-day Trial" starts the trial. The app counts 168 hours from Apple's
@@ -19,11 +19,11 @@ charge (Guideline 3.1.1). The price shown comes from StoreKit at run time.
 
 **How to restore.** Restore purchase is on the first-launch screen, the lock screen and the check screen.
 
-**Network use.** The app works offline after the first start. OpenFrame AI is optional: its model is a data file the
+**Network use.** The app works offline after the first start. Straft AI is optional: its model is a data file the
 person chooses to download, in Settings, from Hugging Face. The AI engine itself is inside the app and nothing executable is
 downloaded after install. The engine helper is sandboxed (inherits) and listens on 127.0.0.1 only.
 
 **Clock check.** The app reads the Mac's clock to count the trial. If the clock is set back behind a date it already trusted,
 a screen asks to set the correct time. It clears by itself once the clock is right.
 
-**Support.** https://openframestudio.app/contact/ (Help, Contact OpenFrame Support).
+**Support.** https://openframestudio.app/contact/ (Help, Contact Straft Studio Support).

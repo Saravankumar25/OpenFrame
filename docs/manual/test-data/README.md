@@ -1,6 +1,6 @@
 # Test data for the Manual Testing Guide
 
-These files go with `docs/manual/OpenFrame_Studio_Manual_Testing_Guide.docx`. They are fictional and were written for OpenFrame manual testing. Do not use real scripts.
+These files go with `docs/manual/Straft_Studio_Manual_Testing_Guide.docx`. They are fictional and were written for Straft Studio manual testing. Do not use real scripts.
 
 | File | What it is | Expected result when you import it |
 |---|---|---|

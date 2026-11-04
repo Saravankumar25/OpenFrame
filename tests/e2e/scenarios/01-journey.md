@@ -9,14 +9,14 @@ Before: the shared journey data folder is empty. The app starts for the first ti
 ## First launch, name, create a project, land on Project Home
 
 1. Start the app.
-2. Check: the screen shows "Welcome to OpenFrame Studio".
+2. Check: the screen shows "Welcome to Straft Studio".
 3. Type 'E2E Tester' in the name field of the welcome dialog.
 4. Click Continue in the dialog.
 5. Click Create Project.
 6. Type 'Night Bus' in the project title field.
 7. Click Create in the dialog.
 8. Check: the screen shows "Start with your ideas, build your story, or open a screenplay."
-9. Check: the window title is "Night Bus - OpenFrame Studio".
+9. Check: the window title is "Night Bus - Straft Studio".
 10. Check: the screen is quiet.
 
 ## Idea Vault: add a note with Quick Capture

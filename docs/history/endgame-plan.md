@@ -16,7 +16,7 @@ Scope rule: no new features. Prove what exists, find what is weak, fix it at the
 | E1 | This plan and the release gate | docs | Review against the session brief | n/a |
 | E2 | Threat model refresh: every entry point with attacker input, guard, proving test | `docs/engineering/20-security-threat-model.md` | Each row names a test that exists and passes | 2 |
 | E3 | SQL: every built SQL string audited; FTS5 MATCH and LIKE escaping; hostile-string tests | storage and application search and list operations | Grep report saved; new tests fail before the fix, pass after | 2, then 3 with the suite |
-| E4 | AI safety: poisoned-retrieval corpus (40 or more cases, 13 languages); no live HTML from model output; Viewer cannot change anything through any AI tool | AI module, `openframe-ai-eval`, `apps/desktop/src/ai` | Corpus run report; one Rust test per tool for the Viewer role; vitest for rendering | 2 and 3 |
+| E4 | AI safety: poisoned-retrieval corpus (40 or more cases, 13 languages); no live HTML from model output; Viewer cannot change anything through any AI tool | AI module, `straft-ai-eval`, `apps/desktop/src/ai` | Corpus run report; one Rust test per tool for the Viewer role; vitest for rendering | 2 and 3 |
 | E5 | Tauri surface: capabilities, commands, CSP, IPC argument validation, `deny_unknown_fields` | `apps/desktop/src-tauri` | Config review report; tests for rejected arguments | 2 and 3 |
 | E6 | Files: traversal, reserved names, links, bombs, entity expansion, malformed PDF and images; fuzz every importer for a fixed time | importers, `fuzz/` | Hostile file tests; fuzz results and corpora saved | 2 |
 | E7 | Process control of the AI engine: fixed binary and arguments, exits with the app, crash never hangs | AI engine supervisor | Rust tests; release suite specs 72 to 76 | 2 and 3 |
@@ -31,7 +31,7 @@ Scope rule: no new features. Prove what exists, find what is weak, fix it at the
 | E16 | Clean as you go (documentation and clean-up agents only, file-ownership map first): dead code, links, writing counts, licences, status rows | docs, unused code | `check:governance` green | n/a |
 | E17 | Final: whole `ai-eval` (679 cases) on the release build, handoff, progress log, dashboard, graph update | docs | Saved report; `plan:status` | 3 |
 
-Owner inputs this plan waits on (everything else continues meanwhile): the `OPENFRAME_TEAM_PASSWORD` variable set on this
+Owner inputs this plan waits on (everything else continues meanwhile): the `STRAFT_TEAM_PASSWORD` variable set on this
 computer (E11), a click on the Windows administrator prompt when VirtualBox installs (E12), and a second Windows user
 account on this laptop, which only the owner may create (E12, backup and restore on a second account).
 

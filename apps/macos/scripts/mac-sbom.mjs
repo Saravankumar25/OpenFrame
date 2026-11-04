@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // Software bill of materials for the Mac app (CycloneDX 1.5 JSON on standard output).
 //
-//   node apps/macos/scripts/mac-sbom.mjs "<path to OpenFrame Studio.app>"
+//   node apps/macos/scripts/mac-sbom.mjs "<path to Straft Studio.app>"
 //
-// Components: the Rust crates linked into the core (normal dependency edges from openframe-ffi
+// Components: the Rust crates linked into the core (normal dependency edges from straft-ffi
 // for aarch64-apple-darwin, from `cargo metadata --locked`), the offline AI engine files inside
 // the bundle with their SHA-256 (pinned in packaging/ai/ai-assets.lock.json), and the app
 // executable itself. The Swift package has no third-party dependencies. Apple system frameworks
@@ -18,7 +18,7 @@ import url from "node:url";
 const ROOT = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "../../..");
 const app = process.argv[2];
 if (!app || !fs.existsSync(app)) {
-  console.error("usage: node apps/macos/scripts/mac-sbom.mjs <OpenFrame Studio.app>");
+  console.error("usage: node apps/macos/scripts/mac-sbom.mjs <Straft Studio.app>");
   process.exit(2);
 }
 
@@ -33,7 +33,7 @@ const meta = JSON.parse(
 );
 const byId = new Map(meta.packages.map((p) => [p.id, p]));
 const nodes = new Map(meta.resolve.nodes.map((n) => [n.id, n]));
-const root = meta.packages.find((p) => p.name === "openframe-ffi");
+const root = meta.packages.find((p) => p.name === "straft-ffi");
 const seen = new Set();
 const stack = [root.id];
 while (stack.length) {
@@ -46,7 +46,7 @@ while (stack.length) {
 }
 const crates = [...seen]
   .map((id) => byId.get(id))
-  .filter((p) => p && !p.name.startsWith("openframe-"))
+  .filter((p) => p && !p.name.startsWith("straft-"))
   .sort((a, b) => a.name.localeCompare(b.name) || a.version.localeCompare(b.version))
   .map((p) => ({
     type: "library",
@@ -68,7 +68,7 @@ if (fs.existsSync(aiDir)) {
   };
   walk(aiDir);
 }
-const exe = path.join(app, "Contents/MacOS/OpenFrameStudio");
+const exe = path.join(app, "Contents/MacOS/StraftStudio");
 const version = execFileSync("/usr/libexec/PlistBuddy", ["-c", "Print :CFBundleShortVersionString", path.join(app, "Contents/Info.plist")]).toString().trim();
 
 const sbom = {
@@ -78,7 +78,7 @@ const sbom = {
   metadata: {
     component: {
       type: "application",
-      name: "OpenFrame Studio",
+      name: "Straft Studio",
       version,
       hashes: [{ alg: "SHA-256", content: sha256(exe) }],
     },

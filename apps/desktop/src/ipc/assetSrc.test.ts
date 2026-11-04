@@ -13,7 +13,7 @@ vi.mock("@tauri-apps/api/core", () => ({ convertFileSrc: (p: string, s?: string)
 const { ASSET_SCHEME, assetSrc, fileSrc } = await import("./assetSrc");
 
 const asset = (over: Record<string, unknown> = {}) =>
-  ({ id: "a1", available: true, path: "C:\\Films\\Letter Town.openframe\\assets\\voice.webm", ...over }) as never;
+  ({ id: "a1", available: true, path: "C:\\Films\\Letter Town.straft\\assets\\voice.webm", ...over }) as never;
 
 describe("assetSrc", () => {
   beforeEach(() => {
@@ -26,8 +26,8 @@ describe("assetSrc", () => {
 
   it("builds the URL on the app's ofasset protocol", () => {
     expect(ASSET_SCHEME).toBe("ofasset");
-    expect(assetSrc(asset())).toBe(`http://ofasset.localhost/${encodeURIComponent("C:\\Films\\Letter Town.openframe\\assets\\voice.webm")}`);
-    expect(convertFileSrc).toHaveBeenCalledWith("C:\\Films\\Letter Town.openframe\\assets\\voice.webm", "ofasset");
+    expect(assetSrc(asset())).toBe(`http://ofasset.localhost/${encodeURIComponent("C:\\Films\\Letter Town.straft\\assets\\voice.webm")}`);
+    expect(convertFileSrc).toHaveBeenCalledWith("C:\\Films\\Letter Town.straft\\assets\\voice.webm", "ofasset");
   });
 
   it("gives nothing for a missing file, no path, or outside the desktop app", () => {

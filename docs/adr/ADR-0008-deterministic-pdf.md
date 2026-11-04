@@ -11,7 +11,7 @@
 
 ## Context
 
-OpenFrame must produce professional PDFs offline: screenplay (industry format, Courier 12 pt), sides, call sheets,
+Straft Studio must produce professional PDFs offline: screenplay (industry format, Courier 12 pt), sides, call sheets,
 schedules, breakdown and reports. Exports are snapshots handed to cast and crew, so the same input must produce the
 same file, which allows golden tests and meaningful "has this changed?" checks. Headless-browser printing (WebView2
 `PrintToPdf`) depends on the webview version and is not byte-stable. Big PDF engines are heavy or GPL/AGPL-licensed.
@@ -23,10 +23,10 @@ same file, which allows golden tests and meaningful "has this changed?" checks. 
 2. Use only the **standard base-14 fonts**: Courier (screenplay and sides), Helvetica (production documents), and
    their bold/oblique variants. They are referenced by name with `WinAnsiEncoding` and no embedded font files.
 3. **Determinism rules:** no creation/modification timestamps or random ids in the output. `/ID` and document
-   metadata are derived from the export's content hash and its snapshot time as recorded by OpenFrame. Object order is
+   metadata are derived from the export's content hash and its snapshot time as recorded by Straft Studio. Object order is
    fixed. Floating-point coordinates are rounded to a fixed precision. Same snapshot + same settings ⇒ byte-identical
    PDF, enforced by golden-file tests.
-4. Paper size is an explicit export setting (US Letter and A4). OpenFrame never guesses silently.
+4. Paper size is an explicit export setting (US Letter and A4). Straft Studio never guesses silently.
 5. **`lopdf`** is used only for reading and validating (tests, import inspection), never for authoring.
 6. **Character coverage guard:** base-14 fonts cover WinAnsi (≈ Latin-1) only. Before rendering, the exporter checks
    every string. If any character cannot be encoded, the export fails with `export.unsupported_characters`, listing

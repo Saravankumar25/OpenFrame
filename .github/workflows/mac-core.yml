@@ -1,4 +1,4 @@
-# OpenFrame Studio: Mac core check (docs/engineering/25-ci-cd.md, docs/roadmap/chapter-1b-mac-phases.md).
+# Straft Studio: Mac core check (docs/engineering/25-ci-cd.md, docs/roadmap/chapter-1b-mac-phases.md).
 #
 # Checks that the shared Rust core builds and passes its tests on Apple silicon, then runs the two
 # scripts of the native Mac app: apps/macos/scripts/build-core.sh (builds the core and its Swift
@@ -66,7 +66,7 @@ jobs:
           xcodebuild -version || true
 
       - name: cargo test (whole workspace except the Windows desktop shell)
-        run: cargo test --workspace --exclude openframe-desktop --locked
+        run: cargo test --workspace --exclude straft-desktop --locked
 
       - name: Build the core for the Mac app
         run: bash apps/macos/scripts/build-core.sh
@@ -77,4 +77,4 @@ jobs:
       # The Swift operation list and types are generated from the same registry and ts-rs output
       # as the TypeScript bindings (ADR-0027 decision 4); a stale committed copy fails here.
       - name: Generated Swift types are up to date
-        run: git diff --exit-code -- apps/macos/Sources/OpenFrameCore/Generated/
+        run: git diff --exit-code -- apps/macos/Sources/StraftCore/Generated/

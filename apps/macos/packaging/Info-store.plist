@@ -9,10 +9,10 @@
      its own (docs/release/mac-app-store-readiness.md). -->
 <plist version="1.0">
 <dict>
-	<key>CFBundleName</key><string>OpenFrame Studio</string>
-	<key>CFBundleDisplayName</key><string>OpenFrame Studio</string>
-	<key>CFBundleIdentifier</key><string>app.openframestudio.studio</string>
-	<key>CFBundleExecutable</key><string>OpenFrameStudio</string>
+	<key>CFBundleName</key><string>Straft Studio</string>
+	<key>CFBundleDisplayName</key><string>Straft Studio</string>
+	<key>CFBundleIdentifier</key><string>app.straftstudio.studio</string>
+	<key>CFBundleExecutable</key><string>StraftStudio</string>
 	<key>CFBundleIconFile</key><string>AppIcon</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
 	<key>CFBundleShortVersionString</key><string>__VERSION__</string>
@@ -24,7 +24,7 @@
 	<key>ITSAppUsesNonExemptEncryption</key><false/>
 	<key>NSHighResolutionCapable</key><true/>
 	<key>NSHumanReadableCopyright</key><string>Copyright 2026 Vighnajith Advisories Private Limited</string>
-	<key>NSMicrophoneUsageDescription</key><string>OpenFrame Studio records voice notes into your Idea Vault only when you press Record.</string>
+	<key>NSMicrophoneUsageDescription</key><string>Straft Studio records voice notes into your Idea Vault only when you press Record.</string>
 	<key>NSSupportsAutomaticTermination</key><false/>
 	<key>NSSupportsSuddenTermination</key><false/>
 </dict>

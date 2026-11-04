@@ -1,7 +1,7 @@
 # Windows UX change log (final polish, October 2026)
 
 > Sources: the owner's change list (`changes/all_changes.docx`), the 2026-10-20 change document
-> (`openframe-chnages.docx`), the AI repair brief (`OpenFrameAI.docx`) and the UX audit brief. None of these source
+> (`straft-chnages.docx`), the AI repair brief (`StraftAI.docx`) and the UX audit brief. None of these source
 > files are committed. Owner decision 2026-10-19: the Windows app keeps its own design and is not unified with the Mac
 > app; only the listed changes are made, in the Windows style. Detailed plan: `docs/history/final-polish-plan.md`.
 
@@ -26,10 +26,10 @@
 | Screenplay Compare drafts | The draft pickers and the view controls sit in two groups in a bar that grows with its rows; nothing overlaps the changes list or the summary | The compare bar kept the 46 px height of the screenplay toolbar and its full-width `select.select` pickers wrapped onto a second row that ran over the content | `screenplay/CompareView.tsx`, `screenplay.css`, `app.css` |
 | Settings Offline AI | Technical details takes a row of its own at the full width; hashes and addresses wrap in their cells and show in full in a tooltip | The component table was squeezed into a 420 px card, its long values forced it wider than the card and it ran under the AI health card | `settings/OfflineAi.tsx`, `ai/ai.css` |
 | Screenplay Find | Find next, previous and typing scroll the page to the current match in both scopes; Replace moves on to the next match after the replaced text; the count follows edits, undo and Replace All | The editor's own scroll-into-view follows the browser selection, which sits in the Find box, so it scrolled the wrong area; the count was only updated by the Find bar's own buttons | `editor/find.ts`, `editor/ScreenplayEditor.tsx` |
-| Stripboard | EXT Night green, INT Night light blue, EXT Day yellow, INT Day white | 2026-10-20 change document item 1 | `openframe.css` |
+| Stripboard | EXT Night green, INT Night light blue, EXT Day yellow, INT Day white | 2026-10-20 change document item 1 | `straft.css` |
 | Packages | Breakdown, Shot List, Schedule and Call Sheet Review packages removed (export refused with a clear message; old files still open) | Owner change list | `features/packages/*`, `modules/packages/exchange.rs` |
 | New project | Episodic and Series removed for new projects; existing projects keep their type | Owner change list | `NewProjectDialog.tsx`, `ProjectSettingsForm.tsx` |
-| Themes | OpenFrame Default has its own dark palette; new Black and White theme (black on white in Light, white on black in Dark); dark contrast fixes | Owner change list, UX brief | `themes.json` |
+| Themes | Straft Default has its own dark palette; new Black and White theme (black on white in Light, white on black in Dark); dark contrast fixes | Owner change list, UX brief | `themes.json` |
 | AI panel | Resizable; plain answers first, details behind "See sources"; long lists show eight items and "Show all" | AI repair brief | `ai/AiPanel.tsx`, `ai/Conversation.tsx` |
 | AI answers | "Details" is now a ghost button, "See sources". It holds the sources, the steps, how sure the answer is, and the rows of a count, a scene fact or a written answer. Rows stay under the answer only when the person asked for a list (the core sets `itemsAreAnswer` per tool). Model-written text loses markdown (bold, bullets, headings) before it is shown | Owner request 2026-10-20: every chat answer is plain text and all metadata sits under one button. Lists under a count repeated what the sentence already said | `ai/Conversation.tsx`, `ai/ai.css`, `modules/ai/toolbox.rs`, `modules/ai/orchestrator.rs`, `modules/ai/records.rs` |
 

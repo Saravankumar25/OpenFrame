@@ -46,8 +46,8 @@ import {
 } from "./rules";
 import "./licensing.css";
 
-const BUY_FAILED = "OpenFrame could not start the purchase right now. Everything keeps working.";
-const SAVE_FAILED = "OpenFrame could not save this step. Try again.";
+const BUY_FAILED = "Straft Studio could not start the purchase right now. Everything keeps working.";
+const SAVE_FAILED = "Straft Studio could not save this step. Try again.";
 
 /** Holds back the app's own keyboard shortcuts (Ctrl, Alt or Cmd combinations) while a mandatory
  * screen is open, so nothing opens on top of it or behind it. Copy, cut, paste and select all go
@@ -90,7 +90,7 @@ export function LicenceScreens({ projectOpen }: { projectOpen: boolean }) {
   const today = localDay();
 
   // A reminder is remembered as soon as it is shown, so it appears at most once that day even
-  // if OpenFrame closes while it is open. A failed save only means it may show once more, so it
+  // if Straft Studio closes while it is open. A failed save only means it may show once more, so it
   // goes to the diagnostics and not on screen.
   useEffect(() => {
     if (notice?.kind !== "reminder" || !projectOpen || reminder !== null || dismissedOn === today) return;
@@ -174,7 +174,7 @@ export function ReminderDialog({ daysLeft, onClose }: { daysLeft: number; onClos
     >
       <Brand />
       <h3 style={{ margin: "10px 0 6px", textAlign: "center", fontSize: 19 }}>{reminderHeadline(daysLeft)}</h3>
-      <p style={{ textAlign: "center", margin: "0 0 8px" }}>Buy the full version to keep using OpenFrame Studio.</p>
+      <p style={{ textAlign: "center", margin: "0 0 8px" }}>Buy the full version to keep using Straft Studio.</p>
       <Banner tone="info">
         <Info size={14} aria-hidden /> Your projects stay on your computer either way. Nothing is deleted when the trial ends.
       </Banner>
@@ -192,15 +192,15 @@ export function ReminderDialog({ daysLeft, onClose }: { daysLeft: number; onClos
 const DATA_POINTS: { title: string; body: string }[] = [
   {
     title: "Your projects live only on this computer.",
-    body: "OpenFrame has no cloud. We do not hold a copy, so we cannot recover your work if the computer is lost, stolen, damaged or reset.",
+    body: "Straft Studio has no cloud. We do not hold a copy, so we cannot recover your work if the computer is lost, stolen, damaged or reset.",
   },
   {
     title: "Back up the whole root folder.",
-    body: "Pick the one folder where your OpenFrame projects are saved and copy it to Google Drive (or another cloud drive) and, if you can, to an external disk. Repeat it often.",
+    body: "Pick the one folder where your Straft Studio projects are saved and copy it to Google Drive (or another cloud drive) and, if you can, to an external disk. Repeat it often.",
   },
   {
     title: "Moving to a new laptop is your job, too.",
-    body: "Copy that same root folder to the new computer, install OpenFrame, then use Open Project and pick the folder.",
+    body: "Copy that same root folder to the new computer, install Straft Studio, then use Open Project and pick the folder.",
   },
   {
     title: "Keep at least two copies.",
@@ -208,10 +208,10 @@ const DATA_POINTS: { title: string; body: string }[] = [
   },
   {
     title: "Never delete or rename the root folder by hand.",
-    body: "Use OpenFrame to rename, archive or delete projects.",
+    body: "Use Straft Studio to rename, archive or delete projects.",
   },
   {
-    title: "Backups inside OpenFrame are separate copies.",
+    title: "Backups inside Straft Studio are separate copies.",
     body: "Create Backup saves a copy; still keep it off this computer.",
   },
 ];
@@ -223,7 +223,7 @@ function atEnd(el: HTMLElement): boolean {
 
 function RootFolder({ dataRoot, platform, heading }: { dataRoot: string; platform?: string; heading: string }) {
   const reveal = () =>
-    void revealLocation("dataRoot").catch((e: unknown) => toast.error(failureText(e, "OpenFrame couldn't open that folder.")));
+    void revealLocation("dataRoot").catch((e: unknown) => toast.error(failureText(e, "Straft Studio couldn't open that folder.")));
   return (
     <div className="card pad" style={{ marginTop: 10 }}>
       <div className="h4">{heading}</div>
@@ -392,7 +392,7 @@ export function TutorialDialog({ dataRoot, platform, channel }: { dataRoot: stri
           <li>Repeat after every working session, or turn on automatic sync.</li>
         </ol>
         <Banner tone="info">
-          <Info size={14} aria-hidden /> Close OpenFrame (or Create Backup) before copying so files are complete. An external drive works as well as Google Drive.
+          <Info size={14} aria-hidden /> Close Straft Studio (or Create Backup) before copying so files are complete. An external drive works as well as Google Drive.
         </Banner>
       </>
     );
@@ -403,10 +403,10 @@ export function TutorialDialog({ dataRoot, platform, channel }: { dataRoot: stri
           <li>On the old laptop copy the whole root folder to a USB disk or Google Drive.</li>
           <li>{newLaptopInstallStep(channel)}</li>
           <li>Copy the folder to the new laptop.</li>
-          <li>Open OpenFrame, choose Open Project, and pick the project inside the folder.</li>
+          <li>Open Straft Studio, choose Open Project, and pick the project inside the folder.</li>
         </ol>
         <Banner tone="warn">
-          <TriangleAlert size={14} aria-hidden /> Linked external files (for example a reference photo on another drive) must be copied too. OpenFrame lists missing ones after opening.
+          <TriangleAlert size={14} aria-hidden /> Linked external files (for example a reference photo on another drive) must be copied too. Straft Studio lists missing ones after opening.
         </Banner>
       </>
     );
@@ -486,13 +486,13 @@ export function WelcomeDialog({ links = SOCIAL_LINKS }: { links?: readonly Socia
   };
   const open = (link: SocialLink) => {
     if (!isFixedSocialUrl(link.url)) return;
-    void openUrl(link.url).catch((e: unknown) => toast.error(failureText(e, "OpenFrame couldn't open that link.")));
+    void openUrl(link.url).catch((e: unknown) => toast.error(failureText(e, "Straft Studio couldn't open that link.")));
   };
   return (
     <Dialog
       open
       onOpenChange={(v) => !v && !busy && void close()}
-      title="Welcome to the OpenFrame Studio family"
+      title="Welcome to the Straft Studio family"
       size="lg"
       footer={
         <Button variant="primary" disabled={busy} onClick={() => void close()}>
@@ -572,7 +572,7 @@ export function MacFirstLaunchDialog() {
   const { busy, message, run } = useStoreAction();
   useHoldShortcuts(true);
   return (
-    <Dialog open onOpenChange={() => undefined} dismissible={false} title="Welcome to OpenFrame Studio" sub="How would you like to begin?" size="lg">
+    <Dialog open onOpenChange={() => undefined} dismissible={false} title="Welcome to Straft Studio" sub="How would you like to begin?" size="lg">
       <Brand />
       <div className="grid g2" style={{ gap: 12 }}>
         <section className="card pad" aria-labelledby="mac-trial-h">

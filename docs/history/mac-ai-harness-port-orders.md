@@ -3,7 +3,7 @@
 # Orders: port the conversational AI harness to the Mac app
 
 > Written 2026-10-27 on Windows from the code on `main` (commit `73640725`) and a read-only look at the Mac tree. Paste
-> everything below the line into a Claude Code session opened on the Mac, in a clone of GitHub `Saravankumar25/OpenFrame`.
+> everything below the line into a Claude Code session opened on the Mac, in a clone of GitHub `Saravankumar25/StraftStudio`.
 > It replaces section 1 of [mac-port-list-2026-10-24.md](mac-port-list-2026-10-24.md) for the AI (that section lists the
 > five lanes, which were retired on 2026-10-26).
 
@@ -37,13 +37,13 @@ GitHub `main` holds two folders, `windows/` and `mac/` (ADR-0034).
 
 | Area | State in `mac/` |
 |---|---|
-| `crates/openframe-application/src/modules/ai/` | Holds only the pre-lane files: `catalog`, `change_set.rs`, `commands.rs`, `intelligence`, `knowledge.*`, `mod.rs`, `offline.rs`, `orchestrator.rs`, `queries.rs`, `records.rs`, `retrieval.rs`, `scope.rs`, `service.rs`, `toolbox*`, `tools.rs`, `trace.rs`, `types.rs` |
+| `crates/straft-application/src/modules/ai/` | Holds only the pre-lane files: `catalog`, `change_set.rs`, `commands.rs`, `intelligence`, `knowledge.*`, `mod.rs`, `offline.rs`, `orchestrator.rs`, `queries.rs`, `records.rs`, `retrieval.rs`, `scope.rs`, `service.rs`, `toolbox*`, `tools.rs`, `trace.rs`, `types.rs` |
 | `migrations/app/` | Stops at `0003_ai_trace.sql` |
 | `migrations/project/` | Stops at `0016_callsheets_budget.sql` |
-| `crates/openframe-ai/` | Every source file differs from Windows. The Mac copy carries the Metal engine placement of ADR-0033 and the macOS runtime lock entry `llama-cpp-b11259-macos-arm64-metal` |
-| Mac-only crates | `openframe-ffi` (UniFFI: one generic `invoke(op, args_json)`, an `EventListener` callback that receives every app event as the Windows JSON, `cancel_task`, `power_event`), `openframe-gold-project` |
-| Swift AI screens | `apps/macos/Sources/OpenFrameUI/AI/`: `AIAssistantModel`, `AIConversationView`, `AIDownloadCard`, `AIDownloadModel`, `AIHealthModel`, `AILogic`, `AIPanelView`, `AIProposedChangesView` |
-| Swift settings | `apps/macos/Sources/OpenFrameUI/Settings/AISettingsView.swift` |
+| `crates/straft-ai/` | Every source file differs from Windows. The Mac copy carries the Metal engine placement of ADR-0033 and the macOS runtime lock entry `llama-cpp-b11259-macos-arm64-metal` |
+| Mac-only crates | `straft-ffi` (UniFFI: one generic `invoke(op, args_json)`, an `EventListener` callback that receives every app event as the Windows JSON, `cancel_task`, `power_event`), `straft-gold-project` |
+| Swift AI screens | `apps/macos/Sources/StraftUI/AI/`: `AIAssistantModel`, `AIConversationView`, `AIDownloadCard`, `AIDownloadModel`, `AIHealthModel`, `AILogic`, `AIPanelView`, `AIProposedChangesView` |
+| Swift settings | `apps/macos/Sources/StraftUI/Settings/AISettingsView.swift` |
 | Mac evidence | `docs/release/evidence/mac/` (the M8 eval, the Metal vs processor timings) |
 
 ### 1.3 What Windows has that the Mac lacks
@@ -136,18 +136,18 @@ Correct abstention was 15% before the fix round. The fix round changed the wordi
 
 ## 3. Phase 1: Mac baseline (no AI code change)
 
-1. **Build and copy the eval.** Build the Mac eval exactly as it is today (`cargo build --release -p openframe-ai-eval --bin ai-eval`) and copy the binary aside.
+1. **Build and copy the eval.** Build the Mac eval exactly as it is today (`cargo build --release -p straft-ai-eval --bin ai-eval`) and copy the binary aside.
 2. **Bring over the test data, unchanged, from `windows/`:**
-   - the Low Tide fixtures: `crates/openframe-ai-eval/gold/fixtures/`;
+   - the Low Tide fixtures: `crates/straft-ai-eval/gold/fixtures/`;
    - the gold sets `conversation.lowtide.en.jsonl` and `tools.lowtide.en.jsonl`;
    - `turn-sets/`;
    - the fixture loader `src/fixture.rs` and its tests.
 
    Do this only if the current Mac eval can load them without the rest of the Windows code. If it cannot, record "Mac baseline on the old 4 sample sets only" and run the existing Mac gold sets instead.
-3. **Run the baseline.** Point `OPENFRAME_AI_BUNDLE_DIR` at the Mac bundle and `OPENFRAME_AI_ASSETS_DIR` at the pinned models (`packaging/ai/fetch-macos-runtime.sh` lays out the runtime). The eval falls back to the processor when Metal is off. Run on Metal:
+3. **Run the baseline.** Point `STRAFT_AI_BUNDLE_DIR` at the Mac bundle and `STRAFT_AI_ASSETS_DIR` at the pinned models (`packaging/ai/fetch-macos-runtime.sh` lays out the runtime). The eval falls back to the processor when Metal is off. Run on Metal:
 
    ```
-   ai-eval --gold crates/openframe-ai-eval/gold --out <folder> --only lt-
+   ai-eval --gold crates/straft-ai-eval/gold --out <folder> --only lt-
    ```
 4. **Save the evidence.** Save `report.md`, `summary.json` and `results.jsonl` to `docs/release/evidence/mac/ai-conversational-baseline-<date>/` with a README: build, commit, engine place, wall time.
 5. **Exit:** baseline saved and committed.
@@ -171,19 +171,19 @@ So do not copy AI files alone. Bring the whole shared core level, then put the M
    ```
    This is the W9 commit both lines grew from. If those branches are not present, use the oldest commit of `mac/` history and say which one you used.
 2. **Build the Mac-only change list.** For every file under `crates/` and `migrations/`, diff the Mac copy against the base. These edits must survive:
-   - the Metal placement in `crates/openframe-ai/` (ADR-0033);
+   - the Metal placement in `crates/straft-ai/` (ADR-0033);
    - the macOS runtime lock entry in `packaging/ai/ai-assets.lock.json`;
-   - macOS code in `crates/openframe-platform/`;
-   - the two Mac-only crates `openframe-ffi` and `openframe-gold-project`;
+   - macOS code in `crates/straft-platform/`;
+   - the two Mac-only crates `straft-ffi` and `straft-gold-project`;
    - StoreKit and entitlement changes;
    - anything else the diff shows.
 
    Write the list to `docs/release/evidence/mac/ai-port-mac-only-changes.md` before merging.
-3. **Merge three ways, file by file.** For each shared crate (`openframe-application`, `openframe-ai`, `openframe-ai-checks`, `openframe-ai-eval`, `openframe-domain`, `openframe-entitlement`, `openframe-import-export`, `openframe-persistence`, `openframe-platform`, `openframe-project-format`, `openframe-search`, `openframe-security`, `openframe-test-support`), merge base, Mac and Windows with `git merge-file` or an equivalent.
+3. **Merge three ways, file by file.** For each shared crate (`straft-application`, `straft-ai`, `straft-ai-checks`, `straft-ai-eval`, `straft-domain`, `straft-entitlement`, `straft-import-export`, `straft-persistence`, `straft-platform`, `straft-project-format`, `straft-search`, `straft-security`, `straft-test-support`), merge base, Mac and Windows with `git merge-file` or an equivalent.
    - Windows wins for the AI.
    - Mac wins for its listed Mac-only edits.
    - A real conflict is resolved by hand, and both versions are recorded in the change list file.
-4. **Engine settings on Metal.** In `crates/openframe-ai`, keep the Metal flags of ADR-0033 (`-ngl 999 --device MTL0`, the fall back to processor, the remembered failure) and add the Windows S8 settings:
+4. **Engine settings on Metal.** In `crates/straft-ai`, keep the Metal flags of ADR-0033 (`-ngl 999 --device MTL0`, the fall back to processor, the remembered failure) and add the Windows S8 settings:
    - `cache_prompt: true` on every request (`build_body`);
    - `--parallel 1`;
    - `--cache-ram 512` (`PROMPT_STORE_MB`);
@@ -198,10 +198,10 @@ So do not copy AI files alone. Bring the whole shared core level, then put the M
    The non-AI ones (`0007`, `0017`, `0019`) come too: projects and packages move between Windows and Mac, so the numbers and schemas must be identical on both. Record them in `migrations/frozen.json` with the script.
 6. **Library setup (ADR-0038).** The Windows core can ask the shell for a first-start library choice. The Mac has no setup screen yet (Mac track 1b blocker). Make the Mac FFI `CoreConfig` pass the value that keeps the old behaviour (`library_setup: None`, which sets the library up in the folder that holds `projects_dir`). Confirm with a test that the Mac app still starts and opens a project with no setup screen. Do not build the setup screen in this work.
 7. **Other behaviour changes.** For every other non-AI behaviour change that comes with the core: if an operation the Mac shell already calls now behaves differently (arguments, defaults, errors), list it. Then adapt the Swift call or keep the old default, and test it. The call sheet order, story page, Beat Board layouts and vault fixes are backend-only here; their Mac screens are not part of this work.
-8. **Regenerate the Swift interface.** Run `npm run bindings` (ts-rs export), then `npm run mac:types`, then `apps/macos/scripts/build-core.sh` (XCFramework, Swift interface, generated types). Never edit `OpenFrameCore/Generated`.
+8. **Regenerate the Swift interface.** Run `npm run bindings` (ts-rs export), then `npm run mac:types`, then `apps/macos/scripts/build-core.sh` (XCFramework, Swift interface, generated types). Never edit `StraftCore/Generated`.
 9. **Verify:**
-   - `RUSTC_WRAPPER= cargo test --workspace --exclude openframe-desktop` (expect the Windows counts plus the Mac-only tests);
-   - `cargo clippy --workspace --all-targets --exclude openframe-desktop -- -D warnings`;
+   - `RUSTC_WRAPPER= cargo test --workspace --exclude straft-desktop` (expect the Windows counts plus the Mac-only tests);
+   - `cargo clippy --workspace --all-targets --exclude straft-desktop -- -D warnings`;
    - `cargo fmt --all -- --check`;
    - `node scripts/check-migrations.mjs`;
    - `npm run check:writing`;
@@ -213,7 +213,7 @@ So do not copy AI files alone. Bring the whole shared core level, then put the M
 
 There is no new code in this phase, only checks. The ported core must already contain:
 
-| Stage | Files in `crates/openframe-application/src/modules/ai/` |
+| Stage | Files in `crates/straft-application/src/modules/ai/` |
 |---|---|
 | Memory | `memory/` (`mod`, `rules`, `long`, `short`, `tests`) |
 | Index, resolver, focus | `index/` (`mod`, `build`, `resolve`, `focus`, `tests`) |
@@ -225,7 +225,7 @@ There is no new code in this phase, only checks. The ported core must already co
 | Store and trace | `trace.rs`, `records.rs`, `conversation_export.rs`, `cancel.rs` |
 | Operations | `ai.ask`, `ai.cancel`, `ai.history`, `ai.export_conversation`, `ai.memory_list`, `ai.memory_delete`, `ai.change_set.*`, `ai.status`, `ai.health`, `ai.download.*`, `ai.graphics.set`, `ai.index_status`, `ai.index_rebuild`, `ai.stop_runtime`, `ai.diagnostics`, `ai.export_report` |
 
-Run `cargo test -p openframe-application --test ai` and `--lib modules::ai`. The integration tests cover:
+Run `cargo test -p straft-application --test ai` and `--lib modules::ai`. The integration tests cover:
 
 - several screenplays answered without asking;
 - an angry message getting a brief calm reply with no data;
@@ -269,7 +269,7 @@ Only screens. Every behaviour comes from the core through `invoke` and the event
 
 1. **Full run.** Release build, Metal on, deterministic sampling, quiet machine (no other build running):
    ```
-   ai-eval --gold crates/openframe-ai-eval/gold --out <folder> --only lt-
+   ai-eval --gold crates/straft-ai-eval/gold --out <folder> --only lt-
    ```
    Then `--turn-only` and `--dossier-only`. The latency section is written on every run (`--warmup on|off`, `--latency-from <folder>`).
 2. **Processor run.** Repeat the full run with Graphics card set to Off (processor only), so the Mac fallback path is measured too.

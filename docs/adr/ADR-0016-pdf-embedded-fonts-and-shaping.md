@@ -3,7 +3,7 @@
 - **Status:** Accepted 2026-10-07 (owner answer in chat). Amends ADR-0008 (decision 2 and the "Known limitation").
 - **Date:** 2026-10-05
 - **Related:** ADR-0008; PRD C-25; Screenplay and Production Depth Specification §19 and §45;
-  `crates/openframe-import-export/src/{layout.rs,pdfgen.rs,winansi.rs}`
+  `crates/straft-import-export/src/{layout.rs,pdfgen.rs,winansi.rs}`
 
 ## Context
 

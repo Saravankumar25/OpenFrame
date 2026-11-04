@@ -258,7 +258,7 @@ describe("saved scene filter", () => {
   it("an old or damaged entry falls back to all scenes instead of breaking the list", async () => {
     const { readFilter } = await import("./filterPref");
     for (const raw of ["{not json", JSON.stringify({ filter: "everything" }), JSON.stringify(null), JSON.stringify({ filter: "suggested", category: "Weapons" })]) {
-      window.localStorage.setItem("openframe.breakdown.sceneFilter", raw);
+      window.localStorage.setItem("straft.breakdown.sceneFilter", raw);
       const v = readFilter();
       expect(["all", "suggested"]).toContain(v.filter);
       expect(v.category).toBeNull();

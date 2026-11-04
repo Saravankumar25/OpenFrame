@@ -22,7 +22,7 @@ reversible action that hides the project from recent views. FSD Part 2 §72 has 
 (`Active/Archived/Closed`), the initial status is unspecified, and the PRD has a third vocabulary (C-27).
 
 **Resolution:** *Status* is a manual, user-selected phase label: `Idea` (initial), `Development`, `Writing`,
-`Rewrite`, `Shooting Draft`, `Pre-Production`, `Shoot Preparation`, `Shooting` (`ProjectStatus` enum). OpenFrame
+`Rewrite`, `Shooting Draft`, `Pre-Production`, `Shoot Preparation`, `Shooting` (`ProjectStatus` enum). Straft Studio
 never changes it automatically (`status_user_selected`). *Archived* is **not a status**. It is the separate
 `project.archived` flag, mirrored in `sys_recent_project.archived` for Home, set by `project.set_archived`. Archiving
 keeps the status, so restoring from the archive returns the project exactly as it was (FSD §4.6 "contents
@@ -88,7 +88,7 @@ Ctrl+F never opens global search, and Ctrl+K never searches only the current vie
 **Gap:** the UX spec and mock-ups define only a light theme and no high-contrast mode (UX digest §8, gaps 2 and 6).
 
 **Resolution:** v1 ships the **light theme only**, exactly as mocked. All colours are CSS tokens
-(`styles/openframe.css`), so a theme can be added later without refactoring, but adding one requires a UX spec change
+(`styles/straft.css`), so a theme can be added later without refactoring, but adding one requires a UX spec change
 and a new ADR. Windows **High Contrast / forced-colors** mode must remain usable, meaning text, focus rings and
 status never rely on colour alone. This is a QA check (22-qa-test-strategy.md), not a separate theme.
 

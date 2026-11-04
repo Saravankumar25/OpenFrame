@@ -34,7 +34,7 @@ import {
 } from "../lib/flows.mjs";
 
 const PROJECT = "Signal Yard";
-const OUT = mkdtempSync(join(tmpdir(), "openframe-e2e-schedule-"));
+const OUT = mkdtempSync(join(tmpdir(), "straft-e2e-schedule-"));
 
 let browser;
 const step = stepper(() => browser, "schedule");

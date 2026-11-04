@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Architecture lint for OpenFrame Studio (build plan item architecture lint, feature PLAT-004).
+// Architecture lint for Straft Studio (build plan item architecture lint, feature PLAT-004).
 //
 //   node scripts/architecture-lint.mjs          exit 1 on any violation
 //   node scripts/architecture-lint.mjs --list   also print every allow-listed site that was found
@@ -24,7 +24,7 @@
 //   R4 unsafe Rust        `unsafe` only in reviewed files, each with a written reason
 //   R5 process spawn      child processes only from the AI sidecar supervisor
 //   R6 platform boundary  operating-system specific code (cfg(windows), cfg(target_os), std::os::*, the
-//                         windows and libc crates) only in openframe-platform and the desktop shell adapters
+//                         windows and libc crates) only in straft-platform and the desktop shell adapters
 //   T1 theme colours      colour literals in the React app only as marked fixed or document colours
 //                         (every themeable colour is a token from the generated theme layer; ADR-0014)
 //
@@ -37,8 +37,8 @@ import path from "node:path";
 import url from "node:url";
 import { walk, rustViews, rustTestRanges, tsViews, lineOf, inRanges } from "./lib/source-scan.mjs";
 
-const ROOT = process.env.OPENFRAME_CHECK_ROOT
-  ? path.resolve(process.env.OPENFRAME_CHECK_ROOT)
+const ROOT = process.env.STRAFT_CHECK_ROOT
+  ? path.resolve(process.env.STRAFT_CHECK_ROOT)
   : path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
 const LIST = process.argv.includes("--list");
 const rel = (p) => path.relative(ROOT, p).split(path.sep).join("/");
@@ -54,81 +54,81 @@ const fail = (rule, file, line, msg) => violations.push(`${rule} ${file}${line ?
 // ---------------------------------------------------------------------------
 
 const SQL_WRITE_ALLOW = {
-  "crates/openframe-persistence/": "Persistence layer: connections, migrations, undo triggers and checkpoints.",
-  "crates/openframe-application/src/store.rs": "Store::mutate, the single canonical write path (BEGIN IMMEDIATE).",
-  "crates/openframe-search/": "Derived FTS5 and vector index, rebuildable from canonical data.",
-  "crates/openframe-application/src/modules/ai/intelligence/": "Derived retrieval intelligence index (doc 18), rebuildable.",
-  "crates/openframe-application/src/modules/ai/change_set.rs":
+  "crates/straft-persistence/": "Persistence layer: connections, migrations, undo triggers and checkpoints.",
+  "crates/straft-application/src/store.rs": "Store::mutate, the single canonical write path (BEGIN IMMEDIATE).",
+  "crates/straft-search/": "Derived FTS5 and vector index, rebuildable from canonical data.",
+  "crates/straft-application/src/modules/ai/intelligence/": "Derived retrieval intelligence index (doc 18), rebuildable.",
+  "crates/straft-application/src/modules/ai/change_set.rs":
     "Groups the undo steps of an applied Change Set into one labelled step (sys_undo bookkeeping only, no canonical rows).",
-  "crates/openframe-application/src/modules/project.rs":
+  "crates/straft-application/src/modules/project.rs":
     "Operations on a project that is not open (rename, duplicate), under ProjectLock, with an Activity row.",
-  "crates/openframe-application/src/modules/packages/backup.rs":
+  "crates/straft-application/src/modules/packages/backup.rs":
     "Works on a private copy of the database in staging (scrub before export, restore into a new project).",
-  "crates/openframe-application/src/modules/packages/coverage.rs":
+  "crates/straft-application/src/modules/packages/coverage.rs":
     "The Full Project Package scrub, on the private staging copy of the database only (scrub_for_transfer).",
-  "crates/openframe-application/src/core.rs":
+  "crates/straft-application/src/core.rs":
     "Opens app.sqlite (recent projects, local profile; no project content) and migrates it with the shared runner.",
-  "crates/openframe-application/src/modules/storage/vault_archive.rs":
+  "crates/straft-application/src/modules/storage/vault_archive.rs":
     "Vault file: scrubs a private staging copy of the vault database for a package, and read-only integrity checks of a vault before it is restored or connected.",
-  "crates/openframe-application/src/modules/storage/relocate.rs":
+  "crates/straft-application/src/modules/storage/relocate.rs":
     "Read-only integrity and identity check of the copy of a project made by Move Project, before it replaces the original.",
-  "crates/openframe-application/src/modules/storage/library_ops.rs":
+  "crates/straft-application/src/modules/storage/library_ops.rs":
     "Read-only (immutable) counts of a library's vault for the setup preview, and one transaction on app.sqlite (Recent Projects paths, no project content) when a library moves.",
 };
 
 const AI_BOUNDARY_EXEMPT = new Set([
-  "crates/openframe-application/src/modules/ai/mod.rs", // registers the human-only accept/reject commands
-  "crates/openframe-application/src/modules/ai/change_set.rs", // implements them
+  "crates/straft-application/src/modules/ai/mod.rs", // registers the human-only accept/reject commands
+  "crates/straft-application/src/modules/ai/change_set.rs", // implements them
 ]);
 
 const LISTENER_ALLOW = {
-  "crates/openframe-ai/src/supervisor.rs":
+  "crates/straft-ai/src/supervisor.rs":
     "Binds 127.0.0.1:0 only to pick a free loopback port for the sidecar, then drops it (no listener remains).",
 };
 
 const UNSAFE_ALLOW = {
-  "crates/openframe-platform/src/graphics.rs": "DXGI adapter enumeration (COM) and GetSystemDirectoryW for the graphics-card decision (platform boundary, ADR-0029); SAFETY comments in place.",
-  "crates/openframe-platform/src/code_signature.rs":
+  "crates/straft-platform/src/graphics.rs": "DXGI adapter enumeration (COM) and GetSystemDirectoryW for the graphics-card decision (platform boundary, ADR-0029); SAFETY comments in place.",
+  "crates/straft-platform/src/code_signature.rs":
     "Security.framework and CoreFoundation calls that check an engine file's code signature on the Mac store build (platform boundary); every created object is released by one guard; SAFETY comments in place.",
-  "crates/openframe-platform/src/exists.rs": "GetFileAttributesW fast existence check (platform boundary); SAFETY comment in place.",
-  "crates/openframe-platform/src/identity.rs": "GetCurrentPackageFamilyName (platform boundary); SAFETY comment in place.",
+  "crates/straft-platform/src/exists.rs": "GetFileAttributesW fast existence check (platform boundary); SAFETY comment in place.",
+  "crates/straft-platform/src/identity.rs": "GetCurrentPackageFamilyName (platform boundary); SAFETY comment in place.",
   "apps/desktop/src-tauri/src/platform/macos_storekit.rs":
     "C ABI calls into the Swift StoreKit bridge (macOS only); every pointer is owned by the bridge and freed with storekit_free; SAFETY comments in place.",
-  "crates/openframe-platform/src/process.rs":
+  "crates/straft-platform/src/process.rs":
     "Suspended creation, Windows Job Object and thread resume, process start times and the stray-engine stop, macOS process group (platform boundary); SAFETY comments in place.",
-  "crates/openframe-platform/src/drives.rs":
+  "crates/straft-platform/src/drives.rs":
     "GetDriveTypeW to refuse mapped network drives (platform boundary); reads a NUL-terminated \"X:\\\" buffer only; SAFETY comment in place.",
-  "crates/openframe-platform/src/power.rs":
+  "crates/straft-platform/src/power.rs":
     "PowerRegisterSuspendResumeNotification callback for sleep and wake (platform boundary); the handler box outlives the registration; SAFETY comments in place.",
-  "crates/openframe-platform/src/shell.rs":
+  "crates/straft-platform/src/shell.rs":
     "ShellExecuteW and SHOpenFolderAndSelectItems for open and reveal (platform boundary); NUL-terminated buffers, balanced COM init, item id list freed; SAFETY comments in place.",
-  "crates/openframe-platform/src/memory.rs":
+  "crates/straft-platform/src/memory.rs":
     "macOS kernel memory statistics (host_statistics64, mach_host_self, sysconf) for the available-memory reading (platform boundary); SAFETY comments in place.",
-  "crates/openframe-platform/src/files.rs":
+  "crates/straft-platform/src/files.rs":
     "macOS and Linux O_NOFOLLOW open and fchmod for side-file permissions (platform boundary); a test-only mkfifo call; SAFETY comment in place.",
-  "crates/openframe-search/src/vector.rs": "Registers the sqlite-vec extension entry point with SQLite.",
-  "crates/openframe-platform/src/spelling.rs":
+  "crates/straft-search/src/vector.rs": "Registers the sqlite-vec extension entry point with SQLite.",
+  "crates/straft-platform/src/spelling.rs":
     "Windows Spell Checking API (COM) for proofing (platform boundary): one worker thread owns its apartment and every COM object, input is bounded before any call, each returned string is read once and freed once with CoTaskMemFree; SAFETY comments in place.",
   "apps/desktop/src-tauri/src/distribution.rs": "GetCurrentPackageFamilyName to detect the Store (MSIX) channel.",
 };
 
 const SPAWN_ALLOW = {
-  "crates/openframe-ai/src/supervisor.rs": "Starts the verified llama.cpp sidecar from the managed runtime folder.",
-  "crates/openframe-ai-eval/src/bin/engine-bench.rs":
-    "Development measurement tool, never shipped (openframe-ai-eval is not a dependency of the app): starts the staged llama-server on 127.0.0.1 to replay recorded requests, one setting at a time, and kills it when done.",
-  "crates/openframe-gold-project/src/media.rs":
-    "Development tool, never shipped (openframe-gold-project is not a dependency of the app): runs macOS `say` and `afconvert` once to make the gold project's spoken voice memo.",
-  "crates/openframe-platform/src/process.rs":
+  "crates/straft-ai/src/supervisor.rs": "Starts the verified llama.cpp sidecar from the managed runtime folder.",
+  "crates/straft-ai-eval/src/bin/engine-bench.rs":
+    "Development measurement tool, never shipped (straft-ai-eval is not a dependency of the app): starts the staged llama-server on 127.0.0.1 to replay recorded requests, one setting at a time, and kills it when done.",
+  "crates/straft-gold-project/src/media.rs":
+    "Development tool, never shipped (straft-gold-project is not a dependency of the app): runs macOS `say` and `afconvert` once to make the gold project's spoken voice memo.",
+  "crates/straft-platform/src/process.rs":
     "Configures and guards a child process for the supervisor (no window, kill with the app); spawns only in its own tests.",
-  "crates/openframe-platform/src/shell.rs":
+  "crates/straft-platform/src/shell.rs":
     "macOS adapter only: runs /usr/bin/open (open a file or link, or `open -R` to reveal) for an absolute path the desktop shell resolved from an id.",
   "apps/desktop/src-tauri/build.rs":
-    "Build script, not the app: compiles and links the Swift StoreKit bridge on macOS only (`swift build`, `swift -print-target-info`); runs at build time on the build machine, never in OpenFrame.",
+    "Build script, not the app: compiles and links the Swift StoreKit bridge on macOS only (`swift build`, `swift -print-target-info`); runs at build time on the build machine, never in Straft Studio.",
 };
 
 // R6: the only places that may know the operating system (build plan area "Platform adapter layer").
 const OS_ALLOW = {
-  "crates/openframe-platform/": "The platform boundary crate: Windows adapter and macOS adapter live here.",
+  "crates/straft-platform/": "The platform boundary crate: Windows adapter and macOS adapter live here.",
   "apps/desktop/src-tauri/src/distribution.rs":
     "Desktop shell: MSIX package data folder redirection and the WebView2 missing-runtime dialog (Windows installer channel).",
   "apps/desktop/src-tauri/src/platform/":
@@ -150,7 +150,7 @@ function scanRust() {
     const file = rel(abs);
     // Test-only code (Cargo integration tests and benches, the test-support crate) may open raw
     // connections, bind sockets and so on. Only the Cargo-defined locations are exempt.
-    if (/^crates\/[^/]+\/(tests|benches)\//.test(file) || file.startsWith("crates/openframe-test-support/")) continue;
+    if (/^crates\/[^/]+\/(tests|benches)\//.test(file) || file.startsWith("crates/straft-test-support/")) continue;
     const src = fs.readFileSync(abs, "utf8").replace(/\r\n/g, "\n");
     const { noComments, code } = rustViews(src);
     const tests = rustTestRanges(code);
@@ -170,7 +170,7 @@ function scanRust() {
     });
 
     // R2 AI boundary
-    if (file.startsWith("crates/openframe-application/src/modules/ai/") && !AI_BOUNDARY_EXEMPT.has(file)) {
+    if (file.startsWith("crates/straft-application/src/modules/ai/") && !AI_BOUNDARY_EXEMPT.has(file)) {
       const aiRe = /change_set::accept|change_set::apply|accept_with\s*\(|change_set_accept|"ai\.change_set\.(accept|apply)"/g;
       each(noComments, aiRe, (m, line) =>
         fail(
@@ -186,7 +186,7 @@ function scanRust() {
     const lisRe = /\b(TcpListener|UdpSocket)\b|\bhyper::server\b|\baxum::serve\b|\bwarp::serve\b|\btiny_http\b/g;
     each(code, lisRe, (m, line) => {
       if (allowed(LISTENER_ALLOW, file)) allowedHits.push(`R3 ${file}:${line} ${m[0]}`);
-      else fail("R3", file, line, `network socket \`${m[0]}\`. OpenFrame has no network listener (ADR-0007, the security standard in the build plan).`);
+      else fail("R3", file, line, `network socket \`${m[0]}\`. Straft Studio has no network listener (ADR-0007, the security standard in the build plan).`);
     });
 
     // R4 unsafe
@@ -201,7 +201,7 @@ function scanRust() {
     each(noComments, osRe, (m, line) => {
       if (allowed(OS_ALLOW, file)) allowedHits.push(`R6 ${file}:${line} ${m[0]}`);
       else
-        fail("R6", file, line, `operating-system specific code \`${m[0]}\`. Call openframe-platform instead; feature code never learns which OS it runs on.`);
+        fail("R6", file, line, `operating-system specific code \`${m[0]}\`. Call straft-platform instead; feature code never learns which OS it runs on.`);
     });
 
     // R5 process spawn
@@ -214,19 +214,19 @@ function scanRust() {
   }
 
   // R2 guard sentinels
-  const toolbox = "crates/openframe-application/src/modules/ai/toolbox.rs";
+  const toolbox = "crates/straft-application/src/modules/ai/toolbox.rs";
   if (!/!\s*op\.starts_with\("ai\."\)/.test(rustViews(read(toolbox)).noComments)) {
     fail("R2", toolbox, 0, 'the toolbox guard `!op.starts_with("ai.")` is missing; no tool may touch an `ai.*` operation.');
   }
-  const aiCargo = read("crates/openframe-ai/Cargo.toml");
-  for (const forbidden of ["openframe-persistence", "openframe-application", "openframe-search", "rusqlite"]) {
+  const aiCargo = read("crates/straft-ai/Cargo.toml");
+  for (const forbidden of ["straft-persistence", "straft-application", "straft-search", "rusqlite"]) {
     if (new RegExp(`^\\s*${forbidden}\\b`, "m").test(aiCargo)) {
-      fail("R2", "crates/openframe-ai/Cargo.toml", 0, `the AI runtime crate depends on \`${forbidden}\`; the sidecar layer has no project-data authority.`);
+      fail("R2", "crates/straft-ai/Cargo.toml", 0, `the AI runtime crate depends on \`${forbidden}\`; the sidecar layer has no project-data authority.`);
     }
   }
-  const supervisor = read("crates/openframe-ai/src/supervisor.rs");
+  const supervisor = read("crates/straft-ai/src/supervisor.rs");
   if (/TcpListener::bind/.test(supervisor) && !/TcpListener::bind\(\("127\.0\.0\.1",\s*0\)\)/.test(supervisor)) {
-    fail("R3", "crates/openframe-ai/src/supervisor.rs", 0, "the port probe must bind 127.0.0.1:0 only.");
+    fail("R3", "crates/straft-ai/src/supervisor.rs", 0, "the port probe must bind 127.0.0.1:0 only.");
   }
 }
 

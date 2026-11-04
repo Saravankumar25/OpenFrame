@@ -4,7 +4,7 @@ Copy this into an email or a message. One problem per report. Plain words are fi
 
 ```text
 Your name:
-Version: the name of the installer file you used (for example OpenFrame-Studio-0.1.0-internal-028d8b6.exe)
+Version: the name of the installer file you used (for example Straft-Studio-0.1.0-internal-028d8b6.exe)
 
 What were you doing? (steps, in order)
   1.

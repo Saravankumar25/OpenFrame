@@ -9,7 +9,7 @@
 
 ## Mission
 
-Replace every MacHTML page with new pages captured today from the real OpenFrame Studio app, with the Screening Room
+Replace every MacHTML page with new pages captured today from the real Straft Studio app, with the Screening Room
 default theme, in Light and in Dark, covering the whole app including the features added on 2026-10-27. Then clean
 up the repository. Time budget: about 2 to 3 hours for MacHTML.
 
@@ -24,9 +24,9 @@ the old pages may remain.
 1. `CLAUDE.md`, then `docs/implementation/handoff.md`.
 2. `MacHTML/README.md` (how the pages are built: the window picture cut into its containers plus real HTML for every
    accessibility element), `apps/macos/E2E/capture.sh`, `scripts/mac-html/`, and the capture tour scenarios
-   `apps/macos/Sources/OpenFrameE2EDriver/Scenarios/CaptureTour*.swift`.
+   `apps/macos/Sources/StraftE2EDriver/Scenarios/CaptureTour*.swift`.
 3. The theme: `docs/engineering/30-appearance-themes.md` section 6 and
-   `apps/macos/Sources/OpenFrameUI/Resources/macDefaultTheme.json`.
+   `apps/macos/Sources/StraftUI/Resources/macDefaultTheme.json`.
 
 ## Orders
 
@@ -55,7 +55,7 @@ the old pages may remain.
      memory;
    - no team password screen anywhere (it was removed on 2026-10-27).
    Compare the capture list with the screens in the app and add any screen that has no page yet.
-6. **One runner, nothing else on screen.** Run the capture with one runner (no `OPENFRAME_E2E_PARALLEL`), the screen
+6. **One runner, nothing else on screen.** Run the capture with one runner (no `STRAFT_E2E_PARALLEL`), the screen
    unlocked, no other window over the app, the Mac kept awake (`caffeinate`). Do not run builds or tests while it runs.
 7. **Check every page.** After the run, open every page (Light and Dark) and compare it with the real app at the same
    state: the whole maximized window, the right screen, the active look, the new theme, readable text, nothing cut
@@ -71,7 +71,7 @@ the old pages may remain.
    the merged branches. Delete `HTML_Mockups/` and the branch `claude/website-html-mockups-9ecfa7` only after asking
    the owner in one plain line.
 2. Remove finished builds and caches: `target/`, the app copies in `.build-cache`, old `release-out/e2e` runs, the
-   release staging folder `$(getconf DARWIN_USER_TEMP_DIR)openframe-release-stage`. Keep `release-out/mac/OpenFrame-5.dmg`.
+   release staging folder `$(getconf DARWIN_USER_TEMP_DIR)straft-release-stage`. Keep `release-out/mac/Straft-5.dmg`.
 3. Dead code pass on the Swift app and the core; the two Word manuals in `docs/manual/` still describe the removed team
    password.
 4. The open end-to-end items listed in the handoff.

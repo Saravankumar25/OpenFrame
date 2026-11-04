@@ -1,4 +1,4 @@
-# Developing OpenFrame Studio
+# Developing Straft Studio
 
 This guide covers Windows 11 setup, day-to-day commands, the repository layout and the architecture you will work in.
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
@@ -45,14 +45,14 @@ The Mac app is a SwiftUI shell over the same Rust core (ADR-0027). Its plan is
 
 Commands, from the repository root:
 
-    RUSTC_WRAPPER= cargo test --workspace --exclude openframe-desktop   # the core on macOS
+    RUSTC_WRAPPER= cargo test --workspace --exclude straft-desktop   # the core on macOS
     apps/macos/scripts/build-core.sh          # Rust core -> XCFramework, Swift interface, generated types
     apps/macos/scripts/test.sh                # Swift package build and tests
     npm run mac:types                         # regenerate Swift types after a DTO or operation change
     npm run mac:parity                        # refresh the Mac parity matrix rows
-    swift run --package-path apps/macos OpenFrameStudio   # run the app (development build)
+    swift run --package-path apps/macos StraftStudio   # run the app (development build)
 
-`OPENFRAME_DATA_ROOT=/absolute/folder` runs the Mac app on a test folder, as on Windows (ADR-0031). The
+`STRAFT_DATA_ROOT=/absolute/folder` runs the Mac app on a test folder, as on Windows (ADR-0031). The
 debug XCFramework is large (about 420 MB, hard-linked from `target/`); `cargo clean` and removing
 `apps/macos/.build` give the space back.
 
@@ -65,9 +65,9 @@ All commands run from the repository root.
 | `npm install` | Installs the npm workspace (`apps/desktop`) |
 | `npm run dev` | `tauri dev`: starts Vite on `http://127.0.0.1:1420` and the Rust app with hot reload. The first build compiles all crates and takes several minutes. Stages the Offline AI engine when `.ai-assets` is present (without it the app shows its "Offline AI is missing" state). A development build has no model host, so it cannot download the models; use the test suite for that |
 | `npm run build` | `tauri build`: optimized release build plus NSIS and MSI installers in `target/release/bundle/`, with the Offline AI engine; the models download from Hugging Face after install at the revisions pinned in `packaging/ai/ai-assets.lock.json` (ADR-0026, ADR-0032). No model host or manifest key is needed. Local builds are unsigned. Fails closed when the pinned engine files are missing or altered. Run it only when the owner says so. |
-| `npm run ai:assets` | Verifies `.ai-assets` (or `OPENFRAME_AI_ASSETS_DIR`) against `packaging/ai/ai-assets.lock.json` and stages the engine in `.build-cache/ai-bundle` (`-- --check` verifies only). A git worktree uses the main checkout's `.ai-assets`. |
+| `npm run ai:assets` | Verifies `.ai-assets` (or `STRAFT_AI_ASSETS_DIR`) against `packaging/ai/ai-assets.lock.json` and stages the engine in `.build-cache/ai-bundle` (`-- --check` verifies only). A git worktree uses the main checkout's `.ai-assets`. |
 | `npm run bundle` | Same as `build`, restricted to `--bundles nsis,msi` |
-| `npm run installer:internal` | Builds the unsigned per-user NSIS installer for the team into `release-out/` (git-ignored) as `OpenFrame-<n>.exe`, numbered in build order so the highest number is the latest, with a `.sha256`, a `.json` build record and Rust and npm SBOMs, then runs the binary and string scans. Needs a clean tree (or `-- --allow-dirty`). Never uses the test model host. Uninstall keeps projects and the vault; the optional "delete app data" box removes `%LOCALAPPDATA%\OpenFrame` only |
+| `npm run installer:internal` | Builds the unsigned per-user NSIS installer for the team into `release-out/` (git-ignored) as `Straft-<n>.exe`, numbered in build order so the highest number is the latest, with a `.sha256`, a `.json` build record and Rust and npm SBOMs, then runs the binary and string scans. Needs a clean tree (or `-- --allow-dirty`). Never uses the test model host. Uninstall keeps projects and the vault; the optional "delete app data" box removes `%LOCALAPPDATA%\Straft Studio` only |
 | `npm run test` | `cargo test --workspace`, then Vitest (`apps/desktop`) |
 | `npm run test:rust` / `npm run test:web` | One side only |
 | `npm run lint` | `cargo clippy --workspace --all-targets -- -D warnings`, then `eslint src --max-warnings 0` |
@@ -80,19 +80,19 @@ All commands run from the repository root.
 | `npm run check:links:online` | The link check, plus a fetch of every app address marked `online` in `scripts/app-addresses.json`. Run before a build (ADR-0030); it uses the network |
 | `npm run scan:installer -- <file or folder>` | Refuses built files that hold a secret, a personal path or the build computer's user name. Run on the unpacked release folder and on the installer (Windows phase W9) |
 | `npm run e2e:setup` | Installs the desktop E2E drivers into the gitignored `tests/e2e/.drivers/`: `msedgedriver.exe` matching the installed WebView2 Runtime (downloaded from Microsoft) and `tauri-driver` (`cargo install --root`). No global installs. |
-| `npm run test:e2e` | Desktop end-to-end suite: runs `e2e:setup`, verifies and stages the Offline AI engine, builds the real app with it and with the suite's local model host (`127.0.0.1:47811`) and test key compiled in, starts that host, installs the model set in each test data folder as a finished download would (`@e2e-ai-models: none` starts without), (`tauri build --debug --no-bundle`) and drives it with WebdriverIO through `tauri-driver` + Edge WebDriver (`tests/e2e/specs/`). Add `-- --no-build` to reuse the last build, `-- --only=05-` to run some specs, and `-- --release=internal` or `-- --release=store` to drive the hardened release executable (`tauri build --no-bundle`, never an installer) of the internal team build or of the store channel; specs marked `@e2e-debug-only` are listed and skipped there. The app runs isolated in `tests/e2e/.run/<time>/` (`OPENFRAME_DATA_ROOT`; the release build honours it for file locations only, ADR-0031); failure screenshots go to `tests/e2e/artifacts/`. Close other OpenFrame windows first, because the suite drives real windows and keyboard input. Installed mode (gate G2): `-- --release=internal --app=<installed openframe-desktop.exe>` never builds, still preinstalls the models in each data root, and lists and skips specs marked `// @e2e-needs-test-host: <reason>` (76, 78: they need the local model host). Memory soak (gate P1): `node tests/e2e/soak/memory-soak.mjs --app=<exe> --minutes=120` (`--dry-run` prints the plan) loops writing and workspace switches, samples the app and WebView2 memory every 60 s into `tests/e2e/artifacts/soak-<stamp>.csv` and `.json`, and prints PASS or FAIL (app private slope under 20 MB/hour, webview under 40 MB/hour over the last 90 minutes, no crash). |
+| `npm run test:e2e` | Desktop end-to-end suite: runs `e2e:setup`, verifies and stages the Offline AI engine, builds the real app with it and with the suite's local model host (`127.0.0.1:47811`) and test key compiled in, starts that host, installs the model set in each test data folder as a finished download would (`@e2e-ai-models: none` starts without), (`tauri build --debug --no-bundle`) and drives it with WebdriverIO through `tauri-driver` + Edge WebDriver (`tests/e2e/specs/`). Add `-- --no-build` to reuse the last build, `-- --only=05-` to run some specs, and `-- --release=internal` or `-- --release=store` to drive the hardened release executable (`tauri build --no-bundle`, never an installer) of the internal team build or of the store channel; specs marked `@e2e-debug-only` are listed and skipped there. The app runs isolated in `tests/e2e/.run/<time>/` (`STRAFT_DATA_ROOT`; the release build honours it for file locations only, ADR-0031); failure screenshots go to `tests/e2e/artifacts/`. Close other Straft Studio windows first, because the suite drives real windows and keyboard input. Installed mode (gate G2): `-- --release=internal --app=<installed straft-desktop.exe>` never builds, still preinstalls the models in each data root, and lists and skips specs marked `// @e2e-needs-test-host: <reason>` (76, 78: they need the local model host). Memory soak (gate P1): `node tests/e2e/soak/memory-soak.mjs --app=<exe> --minutes=120` (`--dry-run` prints the plan) loops writing and workspace switches, samples the app and WebView2 memory every 60 s into `tests/e2e/artifacts/soak-<stamp>.csv` and `.json`, and prints PASS or FAIL (app private slope under 20 MB/hour, webview under 40 MB/hour over the last 90 minutes, no crash). |
 | `npm --workspace apps/desktop run build:web` | Type-checks and builds only the web bundle (`apps/desktop/dist`) |
 | `node scripts/release-validate.mjs --report-only` | Shows which release prerequisites are still missing |
 
 Faster inner loops:
 
 ```powershell
-cargo test -p openframe-application                  # application layer only (does not compile Tauri)
-cargo test -p openframe-application --test platform core_pipeline::
+cargo test -p straft-application                  # application layer only (does not compile Tauri)
+cargo test -p straft-application --test platform core_pipeline::
 cd apps/desktop; npx vitest                          # watch mode
 ```
 
-`cargo clippy`/`cargo check` on the `openframe-desktop` crate needs `apps/desktop/dist` to exist because
+`cargo clippy`/`cargo check` on the `straft-desktop` crate needs `apps/desktop/dist` to exist because
 `tauri::generate_context!()` checks `frontendDist` at compile time. Run `build:web` once, or create an empty
 `apps/desktop/dist/index.html`. CI uses the second option.
 
@@ -100,19 +100,19 @@ cd apps/desktop; npx vitest                          # watch mode
 
 | What | Where |
 |---|---|
-| Application data (local profile, recent projects, settings) | `%LOCALAPPDATA%OpenFrame\app.sqlite` |
-| Logs | `%LOCALAPPDATA%OpenFrame\logs\openframe.YYYY-MM-DD.log`: JSON lines, rotated daily, 14 files kept |
-| New projects (default) | `Documents\OpenFrame\Projects\<Title>.openframe\` |
-| Global Idea Vault | `Documents\OpenFrame\Global Idea Vault\` (`vault.sqlite` + `assets/`) |
-| Offline AI engine (in the package, read-only) and models (downloaded after install, ADR-0026) | engine: `ai\` next to `openframe-desktop.exe` (installer, MSIX and development builds); models: `%LOCALAPPDATA%OpenFrame\models\<version>\`; writable AI records in `%LOCALAPPDATA%\OpenFrame\ai\` and `logs\` (Store builds: `LocalState\OpenFrame`, see doc 27). `ai\graphics.json` holds the Graphics card setting and what the card checks found; set `"forceIntegratedProbe": true` there by hand to check integrated graphics even when the memory rule says no (ADR-0029, never shown in the app) |
+| Application data (local profile, recent projects, settings) | `%LOCALAPPDATA%Straft Studio\app.sqlite` |
+| Logs | `%LOCALAPPDATA%Straft Studio\logs\straft.YYYY-MM-DD.log`: JSON lines, rotated daily, 14 files kept |
+| New projects (default) | `Documents\Straft Studio\Projects\<Title>.straft\` |
+| Global Idea Vault | `Documents\Straft Studio\Global Idea Vault\` (`vault.sqlite` + `assets/`) |
+| Offline AI engine (in the package, read-only) and models (downloaded after install, ADR-0026) | engine: `ai\` next to `straft-desktop.exe` (installer, MSIX and development builds); models: `%LOCALAPPDATA%Straft Studio\models\<version>\`; writable AI records in `%LOCALAPPDATA%\Straft Studio\ai\` and `logs\` (Store builds: `LocalState\Straft Studio`, see doc 27). `ai\graphics.json` holds the Graphics card setting and what the card checks found; set `"forceIntegratedProbe": true` there by hand to check integrated graphics even when the memory rule says no (ADR-0029, never shown in the app) |
 
-**Log level.** Set the `OPENFRAME_LOG` environment variable. It uses
+**Log level.** Set the `STRAFT_LOG` environment variable. It uses
 [`tracing_subscriber::EnvFilter`](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html)
 syntax and defaults to `info`.
 
 ```powershell
-$env:OPENFRAME_LOG = "debug"; npm run dev                                     # every operation with its timing
-$env:OPENFRAME_LOG = "info,openframe_application=debug"; npm run dev
+$env:STRAFT_LOG = "debug"; npm run dev                                     # every operation with its timing
+$env:STRAFT_LOG = "info,straft_application=debug"; npm run dev
 ```
 
 At `info`, the log records startup, failed operations (op name, error code, duration), operations slower than
@@ -143,21 +143,21 @@ Commit the regenerated files with the Rust change. CI fails if `cargo test` leav
 ├─ apps/desktop/
 │  ├─ src/                    React 19 + TypeScript UI (presentation and input only)
 │  │  ├─ app/                 shell, Home, routes (workspace discovery by file convention), stores, toasts
-│  │  ├─ design-system/       UI kit (Radix-based primitives + OpenFrame tokens)
+│  │  ├─ design-system/       UI kit (Radix-based primitives + Straft Studio tokens)
 │  │  ├─ ipc/                 client.ts (the single typed IPC boundary), query.ts, generated/ (ts-rs output)
 │  │  ├─ workspaces/<dir>/    one directory per module workspace (index.tsx default export)
-│  │  └─ styles/              openframe.css (mock-derived classes), app.css (Tailwind v4)
+│  │  └─ styles/              straft.css (mock-derived classes), app.css (Tailwind v4)
 │  └─ src-tauri/              Tauri v2 adapter: of_invoke dispatcher, asset scope, logging, capabilities
 ├─ crates/
-│  ├─ openframe-domain/       identities (UUIDv7), error taxonomy, roles/capabilities, canonical enums. No I/O.
-│  ├─ openframe-persistence/  SQLite connection policy, migrations, trigger-based undo capture, row helpers
-│  ├─ openframe-project-format/ .openframe layout, manifest, single-writer lock, crash marker, atomic writes
-│  ├─ openframe-security/     path confinement, safe ZIP extraction, SHA-256, Ed25519 verify, log redaction
-│  ├─ openframe-application/  AppCore, op registry, Store (mutation pipeline), modules/*, schema list, AI orchestration
-│  ├─ openframe-search/       derived retrieval primitives: FTS5, sqlite-vec vectors, context graph
-│  ├─ openframe-import-export/ FDX, Fountain, DOCX, PDF import, PDF layout and generation, import reports
-│  ├─ openframe-ai/           Offline AI: engine checked against the pinned lock, model download (pinned Hugging Face files, resume, check, activation, import), llama.cpp engine supervision
-│  └─ openframe-test-support/ TestEnv: isolated AppCore, op helpers, crash/restart simulation
+│  ├─ straft-domain/       identities (UUIDv7), error taxonomy, roles/capabilities, canonical enums. No I/O.
+│  ├─ straft-persistence/  SQLite connection policy, migrations, trigger-based undo capture, row helpers
+│  ├─ straft-project-format/ .straft layout, manifest, single-writer lock, crash marker, atomic writes
+│  ├─ straft-security/     path confinement, safe ZIP extraction, SHA-256, Ed25519 verify, log redaction
+│  ├─ straft-application/  AppCore, op registry, Store (mutation pipeline), modules/*, schema list, AI orchestration
+│  ├─ straft-search/       derived retrieval primitives: FTS5, sqlite-vec vectors, context graph
+│  ├─ straft-import-export/ FDX, Fountain, DOCX, PDF import, PDF layout and generation, import reports
+│  ├─ straft-ai/           Offline AI: engine checked against the pinned lock, model download (pinned Hugging Face files, resume, check, activation, import), llama.cpp engine supervision
+│  └─ straft-test-support/ TestEnv: isolated AppCore, op helpers, crash/restart simulation
 ├─ migrations/{app,global,project}/  embedded SQL migrations (one numbered file per owning module)
 ├─ docs/
 │  ├─ adr/                    Architecture Decision Records
@@ -170,11 +170,11 @@ Commit the regenerated files with the Rust change. CI fails if `cargo test` leav
 └─ docs/specs/              authoritative product specifications (PRD, FSD, UX, Domain, AI, ...); docs/adr/README.md is the decision register
 ```
 
-`openframe-search`, `openframe-import-export` and `openframe-ai` exist (corrected 2026-10-05; the earlier text said they
+`straft-search`, `straft-import-export` and `straft-ai` exist (corrected 2026-10-05; the earlier text said they
 were not created yet). The ESD's `-media` crate was never created; media handling lives in
-`openframe-application/src/modules/*`, as ESD §4 allows ("crates may be consolidated during early development").
-The dependency direction rules still apply. `openframe-collaboration` will **not** exist: LAN collaboration was
-removed (ADR-0007), and package exchange lives with import/export. A platform crate (`openframe-platform`) is
+`straft-application/src/modules/*`, as ESD §4 allows ("crates may be consolidated during early development").
+The dependency direction rules still apply. `straft-collaboration` will **not** exist: LAN collaboration was
+removed (ADR-0007), and package exchange lives with import/export. A platform crate (`straft-platform`) is
 planned for the "Platform adapter layer for Windows and Mac" area of the build plan (ADR-0017, Accepted 2026-10-06). Check `[workspace.dependencies]` in `Cargo.toml` for
 entries that no longer match a crate.
 
@@ -186,7 +186,7 @@ React (webview)                                 Rust (single process)
 useOp(op, args, tables[])  ──invoke──►  of_invoke(op, args)            apps/desktop/src-tauri/src/lib.rs
 useCommand(op) / call(op)                 │  spawn_blocking, timing log
                                           ▼
-                                 AppCore::dispatch(actor, op, args)    crates/openframe-application/src/core.rs
+                                 AppCore::dispatch(actor, op, args)    crates/straft-application/src/core.rs
                                           │  actor = local profile + project role (Owner by default)
                                           ▼
                                  Registry::dispatch                    registry.rs: THE IPC allow-list
@@ -234,10 +234,10 @@ Details: [ADR-0004](docs/adr/ADR-0004-single-ipc-dispatcher.md) (IPC),
 Follow [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/architecture/README.md](docs/architecture/README.md). In summary:
 
 1. Add a migration file under `migrations/project/` (use the number already reserved in `schema.rs`).
-2. Create `crates/openframe-application/src/modules/<m>/` with a `register(r)` function covering ops, indexers and
+2. Create `crates/straft-application/src/modules/<m>/` with a `register(r)` function covering ops, indexers and
    trash handlers, and add one line to `modules/mod.rs`.
 3. Add `apps/desktop/src/workspaces/<dir>/index.tsx`. It is discovered automatically.
-4. Add tests in `crates/openframe-application/tests/<area>/<m>.rs` and a `mod <m>;` line in that area's `main.rs`, using `openframe_test_support::TestEnv`.
+4. Add tests in `crates/straft-application/tests/<area>/<m>.rs` and a `mod <m>;` line in that area's `main.rs`, using `straft_test_support::TestEnv`.
 5. Run `npm run bindings`, commit the generated types, and run `npm run verify`.
 
 ## 7. Architecture decisions
@@ -246,7 +246,7 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/architecture/README.md](docs
 |---|---|
 | [0001](docs/adr/ADR-0001-tauri-react-rust.md) | Tauri v2 + React/TypeScript + Rust |
 | [0002](docs/adr/ADR-0002-rusqlite-over-sqlx.md) | rusqlite (bundled SQLite, FTS5, online backup) instead of SQLx |
-| [0003](docs/adr/ADR-0003-project-folder-format.md) | `.openframe` project folder + single-writer lock |
+| [0003](docs/adr/ADR-0003-project-folder-format.md) | `.straft` project folder + single-writer lock |
 | [0004](docs/adr/ADR-0004-single-ipc-dispatcher.md) | Single allow-listed IPC dispatcher `of_invoke`; asset access resolved in Rust |
 | [0005](docs/adr/ADR-0005-generic-undo-redo.md) | Generic trigger-based undo/redo with stale check |
 | [0006](docs/adr/ADR-0006-local-ai-sidecar.md) | Local-AI-only managed `llama.cpp` sidecar + signed manifests |
@@ -269,7 +269,7 @@ Documentation map and update rules: [docs/README.md](docs/README.md). Work plan:
 | `cargo` not recognized | Add `%USERPROFILE%\.cargo\bin` to `PATH` (§1) |
 | `frontendDist … doesn't exist` when running clippy/check | Run `npm --workspace apps/desktop run build:web`, or create `apps/desktop/dist/index.html` |
 | `Port 1420 is already in use` | Another `npm run dev` is running. Close it (Vite uses `strictPort`) |
-| "This project is already open in another OpenFrame window" | Another OpenFrame process holds the project's `.lock`. The OS releases it when that process exits, even after a crash |
+| "This project is already open in another Straft Studio window" | Another Straft Studio process holds the project's `.lock`. The OS releases it when that process exits, even after a crash |
 | "projects can't be edited directly from a network folder" | Working from UNC paths is refused by design (ADR-0003). Copy the project locally |
 | Blank window in `npm run dev` | Check the WebView2 Runtime (§1) and the Vite output in the terminal |
 | TypeScript errors about missing `ipc/generated/*` types | Run `npm run bindings` |

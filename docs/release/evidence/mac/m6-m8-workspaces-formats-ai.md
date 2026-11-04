@@ -16,9 +16,9 @@ the logic and the models of the screens. Nothing here is proved on the release `
 ## Results
 
 `bash apps/macos/scripts/test.sh` on 2026-10-18: **543 tests in 61 suites, all passing.** The count of `@Test`
-attributes in `apps/macos/Tests` is 538 in `OpenFrameUITests` plus 5 in `OpenFrameCoreTests` = 543. The sums by file in the tables below are attribute counts.
+attributes in `apps/macos/Tests` is 538 in `StraftUITests` plus 5 in `StraftCoreTests` = 543. The sums by file in the tables below are attribute counts.
 
-Rust: `cargo test --workspace --exclude openframe-desktop` passes 2056 of 2057. The one failure was
+Rust: `cargo test --workspace --exclude straft-desktop` passes 2056 of 2057. The one failure was
 `core_pipeline::fsd_6_2_continue_remembers_last_location_per_workspace`, which failed once while the load average was
 above 80 and passes when run alone. It is a timing test, not a Mac problem, and it is not fixed; it is recorded here so a
 repeat is recognised.
@@ -29,7 +29,7 @@ attributes.
 ## Phase M6: production workspaces (168 tests)
 
 Built in 3c38c41. Sources: `Schedule/`, `CallSheets/`, `Budget/`, `ProjectPages/` (Files, Notes, Recently Deleted,
-Activity), and Visual Planning, under `apps/macos/Sources/OpenFrameUI/`.
+Activity), and Visual Planning, under `apps/macos/Sources/StraftUI/`.
 
 | Suite file | Tests | Shared scenario implemented at model level |
 |---|---|---|
@@ -52,7 +52,7 @@ Built in d69efa0. Sources: `Interchange/`, `Packages/`.
 
 | Suite file | Tests | Shared scenario implemented at model level |
 |---|---|---|
-| `InterchangeTests.swift` | 20 | `63-every-export.md` and the import and export parts of `41-screenplay-engine.md`. The FDX round-trip suite of 13 classes (the fixtures of `crates/openframe-import-export/tests/fixtures`, shared with Windows) runs through every format; Indian-script text; selecting no scene cannot export; print preview page range |
+| `InterchangeTests.swift` | 20 | `63-every-export.md` and the import and export parts of `41-screenplay-engine.md`. The FDX round-trip suite of 13 classes (the fixtures of `crates/straft-import-export/tests/fixtures`, shared with Windows) runs through every format; Indian-script text; selecting no scene cannot export; print preview page range |
 | `InterchangeSupportTests.swift` | 0 | Helpers only (fixture finder, rig with a real core, file-panel stub, draft readers) used by both M7 suites |
 | `PackagesTests.swift` | 15 | `70-packages.md` in its order: backup, Full Project Package, review package, the reviewer's comment and response, import of the response, restore from Home with the collision choice, a damaged backup, the relaunch. Also stale packages, unmatched notes and the Review Queue, undo, replace after backup, wrong kinds of package, a version from the future, a cancelled task, a folder that cannot be written |
 
@@ -80,12 +80,12 @@ set is 60 of 60 safe ([m8-eval-poisoned](m8-eval-poisoned/report.md)). Metal aga
 ## StoreKit 2 for the Mac App Store entitlement (42 tests)
 
 Built in e7d4eeb. It is compiled into the app but off in the internal build: the internal build still shows the team
-gate and never names a store screen (checked by `Store internal build`). Sources: `Store/`, `crates/openframe-ffi/src/store.rs`,
-`packaging/OpenFrameStudio.storekit`.
+gate and never names a store screen (checked by `Store internal build`). Sources: `Store/`, `crates/straft-ffi/src/store.rs`,
+`packaging/StraftStudio.storekit`.
 
 | Suite file | Tests | Covers |
 |---|---|---|
-| `StoreBridgeTests.swift` | 16 | The Swift side of the bridge over a fake Apple: the five rules of `crates/openframe-entitlement/src/mac/bridge.rs` (verified results only, and the rest), and the licensing server client |
+| `StoreBridgeTests.swift` | 16 | The Swift side of the bridge over a fake Apple: the five rules of `crates/straft-entitlement/src/mac/bridge.rs` (verified results only, and the rest), and the licensing server client |
 | `StoreLicenceTests.swift` | 22 | The licence flow through the real core as the store channel (debug test switch) with a fake Apple and a fake licensing server that signs with a real Ed25519 key: trial start, days left, expiry, purchase, restore, revocation, unverified results dropped, environments never mixed |
 | `StoreScreenTests.swift` | 4 | The licence screens drawn in a real window, light and dark; the store build names its first screen, the internal build never does |
 
@@ -93,13 +93,13 @@ gate and never names a store screen (checked by `Store internal build`). Sources
 
 [m9-security-review.md](m9-security-review.md) is a read-only review of what the Mac adds (12 findings, none critical).
 Commit d0bc17e changed these files: the Story attachment open path, the
-Mac list of launchable file types in `crates/openframe-security/src/lib.rs`, the hardened-runtime entitlements of the
+Mac list of launchable file types in `crates/straft-security/src/lib.rs`, the hardened-runtime entitlements of the
 build script, the installer scan, and `E2E/run.sh`. The review document itself was written before those fixes and still
 lists them as findings; read its table with the commit.
 
 ## Real-app end-to-end (the only window-level evidence)
 
-Because there is no full Xcode, there is no XCUITest. An injected driver (`apps/macos/Sources/OpenFrameE2EDriver`,
+Because there is no full Xcode, there is no XCUITest. An injected driver (`apps/macos/Sources/StraftE2EDriver`,
 runner `apps/macos/E2E/run.sh`) drives the real app through the accessibility tree. On the release rehearsal build with
 the real team gate, three scenarios passed (3 of 3, 2026-10-18):
 
@@ -120,7 +120,7 @@ Fill this table from `release-out/e2e/<timestamp>/summary.md` when the final run
 ## Known gaps
 
 - **Real StoreKit purchases have not run.** The sheet needs Xcode's StoreKit testing with
-  `packaging/OpenFrameStudio.storekit`. Tests use a fake Apple and a fake licensing server.
+  `packaging/StraftStudio.storekit`. Tests use a fake Apple and a fake licensing server.
 - **AI Change Set apply with a real model is not proved.** `AIAssistantTests` reaches the review calls without a model.
   Scenarios 72, 74 (Apply, one Undo, Reject, out of date) and 75 with an answer, and 78 with a download, wait for the
   real-app end-to-end work.

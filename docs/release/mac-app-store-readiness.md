@@ -20,15 +20,15 @@ Status words:
 
 | Requirement | Evidence in the code | Status |
 |---|---|---|
-| App Sandbox on the store build | `OpenFrameStudio-store.entitlements` sets `app-sandbox` | Ready |
+| App Sandbox on the store build | `StraftStudio-store.entitlements` sets `app-sandbox` | Ready |
 | Files the person picks (`files.user-selected.read-write`) | `NSOpenPanel` and `NSSavePanel` in 12 source files, `.fileImporter` in the Idea Vault; paths go to the core in the same process, which keeps the panel's access | Ready |
-| App-scope bookmarks (`files.bookmarks.app-scope`) | Built for linked files only: `LinkedFileBookmarks` in `OpenFrameUI/ProjectPages/ProjectPagesSupport.swift` stores `.withSecurityScope` bookmarks in user defaults. Bookmarks for a library or project folder outside the container are not built; the store build hides Choose new location, Locate, Move and Change Folder (`StorageRules.canRelocate`) | Ready for linked files; folder bookmarks Not built |
+| App-scope bookmarks (`files.bookmarks.app-scope`) | Built for linked files only: `LinkedFileBookmarks` in `StraftUI/ProjectPages/ProjectPagesSupport.swift` stores `.withSecurityScope` bookmarks in user defaults. Bookmarks for a library or project folder outside the container are not built; the store build hides Choose new location, Locate, Move and Change Folder (`StorageRules.canRelocate`) | Ready for linked files; folder bookmarks Not built |
 | Old comment said bookmarks also reopen projects | The store entitlements comment now says linked files only | Fixed now |
 | Microphone (`device.audio-input`) | `AVAudioRecorder` and `AVCaptureDevice.requestAccess(for: .audio)` in `IdeaVault/VoiceRecording.swift`, only on Record | Ready |
 | Printing (`print`) | `NSPrintOperation` in `Interchange/PrintPreviewModel.swift`. A sandboxed app without `com.apple.security.print` cannot print | Fixed now (key added) |
-| Outgoing network (`network.client`) | Model download with `reqwest` to `huggingface.co` and `hf.co` only (`openframe-ai/src/fetch.rs`), started by the person; the core's calls to the engine on 127.0.0.1 | Ready. The trial check makes no network call of its own (ADR-0040) |
+| Outgoing network (`network.client`) | Model download with `reqwest` to `huggingface.co` and `hf.co` only (`straft-ai/src/fetch.rs`), started by the person; the core's calls to the engine on 127.0.0.1 | Ready. The trial check makes no network call of its own (ADR-0040) |
 | Licence server | None (ADR-0040). Trial counted offline with a Keychain clock guard | Done, removed |
-| Loopback listener for the engine (`network.server`) | `llama-server --host 127.0.0.1 --port <free port>` with a random API key (`openframe-ai/src/supervisor.rs`) | Ready. Optional hardening: a Unix socket inside the container would remove this key |
+| Loopback listener for the engine (`network.server`) | `llama-server --host 127.0.0.1 --port <free port>` with a random API key (`straft-ai/src/supervisor.rs`) | Ready. Optional hardening: a Unix socket inside the container would remove this key |
 | Helper inherits the sandbox | `llama-server-store.entitlements` has only `app-sandbox` and `inherit`, as Apple requires | Ready |
 | Internal build entitlements | Hardened runtime plus `device.audio-input` only, no DYLD or library-validation exception | Ready |
 | `application-identifier` and `team-identifier` | Added from the provisioning profile at signing; not written in the repository | Owner task |
@@ -36,14 +36,14 @@ Status words:
 ## 2. Privacy manifest
 
 Apple's required-reason APIs were checked in the shipped Swift targets and in the symbols the Rust core library imports
-(`nm -u` on `libopenframe_ffi.a`): `stat`, `fstat`, `lstat`, `fstatat`, `statfs`, `fstatfs`, `statvfs`, `getfsstat`,
+(`nm -u` on `libstraft_ffi.a`): `stat`, `fstat`, `lstat`, `fstatat`, `statfs`, `fstatfs`, `statvfs`, `getfsstat`,
 `mach_absolute_time`, `sysctl`. The end-to-end driver uses `systemUptime` but is never in the app bundle.
 
 | Requirement | Evidence | Status |
 |---|---|---|
 | Tracking false, no tracking domains | No analytics, no ad or tracking SDK | Ready |
 | File timestamp: `C617.1`, `3B52.1` | Rust `metadata().modified()`, SQLite `fstat`; files in the container or picked by the person | Ready |
-| Disk space: `E174.1` | `statvfs` in `openframe-platform/src/drives.rs` before a model download or a library move | Ready |
+| Disk space: `E174.1` | `statvfs` in `straft-platform/src/drives.rs` before a model download or a library move | Ready |
 | Disk space: `85F4.1` (shown to the person) | `AILogic.swift` shows "free on this drive" in AI settings | Fixed now (reason added) |
 | System boot time: `35F9.1` | The core links `sysinfo`, which imports `mach_absolute_time` and reads the boot time sysctl | Fixed now (category added) |
 | User defaults: `CA92.1` | `@AppStorage` and `UserDefaults.standard` for the app's own settings and bookmarks | Ready |
@@ -59,7 +59,7 @@ what a store script must do differently.
 | Requirement | Evidence | Status |
 |---|---|---|
 | Usage text for every protected resource | `NSMicrophoneUsageDescription` present in both scripts; no camera, contacts, photos, location or calendar use | Ready |
-| Bundle identifier | Internal `studio.openframe.mac`; doc 38 and the StoreKit products use `app.openframestudio.studio` | Owner task (pick one; the store record and product ids must match) |
+| Bundle identifier | Internal `studio.straft.mac`; doc 38 and the StoreKit products use `app.straftstudio.studio` | Owner task (pick one; the store record and product ids must match) |
 | `CFBundleVersion` | Internal value is `<version>.<commit>`, for example `0.1.0.6b1b25c0`. The store accepts only up to three numbers separated by dots, rising with each upload | Not built (store script must write a plain build number) |
 | `CFBundleShortVersionString` | `0.1.0` from `Cargo.toml` | Ready |
 | `LSApplicationCategoryType` | `public.app-category.productivity` | Ready; owner may pick another |
@@ -74,13 +74,13 @@ what a store script must do differently.
 
 | Rule | Evidence | Status |
 |---|---|---|
-| Data stays in the container (2.5.2) | `directories` reads `$HOME`, which the sandbox points at the container, so `~/OpenFrame` and Application Support resolve inside it; doc 40 section 7 records this | Ready; confirm on a sandboxed build |
+| Data stays in the container (2.5.2) | `directories` reads `$HOME`, which the sandbox points at the container, so `~/Straft Studio` and Application Support resolve inside it; doc 40 section 7 records this | Ready; confirm on a sandboxed build |
 | Nothing written next to the app | `app_resources_dir()` only reads `Contents/Resources` | Ready |
 | No downloaded code (2.4.5, 2.5.2) | The engine and its libraries ship inside the app. The download fetches only `<model id>.gguf` weights from a pinned Hugging Face commit, checked by size and SHA-256 (`download.rs`, `install.rs`). Importing a model copies it into app storage | Ready; explain in the review notes |
-| Child processes do not outlive the app (2.4.5) | Kill-on-close guard and a `/bin/sh` watcher that ends the engine group within a second of the app ending (`openframe-platform/src/process.rs`) | Ready; confirm the watcher and its signal work inside the sandbox |
-| Opening links and revealing files | Rust runs `/usr/bin/open` (`openframe-platform/src/shell.rs`); Swift already uses `NSWorkspace` in other screens | Not built: route open and reveal through `NSWorkspace` on the store build, or prove `/usr/bin/open` works in the sandbox |
-| Team password gate absent from the store build | Not applicable since 2026-10-27: the team password gate was removed from every build (owner decision). `OPENFRAME_DISTRIBUTION=store` still selects the store channel | Ready (code); store build script Not built |
-| Trial and purchase through StoreKit only (3.1.1) | StoreKit 2 bridge and runtime in `OpenFrameUI/Store/`; products `7-day Trial` (zero price, follows Apple's naming) and `Lifetime Access` in `OpenFrameStudio.storekit` | Ready |
+| Child processes do not outlive the app (2.4.5) | Kill-on-close guard and a `/bin/sh` watcher that ends the engine group within a second of the app ending (`straft-platform/src/process.rs`) | Ready; confirm the watcher and its signal work inside the sandbox |
+| Opening links and revealing files | Rust runs `/usr/bin/open` (`straft-platform/src/shell.rs`); Swift already uses `NSWorkspace` in other screens | Not built: route open and reveal through `NSWorkspace` on the store build, or prove `/usr/bin/open` works in the sandbox |
+| Team password gate absent from the store build | Not applicable since 2026-10-27: the team password gate was removed from every build (owner decision). `STRAFT_DISTRIBUTION=store` still selects the store channel | Ready (code); store build script Not built |
+| Trial and purchase through StoreKit only (3.1.1) | StoreKit 2 bridge and runtime in `StraftUI/Store/`; products `7-day Trial` (zero price, follows Apple's naming) and `Lifetime Access` in `StraftStudio.storekit` | Ready |
 | Trial sheet says length, what stops and the price before it starts (3.1.1) | Mock 187 shows no price and no Not now; doc 38 section 10 leaves this open | Owner task (decision already open) |
 | No external payment links | No purchase or website link in the app; only fixed social links on the licence screens | Ready |
 | Account deletion (5.1.1(v)) | No accounts | Not applicable |
@@ -94,7 +94,7 @@ what a store script must do differently.
 |---|---|---|
 | Every Mach-O signed with the team identity, sandbox and `inherit` on `llama-server` | The internal build seals the engine as resources and never signs it; the libraries carry only upstream ad hoc signatures (ADR-0033 decision 6) | Not built |
 | Code in a code location | Apple wants executables in `Contents/MacOS` or `Contents/Helpers` and libraries in `Contents/Frameworks`; upload checks scan every executable for the sandbox key. The store build places the engine under `Contents/Helpers/ai` | Ready in the plan: the store build places the engine under `Contents/Helpers/ai` (the internal build keeps `Contents/Resources/ai`) |
-| Byte hashes against signing | The core re-hashed every engine file against `packaging/ai/ai-assets.lock.json` before each launch, which signing breaks. On the store build (`AppConfig.ai_engine_store_signed`, set from `openframe_store`) each code file (`llama-server`, `.dylib`) must instead pass `openframe_platform::code_signature::is_apple_signed` (Security framework, strict check, requirement `anchor apple generic`). Non-code files keep byte hashes, and unexpected program files and missing files are still refused. The check is never cached | Ready: signature check built and unit tested; not yet run on a real signed build |
+| Byte hashes against signing | The core re-hashed every engine file against `packaging/ai/ai-assets.lock.json` before each launch, which signing breaks. On the store build (`AppConfig.ai_engine_store_signed`, set from `straft_store`) each code file (`llama-server`, `.dylib`) must instead pass `straft_platform::code_signature::is_apple_signed` (Security framework, strict check, requirement `anchor apple generic`). Non-code files keep byte hashes, and unexpected program files and missing files are still refused. The check is never cached | Ready: signature check built and unit tested; not yet run on a real signed build |
 | Library validation | With the hardened runtime on the helper, every dylib must carry the same team identifier. Signing all eleven files with one identity meets it; no `disable-library-validation` exception is needed | Not built (comes with the signing step) |
 | Unused RPC backend | `libggml-rpc.0.dylib` ships with the engine; the core never passes `--rpc` | Ready; dropping it is optional |
 
@@ -103,13 +103,13 @@ what a store script must do differently.
 What the Mac build does with encryption, as of 2026-11-03:
 
 - TLS for the model download goes through Apple's Security framework. `reqwest` uses `native-tls` on macOS and `rustls-tls`
-  on every other system (`crates/openframe-ai/Cargo.toml`). On the Mac, `cargo tree -p openframe-ffi -e normal -i rustls`
+  on every other system (`crates/straft-ai/Cargo.toml`). On the Mac, `cargo tree -p straft-ffi -e normal -i rustls`
   and `-i ring` print nothing. The app ships no TLS code of its own there.
 - SHA-256 is used to check file integrity (models, the engine lock, project files). Hashing is exempt.
 - There is no licence server and no Ed25519 check. The licence comes from StoreKit, which is Apple's.
-- OpenFrame encrypts no user data and offers no encryption feature.
+- Straft Studio encrypts no user data and offers no encryption feature.
 - `aes` is in the Mac dependency tree only through `lopdf`, the PDF reader. It is compiled in because `lopdf` cannot leave
-  it out, and it is used only to read a password-protected PDF the person chose to import. OpenFrame never encrypts with it.
+  it out, and it is used only to read a password-protected PDF the person chose to import. Straft Studio never encrypts with it.
   This is the one item the owner should read twice before answering Apple.
 
 Recommended answer: `ITSAppUsesNonExemptEncryption` set to `false` (encryption is Apple's or exempt). The owner confirms
@@ -120,10 +120,10 @@ this in App Store Connect, with legal advice if in doubt. Status: Owner task.
 1. Enrol in the Apple Developer Program as the company (Account Holder). Accept the Paid Apps agreement and finish tax and
    banking.
 2. Install a released Xcode. Create the certificates Apple Distribution and Mac Installer Distribution.
-3. Register the bundle identifier (`app.openframestudio.studio`, section 3) and create a Mac App
+3. Register the bundle identifier (`app.straftstudio.studio`, section 3) and create a Mac App
    Store provisioning profile for it.
 4. Create the App Store Connect record: macOS, price Free, category, age rating answers, support and privacy policy
-   addresses, and the in-app purchases from doc 38 section 10 (product ids must match `OpenFrameStudio.storekit`).
+   addresses, and the in-app purchases from doc 38 section 10 (product ids must match `StraftStudio.storekit`).
 5. (Removed: no licence server, ADR-0040.)
 6. Approve the store build work in sections 3 to 5 (build number, Xcode archive, helper location, helper signing, signature
    check instead of byte hashes, `NSWorkspace` for open and reveal), then the build itself.
@@ -132,7 +132,7 @@ this in App Store Connect, with legal advice if in doubt. Status: Owner task.
    collected.
 9. Export compliance answer from section 6, and `ITSAppUsesNonExemptEncryption` set to match.
 10. Decide the trial sheet wording against guideline 3.1.1 (doc 38 section 10 item 5).
-11. Review notes, for example: "OpenFrame Studio is a writing and production app. Its optional assistant runs fully on the
+11. Review notes, for example: "Straft Studio is a writing and production app. Its optional assistant runs fully on the
     Mac. The app bundle contains the llama.cpp engine (`llama-server` and its libraries, MIT licence), signed with our team
     identity and the App Sandbox with `com.apple.security.inherit`. The app starts it as a child process that listens only on
     127.0.0.1 with a random key and ends it when the app quits. When the reviewer chooses to download the assistant, the app

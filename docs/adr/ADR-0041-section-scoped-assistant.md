@@ -1,6 +1,6 @@
 # ADR-0041: Section-scoped assistant
 
-- **Status:** Accepted 2026-11-03 (owner go-ahead through the release package, `OpenFrame_Release_Package/ai-reharness.md`).
+- **Status:** Accepted 2026-11-03 (owner go-ahead through the release package, `Straft_Release_Package/ai-reharness.md`).
 - **Date:** 2026-11-03
 - **Supersedes:** [ADR-0037](ADR-0037-conversational-assistant-focus-and-dossiers.md) decision 5 (domain by topic words) and
   decision 6 (Stage B plan becomes the picked sections; Stage C "one more fetch" goes, because the person widens by adding a

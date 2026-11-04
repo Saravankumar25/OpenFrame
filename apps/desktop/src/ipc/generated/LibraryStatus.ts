@@ -8,7 +8,7 @@ export type LibraryStatus = { state: LibraryState,
  */
 root: string | null, 
 /**
- * The suggested place for a new library (`<home>\OpenFrame`).
+ * The suggested place for a new library (`<home>\Straft Studio`).
  */
 suggested: string, 
 /**

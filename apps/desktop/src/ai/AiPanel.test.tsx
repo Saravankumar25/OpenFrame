@@ -93,7 +93,7 @@ beforeEach(() => {
 });
 
 describe("AI Assistant panel", () => {
-  it("is ready once OpenFrame AI is downloaded: no download button, no setup step", async () => {
+  it("is ready once Straft AI is downloaded: no download button, no setup step", async () => {
     renderPanel();
     expect(await screen.findByRole("textbox", { name: "Ask or command" })).toBeTruthy();
     expect(screen.getByText("AI Ready")).toBeTruthy();
@@ -103,17 +103,17 @@ describe("AI Assistant panel", () => {
     expect(calls.some((c) => c.op.startsWith("ai.download"))).toBe(false);
   });
 
-  it("offers the download while OpenFrame AI is not downloaded, and starts it only on the click", async () => {
+  it("offers the download while Straft AI is not downloaded, and starts it only on the click", async () => {
     status = {
       ...status,
       available: false,
       mode: "Off",
       bundleState: "NotInstalled",
       runtimeState: "Unavailable",
-      problem: { code: "ai.not_installed", message: "OpenFrame AI is not downloaded yet.", retryable: false },
+      problem: { code: "ai.not_installed", message: "Straft AI is not downloaded yet.", retryable: false },
     };
     renderPanel();
-    const start = await screen.findByRole("button", { name: "Download OpenFrame AI" });
+    const start = await screen.findByRole("button", { name: "Download Straft AI" });
     expect(screen.getByText(/A one-time download of 1.0 GB/)).toBeTruthy();
     expect(screen.queryByRole("textbox", { name: "Ask or command" })).toBeNull();
     expect(calls.some((c) => c.op === "ai.download.start")).toBe(false);
@@ -140,13 +140,13 @@ describe("AI Assistant panel", () => {
       runtimeState: "Unavailable",
       problem: {
         code: "ai.assets_damaged",
-        message: "Offline AI files in this installation were changed or damaged, so OpenFrame did not start them. Reinstall OpenFrame Studio to repair it. Your projects were not changed.",
+        message: "Offline AI files in this installation were changed or damaged, so Straft Studio did not start them. Reinstall Straft Studio to repair it. Your projects were not changed.",
         retryable: false,
       },
     };
     renderPanel();
-    expect(await screen.findByText(/Reinstall OpenFrame Studio to repair it/)).toBeTruthy();
-    expect(screen.getByText("Everything else in OpenFrame works normally.")).toBeTruthy();
+    expect(await screen.findByText(/Reinstall Straft Studio to repair it/)).toBeTruthy();
+    expect(screen.getByText("Everything else in Straft Studio works normally.")).toBeTruthy();
     expect(screen.queryByRole("textbox", { name: "Ask or command" })).toBeNull();
     expect(document.body.textContent?.toLowerCase()).not.toContain("download");
   });

@@ -1,7 +1,7 @@
 # Mac phase M4: screenplay editor spike
 
 Recorded 2026-10-17 on the development Mac (Apple M1, macOS 26.5.2). Test:
-`apps/macos/Tests/OpenFrameUITests/EditorSpikeTests.swift` (`bash apps/macos/scripts/test.sh --filter EditorSpikeTests`).
+`apps/macos/Tests/StraftUITests/EditorSpikeTests.swift` (`bash apps/macos/scripts/test.sh --filter EditorSpikeTests`).
 
 ## What was measured
 

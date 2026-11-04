@@ -1,6 +1,6 @@
 # ADR-0040: Offline Mac trial with a clock guard, no licence server
 
-- **Status:** Accepted 2026-11-03 (owner decision, release package `OpenFrame_Release_Package/`).
+- **Status:** Accepted 2026-11-03 (owner decision, release package `Straft_Release_Package/`).
 - **Date:** 2026-11-03
 - **Supersedes:** the licence server in [ADR-0018](ADR-0018-distribution-licensing-commerce.md) decision 3 and the
   whole of `docs/engineering/38-mac-app-store-trial.md` as a design for a server. Amends
@@ -21,7 +21,7 @@ stores' own calls.
    Family Sharing off. This reverses the old rule "the wall clock is never an input".
 2. **The start** is the earlier of `purchaseDate` and `originalPurchaseDate` of the earliest verified trial transaction,
    never the first download date. Once known it never moves later. The end is the start plus exactly 168 hours.
-3. **The policy** is the table in `crates/openframe-entitlement/src/mac/policy.rs`, rules 1 to 9. "The store is reachable"
+3. **The policy** is the table in `crates/straft-entitlement/src/mac/policy.rs`, rules 1 to 9. "The store is reachable"
    means `Product.products(for:)` returned both products in this evaluation. `currentEntitlements` does not fail offline,
    so an empty list then proves nothing and never reads as "no trial yet".
 4. **The clock guard** is one small record in the data protection Keychain, in the app's own access group, read and

@@ -148,7 +148,7 @@ describe("trial and first-run screens", () => {
       await assertQuiet(browser, "tutorial");
       await finish.click();
 
-      const welcome = await dialog("Welcome to the OpenFrame Studio family");
+      const welcome = await dialog("Welcome to the Straft Studio family");
       await welcome.waitForDisplayed({ timeout: 10_000 });
       await waitForText(browser, "Be a part of our community.");
       await assertQuiet(browser, "welcome");
@@ -212,7 +212,7 @@ describe("trial and first-run screens", () => {
   test("Mac first launch cannot be closed and shows no price", async () => {
     await step("mac-first-launch", async () => {
       await setLicence("macAppStore", { state: "trialNotStarted" });
-      const d = await dialog("Welcome to OpenFrame Studio");
+      const d = await dialog("Welcome to Straft Studio");
       await d.waitForDisplayed({ timeout: 15_000 });
       await waitForText(browser, "7 days. Everything included. No credit card.");
       assert.doesNotMatch(await browser.execute(() => document.body.innerText), NO_PRICE, "no price on the first-launch screen");

@@ -2,10 +2,10 @@
 
 # Windows final polish: work plan
 
-Written 2026-10-19 at the owner's request ("OpenFrame Windows: final refinement, UI unification and release build").
+Written 2026-10-19 at the owner's request ("Straft Studio Windows: final refinement, UI unification and release build").
 Sources: `changes/` (the owner's change list `all_changes.docx`, change specs 01 to 05 with their HTML references, two
-reference pictures), `OpenFrameAI.docx` (AI repair brief with 12 screenshots), and the Mac app in `OpenFrameMac/` (its
-SwiftUI source and the 179 captured screens in `OpenFrameMac/release-out/MacHTML/`). These three folders are reference
+reference pictures), `StraftAI.docx` (AI repair brief with 12 screenshots), and the Mac app in `StraftMac/` (its
+SwiftUI source and the 179 captured screens in `StraftMac/release-out/MacHTML/`). These three folders are reference
 material and are not committed.
 
 ## Findings before work started
@@ -17,7 +17,7 @@ material and are not committed.
   "locations" answers with the location statistics). Same model (Gemma 3 1B), same prompts, same themes file. The Mac
   feels better mostly because Metal makes every step several times faster; the wrong answers in the AI brief come from
   shared core routing and from the Windows chat view, so they are fixed here.
-- OpenFrame Default has no dark palette of its own, so its dark mode is generated from the same seeds as Studio Amber.
+- Straft Default has no dark palette of its own, so its dark mode is generated from the same seeds as Studio Amber.
 
 ## Work items
 
@@ -33,7 +33,7 @@ the existing Windows design:
 2. Ctrl+Plus, Ctrl+Minus and Ctrl+0 zoom the window; the screenplay and Breakdown pages zoom with Ctrl+wheel and pinch.
 3. Focus mode hides everything except the screenplay page.
 4. A page reload keeps the current page (the route is remembered for the session).
-5. OpenFrame Default gets its own dark palette.
+5. Straft Default gets its own dark palette.
 6. Dark mode contrast pass (screenplay suggestions and similar spots).
 7. The page frame can no longer be scrolled by script (the "stuck top, white bottom" bug).
 
@@ -45,7 +45,7 @@ of the Episodic and Series project types for new projects (existing projects sti
 Review section, Daily View export, +Beat/+Scene overflow, long draft names, the Breakdown sidebar overflow, and a grid
 view in Shot Lists.
 
-### C. AI (OpenFrameAI.docx)
+### C. AI (StraftAI.docx)
 
 Unqualified and non-English scene and character counts; "describe a character" answered from screenplay evidence;
 product help only for product questions; search for a category word answers with its statistics; clean chat replies with
@@ -65,19 +65,19 @@ Rust and web tests, governance checks, end-to-end specs, a real-app walkthrough,
 
 ## Overnight checklist (owner instruction 2026-10-20: finish everything, build and verify the .exe)
 
-Sources added 2026-10-20 (reference only, not committed): `Downloads/OPENFRAME_WINDOWS_UX_AUDIT_AND_REDESIGN_CLAUDE_CODE_MASTER_PROMPT.md`,
-`Downloads/OPENFRAME_WINDOWS_AI_CONTEXT_ENGINEERING_CLAUDE_CODE_MASTER_PROMPT.md`, `Downloads/openframe-chnages.docx`.
+Sources added 2026-10-20 (reference only, not committed): `Downloads/STRAFT_WINDOWS_UX_AUDIT_AND_REDESIGN_CLAUDE_CODE_MASTER_PROMPT.md`,
+`Downloads/STRAFT_WINDOWS_AI_CONTEXT_ENGINEERING_CLAUDE_CODE_MASTER_PROMPT.md`, `Downloads/straft-chnages.docx`.
 
 ### Change list and change specs
 - all_changes.docx items 1 to 21: done (item 12, Daily View export, in e6b02e9).
 - Change specs 01 to 05 and read_this.txt (all PDF exports): done in a6fcaaf; 23 sample documents in
   release-out/pdf-samples for the owner (not committed).
-- openframe-chnages.docx 1, stripboard colours (EXT Night green, EXT Day yellow, INT Day white, INT Night light blue):
+- straft-chnages.docx 1, stripboard colours (EXT Night green, EXT Day yellow, INT Day white, INT Night light blue):
   done in the app and in the schedule PDF.
-- openframe-chnages.docx 2, Story Board act columns that scroll on their own with whole card text and a Parking Lot
+- straft-chnages.docx 2, Story Board act columns that scroll on their own with whole card text and a Parking Lot
   column: done in story.css; measured by the layout geometry spec.
 
-### AI (OpenFrameAI.docx and the context engineering brief)
+### AI (StraftAI.docx and the context engineering brief)
 - Done: plain and Indian-language counts, character description from evidence, category search, no false applied
   claims, clean chat UI, greetings, product help only for app questions, scene-level facts, dialogue facts, drafts
   and omitted counts, follow-ups, ten new gold cases, the owner walkthrough (docs/engineering/ai-answer-paths.md).

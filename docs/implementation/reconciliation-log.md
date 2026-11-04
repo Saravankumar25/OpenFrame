@@ -44,7 +44,7 @@ The owner removed the team password of the internal builds; the code is removed 
 | Team gate built and reachable | `feature-status.md` PLAT-016, `mac-parity-matrix.md` | Row set to Removed; the parity row edited by hand (a full `npm run mac:parity` run also pulls in unrelated drift and drops Mac evidence cells, so it was not kept) |
 | Typing or setting the password | `CLAUDE.md`, `docs/README.md`, vision, chapter 1, 1a, 1b and 3 pages, internal test plan, pilot kit, release gates, store readiness, launch register, engineering 17, 20 (T37 retired), 23, 36 (section 11 marked superseded), 40, `ai-answer-paths.md`, the security and harness specifications, the manual test case list (71 rows) | Rewritten to "opens without a password" or marked superseded |
 | `team_gate.*` operations listed | Generated `ai-tool-coverage.md` | Rows and counts edited to match the registry without the two operations; regenerate with the coverage test once the code change builds |
-| Password steps in the Word manuals | `manual/OpenFrame_Studio_Manual_Testing_Guide.docx`, `manual/OpenFrame_Studio_User_Manual_Windows_Build.docx` | Not changed yet (binary files with figures of the password screen); still to do |
+| Password steps in the Word manuals | `manual/Straft_Studio_Manual_Testing_Guide.docx`, `manual/Straft_Studio_User_Manual_Windows_Build.docx` | Not changed yet (binary files with figures of the password screen); still to do |
 | Records of the 2026-10-17 and 2026-10-18 builds that had the gate | `release/evidence/`, progress log | Left as written: they record what happened |
 
 ## 2026-10-27: Mac documents brought level with Windows `114dff50` (core sync)
@@ -127,7 +127,7 @@ Owner instruction: "Update the documentation properly. Move older decisions, dep
 
 Links, rules and scripts changed together: `CLAUDE.md` (three rules), `DEVELOPMENT.md` (tree), `docs/README.md` (layout, precedence, map rows), the history index, the writing check skip list (`docs/archive/` entry removed; `docs/history/` was already skipped), the link check (`docs/history/` is a record folder), and every link to `docs/archive/` in ADR-0005, 0009, 0012, 0017, the architecture page, engineering 13, 20, 27, 35 and 37, the roadmap pages, the vision page, owner decisions, the launch register, the Windows release gate, the UX change log and the specifications README. Entries in the progress log and in this log that named `docs/archive/` or the moved plans now name the new path.
 
-**Left where they are, on purpose:** `docs/reports/2026-10-09-project-retrospection-and-audit.md` (a dated snapshot, still the long explanation that the architecture page points to; its AI figures of 8 steps and a 7,000-character catalogue are the state of 2026-10-09), `docs/audits/` and `docs/release/evidence/` (evidence folders), `docs/specs/openframe_ai_agentic_rag_spec_prompt.md` (code and docs cite its section numbers), `docs/implementation/next-session-mac-html-prompt.md` (still the open Mac task in the handoff), `docs/website/prompts/`.
+**Left where they are, on purpose:** `docs/reports/2026-10-09-project-retrospection-and-audit.md` (a dated snapshot, still the long explanation that the architecture page points to; its AI figures of 8 steps and a 7,000-character catalogue are the state of 2026-10-09), `docs/audits/` and `docs/release/evidence/` (evidence folders), `docs/specs/straft_ai_agentic_rag_spec_prompt.md` (code and docs cite its section numbers), `docs/implementation/next-session-mac-html-prompt.md` (still the open Mac task in the handoff), `docs/website/prompts/`.
 
 **Stale statements marked superseded in place (no living document was moved)**
 
@@ -142,7 +142,7 @@ Links, rules and scripts changed together: `CLAUDE.md` (three rules), `DEVELOPME
 
 **Not found:** no live document states "plain text only" for AI answers except the one marked above, and no live document describes landscape Storyboard, Shot List, Schedule or Card Board outside `specs/pdf-design-package-v2/` (where v1 orientation appears only as "changes from v1").
 
-**Noted, not changed (outside documentation):** two Rust test comments still name `docs/archive/2026-09-30-security-review.md` (`crates/openframe-application/tests/platform/security_review.rs`, `crates/openframe-security/tests/security_paths.rs`). The file is now `docs/history/2026-09-30-security-review.md`. They are comments only; fix them in the next code change. A copy of the v5 screenplay standard sits untracked at the repository root (`OpenFrame_Screenplay_Formatting_Standard_v5_Combined.md`, byte-identical to `docs/specs/screenplay-formatting-standard-v5.md`); the layout rule keeps the root clear, so it can be deleted by whoever owns it.
+**Noted, not changed (outside documentation):** two Rust test comments still name `docs/archive/2026-09-30-security-review.md` (`crates/straft-application/tests/platform/security_review.rs`, `crates/straft-security/tests/security_paths.rs`). The file is now `docs/history/2026-09-30-security-review.md`. They are comments only; fix them in the next code change. A copy of the v5 screenplay standard sits untracked at the repository root (`Straft_Screenplay_Formatting_Standard_v5_Combined.md`, byte-identical to `docs/specs/screenplay-formatting-standard-v5.md`); the layout rule keeps the root clear, so it can be deleted by whoever owns it.
 
 **Decisions recorded:** owner-decisions rows dated 2026-10-24 (answer shape, progress and Cancel, Save conversation, harness plan location, screenplay v5, PDF design v2, history folder, Mac port list, parallel tracks, end-to-end once). New: [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md), [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md), [mac-port-list-2026-10-24.md](../history/mac-port-list-2026-10-24.md). Numbers 0033 and 0034 belong to the Mac tree, so the register jumps to 0035.
 
@@ -162,7 +162,7 @@ Links, rules and scripts changed together: `CLAUDE.md` (three rules), `DEVELOPME
 | The owner's Mac prompt asks for a "See sources" disclosure; Windows shows "Details" holding sources, steps and how sure | Owner prompt 7.3; `apps/desktop/src/ai/Conversation.tsx` | Mac uses "See sources" with sources only (the newer, more specific request). Windows gap recorded; the owner chooses one name |
 | Daily View export: the owner wants a document of its own named "Shoot Day N - Daily view"; Windows exports the schedule with the day first | `new changes.docx` item 1; `features/export/buttons.tsx` | New core query `schedule.export_daily`; the Mac uses it; Windows front end still to call it |
 | "Story Board" names the planning board in the specifications, the manual and the code; the owner renamed it "Beat Board" (2026-10-20) because it was confused with the production Storyboards | `docs/specs/`, `docs/manual/`, core and both front ends | Code, both front ends, both E2E suites and the manual say "Beat Board"; specifications and audits keep "Story Board" as history; operation and table names stay `story.*` |
-| Mac test expectations: 16 themes, the brand line "Created with OpenFrame Studio", a 198-point sidebar width kept | `apps/macos/Tests/...` | Updated to the merged core (17 themes, "Created using OpenFrame") and to the 220-point rule of 5355dc7 |
+| Mac test expectations: 16 themes, the brand line "Created with Straft Studio", a 198-point sidebar width kept | `apps/macos/Tests/...` | Updated to the merged core (17 themes, "Created using Straft Studio") and to the 220-point rule of 5355dc7 |
 
 ## 2026-10-19: Windows final polish (owner change list, AI brief, PDF specs)
 
@@ -171,9 +171,9 @@ Links, rules and scripts changed together: `CLAUDE.md` (three rules), `DEVELOPME
 | The owner's prompt asked to make the Windows UI look like the Mac app; later the same evening the owner said the Windows UI stays its own | Owner prompt, then owner message | The later message wins: a Mac-style shell was reverted; only the change list items were made in the Windows design ([final-polish-plan.md](../history/final-polish-plan.md)) |
 | Tab cycled only the dialogue block (Action, Character, Parenthetical, Dialogue) | `editor/rules.ts` | Owner change list item 7: Tab now goes round every built-in element in menu order; Shift+Tab goes back. No specification fixed the old cycle |
 | The screenplay Review section, four exchange package types and new Episodic or Series projects were Reachable features | feature status SCRIPT-006, packages menu, New Project | Removed at the owner's request (items 9 and 11). The core keeps the data of older projects and refuses to export the removed package types; files made earlier still import |
-| "How many scenes are there?" answered "Nothing mentions scenes"; a character question was answered with product help | AI core (`commands.rs`, `tools.rs`, `knowledge.rs`) | Root causes and fixes in the 2026-10-19 progress log entry (OpenFrameAI.docx) |
-| OpenFrame Default's Dark mode was the generated Studio Amber dark (same seeds) | `themes.json` | OpenFrame Default has its own Dark palette (owner item 16). The Mac app reads the same file from its own copy and is unchanged until the shared core is synced |
-| The Mac core copy has the Metal placement and a location-search fix that Windows lacked | `OpenFrameMac/crates` | The location-search fix is in Windows now (extended to scenes and characters). The Windows AI changes of this session are not yet in the Mac copy (ADR-0034 asks both to match; the owner said not to modify the Mac folder now) |
+| "How many scenes are there?" answered "Nothing mentions scenes"; a character question was answered with product help | AI core (`commands.rs`, `tools.rs`, `knowledge.rs`) | Root causes and fixes in the 2026-10-19 progress log entry (StraftAI.docx) |
+| Straft Default's Dark mode was the generated Studio Amber dark (same seeds) | `themes.json` | Straft Default has its own Dark palette (owner item 16). The Mac app reads the same file from its own copy and is unchanged until the shared core is synced |
+| The Mac core copy has the Metal placement and a location-search fix that Windows lacked | `StraftMac/crates` | The location-search fix is in Windows now (extended to scenes and characters). The Windows AI changes of this session are not yet in the Mac copy (ADR-0034 asks both to match; the owner said not to modify the Mac folder now) |
 
 ## 2026-10-18: Mac phases M6 to M8 session
 
@@ -192,7 +192,7 @@ Links, rules and scripts changed together: `CLAUDE.md` (three rules), `DEVELOPME
 
 | Stale or conflicting statement | Where it was | Resolution |
 |---|---|---|
-| 995bfac named as the final installer | gate G1, W9 README, handoff, progress log | Superseded by `OpenFrame-Studio-0.1.0-internal-028d8b6.exe` (SHA-256 `97b71221...d50f`), rebuilt after the uninstaller fix 6f9a280. The 995bfac and d271894 files must not be shared. Older entries that name 995bfac stay as history |
+| 995bfac named as the final installer | gate G1, W9 README, handoff, progress log | Superseded by `Straft-Studio-0.1.0-internal-028d8b6.exe` (SHA-256 `97b71221...d50f`), rebuilt after the uninstaller fix 6f9a280. The 995bfac and d271894 files must not be shared. Older entries that name 995bfac stay as history |
 | No rule for the end-to-end data folder and the debug build folder | `development-storage-policy.md` | Rule 11 added: delete `tests/e2e/.run` after each final run, prune `.build-cache/target/debug` when not developing |
 
 ## 2026-10-18: endgame session (W9)
@@ -207,7 +207,7 @@ Links, rules and scripts changed together: `CLAUDE.md` (three rules), `DEVELOPME
 
 ## 2026-10-17 (day): ai-eval gold checks
 
-Eight end-state checks in `crates/openframe-ai-eval/gold/tools.en.jsonl` could never pass: `comment.list` (three cases)
+Eight end-state checks in `crates/straft-ai-eval/gold/tools.en.jsonl` could never pass: `comment.list` (three cases)
 and `screenplay.characters` (four cases) were called without the draft id they require, and the vault folder case read
 `vault.list` (items) instead of `vault.overview` (folders). The checks now pass `$current_draft` or read the overview.
 The approved requests and expected results are unchanged; `gold/REVIEW.md` still describes them correctly. Case
@@ -230,9 +230,9 @@ The approved requests and expected results are unchanged; `gold/REVIEW.md` still
   no model host. ADR-0032 records it; ADR-0026 decisions 4 and 8 and its implementation notes 1, 4, 5 and the signed
   parts of 6 are marked superseded in place; the ADR register has a superseded row.
 - Removed with the code it described: `scripts/model-manifest.mjs` (key tool and signed host folder), the build values
-  `MODEL_DISTRIBUTION_BASE_URL` and `OPENFRAME_MANIFEST_PUBLIC_KEY` (build script, release workflow, release check 6a),
+  `MODEL_DISTRIBUTION_BASE_URL` and `STRAFT_MANIFEST_PUBLIC_KEY` (build script, release workflow, release check 6a),
   `set.json` and the list sequence in app data. The test host now serves the pinned files at their Hugging Face paths
-  (`tests/e2e/lib/model-host.mjs`), built with `OPENFRAME_TEST_MODEL_SOURCE`.
+  (`tests/e2e/lib/model-host.mjs`), built with `STRAFT_TEST_MODEL_SOURCE`.
 - Stale statements corrected: `DEVELOPMENT.md`, the privacy policy draft (names Hugging Face), threat model T16, QA
   strategy section 6, release migration sections 6 and 7, Microsoft Store guide, feature row "Production manifest key and
   model host" (Removed), the masterplan (download box rewritten, two boxes marked N/A with the reason), the W8 phase page
@@ -244,13 +244,13 @@ The approved requests and expected results are unchanged; `gold/REVIEW.md` still
 - Renamed: `tests/e2e/scenarios/76-ai-bundle-integrity.md` and its spec to `76-ai-files-integrity` (the models are no longer
   bundled, ADR-0026); new scenario and spec `78-ai-download`. The scenario index (`tests/e2e/scenarios/README.md`) and its
   tag table follow (`@e2e-ai-bundle: own` removed, `@e2e-ai-models: none` added).
-- Removed with the code it described: the debug-only AI folder switch `OPENFRAME_AI_BUNDLE_DIR` (ADR-0031 decision 2 amended
+- Removed with the code it described: the debug-only AI folder switch `STRAFT_AI_BUNDLE_DIR` (ADR-0031 decision 2 amended
   in place) and the cleanup of the retired download folders (`AiPaths::remove_retired_downloads`), which would now delete the
   downloaded models.
 - Stale statements corrected in the same change: the privacy policy draft (the AI never connects, models installed with
   the app), the threat model T16 ("the current build still bundles the models"), `DEVELOPMENT.md` (AI rows), the CI and
   release workflow comments, `build-msix.mjs` and `release-validate.mjs` headers, the `bundle.rs`, `manager.rs`, `store.rs`
-  and `lib.rs` module notes of `openframe-ai`. ADR-0026 and ADR-0029 gained implementation notes; no decision changed.
+  and `lib.rs` module notes of `straft-ai`. ADR-0026 and ADR-0029 gained implementation notes; no decision changed.
 
 ## 2026-10-16: Windows phase W1, archive moves and conflict sweep
 

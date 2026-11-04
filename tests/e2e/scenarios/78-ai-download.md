@@ -1,4 +1,4 @@
-# Download OpenFrame AI after install
+# Download Straft AI after install
 
 Spec: `tests/e2e/specs/78-ai-download.test.mjs`
 
@@ -6,7 +6,7 @@ Tags: `@e2e-data-root: own`, `@e2e-ai-models: none`
 
 Before: an empty data folder of its own, with nothing downloaded. The host serves the model set normally.
 
-"The card" is the section "Download OpenFrame AI" (in the AI panel or in Settings, Offline AI). "Ready" means: click Assistant if it is closed, and check that within 4 minutes the Ask or command box shows. "The language model file" and "the search model file" are the two files the host's signed list names.
+"The card" is the section "Download Straft AI" (in the AI panel or in Settings, Offline AI). "Ready" means: click Assistant if it is closed, and check that within 4 minutes the Ask or command box shows. "The language model file" and "the search model file" are the two files the host's signed list names.
 
 ## Before the click: the not-installed state with the size, and no request to the host
 
@@ -19,8 +19,8 @@ Before: an empty data folder of its own, with nothing downloaded. The host serve
 ## An interrupted download resumes where it stopped and AI becomes ready
 
 1. Make the host cut its next answer for the language model file after 300 MB.
-2. Click Download OpenFrame AI.
-3. Check: the card shows "The OpenFrame AI download stopped".
+2. Click Download Straft AI.
+3. Check: the card shows "The Straft AI download stopped".
 4. Click Try again. Check: ready.
 5. Check: the first request for the language model file asked for the whole file and a later one asked for the rest only (a range).
 6. Check: the host was asked only for the three pinned files, at their Hugging Face paths, and the set version in
@@ -32,7 +32,7 @@ Before: an empty data folder of its own, with nothing downloaded. The host serve
 2. Ask 'Summarise this project in one sentence.'.
 3. Check: the answer is not empty, and the host was asked nothing more.
 
-## A restart with the host down finds OpenFrame AI and asks the host nothing
+## A restart with the host down finds Straft AI and asks the host nothing
 
 1. Open the project menu and choose Close project. Quit the app and start it again.
 2. Check: Application Home shows. Click the project row "Open Harbour Lights".
@@ -41,9 +41,9 @@ Before: an empty data folder of its own, with nothing downloaded. The host serve
 ## Remove takes the AI away; a damaged file is set aside; Pause and Resume continue the download
 
 1. Make the host serve normally. Click Offline AI settings, then choose Offline AI settings.
-2. Click Remove OpenFrame AI…, then Remove.
-3. Check: the screen shows "OpenFrame AI was removed." and "Not downloaded".
-4. Make the host send the language model file with one byte changed. Click Download OpenFrame AI.
+2. Click Remove Straft AI…, then Remove.
+3. Check: the screen shows "Straft AI was removed." and "Not downloaded".
+4. Make the host send the language model file with one byte changed. Click Download Straft AI.
 5. Check: within 4 minutes the card shows "damaged and has been set aside".
 6. Make the host send slowly (40 MB a second). Click Try again.
 7. Check: the card shows "Downloading:" with some bytes. Click Pause. Check: the card shows "Paused at".

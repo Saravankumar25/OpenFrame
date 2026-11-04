@@ -130,7 +130,7 @@ function BuildForm({ data, episodeId, preselect }: { data: StoryBuildPreview; ep
         <div style={{ marginTop: 8 }}>
           <Banner tone="warn">
             {missing === 1 ? "1 card has" : `${missing} cards have`} no valid scene heading. Add a heading (for example INT. POLICE STATION - NIGHT) or leave{" "}
-            {missing === 1 ? "the card" : "those cards"} out. OpenFrame never makes up a heading.
+            {missing === 1 ? "the card" : "those cards"} out. Straft Studio never makes up a heading.
           </Banner>
         </div>
       )}

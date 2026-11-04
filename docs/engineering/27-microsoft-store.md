@@ -14,11 +14,11 @@
 
 | | Direct download (doc 24) | Microsoft Store (this doc) |
 |---|---|---|
-| Artifact | NSIS `.exe` + WiX `.msi` | `OpenFrame-Studio-<ver>-x64.msix` |
+| Artifact | NSIS `.exe` + WiX `.msi` | `Straft-Studio-<ver>-x64.msix` |
 | Code signing | Our Authenticode certificate (⛔ provider not chosen) | **Microsoft signs the package** during Store ingestion. No certificate or signing secret is needed. |
 | Updates | In-app updater (📋 not integrated yet) | Microsoft Store only. The in-app updater is compiled out. |
 | Install | Per user (NSIS) / per machine (MSI) | Per user, no admin rights, clean uninstall |
-| Build flag | `OPENFRAME_DISTRIBUTION` unset or `direct` | `OPENFRAME_DISTRIBUTION=store` |
+| Build flag | `STRAFT_DISTRIBUTION` unset or `direct` | `STRAFT_DISTRIBUTION=store` |
 
 The Store can also list a traditional MSI/EXE by URL (Store policy 10.2.9). That path still needs our
 own trusted code-signing certificate, a silent standalone installer and a versioned download URL, so
@@ -44,38 +44,38 @@ picked automatically, or set `WINDOWS_SDK_BIN_DIR`). GitHub `windows-latest` run
 
 ```powershell
 # Store upload package (unsigned; requires the Partner Center identity in store.config.json)
-$env:OPENFRAME_DISTRIBUTION = 'store'
-npm --workspace apps/desktop run tauri -- build --no-bundle      # target\release\openframe-desktop.exe
-node scripts/build-msix.mjs --store                             # target\msix\OpenFrame-Studio-0.1.0-x64.msix
+$env:STRAFT_DISTRIBUTION = 'store'
+npm --workspace apps/desktop run tauri -- build --no-bundle      # target\release\straft-desktop.exe
+node scripts/build-msix.mjs --store                             # target\msix\Straft-Studio-0.1.0-x64.msix
 node scripts/release-validate.mjs --store --report-only
 
-# Local test package: test identity "OpenFrameStudio.LocalTest", signed with a throwaway certificate
-node scripts/build-msix.mjs --dev                               # target\msix\OpenFrame-Studio-0.1.0-x64-localtest.msix
+# Local test package: test identity "StraftStudio.LocalTest", signed with a throwaway certificate
+node scripts/build-msix.mjs --dev                               # target\msix\Straft-Studio-0.1.0-x64-localtest.msix
 ```
 
 - The version comes from `tauri.conf.json`. `X.Y.Z` becomes `X.Y.Z.0`, because the Store reserves
   the fourth part. Pre-release suffixes are rejected. Every Store submission needs a higher version
   than the last one.
-- `--store` refuses an executable that wasn't built with `OPENFRAME_DISTRIBUTION=store` (it checks
-  the embedded `openframe-distribution-channel:store` marker). This keeps a build with updater code
+- `--store` refuses an executable that wasn't built with `STRAFT_DISTRIBUTION=store` (it checks
+  the embedded `straft-distribution-channel:store` marker). This keeps a build with updater code
   out of the Store.
 - `--bundle` also writes a `.msixbundle`. That becomes useful once an ARM64 package exists. For
   x64 only, upload the `.msix` directly. `.msixupload` is only needed to ship symbol files, and
-  OpenFrame doesn't upload symbols.
+  Straft Studio doesn't upload symbols.
 - **Local test signing:** `--dev` creates a self-signed code-signing certificate in memory, with a
   subject equal to the test publisher, and writes it only to `target/msix/dev-cert/` (gitignored,
   never committed). The script never imports it into a certificate store. To install the test package,
   trust it yourself on a development machine. This changes machine trust, so it needs an elevated
   prompt:
-  `Import-Certificate -FilePath target\msix\dev-cert\OpenFrame-LocalTest.cer -CertStoreLocation Cert:\LocalMachine\TrustedPeople`,
-  then `Add-AppxPackage target\msix\OpenFrame-Studio-<ver>-x64-localtest.msix`. Alternatively, with
+  `Import-Certificate -FilePath target\msix\dev-cert\Straft-LocalTest.cer -CertStoreLocation Cert:\LocalMachine\TrustedPeople`,
+  then `Add-AppxPackage target\msix\Straft-Studio-<ver>-x64-localtest.msix`. Alternatively, with
   Windows **Developer Mode** on, `node scripts/build-msix.mjs --dev --register` registers the staged
   folder without any certificate. Rebuilding replaces the staged folder, so register again afterwards.
-  Remove the test app with `Get-AppxPackage OpenFrameStudio.LocalTest | Remove-AppxPackage`. Remove
+  Remove the test app with `Get-AppxPackage StraftStudio.LocalTest | Remove-AppxPackage`. Remove
   the certificate from Trusted People when you are done.
 - CI: `release.yml` runs `validate-store` (`release-validate.mjs --store` + `cargo deny`), then
   `store` (full verification → Store-channel `tauri build --no-bundle` → `build-msix.mjs --store` →
-  artifact `openframe-<tag>-msstore-x64` with the MSIX, `msix-build.json`, `THIRD_PARTY_LICENSES.md`
+  artifact `straft-<tag>-msstore-x64` with the MSIX, `msix-build.json`, `THIRD_PARTY_LICENSES.md`
   and `SHA256SUMS.txt`). No secrets are used. The repository variable `RELEASE_CHANNELS`
   (`direct,store` by default) or the `channels` dispatch input selects the channels. The MSIX is
   not attached to the GitHub release. It is uploaded to Partner Center by a person.
@@ -85,9 +85,9 @@ node scripts/build-msix.mjs --dev                               # target\msix\Op
 | Item | Decision |
 |---|---|
 | Identity `Name`, `Publisher`, `PublisherDisplayName` | Placeholders filled from Partner Center. `Publisher` is the `CN=<GUID>` shown under Product identity. It must match exactly, or upload fails. |
-| `DisplayName` | Must equal the name reserved in Partner Center (`OpenFrame Studio`). |
+| `DisplayName` | Must equal the name reserved in Partner Center (`Straft Studio`). |
 | Target | `Windows.Desktop`, `MinVersion 10.0.22000.0` (Windows 11 only, decided 2026-10-06; the current `store.config.json` still says `10.0.17763.0`), `MaxVersionTested 10.0.26100.0`, x64. No `uap10` attributes, because they need build 19041. |
-| Entry point | `Windows.FullTrustApplication`: a Desktop Bridge (packaged classic) app running `openframe-desktop.exe` at medium integrity. |
+| Entry point | `Windows.FullTrustApplication`: a Desktop Bridge (packaged classic) app running `straft-desktop.exe` at medium integrity. |
 | Capabilities | `runFullTrust` (restricted, required for every packaged Win32 app; justification in §7). **No other capability.** `internetClient` was removed on 2026-10-08: it only described the former AI download (ADR-0025 bundles the AI), Store builds have no in-app updater, and links open in the user's browser. `release-validate --store` fails if the set changes. |
 | File-type association | Off (`fileTypeAssociations.enabled=false`). Projects are folders, so they can't be associated. Exchange packages (`.ofstory`, `.ofschedule`, `.ofshots`) can be associated once the app handles file activation. The switch generates `uap:FileTypeAssociation`. |
 | Languages | `en-US` (the first release is English only). |
@@ -96,13 +96,13 @@ node scripts/build-msix.mjs --dev                               # target\msix\Op
 ## 5. Runtime behaviour in Store builds (MSIX compatibility)
 
 ### 5.1 Channel flag and updater ✅
-`build.rs` reads `OPENFRAME_DISTRIBUTION` (`direct` default, `store`, anything else fails the build),
-exports it as `env!("OPENFRAME_DISTRIBUTION")` and sets `cfg(openframe_store)` for Store builds.
+`build.rs` reads `STRAFT_DISTRIBUTION` (`direct` default, `store`, anything else fails the build),
+exports it as `env!("STRAFT_DISTRIBUTION")` and sets `cfg(straft_store)` for Store builds.
 `distribution.rs` combines this with runtime detection of MSIX package identity
 (`GetCurrentPackageFamilyName`). `Distribution::in_app_updates_allowed()` is true only for a direct
 build running unpackaged. A sideloaded MSIX of a direct build also never self-updates, because its
 install folder is read-only and an NSIS update would install a second copy. No updater plugin exists
-today. When one is added (doc 24 §3), it must be compiled under `#[cfg(not(openframe_store))]` and
+today. When one is added (doc 24 §3), it must be compiled under `#[cfg(not(straft_store))]` and
 registered only when `in_app_updates_allowed()` is true. `release-validate --store` fails if
 `lib.rs` references `tauri_plugin_updater` without that cfg. The startup log records the channel,
 packaging state and updater decision.
@@ -115,25 +115,25 @@ deleted on uninstall. With the default path, "Open logs folder" would show an em
 folder.
 
 **Decision:** when the process has package identity, `AppConfig.app_data_dir` becomes
-`%LOCALAPPDATA%\Packages\<PackageFamilyName>\LocalState\OpenFrame`, the Win32 path of
+`%LOCALAPPDATA%\Packages\<PackageFamilyName>\LocalState\Straft Studio`, the Win32 path of
 `ApplicationData.Current.LocalFolder`. It is a real, non-virtualized path, so the app, Explorer and
 child processes see the same files. It needs no extra capability (the alternative, disabling
 virtualization, needs the restricted `unvirtualizedResources` capability), and Windows removes it on
-uninstall (Store policy 10.2.7 clean uninstall). Unpackaged builds keep `%LOCALAPPDATA%\OpenFrame`.
+uninstall (Store policy 10.2.7 clean uninstall). Unpackaged builds keep `%LOCALAPPDATA%\Straft Studio`.
 Implemented in the Tauri adapter (`lib.rs` overrides the field); the foundation crates are unchanged.
 
 Consequence: a user who moves from the direct build to the Store build starts with empty settings
 and an empty recent-projects list (the AI runtime comes with either package; the AI models download after a user click). Their projects and Global
 Idea Vault are unaffected (§5.3). They reopen projects with *Open project*. 📋 An optional one-time
-import of `%LOCALAPPDATA%\OpenFrame\` settings and recents could be added later.
+import of `%LOCALAPPDATA%\Straft Studio\` settings and recents could be added later.
 
-Tauri's WebView2 profile (`%LOCALAPPDATA%\studio.openframe.desktop\EBWebView`) stays on the
+Tauri's WebView2 profile (`%LOCALAPPDATA%\studio.straft.desktop\EBWebView`) stays on the
 default path. It is virtualized into the package's private storage, which is harmless because only
 the app's own WebView2 processes use it.
 
 ### 5.3 Projects and Global Idea Vault in Documents ✅
-MSIX does not virtualize Documents (`FOLDERID_Documents`). Projects (`Documents\OpenFrame\Projects`)
-and the Global Idea Vault (`Documents\OpenFrame\Global Idea Vault`) are real files that other apps
+MSIX does not virtualize Documents (`FOLDERID_Documents`). Projects (`Documents\Straft Studio\Projects`)
+and the Global Idea Vault (`Documents\Straft Studio\Global Idea Vault`) are real files that other apps
 and backups can see. They survive uninstall, as the privacy policy promises. File dialogs,
 `opener` open/reveal and the `ofasset` media protocol (project `assets/` and vault `assets/`) work unchanged.
 
@@ -143,9 +143,9 @@ Gemma 3 1B Instruct and BGE small English embedding models (run by `llama-server
 the user's click, from a signed manifest, into the package `LocalState` folder, with SHA-256 checks (ADR-0026 decisions
 1 to 6). The current build still bundles the models, as described below, until the download flow is rebuilt.
 Current build: `build-msix.mjs` verifies the pinned files against `packaging/ai/ai-assets.lock.json` and copies them to
-`ai/` next to `openframe-desktop.exe` in the package layout (`ai/runtimes/<runtime-id>/`, `ai/models/<model-id>/`,
+`ai/` next to `straft-desktop.exe` in the package layout (`ai/runtimes/<runtime-id>/`, `ai/models/<model-id>/`,
 `ai/notices/`). At run time the app finds them through the platform adapter
-(`openframe_platform::dirs::app_resources_dir`, the executable's folder) and reads them in place: the `WindowsApps`
+(`straft_platform::dirs::app_resources_dir`, the executable's folder) and reads them in place: the `WindowsApps`
 install folder is read-only, which is what the bundle needs. The engine is started from there (a full-trust packaged
 app may start executables from its own install folder) with its working folder there too; it writes nothing.
 Writable AI data (the check record, the engine record, the engine logs) goes to `app_data_dir`, the package
@@ -184,7 +184,7 @@ services" = No.
    identity with a government ID and a selfie. Company accounts go through business verification.
    Decide which account type publishes. The publisher display name appears on the Store page.
 2. **Reserve the name.** Apps and games → New product → *MSIX or PWA app* → reserve
-   **OpenFrame Studio**.
+   **Straft Studio**.
 3. **Copy the identity.** Product management → *Product identity*: copy `Package/Identity/Name`,
    `Package/Identity/Publisher` (`CN=…`) and `Package/Properties/PublisherDisplayName` into
    `packaging/msix/store.config.json` and commit them (they are public), or set the repository
@@ -194,17 +194,17 @@ services" = No.
    `STORE_PRIVACY_POLICY_URL`. Store policy 10.5.1 requires a privacy policy for every Win32
    (Desktop Bridge) product, even one that collects no personal information.
 5. **Build.** Push tag `vX.Y.Z`. The `store` job produces the artifact
-   `openframe-<tag>-msstore-x64`. Run WACK on it (§8).
+   `straft-<tag>-msstore-x64`. Run WACK on it (§8).
 6. **Start a submission.**
    - *Pricing and availability:* markets (default: all), audience public, free, release schedule.
    - *Properties:* category **Photo & video** (alternative: Productivity), privacy policy URL,
      website, support contact, system requirements (x64; memory/disk for the AI assistant),
      product declarations.
-   - *Age ratings:* answer the IARC questionnaire honestly. OpenFrame has no violence, no sharing of
+   - *Age ratings:* answer the IARC questionnaire honestly. Straft Studio has no violence, no sharing of
      user content with other users, no chat, no purchases and no location use. Content is written by
      the user and stays on the device. If the AI assistant ships, answer the generative-AI questions
      accordingly. The expected result is a general-audience rating, but the questionnaire decides.
-   - *Packages:* upload `OpenFrame-Studio-<ver>-x64.msix`. Device family: Windows Desktop, with the manifest minimum set to Windows 11 (`10.0.22000.0`).
+   - *Packages:* upload `Straft-Studio-<ver>-x64.msix`. Device family: Windows Desktop, with the manifest minimum set to Windows 11 (`10.0.22000.0`).
    - *Store listings (en-US):* text from `docs/store/listing.md`, 4 to 8 screenshots (§9), and the
      recommended 300 × 300 app tile icon.
    - *Submission options:* restricted capability justification (§7). Notes for certification:
@@ -219,7 +219,7 @@ services" = No.
 
 ## 7. Restricted capability justification (paste into Submission options)
 
-> **runFullTrust:** OpenFrame Studio is a desktop application (Rust + Microsoft Edge WebView2,
+> **runFullTrust:** Straft Studio is a desktop application (Rust + Microsoft Edge WebView2,
 > built with the Tauri framework) packaged with MSIX through the Desktop Bridge. `runFullTrust` is
 > required to run its Win32 executable (`EntryPoint="Windows.FullTrustApplication"`). The app reads
 > and writes the user's project folders in Documents that the user chooses, opens files and folders
@@ -238,7 +238,7 @@ with that certificate. Partner Center runs equivalent checks on upload.
 # elevated PowerShell
 $kit = 'C:\Program Files (x86)\Windows Kits\10\App Certification Kit'
 & "$kit\appcert.exe" reset
-& "$kit\appcert.exe" test -appxpackagepath "$PWD\target\msix\OpenFrame-Studio-0.1.0-x64-localtest.msix" -reportoutputpath "$PWD\target\msix\wack-report.xml"
+& "$kit\appcert.exe" test -appxpackagepath "$PWD\target\msix\Straft-Studio-0.1.0-x64-localtest.msix" -reportoutputpath "$PWD\target\msix\wack-report.xml"
 # or interactively: "$kit\appcertui.exe" → Validate Store App → select the .msix
 ```
 
@@ -249,9 +249,9 @@ images). If the binary analyzer flags Control Flow Guard, add `-C control-flow-g
 builds (📋 decide).
 
 Also check manually on the installed package (§3): launch from Start. The Start tile, taskbar and
-Alt+Tab icons must show the OpenFrame logo, not a placeholder. Create a project (it must appear under
-`Documents\OpenFrame\Projects`), open the Global Idea Vault and add an image. Then check that
-`%LOCALAPPDATA%\Packages\<family>\LocalState\OpenFrame\logs` holds today's log in Explorer. Once
+Alt+Tab icons must show the Straft Studio logo, not a placeholder. Create a project (it must appear under
+`Documents\Straft Studio\Projects`), open the Global Idea Vault and add an image. Then check that
+`%LOCALAPPDATA%\Packages\<family>\LocalState\Straft Studio\logs` holds today's log in Explorer. Once
 Help → Open logs folder exists (doc 26 §3), it must open that folder. Launch
 a second time: the running window must come to the front. Uninstall, then check that the projects
 remain and `…\Packages\<family>` is gone.
@@ -276,7 +276,7 @@ remain and `…\Packages\<family>` is gone.
    download host is named in the policy again, with what it receives (ADR-0026).
 5. Listing details: support contact or website, the screenshots themselves, category choice, and
    the IARC questionnaire answers (the account holder must submit them).
-6. Offline AI: the pinned AI files on the build machine or runner (`OPENFRAME_AI_ASSETS_DIR`), the Gemma Terms of Use
+6. Offline AI: the pinned AI files on the build machine or runner (`STRAFT_AI_ASSETS_DIR`), the Gemma Terms of Use
    redistribution check, the package size recorded, and a report-inappropriate-content channel (policy 11.16). Full
    list: 23-release-migration.md §7. The models download from Hugging Face at pinned commits; no model host or key is needed (ADR-0032).
 
@@ -289,7 +289,7 @@ Run on 2026-09-30 (Windows 11 26200, Windows SDK 10.0.26100.0, non-admin account
 
 | Step | Result |
 |---|---|
-| `OPENFRAME_DISTRIBUTION=store` `tauri build --no-bundle` (release profile) | ✅ `openframe-desktop.exe` 18.2 MB. It contains the `openframe-distribution-channel:store` marker. |
+| `STRAFT_DISTRIBUTION=store` `tauri build --no-bundle` (release profile) | ✅ `straft-desktop.exe` 18.2 MB. It contains the `straft-distribution-channel:store` marker. |
 | `build-msix.mjs --store` with placeholder identity | ✅ Refused (identity incomplete), as designed |
 | `build-msix.mjs --store` with a non-Store executable | ✅ Refused (channel check) |
 | `build-msix.mjs --store --bundle` with a well-formed test identity | ✅ `makepri new` + `makeappx pack` succeeded (manifest schema and referenced files validated). `makeappx bundle` succeeded. |
@@ -297,7 +297,7 @@ Run on 2026-09-30 (Windows 11 26200, Windows SDK 10.0.26100.0, non-admin account
 | `build-msix.mjs --dev` | ✅ Signed with an in-memory self-signed certificate (`signtool`, SHA256). `Get-AuthenticodeSignature` shows the signer as expected, and the chain is untrusted, as expected. |
 | `Add-AppxPackage` of the dev package | ⛔ `0x800B0109` (root not trusted). Trusting the test certificate needs an elevated change to the machine trust store. The release engineer deliberately did not make it. |
 | WACK (`appcert.exe`) | ⛔ Requires elevation ("The requested operation requires elevation"). Not run. |
-| Staged `openframe-desktop.exe` launched unpackaged | ✅ Main window "OpenFrame Studio" opened. The log shows `channel=store packaged=false in_app_updates=false` and WebView2 154.0.4258.37 detected. |
+| Staged `straft-desktop.exe` launched unpackaged | ✅ Main window "Straft Studio" opened. The log shows `channel=store packaged=false in_app_updates=false` and WebView2 154.0.4258.37 detected. |
 | `release-validate --store --report-only` | Fails only on owner blockers: license, Partner Center identity, privacy policy URL. Version, assets, manifest capabilities and the no-updater check pass. |
 
 Still to verify on a machine where the owner trusts the test certificate or enables Developer Mode:
@@ -311,9 +311,9 @@ cleanup, and a WACK run (§8).
 Source: the 2026-10-02 Store readiness audit (`docs/history/audits/`) and the owner's certification notes (`docs/archive/notes/`). Tracked in the
 build plan (areas: Project controls and baseline, AI assistant quality and hardening, Microsoft Store package, Final review and submission) and register Appendix F. Re-check Microsoft Store Policies and Partner Center requirements on the submission date.
 
-**Common first-submission failures, and the answer for OpenFrame**
+**Common first-submission failures, and the answer for Straft Studio**
 
-| Risk | OpenFrame answer |
+| Risk | Straft Studio answer |
 |---|---|
 | Missing or dead privacy policy URL | Required for every Win32 app. Hosted HTTPS page, no placeholders (build plan: Legal, privacy, website and support area). |
 | Crash on first launch on a clean machine | Clean-machine run on Windows 11 with no developer tools; WebView2 present and missing cases (build plan: clean-machine matrix, first-launch crash check). |

@@ -12,23 +12,23 @@
 //     (3 to 1 for large text), measured from the rendered colours;
 //   * the screenplay page and the call-sheet paper stay black on white in every theme and mode.
 // Screenshots of every screen go to tests/e2e/artifacts/themes/<theme>-<mode>/ for review (not
-// committed). OpenFrame Default in Light mode is pixel-compared by 90-visual-baseline; its known
+// committed). Straft Default in Light mode is pixel-compared by 90-visual-baseline; its known
 // readability exceptions (muted text and accent buttons, owner decision to keep the default as it is)
 // are listed below and must match exactly.
 // It ends by choosing a theme and Dark, relaunching, and checking that both come back, then
-// restores OpenFrame Default and System so later specs see the default look.
+// restores Straft Default and System so later specs see the default look.
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { launchApp, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
-import themesFile from "../../../crates/openframe-application/src/modules/appearance/themes.json" with { type: "json" };
+import themesFile from "../../../crates/straft-application/src/modules/appearance/themes.json" with { type: "json" };
 
 const THEMES = themesFile.themes.map((t) => t.id);
 const MODES = ["light", "dark"];
 const OUT = join(import.meta.dirname, "..", "artifacts", "themes");
-/** Only OpenFrame Default (Light) may show these, the documented exceptions of the unchanged default look. */
+/** Only Straft Default (Light) may show these, the documented exceptions of the unchanged default look. */
 const DEFAULT_LIGHT_EXCEPTIONS = /^(muted|accent-button|accent-text)$/;
 
 let browser;
@@ -179,7 +179,7 @@ describe("every built-in theme in Light and Dark", () => {
   });
   after(async () => {
     if (browser) {
-      await setAppearance("openframe-default", "light").catch(() => undefined);
+      await setAppearance("straft-default", "light").catch(() => undefined);
       await browser.execute(() => window.__TAURI_INTERNALS__.invoke("of_invoke", { op: "appearance.set_mode", args: { mode: "system" } }).then(() => undefined, () => undefined));
       await browser.deleteSession().catch(() => undefined);
     }
@@ -200,7 +200,7 @@ describe("every built-in theme in Light and Dark", () => {
             const r = await audit();
             assert.equal(r.mode, mode);
             for (const p of r.problems) {
-              if (theme === "openframe-default" && mode === "light" && DEFAULT_LIGHT_EXCEPTIONS.test(p.kind)) {
+              if (theme === "straft-default" && mode === "light" && DEFAULT_LIGHT_EXCEPTIONS.test(p.kind)) {
                 exceptions.add(p.kind);
                 continue;
               }
@@ -212,7 +212,7 @@ describe("every built-in theme in Light and Dark", () => {
         });
       }
     }
-    console.log(`  themes: ${checked} screens checked; OpenFrame Default Light exceptions seen: ${[...exceptions].join(", ") || "none"}`);
+    console.log(`  themes: ${checked} screens checked; Straft Default Light exceptions seen: ${[...exceptions].join(", ") || "none"}`);
     assert.equal(checked, THEMES.length * MODES.length * 15);
     assert.deepEqual(failures, [], `unreadable text:\n${failures.join("\n")}`);
   });

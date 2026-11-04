@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render an OpenFrame design-reference HTML file to PDF with headless Chrome/Edge.
+"""Render a Straft Studio design-reference HTML file to PDF with headless Chrome/Edge.
 
 usage: python render_pdf.py <input.html> <output.pdf>
 

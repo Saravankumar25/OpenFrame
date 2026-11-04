@@ -1,5 +1,5 @@
 <!--
-OpenFrame pull request. One vertical slice per PR (CONTRIBUTING.md section 3, item 13).
+Straft Studio pull request. One vertical slice per PR (CONTRIBUTING.md section 3, item 13).
 Delete sections that truly do not apply and say why ("n/a: docs only"). Do not leave them blank.
 -->
 

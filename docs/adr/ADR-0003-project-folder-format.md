@@ -1,27 +1,27 @@
-# ADR-0003: `.openframe` project folder format and single-writer lock
+# ADR-0003: `.straft` project folder format and single-writer lock
 
 - **Status:** Accepted (implemented)
 - **Date:** 2026-09-30
-- **Related:** Engineering Index locked decision "One `.openframe` project concept"; FSD §4, §44–45; Security §2;
-  `crates/openframe-project-format`; [12-project-file-format.md](../engineering/12-project-file-format.md)
+- **Related:** Engineering Index locked decision "One `.straft` project concept"; FSD §4, §44–45; Security §2;
+  `crates/straft-project-format`; [12-project-file-format.md](../engineering/12-project-file-format.md)
 
 ## Context
 
 Filmmakers must experience a project as **one thing** they own, can copy and can back up. Internally the project
-holds structured data (SQLite with WAL), large media and recovery artifacts. Two OpenFrame windows or processes
+holds structured data (SQLite with WAL), large media and recovery artifacts. Two Straft Studio windows or processes
 writing the same SQLite file would corrupt state. SQLite WAL is unsafe on network file systems (SMB), yet the PRD
 mentions "network drive where supported" (PRD S-3).
 
 ## Decision
 
-1. **A project is a folder named `<Title>.openframe`** (title sanitized with `sanitize_file_name`, de-duplicated
-   as `<Title> (2).openframe`). It contains:
-   `openframe.json` (manifest: format, formatVersion, projectId, title, createdAt, appVersion, schemaVersion,
+1. **A project is a folder named `<Title>.straft`** (title sanitized with `sanitize_file_name`, de-duplicated
+   as `<Title> (2).straft`). It contains:
+   `straft.json` (manifest: format, formatVersion, projectId, title, createdAt, appVersion, schemaVersion,
    aiCompatibilityVersion), `project.sqlite` (+ `-wal`/`-shm` while open), `assets/<shard>/<assetId>.<ext>`,
    `cache/` (rebuildable), `recovery/` (`session.json` crash marker, `checkpoint.sqlite`), `backups/` (safety
    backups) and `.lock`. The internal layout is an implementation detail and is never shown as a set of files to
    manage.
-2. **Single writer.** On open, OpenFrame takes an exclusive OS file lock on `.lock` (`fs4::try_lock_exclusive`) and
+2. **Single writer.** On open, Straft Studio takes an exclusive OS file lock on `.lock` (`fs4::try_lock_exclusive`) and
    holds it for the session. A second opener gets `project_format.in_use`. The OS releases the lock automatically
    when the process exits, including after a crash, so no stale lock can block the user. The Tauri single-instance
    plugin also focuses the existing window instead of starting a second process.
@@ -30,19 +30,19 @@ mentions "network drive where supported" (PRD S-3).
    LAN collaboration was removed (ADR-0007). The current message text still mentions a "local-network collaboration
    session" and must be updated by a foundation change. Mapped drive letters cannot be detected reliably and are
    documented as unsupported.
-4. **Identity check.** `openframe.json` `projectId` must equal the `project` row id. A mismatch is refused.
+4. **Identity check.** `straft.json` `projectId` must equal the `project` row id. A mismatch is refused.
    `formatVersion` newer than supported is refused with `project_format.too_new`, and nothing is modified.
 5. **Crash-safe writes:** `atomic_write` (temp sibling + fsync + rename) for the manifest and marker files; managed
    assets are copied to `*.importing` and then renamed.
-6. **Default locations:** projects in `Documents\OpenFrame\Projects`, the Global Idea Vault in
-   `Documents\OpenFrame\Global Idea Vault` (user content belongs in Documents), and app-private state in
-   `%LOCALAPPDATA%\OpenFrame`.
+6. **Default locations:** projects in `Documents\Straft Studio\Projects`, the Global Idea Vault in
+   `Documents\Straft Studio\Global Idea Vault` (user content belongs in Documents), and app-private state in
+   `%LOCALAPPDATA%\Straft Studio`.
 
 ## Consequences
 
 - Users can copy, zip or back up a closed project folder with Explorer. Duplicate Project uses the online backup
   API, so it also works while the project is open.
-- Explorer shows the project as a folder. Open Project accepts either the folder or `openframe.json`.
+- Explorer shows the project as a folder. Open Project accepts either the folder or `straft.json`.
 - Media stays as normal files (no BLOBs), which keeps the database small and backups incremental-friendly.
 - Deleting a project moves the whole folder to the Recycle Bin (`trash` crate) after re-checking the identity and
   the lock.

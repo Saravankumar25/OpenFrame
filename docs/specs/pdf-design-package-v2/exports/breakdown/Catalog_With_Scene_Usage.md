@@ -4,7 +4,7 @@
 |---|---|
 | **Export** | Catalog |
 | **Variant** | Catalog with scene usage (`content="catalog"`; from the Catalog tab Export button and from Export Breakdown → Contents) |
-| **Status** | Design reference — not integrated; not validated against OpenFrame's Rust renderer |
+| **Status** | Design reference — not integrated; not validated against Straft Studio's Rust renderer |
 | **Repo commit** | `2f5a045416bd2125801329533fc47f986ccc8174` (main) |
 | **Date** | 2026-10-23 |
 
@@ -22,7 +22,7 @@ The production's **item inventory with scene usage**: for every Catalog item (ch
 2. **Breakdown workspace → Export Breakdown** with Contents = "Catalog with scene usage" (PDF/XLSX) or Table = "Catalog with scene usage" (CSV): additionally allows scope (all / current / selected scenes — which then filters the catalog to items used in those scenes) and the two checkboxes (which have **no effect** on a catalog-only report because no scene cards are produced).
 
 
-**Op:** `breakdown.export_report` — registered in `crates/openframe-application/src/modules/exports/mod.rs` (`r.query("breakdown.export_report", breakdown::export)`), implemented by `breakdown::export` in `exports/breakdown.rs`. Args struct `ExportBreakdownArgs` (`camelCase`, `deny_unknown_fields`):
+**Op:** `breakdown.export_report` — registered in `crates/straft-application/src/modules/exports/mod.rs` (`r.query("breakdown.export_report", breakdown::export)`), implemented by `breakdown::export` in `exports/breakdown.rs`. Args struct `ExportBreakdownArgs` (`camelCase`, `deny_unknown_fields`):
 
 | Arg key | Type | Meaning (from source) | Default |
 |---|---|---|---|

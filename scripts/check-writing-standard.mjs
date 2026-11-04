@@ -14,8 +14,8 @@ import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
 
-const ROOT = process.env.OPENFRAME_CHECK_ROOT
-  ? path.resolve(process.env.OPENFRAME_CHECK_ROOT)
+const ROOT = process.env.STRAFT_CHECK_ROOT
+  ? path.resolve(process.env.STRAFT_CHECK_ROOT)
   : path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
 const BASELINE = path.join(ROOT, "scripts/writing-standard-baseline.json");
 
@@ -49,7 +49,7 @@ const GROUPS = [
 const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", "dist", "gen", "artifacts", "build", ".drivers", ".run", ".build", ".swiftpm", "Frameworks"]);
 const SKIP_PREFIXES = [
   // Written by UniFFI's generator at build time and never committed (apps/macos/.gitignore).
-  "apps/macos/Sources/OpenFrameCore/Generated/openframe_ffi.swift",
+  "apps/macos/Sources/StraftCore/Generated/straft_ffi.swift",
   "docs/audits/",
   "docs/history/",
   "docs/release/evidence/",
@@ -64,7 +64,7 @@ const SKIP_PREFIXES = [
   "docs/website/prompts/production-readiness-anti-ai-slop-prompt.md",
   "THIRD_PARTY_LICENSES.md",
   // The AI answer washing lists "delve" so it can remove it from model-written answers.
-  "crates/openframe-application/src/modules/ai/text.rs",
+  "crates/straft-application/src/modules/ai/text.rs",
 ];
 const TEXT_EXT = new Set([".md", ".ts", ".tsx", ".js", ".mjs", ".rs", ".html", ".css", ".json", ".yml", ".yaml", ".toml", ".sql", ".txt", ".xml", ".swift"]);
 

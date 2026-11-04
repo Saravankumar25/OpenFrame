@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main-window",
-  "description": "Least-privilege capability for the OpenFrame main window. All project data access goes through the single allow-listed `of_invoke` command; the webview has no filesystem, shell or HTTP permissions.",
+  "description": "Least-privilege capability for the Straft Studio main window. All project data access goes through the single allow-listed `of_invoke` command; the webview has no filesystem, shell or HTTP permissions.",
   "windows": ["main"],
   "permissions": [
     "core:event:allow-listen",

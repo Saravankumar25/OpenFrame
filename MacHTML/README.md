@@ -1,4 +1,4 @@
-# MacHTML: every screen of OpenFrame Studio for the Mac
+# MacHTML: every screen of Straft Studio for the Mac
 
 760 screens in 27 areas, each captured from the real app in Light mode (`light/`) and in Dark mode
 (`dark/`). Open `index.html`. Page `NNN-name.html` is the same screen in both folders.
@@ -15,7 +15,7 @@ is no DOM to save. MacHTML is built from two things captured at the same moment 
 
 ## How the pages are made
 
-- The capture tour (`apps/macos/Sources/OpenFrameE2EDriver/Scenarios/CaptureTour*.swift`, scenarios `zz-capture/*`) drives
+- The capture tour (`apps/macos/Sources/StraftE2EDriver/Scenarios/CaptureTour*.swift`, scenarios `zz-capture/*`) drives
   the real app, seeds a project and visits every screen it can reach, once with Settings, Appearance, Mode set to Light and
   once with Dark. Only screens present in both runs become pages. A screen that looks the same as an earlier one is dropped.
 - `scripts/mac-html/build-mac-html.mjs` writes one page per screen. The window picture is the background, cut into the
@@ -42,13 +42,13 @@ The window is 1280 x 630 points (shown at one CSS pixel per point; the pictures 
 
 ## Regenerate
 
-    apps/macos/E2E/capture.sh "apps/macos/build/OpenFrame Studio.app"
+    apps/macos/E2E/capture.sh "apps/macos/build/Straft Studio.app"
 
-That runs the tour in Light and in Dark (with `OPENFRAME_E2E_PARALLEL=n` it runs n runners side by side), builds this
+That runs the tour in Light and in Dark (with `STRAFT_E2E_PARALLEL=n` it runs n runners side by side), builds this
 folder and checks every page (`scripts/mac-html/check-pages.swift`). To rebuild the pages from an earlier capture
 without running the app:
 
-    OPENFRAME_CAPTURE_SKIP_RUN=1 OPENFRAME_CAPTURE_DIR=<capture folder with light/ and dark/> apps/macos/E2E/capture.sh "apps/macos/build/OpenFrame Studio.app"
+    STRAFT_CAPTURE_SKIP_RUN=1 STRAFT_CAPTURE_DIR=<capture folder with light/ and dark/> apps/macos/E2E/capture.sh "apps/macos/build/Straft Studio.app"
 
 ## Not captured
 

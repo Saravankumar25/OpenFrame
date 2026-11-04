@@ -62,7 +62,7 @@ vi.mock("../../ipc/client", async () => {
           state = { ...state, myThemes: [{ id: harbour.id, name: harbour.name, theme: harbour, problem: null }], themeId: args.apply ? harbour.id : state.themeId };
           return state;
         case "appearance.delete_theme":
-          state = { ...state, myThemes: [], themeId: "openframe-default" };
+          state = { ...state, myThemes: [], themeId: "straft-default" };
           return state;
         case "appearance.rename_theme":
           return state;
@@ -79,14 +79,14 @@ beforeEach(() => {
   calls.length = 0;
   pickedFile.value = null;
   savedPath.value = null;
-  state = { mode: "system", themeId: "openframe-default", fallbackNotice: null, myThemes: [] };
+  state = { mode: "system", themeId: "straft-default", fallbackNotice: null, myThemes: [] };
   checkResult = { status: "ok", theme: harbour, problems: [], notes: [], contrast: [{ mode: "light", label: "Main text on panels", foreground: "ink", background: "panel", ratio: 12.5, passes: true }] };
 });
 
 const ops = () => calls.map((c) => c.op).filter((o) => o !== "appearance.get");
 
 describe("Settings > Appearance", () => {
-  it("offers Light, Dark and System and the sixteen themes, OpenFrame Default selected", async () => {
+  it("offers Light, Dark and System and the sixteen themes, Straft Default selected", async () => {
     renderWithClient(<AppearancePanel />);
     const modes = await screen.findByRole("radiogroup", { name: "Mode" });
     expect(within(modes).getAllByRole("radio").map((r) => r.textContent)).toEqual(["Light", "Dark", "System"]);
@@ -94,7 +94,7 @@ describe("Settings > Appearance", () => {
     const themes = screen.getByRole("radiogroup", { name: "Theme" });
     const cards = within(themes).getAllByRole("radio");
     expect(cards).toHaveLength(17);
-    expect(cards[0]).toHaveAccessibleName(/^OpenFrame Default/);
+    expect(cards[0]).toHaveAccessibleName(/^Straft Default/);
     expect(cards[0]).toHaveAttribute("aria-checked", "true");
     // Each card is drawn in its own theme.
     expect(cards[1]).toHaveAttribute("data-theme", "black-and-white");
@@ -114,7 +114,7 @@ describe("Settings > Appearance", () => {
   it("moves through the themes with the arrow keys (one tab stop)", async () => {
     const user = userEvent.setup();
     renderWithClient(<AppearancePanel />);
-    const first = await screen.findByRole("radio", { name: /^OpenFrame Default/ });
+    const first = await screen.findByRole("radio", { name: /^Straft Default/ });
     expect(first).toHaveAttribute("tabindex", "0");
     expect(screen.getByRole("radio", { name: /^Black and White/ })).toHaveAttribute("tabindex", "-1");
     first.focus();
@@ -142,7 +142,7 @@ describe("Settings > Appearance", () => {
   });
 
   it("a refused theme says why, cannot be saved and changes nothing", async () => {
-    checkResult = { status: "rejected", theme: null, problems: ['The file has a setting OpenFrame does not know: "script".'], notes: [], contrast: [] };
+    checkResult = { status: "rejected", theme: null, problems: ['The file has a setting Straft Studio does not know: "script".'], notes: [], contrast: [] };
     const user = userEvent.setup();
     renderWithClient(<AppearancePanel />);
     await user.click(await screen.findByRole("button", { name: "Paste Theme…" }));
@@ -150,7 +150,7 @@ describe("Settings > Appearance", () => {
     await user.click(within(dialog).getByLabelText("Theme text"));
     await user.paste('{"script":"alert(1)"}');
     await user.click(within(dialog).getByRole("button", { name: "Check Theme" }));
-    expect(await within(dialog).findByRole("alert")).toHaveTextContent('This theme cannot be used. Nothing was changed.The file has a setting OpenFrame does not know: "script".');
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent('This theme cannot be used. Nothing was changed.The file has a setting Straft Studio does not know: "script".');
     expect(within(dialog).getByRole("button", { name: "Save and Apply" })).toBeDisabled();
     expect(within(dialog).getByRole("button", { name: "Save to My Themes" })).toBeDisabled();
     expect(ops()).toEqual(["appearance.check_theme"]);
@@ -198,11 +198,11 @@ describe("Settings > Appearance", () => {
   it("a damaged saved theme is listed with the reason and can only be deleted; the fallback is explained", async () => {
     state = {
       ...state,
-      fallbackNotice: "Your saved theme could not be used, so OpenFrame Default is shown. Your projects are not affected.",
+      fallbackNotice: "Your saved theme could not be used, so Straft Default is shown. Your projects are not affected.",
       myThemes: [{ id: "broken-one", name: "Broken One", theme: null, problem: "Its saved data is damaged." }],
     };
     renderWithClient(<AppearancePanel />);
-    expect(await screen.findByText(/OpenFrame Default is shown/)).toBeInTheDocument();
+    expect(await screen.findByText(/Straft Default is shown/)).toBeInTheDocument();
     const row = screen.getByRole("listitem", { name: "Broken One" });
     expect(row).toHaveTextContent("This theme cannot be used. Its saved data is damaged.");
     expect(within(row).queryByRole("button", { name: "Apply" })).toBeNull();

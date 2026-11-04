@@ -9,9 +9,9 @@ candidate and record the result at the end.
 1. On the old computer: project menu, **Create Backup…**, choose a folder on another disk, optionally tick **Copy
    linked external files into the backup** (portable backup), **Create Backup**. The result names the file, its size,
    the files included and any linked file that was not copied or is missing.
-2. On the new computer: install OpenFrame, open it. With no project yet, Application Home shows **Restore Backup or
+2. On the new computer: install Straft Studio, open it. With no project yet, Application Home shows **Restore Backup or
    Package…** next to Create Project and Open Existing Project (it stays next to Open Project once projects exist).
-3. **Choose Package…**, pick the `.ofbackup` file. OpenFrame validates it before anything is created and shows the
+3. **Choose Package…**, pick the `.ofbackup` file. Straft Studio validates it before anything is created and shows the
    package type, project, date, size and linked-file report. When the package holds private notes, the screen says
    before the restore that they will become yours (ADR-0012 amendment of 2026-10-08).
 4. **Restore**. The project opens with its own identity. If a project with the same identity already exists on this
@@ -38,7 +38,7 @@ message says how many notes are now yours.
 | Damaged backups are refused and create nothing: truncated file, flipped bytes, damaged database pages, rows removed with recomputed checksums, a foreign trigger planted | `packages.rs::corrupt_backups_are_detected_and_leave_nothing_behind` |
 | An interrupted restore leaves no project and no staging folder at any checkpoint | `packages.rs::interrupted_restore_leaves_nothing_behind` |
 | Identity collision: open as copy or replace after a verified safety backup | `packages.rs::fsd_45_4_identity_collision_open_as_copy_or_replace_after_backup` |
-| Packages from every committed format still open, and an old backup migrates to the current schema | `packages.rs::older_package_formats_still_open` (fixtures `crates/openframe-application/tests/fixtures/packages/format-1/`, `format-2/`) |
+| Packages from every committed format still open, and an old backup migrates to the current schema | `packages.rs::older_package_formats_still_open` (fixtures `crates/straft-application/tests/fixtures/packages/format-1/`, `format-2/`) |
 | Production numbers and custom elements travel in review, response, backup and full project packages |  `packages.rs::production_numbers_and_custom_elements_travel_in_every_package_class` |
 | Hostile packages are refused with a stable code and leave nothing behind | `format.rs` module `hostile` (5 tests), `archive.rs::damaged_entry_data_is_a_rejected_archive_not_a_storage_error` |
 | Every project table and column has a package decision | `coverage.rs::package_coverage_follows_the_project_schema` |
@@ -48,14 +48,14 @@ message says how many notes are now yours.
 
 1. Account A: create a project, write two scenes (one in Telugu), add a Beat Board card, a comment, a private note,
    a stored image and a linked PDF. Create a portable backup on a USB drive.
-2. Account B (nothing of A's app data): open OpenFrame, **Restore Backup or Package…**, pick the backup. Expect
+2. Account B (nothing of A's app data): open Straft Studio, **Restore Backup or Package…**, pick the backup. Expect
    **Restore** (no collision), then the project opens with the same text, image, PDF (now stored in the project)
    and comment. Before the restore, the screen says the backup's private note will become yours. After it, the note
    is in Private Notes for account B and can be edited.
 3. Restore the same backup again on B. Expect the collision choice; **Open as Copy** gives "<title> (copy)".
 4. Copy the backup, cut its size in half with any tool, try to restore it. Expect a message that the package is
    damaged or incomplete and no new project in the list.
-5. Quit and reopen OpenFrame on B. Both projects are listed and open.
+5. Quit and reopen Straft Studio on B. Both projects are listed and open.
 
 ## 4. Result of the last run
 

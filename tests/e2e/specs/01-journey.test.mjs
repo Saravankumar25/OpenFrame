@@ -104,7 +104,7 @@ describe("desktop journey", () => {
 
   test("first launch → name → create project → Project Home", async () => {
     await step("first-launch", async () => {
-      await waitForText(browser, "Welcome to OpenFrame Studio");
+      await waitForText(browser, "Welcome to Straft Studio");
       const name = await $("#dn-name");
       await name.setValue("E2E Tester");
       await inDialog("Continue");
@@ -112,7 +112,7 @@ describe("desktop journey", () => {
       await (await $("#np-title")).setValue("Night Bus");
       await inDialog("Create");
       await waitForText(browser, "Start with your ideas, build your story, or open a screenplay.");
-      await browser.waitUntil(async () => (await browser.execute(() => document.title)) === "Night Bus - OpenFrame Studio", {
+      await browser.waitUntil(async () => (await browser.execute(() => document.title)) === "Night Bus - Straft Studio", {
         timeout: 10_000,
         timeoutMsg: "window title does not name the open project",
       });

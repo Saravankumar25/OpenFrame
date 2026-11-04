@@ -20,8 +20,8 @@ pricing, discounts, refunds, entitlement refresh and restore purchase. The two w
    unlocked. Each release file has its own adapter behind that interface:
    - Microsoft Store: the Store licence API (trial and purchase).
    - Mac App Store: StoreKit 2 with Apple's non-subscription trial model (owner decision 2026-10-06). A zero-price Non-Consumable
-     "7-day Trial" (`app.openframestudio.studio.trial7`) starts the trial and a paid Non-Consumable "Lifetime Access"
-     (`app.openframestudio.studio.lifetime`) unlocks the app. There is no auto-renewing subscription and Family Sharing is off. Only
+     "7-day Trial" (`app.straftstudio.studio.trial7`) starts the trial and a paid Non-Consumable "Lifetime Access"
+     (`app.straftstudio.studio.lifetime`) unlocks the app. There is no auto-renewing subscription and Family Sharing is off. Only
      cryptographically verified StoreKit 2 transactions count; the system clock, installation date, files, Keychain and frontend
      state are never the source of truth. **SUPERSEDED 2026-11-03 by [ADR-0040](ADR-0040-offline-mac-trial-no-licence-server.md): no server; the trial is counted offline with a Keychain clock guard (the "clock is never an input" rule is reversed too).** A small licensing server validates the Apple-signed trial transaction and computes
      `trialEndsAt` as Apple's purchase time plus 168 hours in server UTC. Lifetime comes only from the verified paid
@@ -66,6 +66,6 @@ submission.
 
 ## Implementation notes
 
-- The entitlement interface, the trial rules and the three adapters are in the crate `crates/openframe-entitlement`. Rules, file formats and limits: [36-entitlement-and-trial.md](../engineering/36-entitlement-and-trial.md).
-- Built and tested at crate level: five states, 7-day trial record, offline licence file check. The two store adapters are stubs that answer Unknown. The Mac policy and adapter (with a fake StoreKit and a fake licensing server) are being built in `crates/openframe-entitlement/src/mac/`; the real StoreKit bridge and the licensing server are not built.
+- The entitlement interface, the trial rules and the three adapters are in the crate `crates/straft-entitlement`. Rules, file formats and limits: [36-entitlement-and-trial.md](../engineering/36-entitlement-and-trial.md).
+- Built and tested at crate level: five states, 7-day trial record, offline licence file check. The two store adapters are stubs that answer Unknown. The Mac policy and adapter (with a fake StoreKit and a fake licensing server) are being built in `crates/straft-entitlement/src/mac/`; the real StoreKit bridge and the licensing server are not built.
 - Not reachable in the app yet: nothing calls the crate. The open owner decisions above still block the purchase flows and the reinstall rule.

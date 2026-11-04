@@ -8,7 +8,7 @@
 > the non-English languages ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)).
 
 > Written 2026-10-09. This is the plan for the first real-world test of the internal Windows `.exe` and macOS `.dmg`. The
-> testers are working writers, screenwriters and production people, not developers. They install OpenFrame on their own
+> testers are working writers, screenwriters and production people, not developers. They install Straft Studio on their own
 > computers and use it as their main tool for 2 to 3 days. Nothing here starts before the owner says the installers may be
 > built and gives the invitation list.
 
@@ -42,7 +42,7 @@ warn on first run. Testers are told this in advance and given the steps below.
 
 ## 4. Rules for testers
 
-- Keep your own copy of anything important. OpenFrame saves continuously and keeps recovery points, but this is a test
+- Keep your own copy of anything important. Straft Studio saves continuously and keeps recovery points, but this is a test
   build. Use Create Backup before large changes and keep the backup file somewhere else.
 - Work on real tasks, but start with a copy of a script, not the only copy.
 - Do not send us your script. If you want to show a problem, describe it or use a sample script.
@@ -57,23 +57,23 @@ warn on first run. Testers are told this in advance and given the steps below.
 2. Double-click the installer. If a blue "Windows protected your PC" window appears, click **More info**, then **Run
    anyway**. This appears because the build is not signed yet.
 3. Finish the installation. It installs for your user only and needs no administrator rights.
-4. Start OpenFrame Studio.
+4. Start Straft Studio.
 5. Allow the first start a moment: the AI engine starts when you first use the assistant.
 
 ### Apple silicon Mac
 
 1. Download the disk image and check the checksum (`shasum -a 256 file.dmg` in Terminal).
-2. Open the disk image and drag OpenFrame Studio to Applications.
+2. Open the disk image and drag Straft Studio to Applications.
 3. The first time, macOS may say it cannot check the app for malicious software. Open **System Settings, Privacy and
-   Security**, scroll down and click **Open Anyway** next to OpenFrame Studio (older macOS versions: Control-click the app,
+   Security**, scroll down and click **Open Anyway** next to Straft Studio (older macOS versions: Control-click the app,
    choose **Open**, then **Open**). The exact steps depend on your macOS version; the owner confirms them on the Mac before
    the pilot.
 4. Start the app.
 
 ### Uninstall
 
-Windows: Settings, Apps, OpenFrame Studio, Uninstall. Mac: drag the app to the Bin. Your projects in
-`Documents\OpenFrame` stay; delete them yourself only if you are sure.
+Windows: Settings, Apps, Straft Studio, Uninstall. Mac: drag the app to the Bin. Your projects in
+`Documents\Straft Studio` stay; delete them yourself only if you are sure.
 
 ## 6. Daily tasks
 

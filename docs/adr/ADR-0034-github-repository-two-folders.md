@@ -3,11 +3,11 @@
 - **Status:** Accepted 2026-10-19 (owner decision in the Mac M6 to M10 session).
 - **Date:** 2026-10-19
 - **Amends:** the "Layout and decisions" rule of `CLAUDE.md` (the repository root holds README, CONTRIBUTING and the
-  other root files) for the GitHub repository `Saravankumar25/OpenFrame`. The local working checkout keeps its layout.
+  other root files) for the GitHub repository `Saravankumar25/StraftStudio`. The local working checkout keeps its layout.
 
 ## Context
 
-The owner's words (2026-10-19): "the thing is openframe github repo should only have 2 folder named windows and mac and
+The owner's words (2026-10-19): "the thing is straft github repo should only have 2 folder named windows and mac and
 the 2 codebases must be seperately given in two folders, no compromises held. Make it safe and perfectly done without
 losing anything."
 

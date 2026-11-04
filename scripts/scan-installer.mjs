@@ -20,7 +20,7 @@ import { lineHits } from "./lib/secret-rules.mjs";
 const MAX_BYTES = 400 * 1024 * 1024;
 const MIN_RUN = 6;
 const PERSONAL_PATH = /[A-Za-z]:[\\/]{1,2}Users[\\/]{1,2}(?!(?:Public|Default|All Users|runneradmin)[\\/])[^\\/\s"]+|\/Users\/(?!Shared\/|runner\/)[^/\s"]+|\/home\/[^/\s"]+/i;
-const user = (process.env.OPENFRAME_SCAN_USER ?? os.userInfo().username ?? "").trim();
+const user = (process.env.STRAFT_SCAN_USER ?? os.userInfo().username ?? "").trim();
 
 const targets = process.argv.slice(2);
 if (targets.length === 0) {

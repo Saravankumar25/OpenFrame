@@ -129,7 +129,7 @@ export function EpisodesView({ readOnly, onOpenEpisode }: { readOnly: boolean; o
               <b>{characters.data?.filter((c) => !c.episodeId).length ?? 0}</b>
             </div>
             <p className="muted" style={{ fontSize: 12, lineHeight: 1.5 }}>
-              Episodes can reference these lightweight lists. OpenFrame does not require you to manage cross-episode continuity.
+              Episodes can reference these lightweight lists. Straft Studio does not require you to manage cross-episode continuity.
             </p>
           </aside>
         </div>
