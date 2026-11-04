@@ -113,7 +113,7 @@
 |---|---|---|---|
 | How work reaches `main` | Local merge only, after unit tests and end-to-end specs pass. A work-in-progress commit on its own branch is a checkpoint. No push, pull request or repository change unless the owner asks in that conversation | 2026-10-08 | CLAUDE.md |
 | No build without the word | An installer, a release executable or a disk image is built only when the owner says so in that conversation | 2026-10-08 | CLAUDE.md, ADR-0030 |
-| Repository visibility | Public: `Saravankumar25/OpenFrame` stays public (replaces "private" of 2026-10-06). Nothing that must stay secret goes into it | 2026-11-04 | Owner, in chat |
+| Repository visibility | Public: `Saravankumar25/OpenFrame` stays public (replaces "private" of 2026-10-06). Nothing that must stay secret goes into it. The six tracked files that hold this Mac's user name in paths stay as they are | 2026-11-04 | Owner, in chat |
 | Verification before ticking | A box is ticked only with `(ev: ...)` evidence, at the proof level it names | 2026-10-08 | CLAUDE.md, ADR-0030 |
 | Documentation | Organised by chapter; history moves to docs/history and is not rewritten (Windows merged docs/archive into it on 2026-10-24; the Mac had removed docs/archive on 2026-10-19 and moved its other history there on 2026-10-27); no two current documents give different rules; one pass, not several | 2026-10-15 | [docs/README.md](../README.md) |
 | Build folders and storage | One build folder per checkout under `.build-cache`; budgets in the storage policy | 2026-10-08 | [development-storage-policy.md](../development-storage-policy.md) |

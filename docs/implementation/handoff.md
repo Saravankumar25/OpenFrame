@@ -28,8 +28,6 @@
 ## Owner decisions open
 
 - AI tool bar missed (58.5% against 90%), and whether the older sets still count now that no person can reach that road.
-- `Saravankumar25/OpenFrame` stays public (owner decision 2026-11-04). Whether to clean six tracked files that hold this Mac's
-  user name in paths (`InterchangeScenarios.swift`, `OnboardingTests.swift`, `SettingsTests.swift`, `ShellScenarioTests.swift`, `tests/gold-project/VERIFY.md`, `docs/release/evidence/mac/m8-eval-en/results.jsonl`).
 - Identity in `library.json` is not authentication (doc 40 section 2): keep or change.
 
 ## Do not
