@@ -57,6 +57,17 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-11-04, Release package pushed to `mac/` on GitHub
+- **Areas and items worked:** the owner's instruction to push from `Saravankumar25`.
+- **Done:** `Saravankumar25` signed in by device code on the owner's approval. Branch `mac/sync-2026-11-03` (`c58d7bcd`) pushed, [pull request 6](https://github.com/Saravankumar25/OpenFrame/pull/6) opened and merged as `fb4be22e` with a merge commit. The active `gh` login was set back to `udarshmarthala`.
+- **Evidence:** GitGuardian passed, the only check that ran on the pull request. `git diff` between `mac/` on main and local HEAD is empty outside `release/`; no change outside `mac/`. A scan of the pushed tree found no key files, access tokens or private keys.
+- **Features moved:** none.
+- **Docs updated:** handoff, this log.
+- **Decisions made or needed:** owner: the repository shows as public against `CLAUDE.md`, and six tracked files hold this Mac's user name.
+- **Blocked / risks:** the macOS build workflows in `mac/.github/workflows/` do not run from that folder, so GitHub built and tested nothing; the evidence is the local runs in the entry below. The entry below is left as written: its refused push is now resolved.
+- **Next:** the owner's store steps, the spot check, the Windows port.
+- **Checks run:** no code changed; `npm run verify` not run.
+
 ### 2026-11-03, Release package finished on the Mac: rename, review fixes, installer, update check
 - **Areas and items worked:** Mac App Store package, payment and free trial, AI assistant quality; the owner's "OpenFrame AI" naming instruction.
 - **Done:** The product is called OpenFrame AI on every screen, message, prompt, Settings tab and in the review notes and test cases
