@@ -26,6 +26,9 @@
 //! show an empty app, write a new `app.sqlite` and so stop every later attempt. The reason is logged
 //! once logging is up ([`log_notes`]).
 //!
+//! The person's own folders under the earlier name (the library, project folders) are renamed after
+//! this, in `legacy_rename`.
+//!
 //! Nothing inside these folders names the old folder: `app.sqlite` stores the library folder (the
 //! person's own, which does not move), project folders and a cover's file name only,
 //! `ai/bundle-check.json` names the installed engine, and the model set is named after the model
@@ -397,15 +400,20 @@ pub fn allowed(
     data_root.is_none() && started_by_cargo.is_none() && package_identity.is_none()
 }
 
+/// [`allowed`] for this process.
+pub(crate) fn allowed_here() -> bool {
+    allowed(
+        std::env::var_os("STRAFT_DATA_ROOT").as_deref(),
+        std::env::var_os("CARGO_MANIFEST_DIR").as_deref(),
+        identity::package_family_name().as_deref(),
+    )
+}
+
 /// The folders to use in this run: `(app data, library pointer)`.
 pub(crate) fn folders_for_current_user() -> (Option<PathBuf>, Option<PathBuf>) {
     let app_data = dirs::app_data_dir();
     let pointer = dirs::roaming_data_dir();
-    if !allowed(
-        std::env::var_os("STRAFT_DATA_ROOT").as_deref(),
-        std::env::var_os("CARGO_MANIFEST_DIR").as_deref(),
-        identity::package_family_name().as_deref(),
-    ) {
+    if !allowed_here() {
         return (app_data, pointer);
     }
     (

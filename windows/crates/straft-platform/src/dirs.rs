@@ -2,6 +2,8 @@
 //! Every function returns `None` when the operating system cannot name the folder. There is no
 //! fallback to a temp folder: settings, the trial record and projects must never land somewhere
 //! the system cleans up. Callers decide what to do (refuse to start, or ask the user).
+//! Folders under the product's earlier name are copied and renamed at start, not used
+//! (`straft_application::modules::storage::{legacy_migration, legacy_rename}`).
 //! macOS: `~/Library/Application Support/Straft` and `~/Documents/Straft Studio`. Inside the Mac
 //! App Sandbox the home folder is the container, so the same calls land in the container; the
 //! security-scoped access to user-picked project folders is handled by the desktop shell.

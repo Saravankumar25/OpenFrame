@@ -37,7 +37,7 @@ const ROOT_SETTING: &str = "storage.library_root";
 const POINTER_FORMAT: u32 = 1;
 const POINTER_MAX_BYTES: u64 = 64 * 1024;
 /// Folders looked at when counting projects or finding a library one level down.
-const SCAN_LIMIT: usize = 2_000;
+pub(super) const SCAN_LIMIT: usize = 2_000;
 
 /// Where the first start looks and what it suggests.
 #[derive(Debug, Clone)]
@@ -215,7 +215,7 @@ fn usable_root(raw: &str) -> Option<PathBuf> {
     .then_some(p)
 }
 
-fn read_db_root(conn: &Connection) -> Option<PathBuf> {
+pub(super) fn read_db_root(conn: &Connection) -> Option<PathBuf> {
     let raw: Option<String> = conn
         .query_row(
             "SELECT value_json FROM sys_settings WHERE key=?1",
@@ -229,7 +229,7 @@ fn read_db_root(conn: &Connection) -> Option<PathBuf> {
     usable_root(&text)
 }
 
-fn write_db_root(conn: &Connection, root: &Path) -> AppResult<()> {
+pub(super) fn write_db_root(conn: &Connection, root: &Path) -> AppResult<()> {
     let value = serde_json::Value::String(root.to_string_lossy().into_owned()).to_string();
     conn.execute(
         "INSERT INTO sys_settings(key, value_json, updated_at) VALUES (?1, ?2, ?3)
@@ -265,7 +265,7 @@ pub fn read_pointer(file: &Path) -> Option<PathBuf> {
     root
 }
 
-fn write_pointer(file: &Path, root: &Path) -> AppResult<()> {
+pub(super) fn write_pointer(file: &Path, root: &Path) -> AppResult<()> {
     let bytes = serde_json::to_vec_pretty(&Pointer {
         format: POINTER_FORMAT,
         library_root: root.to_string_lossy().into_owned(),

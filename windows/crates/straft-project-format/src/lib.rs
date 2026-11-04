@@ -14,8 +14,9 @@
 //! └─ .lock                 single-writer lock (prevents two apps writing at once)
 //! ```
 //!
-//! Projects made before the rename keep their folder name (`straft_platform::legacy_names`) and may
-//! still hold the earlier manifest file. One rule: `straft.json` wins whenever it exists. The earlier
+//! Projects made before the rename may still have the earlier folder extension until they are
+//! opened or the app starts (`legacy_rename` in the application crate), and may still hold the
+//! earlier manifest file. One rule: `straft.json` wins whenever it exists. The earlier
 //! file is read only when there is no `straft.json`, and every manifest write creates `straft.json`
 //! first and removes the earlier file only once the new one is on the drive, so the two can never
 //! disagree.
