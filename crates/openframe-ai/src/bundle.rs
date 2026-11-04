@@ -43,7 +43,7 @@ const MAX_FILES: usize = 200;
 pub fn missing() -> AppError {
     AppError::ai(
         "assets_missing",
-        "Offline AI is missing from this installation, so it can't start. Reinstall OpenFrame Studio to repair it. Your projects were not changed.",
+        "OpenFrame AI is missing from this installation, so it can't start. Reinstall OpenFrame Studio to repair it. Your projects were not changed.",
     )
 }
 
@@ -51,7 +51,7 @@ pub fn missing() -> AppError {
 pub fn damaged() -> AppError {
     AppError::ai(
         "assets_damaged",
-        "Offline AI files in this installation were changed or damaged, so OpenFrame did not start them. Reinstall OpenFrame Studio to repair it. Your projects were not changed.",
+        "OpenFrame AI files in this installation were changed or damaged, so OpenFrame did not start them. Reinstall OpenFrame Studio to repair it. Your projects were not changed.",
     )
 }
 
@@ -59,7 +59,7 @@ pub fn damaged() -> AppError {
 pub fn not_installed() -> AppError {
     AppError::ai(
         "not_installed",
-        "OpenFrame AI is not downloaded yet. Download it in Settings, Offline AI. Everything else in OpenFrame works without it.",
+        "OpenFrame AI is not downloaded yet. Download it in Settings, OpenFrame AI. Everything else in OpenFrame works without it.",
     )
 }
 
@@ -67,7 +67,7 @@ pub fn not_installed() -> AppError {
 pub fn models_damaged() -> AppError {
     AppError::ai(
         "models_damaged",
-        "An OpenFrame AI file is missing or damaged, so OpenFrame did not start it. Remove OpenFrame AI and download it again in Settings, Offline AI. Your projects were not changed.",
+        "An OpenFrame AI file is missing or damaged, so OpenFrame did not start it. Remove OpenFrame AI and download it again in Settings, OpenFrame AI. Your projects were not changed.",
     )
 }
 
@@ -75,12 +75,12 @@ pub fn models_damaged() -> AppError {
 pub fn unsupported() -> AppError {
     AppError::ai(
         "unsupported",
-        "Offline AI isn't available for this kind of computer yet. Everything else in OpenFrame works normally.",
+        "OpenFrame AI isn't available for this kind of computer yet. Everything else in OpenFrame works normally.",
     )
 }
 
 fn invalid_lock(detail: impl Into<String>) -> AppError {
-    AppError::internal("the Offline AI lock compiled into this build is invalid")
+    AppError::internal("OpenFrame AI lock compiled into this build is invalid")
         .with_detail(detail)
 }
 
@@ -845,7 +845,7 @@ impl BundledAi {
             && let Err(e) = crate::store::write_json_atomic(record, &rec)
         {
             // The check passed; only the shortcut for the next start is lost.
-            tracing::warn!(code = e.code_str(), "could not record the Offline AI check");
+            tracing::warn!(code = e.code_str(), "could not record OpenFrame AI check");
         }
         Ok(())
     }

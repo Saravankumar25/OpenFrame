@@ -425,7 +425,7 @@ fn a_model_failure_mid_run_keeps_what_was_found() {
     assert!(
         texts(&r["details"])
             .iter()
-            .any(|d| d.starts_with("Offline AI stopped before finishing"))
+            .any(|d| d.starts_with("OpenFrame AI stopped before finishing"))
     );
     assert_eq!(r["steps"].as_array().unwrap().len(), 1);
 }

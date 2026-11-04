@@ -119,7 +119,7 @@ fn lookup(name: &str) -> Option<Tool> {
 fn unknown(name: &str) -> AppError {
     AppError::ai(
         "unknown_tool",
-        "That isn't something the assistant can do yet.",
+        "That isn't something OpenFrame AI can do yet.",
     )
     .with_detail(format!("tool {}", queries::truncate_chars(name, 64)))
 }

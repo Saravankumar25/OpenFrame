@@ -70,7 +70,7 @@ const OBSERVATION_ITEMS: usize = 15;
 const OBSERVATION_SHORT_CHARS: usize = 200;
 const MAX_RESULT_ITEMS: usize = 50;
 
-const POLICY: &str = "You are the assistant inside OpenFrame Studio, a filmmaking application. You run locally on the user's computer.
+const POLICY: &str = "You are OpenFrame AI inside OpenFrame Studio, a filmmaking application. You run locally on the user's computer.
 The person asked for a change. You work in steps. At each step reply with ONE JSON object choosing the next tool: {\"action\": <tool name>, \"arguments\": {...}, \"done\": <true|false>}.
 Set \"done\" to true when that tool's result will fully answer the request; set it to false when you need to see the result before the next step.
 When the results you received are enough, or the request cannot be done with the tools, use \"final_answer\" with one short plain sentence in the user's language.
@@ -85,7 +85,7 @@ const NEXT_STEP: &str = "Choose the next step: another tool, or \"final_answer\"
 const REPEATED_NOTE: &str =
     "I stopped because the same step was requested twice. This is what I found so far.";
 const MODEL_STOPPED_NOTE: &str =
-    "Offline AI stopped before finishing. This is what I found so far.";
+    "OpenFrame AI stopped before finishing. This is what I found so far.";
 
 /// The arguments of a tool as one readable list: `query: string, limit?: integer, kind: "a"|"b"`.
 /// Required arguments come first, then the optional ones by name (`?` marks them). The step grammar

@@ -34,7 +34,7 @@ pub fn register(r: &mut Registry) {
     r.index_parent("dood_override", "shooting_day", "day_id");
     r.command("schedule.set_dood_override", set_override).meta(
         M::edit("Correct one Day Out of Days cell, or return it to the derived value.").hidden(
-            "A manual Day Out of Days correction records what the user knows about holds, travel, fittings and rehearsals; the assistant reads the derived report instead.",
+            "A manual Day Out of Days correction records what the user knows about holds, travel, fittings and rehearsals; OpenFrame AI reads the derived report instead.",
         ),
     );
 }

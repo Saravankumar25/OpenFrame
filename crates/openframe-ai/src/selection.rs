@@ -36,13 +36,13 @@ pub fn assess(hw: &HardwareInfo, chat: &ModelEntry) -> Fitness {
     let mut warnings = Vec::new();
     if !suitable {
         warnings.push(format!(
-            "This computer has less memory than Offline AI normally needs ({} of {}). It may be very slow or fail to start.",
+            "This computer has less memory than OpenFrame AI normally needs ({} of {}). It may be very slow or fail to start.",
             gb(hw.total_ram_bytes),
             gb(chat.min_ram_bytes)
         ));
     } else if likely_slow {
         warnings
-            .push("Offline AI works on this computer, but answers may take a while.".to_string());
+            .push("OpenFrame AI works on this computer, but answers may take a while.".to_string());
     }
     Fitness {
         suitable,

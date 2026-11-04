@@ -63,7 +63,7 @@ impl AiService {
             Err(e) => {
                 tracing::error!(
                     code = e.code_str(),
-                    "Offline AI could not initialise; the rest of OpenFrame is unaffected"
+                    "OpenFrame AI could not initialise; the rest of OpenFrame is unaffected"
                 );
                 Self::with_manager(None, Some(e), events)
             }

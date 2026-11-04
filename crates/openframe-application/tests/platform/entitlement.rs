@@ -870,7 +870,7 @@ fn plat_009_the_assistant_cannot_see_the_licence_operations() {
             .metadata(op)
             .unwrap_or_else(|| panic!("{op} registered"));
         assert!(
-            matches!(m.ai_exposure, AiExposure::Hidden(r) if r.contains("assistant")),
+            matches!(m.ai_exposure, AiExposure::Hidden(r) if r.contains("OpenFrame AI")),
             "{op} hidden"
         );
         assert_eq!(m.required_capability, None, "{op} is application level");

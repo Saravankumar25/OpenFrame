@@ -136,7 +136,7 @@ fn run(ix: &ProjectIndex, core: &std::sync::Weak<AppCore>) {
         index_ms = index_ms as u64,
         examples_ms = examples_ms as u64,
         total_ms = started.elapsed().as_millis() as u64,
-        "the assistant was prepared"
+        "OpenFrame AI was prepared"
     );
 }
 

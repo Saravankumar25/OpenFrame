@@ -3,7 +3,7 @@
     "argType": "AskArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.ask",
     "resultType": "AiExchange"
   },
@@ -11,7 +11,7 @@
     "argType": "AiCancelArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.cancel",
     "resultType": "AiCancelDto"
   },
@@ -19,7 +19,7 @@
     "argType": "AcceptArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.change_set.accept",
     "resultType": "ChangeSetDto"
   },
@@ -27,7 +27,7 @@
     "argType": "AiChangeSetArgs",
     "kind": "query",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.change_set.get",
     "resultType": "ChangeSetDto"
   },
@@ -35,7 +35,7 @@
     "argType": "AiChangeSetArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.change_set.recheck",
     "resultType": "ChangeSetDto"
   },
@@ -43,7 +43,7 @@
     "argType": "AiChangeSetArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.change_set.reject",
     "resultType": "ChangeSetDto"
   },
@@ -51,7 +51,7 @@
     "argType": "AiEmptyArgs",
     "kind": "query",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.diagnostics",
     "resultType": "AiDiagnosticsDto"
   },
@@ -59,7 +59,7 @@
     "argType": "AiImportArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.download.import",
     "resultType": "AiImportResult"
   },
@@ -67,7 +67,7 @@
     "argType": "AiEmptyArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.download.pause",
     "resultType": "()"
   },
@@ -75,7 +75,7 @@
     "argType": "AiEmptyArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.download.remove",
     "resultType": "()"
   },
@@ -83,7 +83,7 @@
     "argType": "AiEmptyArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.download.start",
     "resultType": "()"
   },
@@ -91,7 +91,7 @@
     "argType": "AiEmptyArgs",
     "kind": "query",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.download.status",
     "resultType": "AiDownloadDto"
   },
@@ -99,7 +99,7 @@
     "argType": "AiConversationExportArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.export_conversation",
     "resultType": "AiReportResult"
   },
@@ -107,7 +107,7 @@
     "argType": "AiReportArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.export_report",
     "resultType": "AiReportResult"
   },
@@ -115,7 +115,7 @@
     "argType": "AiGraphicsArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.graphics.set",
     "resultType": "()"
   },
@@ -123,7 +123,7 @@
     "argType": "AiHealthArgs",
     "kind": "query",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.health",
     "resultType": "AiHealthDto"
   },
@@ -131,7 +131,7 @@
     "argType": "AiHistoryArgs",
     "kind": "query",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.history",
     "resultType": "AiHistoryDto"
   },
@@ -139,7 +139,7 @@
     "argType": "AiIndexArgs",
     "kind": "command",
     "longRunning": true,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.index_rebuild",
     "resultType": "IndexRebuildStarted"
   },
@@ -147,7 +147,7 @@
     "argType": "AiIndexArgs",
     "kind": "query",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.index_status",
     "resultType": "IndexStatusDto"
   },
@@ -155,7 +155,7 @@
     "argType": "AiMemoryDeleteArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.memory_delete",
     "resultType": "AiMemoryDeleteDto"
   },
@@ -163,7 +163,7 @@
     "argType": "AiEmptyArgs",
     "kind": "query",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.memory_list",
     "resultType": "AiMemoryListDto"
   },
@@ -171,7 +171,7 @@
     "argType": "SectionsArgs",
     "kind": "query",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.sections",
     "resultType": "SectionsDto"
   },
@@ -179,7 +179,7 @@
     "argType": "AiEmptyArgs",
     "kind": "query",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.status",
     "resultType": "AiStatusDto"
   },
@@ -187,7 +187,7 @@
     "argType": "AiEmptyArgs",
     "kind": "command",
     "longRunning": false,
-    "module": "Offline AI",
+    "module": "OpenFrame AI",
     "name": "ai.stop_runtime",
     "resultType": "()"
   },

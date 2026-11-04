@@ -639,7 +639,7 @@ pub fn execute(ctx: &ToolCtx<'_>, name: &str, args: &Value) -> AppResult<ToolOut
         }
         other => Err(AppError::ai(
             "unknown_tool",
-            "That isn't something the assistant can do yet.",
+            "That isn't something OpenFrame AI can do yet.",
         )
         .with_detail(format!("tool {other}"))),
     }
@@ -998,7 +998,7 @@ fn scene_fact(ctx: &ToolCtx<'_>, a: &SceneFactArgs) -> AppResult<ToolOutput> {
         other => {
             return Err(AppError::ai(
                 "unknown_tool",
-                "That isn't something the assistant can do yet.",
+                "That isn't something OpenFrame AI can do yet.",
             )
             .with_detail(format!("scene fact {other}")));
         }
@@ -1127,7 +1127,7 @@ fn dialogue_fact(ctx: &ToolCtx<'_>, a: &DialogueFactArgs) -> AppResult<ToolOutpu
                 other => {
                     return Err(AppError::ai(
                         "unknown_tool",
-                        "That isn't something the assistant can do yet.",
+                        "That isn't something OpenFrame AI can do yet.",
                     )
                     .with_detail(format!("dialogue fact {other}")));
                 }

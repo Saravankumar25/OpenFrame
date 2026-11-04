@@ -153,7 +153,7 @@ fn run() -> Result<(), String> {
         });
     if !bundle.join("runtimes").exists() {
         return Err(format!(
-            "no Offline AI engine in {}; run node scripts/prepare-ai-assets.mjs",
+            "no OpenFrame AI engine in {}; run node scripts/prepare-ai-assets.mjs",
             bundle.display()
         ));
     }
@@ -216,7 +216,7 @@ fn run() -> Result<(), String> {
     let recorder = Arc::new(Recorder {
         inner: svc
             .model()
-            .ok_or("the Offline AI is not available in this run")?,
+            .ok_or("OpenFrame AI is not available in this run")?,
         bodies: Mutex::new(Vec::new()),
         usage: Mutex::new(Usage::default()),
         chat_ms: Mutex::new(0),
@@ -312,7 +312,7 @@ fn run() -> Result<(), String> {
         ("Gold folder".to_string(), args.gold.display().to_string()),
         (
             "Model files".to_string(),
-            "the pinned Offline AI of packaging/ai/ai-assets.lock.json".to_string(),
+            "the pinned OpenFrame AI of packaging/ai/ai-assets.lock.json".to_string(),
         ),
         (
             "Build".to_string(),

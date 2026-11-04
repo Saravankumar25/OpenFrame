@@ -33,13 +33,13 @@ fn ask(g: &Gold, ctx: &mut Ctx, label: &str, text: &str, sections: Value) -> Val
 }
 
 pub fn run(g: &Gold, ctx: &mut Ctx) {
-    g.phase("Offline AI");
+    g.phase("OpenFrame AI");
     g.ok("ai.status", json!({}));
     g.ok("ai.download.status", json!({}));
     if !ctx.ai_enabled {
         ctx.facts.insert(
             "aiSkipped".into(),
-            json!("run with the AI build inputs present to include the Offline AI"),
+            json!("run with the AI build inputs present to include OpenFrame AI"),
         );
         return;
     }

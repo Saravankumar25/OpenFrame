@@ -40,7 +40,7 @@ pub const PREPARING_NOTICE: &str = "Preparing project context…";
 
 pub fn register(r: &mut Registry) {
     use crate::registry::{OperationMetadata as M, hidden as h};
-    r.module("Offline AI");
+    r.module("OpenFrame AI");
     r.query("ai.index_status", index_status_op).meta(
         M::read("State of the derived project-context index (current, updating, rebuilding…).")
             .hidden(h::MAINTENANCE),
@@ -181,7 +181,7 @@ pub fn retrieve(
     actor: &Actor,
     req: &RetrieveRequest,
 ) -> AppResult<ContextPacket> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     actor.require(Capability::View, "view this project")?;
     if req.query.chars().count() > MAX_QUERY_CHARS {
         return Err(AppError::invalid_input("That question is too long."));
@@ -327,7 +327,7 @@ fn index_rebuild_op(
     actor: &Actor,
     _: AiIndexArgs,
 ) -> AppResult<IndexRebuildStarted> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     actor.require(Capability::View, "view this project")?;
     core.project()?;
     let ix = intelligence::activate(core).ok_or_else(AppError::no_project_open)?;

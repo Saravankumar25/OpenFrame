@@ -91,7 +91,7 @@ pub fn prepare(i: &Input<'_>) -> AppResult<TurnMemory> {
     .unwrap_or_else(|e| {
         tracing::warn!(
             code = e.code_str(),
-            "the assistant's memory could not be read"
+            "OpenFrame AI's memory could not be read"
         );
         Vec::new()
     });
@@ -176,7 +176,7 @@ pub fn remember(
             request_id,
         )
     }) {
-        tracing::warn!(code = e.code_str(), "the assistant could not save a memory");
+        tracing::warn!(code = e.code_str(), "OpenFrame AI could not save a memory");
     }
 }
 
@@ -205,7 +205,7 @@ pub struct AiMemoryDeleteDto {
 }
 
 fn memory_list(core: &AppCore, actor: &Actor, _: super::AiEmptyArgs) -> AppResult<AiMemoryListDto> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     let s = core.project()?;
     Ok(AiMemoryListDto {
         entries: s.store.read(|c| long::list(c, &actor.user_id))?,
@@ -229,14 +229,14 @@ pub fn register(r: &mut Registry) {
     r.query("ai.memory_list", memory_list).meta(
         M::query(
             Capability::UseAi,
-            "What the assistant remembers about the user in this project (their own entries only).",
+            "What OpenFrame AI remembers about the user in this project (their own entries only).",
         )
         .hidden(h::AI_SELF),
     );
     r.command("ai.memory_delete", memory_delete).meta(
         M::command(
             Capability::UseAi,
-            "Make the assistant forget one of the user's remembered entries; the words are erased.",
+            "Make OpenFrame AI forget one of the user's remembered entries; the words are erased.",
         )
         .destructive()
         .irreversible()

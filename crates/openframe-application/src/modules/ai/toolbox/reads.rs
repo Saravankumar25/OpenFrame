@@ -1212,7 +1212,7 @@ fn package_history(ctx: &ToolCtx<'_>, _: &Value) -> AppResult<ToolOutput> {
         ));
     }
     Ok(o.detail(
-        "Opening, reviewing and applying packages stays in Packages (the assistant can't do it).",
+        "Opening, reviewing and applying packages stays in Packages (OpenFrame AI can't do it).",
     )
     .prov("Scope", "Package history"))
 }

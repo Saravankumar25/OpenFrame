@@ -335,7 +335,7 @@ impl AiManager {
                     tracing::warn!(
                         code = e.code_str(),
                         detail = e.detail.as_deref().unwrap_or(""),
-                        "the Offline AI is not usable"
+                        "OpenFrame AI is not usable"
                     );
                 }
                 let loaded = Loaded {
@@ -512,7 +512,7 @@ impl AiManager {
         tracing::error!(
             code = e.code_str(),
             detail = e.detail.as_deref().unwrap_or(""),
-            "the bundled Offline AI failed its check; AI stays off"
+            "the bundled OpenFrame AI failed its check; AI stays off"
         );
         *self.state.write() = (state_of(&e), Some(e.clone()));
         self.configure();
@@ -1268,7 +1268,7 @@ impl AiManager {
             }
             return Err(AppError::ai(
                 "remove_first",
-                "Remove OpenFrame AI in Settings, Offline AI, then download it again.",
+                "Remove OpenFrame AI in Settings, OpenFrame AI, then download it again.",
             )
             .with_detail("the active set of this version is damaged"));
         }

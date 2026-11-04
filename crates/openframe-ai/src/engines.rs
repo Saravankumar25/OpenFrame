@@ -273,7 +273,7 @@ impl EngineRegistry {
         if stopped > 0 {
             tracing::warn!(
                 stopped,
-                "stopped offline AI engines left running by an earlier session"
+                "stopped OpenFrame AI engines left running by an earlier session"
             );
         }
         self.write(&[]);

@@ -616,7 +616,7 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
     };
     if answered.shown == Shown::Abstained && t.read.group != Group::Chat {
         o.details.push(
-            "The assistant could not write a reliable answer, so this is what the project holds."
+            "OpenFrame AI could not write a reliable answer, so this is what the project holds."
                 .into(),
         );
     }
@@ -752,16 +752,16 @@ fn ask_without_section(
     );
     s.store
         .read(|c| records::load_exchange(c, actor, &request_id))?
-        .ok_or_else(|| AppError::internal("assistant exchange not recorded"))
+        .ok_or_else(|| AppError::internal("OpenFrame AI exchange not recorded"))
 }
 
 /// Handle one assistant request end to end.
 pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     // The assistant never runs on behalf of an applied Change Set (no recursive agents).
     if matches!(actor.origin, ActorOrigin::Ai { .. }) {
         return Err(AppError::permission_denied(
-            "start an assistant request from a proposal",
+            "start an OpenFrame AI request from a proposal",
         ));
     }
     let text = args.text.trim().to_string();
@@ -1102,7 +1102,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     );
     s.store
         .read(|c| records::load_exchange(c, actor, &request_id))?
-        .ok_or_else(|| AppError::internal("assistant exchange not recorded"))
+        .ok_or_else(|| AppError::internal("OpenFrame AI exchange not recorded"))
 }
 
 /// Record the path in the result's structured data, where the screen reads it.

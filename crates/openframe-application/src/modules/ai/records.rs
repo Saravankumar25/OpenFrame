@@ -13,7 +13,7 @@ use crate::store::{MutationMeta, Tx};
 /// Metadata for AI bookkeeping writes: the user's own AI history, not project edits
 /// (no undo step, no activity entry).
 pub fn ai_meta(action: &'static str) -> MutationMeta {
-    MutationMeta::new(action, "Assistant history", Capability::UseAi)
+    MutationMeta::new(action, "OpenFrame AI history", Capability::UseAi)
         .not_undoable()
         .quiet()
 }

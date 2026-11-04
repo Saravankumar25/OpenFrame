@@ -48,7 +48,7 @@ use crate::registry::Registry;
 use crate::store::MutationMeta;
 
 /// Why the assistant never reaches these operations (coverage matrix).
-pub const HIDDEN_REASON: &str = "Support diagnostics are user-initiated only (ADR-0021): the user reviews the bundle and saves it to a location they pick; the assistant never gathers, exports or sends diagnostics.";
+pub const HIDDEN_REASON: &str = "Support diagnostics are user-initiated only (ADR-0021): the user reviews the bundle and saves it to a location they pick; OpenFrame AI never gathers, exports or sends diagnostics.";
 
 pub fn register(r: &mut Registry) {
     use crate::registry::{FsEffect as Fs, OperationMetadata as M};
@@ -314,7 +314,7 @@ const NEVER_INCLUDED: [&str; 6] = [
     "Screenplay text, notes, comments and any other project content",
     "Project titles, file names and folder paths",
     "Names, contacts and e-mail addresses",
-    "Assistant questions and answers",
+    "OpenFrame AI questions and answers",
     "Passwords, keys and tokens",
     "Nothing is sent automatically. The bundle stays on this computer until you share it.",
 ];
@@ -342,7 +342,7 @@ const FILES: [(&str, &str); 6] = [
     ),
     (
         "ai-status.json",
-        "Offline AI status: available or not, bundle check, engine state and component versions. No folders or file paths.",
+        "OpenFrame AI status: available or not, bundle check, engine state and component versions. No folders or file paths.",
     ),
 ];
 
@@ -594,7 +594,7 @@ const KNOWN_MESSAGES: &[&str] = &[
     "could not record an automatic history point",
     "could not record diagnostics export activity",
     "could not record export activity",
-    "could not record the Offline AI check",
+    "could not record OpenFrame AI check",
     "could not recover an interrupted AI change set",
     "could not remove purged file; it was left in place",
     "could not roll back a partially applied AI change set",
@@ -612,12 +612,12 @@ const KNOWN_MESSAGES: &[&str] = &[
     "journal closed",
     "lexical retrieval failed; using scope and tools only",
     "mutation failed to persist",
-    "Offline AI could not initialise; the rest of OpenFrame is unaffected",
-    "offline AI runtime could not be placed in a kill-on-close job",
-    "offline AI runtime could not be restarted",
-    "offline AI runtime could not use its loopback port; starting again on a new port",
-    "offline AI runtime exited and will not be restarted automatically",
-    "offline AI runtime exited unexpectedly; restarting",
+    "OpenFrame AI could not initialise; the rest of OpenFrame is unaffected",
+    "OpenFrame AI runtime could not be placed in a kill-on-close job",
+    "OpenFrame AI runtime could not be restarted",
+    "OpenFrame AI runtime could not use its loopback port; starting again on a new port",
+    "OpenFrame AI runtime exited and will not be restarted automatically",
+    "OpenFrame AI runtime exited unexpectedly; restarting",
     "OpenFrame Studio starting",
     "operation",
     "operation failed",
@@ -633,7 +633,7 @@ const KNOWN_MESSAGES: &[&str] = &[
     "the AI engine place was chosen",
     "the AI trace could not find the request of a proposal",
     "the AI trace could not read the undo step",
-    "the bundled Offline AI failed its check; AI stays off",
+    "the bundled OpenFrame AI failed its check; AI stays off",
     "the engine did not start for the graphics card check",
     "the graphics card check could not be recorded",
     "the graphics card check could not run fully; the processor is used",
@@ -642,7 +642,7 @@ const KNOWN_MESSAGES: &[&str] = &[
     "the graphics card engine could not list devices",
     "the graphics card record could not be read; it starts again",
     "the test model source this build was made with is not valid; OpenFrame AI cannot be downloaded",
-    "the Offline AI is not usable",
+    "OpenFrame AI is not usable",
     "the OpenFrame AI download stopped",
     "an OpenFrame AI model file was imported",
     "an answer stayed in its first language after the verifier passes",
@@ -650,7 +650,7 @@ const KNOWN_MESSAGES: &[&str] = &[
     "the new OpenFrame AI set failed its health check; going back to the previous set",
     "the previous OpenFrame AI set could not be restored",
     "the previous OpenFrame AI set could not be removed yet",
-    "unloading offline AI model after inactivity",
+    "unloading OpenFrame AI model after inactivity",
     "WAL journal mode unavailable; continuing with fallback mode",
     "WebView2 runtime available",
     "WebView2 runtime not available",

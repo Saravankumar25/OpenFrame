@@ -69,7 +69,7 @@ use crate::core::{AppConfig, AppCore};
 use crate::registry::Registry;
 
 /// Why the assistant never sees these operations (published in the AI tool coverage matrix).
-pub const HIDDEN_REASON: &str = "Licence and free-trial status belong to the person at this computer and the release channel; the assistant never reads, restores or changes them.";
+pub const HIDDEN_REASON: &str = "Licence and free-trial status belong to the person at this computer and the release channel; OpenFrame AI never reads, restores or changes them.";
 
 pub fn register(r: &mut Registry) {
     use crate::registry::{FsEffect as Fs, OperationMetadata as M};

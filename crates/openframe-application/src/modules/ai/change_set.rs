@@ -66,7 +66,7 @@ pub fn require_human(actor: &Actor) -> AppResult<()> {
         ActorOrigin::Local => Ok(()),
         _ => Err(AppError::new(
             "permission.denied",
-            "Only you can review proposed changes, from the AI Assistant panel.",
+            "Only you can review proposed changes, from OpenFrame AI panel.",
         )
         .with_detail("change set review requires a local user action")),
     }
@@ -221,7 +221,7 @@ pub fn insert(
 /// Create a standalone Change Set (no AI request). Used by callers that build
 /// proposals programmatically; the AI orchestrator uses `insert` inside its own transaction.
 pub fn create(core: &AppCore, actor: &Actor, d: &ChangeSetDraft) -> AppResult<ChangeSetDto> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     let s = core.project()?;
     let id = s
         .store
@@ -913,7 +913,7 @@ pub mod fault {
 /// Rejecting leaves project content unchanged (AI-AC-008).
 pub fn reject(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto> {
     require_human(actor)?;
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     let s = core.project()?;
     let row = s.store.read(|c| load_row(c, actor, id))?;
     if !matches!(row.state.as_str(), "Pending" | "Stale" | "Conflict") {
@@ -941,7 +941,7 @@ pub fn reject(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto
 /// explicit review. Re-checking never applies anything.
 pub fn recheck(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto> {
     require_human(actor)?;
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     let s = core.project()?;
     let row = s.store.read(|c| load_row(c, actor, id))?;
     if !matches!(row.state.as_str(), "Pending" | "Stale" | "Conflict") {

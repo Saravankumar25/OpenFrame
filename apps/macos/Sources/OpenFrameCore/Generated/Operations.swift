@@ -534,76 +534,76 @@ public enum OperationName {
 }
 
 extension CoreInvoking {
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiAsk(_ args: AiAskArgs) async throws -> AiExchange { try await call("ai.ask", args) }
 
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiCancel(_ args: AiCancelArgs) async throws -> AiCancelDto { try await call("ai.cancel", args) }
 
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiChangeSetAccept(_ args: AiAcceptArgs) async throws -> AiChangeSetDto { try await call("ai.change_set.accept", args) }
 
-    /// Offline AI query.
+    /// OpenFrame AI query.
     public func aiChangeSetGet(_ args: AiChangeSetArgs) async throws -> AiChangeSetDto { try await call("ai.change_set.get", args) }
 
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiChangeSetRecheck(_ args: AiChangeSetArgs) async throws -> AiChangeSetDto { try await call("ai.change_set.recheck", args) }
 
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiChangeSetReject(_ args: AiChangeSetArgs) async throws -> AiChangeSetDto { try await call("ai.change_set.reject", args) }
 
-    /// Offline AI query.
+    /// OpenFrame AI query.
     public func aiDiagnostics(_ args: AiEmptyArgs = AiEmptyArgs()) async throws -> AiDiagnosticsDto { try await call("ai.diagnostics", args) }
 
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiDownloadImport(_ args: AiImportArgs) async throws -> AiImportResult { try await call("ai.download.import", args) }
 
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiDownloadPause(_ args: AiEmptyArgs = AiEmptyArgs()) async throws -> EmptyResult { try await call("ai.download.pause", args) }
 
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiDownloadRemove(_ args: AiEmptyArgs = AiEmptyArgs()) async throws -> EmptyResult { try await call("ai.download.remove", args) }
 
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiDownloadStart(_ args: AiEmptyArgs = AiEmptyArgs()) async throws -> EmptyResult { try await call("ai.download.start", args) }
 
-    /// Offline AI query.
+    /// OpenFrame AI query.
     public func aiDownloadStatus(_ args: AiEmptyArgs = AiEmptyArgs()) async throws -> AiDownloadDto { try await call("ai.download.status", args) }
 
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiExportConversation(_ args: AiConversationExportArgs) async throws -> AiReportResult { try await call("ai.export_conversation", args) }
 
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiExportReport(_ args: AiReportArgs) async throws -> AiReportResult { try await call("ai.export_report", args) }
 
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiGraphicsSet(_ args: AiGraphicsArgs) async throws -> EmptyResult { try await call("ai.graphics.set", args) }
 
-    /// Offline AI query.
+    /// OpenFrame AI query.
     public func aiHealth(_ args: AiHealthArgs = AiHealthArgs()) async throws -> AiHealthDto { try await call("ai.health", args) }
 
-    /// Offline AI query.
+    /// OpenFrame AI query.
     public func aiHistory(_ args: AiHistoryArgs) async throws -> AiHistoryDto { try await call("ai.history", args) }
 
-    /// Offline AI command, long running.
+    /// OpenFrame AI command, long running.
     public func aiIndexRebuild(_ args: AiIndexArgs = AiIndexArgs()) async throws -> AiIndexRebuildStarted { try await call("ai.index_rebuild", args) }
 
-    /// Offline AI query.
+    /// OpenFrame AI query.
     public func aiIndexStatus(_ args: AiIndexArgs = AiIndexArgs()) async throws -> AiIndexStatus { try await call("ai.index_status", args) }
 
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiMemoryDelete(_ args: AiMemoryDeleteArgs) async throws -> AiMemoryDeleteDto { try await call("ai.memory_delete", args) }
 
-    /// Offline AI query.
+    /// OpenFrame AI query.
     public func aiMemoryList(_ args: AiEmptyArgs = AiEmptyArgs()) async throws -> AiMemoryListDto { try await call("ai.memory_list", args) }
 
-    /// Offline AI query.
+    /// OpenFrame AI query.
     public func aiSections(_ args: AiSectionsArgs) async throws -> AiSections { try await call("ai.sections", args) }
 
-    /// Offline AI query.
+    /// OpenFrame AI query.
     public func aiStatus(_ args: AiEmptyArgs = AiEmptyArgs()) async throws -> AiStatusDto { try await call("ai.status", args) }
 
-    /// Offline AI command.
+    /// OpenFrame AI command.
     public func aiStopRuntime(_ args: AiEmptyArgs = AiEmptyArgs()) async throws -> EmptyResult { try await call("ai.stop_runtime", args) }
 
     /// Project command.

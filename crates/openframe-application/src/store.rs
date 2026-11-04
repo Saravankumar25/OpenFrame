@@ -60,7 +60,7 @@ impl MutationMeta {
             Capability::Import => "import into this project",
             Capability::ApplyChangeSet => "apply proposed changes",
             Capability::Export | Capability::CreatePackage => "export from this project",
-            Capability::UseAi => "use the assistant",
+            Capability::UseAi => "use OpenFrame AI",
             Capability::View => "view this project",
         };
         Self {

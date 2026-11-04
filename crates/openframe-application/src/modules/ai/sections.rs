@@ -1454,7 +1454,7 @@ pub struct SectionsDto {
 
 /// The tree for the picker, and the things an instance picker lists.
 pub fn sections_op(core: &AppCore, actor: &Actor, args: SectionsArgs) -> AppResult<SectionsDto> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     let s = core.project()?;
     s.store.read(|c| {
         let episodic = is_episodic(c)?;

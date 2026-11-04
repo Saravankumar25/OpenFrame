@@ -313,7 +313,7 @@ pub fn build(ctx: &BuildCtx<'_>, tool: &str, args: &Value) -> AppResult<ChangeSe
     let spec = spec(tool).ok_or_else(|| {
         AppError::ai(
             "unknown_tool",
-            "That isn't something the assistant can do yet.",
+            "That isn't something OpenFrame AI can do yet.",
         )
     })?;
     if !spec

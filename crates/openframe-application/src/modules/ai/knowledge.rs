@@ -30,8 +30,13 @@ fn words(s: &str) -> Vec<String> {
 
 /// The `n` sections most relevant to `question` (keyword overlap; titles weigh more).
 pub fn relevant(question: &str, n: usize) -> Vec<(&'static str, &'static str)> {
-    let mut q = words(question);
-    let asked = question.to_lowercase();
+    // Older names of the product still find its guide sections.
+    let asked = question
+        .to_lowercase()
+        .replace("offline ai", "openframe ai")
+        .replace("ai assistant", "openframe ai")
+        .replace("the assistant", "openframe ai");
+    let mut q = words(&asked);
     // "Who can do this" asks about roles, whatever the verb is.
     if asked.contains("who can") {
         q.extend(["role".to_string(), "permission".to_string()]);

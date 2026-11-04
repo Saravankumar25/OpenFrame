@@ -31,7 +31,7 @@ use crate::registry::Registry;
 use theme::{ContrastRow, DEFAULT_THEME_ID, MAX_NAME_CHARS, MAX_THEME_BYTES, Origin, Seeds, Theme};
 
 /// Why the assistant cannot call the other appearance operations (published in the AI tool coverage matrix).
-pub const HIDDEN_REASON: &str = "Changing appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; the assistant reads how the app looks but never changes it.";
+pub const HIDDEN_REASON: &str = "Changing appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; OpenFrame AI reads how the app looks but never changes it.";
 
 /// The table name the UI listens to for appearance changes.
 pub const TABLE: &str = "sys_appearance";
