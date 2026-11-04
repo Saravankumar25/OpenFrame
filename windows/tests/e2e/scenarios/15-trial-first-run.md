@@ -66,7 +66,7 @@ Before: an empty data folder of its own. The app is the internal test build (no 
 22. Check: Finish becomes enabled.
 23. Check: the screen is quiet.
 24. Click Finish.
-25. Check: the dialog "Welcome to the OpenFrame Studio family" shows with "Be a part of our community."
+25. Check: the dialog "Welcome to the Straft Studio family" shows with "Be a part of our community."
 26. Check: the screen is quiet.
 27. Click OK in the dialog.
 28. Check: the dialog closes.
@@ -116,7 +116,7 @@ Before: an empty data folder of its own. The app is the internal test build (no 
 ## The Mac first launch screen cannot be closed and shows no price
 
 1. Set the licence to Mac App Store, trial not started.
-2. Check: the dialog "Welcome to OpenFrame Studio" shows.
+2. Check: the dialog "Welcome to Straft Studio" shows.
 3. Check: the screen shows "7 days. Everything included. No credit card."
 4. Check: no price anywhere on the screen.
 5. Press Esc.

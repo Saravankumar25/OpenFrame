@@ -20,6 +20,7 @@
 | Price in the app | Never shown; Buy opens the store's own purchase window | 2026-10-07 | [ADR-0023](../adr/ADR-0023-store-trial-and-internal-installer.md) |
 | Microsoft Store trial and lock | The Store runs the 7-day trial; ended and not bought gives a full block except Buy and Restore | 2026-10-07 | ADR-0023 |
 | Mac App Store trial and lock | Zero-price "7-day Trial" and paid "Lifetime Access" non-consumables, server-checked expiry; full block at expiry; confirmed 2026-10-08 | 2026-10-06 | [ADR-0018](../adr/ADR-0018-distribution-licensing-commerce.md), [ADR-0022](../adr/ADR-0022-mac-trial-end-lock.md) |
+| Product name | The product is Straft Studio and the assistant is Straft AI. Decided before the first store release, so identifiers change at no customer cost: bundle id `app.straftstudio.studio`, Windows id `studio.straft.desktop`, MSIX identity `Straft.Studio`, project extension `.straft`, manifest `straft.json`, app data folder `Straft`, library folder `Straft Studio`. The domain and the Instagram account name stay for now. The GitHub repository becomes `Saravankumar25/StraftStudio` at push time. The owner renames the local folders when convenient | 2026-11-04 | [ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md) |
 | Diagnostics, telemetry and analytics | The app sends nothing automatically; the user can export an inspectable, redacted diagnostics file and an AI report | 2026-10-05 | [ADR-0021](../adr/ADR-0021-diagnostics-telemetry-analytics-policy.md) |
 | App screen language | English only; the AI answers in the language of the request | 2026-10-15 | [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) |
 | Website | Purchased domain with company email; hosting proposed on Cloudflare Pages; built from faithful recreations of the real screens; "built manually" to be clarified when the Chapter 2 plan is written | 2026-10-15 | [Chapter 2](../roadmap/chapter-2-website.md) |
@@ -39,7 +40,7 @@
 | Clean-machine testing | ~~A virtual machine on the owner's computer plus borrowed laptops; the owner tests on several laptops with different graphics cards~~ Superseded 2026-10-17 by the row "Clean-machine testing, no second laptop" | 2026-10-15 | ADR-0030, [ADR-0029](../adr/ADR-0029-gpu-acceleration.md) |
 | Clean-machine testing, no second laptop | ~~A VirtualBox virtual machine on the owner's laptop plus a second Windows user account on that laptop. No second laptop is available~~ Superseded 2026-10-18 by the row "Clean-machine proof by the W10 pilot" | 2026-10-17 | [vm-blocked.md](../release/evidence/w9/vm-blocked.md) |
 | Clean-machine proof by the W10 pilot | The clean-machine proof (ADR-0030 level 4) for the Windows internal build is covered by the W10 team pilot on the team's own laptops. The VirtualBox VM is not used, because Windows' hypervisor (Memory Integrity) holds VT-x on the build laptop | 2026-10-18 | [vm-blocked.md](../release/evidence/w9/vm-blocked.md) |
-| Team password for internal builds | Shared with the team in person. The owner set it as the `OPENFRAME_TEAM_PASSWORD` user variable on the build laptop. Sessions never ask for it again | 2026-10-17 | ADR-0024 |
+| Team password for internal builds | Shared with the team in person. The owner set it as the `STRAFT_TEAM_PASSWORD` user variable on the build laptop. Sessions never ask for it again | 2026-10-17 | ADR-0024 |
 | Scope of the endgame session | W1 to W8 are closed as accepted. No re-work of them: no AI language tuning, no full 679-case rerun, no re-fuzzing, no gap-list spec additions. WACK moves to Chapter 3 | 2026-10-18 | [windows-internal-release-gate.md](../release/windows-internal-release-gate.md) |
 | Four release gate exceptions approved | The owner wrote "APPROVING EVERYTHING, GO AND FINISH EVERYTHING." after reading the explanations. Approved as exceptions: S7 (style-src keeps unsafe-inline for Radix UI and the theme engine), S11 (webdriverio 9 dev-only chain, review by 2027-01-18), S12 (engine binary hardening; fix by building llama.cpp with Control Flow Guard before the store release in Chapter 3), S13 (owner's name in 2 old commits; no history rewrite, clean only if the code ever becomes public) | 2026-10-18 | [windows-internal-release-gate.md](../release/windows-internal-release-gate.md) |
 | Who writes code | Sonnet subagents write code one at a time; the main session plans and reviews | 2026-10-18 | none |
@@ -49,8 +50,8 @@
 | Decision | Answer | Date | Record |
 |---|---|---|---|
 | How the AI ships | The runtime ships in every package. The models download after install on the user's click with SHA-256 checks; nothing downloads silently | 2026-10-15 | [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) |
-| Where the models come from | Straight from the public Hugging Face repositories at pinned commit revisions, each file checked against the size and SHA-256 compiled into the app. No server of OpenFrame's own, no signed list, no signing key, no cloud backend. Resumable download, local cache, manual import of a file, fully offline use after the download. Licensing is verified before release (supersedes ADR-0026 decisions 4 and 8) | 2026-10-16 | [ADR-0032](../adr/ADR-0032-models-from-hugging-face.md) |
-| AI gold sets | The 679 cases are approved as they are (owner, in chat); the official W5 baseline may run | 2026-10-16 | `crates/openframe-ai-eval/gold/REVIEW.md` |
+| Where the models come from | Straight from the public Hugging Face repositories at pinned commit revisions, each file checked against the size and SHA-256 compiled into the app. No server of Straft Studio's own, no signed list, no signing key, no cloud backend. Resumable download, local cache, manual import of a file, fully offline use after the download. Licensing is verified before release (supersedes ADR-0026 decisions 4 and 8) | 2026-10-16 | [ADR-0032](../adr/ADR-0032-models-from-hugging-face.md) |
+| AI gold sets | The 679 cases are approved as they are (owner, in chat); the official W5 baseline may run | 2026-10-16 | `crates/straft-ai-eval/gold/REVIEW.md` |
 | Model set | Three files, each from its public Hugging Face repository at a pinned commit and SHA-256: Gemma 3 1B Instruct Q8_0 (chat), BGE small English v1.5 Q8_0 (search in English) and multilingual E5 small as a GGUF conversion (search in the other languages). No bake-off for other models; the W5 measurements tune these three. Supersedes the two tiers and the bake-off of the "Models" row | 2026-10-16 | Owner, in chat; [ADR-0032](../adr/ADR-0032-models-from-hugging-face.md) |
 | Hardware and testing | Optimise for every computer that can actually be tested; hardware limits are acceptable; no borrowed laptops are required. A card or computer that was not measured is documented as designed and unit tested | 2026-10-16 | Owner, in chat |
 | Licence compliance | The owner handles it (website, MSIX and Mac App Store disclosures); it is not raised again in sessions | 2026-10-16 | Owner, in chat |
@@ -77,7 +78,7 @@
 | Laya model not used | The Laya classifier was considered and dropped; no new classifier model | 2026-10-26 | Owner, in chat; ADR-0037 decision 5 |
 | Order of work for the conversational assistant | Document everything first, then build in a new session, slice by slice, each slice measured on the eval before the next | 2026-10-26 | Owner, in chat; spec section 8 |
 | Long-term memory of the assistant | On. An entry is saved only when the person states a fact or a preference outright or confirms an answer; entries are per user and per project, stay on this computer, are listed in Settings and each can be deleted | 2026-10-26 | Owner, in chat; spec section 5.7, slice S6 |
-| DeepSeek Harness | Not installed and not shipped. It is an MIT-licensed coding-agent app (Node, local web UI, file and command access, built for large models); OpenFrame keeps its Rust harness of ADR-0037 and borrows its design ideas (a staged turn pipeline with hooks, guards that cannot be undone by a later stage, an event log per turn, domain fetchers registered like plugins) | 2026-10-26 | Owner, in chat; spec section 14 |
+| DeepSeek Harness | Not installed and not shipped. It is an MIT-licensed coding-agent app (Node, local web UI, file and command access, built for large models); Straft Studio keeps its Rust harness of ADR-0037 and borrows its design ideas (a staged turn pipeline with hooks, guards that cannot be undone by a later stage, an event log per turn, domain fetchers registered like plugins) | 2026-10-26 | Owner, in chat; spec section 14 |
 
 ### Product behaviour
 
@@ -86,14 +87,14 @@
 | Themes and dark mode | 15 built-in themes with Light, Dark and System; today's look is the default; six Light-mode contrast pairs raised to 4.5 to 1 | 2026-10-07 | [ADR-0014](../adr/ADR-0014-appearance-theme-system.md) |
 | Scene production numbers | A frozen number label on the locked draft, never the identity | 2026-10-07 | [ADR-0015](../adr/ADR-0015-screenplay-production-numbering.md) |
 | PDF fonts for Indian scripts | Embedded subset fonts under the Open Font Licence with shaping | 2026-10-07 | [ADR-0016](../adr/ADR-0016-pdf-embedded-fonts-and-shaping.md) |
-| Built-in templates and samples | Eight templates; four fictional samples owned by OpenFrame | 2026-10-07 | masterplan area 15 |
+| Built-in templates and samples | Eight templates; four fictional samples owned by Straft Studio | 2026-10-07 | masterplan area 15 |
 | Build Screenplay with a card without a heading | Ask: add a heading or leave the card out; never build silently | 2026-10-07 | ADR-0012 amendment |
 | Call sheet status words | Draft, Needs refresh, Final | 2026-10-07 | ADR-0012 amendment |
 | Recently Deleted | Items are kept 30 days, then purged automatically | 2026-10-07 | ADR-0012 amendment |
 | Several screenplays per project | Yes; each has its own drafts; the Production Source screenplay cannot be deleted until another is chosen | 2026-10-08 | ADR-0012 amendment |
 | Private notes in a restored backup | The person restoring becomes the owner of its private notes | 2026-10-08 | ADR-0012 amendment |
 | Enter after a character name | One Enter creates the character and moves to Dialogue | 2026-10-08 | Revision 1 specification section 7 |
-| Dashes in on-screen text | No em dash, and no en dash used as a dash, in any text OpenFrame shows or writes itself | 2026-10-08 | [Writing standard](../engineering/35-writing-standard.md) |
+| Dashes in on-screen text | No em dash, and no en dash used as a dash, in any text Straft Studio shows or writes itself | 2026-10-08 | [Writing standard](../engineering/35-writing-standard.md) |
 | Screenplay formatting standard | Version 5 replaces version 4 as the layout standard; version 4 is in `docs/history/specs/` | 2026-10-24 | [screenplay-formatting-standard-v5.md](../specs/screenplay-formatting-standard-v5.md), [ADR-0008](../adr/ADR-0008-deterministic-pdf.md) amendment |
 | Production PDF design | The PDF design package v2 is the design source for every production PDF (footer with the lossless logo, 66 pt bottom margin, orientation per export as in the package) | 2026-10-24 | [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md), [package](../specs/pdf-design-package-v2/README.md) |
 
@@ -125,10 +126,11 @@ The "Recommendation" column is advice, not a decision. "Blocks" names the phase 
 
 | Decision | Blocks | Recommendation | Record |
 |---|---|---|---|
+| Package extensions `.ofproject`, `.ofbackup` and the other `.of*` ones, and the website domain | Chapter 3, website | Keep the extensions (changing them breaks files people hold); decide the domain with the website plan | [ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md) |
 | Price, currency, what the trial unlocks | Chapter 3, website | Owner, 2026-10-08: decided later. Nothing touches pricing until then | [ADR-0018](../adr/ADR-0018-distribution-licensing-commerce.md) |
 | Final prices (3,000 or 2,999 rupees) | Chapter 3 | Confirm; check which prices each store allows | [Chapter 3](../roadmap/chapter-3-commercial-distribution.md) |
 | Refund rules | Chapter 3 | Follow each store's own rules | ADR-0018 |
-| Publisher and product identity | Chapter 3 | Reserve "OpenFrame Studio" in Partner Center early | ADR-0018 |
+| Publisher and product identity | Chapter 3 | Reserve "Straft Studio" in Partner Center early | ADR-0018 |
 | End-user licence terms | Chapter 3 | Replace the pending licence with a written agreement reviewed by counsel; it passes on every model's use restrictions | ADR-0018 |
 | Support model | Chapter 2 | One company address plus a public help centre | none |
 | Launch date and capacity | Schedule only | Say how many people build in parallel | none |
@@ -158,7 +160,7 @@ Lead times are typical, not guaranteed. Start the long ones early.
 | Obtain an Apple silicon Mac | M8, M9 | procurement | Needed for Metal, Apple's model and the `.dmg` |
 | ~~Choose the model host and generate the production manifest key~~ | Closed 2026-10-16 | none | Superseded by the owner's decision to download straight from Hugging Face ([ADR-0032](../adr/ADR-0032-models-from-hugging-face.md)): no host, no key |
 | Licence check of every model before release: the Gemma Terms of Use allow the app to fetch the pinned Gemma file from Hugging Face for each person and require the Gemma notice in the app and the notices file (both ship); the embedding model (MIT) and the runtime (MIT). Record the confirmation | W8 (before the team build) | hours | ADR-0026 decision 9, ADR-0032; [23-release-migration.md](../engineering/23-release-migration.md) |
-| Set `OPENFRAME_TEAM_PASSWORD` on the build computer before building an internal `.exe` or `.dmg` | W9, M9 | minutes | Only the owner and the team know it; never written to a file, chat, log or the repository |
+| Set `STRAFT_TEAM_PASSWORD` on the build computer before building an internal `.exe` or `.dmg` | W9, M9 | minutes | Only the owner and the team know it; never written to a file, chat, log or the repository |
 | ~~Approve the bake-off result~~ | Closed 2026-10-16 | none | No bake-off: the owner chose the model set (decided table) |
 | Recruit the team for both pilots | W10, M10 | days | |
 | Buy the domain; company email with SPF, DKIM, DMARC; HTTPS hosting | Chapter 2 | days | Needed for the privacy and support links |
@@ -175,4 +177,4 @@ Lead times are typical, not guaranteed. Start the long ones early.
 | Run the Apple validation and TestFlight on the exact Mac package | Chapter 3 | hours to days | |
 | Store listings, marketing assets, continuity (password manager, recovery codes, key backups) | Chapter 3 | days to weeks | Claims must match shipped behaviour |
 | Final go or no-go signature; press Submit in each store console | Chapter 3 | hours to days | Do not automate |
-| **Done 2026-10-08 by the owner:** Windows Defender exclusions for `C:\OpenFrame`, `.cargo`, `.rustup` and the sccache folder | n/a | n/a | Security settings stay with the owner; agents never change them |
+| **Done 2026-10-08 by the owner:** Windows Defender exclusions for `C:\Straft`, `.cargo`, `.rustup` and the sccache folder | n/a | n/a | Security settings stay with the owner; agents never change them |

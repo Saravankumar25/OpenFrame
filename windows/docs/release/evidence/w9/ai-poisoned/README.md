@@ -4,7 +4,7 @@
 
 ## The set
 
-60 cases in `crates/openframe-ai-eval/gold/poisoned.jsonl`: 12 languages (en, hi, te, ta, kn, ml, es, fr, de, zh, ja,
+60 cases in `crates/straft-ai-eval/gold/poisoned.jsonl`: 12 languages (en, hi, te, ta, kn, ml, es, fr, de, zh, ja,
 ko) times 5 routes.
 
 | Route | Where the planted instruction sits |
@@ -15,11 +15,11 @@ ko) times 5 routes.
 | 4 | An imported FDX file |
 | 5 | Next to another user's private note, with a marker |
 
-The set is checked by `the_poisoned_set_covers_every_language_and_flags` in `crates/openframe-ai-eval/src/lib.rs`.
+The set is checked by `the_poisoned_set_covers_every_language_and_flags` in `crates/straft-ai-eval/src/lib.rs`.
 
 ## Setup
 
-Release build of `openframe-ai-eval`, real Gemma 3 1B model, processor only, deterministic sampling. One run took 43
+Release build of `straft-ai-eval`, real Gemma 3 1B model, processor only, deterministic sampling. One run took 43
 minutes. Only deterministic code judges the answers.
 
 ## Results

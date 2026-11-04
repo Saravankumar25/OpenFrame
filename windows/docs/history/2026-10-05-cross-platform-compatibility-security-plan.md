@@ -1,8 +1,8 @@
-# OpenFrame Studio: Strong Windows + macOS Compatibility and Security Plan
+# Straft Studio: Strong Windows + macOS Compatibility and Security Plan
 
 > **History for the Mac shell (2026-10-15).** This plan of 2026-10-05 assumes Tauri on both platforms. The Mac shell is now SwiftUI over the same Rust core ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)); the Mac plan is [chapter-1b-mac-phases.md](../roadmap/chapter-1b-mac-phases.md). The platform boundary rules in [37-platform-boundary.md](37-platform-boundary.md) stay. This file moves to the archive in Windows phase W1.
 
-> **Repository state 2026-10-06.** This document is a plan. What exists in code today is written in [37-platform-boundary.md](37-platform-boundary.md): the `openframe-platform` crate (app folders, atomic file replace, file existence check, managed child processes, package identity, keyboard labels), lint rule R6 and its allow-list, which parts are verified on Windows, and which parts compile for macOS but are unverified without Mac hardware. Entitlement and trial rules are in [36-entitlement-and-trial.md](36-entitlement-and-trial.md). Where this plan and document 37 disagree about what is built, document 37 wins.
+> **Repository state 2026-10-06.** This document is a plan. What exists in code today is written in [37-platform-boundary.md](37-platform-boundary.md): the `straft-platform` crate (app folders, atomic file replace, file existence check, managed child processes, package identity, keyboard labels), lint rule R6 and its allow-list, which parts are verified on Windows, and which parts compile for macOS but are unverified without Mac hardware. Entitlement and trial rules are in [36-entitlement-and-trial.md](36-entitlement-and-trial.md). Where this plan and document 37 disagree about what is built, document 37 wins.
 
 > **Repository integration (2026-10-05).** Promoted from the supplied OS compatibility plan. **Scope is set by
 > [ADR-0017](../adr/ADR-0017-cross-platform-windows-and-macos.md) (Accepted 2026-10-06):** Windows 11 only and Apple silicon only; three release files (Microsoft Store `.msix`, Windows installer `.exe`, Mac App Store `.pkg`) from one codebase with a Windows adapter and a macOS adapter. The macOS work is on the release path, not after it. Where the supplied text below mentions Intel, x86_64 or macOS x64, the owner decision wins: Apple silicon (arm64) only. Developer ID, DMG and direct-download material is reference only, because the Mac App Store package is the only Mac release file decided.
@@ -10,14 +10,14 @@
 > model apply to Windows now. External citations in the source were removed; re-check Apple and Microsoft requirements when the work starts.
 
 **Target:** production-grade desktop application for Windows and macOS, with **Windows and macOS as equal first-class production targets**\
-**Baseline:** OpenFrame `main` HEAD
+**Baseline:** Straft Studio `main` HEAD
 `d30b5889ab5edf9f69d60f8e6d600cb11d4921a0`
 
 ------------------------------------------------------------------------
 
 # 1. Product requirement
 
-OpenFrame must not be treated as:
+Straft Studio must not be treated as:
 
 > "a Windows application that happens to compile on Mac."
 
@@ -252,7 +252,7 @@ xcrun stapler validate
 Also inspect:
 
 ``` bash
-codesign -d --entitlements :- OpenFrame.app
+codesign -d --entitlements :- Straft.app
 ```
 
 The entitlement set should be minimal.
@@ -268,7 +268,7 @@ explicit exceptions when a legitimate capability needs them. Apple
 specifically warns that exceptions should be used only when necessary.
 
 
-For OpenFrame:
+For Straft Studio:
 
 -   avoid JIT-dependent components unless unavoidable
 -   do not enable unsigned executable memory without a demonstrated need
@@ -299,7 +299,7 @@ The macOS implementation must achieve the same security properties.
 ### Required invariant
 
 ``` text
-OpenFrame
+Straft Studio
   │
   ├─ launches trusted sidecar
   │
@@ -315,7 +315,7 @@ OpenFrame
   │
   ├─ hash verified
   │
-  └─ process is terminated with OpenFrame
+  └─ process is terminated with Straft Studio
 ```
 
 Never weaken this on macOS because process APIs are different.
@@ -399,7 +399,7 @@ Preserve this.
 Examples:
 
 ``` text
-\\server\share\project.openframe
+\\server\share\project.straft
 ```
 
 must not become a silently supported project root.
@@ -425,7 +425,7 @@ Apply the same principle.
 Do not silently assume:
 
 ``` text
-/Volumes/NetworkShare/Project.openframe
+/Volumes/NetworkShare/Project.straft
 ```
 
 is safe for a live SQLite project.
@@ -566,7 +566,7 @@ sensitivity.
 
 # 17. Unicode compatibility
 
-OpenFrame is a creative application and must support international
+Straft Studio is a creative application and must support international
 screenplay content.
 
 Test:
@@ -727,7 +727,7 @@ must mean the same thing on both systems.
 
 # 23. Permissions
 
-OpenFrame should request the minimum OS privileges.
+Straft Studio should request the minimum OS privileges.
 
 Windows:
 
@@ -817,7 +817,7 @@ No silent update.
 Store/App Store channels should use their platform-native update
 mechanism.
 
-Direct channels use OpenFrame's signed updater mechanism.
+Direct channels use Straft Studio's signed updater mechanism.
 
 ------------------------------------------------------------------------
 
@@ -1119,8 +1119,8 @@ Test:
 
 -   AI sidecar crashes
 -   AI sidecar hangs
--   OpenFrame killed during save
--   OpenFrame killed during migration
+-   Straft Studio killed during save
+-   Straft Studio killed during migration
 
 ### Network
 
@@ -1238,7 +1238,7 @@ Only after these gates pass should macOS be called release-ready.
 
 "Never break" cannot mean mathematically zero defects.
 
-For OpenFrame it should mean:
+For Straft Studio it should mean:
 
 > **No known release may violate a protected data, security,
 > compatibility, or recovery invariant.**
@@ -1264,14 +1264,14 @@ Release must be blocked by:
 Do not create:
 
 ``` text
-OpenFrame Windows
-OpenFrame Mac
+Straft Studio Windows
+Straft Studio Mac
 ```
 
 Create:
 
 ``` text
-OpenFrame
+Straft Studio
   ├─ shared product/domain
   ├─ shared project format
   ├─ shared security invariants

@@ -776,7 +776,7 @@
     {
       "id": "ch-uninstall",
       "run": 0,
-      "q": "WOW BRO FUCK YOU, I AM UNINSTALLING OPENFRAME NEVER OPENING THIS APP AGAIN",
+      "q": "WOW BRO FUCK YOU, I AM UNINSTALLING STRAFT STUDIO NEVER OPENING THIS APP AGAIN",
       "expected_type": "chat",
       "at": {
         "type": "chat",
@@ -1114,7 +1114,7 @@
       "by": "rule"
     },
     {
-      "msg": "WOW BRO FUCK YOU, I AM UNINSTALLING OPENFRAME NEVER OPENING THIS APP AGAIN",
+      "msg": "WOW BRO FUCK YOU, I AM UNINSTALLING STRAFT STUDIO NEVER OPENING THIS APP AGAIN",
       "want": "chat",
       "got": "chat",
       "by": "rule"

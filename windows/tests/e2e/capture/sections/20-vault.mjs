@@ -518,7 +518,7 @@ export default async function (t) {
   // ----------------------------------------------- the item that is not there
 
   await b.execute(() =>
-    sessionStorage.setItem("openframe.route", JSON.stringify({ workspace: "vault", params: { itemId: "00000000-0000-4000-8000-000000000000" } })),
+    sessionStorage.setItem("straft.route", JSON.stringify({ workspace: "vault", params: { itemId: "00000000-0000-4000-8000-000000000000" } })),
   );
   await b.refresh();
   await b.$('//nav[@aria-label="Workspaces"]').waitForExist({ timeout: 30_000 });

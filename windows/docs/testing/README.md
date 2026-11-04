@@ -57,7 +57,7 @@ Counted and read on 2026-10-09:
 The aim: a small change must not rebuild and retest everything.
 
 1. While coding: run the tests of the crate and file you touched, through the build queue
-   (`node scripts/cargo-queued.mjs test -p openframe-application --test <file>`), and Vitest for the screen.
+   (`node scripts/cargo-queued.mjs test -p straft-application --test <file>`), and Vitest for the screen.
 2. Before committing: `npm run check:governance` (seconds) and `cargo fmt --check`.
 3. Before merging a branch: format, clippy, all Rust tests, typecheck, lint, Vitest, governance. One run, not several.
 4. After a set of areas: one full E2E run on the merged branch, then tick plan boxes with evidence.
@@ -70,7 +70,7 @@ reasons are in [development-storage-policy.md](../development-storage-policy.md)
 
 - The invented demo project "Night Bus" is created by `01-journey.test.mjs` and reused by the restart, visual and
   reachability specs.
-- Four OpenFrame-owned sample scripts live in `templates/samples/` and are compiled into the app.
+- Four Straft Studio-owned sample scripts live in `templates/samples/` and are compiled into the app.
 - The 13-class Final Draft fixture suite is in `tests/fixtures/fdx-suite/`.
 - Never use a real person's script in tests or screenshots.
 

@@ -1,7 +1,7 @@
 # Session 2 end-to-end run: evidence of 2026-10-08
 
 Branch `session-2`, starting at `900f245`. Windows 11 machine of the owner, debug build from the shared Cargo
-target `C:\OpenFrame\.build-cache\target`, real bundled Offline AI (Gemma 3 1B chat model and BGE embedding model)
+target `C:\Straft\.build-cache\target`, real bundled Offline AI (Gemma 3 1B chat model and BGE embedding model)
 with deterministic sampling. No release or installer build was run.
 
 ## 1. Result
@@ -175,7 +175,7 @@ No other screen changed. The docked panel is not part of any baseline screen.
 
 The hits left in `app` and `crates` are test fixtures that stand for text people write (scene headings, draft
 names, captions), parsers that accept every dash a writer may type, developer comments, migration comments and test
-panic messages. No user-visible string OpenFrame builds keeps an em dash or a spaced en dash.
+panic messages. No user-visible string Straft Studio builds keeps an em dash or a spaced en dash.
 
 ### Other checks at the end
 

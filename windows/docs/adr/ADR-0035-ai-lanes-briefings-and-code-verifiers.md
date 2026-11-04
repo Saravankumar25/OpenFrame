@@ -2,7 +2,7 @@
 
 - **Status:** Accepted 2026-10-24 (owner, in chat, answers to the questions in section 15 of the harness plan; recorded in
   [owner-decisions.md](../implementation/owner-decisions.md)). Built on the branch `upgrade/harness-exports-screenplay`.
-  Measured results are not in yet: the held-out and conversation benches exist (`crates/openframe-ai-eval`), the first
+  Measured results are not in yet: the held-out and conversation benches exist (`crates/straft-ai-eval`), the first
   full run on the new lanes is still to be made. Nothing below is claimed as faster or more accurate until that run is saved.
 - **Date:** 2026-10-24
 - **Superseded in part 2026-10-26:** decision 1 (code picks one of five answer lanes for every question) by

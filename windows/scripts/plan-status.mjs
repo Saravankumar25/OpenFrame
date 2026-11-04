@@ -15,8 +15,8 @@ import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
 
-const ROOT = process.env.OPENFRAME_CHECK_ROOT
-  ? path.resolve(process.env.OPENFRAME_CHECK_ROOT)
+const ROOT = process.env.STRAFT_CHECK_ROOT
+  ? path.resolve(process.env.STRAFT_CHECK_ROOT)
   : path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
 const PLAN = "docs/implementation/masterplan.md";
 const LATER_TAG = "(Later: store publishing)";

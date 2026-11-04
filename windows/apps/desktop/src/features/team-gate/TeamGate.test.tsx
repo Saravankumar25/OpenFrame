@@ -41,10 +41,10 @@ describe("Team password gate", () => {
     renderWithClient(<TeamGate><p>The app</p></TeamGate>);
     const input = await screen.findByLabelText("Team password");
     expect(screen.queryByText("The app")).not.toBeInTheDocument();
-    expect(screen.getByText(/internal build of OpenFrame Studio for the team/)).toBeInTheDocument();
+    expect(screen.getByText(/internal build of Straft Studio for the team/)).toBeInTheDocument();
 
     await user.type(input, "wrong one");
-    await user.click(screen.getByRole("button", { name: "Open OpenFrame Studio" }));
+    await user.click(screen.getByRole("button", { name: "Open Straft Studio" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("4 tries left before a wait");
     expect(unlock).toHaveBeenCalledWith({ password: "wrong one" });
     expect(screen.getByLabelText("Team password")).toHaveValue("");
@@ -59,7 +59,7 @@ describe("Team password gate", () => {
     renderWithClient(<TeamGate><p>The app</p></TeamGate>);
     expect(await screen.findByText("Next try in 1:05.")).toBeInTheDocument();
     expect(screen.getByLabelText("Team password")).toBeDisabled();
-    expect(screen.getByRole("button", { name: "Open OpenFrame Studio" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Open Straft Studio" })).toBeDisabled();
     expect(waitClock(9)).toBe("0:09");
     expect(waitClock(1800)).toBe("30:00");
   });

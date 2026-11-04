@@ -7,7 +7,7 @@
 //   - a secret pattern from scripts/lib/secret-rules.mjs;
 //   - a personal path (C:\Users\<name>, /Users/<name>, /home/<name>), which leaks the builder's name and folders;
 //   - the build computer's user name anywhere;
-//   - the team password in plain text, when OPENFRAME_TEAM_PASSWORD is set (only its hash may be embedded).
+//   - the team password in plain text, when STRAFT_TEAM_PASSWORD is set (only its hash may be embedded).
 // A compressed installer hides its payload, so run it on the unpacked release folder as well as on the installer.
 // Findings name the file, the rule and the byte offset, never the matched text.
 
@@ -20,8 +20,8 @@ import { lineHits } from "./lib/secret-rules.mjs";
 const MAX_BYTES = 400 * 1024 * 1024;
 const MIN_RUN = 6;
 const PERSONAL_PATH = /[A-Za-z]:[\\/]{1,2}Users[\\/]{1,2}(?!(?:Public|Default|All Users|runneradmin)[\\/])[^\\/\s"]+|\/Users\/(?!Shared\/)[^/\s"]+|\/home\/[^/\s"]+/i;
-const user = (process.env.OPENFRAME_SCAN_USER ?? os.userInfo().username ?? "").trim();
-const password = process.env.OPENFRAME_TEAM_PASSWORD ?? "";
+const user = (process.env.STRAFT_SCAN_USER ?? os.userInfo().username ?? "").trim();
+const password = process.env.STRAFT_TEAM_PASSWORD ?? "";
 
 const targets = process.argv.slice(2);
 if (targets.length === 0) {

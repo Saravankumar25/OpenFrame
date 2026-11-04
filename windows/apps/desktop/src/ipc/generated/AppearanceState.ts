@@ -8,7 +8,7 @@ export type AppearanceState = { mode: AppearanceMode,
  */
 themeId: string, 
 /**
- * Set when the saved theme could not be used and OpenFrame Default is shown instead.
+ * Set when the saved theme could not be used and Straft Default is shown instead.
  */
 fallbackNotice: string | null, 
 /**

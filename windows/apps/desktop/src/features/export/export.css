@@ -1,4 +1,4 @@
-/* Document Export dialog (mocks 072, 122, 139, 147–149). Reuses openframe.css
+/* Document Export dialog (mocks 072, 122, 139, 147–149). Reuses straft.css
    primitives; only layout specific to this dialog lives here. */
 
 .exp-source { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }

@@ -1,7 +1,7 @@
 # Clean-machine proof (level 4)
 
 This proves the Windows installer on a computer that has never seen the project. It runs in the
-VirtualBox guest `OpenFrame-W9-Clean`, restored from its `clean` snapshot (Windows 11, no developer
+VirtualBox guest `Straft-W9-Clean`, restored from its `clean` snapshot (Windows 11, no developer
 tools, no Visual C++ runtime installed for the whole machine). The host drives the installed app
 through WebDriver, so nothing for testing is installed in the guest except two small driver programs.
 
@@ -17,7 +17,7 @@ Microsoft Defender. Then the steps run in this order:
 3. `upgrade`: install the final build (995bfac) over it; the project must survive.
 4. `gate-bypass`: edit settings files and registry keys to try to skip the password screen. It must
    still show. Everything is restored afterwards.
-5. `ai-download`: download OpenFrame AI, then cut the network and ask a question.
+5. `ai-download`: download Straft AI, then cut the network and ask a question.
 6. `offline-export-backup`: with no network, export a PDF, make a backup, restore it as a copy.
 7. `power-loss`: type a line, pull the virtual power cord, start again, check the line.
 8. `uninstall-keeps-projects`: run the real uninstaller; projects must stay.
@@ -38,7 +38,7 @@ Options: `--offline link|firewall|auto`. The default `auto` takes the virtual ne
 test connection then stops answering, it blocks outgoing traffic with a guest firewall rule instead.
 
 Secrets are read when needed and never printed: the guest account password from
-`C:\w9-vm\guest-account.txt`, the team password from `OPENFRAME_TEAM_PASSWORD` (or the Windows User
+`C:\w9-vm\guest-account.txt`, the team password from `STRAFT_TEAM_PASSWORD` (or the Windows User
 variable of the same name).
 
 ## Where the evidence goes

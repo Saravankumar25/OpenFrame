@@ -2,7 +2,7 @@ M1.23 Network-location policy refuses mapped network drives and paths that resol
 Date: 2026-10-05. Machine: Windows 11 Home 10.0.26200. Working tree on master (uncommitted).
 
 Changes
-- crates/openframe-security/src/lib.rs
+- crates/straft-security/src/lib.rs
   - drive_kind(letter): GetDriveTypeW (DRIVE_REMOTE = 4). Declared with extern "system" like util.rs and
     distribution.rs, so no Cargo.toml or Cargo.lock change and no new windows-crate feature. One unsafe call with a
     SAFETY comment; file added to UNSAFE_ALLOW in scripts/architecture-lint.mjs with the reason.
@@ -12,7 +12,7 @@ Changes
     paths the nearest existing ancestor is canonicalized and refused if it resolves to a share or mapped drive.
   - validate_output_dir (project parent folders) now rechecks the canonical folder with Refuse (was Allow).
   - The decision is split: check_user_path_with / is_network_location_with take an injected drive classifier.
-- crates/openframe-project-format/src/lib.rs is_network_path delegates to is_network_location.
+- crates/straft-project-format/src/lib.rs is_network_path delegates to is_network_location.
 
 Tests
 - lib unit: mapped_network_drives_are_refused_for_projects_and_content (classifier says Z: is remote; upper,

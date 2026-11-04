@@ -28,10 +28,10 @@ vi.mock("../../ipc/client", async () => {
     call: vi.fn(async (op: string) => {
       if (op !== "ai.diagnostics") return null;
       return {
-        bundleId: "openframe-ai",
+        bundleId: "straft-ai",
         bundleVersion: "1",
         bundleState: "Verified",
-        bundleDir: "C:/Program Files/OpenFrame/ai",
+        bundleDir: "C:/Program Files/Straft Studio/ai",
         bundleBytes: 1_000_000,
         problem: null,
         components: [

@@ -6,13 +6,15 @@
 // script: it takes one lock shared by all worktrees, runs cargo with a capped job count, and releases
 // the lock when cargo ends, on Ctrl+C, or when the holder dies (a stale lock is recovered).
 //
-//   node C:/OpenFrame/scripts/cargo-queued.mjs <cargo args...>
-//   e.g. node C:/OpenFrame/scripts/cargo-queued.mjs test -p openframe-application --test production schedule_depth::
+//   node scripts/cargo-queued.mjs <cargo args...>
+//   e.g. node scripts/cargo-queued.mjs test -p straft-application --test production schedule_depth::
 //
-// OPENFRAME_CARGO_JOBS sets the job count (default 4); RUST_TEST_THREADS defaults to 4.
+// STRAFT_CARGO_JOBS sets the job count (default 4); RUST_TEST_THREADS defaults to 4.
+// STRAFT_CARGO_LOCK sets the lock folder (default: .build-cache/cargo-queue.lock in the main checkout,
+// which every worktree of that checkout finds through git).
 // docs/development-storage-policy.md describes the rules.
 
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import {
   mkdirSync,
   readFileSync,
@@ -20,11 +22,20 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+/** The main checkout, the same answer from every worktree; this script's own checkout without git. */
+function mainCheckout() {
+  const here = dirname(dirname(fileURLToPath(import.meta.url)));
+  const r = spawnSync("git", ["rev-parse", "--path-format=absolute", "--git-common-dir"], { cwd: here, encoding: "utf8" });
+  return r.status === 0 ? dirname(r.stdout.trim()) : here;
+}
 
 const LOCK_DIR =
-  process.env.OPENFRAME_CARGO_LOCK ??
-  "C:/OpenFrame/.build-cache/cargo-queue.lock";
+  process.env.STRAFT_CARGO_LOCK ??
+  join(mainCheckout(), ".build-cache", "cargo-queue.lock");
+mkdirSync(dirname(LOCK_DIR), { recursive: true });
 const OWNER = join(LOCK_DIR, "owner.json");
 const POLL_MS = 2000;
 const args = process.argv.slice(2);
@@ -145,7 +156,7 @@ delete env.CARGO_TARGET_DIR;
 delete env.CARGO_BUILD_JOBS;
 env.RUST_TEST_THREADS ??= "4";
 env.CARGO_INCREMENTAL ??= "0";
-const jobs = process.env.OPENFRAME_CARGO_JOBS ?? "4";
+const jobs = process.env.STRAFT_CARGO_JOBS ?? "4";
 const [sub, ...rest] = args;
 const cargoArgs = BUILD_LIKE.has(sub)
   ? [

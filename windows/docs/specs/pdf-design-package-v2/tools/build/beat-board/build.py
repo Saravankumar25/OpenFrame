@@ -29,7 +29,7 @@ OUT = ROOT / "exports" / "story-beat-board"
 COLS = int(os.environ.get("BB_COLS", "3"))
 GAP = {3: 8, 4: 6}[COLS]
 EXPORT_DATE = "22 Oct 2026"          # as in the supplied PDFs ("Exported 22 Oct 2026")
-SCRATCH = pathlib.Path(r"C:/Users/avuku/AppData/Local/Temp/claude/d--web-development-projects-OpenFrame-export-changes/7f45d7c4-514c-4b3e-a651-c0d0a68695ea/scratchpad/bb")
+SCRATCH = pathlib.Path(r"C:/Users/avuku/AppData/Local/Temp/claude/d--web-development-projects-Straft Studio-export-changes/7f45d7c4-514c-4b3e-a651-c0d0a68695ea/scratchpad/bb")
 
 
 def esc(s):
@@ -342,7 +342,7 @@ def masthead(layout, project, source_label, scope_label, scope_note=None, panels
 
 
 CSS = r"""
-  /* ===== Beat Board — document-specific CSS (shared tokens/components come from openframe-print.css) ===== */
+  /* ===== Beat Board — document-specific CSS (shared tokens/components come from straft-print.css) ===== */
   .masthead .proj { font-size: 13pt; color: var(--of-slate); margin-top: 1pt; }
   .masthead .meta-line { font-size: 8.4pt; }
   .scope-panel { background: var(--of-panel); border: var(--hair) solid var(--of-line); border-radius: var(--radius-lg);
@@ -520,7 +520,7 @@ def page(layout, title, meta, project, relroot, body, header_text, panel_variant
     landscape = False                      # v2: both layouts are portrait US Letter
     size = "8.5in 11in"
     css = CSS + (CSS_BOARD.replace("__COLS__", str(COLS)).replace("__GAP__", str(GAP)) if layout == "board" else CSS_OUTLINE) + extra_css
-    logo = f'<meta name="of-logo" content="{relroot}00_SYSTEM/assets/openframe-logo.png">' if relroot != "../../" else ""
+    logo = f'<meta name="of-logo" content="{relroot}00_SYSTEM/assets/straft-logo.png">' if relroot != "../../" else ""
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -529,7 +529,7 @@ def page(layout, title, meta, project, relroot, body, header_text, panel_variant
 <title>{esc(title)}</title>
 <meta name="of-doc" content="{esc(meta)}">
 {logo}
-<link rel="stylesheet" href="{relroot}00_SYSTEM/assets/openframe-print.css">
+<link rel="stylesheet" href="{relroot}00_SYSTEM/assets/straft-print.css">
 <style>
   /* Running header: one compact line, top-right (project · document). Identifies loose printed pages of a long board. */
   @page {{ size: {size}; @top-right {{ content: "{esc(header_text)}"; }} }}

@@ -1,4 +1,4 @@
-# Chapter 1: complete, test and validate OpenFrame
+# Chapter 1: complete, test and validate Straft Studio
 
 > Written 2026-10-09 after the full retrospection ([report](../reports/2026-10-09-project-retrospection-and-audit.md)).
 > This is the current plan for finishing the application. It replaces the habit of working down the 26 areas of the
@@ -58,12 +58,12 @@ says two streams are independent.
 ### Projects inside cloud-synced folders (Medium)
 
 - **Objective.** A writer whose Documents folder is synced by OneDrive does not get a damaged or locked project.
-- **Why.** Projects live in `Documents\OpenFrame\Projects`. Windows 11 often redirects Documents into OneDrive.
+- **Why.** Projects live in `Documents\Straft Studio\Projects`. Windows 11 often redirects Documents into OneDrive.
   [ADR-0003](../adr/ADR-0003-project-folder-format.md) allows cloud folders and says sync "may still interfere". A
   SQLite database in write-ahead mode (the `-wal` and `-shm` files) is a known bad fit for sync clients.
-- **Where.** `crates/openframe-project-format/src/lib.rs` (`default_projects_dir`), `crates/openframe-security` (path
+- **Where.** `crates/straft-project-format/src/lib.rs` (`default_projects_dir`), `crates/straft-security` (path
   checks), the new-project dialog and Home.
-- **Expected behaviour.** OpenFrame detects a synced location (OneDrive, Dropbox, Google Drive, iCloud Drive by folder
+- **Expected behaviour.** Straft Studio detects a synced location (OneDrive, Dropbox, Google Drive, iCloud Drive by folder
   markers and known-folder redirection), tells the person in plain words, and offers a local folder as the default. It
   never moves existing projects by itself.
 - **Verification.** A test with a folder under a fake `OneDrive` root; a manual test on a Windows laptop with Documents
@@ -75,7 +75,7 @@ says two streams are independent.
 ### Project delete and "locate a moved project" tests (Small)
 
 - **Objective.** The two Home actions that touch whole projects are tested.
-- **Where.** `crates/openframe-application/src/modules/project.rs` (`delete_project`, `locate`).
+- **Where.** `crates/straft-application/src/modules/project.rs` (`delete_project`, `locate`).
 - **Expected behaviour.** Delete moves the folder to the Recycle Bin or Trash and removes it from recents; locate finds a
   project that was moved and keeps its identity; both refuse a network folder.
 - **Verification.** Two integration tests and one end-to-end step on Home. Today no test calls either operation.
@@ -93,7 +93,7 @@ says two streams are independent.
 ### Decide what happens when the Documents folder cannot be found (Small, owner decision)
 
 - **Objective.** The app never writes writers' work into a temporary folder by accident.
-- **Where.** `openframe_project_format::documents_dir` falls back to the system temp folder (recorded as an open owner
+- **Where.** `straft_project_format::documents_dir` falls back to the system temp folder (recorded as an open owner
   decision).
 - **Recommendation.** Refuse to start with a plain message that names the problem.
 - **Accepted when.** The owner decides and a test covers the choice.
@@ -146,7 +146,7 @@ canvas, sketch dialog or drag reorder. Add one spec for the three tabs.
 
 The window and installer description, the AI policy text and the README say "filmmakers". The owner's description is
 writers, screenwriters and production teams. Text that the app shows is product behaviour, so the owner approves the new
-wording first. Files: `apps/desktop/src-tauri/tauri.conf.json`, `crates/openframe-application/src/modules/ai/orchestrator.rs`
+wording first. Files: `apps/desktop/src-tauri/tauri.conf.json`, `crates/straft-application/src/modules/ai/orchestrator.rs`
 (the policy text), `README.md`, `CONTRIBUTING.md`.
 
 ## 5. Stream 3: make the AI honest and usable
@@ -158,7 +158,7 @@ unmeasured. Area 8 of the build plan is 2 of 22 done.
 
 - **Objective.** Numbers instead of impressions: how often the right scene, card or character is found, and how often the
   right tool is picked.
-- **Where.** New test data and a harness beside `crates/openframe-application/tests/ai_retrieval.rs`; the metrics are
+- **Where.** New test data and a harness beside `crates/straft-application/tests/ai_retrieval.rs`; the metrics are
   recall at 1, 5 and 10, mean reciprocal rank, grounding and leakage (feature row AI-003).
 - **Verification.** At least 120 questions across Story, Screenplay, Breakdown, Schedule and Vault, in English and in
   Telugu and Hindi, run against the real bundled model. The owner approves the thresholds after the first run.
@@ -191,14 +191,14 @@ Rule: the installer is not built until the owner says so in that conversation.
 
 ### Decide the team password for testers (Small, owner decision)
 
-The gate is built (`crates/openframe-entitlement/src/team_gate/`). It asks the password on every launch and slows wrong
+The gate is built (`crates/straft-entitlement/src/team_gate/`). It asks the password on every launch and slows wrong
 tries. For 2 to 3 days of real use by writers the owner decides: keep it, remove it, or use a short shared password. The
-hash is built from `OPENFRAME_TEAM_PASSWORD` on the build computer. The gate has only unit tests; the end-to-end suite
+hash is built from `STRAFT_TEAM_PASSWORD` on the build computer. The gate has only unit tests; the end-to-end suite
 runs builds without it. Whatever is chosen, the gated build gets its own test.
 
 ### Build and install on a clean Windows 11 computer (Medium)
 
-- **Steps.** Set `OPENFRAME_TEAM_PASSWORD` (if kept), run `npm run bundle`, copy the installer to a clean computer or
+- **Steps.** Set `STRAFT_TEAM_PASSWORD` (if kept), run `npm run bundle`, copy the installer to a clean computer or
   virtual machine, install, start, create a project, type, close, reopen, use the AI with the network switched off,
   export a PDF, make a backup and restore it on a second Windows account, upgrade over the previous build, uninstall,
   reinstall.
@@ -228,8 +228,8 @@ The owner has a Mac now. Everything Mac-specific is unverified until it runs the
    keep it unsigned, and document the Gatekeeper steps (right-click Open, or remove the quarantine flag) as an
    installation restriction.
 4. **Check the Mac behaviours.** Spell check (the Mac adapter is written but never run), file dialogs, shortcuts with the
-   Command key, window close and quit, data in `~/Library/Application Support/OpenFrame`, documents in
-   `~/Documents/OpenFrame`.
+   Command key, window close and quit, data in `~/Library/Application Support/Straft`, documents in
+   `~/Documents/Straft Studio`.
 5. **Mac test automation.** `tauri-driver`, which the end-to-end suite uses, does not support macOS (the Tauri
    documentation says so). Options: the WebdriverIO Tauri service named in the same documentation, or a written manual
    checklist run by a person. Decide after the first manual pass.

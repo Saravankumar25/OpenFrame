@@ -4,7 +4,7 @@
 #   cargo install cargo-fuzz --locked
 #   node scripts/fuzz.mjs            (every target for the time in scripts/fuzz.mjs)
 [package]
-name = "openframe-fuzz"
+name = "straft-fuzz"
 version = "0.0.0"
 publish = false
 edition = "2024"
@@ -15,9 +15,9 @@ cargo-fuzz = true
 [dependencies]
 libfuzzer-sys = "0.4"
 tempfile = "3"
-openframe-import-export = { path = "../crates/openframe-import-export" }
-openframe-security = { path = "../crates/openframe-security" }
-openframe-project-format = { path = "../crates/openframe-project-format" }
+straft-import-export = { path = "../crates/straft-import-export" }
+straft-security = { path = "../crates/straft-security" }
+straft-project-format = { path = "../crates/straft-project-format" }
 
 [workspace]
 members = ["."]

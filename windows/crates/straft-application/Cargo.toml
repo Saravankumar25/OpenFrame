@@ -1,0 +1,45 @@
+[package]
+name = "straft-application"
+description = "Straft Studio application layer: command/query pipeline, permissions, undo, activity, search indexing and all module services."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+straft-domain = { workspace = true, features = ["sqlite"] }
+straft-persistence.workspace = true
+straft-project-format.workspace = true
+straft-security.workspace = true
+straft-platform.workspace = true
+# Licence and free-trial state (build plan area "Payment and free trial in all three channels").
+straft-entitlement.workspace = true
+straft-import-export.workspace = true
+straft-ai.workspace = true
+straft-search.workspace = true
+straft-ai-checks = { path = "../straft-ai-checks" }
+rusqlite.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+ts-rs.workspace = true
+parking_lot.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+time.workspace = true
+regex.workspace = true
+similar.workspace = true
+unicode-segmentation.workspace = true
+base64.workspace = true
+# Project cover photos: decode, crop and re-encode a chosen picture.
+image.workspace = true
+# OS name and version for the support diagnostics bundle (M1.19); already in the tree via straft-ai.
+sysinfo.workspace = true
+trash = "5"
+
+[dev-dependencies]
+tempfile.workspace = true
+straft-ai = { workspace = true, features = ["test-support"] }
+straft-test-support.workspace = true
+# Export tests parse the written PDFs and spreadsheets.
+lopdf.workspace = true
+zip.workspace = true

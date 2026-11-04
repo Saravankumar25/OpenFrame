@@ -110,7 +110,7 @@ export default async function (t) {
       await t.el('//table[@aria-label="Offline AI components"]');
     });
     await t.go('//section[@aria-label="Technical details"]//summary');
-    await t.state("ai-offline-remove-confirm", () => t.press("Remove OpenFrame AI…"));
+    await t.state("ai-offline-remove-confirm", () => t.press("Remove Straft AI…"));
     await t.press("Cancel", DIALOG);
     await t.workspace("Home");
 
@@ -388,7 +388,7 @@ export default async function (t) {
       });
       await t.state("licence-welcome-family", async () => {
         await t.press("Finish", DIALOG);
-        await licenceDialog("Welcome to the OpenFrame Studio family");
+        await licenceDialog("Welcome to the Straft Studio family");
         await t.waitText("Be a part of our community.");
       });
       await t.press("OK", DIALOG);
@@ -425,7 +425,7 @@ export default async function (t) {
   };
 
   t.unreachable("ai-scope-options-open", "The Scope list is a native select; its drop-down is drawn by Windows outside the page and does not appear in a page capture. Each scope is captured as the chosen value instead");
-  t.unreachable("ai-offline-download-states", "The download, paused, failed, not enough space and damaged states of OpenFrame AI need the model host steered through a failed or interrupted download; this tour runs with the models installed");
+  t.unreachable("ai-offline-download-states", "The download, paused, failed, not enough space and damaged states of Straft AI need the model host steered through a failed or interrupted download; this tour runs with the models installed");
   t.unreachable("ai-offline-not-downloaded", "Needs a run without the AI models installed; this tour runs with them");
   t.unreachable("ai-export-report", "Export AI report opens the native save dialog; the saved toast needs a file chosen there");
   t.unreachable("ai-runtime-failed", "The runtime failed banner needs the AI engine to crash mid-answer (covered by the crash-safe apply spec, not by a capture)");

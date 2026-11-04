@@ -1,9 +1,9 @@
-# OpenFrame Studio: Masterplan to Microsoft Store
+# Straft Studio: Masterplan to Microsoft Store
 
 > **Status:** Draft v2 (restructured 2026-10-05: waves, security standard, M0.28; 10 boxes added 2026-10-05 from the M0.28 security baseline: M1.21 to M1.28, M11.15, M11.16). 234 boxes. Baseline: repository `master` at `cd60f08`
 > (identical tree to GitHub `main` at `d30b588`).
 > **Purpose:** one checklist. When every box on the Store path is checked with evidence and every gate in §9 is
-> signed, OpenFrame Studio is ready to be submitted to the Microsoft Store and to pass certification.
+> signed, Straft Studio is ready to be submitted to the Microsoft Store and to pass certification.
 > Companion files: [01-feature-ledger.md](01-feature-ledger.md) (per-feature state),
 > [02-owner-decisions-and-manual-work.md](02-owner-decisions-and-manual-work.md) (D and X items),
 > [03-reconciliation-log.md](03-reconciliation-log.md), [04-progress-log.md](04-progress-log.md) (session dashboard and log), [../release/launch-readiness-register.md](../release/launch-readiness-register.md)
@@ -11,7 +11,7 @@
 
 ## 0. Definition of "ready for the Microsoft Store"
 
-OpenFrame Studio is Store-ready only when **all** of this is true:
+Straft Studio is Store-ready only when **all** of this is true:
 
 1. Every feature promised in the Store listing is at state **S5** in the ledger, and nothing S5-incomplete is listed.
 2. Every **P0** ledger row is S5. P1 rows are S5 or consciously deferred by the owner in writing (D2) and removed from the listing.
@@ -46,7 +46,7 @@ The software cannot be proven free of every bug. This definition is the standard
 
 ### 1a. Windows security standard (permanent, applies to every box)
 
-OpenFrame must meet the security bar of well-regarded professional Windows desktop applications, on every change and in every release.
+Straft Studio must meet the security bar of well-regarded professional Windows desktop applications, on every change and in every release.
 
 - **Least privilege:** standard user, no elevation; Store capabilities limited to runFullTrust and internetClient, justified in writing.
 - **Binary hardening:** verify ASLR, DEP, control-flow guard and safe linker flags in release builds; no secrets or debug data in artifacts; no unsafe Rust without a written reason.
@@ -147,7 +147,7 @@ M9 corpus authoring, M12 domain and policy drafting.
 ### Manual long-lead work (start now)
 - [ ] M0.13 **[WO]** [OWNER] X1 legal entity confirmed.
 - [ ] M0.14 **[WO]** [OWNER] X2 Partner Center account verified, second administrator added (`STORE-001`).
-- [ ] M0.15 **[WO]** [OWNER] X3 name "OpenFrame Studio" reserved; identity values copied into `packaging/msix/store.config.json` (REL-002).
+- [ ] M0.15 **[WO]** [OWNER] X3 name "Straft Studio" reserved; identity values copied into `packaging/msix/store.config.json` (REL-002).
 - [ ] M0.16 **[WO]** [OWNER] X4 licence added; `LICENSE-PENDING.md` deleted; manifests updated (REL-001).
 - [ ] M0.17 **[WO]** [OWNER] X5 trademark, domain, handles, logo and font-licence clearance recorded (`LEGAL-005`).
 
@@ -194,7 +194,7 @@ M9 corpus authoring, M12 domain and policy drafting.
 - [ ] M1.15 **[W1]** [CODE] Hostile-input corpus (normal, malformed, huge, nested, zip-slip, traversal, entity expansion, decompression bomb, symlink, case collision, Unicode path) kept permanently for FDX, Fountain, DOCX, PDF, ZIP, packages; fuzz harness for each parser.
 - [ ] M1.16 **[W1]** [CODE] Golden PDF image-compare harness (page count, margins, headings, dialogue, title page, numbers, continuation, revision marks, headers, no clipping) [XFER-010].
 - [ ] M1.17 **[W1]** [CODE] UI visual-regression harness using the M0.20 baseline.
-- [ ] M1.18 **[W1]** [CODE] Log redaction test (no screenplay text, notes, contacts, prompts, paths, keys) [CORE-014]. Amended by M0.28 (P13): release builds cap `OPENFRAME_LOG` at `info` for non-OpenFrame targets, the project lock path log is removed or redacted, and the test also covers the sidecar log.
+- [ ] M1.18 **[W1]** [CODE] Log redaction test (no screenplay text, notes, contacts, prompts, paths, keys) [CORE-014]. Amended by M0.28 (P13): release builds cap `STRAFT_LOG` at `info` for non-Straft Studio targets, the project lock path log is removed or redacted, and the test also covers the sidecar log.
 - [ ] M1.19 **[W1]** [CODE] **Export diagnostics** bundle: user-initiated, inspectable, redacted [CORE-015, ADR-0021]. ADR-0021 Accepted 2026-10-05.
 - [ ] M1.20 **[W1]** [CODE] Performance budgets re-run and extended with budgets for features in M2 to M7 (typing latency, reflow, breakdown filters, schedule ops, call-sheet and PDF export) (doc 21).
 
@@ -238,7 +238,7 @@ M9 corpus authoring, M12 domain and policy drafting.
 - [ ] M2.15 **[W2]** [CODE] Dialogue continuation generated from structure; one split block distinct from two blocks [SCRIPT-011].
 - [ ] M2.16 **[W2]** [CODE] Embedded subset fonts and shaping for Telugu, Hindi, Tamil, Malayalam, Kannada, English and mixed text; deterministic golden output [SCRIPT-UNI-001, ADR-0016].
 - [ ] M2.17 **[W2]** [CODE] Multilingual round trip passes: type, save, reload, PDF, FDX, Fountain, DOCX, search, AI retrieval.
-- [ ] M2.18 **[W2]** [CODE] Screenplay outputs carry no OpenFrame branding (test) [XFER-009].
+- [ ] M2.18 **[W2]** [CODE] Screenplay outputs carry no Straft Studio branding (test) [XFER-009].
 
 ### Interchange
 - [ ] M2.19 **[W2]** [CODE] FDX import: preview with counts and warnings; custom element preserve, map or review; scene numbers, title data, revisions; never flatten unknown constructs [XFER-001].
@@ -262,7 +262,7 @@ Spec: Revision 1 §§7, 16, 19, 20, 44, 47A; engineering: doc 30; ADR-0014.
 - [ ] M3.03 **[W1]** [CODE] Scene navigator optional columns [SCRIPT-017].
 - [ ] M3.04 **[W1]** [CODE] Proofing: project language, toggle, underline, personal dictionary, available dictionaries, primary and secondary language [SCRIPT-020].
 - [ ] M3.05 **[W2]** [CODE] Tokenization pass: every colour literal classified as theme token, intentional fixed, or document output; themeable literals replaced [THEME-003].
-- [ ] M3.06 **[W2]** [CODE] **OpenFrame Default renders identically** to the M0.20 baseline (visual regression) [THEME-002].
+- [ ] M3.06 **[W2]** [CODE] **Straft Default renders identically** to the M0.20 baseline (visual regression) [THEME-002].
 - [ ] M3.07 **[W2]** [CODE] Appearance engine: Light, Dark, System, live OS follow, no restart [THEME-001].
 - [ ] M3.08 **[W2]** [CODE] App migration `0002` stores preferences and My Themes; invalid or deleted theme falls back to Default [THEME-006].
 - [ ] M3.09 **[W2]** [CODE] 15 built-in themes from one registry; adding one touches no component [THEME-004].
@@ -333,7 +333,7 @@ Contract: doc 33. Extend existing tables; do not replace them (reconciliation C1
 - [ ] M7.04 **[W3]** [CODE] Editing a call sheet never changes screenplay, breakdown or schedule (test).
 - [ ] M7.05 **[W3]** [CODE] Lightweight budget Planned and Actual, category totals, difference, report; migration keeps existing amounts as Planned [BUDGET-001].
 - [ ] M7.06 **[W3]** [CODE] Sides, production reports (6 types), moodboard, storyboard sheet, shot list exports [CALL-007, VIS-001 to 003].
-- [ ] M7.07 **[W3]** [CODE] Subtle OpenFrame branding on every non-screenplay export; spreadsheets via metadata or footer; user files never modified (test per export) [BRAND-001].
+- [ ] M7.07 **[W3]** [CODE] Subtle Straft Studio branding on every non-screenplay export; spreadsheets via metadata or footer; user files never modified (test per export) [BRAND-001].
 - [ ] M7.08 **[W3]** [CODE] Call sheet, schedule, DOOD, breakdown, budget, sides PDFs have golden or image regression [CALL-006].
 - [ ] M7.09 **[W3]** [OWNER] D12 template inventory decided; D13 and X13 sample scripts written or commissioned.
 - [ ] M7.10 **[W3]** [CODE] Built-in templates per D12; Use creates an independent copy; later template edits never change existing documents (test) [TEMP-001, TEMP-002].
@@ -369,7 +369,7 @@ Contract: doc 33. Extend existing tables; do not replace them (reconciliation C1
 - [ ] M9.09 **[W1]** [CODE] Automated no-egress test; Offline claim verified against actual network and process behaviour [AI-007]. Amended by M0.28 (P10): capture traffic for install, first launch, an offline core workflow and AI use including WebView2; disable unneeded WebView2 network features after testing.
 - [ ] M9.10 **[W1]** [CODE] Prompt-injection and retrieval-poisoning corpus; privilege-escalation and nested-AI tests [AI-008].
 - [ ] M9.11 **[W3]** [CODE] Runtime bundled in the Store package, weights downloaded on click, manifest and hash verification intact, quarantine on mismatch (ADR-0020) [AI-011].
-- [ ] M9.12 **[W3]** [OWNER] X7 production manifest key generated and held offline; production host provisioned; `MODEL_DISTRIBUTION_BASE_URL` and `OPENFRAME_MANIFEST_PUBLIC_KEY` set; production manifest signed and published; Gemma terms review recorded (X8) [AI-012].
+- [ ] M9.12 **[W3]** [OWNER] X7 production manifest key generated and held offline; production host provisioned; `MODEL_DISTRIBUTION_BASE_URL` and `STRAFT_MANIFEST_PUBLIC_KEY` set; production manifest signed and published; Gemma terms review recorded (X8) [AI-012].
 - [ ] M9.13 **[W1]** [CODE] **Report AI output** action: opens the support channel with app version and optional user-approved context; never sends project content automatically [AI-010]. Needs the support channel address from the owner (X15); use one configurable constant, never an invented address.
 - [ ] M9.14 **[W1]** [CODE] Download resilience under packet loss and HTTP 408/429/5xx; disk-space preflight; cancel and resume; corrupt download quarantined.
 - [ ] M9.15 **[W1]** [CODE] Model update regression suite wired to the benchmark [AI-013].
@@ -403,7 +403,7 @@ Contract: doc 33. Extend existing tables; do not replace them (reconciliation C1
 ## M11. Windows Store build and certification pre-flight
 
 ### Build and package
-- [ ] M11.01 **[W4]** [CODE] Store channel build uses `OPENFRAME_DISTRIBUTION=store`; in-app updater compiled out; `release-validate --store` passes with no bypass (REL-003).
+- [ ] M11.01 **[W4]** [CODE] Store channel build uses `STRAFT_DISTRIBUTION=store`; in-app updater compiled out; `release-validate --store` passes with no bypass (REL-003).
 - [ ] M11.02 **[W4]** [CODE] MSIX manifest: Windows version per D3; capabilities only `runFullTrust` and `internetClient` with written justification; 77 visual assets valid; version `X.Y.Z.0`, higher than any prior submission.
 - [ ] M11.03 **[W4]** [CODE] Release candidate tag; pipeline produces the MSIX, `msix-build.json`, `THIRD_PARTY_LICENSES.md`, SBOM and `SHA256SUMS.txt` (REL-008). The release candidate is **immutable** once approved.
 - [ ] M11.04 **[W4]** [CODE] Licence inventory complete including bundled fonts, runtime, models notices (Gemma notice in the app and notices file).
@@ -419,8 +419,8 @@ Contract: doc 33. Extend existing tables; do not replace them (reconciliation C1
 - [ ] M11.12 **[W4]** [BOTH] Project open and migration from every previously shipped version using the fixture corpus on the packaged build.
 - [ ] M11.13 **[W4]** [BOTH] Hardware matrix results (minimum, recommended, discrete GPU) recorded for the listing.
 - [ ] M11.14 **[W4]** [CODE] Upgrade test: v0.x package to the next version with settings, projects, AI index invalidation and rebuild preserved.
-- [ ] M11.15 **[W4]** [CODE] Binary hardening gate: release pipeline runs BinSkim (or `dumpbin /headers /loadconfig`) on `openframe-desktop.exe` and fails on missing DYNAMICBASE, HIGHENTROPYVA, NXCOMPAT, GUARD_CF, CETCOMPAT, an embedded PDB path, or a manifest that is not `asInvoker`; MSI install-scope decision recorded in doc 24 (M0.28 P7).
-- [ ] M11.16 **[W4]** [CODE] Store and release builds fail to compile when `OPENFRAME_MANIFEST_PUBLIC_KEY` is unset (for example `compile_error!` under `cfg(openframe_store)`) (M0.28 P14; the key-sweep half was done 2026-10-05).
+- [ ] M11.15 **[W4]** [CODE] Binary hardening gate: release pipeline runs BinSkim (or `dumpbin /headers /loadconfig`) on `straft-desktop.exe` and fails on missing DYNAMICBASE, HIGHENTROPYVA, NXCOMPAT, GUARD_CF, CETCOMPAT, an embedded PDB path, or a manifest that is not `asInvoker`; MSI install-scope decision recorded in doc 24 (M0.28 P7).
+- [ ] M11.16 **[W4]** [CODE] Store and release builds fail to compile when `STRAFT_MANIFEST_PUBLIC_KEY` is unset (for example `compile_error!` under `cfg(straft_store)`) (M0.28 P14; the key-sweep half was done 2026-10-05).
 
 **Gate G11:** one immutable MSIX with WACK pass, clean-machine pass, installed-package E2E pass.
 

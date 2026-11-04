@@ -11,8 +11,8 @@
 - **Decision 2 superseded 2026-10-08** by [ADR-0025](ADR-0025-offline-ai-bundled-in-every-package.md): the runtime,
   both models and the tokenizer ship inside every package; there is no Offline AI download.
 - **Date:** 2026-09-30
-- **Related:** `openframe_ai_agentic_rag_spec_prompt.md` (the agentic AI + hybrid RAG spec);
-  `OpenFrame_Studio_AI_Specification_Updated.md`; `OpenFrame_Local_AI_Runtime_Model_Management_Specification.md`;
+- **Related:** `straft_ai_agentic_rag_spec_prompt.md` (the agentic AI + hybrid RAG spec);
+  `Straft_Studio_AI_Specification_Updated.md`; `Straft_Local_AI_Runtime_Model_Management_Specification.md`;
   `docs/engineering/16-search.md`, `18-retrieval-intelligence-index.md`, `ai-tool-coverage.md`; ADR-0004 (single
   dispatcher), ADR-0005 (generic undo), ADR-0009 (permissions), ADR-0012 §5 (no external AI).
 
@@ -26,7 +26,7 @@ above the user's.
 
 ## Decision
 
-1. **One model, one profile.** Offline AI has exactly one production profile, internal id `openframe-local-ai-v1`:
+1. **One model, one profile.** Offline AI has exactly one production profile, internal id `straft-local-ai-v1`:
    Google **Gemma 3 1B Instruct** (GGUF Q8_0, chosen by a benchmark on the real runtime path; runtime spec §4) plus the
    **BGE small English v1.5** embedding model (MIT, 384 dimensions), both served by pinned `llama.cpp` `llama-server`
    sidecars on 127.0.0.1. There is no model picker and no user-loaded model. The manifest format 2 describes runtime +
@@ -34,7 +34,7 @@ above the user's.
 2. **Reinstated 2026-10-15 by ADR-0026.** **One download.** **Download Offline AI** fetches the runtime and both models as one combined, resumable,
    SHA-256-verified download from the signed manifest, activates atomically, health-checks both sidecars and is usable
    without a restart. Components are stored once per Windows user, never per project.
-3. **Derived intelligence index.** Each project gets `cache/intelligence.sqlite` (crate `openframe-search`): semantic
+3. **Derived intelligence index.** Each project gets `cache/intelligence.sqlite` (crate `straft-search`): semantic
    documents and domain-aware chunks, a `sqlite-vec` `vec0` vector table (statically linked, registered only on
    intelligence connections, no runtime extension loading) and a context graph (`context_node` / `context_edge`,
    provenance Canonical or Derived; Inferred is never produced). It is never canonical, never in undo/activity, not
@@ -72,7 +72,7 @@ above the user's.
   facts therefore come from deterministic tools, the catalogue offered per request is small and route-relevant, and
   every model reply is schema-constrained (100% valid JSON in the benchmark).
 - Gemma is distributed under the Gemma Terms of Use: the notice is shown in Settings → Offline AI → Technical details
-  and in `THIRD_PARTY_LICENSES.md`, and redistribution through the OpenFrame endpoint must pass the terms on (release
+  and in `THIRD_PARTY_LICENSES.md`, and redistribution through the Straft Studio endpoint must pass the terms on (release
   prerequisite, 23-release-migration.md §7).
 - Retrieval quality has not yet been measured against an evaluation set (Recall@K / MRR, spec §35); only the
   latency budgets (spec §34) are measured. Until that harness exists, the claim is limited to what the tests show.

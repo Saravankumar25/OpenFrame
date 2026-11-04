@@ -1,6 +1,6 @@
-# PRD Digest — OpenFrame Studio (Engineering View)
+# PRD Digest — Straft Studio (Engineering View)
 
-**Source:** `C:\dev\OpenFrame\OpenFrame_Studio_Mega_PRD_Aligned_Updated.md` (5,736 lines, read in full).
+**Source:** `C:\dev\Straft Studio\Straft_Studio_Mega_PRD_Aligned_Updated.md` (5,736 lines, read in full).
 **Citation format:** `§N` = PRD section number; `L1234` = line number in the source file.
 **Rule:** Nothing here is invented. Where the PRD is silent, the digest says so. Items marked **[FLAG]** need an explicit decision before implementation. Items marked **[ENG NOTE]** are engineering observations, not PRD content.
 
@@ -192,7 +192,7 @@ Registry IDs are given where they exist. "Untiered" means the body describes the
 | Feature | Module | PRD section | Tier | Notes |
 |---|---|---|---|---|
 | Mode 1, Solo Local (default, no internet) | Collab | §87 L2405–2411 | P0 (PRD-OFF-001) | |
-| Mode 2, Exchange Packages (file-based; no OpenFrame account) | Collab | §87 L2415–2441; §88 L2461–2476 | P0 for review packages (COL-002); P1 for other page types (COL-003) | Package contents: selected content, required context, optional comments and attachments, source version ID, export timestamp. |
+| Mode 2, Exchange Packages (file-based; no Straft Studio account) | Collab | §87 L2415–2441; §88 L2461–2476 | P0 for review packages (COL-002); P1 for other page types (COL-003) | Package contents: selected content, required context, optional comments and attachments, source version ID, export timestamp. |
 | Review Package round trip (Script only, Script + comments, or specific scenes → reviewer annotates → Review Response Package → "14 new comments received" → Import Review) | Collab | §89 L2480–2523; §134 L3561–3576; §133 L3531–3557 | P0 (PRD-COL-002) | Package metadata: project, target, draft, "Exported by", date, contents. Banner: "comments are separate from the original project". |
 | Merge safety (older-version packages: view only, import comments only, separate review record, or compare) | Collab | §90 L2527–2542 | Untiered (AC §208.5–6 P0) | Never blindly overwrite. |
 | Comment import mapping to draft, scene and text; otherwise "Unmatched Review Notes"; nothing silently discarded | Collab | §135 L3580–3594 | Untiered | |
@@ -205,7 +205,7 @@ Registry IDs are given where they exist. "Untiered" means the body describes the
 | Offline collaboration state (solo, packages and local files always work; host keeps the latest copy on disconnect; clients informed; no data loss) | Collab | §130 L3471–3486 | P0 (OFF-001) | |
 | Autosave with Saved / Saving… / Unsaved changes status; explicit save or export of a project package | Data | §105 L2903–2917 | P0 (OFF-001) | |
 | Export Project Archive (structure, Story Board, drafts, breakdown, catalog, production planning, comments, attached files where included) | Data | §106 L2921–2946 | P0 (OFF-001; "project archive" in §195 P0) | Format is an engineering choice. |
-| User-chosen storage (local drive, external SSD, project folder, network drive "where supported by the OS"); no OpenFrame cloud folder | Data | §107 L2950–2961 | P0 (OFF-001) | |
+| User-chosen storage (local drive, external SSD, project folder, network drive "where supported by the OS"); no Straft Studio cloud folder | Data | §107 L2950–2961 | P0 (OFF-001) | |
 | Backups: manual archive, automatic local backup versions, backup location selection; "Project backups are separate from your active project" | Data | §108 L2965–2977 | P0 (OFF-001) | No count or frequency is given. |
 | Media handled as references or attachments only; not a media editor or DAM | Data | §182 L4526–4532 | Untiered (constraint) | |
 
@@ -225,7 +225,7 @@ Registry IDs are given where they exist. "Untiered" means the body describes the
 
 | Feature | Module | PRD section | Tier | Notes |
 |---|---|---|---|---|
-| Optional system-wide natural-language assistant and command interface ("Amazon Q-style"), grounded in OpenFrame knowledge and project knowledge; never authoritative | AI | §93 L2604–2613 | **P1** (PRD-AI-001) | Not a second database. |
+| Optional system-wide natural-language assistant and command interface ("Amazon Q-style"), grounded in Straft Studio knowledge and project knowledge; never authoritative | AI | §93 L2604–2613 | **P1** (PRD-AI-001) | Not a second database. |
 | Allowed on explicit request: Q&A, exact counts, draft comparison, locating objects, relationship traversal, navigation, summaries, continuity concerns, Scene Card suggestions, breakdown suggestions, synopsis, schedule-grouping advice, call-sheet drafts, tasks/notes after confirmation, structured rename/replace, batch ops, stale-dependency explanation, product help | AI | §94 L2617–2652 | P1 | Routes to the same actions as the UI; no parallel command system (L2652, L4364). |
 | Not allowed silently: rewrite script, change canon, modify cards, rename, replace text, add breakdown items, move schedule, edit call sheets, delete/archive, lock/approve, change permissions, any mutation | AI | §95 L2656–2675 | P1 | "A natural-language imperative is not blanket permission" (L2673). |
 | Scope selector (selection, scene, screenplay, draft, Story Board, Vault items, production, shoot day, call sheet, whole project, combinations); scope shown when it matters; ask instead of guessing on ambiguity | AI | §96 L2679–2703 | P1 | Counts must come from deterministic calculation (L2703). |
@@ -251,7 +251,7 @@ Registry IDs are given where they exist. "Untiered" means the body describes the
 ### 2.2 Platform boundaries
 - Desktop only, on Windows and macOS (L8, §5.1 L254–265). "A mobile application is not part of the initial product." "A browser-only replacement is not the product goal."
 - Mobile access is provided **only through exported PDFs** (§85 L2389).
-- No OpenFrame-hosted cloud folder (L2961). No OpenFrame cloud needed for exchange or LAN (L2441, L2451). OpenFrame does not own the transport channel (L2600, L3555).
+- No Straft Studio-hosted cloud folder (L2961). No Straft Studio cloud needed for exchange or LAN (L2441, L2451). Straft Studio does not own the transport channel (L2600, L3555).
 
 ### 2.3 Module-level "do not build" constraints
 | Constraint | Location |
@@ -298,7 +298,7 @@ A feature is rejected or postponed if it: (1) is rarely used by indie filmmakers
 - **Required connections** (§112 L3054–3098): Vault→Story (optional copy); Story→Screenplay (optional generation); Screenplay→Breakdown (direct extraction); Screenplay→Shot List (scenes become containers); Screenplay→Storyboard (scenes become containers); Breakdown→Catalog (confirmed elements); Catalog→Schedule (cast/location requirements inform planning); Schedule→Call Sheet (day populates the sheet); Storyboard→Shot List (optional reference); Shot List→Call Sheet (optional daily shots).
 - **Automation boundary** (§2.4 L153–172). Good: suggest breakdown elements, carry headings into production, generate scene numbers, populate call sheets, create drafts from drafts, generate a synopsis on request. Bad: auto-change story, auto-move schedule scenes, auto-change the screenplay, auto-categorize ideas, auto-delete "unused" material.
 - **Engineering handoff priority order** (§230 L5674–5686): (1) simple workflow, (2) ownership/offline, (3) source-of-truth, (4) no duplicate entry, (5) no silent destructive sync, (6) explicit over hidden automation, (7) fewer controls with defaults, (8) advanced behavior behind options, (9) no enterprise complexity without demonstrated need. "If … technically elegant but makes the filmmaker's workflow harder, the workflow wins."
-- **Non-negotiable rules** (§221 L5437–5451): 15 rules. The engineering-relevant ones are #4 (no manual scene numbers during outlining), #6 (Story Board is not a synced duplicate of the screenplay), #7 (breakdown without re-entry), #8 (suggestions require confirmation), #9 (drag-and-drop-first scheduling), #10 (call sheets derive from shooting days), #11 (offline core), #12 (ownership/export), #13 (no OpenFrame cloud for remote collaboration), #14 (AI optional and user-controlled).
+- **Non-negotiable rules** (§221 L5437–5451): 15 rules. The engineering-relevant ones are #4 (no manual scene numbers during outlining), #6 (Story Board is not a synced duplicate of the screenplay), #7 (breakdown without re-entry), #8 (suggestions require confirmation), #9 (drag-and-drop-first scheduling), #10 (call sheets derive from shooting days), #11 (offline core), #12 (ownership/export), #13 (no Straft Studio cloud for remote collaboration), #14 (AI optional and user-controlled).
 
 ---
 
@@ -311,7 +311,7 @@ The PRD does **not** gate features by project type. All modules are available to
 | Aspect | Feature Film | Short Film | Episodic / Series |
 |---|---|---|---|
 | Structure | Acts → Sequences → Beats/Scene Cards | May place Scene Cards directly under an Act with no Sequences (§18 L902–906). Must not be forced into complex acts, detailed breakdown categories or elaborate schedule optimization (§164 L4201–4207). | Series → Season → Episode → Story Board → Screenplay (§55 L1718–1728) |
-| Minimum valid project | — | Idea → 5 Scene Cards → Screenplay → Breakdown → Simple Schedule → Call Sheet "is a complete valid OpenFrame project" (§192 L4737–4753). Must not require completing "50 fields" (L4735). | — |
+| Minimum valid project | — | Idea → 5 Scene Cards → Screenplay → Breakdown → Simple Schedule → Call Sheet "is a complete valid Straft Studio project" (§192 L4737–4753). Must not require completing "50 fields" (L4735). | — |
 | Reference size | §181 targets (120 pages, 150–250 cards; see §5). "Should not require splitting a normal feature film into multiple projects" (L4522). | Example: 5 scenes, 1 location, 3 actors (§164 L4197–4199) | Not specified |
 | Idea Vault | Project Vault | Project Vault | Per-episode "Idea Vault subset" (L1732) |
 | Story Board | One per project | One per project (acts optional in practice) | One per episode, plus a **Series-level Story Board** of episodes with optional title, one-line summary and status (§56) |
@@ -399,7 +399,7 @@ No mechanism for selecting a "beginner" or "pro" mode is specified. The behavior
 - **Deletion:** soft delete through Recently Deleted. Permanent delete is a deliberate second action (§101).
 - **Import safety:** never auto-replace. Default to a new draft (§44). Package import never silently overwrites (§90, AC §208.5).
 - **Privacy:** private notes are never exported or shared by default (§51, §124 L3354). Moodboard internal notes are excluded unless selected (§68).
-- **Portability and ownership:** Export Project Archive; the user chooses storage location; no OpenFrame cloud folder (§106–107). "The user owns and can move the project" (L2946).
+- **Portability and ownership:** Export Project Archive; the user chooses storage location; no Straft Studio cloud folder (§106–107). "The user owns and can move the project" (L2946).
 - **Responsiveness:** "Application responsiveness for normal supported project sizes" (L187). Sizes are given in §181.
 - **Accessibility:** only "Accessibility/basic input flexibility" (L186) and keyboard-first operation (§103). There is no WCAG level or screen-reader requirement. **[FLAG]**
 - **Print and export fidelity:** readable on standard paper sizes (§125). Screenplay export preserves page breaks, scene numbers, title page and revisions (§45). Call-sheet PDFs are readable on a phone (§85).
@@ -421,7 +421,7 @@ No mechanism for selecting a "beginner" or "pro" mode is specified. The behavior
 | A-3 | L298 | "The interface must clearly indicate when content is being sent outside the local application." | Vacuous for AI in v1, but it still applies to any outbound network use (model download, URL fetch, update check). Keep it as a general egress-disclosure rule. |
 | A-4 | L2606 | "an **Amazon Q-style** assistant" | An analogy to a cloud product. Interaction style only; it does not imply cloud. |
 | A-5 | **L2752** | "**External AI providers remain optional** and require clear disclosure before project content is transmitted." | **Direct conflict.** It presumes external providers exist as an option. Resolution: document them as out of scope for v1. |
-| A-6 | L2746 | "A small local model, including a **Qwen2.5-0.5B-class** model, is a supported implementation target" | **Consistent.** The Engineering Index adds hardware-aware automatic Qwen profile selection and "One-click Download Offline AI" from an OpenFrame-controlled CDN. Note that the model download is outbound network use (see A-3). |
+| A-6 | L2746 | "A small local model, including a **Qwen2.5-0.5B-class** model, is a supported implementation target" | **Consistent.** The Engineering Index adds hardware-aware automatic Qwen profile selection and "One-click Download Offline AI" from a Straft Studio-controlled CDN. Note that the model download is outbound network use (see A-3). |
 | A-7 | **L5072** | AC §210.17: "External AI usage is clearly disclosed before project content is transmitted externally." | Acceptance criterion for a v1-absent path. Resolution: mark N/A for v1, or test that no external transmission path exists. |
 | A-8 | **L5073** | AC §210.18: "Local AI **may** operate without internet when configured and supported." | Under local-only this should be strengthened to **must** once the model is installed. |
 | A-9 | L5075 | AC §210.20: changing the underlying model must not alter semantics | Consistent. It applies to swapping Qwen profiles. |
@@ -441,7 +441,7 @@ The PRD never requires an account. However, several features assume **user ident
 | ID | Line(s) | Passage | Issue |
 |---|---|---|---|
 | B-1 | L366 | Shell top bar: "Help / **User**" | Implies a user menu. It must be a local profile, not an account. |
-| B-2 | L2441 | "No OpenFrame **cloud account** is required for exchanging a package." | Worded narrowly, as if accounts might exist elsewhere. Under the build decision, no accounts exist anywhere. |
+| B-2 | L2441 | "No Straft Studio **cloud account** is required for exchanging a package." | Worded narrowly, as if accounts might exist elsewhere. Under the build decision, no accounts exist anywhere. |
 | B-3 | L229–248, L3443–3467 | Roles (8) and Permissions (Owner/Editor/Commenter/Viewer/Export-only) | Permissions need principal identities. Without accounts, it is unclear how Commenter/Viewer is enforced on a received package or LAN client. **[FLAG]** |
 | B-4 | L2748, AC §210.14 | "AI inherits the user's effective permissions" | Needs a local notion of the current user. |
 | B-5 | L3568 | Review package shows "**Exported by**" | Needs a local display name. |
@@ -460,7 +460,7 @@ The PRD never requires an account. However, several features assume **user ident
 | ID | Line(s) | Passage | Status |
 |---|---|---|---|
 | S-1 | L2395 | "The user does not want to maintain a cloud synchronization platform" | Consistent. |
-| S-2 | L2437, L2598, L3555 | Users may use email, WhatsApp, Telegram, Drive or Dropbox themselves as transport | Consistent. There is no integration with those services, and OpenFrame doesn't own the channel. |
+| S-2 | L2437, L2598, L3555 | Users may use email, WhatsApp, Telegram, Drive or Dropbox themselves as transport | Consistent. There is no integration with those services, and Straft Studio doesn't own the channel. |
 | S-3 | L2959 | Project on a "network drive where supported by the OS" | Consistent with no-cloud. **[ENG NOTE]** SQLite on network or cloud-synced folders is a known corruption and locking risk, so this needs an explicit ESD position. |
 | S-4 | L2445–2457, §131 | LAN collaboration (direct peer-to-host, no cloud) | Consistent with no-cloud. It requires a network listener, discovery and identity. Tier conflict with the Engineering Index (C-18). |
 | S-5 | L5377 | DaVinci Resolve "cloud collaboration" cited as research | Context only. |
@@ -494,7 +494,7 @@ The PRD never requires an account. However, several features assume **user ident
 | C-17 | L4826–4827 | **COL-005 (P0) and COL-006 (P1) both cite §131–132.** The boundary between "basic" soft-locking and "advanced conflict handling" is undefined. |
 | C-18 | L4826, L4859 vs Engineering Index | **LAN collaboration tier.** The PRD makes basic LAN collaboration **P0**. The Engineering Package Index's locked decision is "LAN collaboration: Architecture-ready now; **ship after stable solo core**" and "Soft locks + optimistic version/conflict handling; no CRDT in v1". This effectively re-tiers a P0 feature, which violates the PRD rule that only the PRD sets priority (L47, L4849). The PRD needs an amendment. |
 | C-19 | L8, L256–259 vs Engineering Index | **OS scope.** The PRD requires Windows **and** macOS as P0 (L4859 "Desktop Windows/macOS"). The Engineering Index says "Windows 11 first; preserve macOS-ready boundaries." This also needs a PRD amendment or a sequencing note. |
-| C-20 | L2550–2574 vs L3598–3646 | **Exchange package set.** Six extensions are named, but behavior is described only for Script review (§89), Story (§136), Shots (§137) and Breakdown (§138). `.ofschedule` and `.ofcallreview` have no described workflow. §91 says "Every major OpenFrame workspace can produce" a package, but COL-003 is P1. |
+| C-20 | L2550–2574 vs L3598–3646 | **Exchange package set.** Six extensions are named, but behavior is described only for Script review (§89), Story (§136), Shots (§137) and Breakdown (§138). `.ofschedule` and `.ofcallreview` have no described workflow. §91 says "Every major Straft Studio workspace can produce" a package, but COL-003 is P1. |
 | C-21 | L5548, L4192 vs L2306 | "Screenplay → Breakdown → Call Sheet" (§225) skips the schedule, but call sheets are "generated from a scheduled shooting day" (§82) and must "derive from shooting days" (Rule #10). Either a minimal implicit shooting day is needed, or the §225 phrase is loose. |
 | C-22 | L1735–1736 | **Episodic production is per-episode.** Each episode has its own breakdown and production plan, so no cross-episode ("block") scheduling is described. This contradicts the common episodic practice of shooting several episodes together. The series-level shared reference covers only characters and locations. |
 | C-23 | L2316–2358 | **Call sheet has no crew roster or department call times.** It has only "Crew call", cast call times and emergency contacts. This contradicts the common call-sheet assumption. The Crew directory (§66) does not feed the call sheet per §112. |
@@ -534,6 +534,6 @@ The PRD never requires an account. However, several features assume **user ident
 ### 7.3 Cross-spec conflicts found during this read (not exhaustive)
 - **Engineering Package Index vs PRD:** LAN collaboration timing (C-18); Windows-first vs Windows+macOS P0 (C-19); local-only AI vs PRD provider language (A-2, A-5, A-7). The opt-in crash telemetry and update-notify behavior in the Index/ESD are **not described in the PRD**.
 - **FSD vs PRD:** the FSD traceability table (L4545–4547) references PRD §196–198, which no longer exist in this PRD (C-3). The FSD and Domain spec define Budget Snapshot behavior with no PRD body section (C-5).
-- **Filename drift:** the Engineering Index lists `OpenFrame_Studio_Mega_PRD_Aligned_Updated(3).md`, but the file on disk has no "(3)" suffix. Confirm they are the same revision.
+- **Filename drift:** the Engineering Index lists `Straft_Studio_Mega_PRD_Aligned_Updated(3).md`, but the file on disk has no "(3)" suffix. Confirm they are the same revision.
 
 ---

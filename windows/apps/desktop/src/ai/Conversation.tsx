@@ -2,7 +2,7 @@
 //
 // - One request runs a bounded, multi-step agent on this computer; the answer is
 //   plain conversational text. Sources, steps, how sure the answer is, and any list that only
-//   backs the text wait behind "See sources" (OpenFrameAI.docx section 4.1). A list the person
+//   backs the text wait behind "See sources" (StraftAI.docx section 4.1). A list the person
 //   asked for stays under the answer (the core says so with itemsAreAnswer); long lists show a
 //   preview and "Show all".
 // - Project changes arrive only as a "Proposed Changes" card the user reviews;
@@ -135,7 +135,7 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
     try {
       path = await saveDialog({
         title: "Save conversation for review",
-        defaultPath: "openframe-ai-conversation.json",
+        defaultPath: "straft-ai-conversation.json",
         filters: [{ name: "JSON file", extensions: ["json"] }],
       });
     } catch (e) {
@@ -363,7 +363,7 @@ export function ResultView({ r, onChanged }: { r: AiResultDto; onChanged: () => 
   const chips = sourceChips(r.provenance);
   const steps = stepsSummary(r.steps);
   // A refusal, failure or question needs its reasons in view; for an ordinary answer they are
-  // technical detail and wait behind "See sources" (OpenFrameAI.docx section 4.1).
+  // technical detail and wait behind "See sources" (StraftAI.docx section 4.1).
   const reasonsVisible = denied || r.kind === "Failed" || r.kind === "Unavailable" || r.kind === "Clarify" || r.kind === "Private";
   // Rows are the answer only when the person asked for a list; otherwise they back the text.
   const hasItems = r.items.length > 0;

@@ -724,11 +724,11 @@ export default async function (t) {
     await t.el('//section[@aria-label="AI health"]');
     await t.sleep(800);
   });
-  const aiReady = await exists('//button[normalize-space(.)="Remove OpenFrame AI…"]');
+  const aiReady = await exists('//button[normalize-space(.)="Remove Straft AI…"]');
   if (aiReady) {
     await state("settings-offline-ai-remove-confirm", async () => {
-      await t.press("Remove OpenFrame AI…");
-      await t.el(t.dialog("Remove OpenFrame AI?"));
+      await t.press("Remove Straft AI…");
+      await t.el(t.dialog("Remove Straft AI?"));
     });
     await state("settings-offline-ai-technical-details", async () => {
       await t.press("Cancel", DIALOG);

@@ -19,7 +19,7 @@
 ~150 scene cards in 3 acts / 12 sequences, 40 characters, a full breakdown (~1,200 elements, ~300 catalog items),
 a 25-day schedule, 25 call sheets, 300 comments, 200 vault items and 500 managed media files (≈ 2 GB).
 
-**Stress fixture ✅ (`openframe_test_support::stress`, `StressSpec::feature_120()`).** It is deliberately larger than
+**Stress fixture ✅ (`straft_test_support::stress`, `StressSpec::feature_120()`).** It is deliberately larger than
 Feature-120 and is built **only through the operation registry**, using the same ops the UI calls. Search documents,
 activity, undo history, assets on disk and derived production data are therefore real. It contains:
 
@@ -77,17 +77,17 @@ evaluation gates in the Local AI Runtime spec §16.
 
 ## 4. Measurement
 
-1. ✅ **Application layer: `npm run perf`.** This runs `cargo test --profile perf -p openframe-application --test perf
+1. ✅ **Application layer: `npm run perf`.** This runs `cargo test --profile perf -p straft-application --test perf
    -- --ignored --nocapture --test-threads=1`. The `perf` cargo profile uses the release opt-level without LTO, so it
    builds in minutes.
-   - `crates/openframe-application/tests/perf.rs` builds the stress fixture, then times the following through
+   - `crates/straft-application/tests/perf.rs` builds the stress fixture, then times the following through
      `AppCore::dispatch`: every workspace query, search, typing batches, ordinary mutations, undo/redo, autosave
      throughput, DB growth after 1,000 edits, explicit save, PDF export and backup.
    - Each call takes JSON in and returns JSON out with the result serialised: the IPC path minus the WebView2 hop.
    - The suite fails on any budget breach.
    - While the queries run, it records every SQL statement with `sqlite3_trace_v2`. It prints the 30 most expensive
      statements with their `EXPLAIN QUERY PLAN` and flags full-table scans.
-   - Set `OPENFRAME_PERF_EXPORT=<dir>` to keep a copy of the generated project for UI profiling.
+   - Set `STRAFT_PERF_EXPORT=<dir>` to keep a copy of the generated project for UI profiling.
    - The non-ignored tests in the same file keep the fixture builder and the performance fixes covered by
      `cargo test`.
 2. **WebView level (manual, per release candidate).** Open the exported project in a release build and drive it in
@@ -101,7 +101,7 @@ evaluation gates in the Local AI Runtime spec §16.
 3. A release-candidate checklist (22-qa-test-strategy.md §5) records P1–P6 on minimum hardware. Any regression
    > 10% or budget breach blocks the release.
 4. Slow operations (> 250 ms) are already logged at `info` with op name and duration, and must be reviewed before
-   release (`%LOCALAPPDATA%\OpenFrame\logs`).
+   release (`%LOCALAPPDATA%\Straft\logs`).
 
 ## 5. Measured results (2026-09-30)
 
@@ -164,7 +164,7 @@ Measured on `npm run build`, installed per user with the NSIS installer.
 | P9 | Workspace opened → rendered: stripboard | 0.53–0.69 s | none |
 | P10 | NSIS installer | 9.61 MiB | < 25 MB ✅ |
 | none | MSI | 13.61 MiB | none |
-| none | `openframe-desktop.exe` | 36.2 MB | none |
+| none | `straft-desktop.exe` | 36.2 MB | none |
 
 ² Baseline: a plain `<input>` in the same harness gives p50 16 ms.
 ³ 60 s measured after a 30 s settle. By process: app 0.03 %, renderer 0.05 %, WebView2 browser process 0.31 %,

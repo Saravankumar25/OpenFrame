@@ -21,7 +21,7 @@ then decided the Mac case directly.
 
 1. **Mac App Store build, trial ended without a purchase (TrialEnded) or purchase revoked or refunded (Revoked):** the
    app is fully blocked. No project can be opened, edited or exported. The lock screen offers only **Buy full version**
-   (the Apple payment sheet through StoreKit, product `com.openframe.studio.lifetime`) and **Restore purchase**. The
+   (the Apple payment sheet through StoreKit, product `com.straft.studio.lifetime`) and **Restore purchase**. The
    screen cannot be closed.
 2. The block is enforced in the Rust core, not only in the webview: every project open, edit and export operation
    refuses in these two states. A purchase or a restore lifts the block without a restart.

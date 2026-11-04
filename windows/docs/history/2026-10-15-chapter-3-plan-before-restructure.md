@@ -24,7 +24,7 @@ Europe. One shared code base. Platform-specific code stays in the platform crate
 
 ## 3. Built, but only tested with fakes
 
-- `crates/openframe-entitlement`: eight licence states, the 7-day rules, reminders, the Microsoft Store and Mac adapters
+- `crates/straft-entitlement`: eight licence states, the 7-day rules, reminders, the Microsoft Store and Mac adapters
   over fake store sources. 76 unit tests in the crate.
 - The store lock inside the Rust dispatcher (`Registry::dispatch` calls `entitlement.check_operation`).
 - The trial chip, reminders, Buy routing and first-run safety screens in the interface.

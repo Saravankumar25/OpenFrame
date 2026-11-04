@@ -1,6 +1,6 @@
 //! The request checks, the trial and lifetime decision, and the signed answer the app checks.
 //!
-//! The wire format is the app's (`crates/openframe-entitlement/src/mac/server.rs`), version 1:
+//! The wire format is the app's (`crates/straft-entitlement/src/mac/server.rs`), version 1:
 //!
 //! - Request: `{schema, nonce, environment, appTransactionJws, transactionJws}`. `nonce` is 64
 //!   lowercase hex characters; `environment` is `"sandbox"` or `"production"`;
@@ -14,8 +14,8 @@
 //! transaction) or from this server's UTC clock. Nothing the app sends about time is used, and the
 //! app transaction's `originalPurchaseDate` (the app's first download) is never read.
 //!
-//! The domain prefix stops a signature made for another OpenFrame file (for example the installer
-//! licence, `openframe-licence-v1`) from being replayed as a server answer.
+//! The domain prefix stops a signature made for another Straft Studio file (for example the installer
+//! licence, `straft-licence-v1`) from being replayed as a server answer.
 
 use std::collections::HashSet;
 
@@ -30,7 +30,7 @@ use crate::apple::{
 };
 
 /// Domain separation prefix for the signed answer.
-pub const RESPONSE_DOMAIN: &[u8] = b"openframe-mac-licence-response-v1\0";
+pub const RESPONSE_DOMAIN: &[u8] = b"straft-mac-licence-response-v1\0";
 
 /// The request and answer schema this server speaks.
 pub const SCHEMA: u32 = 1;
@@ -52,7 +52,7 @@ pub const NONCE_HEX_LEN: usize = 64;
 /// future".
 pub const MAX_CLOCK_SKEW_MS: i64 = 5 * 60 * 1000;
 
-/// No genuine OpenFrame purchase can be older than this. PLACEHOLDER: 2026-01-01T00:00:00Z.
+/// No genuine Straft Studio purchase can be older than this. PLACEHOLDER: 2026-01-01T00:00:00Z.
 ///
 /// OWNER INPUT: before the first production deployment, set this to a date no later than the
 /// first sandbox test purchase of the trial product (sandbox purchases happen before the App

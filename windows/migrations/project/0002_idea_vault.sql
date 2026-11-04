@@ -1,4 +1,4 @@
--- Project Idea Vault schema (owned by crates/openframe-application/src/modules/idea_vault).
+-- Project Idea Vault schema (owned by crates/straft-application/src/modules/idea_vault).
 -- IDENTICAL to migrations/global/0002_idea_vault.sql: the same module code serves
 -- both stores (FSD §5.8). Keep the two files byte-for-byte equal below this header.
 --

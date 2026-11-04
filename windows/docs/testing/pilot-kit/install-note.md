@@ -6,7 +6,7 @@ This is for Windows 11. It takes about 10 minutes, plus the AI download.
 
 The owner sends you one file. Its name looks like this:
 
-`OpenFrame-Studio-0.1.0-internal-028d8b6.exe`
+`Straft-Studio-0.1.0-internal-028d8b6.exe`
 
 The last part is a short code for this exact version. Write the file name in every bug report.
 
@@ -22,7 +22,7 @@ Do not report the blue window as a bug.
 
 ## 3. First start
 
-1. Open OpenFrame Studio from the Start menu.
+1. Open Straft Studio from the Start menu.
 2. The app asks for the team password every time you start it. The owner gives you the password in person. Do not write
    it in a message or in a bug report.
 3. You land on Home. Make a project or open a sample one.
@@ -38,12 +38,12 @@ The AI helper is not inside the installer. You download it one time.
 
 ## 5. Where your projects are
 
-Your projects are saved in the `Documents\OpenFrame` folder. Keep a copy of anything important somewhere else. This is a
+Your projects are saved in the `Documents\Straft Studio` folder. Keep a copy of anything important somewhere else. This is a
 test version.
 
 ## 6. Uninstall
 
-Open Settings, Apps, OpenFrame Studio, then Uninstall. Uninstalling never removes your projects.
+Open Settings, Apps, Straft Studio, then Uninstall. Uninstalling never removes your projects.
 
 ## For the owner
 

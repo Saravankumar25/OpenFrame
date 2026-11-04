@@ -1,4 +1,4 @@
--- OpenFrame project schema — core (project, members/roles, episodic structure,
+-- Straft Studio project schema — core (project, members/roles, episodic structure,
 -- recoverable deletes, assets, project files, snapshots, notes, tasks, comments,
 -- private notes, templates, activity, undo, view state, search).
 -- Conventions: docs/engineering/11-physical-database.md

@@ -19,7 +19,7 @@ spec now presses End before Enter and makes each new line an Action (Ctrl+2).
 
 | Item | Test | Result |
 |---|---|---|
-| Cloud-synced folders (fake OneDrive root, Dropbox marker, Google Drive, iCloud names, environment-named OneDrive) | `openframe-platform` `cloud::tests` (4), `platform/project_lifecycle.rs::a_new_project_in_a_fake_onedrive_folder_is_flagged_and_existing_projects_stay`, `NewProjectDialog.test.tsx` | Pass |
+| Cloud-synced folders (fake OneDrive root, Dropbox marker, Google Drive, iCloud names, environment-named OneDrive) | `straft-platform` `cloud::tests` (4), `platform/project_lifecycle.rs::a_new_project_in_a_fake_onedrive_folder_is_flagged_and_existing_projects_stay`, `NewProjectDialog.test.tsx` | Pass |
 | Documents folder unknown: refuse to start, never a temp folder | `project_lifecycle.rs::the_app_refuses_to_start_without_a_documents_folder` | Pass |
 | Project delete and locate | `project_lifecycle.rs` (4 tests); `10-home.test.mjs` "Delete Project" step | Pass; a deliberate break (delete skips the move, locate skips the identity check) made 2 of them fail, then restored |
 | Pre-migration backup opens with the old reader and equals the fixture | `migration_fixtures.rs::m1_04_every_project_schema_version_upgrades_with_content_backup_search_and_export` | Pass; a deliberate break (backup taken after the migration) failed on v1 |

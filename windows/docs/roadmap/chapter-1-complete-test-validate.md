@@ -1,4 +1,4 @@
-# Chapter 1: complete, test and validate OpenFrame on Windows and on the Mac
+# Chapter 1: complete, test and validate Straft Studio on Windows and on the Mac
 
 > Rewritten 2026-10-15 after the owner's 25 decisions ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) to
 > [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). The earlier Chapter 1 plan (seven streams) is kept in

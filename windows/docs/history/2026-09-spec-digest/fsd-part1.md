@@ -1,7 +1,7 @@
 # FSD Digest — Part 1 (Sections 1–52)
 
-Source: `OpenFrame_Studio_Functional_Specification_Document_Aligned_Updated.md`, lines 1–2130.
-Companion specs referenced by the FSD: `OpenFrame_Studio_Mega_PRD_Aligned_Updated.md` (source PRD), `OpenFrame_Studio_AI_Specification_Updated.md` (cross-cutting AI).
+Source: `Straft_Studio_Functional_Specification_Document_Aligned_Updated.md`, lines 1–2130.
+Companion specs referenced by the FSD: `Straft_Studio_Mega_PRD_Aligned_Updated.md` (source PRD), `Straft_Studio_AI_Specification_Updated.md` (cross-cutting AI).
 
 ## Legend
 
@@ -20,7 +20,7 @@ Product scope (L17): project creation, Global/Project Idea Vaults, Project Home,
 
 **Explicit exclusions (L19) [REQ — must NOT build]:** enterprise ERP, payroll, union accounting, full accounting, advanced studio resource planning, VFX production tracking, post-production asset management, distribution CRM, festival submission suite, legal-management suite, talent marketplace, equipment marketplace, mandatory cloud-sync platform.
 
-Platform/operating model (L7–9): Windows + macOS desktop; local-first, offline-capable, user-owned project files; optional internet AI; optional LAN collaboration; no mandatory OpenFrame cloud.
+Platform/operating model (L7–9): Windows + macOS desktop; local-first, offline-capable, user-owned project files; optional internet AI; optional LAN collaboration; no mandatory Straft Studio cloud.
 
 ---
 
@@ -38,7 +38,7 @@ Violating any of these = functionally incorrect even if the UI works.
 - **1.5 Safe experimentation [REQ]:** duplicate cards, create drafts, move cards to Parking Lot, undo — without destroying earlier work.
 - **1.6 User control over automation [REQ]:** AI/automatic parsing only suggests; user confirms anything that becomes meaningful project data. No AI operation may silently change story, script, breakdown, schedule, or call sheet info.
 - **1.7 Offline ownership [REQ]:** lack of internet cannot prevent open/edit/save/export of a local project.
-- **1.8 File exchange over cloud [REQ]:** remote collaboration defaults to portable exchange packages; real-time collab = optional LAN session; no OpenFrame cloud required for ordinary use.
+- **1.8 File exchange over cloud [REQ]:** remote collaboration defaults to portable exchange packages; real-time collab = optional LAN session; no Straft Studio cloud required for ordinary use.
 - **1.9 Short films first-class [REQ]:** short film may use only Story Board + Screenplay + a few production features; must NOT force empty enterprise sections.
 - **1.10** Professional output, short/approachable input forms.
 - **1.11 Manual overrides automatic [REQ]:** when an automatic suggestion conflicts with a manual decision, manual decision is authoritative.
@@ -311,7 +311,7 @@ ID ref: **FSD-SCRIPT-002 P0** (build creates scenes from selected cards — veri
 - **19.6 TXT/paste:** parsing preview; user corrects scene headings / element interpretation before confirming.
 - **19.7 FDX:** preserve content + supported draft/revision metadata; unsupported properties ignored gracefully, reported in import summary if relevant.
 - **19.8 Import report (post-import):** imported scenes; detected characters; pages/length; warnings requiring attention; source filename.
-- **19.9 Source preservation [MAY, user choice]:** original file can be retained in Project Files. Imported screenplay is the editable OpenFrame object.
+- **19.9 Source preservation [MAY, user choice]:** original file can be retained in Project Files. Imported screenplay is the editable Straft Studio object.
 - Suggestions may also be offered after import for breakdown (§27.1).
 
 ## §20 Screenplay Export (L787–819)
@@ -319,7 +319,7 @@ ID ref: **FSD-SCRIPT-002 P0** (build creates scenes from selected cards — veri
 - **20.1 Required formats [REQ]:** PDF, FDX, Fountain, DOCX.
 - **20.2 Scope:** entire current draft; selected scenes [LATER: "where supported"]; clean script; revision-marked version when applicable.
 - **20.3 PDF:** professionally formatted, printable; notes excluded unless explicitly selected.
-- **20.4 FDX:** preserve structure/content that maps to FDX; unsupported OpenFrame metadata retained internally; must not block export.
+- **20.4 FDX:** preserve structure/content that maps to FDX; unsupported Straft Studio metadata retained internally; must not block export.
 - **20.5 Fountain:** standard Fountain conventions; internal metadata NOT inserted unless user selects optional header/comment export.
 - **20.6 DOCX:** editable document; readable screenplay layout.
 - **20.7 Completion:** show file location + offer "Reveal in File Manager".
@@ -664,16 +664,16 @@ ID refs: **FSD-COL-001 P0** (export a portable exchange package, inspect in anot
 
 ## §48 Local-Network Real-Time Collaboration (L1952–1986) — optional
 
-ID ref: **FSD-COL-003 P1** (LAN session without OpenFrame cloud; host and join on same LAN).
+ID ref: **FSD-COL-003 P1** (LAN session without Straft Studio cloud; host and join on same LAN).
 
 - **48.2 Host:** "Start Collaboration Session" → app displays session name + join info.
-- **48.3 Join:** another OpenFrame desktop joins using displayed local session info.
+- **48.3 Join:** another Straft Studio desktop joins using displayed local session info.
 - **48.4 Shared scope (host chooses):** entire project; Story Board; Screenplay; specific production workspace. Default = current project, permissions from session role selection.
 - **48.5** Participants edit shared workspace; changes appear to others while connected.
 - **48.6 [MAY]** Presence (who/where) — informational only.
 - **48.7 Disconnect:** participant's last acknowledged changes stay in session; unacknowledged edits retained locally where possible and exportable as a recovery package.
 - **48.8 End session:** host ends; host project remains local and saved.
-- **48.9 [REQ]** Ending a session never publishes/uploads to an OpenFrame server.
+- **48.9 [REQ]** Ending a session never publishes/uploads to a Straft Studio server.
 - **Session states (derived):** not started → hosting/active → participant connected/disconnected → ended.
 
 ## §49 Collaboration Conflict Rules (L1989–2016)

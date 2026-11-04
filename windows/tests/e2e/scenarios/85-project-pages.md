@@ -20,11 +20,11 @@ Before: an empty data folder of its own. The app starts for the first time.
 4. Type 'A ferry pilot races the tide to reach her brother.' in the logline field.
 5. Click Save.
 6. Check: the screen shows "Updated project settings".
-7. Check: the window title is "Tide Line Revised - OpenFrame Studio".
+7. Check: the window title is "Tide Line Revised - Straft Studio".
 8. Move focus off any text field and press Ctrl+Z.
-9. Check: the window title is "Tide Line - OpenFrame Studio" and the logline field is empty.
+9. Check: the window title is "Tide Line - Straft Studio" and the logline field is empty.
 10. Press Ctrl+Y.
-11. Check: the window title is "Tide Line Revised - OpenFrame Studio" and the logline field reads "A ferry pilot races the tide to reach her brother."
+11. Check: the window title is "Tide Line Revised - Straft Studio" and the logline field reads "A ferry pilot races the tide to reach her brother."
 12. Check: the screen is quiet.
 
 ## Templates: make two, delete both, restore one, delete the other for good

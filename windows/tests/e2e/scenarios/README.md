@@ -24,7 +24,7 @@ Some steps ask the core directly ("Ask the core ...", "Through the core: ..."). 
 
 Each scenario file starts in its own empty data folder, unless it says "shared journey data". The shared journey data is one folder used, in this order, by `01-journey` (which creates the demo project "Night Bus"), `02-restart`, `90-visual-baseline`, `91-appearance-themes` and `95-reachability`. Those files depend on each other only through that folder and that order. Every other file creates its own project and never sees the shared folder, so any of them can run alone.
 
-OpenFrame AI is downloaded after install (ADR-0026). Every test build is made with the local model host of the run (`127.0.0.1:47811`, `tests/e2e/lib/model-host.mjs`) in place of Hugging Face; it serves the pinned files at their Hugging Face paths (ADR-0032). Each data folder starts with the model set installed as a finished download leaves it, unless its file has the tag `@e2e-ai-models: none`. "The host" in a scenario is that local model host; a scenario can make it cut a file short, change a byte, send slowly or refuse every request, and can read what it was asked for.
+Straft AI is downloaded after install (ADR-0026). Every test build is made with the local model host of the run (`127.0.0.1:47811`, `tests/e2e/lib/model-host.mjs`) in place of Hugging Face; it serves the pinned files at their Hugging Face paths (ADR-0032). Each data folder starts with the model set installed as a finished download leaves it, unless its file has the tag `@e2e-ai-models: none`. "The host" in a scenario is that local model host; a scenario can make it cut a file short, change a byte, send slowly or refuse every request, and can read what it was asked for.
 
 ## Header tags
 
@@ -32,7 +32,7 @@ OpenFrame AI is downloaded after install (ADR-0026). Every test build is made wi
 |---|---|
 | `@e2e-data-root: own` | The spec gets its own empty data folder (see above). |
 | `@e2e-fake-media` | The web view starts with a fake microphone and camera: no device, no permission prompt, so a voice note can be recorded. |
-| `@e2e-ai-models: none` | The spec starts with OpenFrame AI not downloaded. Every other data folder starts with the model set installed the way a finished download leaves it (ADR-0026). |
+| `@e2e-ai-models: none` | The spec starts with Straft AI not downloaded. Every other data folder starts with the model set installed the way a finished download leaves it (ADR-0026). |
 | `@e2e-net-log` | The web view writes a network log of its own network code into the spec's data folder, so the spec can list every host it asked for. |
 | `@e2e-debug-only: <reason>` | The spec needs a switch that the release build refuses (ADR-0031). A release run lists it with the reason and skips it. |
 
@@ -40,9 +40,9 @@ OpenFrame AI is downloaded after install (ADR-0026). Every test build is made wi
 
 These short forms appear in many files.
 
-**Do the first launch** (with a name and a title): check the screen shows "Welcome to OpenFrame Studio"; select all text in the name field and type the name; click Continue in the dialog; click Create Project; type the title in the project title field; click Create in the dialog; check the Workspaces navigation shows and the window title is "<title> - OpenFrame Studio".
+**Do the first launch** (with a name and a title): check the screen shows "Welcome to Straft Studio"; select all text in the name field and type the name; click Continue in the dialog; click Create Project; type the title in the project title field; click Create in the dialog; check the Workspaces navigation shows and the window title is "<title> - Straft Studio".
 
-**Team password** (gated release run only): every start of the app first shows the team password screen. Type the run's password in the team password field and click Open OpenFrame Studio; check the screen closes.
+**Team password** (gated release run only): every start of the app first shows the team password screen. Type the run's password in the team password field and click Open Straft Studio; check the screen closes.
 
 **Check: the screen is quiet**: no console error or warning was recorded since the last check, every visible control has an accessible name (a label, a title or visible text), and neither the window nor the workspace scrolls sideways.
 

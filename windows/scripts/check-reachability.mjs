@@ -18,8 +18,8 @@ import path from "node:path";
 import url from "node:url";
 import { readFeatureStatus, routeTokens, isReachableStatus, SHELL_ENTRY_POINTS } from "./lib/feature-status.mjs";
 
-const ROOT = process.env.OPENFRAME_CHECK_ROOT
-  ? path.resolve(process.env.OPENFRAME_CHECK_ROOT)
+const ROOT = process.env.STRAFT_CHECK_ROOT
+  ? path.resolve(process.env.STRAFT_CHECK_ROOT)
   : path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
 
 export function sourceRoutes(root = ROOT) {

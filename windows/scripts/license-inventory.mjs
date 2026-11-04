@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Third-party license inventory for OpenFrame Studio.
+// Third-party license inventory for Straft Studio.
 //
 //   node scripts/license-inventory.mjs            write THIRD_PARTY_LICENSES.md
 //   node scripts/license-inventory.mjs --check    also exit 1 if a copyleft/unknown license is found
@@ -36,7 +36,7 @@ const outIdx = args.indexOf("--out");
 const OUT = path.resolve(ROOT, outIdx >= 0 && args[outIdx + 1] ? args[outIdx + 1] : "THIRD_PARTY_LICENSES.md");
 
 // Crates that are part of the workspace but never shipped in the application.
-const NON_SHIPPED_WORKSPACE_CRATES = new Set(["openframe-test-support"]);
+const NON_SHIPPED_WORKSPACE_CRATES = new Set(["straft-test-support"]);
 
 const PERMISSIVE = new Set([
   "0BSD",
@@ -286,8 +286,8 @@ function aiTable(rows) {
 // ------------------------------------------------------------------ bundled fonts
 
 // Compiled into the app for screenplay and document PDFs (ADR-0016), listed with their hashes in
-// crates/openframe-import-export/fonts/fonts.json (checked by tests/fonts_manifest.rs).
-const FONT_MANIFEST = path.join(ROOT, "crates", "openframe-import-export", "fonts", "fonts.json");
+// crates/straft-import-export/fonts/fonts.json (checked by tests/fonts_manifest.rs).
+const FONT_MANIFEST = path.join(ROOT, "crates", "straft-import-export", "fonts", "fonts.json");
 
 function bundledFonts() {
   if (!fs.existsSync(FONT_MANIFEST)) return [];
@@ -298,7 +298,7 @@ function fontTable(rows) {
   const lines = ["| Font file | Family and style | Version | License | Source | SHA-256 |", "|---|---|---|---|---|---|"];
   for (const r of rows) {
     lines.push(
-      `| ${esc(r.file)} | ${esc(`${r.family} ${r.style}`)} | ${esc(r.version)} | ${esc(r.license)} (text: \`crates/openframe-import-export/fonts/${esc(r.licenseFile)}\`) | ${esc(r.source)} | \`${esc(r.sha256)}\` |`,
+      `| ${esc(r.file)} | ${esc(`${r.family} ${r.style}`)} | ${esc(r.version)} | ${esc(r.license)} (text: \`crates/straft-import-export/fonts/${esc(r.licenseFile)}\`) | ${esc(r.source)} | \`${esc(r.sha256)}\` |`,
     );
   }
   return lines.join("\n");
@@ -333,20 +333,20 @@ function render(rust, npm) {
   const flagged = all.filter((r) => r.category === "copyleft" || r.category === "unknown").sort(byName);
   const review = all.filter((r) => r.category === "weak").sort(byName);
   const parts = [];
-  parts.push("# Third-Party Licenses: OpenFrame Studio");
+  parts.push("# Third-Party Licenses: Straft Studio");
   parts.push("");
   parts.push(
     "<!-- GENERATED FILE. Do not edit by hand. Regenerate with `npm run licenses` (scripts/license-inventory.mjs). -->",
   );
   parts.push("");
   parts.push(
-    "This is an inventory of the third-party packages that are compiled into, or shipped with, the OpenFrame Studio " +
+    "This is an inventory of the third-party packages that are compiled into, or shipped with, the Straft Studio " +
       `desktop application (Rust target \`${TARGET}\`, normal dependencies only; npm production dependencies only). ` +
       "Build tools, test tooling and dev-only packages are excluded. This inventory is not a substitute for the full " +
       "license texts, which the release pipeline must bundle with the installer.",
   );
   parts.push("");
-  parts.push("OpenFrame Studio's own license has **not been selected yet**. See `LICENSE-PENDING.md`.");
+  parts.push("Straft Studio's own license has **not been selected yet**. See `LICENSE-PENDING.md`.");
   parts.push("");
   parts.push("## Summary");
   parts.push("");

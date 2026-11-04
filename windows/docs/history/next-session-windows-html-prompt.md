@@ -6,7 +6,7 @@
 > removed the same day at the owner's request. Kept as the record of what was asked.
 
 > Written 2026-10-21 at the owner's request. Paste the block below into a new Claude Code session opened in
-> `C:\OpenFrame`. The Mac side already has the same thing (`mac/MacHTML/` on GitHub main); this is its Windows twin.
+> `C:\Straft`. The Mac side already has the same thing (`mac/MacHTML/` on GitHub main); this is its Windows twin.
 
 ```text
 Read CLAUDE.md, docs/implementation/handoff.md and this file, then build WindowsHTML.

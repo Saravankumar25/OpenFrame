@@ -52,11 +52,11 @@ export function storeName(channel: Channel | undefined): string {
 export function newLaptopInstallStep(channel: Channel | undefined): string {
   switch (channel) {
     case "macAppStore":
-      return "Install OpenFrame Studio on the new laptop from the App Store, signed in with the same Apple Account.";
+      return "Install Straft Studio on the new laptop from the App Store, signed in with the same Apple Account.";
     case "microsoftStore":
-      return "Install OpenFrame Studio on the new laptop from the Microsoft Store, signed in with the same Microsoft account.";
+      return "Install Straft Studio on the new laptop from the Microsoft Store, signed in with the same Microsoft account.";
     default:
-      return "Install OpenFrame Studio on the new laptop.";
+      return "Install Straft Studio on the new laptop.";
   }
 }
 

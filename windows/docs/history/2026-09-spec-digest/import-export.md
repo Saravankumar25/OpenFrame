@@ -1,7 +1,7 @@
-# Digest — OpenFrame Studio Import & Export Specification
+# Digest — Straft Studio Import & Export Specification
 
-Source: `C:\dev\OpenFrame\OpenFrame_Studio_Import_Export_Specification.md` (1467 lines, ~5.1k words, read in full).
-Cross-references: `OpenFrame_Studio_Offline_Collaboration_Specification.md` (cited as **OC §n**).
+Source: `C:\dev\Straft Studio\Straft_Studio_Import_Export_Specification.md` (1467 lines, ~5.1k words, read in full).
+Cross-references: `Straft_Studio_Offline_Collaboration_Specification.md` (cited as **OC §n**).
 Section refs below are to the Import/Export spec (**§n**) unless marked OC.
 
 **How to read this digest**
@@ -15,7 +15,7 @@ Section refs below are to the Import/Export spec (**§n**) unless marked OC.
 
 - The document owns the following behavior: screenplay import, screenplay export, Story Board/production document export, Full Project Package export/import, backup-package semantics, review/exchange packages, package metadata, package validation, import preview, identity mapping, stale-source handling, ambiguous mapping, unmapped review material, partial import, round-trip expectations, export snapshots, private-content exclusion, external-file behavior, project collision, error recovery, and AI interaction with import/export.
 - Authority order: PRD owns product scope and priority. FSD owns application behavior and acceptance. UX/UI owns presentation. Domain/Data owns logical identities and source-of-truth relationships. AI spec owns AI behavior. This document "joins those specifications; it does not replace them."
-- Platform: Windows + macOS desktop. Local-first and offline-capable, with no mandatory OpenFrame cloud. External AI is optional and LAN collaboration is optional.
+- Platform: Windows + macOS desktop. Local-first and offline-capable, with no mandatory Straft Studio cloud. External AI is optional and LAN collaboration is optional.
 
 ## 1. Governing principles (§0.2), verbatim list
 
@@ -43,7 +43,7 @@ Section refs below are to the Import/Export spec (**§n**) unless marked OC.
 | Concept | Nature | Purpose | Examples |
 |---|---|---|---|
 | **A. Document Export** | Human-readable or interchange document snapshot | Distribution and interchange | Screenplay PDF, FDX, Fountain, DOCX, Story Board PDF, Outline PDF, Breakdown PDF/report, Catalog CSV/XLSX-style export, Shot List PDF, Storyboard PDF/image presentation, Schedule PDF, Schedule spreadsheet export "where practical", Call Sheet PDF, Sides PDF, Reports/approved document exports |
-| **B. Exchange Package** | Selected project subset | Review or controlled collaboration without OpenFrame cloud | Story Board package, Screenplay review package, Breakdown package, Shot List package, Schedule package, Call Sheet review package |
+| **B. Exchange Package** | Selected project subset | Review or controlled collaboration without Straft Studio cloud | Story Board package, Screenplay review package, Breakdown package, Shot List package, Schedule package, Call Sheet review package |
 | **C. Full Project Package** | Portable working project transfer | Move a working project to another installation. "It is not merely a PDF collection and is not a review package." | — |
 | **D. Backup Package** | Recovery-oriented copy of supported project state | Backup, recovery, disaster avoidance, migration safety, pre-risk-operation protection | — |
 
@@ -115,10 +115,10 @@ Legend: **Dir** = direction (I = import, E = export). "Preserve" lists what the 
 
 | Format | Dir | Preserve | Lost / omitted | Parsing / heuristics | Round-trip (§23) |
 |---|---|---|---|---|---|
-| **Fountain** | I | "Where valid Fountain structure exists, it should become equivalent OpenFrame screenplay elements." (§4.9) | [NOT SPECIFIED] | Fountain "has explicit screenplay-oriented conventions" (§4.9). The spec does not list the rules (for example forced headings or boneyard). | Exported Fountain "should parse back into equivalent screenplay elements" |
+| **Fountain** | I | "Where valid Fountain structure exists, it should become equivalent Straft Studio screenplay elements." (§4.9) | [NOT SPECIFIED] | Fountain "has explicit screenplay-oriented conventions" (§4.9). The spec does not list the rules (for example forced headings or boneyard). | Exported Fountain "should parse back into equivalent screenplay elements" |
 | **Fountain** | E | "preserve screenplay semantics through standard Fountain representations" (§5.4) | "Internal application metadata that is not screenplay content should not be silently inserted into screenplay text." | — | same |
-| **FDX** (Final Draft `.fdx`) | I | "map supported screenplay structures to OpenFrame screenplay elements as directly as possible" (§4.10) | "Unsupported FDX-specific metadata may be retained as import metadata or ignored according to the documented import result, but it must not silently corrupt screenplay content." | Direct structural mapping | Exported FDX "should be re-importable with screenplay structure substantially intact" |
-| **FDX** | E | "preserve screenplay structure that maps to FDX" (§5.3) | "Unsupported OpenFrame metadata remains internal and must not block ordinary FDX export." | — | same (IEX-005) |
+| **FDX** (Final Draft `.fdx`) | I | "map supported screenplay structures to Straft Studio screenplay elements as directly as possible" (§4.10) | "Unsupported FDX-specific metadata may be retained as import metadata or ignored according to the documented import result, but it must not silently corrupt screenplay content." | Direct structural mapping | Exported FDX "should be re-importable with screenplay structure substantially intact" |
+| **FDX** | E | "preserve screenplay structure that maps to FDX" (§5.3) | "Unsupported Straft Studio metadata remains internal and must not block ordinary FDX export." | — | same (IEX-005) |
 | **DOCX** | I | "preserve screenplay structure where recognizable" (§4.7) | — | DOCX "may contain readable screenplay formatting but may also contain ordinary document content". The importer must "expose uncertainty where it cannot" recognize structure. | "Export/re-import should preserve readable screenplay content even if some layout details vary" |
 | **DOCX** | E | "an editable ordinary document while preserving readable screenplay structure and layout" (§5.5) | Some layout details may vary on round-trip | — | IEX-007 |
 | **TXT** | I | Screenplay-like headings and element patterns "where possible" (§4.8) | — | "TXT may have weak structural signals." The importer should "detect screenplay-like headings and element patterns where possible." It "must not claim guaranteed screenplay fidelity when structure is ambiguous." | [NOT SPECIFIED] (no TXT export) |
@@ -128,7 +128,7 @@ Legend: **Dir** = direction (I = import, E = export). "Preserve" lists what the 
 
 - Supported screenplay **import** inputs (§4.1): PDF; Final Draft `.fdx`; Fountain; TXT; DOCX; pasted screenplay text.
 - Supported screenplay **export** outputs (§5.1): PDF; FDX; Fountain; DOCX. TXT is **not** listed as an export format.
-- "Round-trip" does not mean every internal OpenFrame field becomes portable through every ordinary document format (§23).
+- "Round-trip" does not mean every internal Straft Studio field becomes portable through every ordinary document format (§23).
 
 ### 5.2 Other document exports (§6). All are export-only snapshots.
 
@@ -194,7 +194,7 @@ Comments: normal screenplay PDF export does not insert internal review comments 
 ## 7. Screenplay import workflow (§4)
 
 ### 7.1 Intent (§4.2)
-- Import turns an existing screenplay into OpenFrame screenplay content. "It is not intended to force every document into screenplay structure."
+- Import turns an existing screenplay into Straft Studio screenplay content. "It is not intended to force every document into screenplay structure."
 
 ### 7.2 Lifecycle (§4.3)
 `Select source → Read source → Detect format → Parse screenplay structure → Build import preview → Show warnings → Choose New Screenplay / New Draft → Confirm import → Create screenplay content`
@@ -223,7 +223,7 @@ PDF preview must also show parsing confidence/warnings (§4.6, IEX-004).
 
 ### 7.5 Identity on screenplay re-import
 - The spec does not describe re-importing an FDX/Fountain file *as an update* to an existing draft. The default is always **new screenplay / new named draft**, which is effectively a copy.
-- Non-OpenFrame sources lack identity. §14.3 applies: "mapping must use supported contextual rules and surface ambiguity."
+- Non-Straft Studio sources lack identity. §14.3 applies: "mapping must use supported contextual rules and surface ambiguity."
 - Scene numbers are never used as the sole basis for identity (§14.4).
 
 ### 7.6 Error message (§25)
@@ -234,7 +234,7 @@ PDF preview must also show parsing confidence/warnings (§4.6, IEX-004).
 ## 8. Full Project Package (§7, §21, §22, §27.3)
 
 ### 8.1 Purpose
-Moves the user's working project between supported machines, or preserves it as a complete portable project. OC §7.2 flow: `Machine A Project → Full Project Package → Machine B Open as project/copy`, "without needing OpenFrame cloud."
+Moves the user's working project between supported machines, or preserves it as a complete portable project. OC §7.2 flow: `Machine A Project → Full Project Package → Machine B Open as project/copy`, "without needing Straft Studio cloud."
 
 ### 8.2 Expected contents "to the extent supported" (§7.2)
 - project identity
@@ -288,7 +288,7 @@ Cancel
 `Open Package → Validate → Project Identity → Collision Choice → File/Reference Report → Import`
 
 ### 8.7 Pre-import backup (§8.2)
-- For "a substantial full-project or change-heavy import", OpenFrame may offer:
+- For "a substantial full-project or change-heavy import", Straft Studio may offer:
   > Create Backup Before Import
 - "This is a safety option and does not alter the source package."
 
@@ -317,7 +317,7 @@ Cancel
 ## 10. Exchange packages (§9–§11, §18–§20)
 
 ### 10.1 Core idea (§9.1)
-> "I need another person to review or edit this selected part of the project without giving them the entire project or requiring OpenFrame cloud."
+> "I need another person to review or edit this selected part of the project without giving them the entire project or requiring Straft Studio cloud."
 
 Exchange Packages are "the primary remote collaboration transport" (§30). LAN is not required for exchange interop.
 
@@ -407,7 +407,7 @@ Exchange import UX (§28): `Open Package → Validation → Mapping Preview → 
 |---|---|
 | **Same identity** (§14.1) | If the incoming object "represents an existing project object and the package explicitly carries that identity", import "may propose an update to that existing object after validation and approval." → **update proposal** |
 | **New identity** (§14.2) | If the content "is intentionally a copy/new object, import creates a new stable identity." → **copy** |
-| **Missing identity** (§14.3) | Old or non-OpenFrame source: "mapping must use supported contextual rules and surface ambiguity." The contextual rules themselves are [NOT SPECIFIED]. |
+| **Missing identity** (§14.3) | Old or non-Straft Studio source: "mapping must use supported contextual rules and surface ambiguity." The contextual rules themselves are [NOT SPECIFIED]. |
 | **Display numbers** (§14.4) | "Scene numbers must not be used as the sole basis for object identity." "A changed scene number caused by reordering does not mean the scene is a new object." |
 | **Deleted host object** (§14.5) | "must not silently recreate or overwrite it." Preview message: `> Incoming package refers to an object that no longer exists in the host project.` Then provide "a safe user decision" (the options are [NOT SPECIFIED]). |
 
@@ -488,7 +488,7 @@ Yes
 
 ## 17. Unsupported-feature handling (§24)
 
-When a format cannot represent some OpenFrame metadata:
+When a format cannot represent some Straft Studio metadata:
 1. preserve it internally when exporting the project itself;
 2. omit it from ordinary document output where appropriate;
 3. do not silently translate it into misleading screenplay/content data;
@@ -539,7 +539,7 @@ Error codes and taxonomy are [NOT SPECIFIED].
 ## 21. Offline and collaboration (§29–§30)
 
 - All local imports/exports that do not depend on network services work offline. The spec lists: import FDX; import Fountain; export PDF; export FDX; import exchange package; export exchange package; export full project package; create backup.
-- Exchange Packages are the primary remote collaboration transport. A LAN participant can fall back to `Local work → Export package → Send normally → Import/reconcile`. No OpenFrame cloud is required.
+- Exchange Packages are the primary remote collaboration transport. A LAN participant can fall back to `Local work → Export package → Send normally → Import/reconcile`. No Straft Studio cloud is required.
 
 ## 22. Domain objects used (§32)
 

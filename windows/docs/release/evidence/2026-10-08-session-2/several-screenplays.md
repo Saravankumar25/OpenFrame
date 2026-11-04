@@ -25,7 +25,7 @@ Every place listed in the 2026-10-08 section of `docs/implementation/reconciliat
 | `ai/catalog/story.rs` | Build Screenplay takes a `screenplay` argument; a new draft goes to the named, open or only screenplay, else the tool asks. |
 | Other AI reads | Character rename, scene numbers, character cues, Production Source comparison and project overview work per screenplay. |
 | Frontend | Screenplay picker (`workspaces/screenplay/picker.tsx`: switch, New Screenplay, Rename Screenplay) at the left of the toolbar, keyboard reachable. The route and saved view keep `screenplayId`. Build dialog: "Build a new screenplay document" enabled with a title field (mock 064). Apply order dialog: screenplay chooser. Import dialog: New Screenplay always offered, New Draft names its target, the open screenplay is offered first. Breakdown, Production overview and Schedule banners name the screenplay of the Production Source. The assistant's Current Screenplay scope sends the open draft. |
-| Docs | `docs/engineering/32-screenplay-engine-contract.md` section 1.2; `docs/engineering/ai-tool-coverage.md` regenerated; user manual source (`docs/manual/OpenFrame_Studio_User_Manual.docx`) step 2 in the Screenplay empty state section. |
+| Docs | `docs/engineering/32-screenplay-engine-contract.md` section 1.2; `docs/engineering/ai-tool-coverage.md` regenerated; user manual source (`docs/manual/Straft_Studio_User_Manual.docx`) step 2 in the Screenplay empty state section. |
 
 ## Screenplay delete (second slice, same day)
 

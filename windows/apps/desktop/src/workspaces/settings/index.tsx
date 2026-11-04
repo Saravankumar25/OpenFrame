@@ -26,7 +26,7 @@ import { StoragePanel } from "../../features/storage/StoragePanel";
 function AppearancePage() {
   return (
     <div className="content" style={{ overflow: "auto" }}>
-      <PageHeader title="Appearance" sub="Mode and theme for OpenFrame on this computer. Your projects are not changed." />
+      <PageHeader title="Appearance" sub="Mode and theme for Straft Studio on this computer. Your projects are not changed." />
       <div style={{ maxWidth: 980 }}>
         <AppearancePanel />
       </div>

@@ -65,8 +65,8 @@ mod worker {
     use std::sync::{Arc, Mutex, OnceLock, PoisonError, Weak};
     use std::time::{Duration, Instant, SystemTime};
 
-    use openframe_application::AppCore;
-    use openframe_entitlement::mac::RevalidateReason;
+    use straft_application::AppCore;
+    use straft_entitlement::mac::RevalidateReason;
     use tauri::{AppHandle, RunEvent, WindowEvent};
 
     use super::{FocusTracker, resume_is_redundant, slept};
@@ -96,7 +96,7 @@ mod worker {
         }
         let core = Arc::downgrade(core);
         let spawned = std::thread::Builder::new()
-            .name("openframe-entitlement".into())
+            .name("straft-entitlement".into())
             .spawn(move || run(core, rx));
         if spawned.is_err() {
             tracing::warn!("the licence check thread could not start; the state stays as it is");

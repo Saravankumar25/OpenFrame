@@ -1,7 +1,7 @@
 // Helpers for the Offline AI specs (72..78): drive the AI Assistant panel the way a user does and
 // inspect the real app and engine processes. The app under test carries the engine and finds the
 // real models in its app data, installed by run.mjs as a finished download leaves them (ADR-0026).
-// It runs with deterministic sampling (OPENFRAME_AI_DETERMINISTIC=1, set by run.mjs: temperature 0,
+// It runs with deterministic sampling (STRAFT_AI_DETERMINISTIC=1, set by run.mjs: temperature 0,
 // fixed seed; a debug build only), so the specs assert structure and effects, never the wording of
 // an answer. One real answer takes 20 to 40 seconds on a laptop processor.
 

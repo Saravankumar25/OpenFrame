@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const css = readFileSync(join(__dirname, "openframe.css"), "utf8");
+const css = readFileSync(join(__dirname, "straft.css"), "utf8");
 
 /** The declarations of the first rule whose selector list is exactly `selector`. */
 function rule(selector: string): string {

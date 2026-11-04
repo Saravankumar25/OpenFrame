@@ -1,4 +1,4 @@
-# OpenFrame Studio: release build (docs/engineering/24-windows-packaging-updater.md, 25-ci-cd.md).
+# Straft Studio: release build (docs/engineering/24-windows-packaging-updater.md, 25-ci-cd.md).
 #
 # Triggered by a version tag (vX.Y.Z). FAILS CLOSED: nothing is built unless
 # scripts/release-validate.mjs passes (license selected, versions consistent,
@@ -9,11 +9,11 @@
 #   WINDOWS_CERTIFICATE_PASSWORD        password for the .pfx
 #   TAURI_SIGNING_PRIVATE_KEY           Tauri updater signing key (minisign), content or path
 #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD  password for the updater key
-#   OPENFRAME_TEAM_PASSWORD             team password of the internal build (ADR-0024); build.rs embeds
+#   STRAFT_TEAM_PASSWORD             team password of the internal build (ADR-0024); build.rs embeds
 #                                       only its Argon2id hash, and the build fails without it
 # Required repository variables:
 #   WINDOWS_TIMESTAMP_URL               RFC 3161 timestamp server of the chosen CA
-#   OPENFRAME_AI_ASSETS_DIR             folder on the runner holding the pinned Offline AI build inputs
+#   STRAFT_AI_ASSETS_DIR             folder on the runner holding the pinned Offline AI build inputs
 #                                       (packaging/ai/ai-assets.lock.json, never in git): the engine,
 #                                       packaged in every release file, and the models, which the
 #                                       end-to-end suite serves from its local test host (ADR-0026).
@@ -87,7 +87,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           WINDOWS_TIMESTAMP_URL: ${{ vars.WINDOWS_TIMESTAMP_URL }}
-          OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
+          STRAFT_AI_ASSETS_DIR: ${{ vars.STRAFT_AI_ASSETS_DIR }}
         run: node scripts/release-validate.mjs --tag "${{ env.RELEASE_TAG }}"
 
       - name: Install cargo-deny
@@ -127,11 +127,11 @@ jobs:
       # the relaunch check and the reachability test generated from the feature status file.
       # The test build carries the Offline AI engine (build-app.mjs runs prepare-ai-assets.mjs) and is
       # compiled with the suite's local model host and a throwaway test key; the host serves the
-      # models from the build inputs (ADR-0026). The gate fails closed until OPENFRAME_AI_ASSETS_DIR
+      # models from the build inputs (ADR-0026). The gate fails closed until STRAFT_AI_ASSETS_DIR
       # provides the pinned files.
       - name: Desktop E2E (tauri-driver + WebView2)
         env:
-          OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
+          STRAFT_AI_ASSETS_DIR: ${{ vars.STRAFT_AI_ASSETS_DIR }}
         run: npm run test:e2e
 
       - name: Failure screenshots
@@ -186,7 +186,7 @@ jobs:
           WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
           WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
         run: |
-          $pfx = Join-Path $env:RUNNER_TEMP "openframe-signing.pfx"
+          $pfx = Join-Path $env:RUNNER_TEMP "straft-signing.pfx"
           [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE))
           $pw = ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -Force -AsPlainText
           $cert = Import-PfxCertificate -FilePath $pfx -CertStoreLocation Cert:\CurrentUser\My -Password $pw
@@ -220,11 +220,11 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          OPENFRAME_TEAM_PASSWORD: ${{ secrets.OPENFRAME_TEAM_PASSWORD }}
-          OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
+          STRAFT_TEAM_PASSWORD: ${{ secrets.STRAFT_TEAM_PASSWORD }}
+          STRAFT_AI_ASSETS_DIR: ${{ vars.STRAFT_AI_ASSETS_DIR }}
           # Never the test host in a build for people (ADR-0032; build.rs refuses it).
-          OPENFRAME_TEST_MODEL_SOURCE: ""
-          OPENFRAME_TEST_BUILD: ""
+          STRAFT_TEST_MODEL_SOURCE: ""
+          STRAFT_TEST_BUILD: ""
         run: |
           node scripts/prepare-ai-assets.mjs
           npm --workspace apps/desktop run tauri -- build --bundles nsis,msi --config src-tauri/tauri.bundled-ai.conf.json --config "$env:RUNNER_TEMP/tauri.release.json"
@@ -242,9 +242,9 @@ jobs:
             Write-Host "$($f.Name): $($sig.Status)"
             if ($sig.Status -ne 'Valid') { $bad += $f.Name }
           }
-          $app = Get-AuthenticodeSignature target/release/openframe-desktop.exe
-          Write-Host "openframe-desktop.exe: $($app.Status)"
-          if ($app.Status -ne 'Valid') { $bad += 'openframe-desktop.exe' }
+          $app = Get-AuthenticodeSignature target/release/straft-desktop.exe
+          Write-Host "straft-desktop.exe: $($app.Status)"
+          if ($app.Status -ne 'Valid') { $bad += 'straft-desktop.exe' }
           if ($bad.Count) { Write-Error "Unsigned or invalid: $($bad -join ', ')"; exit 1 }
 
       - name: Software bill of materials (CycloneDX)
@@ -276,7 +276,7 @@ jobs:
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: openframe-${{ env.RELEASE_TAG }}-windows-x64
+          name: straft-${{ env.RELEASE_TAG }}-windows-x64
           path: release-assets/
           if-no-files-found: error
           retention-days: 30
@@ -288,7 +288,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$env:RELEASE_TAG" --draft --verify-tag --title "OpenFrame Studio $env:RELEASE_TAG" --notes "Draft build. Review installers, signatures, SBOM and notices before publishing." (Get-ChildItem release-assets -File).FullName
+          gh release create "$env:RELEASE_TAG" --draft --verify-tag --title "Straft Studio $env:RELEASE_TAG" --notes "Draft build. Review installers, signatures, SBOM and notices before publishing." (Get-ChildItem release-assets -File).FullName
 
       - name: Remove signing certificate from runner
         if: always()
@@ -325,7 +325,7 @@ jobs:
           MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
           MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
           STORE_PRIVACY_POLICY_URL: ${{ vars.STORE_PRIVACY_POLICY_URL }}
-          OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
+          STRAFT_AI_ASSETS_DIR: ${{ vars.STRAFT_AI_ASSETS_DIR }}
         run: node scripts/release-validate.mjs --store --tag "${{ env.RELEASE_TAG }}"
 
       - name: Install cargo-deny
@@ -371,16 +371,16 @@ jobs:
           npm run test:web
           Remove-Item -Recurse -Force apps/desktop/dist
 
-      # OPENFRAME_DISTRIBUTION=store sets cfg(openframe_store): the in-app updater is compiled out
+      # STRAFT_DISTRIBUTION=store sets cfg(straft_store): the in-app updater is compiled out
       # and the executable carries the "store" channel marker that build-msix.mjs --store requires.
       - name: tauri build (Store channel, no installer bundles)
         shell: pwsh
         env:
-          OPENFRAME_DISTRIBUTION: store
-          OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
+          STRAFT_DISTRIBUTION: store
+          STRAFT_AI_ASSETS_DIR: ${{ vars.STRAFT_AI_ASSETS_DIR }}
           # Never the test host in a build for people (ADR-0032; build.rs refuses it).
-          OPENFRAME_TEST_MODEL_SOURCE: ""
-          OPENFRAME_TEST_BUILD: ""
+          STRAFT_TEST_MODEL_SOURCE: ""
+          STRAFT_TEST_BUILD: ""
         run: |
           node scripts/prepare-ai-assets.mjs
           npm --workspace apps/desktop run tauri -- build --no-bundle --config src-tauri/tauri.bundled-ai.conf.json -- --locked
@@ -390,7 +390,7 @@ jobs:
           MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
           MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
           MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
-          OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
+          STRAFT_AI_ASSETS_DIR: ${{ vars.STRAFT_AI_ASSETS_DIR }}
         run: node scripts/build-msix.mjs --store
 
       - name: Collect Store artifacts and checksums
@@ -410,7 +410,7 @@ jobs:
       # (Partner Center > Packages). A human submits it; see docs/engineering/27-microsoft-store.md.
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: openframe-${{ env.RELEASE_TAG }}-msstore-x64
+          name: straft-${{ env.RELEASE_TAG }}-msstore-x64
           path: store-assets/
           if-no-files-found: error
           retention-days: 30

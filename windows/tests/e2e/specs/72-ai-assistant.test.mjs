@@ -61,7 +61,7 @@ describe("Offline AI assistant with the bundled model", () => {
       await click(browser, "Offline AI settings");
       await menuItem(browser, "Offline AI settings");
       await (await browser.$('//section[@aria-label="Offline AI"]')).waitForDisplayed({ timeout: 15_000 });
-      await waitForText(browser, "OpenFrame AI runs on this computer after a one-time download");
+      await waitForText(browser, "Straft AI runs on this computer after a one-time download");
       await (await browser.$('//section[@aria-label="Technical details"]//summary')).click();
       await (await browser.$('//table[@aria-label="Offline AI components"]')).waitForDisplayed({ timeout: 10_000 });
       const rows = await browser.execute(() => [...document.querySelectorAll('table[aria-label="Offline AI components"] tbody tr')].map((r) => r.innerText));
@@ -70,8 +70,8 @@ describe("Offline AI assistant with the bundled model", () => {
       assert.ok(rows.every((r) => /[0-9a-f]{64}/.test(r)), "every component shows its pinned SHA-256");
       const details = await browser.execute(() => document.querySelector('section[aria-label="Technical details"]')?.innerText ?? "");
       assert.match(details, /read-only/);
-      assert.ok(await (await browser.$('//button[normalize-space(.)="Remove OpenFrame AI…"]')).isDisplayed(), "Remove is offered");
-      for (const gone of ["Download OpenFrame AI", "Download Offline AI", "Update Offline AI"]) {
+      assert.ok(await (await browser.$('//button[normalize-space(.)="Remove Straft AI…"]')).isDisplayed(), "Remove is offered");
+      for (const gone of ["Download Straft AI", "Download Offline AI", "Update Offline AI"]) {
         assert.equal(await (await browser.$(`//button[normalize-space(.)="${gone}"]`)).isExisting(), false, `"${gone}" must not exist while installed`);
       }
     });

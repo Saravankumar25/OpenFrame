@@ -32,7 +32,7 @@ menu and panel. Each page then has:
 Say this difference plainly in MacHTML/README.md.
 
 How:
-1. Start from what exists: apps/macos/Sources/OpenFrameE2EDriver/Scenarios/CaptureTour.swift (the old tour),
+1. Start from what exists: apps/macos/Sources/StraftE2EDriver/Scenarios/CaptureTour.swift (the old tour),
    apps/macos/E2E/capture.sh and scripts/mac-html/build-mac-html.mjs. Extend them; do not start over. Delete
    the old MacHTML/ first (git rm; history keeps it) and fix every document that names it.
 2. Seed the invented demo project Night Bus the same way the Windows tour does: first-run screens through the UI
@@ -57,7 +57,7 @@ How:
    and drop, microphone, print panel, forced crashes, disk failures). Each section must leave the app as it
    found it.
 4. Run the parts in parallel if the driver can target one app instance by process id with its own data root
-   (check first; OPENFRAME_DATA_ROOT or the Mac equivalent); otherwise the subagents write their sections in
+   (check first; STRAFT_DATA_ROOT or the Mac equivalent); otherwise the subagents write their sections in
    parallel and one runner runs them. Capture each state in Light and Dark (set through the app's own Appearance
    setting or the core operation it uses), at one fixed window size, recorded in the README.
 5. Generate MacHTML/light/NNN-name.html and MacHTML/dark/NNN-name.html (same NNN-name in both), and

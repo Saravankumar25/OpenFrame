@@ -12,7 +12,7 @@ The backup file is `Global Idea Vault backup.ofvault` in `vault-out`. "Wait for 
 
 1. Do the first launch: type 'E2E Tester' as the name, click Continue, click Create Project, type 'Harbour Ledger' as the title, click Create.
 2. Open the project menu and choose Project settings. Click the Storage tab.
-3. Check: the screen shows the sections "Your OpenFrame library", "Folder for new projects", "Global Idea Vault", "This project" and "App data".
+3. Check: the screen shows the sections "Your Straft Studio library", "Folder for new projects", "Global Idea Vault", "This project" and "App data".
 4. Check: the buttons of the Global Idea Vault section are, in order, "Open Folder", "Back Up…", "Export Package…", "Restore…", "Move…", "Locate Existing Vault…".
 5. Check: "Restore…" and "Locate Existing Vault…" can be clicked (the other four need a vault that exists).
 6. Check: the buttons of the "This project" section include "Open Folder" and "Move Project…".

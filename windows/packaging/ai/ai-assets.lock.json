@@ -1,6 +1,6 @@
 {
   "lockVersion": 1,
-  "bundleId": "openframe-local-ai-v1",
+  "bundleId": "straft-local-ai-v1",
   "bundleVersion": "1.0.0",
   "runtimes": [
     {

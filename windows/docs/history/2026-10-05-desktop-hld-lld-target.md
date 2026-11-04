@@ -1,14 +1,14 @@
-# OpenFrame Studio: Optimal HLD & LLD for the Desktop Application
+# Straft Studio: Optimal HLD & LLD for the Desktop Application
 
 > **History for the shell (2026-10-15).** This target design of 2026-10-05 assumes one Tauri shell. The current structure is one Rust core with a Tauri shell on Windows and a SwiftUI shell on the Mac ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md), [architecture/README.md](../architecture/README.md)). This file moves to the archive in Windows phase W1.
 
 > **Repository integration (2026-10-05).** Promoted from the supplied HLD/LLD. It describes the **target architecture** and
-> overlaps with `OpenFrame_ESD_Technical_Architecture.md` and docs 13, 14 and 17; where they differ on current behaviour, the ESD and
+> overlaps with `Straft_ESD_Technical_Architecture.md` and docs 13, 14 and 17; where they differ on current behaviour, the ESD and
 > the code win, and this file wins only for the target items (platform services, theme subsystem, screenplay layout service,
 > lineage rules). The bounded-context view and dependency directions are enforced by CONTRIBUTING §2 and the architecture lint (build plan: architecture lint).
-> Platform sections follow ADR-0017 (Accepted 2026-10-06: Windows 11 only, Apple silicon only, three release files from one codebase). The repository additions it lists (`crates/openframe-platform` and so on) belong to the "Platform adapter layer for Windows and Mac" area of the build plan, which is on the release path.
+> Platform sections follow ADR-0017 (Accepted 2026-10-06: Windows 11 only, Apple silicon only, three release files from one codebase). The repository additions it lists (`crates/straft-platform` and so on) belong to the "Platform adapter layer for Windows and Mac" area of the build plan, which is on the release path.
 
-**Baseline reviewed:** OpenFrame `main`, HEAD
+**Baseline reviewed:** Straft Studio `main`, HEAD
 `d30b5889ab5edf9f69d60f8e6d600cb11d4921a0`\
 **Primary architecture:** Tauri v2 + React/TypeScript + Rust + SQLite\
 **Target platforms:** Windows and macOS\
@@ -20,14 +20,14 @@ data, commands, undo/redo, AI, project files, or user workflows.
 
 ## 1. Executive architecture decision
 
-OpenFrame should remain a **single-process desktop application with a
+Straft Studio should remain a **single-process desktop application with a
 strongly isolated webview UI and a Rust application core**.
 
 The target architecture is:
 
 ``` text
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         OPENFRAME DESKTOP                            │
+│                         STRAFT STUDIO DESKTOP                            │
 │                                                                     │
 │  React / TypeScript UI                                              │
 │  ├─ Shell / navigation / workspaces                                 │
@@ -44,7 +44,7 @@ The target architecture is:
 │             └─ external URL opening                                   │
 │                    │                                                │
 │                    ▼                                                │
-│              openframe-application                                   │
+│              straft-application                                   │
 │              ├─ AppCore                                               │
 │              ├─ Registry                                              │
 │              ├─ Store / transaction pipeline                          │
@@ -97,29 +97,29 @@ The current repository already establishes a strong layering model.
   ----------------------------------------------------------------------------
   Layer                        Current responsibility  Future rule
   ---------------------------- ----------------------- -----------------------
-  `openframe-domain`           IDs, errors, roles,     Keep I/O-free
+  `straft-domain`           IDs, errors, roles,     Keep I/O-free
                                capabilities, enums,    
                                format constants        
 
-  `openframe-persistence`      SQLite connection       Remain canonical
+  `straft-persistence`      SQLite connection       Remain canonical
                                policy, migrations,     persistence boundary
                                undo, integrity,        
                                backups                 
 
-  `openframe-project-format`   folder layout,          Add platform-neutral
+  `straft-project-format`   folder layout,          Add platform-neutral
                                manifest, lock, crash   abstractions only
                                marker, atomic          
                                filesystem operations   
 
-  `openframe-security`         path confinement, ZIP   Become shared security
+  `straft-security`         path confinement, ZIP   Become shared security
                                safety, hashing,        foundation
                                signatures, redaction   
 
-  `openframe-application`      AppCore, Registry,      Remain platform-neutral
+  `straft-application`      AppCore, Registry,      Remain platform-neutral
                                Store, modules, AI,     
                                search                  
 
-  `openframe-desktop` / Tauri  IPC, asset protocol,    Own OS-specific
+  `straft-desktop` / Tauri  IPC, asset protocol,    Own OS-specific
                                dialogs, platform       behavior
                                integration, logging    
 
@@ -135,7 +135,7 @@ architectures.
 
 # 3. HLD: bounded contexts
 
-OpenFrame should be treated as several bounded contexts connected
+Straft Studio should be treated as several bounded contexts connected
 through explicit contracts.
 
 ## 3.1 Project context
@@ -157,7 +157,7 @@ Owns:
 Canonical storage:
 
 ``` text
-<Project>.openframe/
+<Project>.straft/
   manifest.json
   project.sqlite
   assets/
@@ -526,7 +526,7 @@ Only the platform path provider knows how these resolve.
 A project is still a normal folder:
 
 ``` text
-Title.openframe/
+Title.straft/
 ```
 
 The extension is part of the product contract, not a Windows-only
@@ -540,7 +540,7 @@ The application should compile from the same workspace but use platform
 adapters.
 
 ``` text
-openframe-platform
+straft-platform
   ├─ paths
   ├─ process
   ├─ file_open
@@ -696,7 +696,7 @@ subsystem.
 
 ``` text
 ThemeRegistry
- ├─ canonical OpenFrame Default
+ ├─ canonical Straft Default
  ├─ built-in themes
  ├─ My Themes
  └─ imported themes
@@ -962,7 +962,7 @@ These should be additive:
 
 ``` text
 crates/
-  openframe-platform/
+  straft-platform/
     src/
       lib.rs
       paths.rs

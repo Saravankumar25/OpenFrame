@@ -6,9 +6,9 @@ All identifiers below were read from the repository at the commit named here. An
 
 | Item | Value |
 |---|---|
-| Repository | `https://github.com/Saravankumar25/OpenFrame` |
+| Repository | `https://github.com/Saravankumar25/StraftStudio` |
 | Branch inspected | `main` |
-| **Commit used as source of truth** | `2f5a045416bd2125801329533fc47f986ccc8174` — "Add website/: OpenFrame Studio public website (live at openframe-studio.pages.dev)" (committed 2026-10-21; still the tip of `main` when checked with `git ls-remote` on 2026-10-23) |
+| **Commit used as source of truth** | `2f5a045416bd2125801329533fc47f986ccc8174` — "Add website/: Straft Studio public website (live at straft-studio.pages.dev)" (committed 2026-10-21; still the tip of `main` when checked with `git ls-remote` on 2026-10-23) |
 | Working checkout | **None supplied**: the working directory (`export changes/`) is not a git repository and contains no application source. The repository was therefore cloned read-only (blobless, sparse: `windows/crates/**`, `windows/apps/desktop/src/**`, `mac/crates/…/exports`, selected docs) into a scratch folder outside the package. No application file was modified, committed or pushed. |
 | Earlier audit pack (supplied) | pinned to `324cd963240b6c563c93ad065b239b1e6d5e31c2` (2026-10-20) |
 | Commits between audit and `main` | 43 (`git rev-list --count 324cd96..2f5a045`), mostly WindowsHTML/MacHTML captures, Mac work and the website. |
@@ -17,14 +17,14 @@ All identifiers below were read from the repository at the commit named here. An
 
 | Area | Change | Effect on this package |
 |---|---|---|
-| `windows/crates/openframe-application/src/modules/exports/daily_view.rs` | **New file, 333 lines**; op `schedule.export_daily_view` registered in `exports/mod.rs` ("Export one shooting day's Daily View"), formats PDF · TXT | The audit pack (and its CSV) describes the Daily View as `schedule.export_schedule` opened with `dayFirst`; that is **outdated**. Daily View now has its own builder → its own design (no baseline PDF was supplied). |
+| `windows/crates/straft-application/src/modules/exports/daily_view.rs` | **New file, 333 lines**; op `schedule.export_daily_view` registered in `exports/mod.rs` ("Export one shooting day's Daily View"), formats PDF · TXT | The audit pack (and its CSV) describes the Daily View as `schedule.export_schedule` opened with `dayFirst`; that is **outdated**. Daily View now has its own builder → its own design (no baseline PDF was supplied). |
 | `exports/story_page.rs` + op `story.page.export` | **New**: Story page (free writing) export TXT/PDF/DOCX | Excluded from scope by the brief. |
 | `exports/story.rs`, `buttons.tsx`, `ExportDialog.tsx`, `model.ts`, `export.test.tsx` | "Story Board" → **"Beat Board"** rename in user-visible strings; `StoryExportButton` title "Export Beat Board"; layout choice labels "Outline PDF" / "Board PDF" | The supplied PDFs' metadata titles still read "Story Board" / "Story Board Outline" (verified with PyMuPDF) — those PDFs were produced before the rename or the PDF title string was not renamed (see Beat Board spec). |
 | `modules/exports/mod.rs` (+60) | module list/doc table updated for daily view + story page | Op table in the header comment is the authoritative export list (§2 below). |
-| `windows/crates/openframe-import-export/src/report.rs`, `report/design*.rs` | **No change** since the audit (not in the diff stat) | The renderer description in the audit pack remains valid. |
+| `windows/crates/straft-import-export/src/report.rs`, `report/design*.rs` | **No change** since the audit (not in the diff stat) | The renderer description in the audit pack remains valid. |
 | `breakdown.rs`, `budget.rs`, `callsheet.rs`, `dood.rs`, `reports.rs`, `schedule.rs`, `sides.rs`, `style.rs`, `visual.rs` | unchanged | — |
 
-Not compared: the `mac/` tree (separate Rust crates exist: `mac/crates/openframe-application/src/modules/exports/{daily.rs,…}` and `mac/crates/openframe-import-export/src/report*`). The supplied PDFs match the **Windows** renderer (Helvetica base-14, navy/orange design blocks, `Created using OpenFrame` footer), so Windows is the authority; any Mac port is an open question.
+Not compared: the `mac/` tree (separate Rust crates exist: `mac/crates/straft-application/src/modules/exports/{daily.rs,…}` and `mac/crates/straft-import-export/src/report*`). The supplied PDFs match the **Windows** renderer (Helvetica base-14, navy/orange design blocks, `Created using Straft Studio` footer), so Windows is the authority; any Mac port is an open question.
 
 ## 2. The export inventory (from `exports/mod.rs` header table + UI)
 
@@ -70,10 +70,10 @@ All buttons are in `windows/apps/desktop/src/features/export/buttons.tsx` and op
 
 | Layer | Path (under `windows/`) |
 |---|---|
-| Document builders | `crates/openframe-application/src/modules/exports/{story,breakdown,visual,schedule,dood,daily_view,callsheet,reports,budget}.rs` (+ `style.rs`, `mod.rs`) |
-| Source data models | `crates/openframe-application/src/modules/schedule/{callsheet,board,dood,budget,…}.rs`, `crates/openframe-domain/src` |
-| Renderer | `crates/openframe-import-export/src/report.rs` (`Document`, `Block`, `to_pdf_strict`, `MARGIN=46`, `FOOTER_SPACE=34`, `BRAND_LINE`) and `report/design.rs`, `design/{blocks,cards,table}.rs` (`pal`, `Tone`, `Txt`, `Chip`, `Masthead`, `Metrics`, `Section`, `Banner`, `Callout`, `Legend`, `Cards`, `StyledTable`) |
-| Low-level PDF | `crates/openframe-import-export/src/pdfgen.rs` (`pdf-writer`), `pdf_fonts.rs`, `winansi.rs` |
+| Document builders | `crates/straft-application/src/modules/exports/{story,breakdown,visual,schedule,dood,daily_view,callsheet,reports,budget}.rs` (+ `style.rs`, `mod.rs`) |
+| Source data models | `crates/straft-application/src/modules/schedule/{callsheet,board,dood,budget,…}.rs`, `crates/straft-domain/src` |
+| Renderer | `crates/straft-import-export/src/report.rs` (`Document`, `Block`, `to_pdf_strict`, `MARGIN=46`, `FOOTER_SPACE=34`, `BRAND_LINE`) and `report/design.rs`, `design/{blocks,cards,table}.rs` (`pal`, `Tone`, `Txt`, `Chip`, `Masthead`, `Metrics`, `Section`, `Banner`, `Callout`, `Legend`, `Cards`, `StyledTable`) |
+| Low-level PDF | `crates/straft-import-export/src/pdfgen.rs` (`pdf-writer`), `pdf_fonts.rs`, `winansi.rs` |
 | Branding | `exports/mod.rs::deliver` → `out.doc.brand = Some(BRAND_LINE)`; `design::draw_footer` + `lockup()` + `draw_mark` |
 | Result object | `ExportResult` (path, pages, scope/contents labels, warnings, `private_notes_excluded`) |
 
@@ -98,4 +98,4 @@ Per-export field-level mappings are in each export's `.md` (section C/D).
 | Budget — Summary | 4 | portrait | Budget Summary |
 | *(none supplied)* | — | — | **Daily View — no baseline** |
 
-The supplied *design-reference folder* (`OpenFrame_PDF_Export_Audit_and_Redesign_Pack/`) contains audit/redesign **documents only** — no earlier HTML or visual designs. The reconciliation rule "structure from one reference, polish from another" therefore reduced to: structure and content = current source + current PDFs; polish = the Windows `report/design.rs` design language, sharpened in `PDF_Design_System.md`.
+The supplied *design-reference folder* (`Straft_PDF_Export_Audit_and_Redesign_Pack/`) contains audit/redesign **documents only** — no earlier HTML or visual designs. The reconciliation rule "structure from one reference, polish from another" therefore reduced to: structure and content = current source + current PDFs; polish = the Windows `report/design.rs` design language, sharpened in `PDF_Design_System.md`.

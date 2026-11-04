@@ -4,7 +4,7 @@
 //   2. builds the real app (debug, embedded UI) unless --no-build;
 //   3. runs specs/*.test.mjs in file-name order with node:test, one tauri-driver per data root.
 //
-// Data roots (OPENFRAME_DATA_ROOT, honoured by debug builds only) live under tests/e2e/.run/<stamp>/:
+// Data roots (STRAFT_DATA_ROOT, honoured by debug builds only) live under tests/e2e/.run/<stamp>/:
 //
 //   * shared/   the journey data root. 01-journey seeds the demo project "Night Bus"; 02-restart,
 //               90-visual-baseline and 95-reachability reopen it, in that order. These specs depend
@@ -19,12 +19,12 @@
 // flags reach the webview through the session capabilities (E2E_WEBVIEW_ARGS, see lib/app.mjs);
 // no other spec gets them.
 //
-// Every spec runs with deterministic Offline AI sampling (OPENFRAME_AI_DETERMINISTIC=1: temperature 0
+// Every spec runs with deterministic Offline AI sampling (STRAFT_AI_DETERMINISTIC=1: temperature 0
 // and a fixed seed; honoured by debug builds on an isolated data root only).
 //
-// OpenFrame AI is downloaded after install (ADR-0026). The run starts the local model host
+// Straft AI is downloaded after install (ADR-0026). The run starts the local model host
 // (lib/model-host.mjs) that every test build is compiled with, and each data root starts with the
-// model set installed the way a finished download leaves it, so the AI specs find OpenFrame AI
+// model set installed the way a finished download leaves it, so the AI specs find Straft AI
 // ready. A spec whose header contains `// @e2e-ai-models: none` starts with nothing downloaded (the
 // download specs). Each data root gets its own host control file and request log
 // (E2E_MODEL_HOST_CTL, E2E_MODEL_HOST_LOG).
@@ -32,8 +32,8 @@
 // Options: --no-build (reuse the last build), --only=<substring>[,<substring>...] (filter specs),
 // --release=gated | --release=open (drive the release executable, with or without the team password
 // screen; see scripts/build-app.mjs. Specs marked `// @e2e-debug-only: <reason>` are listed and skipped).
-// --app=<installed openframe-desktop.exe> (needs --release=gated): drive an installed build, never
-// build, take the team password from OPENFRAME_TEAM_PASSWORD or the Windows User scope, still
+// --app=<installed straft-desktop.exe> (needs --release=gated): drive an installed build, never
+// build, take the team password from STRAFT_TEAM_PASSWORD or the Windows User scope, still
 // preinstall the models in each data root, and skip specs marked `// @e2e-needs-test-host: <reason>`.
 // Failure screenshots and visual diffs go to tests/e2e/artifacts/ (gitignored).
 
@@ -51,7 +51,7 @@ const args = new Set(process.argv.slice(2));
 // --release=gated | --release=open: drive the release executable (build-app.mjs explains both).
 const RELEASE = [...args].find((a) => a.startsWith("--release="))?.slice("--release=".length) ?? false;
 if (RELEASE && !["gated", "open"].includes(RELEASE)) throw new Error(`Unknown --release=${RELEASE}; use gated or open.`);
-// --app=<path to an installed openframe-desktop.exe>: gate G2, "tested as shipped". Never builds.
+// --app=<path to an installed straft-desktop.exe>: gate G2, "tested as shipped". Never builds.
 const APP_ARG = [...args].find((a) => a.startsWith("--app="))?.slice("--app=".length);
 if (APP_ARG && RELEASE !== "gated") throw new Error("--app needs --release=gated (the installed build asks the team password).");
 if (APP_ARG && !existsSync(APP_ARG)) throw new Error(`--app: ${APP_ARG} does not exist.`);
@@ -132,8 +132,8 @@ async function runGroup(files, dataRoot, fakeMedia = false, noModels = false, ne
   console.log(`\nE2E data root: ${dataRoot}\n  specs: ${files.join(", ")}${fakeMedia ? " (fake media devices)" : ""}`);
   const env = {
     ...process.env,
-    OPENFRAME_DATA_ROOT: dataRoot,
-    OPENFRAME_AI_DETERMINISTIC: "1",
+    STRAFT_DATA_ROOT: dataRoot,
+    STRAFT_AI_DETERMINISTIC: "1",
     E2E_APP: APP_BINARY,
     E2E_DATA_ROOT: dataRoot,
     E2E_PORT: String(PORT),
@@ -143,7 +143,7 @@ async function runGroup(files, dataRoot, fakeMedia = false, noModels = false, ne
   };
   delete env.E2E_WEBVIEW_ARGS;
   delete env.E2E_TEAM_PASSWORD;
-  delete env.OPENFRAME_TEAM_PASSWORD;
+  delete env.STRAFT_TEAM_PASSWORD;
   if (RELEASE) env.E2E_RELEASE = RELEASE;
   if (GATE_PASSWORD) env.E2E_TEAM_PASSWORD = GATE_PASSWORD;
   delete env.E2E_NET_LOG;
@@ -191,7 +191,7 @@ async function main() {
     // (ADR-0030 decision 6). The scan gets this run's throwaway password through its environment.
     const scan = spawnSync(process.execPath, [join(E2E_ROOT, "..", "..", "scripts", "scan-installer.mjs"), APP_BINARY], {
       stdio: "inherit",
-      env: { ...process.env, OPENFRAME_TEAM_PASSWORD: GATE_PASSWORD }, // secret-scan: allow (this run's random test password)
+      env: { ...process.env, STRAFT_TEAM_PASSWORD: GATE_PASSWORD }, // secret-scan: allow (this run's random test password)
     });
     if (scan.status !== 0) throw new Error("The gated release executable failed the string scan.");
   }

@@ -7,7 +7,7 @@
 
 ## Method
 
-1. The owner's change lists (`all_changes.docx`, `openframe-chnages.docx`) and the AI brief screenshots: each item
+1. The owner's change lists (`all_changes.docx`, `straft-chnages.docx`) and the AI brief screenshots: each item
    reproduced in the app, then fixed (see `change-log.md`).
 2. Layout geometry spec: the journey project "Night Bus" plus stress text (a 300-character card title, a 200-character
    unbroken address, mixed Telugu, Tamil, Devanagari, emoji and accented Latin, a 62-character character name). It
@@ -31,7 +31,7 @@
 | 8 | Low | AI answers | Long list items ended in an ellipsis on unbroken text | `text-overflow` on list items | Fixed: items wrap |
 | 9 | High | Navigation rail, every theme | Workspace buttons drawn as grey browser buttons with unreadable text (contrast 1.44 to 1, theme spec 91) | The rail button rules were lost from app.css in the first polish checkpoint | Fixed: rules restored |
 | 10 | Medium | Settings, Offline AI, beside the AI panel | Two cards squeezed to about 200 px; the status chip was cut | Growing cards with no minimum width next to a fixed 420 px card | Fixed: cards wrap below 320 px |
-| 11 | Low | Dark themes | OpenFrame Default dark was a copy of Studio Amber; screenplay suggestions low contrast | Shared seeds | Fixed: own palette |
+| 11 | Low | Dark themes | Straft Default dark was a copy of Studio Amber; screenplay suggestions low contrast | Shared seeds | Fixed: own palette |
 
 Measured after the fixes: page sideways scroll 0, AI panel overlap 0 and navigation overlap 0 on every screen state;
 no control outside the window, cut off or covered; no text cut without its full text available.
@@ -41,6 +41,6 @@ no control outside the window, cut off or covered; no text cut without its full 
 - Display scaling above 100 percent, Windows Snap layouts and a maximised window on a second monitor were not run by
   automation; the team hand test covers them.
 - IME composition (typing Telugu or Hindi with an input method) is not automated; pasted Indic text is.
-- Contrast is enforced by the theme contrast pairs in `crates/openframe-application/src/modules/appearance/theme.rs`
+- Contrast is enforced by the theme contrast pairs in `crates/straft-application/src/modules/appearance/theme.rs`
   and the theme spec (91); there is no per-pixel contrast scan of every screen.
 - Before and after screenshots exist only as the geometry numbers and the visual baseline; no HTML mock-ups were made.

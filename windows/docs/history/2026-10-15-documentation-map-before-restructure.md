@@ -1,4 +1,4 @@
-# OpenFrame Studio documentation map
+# Straft Studio documentation map
 
 > Rewritten 2026-10-09 around the three chapters of the work. Start here. It says where every document lives, which one
 > wins when two disagree, what is current and what is history, and what must be updated when the code changes.
@@ -7,7 +7,7 @@
 
 | If you want to know | Read |
 |---|---|
-| What OpenFrame is, who it is for, the three chapters | [product/vision-and-scope.md](product/vision-and-scope.md) |
+| What Straft Studio is, who it is for, the three chapters | [product/vision-and-scope.md](product/vision-and-scope.md) |
 | What to do next | [roadmap/README.md](roadmap/README.md), then the page for the chapter |
 | How it is built, in simple words | [architecture/README.md](architecture/README.md), then the full [report](reports/2026-10-09-project-retrospection-and-audit.md) |
 | What works and how well it is proved | [implementation/feature-status.md](implementation/feature-status.md) |
@@ -105,16 +105,16 @@ Full table with replaced decisions: [adr/README.md](adr/README.md).
 
 | Question | Document |
 |---|---|
-| What are we building and why | [PRD](specs/OpenFrame_Studio_Mega_PRD_Aligned_Updated.md) |
-| How each feature behaves | [Functional Specification](specs/OpenFrame_Studio_Functional_Specification_Document_Aligned_Updated.md) |
-| How each screen behaves | [UX/UI Specification](specs/OpenFrame_Studio_UX_UI_Specification_Updated.md) |
-| What objects exist | [Domain and Data Specification](specs/OpenFrame_Studio_Domain_Data_Specification_Updated.md) |
-| Screenplay depth, production depth, themes (newest) | [Revision 1](specs/OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md) |
-| Offline and packages (LAN removed) | [Offline and Collaboration](specs/OpenFrame_Studio_Offline_Collaboration_Specification.md) |
-| Formats | [Import and Export](specs/OpenFrame_Studio_Import_Export_Specification.md) |
-| What AI may do | [AI spec](specs/OpenFrame_Studio_AI_Specification_Updated.md), [agent behaviour](specs/openframe_ai_agentic_rag_spec_prompt.md), [runtime](specs/OpenFrame_Local_AI_Runtime_Model_Management_Specification.md) |
-| What leaves the computer | [Security, Privacy, Data Ownership](specs/OpenFrame_Studio_Security_Privacy_Data_Ownership_Specification.md) |
-| How engineering builds it | [ESD](specs/OpenFrame_ESD_Technical_Architecture.md), [Engineering Package Index](specs/OpenFrame_Studio_Engineering_Package_Index.md), [engineering/](engineering) |
+| What are we building and why | [PRD](specs/Straft_Studio_Mega_PRD_Aligned_Updated.md) |
+| How each feature behaves | [Functional Specification](specs/Straft_Studio_Functional_Specification_Document_Aligned_Updated.md) |
+| How each screen behaves | [UX/UI Specification](specs/Straft_Studio_UX_UI_Specification_Updated.md) |
+| What objects exist | [Domain and Data Specification](specs/Straft_Studio_Domain_Data_Specification_Updated.md) |
+| Screenplay depth, production depth, themes (newest) | [Revision 1](specs/Straft_Studio_Screenplay_and_Production_Depth_Specification.md) |
+| Offline and packages (LAN removed) | [Offline and Collaboration](specs/Straft_Studio_Offline_Collaboration_Specification.md) |
+| Formats | [Import and Export](specs/Straft_Studio_Import_Export_Specification.md) |
+| What AI may do | [AI spec](specs/Straft_Studio_AI_Specification_Updated.md), [agent behaviour](specs/straft_ai_agentic_rag_spec_prompt.md), [runtime](specs/Straft_Local_AI_Runtime_Model_Management_Specification.md) |
+| What leaves the computer | [Security, Privacy, Data Ownership](specs/Straft_Studio_Security_Privacy_Data_Ownership_Specification.md) |
+| How engineering builds it | [ESD](specs/Straft_ESD_Technical_Architecture.md), [Engineering Package Index](specs/Straft_Studio_Engineering_Package_Index.md), [engineering/](engineering) |
 
 ## 7. Engineering documents
 

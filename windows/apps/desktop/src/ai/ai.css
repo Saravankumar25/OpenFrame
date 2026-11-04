@@ -37,7 +37,7 @@
 .ai-tech .ai-col-size{width:12%;white-space:nowrap}
 .ai-tech td:nth-child(3){white-space:nowrap}
 .ai-tech td{overflow-wrap:anywhere}
-/* Plain answers (OpenFrameAI.docx section 4.1): normal weight, paragraphs kept. */
+/* Plain answers (StraftAI.docx section 4.1): normal weight, paragraphs kept. */
 .ai .ai-text{line-height:1.5;overflow-wrap:anywhere}
 .ai .ai-p{margin:0 0 6px}
 .ai .ai-list{margin:0 0 6px;padding-left:20px}

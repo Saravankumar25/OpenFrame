@@ -1,10 +1,10 @@
-# Agent handoff — implementing the OpenFrame PDF designs
+# Agent handoff — implementing the Straft Studio PDF designs
 
-Give this file to the coding assistant together with the package (this folder, or `OpenFrame_PDF_Design_Package_v2.zip`) and access to the OpenFrame repository.
+Give this file to the coding assistant together with the package (this folder, or `Straft_PDF_Design_Package_v2.zip`) and access to the Straft Studio repository.
 
 ## Task
 
-Implement the PDF designs in this package in OpenFrame's Rust PDF renderer (the `windows/` tree of `Saravankumar25/OpenFrame`, current `main`; the package was prepared against commit `2f5a045416bd2125801329533fc47f986ccc8174`). Work one export at a time.
+Implement the PDF designs in this package in Straft Studio's Rust PDF renderer (the `windows/` tree of `Saravankumar25/StraftStudio`, current `main`; the package was prepared against commit `2f5a045416bd2125801329533fc47f986ccc8174`). Work one export at a time.
 
 ## Read first
 
@@ -28,7 +28,7 @@ Implement the PDF designs in this package in OpenFrame's Rust PDF renderer (the 
 - The HTML and PDF are references rendered by Chrome, **not** an implementation. Match the spec's rules (pagination, keep-together, repeated table headers, type sizes, spacing), not Chrome's exact break positions or the browser's Arial metrics. Renderer text is PDF base-14 Helvetica.
 - Verify every source identifier named in a spec against the repository before relying on it. If something differs, say so and follow the repository for behaviour, the spec for appearance.
 - Do the shared work first, then exports one by one:
-  1. Footer on every page: embed the official logo `00_SYSTEM/assets/openframe-logo.png` losslessly (once, reused), `Created using OpenFrame` directly below it, real `Page X of Y` at the lower right; bottom content margin 66 pt. Do not redraw or retype the logo. No footer rule, no project text in the footer.
+  1. Footer on every page: embed the official logo `00_SYSTEM/assets/straft-logo.png` losslessly (once, reused), `Created using Straft Studio` directly below it, real `Page X of Y` at the lower right; bottom content margin 66 pt. Do not redraw or retype the logo. No footer rule, no project text in the footer.
   2. Running-header support (a single top-right line). Mandatory only for the Call Sheet (`PRODUCTION · SHOOT DAY NN · REVISION n`); other exports as each spec states.
   3. Shared table and card behaviour: title row inside the repeating header, keep-with-next, no split rows or cards, keep-together groups.
 - Several designs need new renderer features (Appendix B of the design system). Flag anything you cannot build instead of approximating it silently.

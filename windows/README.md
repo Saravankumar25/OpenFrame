@@ -1,6 +1,6 @@
-# OpenFrame Studio
+# Straft Studio
 
-OpenFrame Studio is a **local-first desktop studio for writers, screenwriters and production teams**. It takes a film from first idea to shoot day in one
+Straft Studio is a **local-first desktop studio for writers, screenwriters and production teams**. It takes a film from first idea to shoot day in one
 project: Idea Vault, Beat Board (acts, sequences, beats and scene cards), screenplay, breakdown and production
 catalog, visual planning, shooting schedule and call sheets. It is built with Tauri v2, React and TypeScript for the
 interface, and Rust with SQLite for everything that owns data. It targets Windows 11 and Apple silicon Macs from one
@@ -19,15 +19,15 @@ These statements describe the code in this repository. They are not aspirations.
 
 | Promise | How it holds in this implementation |
 |---|---|
-| **No account, no sign-in** | There is no login, server or identity provider. On first launch OpenFrame creates a local profile in `%LOCALAPPDATA%\OpenFrame\app.sqlite`: a random UUIDv7 user id plus a display name, defaulting to your Windows user name and changeable in the app. |
-| **Your projects are ordinary folders on your computer** | Each project is a `<Title>.openframe` folder, by default under `Documents\OpenFrame\Projects`. It holds a SQLite database, a JSON manifest and your media under `assets/`. The Global Idea Vault lives in `Documents\OpenFrame\Global Idea Vault`. You can copy, back up or delete these folders yourself. |
+| **No account, no sign-in** | There is no login, server or identity provider. On first launch Straft Studio creates a local profile in `%LOCALAPPDATA%\Straft\app.sqlite`: a random UUIDv7 user id plus a display name, defaulting to your Windows user name and changeable in the app. |
+| **Your projects are ordinary folders on your computer** | Each project is a `<Title>.straft` folder, by default under `Documents\Straft Studio\Projects`. It holds a SQLite database, a JSON manifest and your media under `assets/`. The Global Idea Vault lives in `Documents\Straft Studio\Global Idea Vault`. You can copy, back up or delete these folders yourself. |
 | **No telemetry, analytics or crash upload** | The application contains no telemetry, analytics or crash-reporting code, and makes no background network requests. |
-| **No network listener** | OpenFrame opens no listening socket that other computers can reach. Collaboration is file-based: you export a package and send it however you like. The only listeners are the Offline AI engines (while in use), bound to `127.0.0.1` on a random port and protected by a random per-launch key. |
+| **No network listener** | Straft Studio opens no listening socket that other computers can reach. Collaboration is file-based: you export a package and send it however you like. The only listeners are the Offline AI engines (while in use), bound to `127.0.0.1` on a random port and protected by a random per-launch key. |
 | **The UI cannot reach the network or your disk** | The webview's Content Security Policy allows connections only to the Tauri IPC channel. The webview has no filesystem, shell or HTTP plugin (lint-enforced). Every read and write goes through one allow-listed Rust entry point (`of_invoke`), and files are opened by id with the path resolved in Rust. |
 | **Network use** | The running app itself makes no network requests. There are two exceptions. (1) When you open a web link saved in the Idea Vault, the link is handed to your default browser. (2) If the WebView2 runtime is missing, the installer downloads Microsoft's WebView2 bootstrapper. Windows 11 ships with WebView2, so this normally does not happen. Offline AI is installed with the app and never uses the network (ADR-0026). No project content is ever sent. *Planned:* the direct-download edition's update check, only after you approve it. |
-| **Logs stay local** | Diagnostic logs are written only to `%LOCALAPPDATA%\OpenFrame\logs` and kept for 14 days. They record operation names, error codes and timings, not project content. Panic messages are redacted (user paths, e-mail addresses, tokens). |
-| **Not encrypted by OpenFrame** | Project data is protected by your Windows account's file permissions, like any document. OpenFrame does not encrypt projects at rest. Optional encrypted projects are later scope. |
-| **AI runs on this computer, right after install** | The optional AI assistant uses **Offline AI**: one local model (Google Gemma 3 1B Instruct) and a small local embedding model (BGE small English v1.5), run by OpenFrame-managed `llama.cpp` processes. There are no cloud AI providers, API keys, accounts or Ollama, and no model choice. The AI runtime ships inside the app. The models (about 1.1 GB) download once, after install, when you click **Download OpenFrame AI** (ADR-0026); the app checks every downloaded file against a signed manifest and SHA-256 hashes before it uses it. After that AI works offline, with no setup. The per-project search index for the assistant (`cache/intelligence.sqlite`) is derived data that can be deleted and is rebuilt. **The AI never changes your project on its own**: every change is shown as *Proposed Changes* and applied only when you click **Apply Changes**, and it can never do more than you are allowed to do. |
+| **Logs stay local** | Diagnostic logs are written only to `%LOCALAPPDATA%\Straft\logs` and kept for 14 days. They record operation names, error codes and timings, not project content. Panic messages are redacted (user paths, e-mail addresses, tokens). |
+| **Not encrypted by Straft Studio** | Project data is protected by your Windows account's file permissions, like any document. Straft Studio does not encrypt projects at rest. Optional encrypted projects are later scope. |
+| **AI runs on this computer, right after install** | The optional AI assistant uses **Offline AI**: one local model (Google Gemma 3 1B Instruct) and a small local embedding model (BGE small English v1.5), run by Straft Studio-managed `llama.cpp` processes. There are no cloud AI providers, API keys, accounts or Ollama, and no model choice. The AI runtime ships inside the app. The models (about 1.1 GB) download once, after install, when you click **Download Straft AI** (ADR-0026); the app checks every downloaded file against a signed manifest and SHA-256 hashes before it uses it. After that AI works offline, with no setup. The per-project search index for the assistant (`cache/intelligence.sqlite`) is derived data that can be deleted and is rebuilt. **The AI never changes your project on its own**: every change is shown as *Proposed Changes* and applied only when you click **Apply Changes**, and it can never do more than you are allowed to do. |
 
 ## Feature status
 
@@ -53,7 +53,7 @@ machine, in a debug build. It does not mean installed and tried on a clean compu
 | Real-writer test (2 to 3 days) | Planned: [internal test plan](docs/testing/internal-test-plan.md) |
 | Product website | Not started (Chapter 2) |
 | Microsoft Store and Mac App Store, trial and payment | Not started in practice (Chapter 3); the trial and lock code exists and has only been tested with fakes |
-| Real-time LAN collaboration | **Removed from scope** by product-owner decision (2026-09-30, ADR-0007). OpenFrame opens no network listener |
+| Real-time LAN collaboration | **Removed from scope** by product-owner decision (2026-09-30, ADR-0007). Straft Studio opens no network listener |
 
 A workspace or action that is not available shows "This workspace isn't available in this build." instead of fake content.
 
@@ -86,4 +86,4 @@ npm run test       # Rust + frontend tests
 
 ## License
 
-OpenFrame Studio is proprietary software. No license is granted until the end-user license agreement is published. See [LICENSE-PENDING.md](LICENSE-PENDING.md).
+Straft Studio is proprietary software. No license is granted until the end-user license agreement is published. See [LICENSE-PENDING.md](LICENSE-PENDING.md).

@@ -22,7 +22,7 @@ export function AiHealthCard() {
     try {
       path = await saveDialog({
         title: "Export AI report",
-        defaultPath: "openframe-ai-report.json",
+        defaultPath: "straft-ai-report.json",
         filters: [{ name: "JSON file", extensions: ["json"] }],
       });
     } catch (e) {

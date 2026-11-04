@@ -26,8 +26,8 @@ A 40-exchange export from 2026-10-25 (one project, two screenplays) shows the cu
 the code, as read on 2026-10-25:
 
 1. **Scope never narrows to a screenplay.** Draft resolution returns no draft when a project has several screenplays
-   ([queries.rs](../../crates/openframe-application/src/modules/ai/queries.rs), `current_draft`). The understanding step
-   runs only when a draft exists ([orchestrator.rs](../../crates/openframe-application/src/modules/ai/orchestrator.rs),
+   ([queries.rs](../../crates/straft-application/src/modules/ai/queries.rs), `current_draft`). The understanding step
+   runs only when a draft exists ([orchestrator.rs](../../crates/straft-application/src/modules/ai/orchestrator.rs),
    `run_agent`). So name matching, relationship and entity context are all skipped.
 2. **No conversation state.** The model sees the last four exchanges as text, each answer cut to 400 characters. A
    chosen screenplay or a resolved person is not stored, so the user repeats it.

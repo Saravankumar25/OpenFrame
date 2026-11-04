@@ -3,7 +3,7 @@
 - **Status:** Accepted (implemented)
 - **Date:** 2026-09-30
 - **Related:** FSD §51 (undo across major workspaces), §52 (Recently Deleted); Autosave/Undo/Recovery spec;
-  `crates/openframe-persistence/src/undo.rs`, `crates/openframe-application/src/store.rs`;
+  `crates/straft-persistence/src/undo.rs`, `crates/straft-application/src/store.rs`;
   [17-autosave-undo-recovery.md](../engineering/17-autosave-undo-recovery.md)
 
 ## Context

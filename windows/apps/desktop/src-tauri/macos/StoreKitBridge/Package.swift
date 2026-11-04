@@ -1,5 +1,5 @@
 // swift-tools-version:5.9
-// StoreKit 2 bridge for the OpenFrame Studio Mac App Store build.
+// StoreKit 2 bridge for the Straft Studio Mac App Store build.
 //
 // NOT COMPILED YET. Written on a Windows machine with no Xcode. apps/desktop/src-tauri/build.rs
 // runs `swift build -c release --product StoreKitBridge` for every macOS build of the app and links

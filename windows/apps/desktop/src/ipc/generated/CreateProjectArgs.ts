@@ -3,6 +3,6 @@ import type { ProjectType } from "./ProjectType";
 
 export type CreateProjectArgs = { title: string, projectType: ProjectType, language?: string | null, genre?: string | null, creator?: string | null, 
 /**
- * Parent folder; defaults to Documents/OpenFrame/Projects.
+ * Parent folder; defaults to Documents/Straft Studio/Projects.
  */
 parentDir?: string | null, };

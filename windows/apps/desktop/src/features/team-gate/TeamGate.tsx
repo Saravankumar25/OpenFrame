@@ -13,8 +13,8 @@ import type { TeamGateAnswer } from "../../ipc/generated/TeamGateAnswer";
 import type { TeamGateStatus } from "../../ipc/generated/TeamGateStatus";
 import { BrandLogo } from "../../theme/BrandLogo";
 
-const LOAD_FAILED = "OpenFrame could not start the password check. Close OpenFrame and open it again.";
-const TRY_FAILED = "OpenFrame could not check the password right now. Try again.";
+const LOAD_FAILED = "Straft Studio could not start the password check. Close Straft Studio and open it again.";
+const TRY_FAILED = "Straft Studio could not check the password right now. Try again.";
 
 /** "1:05", "0:09": the wait in minutes and seconds. */
 export function waitClock(seconds: number): string {
@@ -46,7 +46,7 @@ export function TeamGate({ children }: { children: ReactNode }) {
       ) : status ? (
         <PasswordDialog status={status} onStatus={setStatus} />
       ) : (
-        <div className="splash-sub">Starting OpenFrame Studio…</div>
+        <div className="splash-sub">Starting Straft Studio…</div>
       )}
     </div>
   );
@@ -97,7 +97,7 @@ function PasswordDialog({ status, onStatus }: { status: TeamGateStatus; onStatus
     <Dialog open onOpenChange={() => undefined} dismissible={false} title="Enter the team password" size="md">
       <form onSubmit={(e) => void submit(e)} className="col" style={{ gap: 12 }}>
         <p style={{ margin: 0 }}>
-          This is an internal build of OpenFrame Studio for the team. It is not for sale. Enter the team password to open it.
+          This is an internal build of Straft Studio for the team. It is not for sale. Enter the team password to open it.
         </p>
         <Field label="Team password" htmlFor="team-password">
           <TextInput
@@ -122,7 +122,7 @@ function PasswordDialog({ status, onStatus }: { status: TeamGateStatus; onStatus
           </p>
         )}
         <Button type="submit" variant="primary" icon={<LockKeyhole size={14} aria-hidden />} disabled={!password || busy || waiting}>
-          {busy ? "Checking…" : "Open OpenFrame Studio"}
+          {busy ? "Checking…" : "Open Straft Studio"}
         </Button>
       </form>
     </Dialog>

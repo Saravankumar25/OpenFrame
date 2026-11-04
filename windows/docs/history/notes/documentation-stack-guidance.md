@@ -12,7 +12,7 @@ They can get you very far, but each answers a different question:
 
 The biggest missing piece is usually the exact **behavioral contract between product, design, and engineering**.
 
-For OpenFrame, I would use the following document set.
+For Straft Studio, I would use the following document set.
 
 # The complete documentation stack
 
@@ -41,7 +41,7 @@ You already have this.
 
 It should answer:
 
-> What is OpenFrame?
+> What is Straft Studio?
 
 > Who is it for?
 
@@ -233,7 +233,7 @@ It implements the behavior defined by the FSD.
 
 # 5. Data / Domain Model Specification
 
-This is extremely important for OpenFrame.
+This is extremely important for Straft Studio.
 
 Your application is fundamentally a network of relationships.
 
@@ -377,21 +377,21 @@ You already want:
 
 The specification needs exact behavior for:
 
-### FDX → OpenFrame
+### FDX → Straft Studio
 
 What information is preserved?
 
-### PDF → OpenFrame
+### PDF → Straft Studio
 
 How does parsing work?
 
 What if the PDF isn't properly formatted?
 
-### OpenFrame → FDX
+### Straft Studio → FDX
 
-What happens to unsupported OpenFrame features?
+What happens to unsupported Straft Studio features?
 
-### OpenFrame → PDF
+### Straft Studio → PDF
 
 What exact screenplay formatting is produced?
 
@@ -415,7 +415,7 @@ Since you want an AI assistant similar in spirit to Amazon Q, don't bury this in
 
 Create:
 
-# OpenFrame AI Specification
+# Straft AI Specification
 
 It should define:
 
@@ -535,11 +535,11 @@ That needs to be crystal clear.
 
 This is often forgotten.
 
-Suppose OpenFrame 1.0 creates:
+Suppose Straft Studio 1.0 creates:
 
 > `Project A`
 
-Then OpenFrame 2.0 changes the project format.
+Then Straft Studio 2.0 changes the project format.
 
 What happens?
 
@@ -548,7 +548,7 @@ You need rules for:
 ```text
 Project v1
  ↓
-OpenFrame v2
+Straft Studio v2
  ↓
 Migration
  ↓
@@ -654,7 +654,7 @@ What you **can** achieve is:
 
 > **100% planned product coverage before development begins.**
 
-For OpenFrame I'd define that as:
+For Straft Studio I'd define that as:
 
 ### Product coverage
 
@@ -698,34 +698,34 @@ Once those are covered, your engineering team can make implementation decisions 
 
 ---
 
-# For OpenFrame specifically, I'd recommend this final package
+# For Straft Studio specifically, I'd recommend this final package
 
-**01 — OpenFrame Product PRD**
+**01 — Straft Studio Product PRD**
 You already have this.
 
-**02 — OpenFrame Functional Specification**
+**02 — Straft Studio Functional Specification**
 This is the next document I'd create.
 
-**03 — OpenFrame UX/UI Specification**
+**03 — Straft Studio UX/UI Specification**
 Screen-by-screen behavior and visual interaction.
 
-**04 — OpenFrame Domain & Data Specification**
+**04 — Straft Studio Domain & Data Specification**
 Every object and relationship.
 
-**05 — OpenFrame Offline & Collaboration Specification**
+**05 — Straft Studio Offline & Collaboration Specification**
 Especially important because you've chosen local-first.
 
-**06 — OpenFrame Import/Export Specification**
+**06 — Straft Studio Import/Export Specification**
 
-**07 — OpenFrame AI Specification**
+**07 — Straft AI Specification**
 
-**08 — OpenFrame QA & Acceptance Specification**
+**08 — Straft Studio QA & Acceptance Specification**
 
-**09 — OpenFrame Security & Privacy Specification**
+**09 — Straft Studio Security & Privacy Specification**
 
-**10 — OpenFrame Release & Migration Specification**
+**10 — Straft Studio Release & Migration Specification**
 
-**11 — OpenFrame ESD / Technical Architecture**
+**11 — Straft Studio ESD / Technical Architecture**
 
 **12 — README + CONTRIBUTING + DEVELOPMENT GUIDE**
 

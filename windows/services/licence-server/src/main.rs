@@ -3,10 +3,10 @@
 //!
 //! | Variable | Meaning |
 //! |---|---|
-//! | `OPENFRAME_LICENCE_SIGNING_KEY` | Required. base64url (no padding) of the 32-byte Ed25519 seed. |
-//! | `OPENFRAME_APPLE_ENVIRONMENT` | Required. `Production` or `Sandbox`. One deployment serves one. |
-//! | `OPENFRAME_BIND` | Address to listen on. Default `127.0.0.1:8787`. |
-//! | `OPENFRAME_TLS_CERT`, `OPENFRAME_TLS_KEY` | PEM files for TLS (rustls). Required unless the bind address is loopback. |
+//! | `STRAFT_LICENCE_SIGNING_KEY` | Required. base64url (no padding) of the 32-byte Ed25519 seed. |
+//! | `STRAFT_APPLE_ENVIRONMENT` | Required. `Production` or `Sandbox`. One deployment serves one. |
+//! | `STRAFT_BIND` | Address to listen on. Default `127.0.0.1:8787`. |
+//! | `STRAFT_TLS_CERT`, `STRAFT_TLS_KEY` | PEM files for TLS (rustls). Required unless the bind address is loopback. |
 
 use std::net::SocketAddr;
 use std::process::ExitCode;
@@ -16,9 +16,9 @@ use std::time::Duration;
 use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use ed25519_dalek::SigningKey;
-use openframe_licence_server::apple::{Environment, TrustAnchor};
-use openframe_licence_server::http::{AppState, router, system_clock_ms};
-use openframe_licence_server::ratelimit::RateLimiter;
+use straft_licence_server::apple::{Environment, TrustAnchor};
+use straft_licence_server::http::{AppState, router, system_clock_ms};
+use straft_licence_server::ratelimit::RateLimiter;
 
 #[tokio::main]
 async fn main() -> ExitCode {
@@ -37,26 +37,26 @@ fn required(name: &str) -> Result<String, String> {
 
 async fn run() -> Result<(), String> {
     let seed = URL_SAFE_NO_PAD
-        .decode(required("OPENFRAME_LICENCE_SIGNING_KEY")?.trim())
-        .map_err(|_| "OPENFRAME_LICENCE_SIGNING_KEY is not base64url".to_string())?;
+        .decode(required("STRAFT_LICENCE_SIGNING_KEY")?.trim())
+        .map_err(|_| "STRAFT_LICENCE_SIGNING_KEY is not base64url".to_string())?;
     let seed: [u8; 32] = seed
         .try_into()
-        .map_err(|_| "OPENFRAME_LICENCE_SIGNING_KEY must decode to 32 bytes".to_string())?;
+        .map_err(|_| "STRAFT_LICENCE_SIGNING_KEY must decode to 32 bytes".to_string())?;
     let signing_key = SigningKey::from_bytes(&seed);
 
-    let environment = Environment::parse(required("OPENFRAME_APPLE_ENVIRONMENT")?.trim())
-        .ok_or("OPENFRAME_APPLE_ENVIRONMENT must be Production or Sandbox")?;
-    let addr: SocketAddr = std::env::var("OPENFRAME_BIND")
+    let environment = Environment::parse(required("STRAFT_APPLE_ENVIRONMENT")?.trim())
+        .ok_or("STRAFT_APPLE_ENVIRONMENT must be Production or Sandbox")?;
+    let addr: SocketAddr = std::env::var("STRAFT_BIND")
         .unwrap_or_else(|_| "127.0.0.1:8787".into())
         .parse()
-        .map_err(|_| "OPENFRAME_BIND is not an address and port".to_string())?;
+        .map_err(|_| "STRAFT_BIND is not an address and port".to_string())?;
     let tls = match (
-        std::env::var("OPENFRAME_TLS_CERT"),
-        std::env::var("OPENFRAME_TLS_KEY"),
+        std::env::var("STRAFT_TLS_CERT"),
+        std::env::var("STRAFT_TLS_KEY"),
     ) {
         (Ok(cert), Ok(key)) => Some((cert, key)),
         (Err(_), Err(_)) => None,
-        _ => return Err("set both OPENFRAME_TLS_CERT and OPENFRAME_TLS_KEY, or neither".into()),
+        _ => return Err("set both STRAFT_TLS_CERT and STRAFT_TLS_KEY, or neither".into()),
     };
     if tls.is_none() && !addr.ip().is_loopback() {
         return Err("TLS is required on any address other than loopback".into());

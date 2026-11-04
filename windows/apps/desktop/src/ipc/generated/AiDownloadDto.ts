@@ -2,7 +2,7 @@
 import type { AppError } from "./AppError";
 
 /**
- * The Download OpenFrame AI screen.
+ * The Download Straft AI screen.
  */
 export type AiDownloadDto = { 
 /**

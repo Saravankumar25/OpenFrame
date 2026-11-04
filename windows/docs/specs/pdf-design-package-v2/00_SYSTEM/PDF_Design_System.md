@@ -1,14 +1,14 @@
-# OpenFrame Studio — PDF Design System (v1.0 system; package v2)
+# Straft Studio — PDF Design System (v1.0 system; package v2)
 
-Status: **design reference for the coding assistant — not integrated into OpenFrame, not validated against the Rust renderer.**
-Evidence base: repository `Saravankumar25/OpenFrame` `main` @ `2f5a045416bd2125801329533fc47f986ccc8174` (Windows tree), the 19 supplied PDF exports, and the earlier audit pack (older commit `324cd96…`, used only as a lead and re-verified).
-Visual companion: `Brand_and_Footer_Reference.html / .pdf`. Machine-readable tokens and components: `assets/openframe-print.css`.
+Status: **design reference for the coding assistant — not integrated into Straft Studio, not validated against the Rust renderer.**
+Evidence base: repository `Saravankumar25/StraftStudio` `main` @ `2f5a045416bd2125801329533fc47f986ccc8174` (Windows tree), the 19 supplied PDF exports, and the earlier audit pack (older commit `324cd96…`, used only as a lead and re-verified).
+Visual companion: `Brand_and_Footer_Reference.html / .pdf`. Machine-readable tokens and components: `assets/straft-print.css`.
 
 ---
 
 ## 1. What this system is — and is not
 
-* It extends the **existing** production-document design language that already ships in `windows/crates/openframe-import-export/src/report/design.rs` (navy ink on white, orange accent, restrained status colours, Helvetica, flat fills and hairlines). It sharpens it (type floor, contrast, grayscale safety, footer, pagination rules) rather than replacing it.
+* It extends the **existing** production-document design language that already ships in `windows/crates/straft-import-export/src/report/design.rs` (navy ink on white, orange accent, restrained status colours, Helvetica, flat fills and hairlines). It sharpens it (type floor, contrast, grayscale safety, footer, pagination rules) rather than replacing it.
 * It covers **production PDFs** produced by the `modules/exports/*` builders. It excludes Screenplay, Sides, the Story page and any Breakdown Summary (not a user-reachable export — see `Source_Map.md`).
 * Every design stays inside what the Rust renderer can draw (§3). The HTML references are a *visual and layout specification*, not an implementation.
 
@@ -16,10 +16,10 @@ Visual companion: `Brand_and_Footer_Reference.html / .pdf`. Machine-readable tok
 
 | Rule | Value |
 |---|---|
-| Artwork | `assets/openframe-logo.png` — the user-supplied official logo, **cropped only to its artwork bounds** (699 × 163 px). Unmodified original: `assets/openframe-logo-original.png` (812 × 347). No vector/SVG version of the lockup exists in the repository (the repo's `BrandLogo.tsx` is a UI re-creation of the mark + typed wordmark and the website favicon is the mark only), so the supplied raster is the only authoritative asset. |
+| Artwork | `assets/straft-logo.png`: the official logo for light paper, transparent background, **trimmed to its artwork bounds** (735 × 163 px). Dark-background master: `assets/straft-logo-original.png` (1406 × 360). No vector/SVG version of the lockup exists in the repository (the repo's `BrandLogo.tsx` is a UI re-creation of the mark + typed wordmark and the website favicon is the mark only), so these rasters are the only authoritative assets. |
 | Use | Footer, bottom-left, every page of every production PDF in scope. Never in a header. Never redrawn, typeset, recoloured, stretched, cropped into the artwork. |
-| Size | 17 pt high × 72.9 pt wide (ratio 4.289 : 1). Minimum 14 pt high. |
-| Brand line | `Created using OpenFrame` (the constant `BRAND_LINE` in `report.rs`) 6.8 pt regular, slate `#566277`, directly under the logo, left edges aligned. |
+| Size | 17 pt high × 76.7 pt wide (ratio 4.509 : 1). Minimum 14 pt high. |
+| Brand line | `Created using Straft Studio` (the constant `BRAND_LINE` in `report.rs`) 6.8 pt regular, slate `#566277`, directly under the logo, left edges aligned. |
 | Page number | `Page X of Y`, 7.4 pt regular ink, lower-right margin, same baseline as the brand line. X, Y = real page number / real page count. |
 | Position | Logo bottom edge 33 pt above the page bottom; brand-line baseline ≈ 22 pt above the bottom edge. No footer rule. No project/document string. |
 | Embedding | Embed once as a lossless image and reuse on every page. (`ReportImage::decode` converts to JPEG q85 — fine for photos, not for the wordmark; add a lossless path.) |
@@ -29,7 +29,7 @@ Footer geometry replaces the current one (`design::draw_footer`: hairline rule +
 
 ## 3. Renderer constraints that shape every design (verified in source)
 
-* Writer: `pdf-writer` via `openframe-import-export/src/pdfgen.rs`; documents are `report::Document` = ordered `Block`s (`Masthead`, `Metrics`, `Section`, `Banner`, `Callout`, `Legend`, `Cards`, `StyledTable`, `Grid`, `Text`, …). Text is laid out with the same Helvetica metrics that paint it (wrapping is exact; nothing is ellipsised).
+* Writer: `pdf-writer` via `straft-import-export/src/pdfgen.rs`; documents are `report::Document` = ordered `Block`s (`Masthead`, `Metrics`, `Section`, `Banner`, `Callout`, `Legend`, `Cards`, `StyledTable`, `Grid`, `Text`, …). Text is laid out with the same Helvetica metrics that paint it (wrapping is exact; nothing is ellipsised).
 * Fonts: PDF **base-14 Helvetica** (regular + bold); text the base font cannot print triggers embedded fallback fonts, or the `export.pdf_unsupported_characters` error (`HINT_*` strings in `exports/mod.rs`). No web fonts, no italics system.
 * Drawing vocabulary: text (size, bold, colour, tracking), rects/rounded rects (fill + stroke), lines, circles, JPEG images, the vector mark. **No** shadows, gradients, opacity, rotated text, blend modes, SVG, hyperlinks styling.
 * Existing invariants to preserve: measure = paint; rows grow, text wraps; table header repeats; styled rows move whole to the next page; cards move whole (tall cards have a split strategy); deterministic bytes (no clock/random in layout); footer identical on every page.
@@ -95,7 +95,7 @@ Numerals are tabular wherever columns align (Helvetica digits are tabular by des
 
 Scale (pt): **2 · 4 · 6 · 8 · 12 · 16 · 24**. Section gap 12; card padding 6/9; table cell padding 4.2/6 (compact 2.6/4); grid gap 8. Radii: 3 (chips/tiles), 4 (metrics), 6 (cards, callouts, day block). Rules: 1.2 pt navy section rule; 0.5 pt hairlines.
 
-## 8. Components (all in `assets/openframe-print.css`)
+## 8. Components (all in `assets/straft-print.css`)
 
 | Component | Class | Key behaviour |
 |---|---|---|
@@ -144,7 +144,7 @@ Contrast ≥ 4.5 : 1 for text; status redundantly encoded; grayscale review requ
 
 ## 15. How the HTML references are rendered
 
-`tools/render_pdf.py` runs headless Chrome (v155 used here): `--headless=new --no-pdf-header-footer --print-to-pdf`. Page size, margins, the footer logo (background image of the `@page` bottom-left margin box), brand line and `Page X of Y` (`counter(page)` / `counter(pages)`) come from CSS `@page` rules in `openframe-print.css`; running headers are set per document in `@page { @top-right }`. `tools/verify_pdf.py` checks page size, footer on every page with the real total, logo aspect ratio, content never in the footer band / outside margins, header presence/absence, blank/near-empty pages, and can emit grayscale thumbnails. Mechanical checks complement, and do not replace, visual inspection.
+`tools/render_pdf.py` runs headless Chrome (v155 used here): `--headless=new --no-pdf-header-footer --print-to-pdf`. Page size, margins, the footer logo (background image of the `@page` bottom-left margin box), brand line and `Page X of Y` (`counter(page)` / `counter(pages)`) come from CSS `@page` rules in `straft-print.css`; running headers are set per document in `@page { @top-right }`. `tools/verify_pdf.py` checks page size, footer on every page with the real total, logo aspect ratio, content never in the footer band / outside margins, header presence/absence, blank/near-empty pages, and can emit grayscale thumbnails. Mechanical checks complement, and do not replace, visual inspection.
 
 ## 16. Open questions for the product owner
 

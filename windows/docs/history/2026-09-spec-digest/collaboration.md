@@ -1,7 +1,7 @@
-# Digest — OpenFrame Studio Offline & Collaboration Specification
+# Digest — Straft Studio Offline & Collaboration Specification
 
-Source: `C:\dev\OpenFrame\OpenFrame_Studio_Offline_Collaboration_Specification.md` (1686 lines, ~5.1k words, read in full).
-Cross-reference: `OpenFrame_Studio_Import_Export_Specification.md` (cited as **IE §n**). Package merge mechanics live there.
+Source: `C:\dev\Straft Studio\Straft_Studio_Offline_Collaboration_Specification.md` (1686 lines, ~5.1k words, read in full).
+Cross-reference: `Straft_Studio_Import_Export_Specification.md` (cited as **IE §n**). Package merge mechanics live there.
 Section refs are to the Offline & Collaboration spec (**§n**) unless marked IE.
 
 **How to read this digest**
@@ -12,7 +12,7 @@ Section refs are to the Offline & Collaboration spec (**§n**) unless marked IE.
 
 ## 0. Core idea and authority (§0)
 
-- OpenFrame is a **local-first desktop application**. "The user's project remains their local working asset." Internet "is optional infrastructure, not a prerequisite for ownership of or ordinary access to the project."
+- Straft Studio is a **local-first desktop application**. "The user's project remains their local working asset." Internet "is optional infrastructure, not a prerequisite for ownership of or ordinary access to the project."
 - There are three complementary collaboration modes:
   ```text
   Mode 1 — Solo Local
@@ -29,7 +29,7 @@ Section refs are to the Offline & Collaboration spec (**§n**) unless marked IE.
 4. Core filmmaking workflows remain available offline.
 5. Local AI may remain available offline when configured.
 6. External AI is unavailable without network access to its provider.
-7. No OpenFrame cloud account is required for ordinary local use.
+7. No Straft Studio cloud account is required for ordinary local use.
 8. Remote collaboration can use file-based Exchange Packages.
 9. Local-network collaboration is optional.
 10. Collaboration permissions remain active during LAN sessions.
@@ -38,7 +38,7 @@ Section refs are to the Offline & Collaboration spec (**§n**) unless marked IE.
 13. Same-object conflicts must be visible.
 14. No silent last-write-wins data loss.
 15. Collaboration session state is temporary and is not a permanent project permission.
-16. Ending a LAN session does not publish the project to OpenFrame cloud.
+16. Ending a LAN session does not publish the project to Straft Studio cloud.
 17. Exchange Packages remain the safe fallback when users are not connected to the same network.
 18. AI cannot bypass offline, permission, conflict, or approval rules.
 
@@ -49,10 +49,10 @@ Section refs are to the Offline & Collaboration spec (**§n**) unless marked IE.
 | Mode | When | Mechanics | Key rules |
 |---|---|---|---|
 | **1. Solo Local** (default) | One person, no network needed | Local project open/edit | All core ops available: project create/open/close, Idea Vault, Story Board, Screenplay, drafts, comments/review locally, breakdown, Production Catalog, locations, cast/crew, moodboards, storyboards, shot lists, schedule, call sheets, notes/tasks, reports, supported imports, supported exports, backup, recovery |
-| **2. Exchange Collaboration** | Collaborators are remote or share no private network | `Export Exchange Package → Normal file transfer → Reviewer/Collaborator → Import Package → Review/Map/Compare → Export Response Package → Originator imports/reviews` | The transport can be email, messaging, USB, file-sharing or other ordinary methods. "OpenFrame does not own the transport." |
-| **3. Local-Network Collaboration** | Users share a private network | "One OpenFrame installation becomes the host for a temporary project session. Participants connect to the host. The host selects the shared scope and permissions." | "The project remains locally owned." |
+| **2. Exchange Collaboration** | Collaborators are remote or share no private network | `Export Exchange Package → Normal file transfer → Reviewer/Collaborator → Import Package → Review/Map/Compare → Export Response Package → Originator imports/reviews` | The transport can be email, messaging, USB, file-sharing or other ordinary methods. "Straft Studio does not own the transport." |
+| **3. Local-Network Collaboration** | Users share a private network | "One Straft Studio installation becomes the host for a temporary project session. Participants connect to the host. The host selects the shared scope and permissions." | "The project remains locally owned." |
 
-"Offline is a state of normal OpenFrame operation, not a reduced 'offline edition.'" A project can move between `Offline / Online / LAN Collaboration / Exchange Collaboration` without changing its logical identity (§45).
+"Offline is a state of normal Straft Studio operation, not a reduced 'offline edition.'" A project can move between `Offline / Online / LAN Collaboration / Exchange Collaboration` without changing its logical identity (§45).
 
 ---
 
@@ -93,7 +93,7 @@ Section refs are to the Offline & Collaboration spec (**§n**) unless marked IE.
 | Local-network collaboration | Requires local network |
 
 ### 3.3 Offline must NOT (§2.3)
-- require sign-in to OpenFrame cloud;
+- require sign-in to Straft Studio cloud;
 - block project opening because synchronization is unavailable;
 - create a hidden replacement copy of the project;
 - claim that the project is cloud-backed;
@@ -276,7 +276,7 @@ Suggested mapping from canonical to detailed states (derived; the spec does not 
 
 ### 12.5 Session state is temporary (§13.1, §38.2)
 - "The collaboration session is not a permanent project object representing ownership."
-- Ending it does not delete the project, publish it, upload it to OpenFrame cloud, or alter normal project permissions.
+- Ending it does not delete the project, publish it, upload it to Straft Studio cloud, or alter normal project permissions.
 - "Presence, soft locks, connection state, and other live session signals are session-scoped. They must not become permanent project truth unless the user intentionally performs a project operation."
 
 ---
@@ -554,7 +554,7 @@ Meaningful events may be recorded as Activity Entries:
 
 ## 25. No cloud dependency (§32)
 
-None of the following requires OpenFrame cloud: ordinary local use; offline editing; local saving; local backups; local project packages; review Exchange Packages; LAN collaboration.
+None of the following requires Straft Studio cloud: ordinary local use; offline editing; local saving; local backups; local project packages; review Exchange Packages; LAN collaboration.
 
 ## 26. Data model dependencies (§38)
 
@@ -623,9 +623,9 @@ Canonical objects from Domain/Data: Application User; Exchange Package; Import S
 | OC-028 | Unacknowledged local work is retained where possible |
 | OC-029 | Participant offline changes are reconciled through a safe review path |
 | OC-030 | Reconnection does not blindly overwrite the host |
-| OC-031 | Ending a LAN session does not upload/publish the project to OpenFrame cloud |
+| OC-031 | Ending a LAN session does not upload/publish the project to Straft Studio cloud |
 | OC-032 | Remote collaboration can fall back to Exchange Packages |
-| OC-033 | Exchange Packages can be used without OpenFrame cloud |
+| OC-033 | Exchange Packages can be used without Straft Studio cloud |
 | OC-034 | AI respects collaboration permissions |
 | OC-035 | AI does not expose host-only or private participant data |
 | OC-036 | AI mutations still require explicit user approval |

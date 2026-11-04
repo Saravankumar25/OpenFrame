@@ -14,11 +14,11 @@ was resolved by keeping both imports (the About card and the breakdown category 
 
 Reviewed against ADR-0024 and the security standard:
 
-- **Hash only, never the password.** `apps/desktop/src-tauri/build.rs` reads `OPENFRAME_TEAM_PASSWORD` on the build machine,
+- **Hash only, never the password.** `apps/desktop/src-tauri/build.rs` reads `STRAFT_TEAM_PASSWORD` on the build machine,
   hashes it with Argon2id (64 MiB, 3 passes, 1 lane, 16 bytes of salt from the system's secure random generator) and writes
   only the PHC string to `OUT_DIR/team_gate_hash.txt`. Error messages name the variable, never its value (tested). The build
   script avoids `rerun-if-env-changed` while the variable is set, so Cargo does not keep the value in the target folder.
-- **One shared rule file.** `crates/openframe-entitlement/src/team_gate/build_hash.rs` is included by path in the build script
+- **One shared rule file.** `crates/straft-entitlement/src/team_gate/build_hash.rs` is included by path in the build script
   and compiled in the crate, so the build and the check use the same algorithm and costs.
 - **Constant-time check.** `verify_team_password` accepts only `argon2id`, refuses passwords over 1024 bytes without hashing,
   and recomputes the hash with the stored salt and costs. The comparison is `phc::Output`'s `PartialEq`, which uses
@@ -29,7 +29,7 @@ Reviewed against ADR-0024 and the security standard:
 - **Lockout.** 5 wrong tries wait 1 minute, then 2, 4, 8, 16 and 30 minutes from then on; a try during a wait is refused
   unchecked; the count is saved before the slow check; a restart keeps the count and the running wait; a right password
   resets it; a damaged count file starts at the first wait.
-- **Store builds.** A `store` build never reads the variable, sets no `openframe_team_gate` cfg and embeds nothing. The core
+- **Store builds.** A `store` build never reads the variable, sets no `straft_team_gate` cfg and embeds nothing. The core
   holds no gate when `AppConfig::team_password_hash` is `None`.
 - **Fail closed.** An internal (`direct`) release build without the variable, with an empty one or with fewer than 12
   characters panics in the build script. Debug builds without the variable run with no gate (development and end-to-end).
@@ -49,15 +49,15 @@ Fixed in this review:
    for those two kinds, which the store lock needs. Before the team password it now refuses them too
    (`apps/desktop/src-tauri/src/lib.rs`).
 3. **The end-to-end build could pick up the build machine's team password.** `tests/e2e/scripts/build-app.mjs` now removes
-   `OPENFRAME_TEAM_PASSWORD` from the environment of the debug build, so the suite never meets the password screen.
+   `STRAFT_TEAM_PASSWORD` from the environment of the debug build, so the suite never meets the password screen.
 4. **Two clippy findings** in the gate (`is_multiple_of`, an identity operation in a test).
 5. **Three Vitest files failed** (`TeamGate.test.tsx`, `About.test.tsx`, `DeletedView.test.tsx`): `beforeEach(() =>
    callMock.mockReset())` returns the mock, and Vitest runs a function returned from `beforeEach` as a clean-up hook, which
    called the mock with no operation after each test. The hooks now use braces. No assertion changed.
-6. `Cargo.toml` and `crates/openframe-entitlement/Cargo.toml` had been rewritten with LF line endings over CRLF files; the
+6. `Cargo.toml` and `crates/straft-entitlement/Cargo.toml` had been rewritten with LF line endings over CRLF files; the
    original endings are restored so the diff shows only the real lines.
 
-Proof: `crates/openframe-entitlement/src/team_gate/tests.rs` (9 tests), `crates/openframe-application/tests/team_gate.rs`
+Proof: `crates/straft-entitlement/src/team_gate/tests.rs` (9 tests), `crates/straft-application/tests/team_gate.rs`
 (4), `apps/desktop/src-tauri/src/lib.rs` tests `a_store_build_embeds_no_team_password_hash` and
 `store_packages_are_store_channels_and_everything_else_is_an_internal_build`, `TeamGate.test.tsx` (4). Docs updated:
 `docs/engineering/36-entitlement-and-trial.md` section 11 (clock rule, shell commands, test count).
@@ -68,8 +68,8 @@ the desktop crate is long and the shared target is in use by other agents); the 
 
 ## 2. Release workflow and Cargo changes
 
-**Verdict: finished.** `.github/workflows/release.yml` passes the `OPENFRAME_TEAM_PASSWORD` secret to the internal installer
-step only; the Microsoft Store step sets `OPENFRAME_DISTRIBUTION: store` and gets no secret. The verification steps run debug
+**Verdict: finished.** `.github/workflows/release.yml` passes the `STRAFT_TEAM_PASSWORD` secret to the internal installer
+step only; the Microsoft Store step sets `STRAFT_DISTRIBUTION: store` and gets no secret. The verification steps run debug
 builds, which need no password. `argon2` 0.6 (default features off, `alloc` and `password-hash`) and `getrandom` 0.3 (build
 script only) are added; `ed25519-dalek` and the `issuer` feature leave the application crate. `npm run licenses` reproduces
 `THIRD_PARTY_LICENSES.md` exactly.
@@ -83,7 +83,7 @@ Nothing reported touches `argon2`, `blake2`, `password-hash` or `phc`.
 **Verdict: finished.** `licence.rs`, `trial.rs`, `DirectInstallerAdapter`, `LicenceCheck`, the `issuer` feature and
 `AppConfig::licence_public_key` are gone. A search of code, tests, scripts and living documents finds no reference left; the
 only mentions are SUPERSEDED history in `docs/engineering/36-entitlement-and-trial.md`, old evidence in
-`docs/release/evidence/2026-10-06-foundation/verify.txt`, and tests in `crates/openframe-application/tests/entitlement.rs`
+`docs/release/evidence/2026-10-06-foundation/verify.txt`, and tests in `crates/straft-application/tests/entitlement.rs`
 that assert no `trial.json` is ever written. The internal builds have no adapter (`adapters::for_channel` returns none) and
 their state is InternalBuild: no trial, no Buy, no reminder, no lock. A Mac build is the Mac App Store channel only when it is
 a `store` build; the internal Mac disk image is an internal build.
@@ -110,7 +110,7 @@ a `store` build; the internal Mac disk image is an internal build.
 - **Screens.** Both Recently Deleted screens show "N days left" in a "Removed in" column; Delete Permanently still works
   earlier.
 
-Proof: `crates/openframe-application/tests/recently_deleted_purge.rs` (7: boundary millisecond, days left, clock back, clock
+Proof: `crates/straft-application/tests/recently_deleted_purge.rs` (7: boundary millisecond, days left, clock back, clock
 forward, interrupted purge through injected commit failures and the per-run limit, a record pointing at a live object, purge
 on project open and app start), `modules/retention.rs` unit tests (2), `RecentlyDeleted.test.tsx`, `DeletedView.test.tsx`.
 New end-to-end spec `tests/e2e/specs/25-recently-deleted-purge.test.mjs` (not run here): deletes two notes and an idea in the
@@ -120,10 +120,10 @@ built-in SQLite module, relaunches, and checks that only what is due is gone, th
 
 ## 6. Forced-kill tests and process sweep (areas 3 and 4)
 
-**Verdict: finished.** `crates/openframe-application/tests/forced_kill.rs` now times its last kill after the worker's first
+**Verdict: finished.** `crates/straft-application/tests/forced_kill.rs` now times its last kill after the worker's first
 committed operation instead of a fixed 700 ms, so the kill always lands in real work on a slow or loaded machine, with a
 generous 180 s bound that only turns a hung worker into a failure. Three panic messages that held raw line breaks inside
-string literals now use `\n`. `crates/openframe-platform/src/process.rs`: `stop_if_same` answers NotRunning for a process
+string literals now use `\n`. `crates/straft-platform/src/process.rs`: `stop_if_same` answers NotRunning for a process
 that has exited but can still be opened through another handle; the existing test
 `stop_if_same_stops_only_the_recorded_process` covers that last step. Both strengthen boxes already ticked; no box changes.
 
@@ -131,8 +131,8 @@ that has exited but can still be opened through another handle; the existing tes
 
 The merged `session-2` did not pass the gates on its own. Fixed here so the branch is green: `cargo fmt` over nine files that
 were not formatted (`asset_scope.rs`, `distribution.rs`, `engines.rs`, `supervisor.rs` and its test, `failure_injection.rs`,
-`migration_failures.rs`, `power.rs`, `shell.rs`, `openframe-security/src/lib.rs`); clippy `assertions_on_constants` in
-`crates/openframe-platform/src/drives.rs` (now a `const` assertion); clippy dead code in
+`migration_failures.rs`, `power.rs`, `shell.rs`, `straft-security/src/lib.rs`); clippy `assertions_on_constants` in
+`crates/straft-platform/src/drives.rs` (now a `const` assertion); clippy dead code in
 `apps/desktop/src-tauri/src/asset_scope.rs` (`AssetRoots::dirs` and `AssetScope::roots` are used only by tests and are now
 `#[cfg(test)]`).
 
@@ -142,7 +142,7 @@ were not formatted (`asset_scope.rs`, `distribution.rs`, `engines.rs`, `supervis
 |---|---|
 | `cargo fmt --all -- --check` | clean |
 | `cargo clippy --workspace --all-targets --locked -- -D warnings` | clean |
-| `cargo test --workspace --locked` | 1901 passed, 0 failed, 6 ignored, 80 test binaries. The doctest step first failed with E0460 because another agent rebuilt `openframe_domain` in the shared target at the same moment; `cargo test --workspace --locked --doc` then passed (12 crates, 0 failed, 2 ignored) |
+| `cargo test --workspace --locked` | 1901 passed, 0 failed, 6 ignored, 80 test binaries. The doctest step first failed with E0460 because another agent rebuilt `straft_domain` in the shared target at the same moment; `cargo test --workspace --locked --doc` then passed (12 crates, 0 failed, 2 ignored) |
 | `npm run typecheck` | clean |
 | `npm --workspace apps/desktop run lint` | clean (the root `npm run lint` also runs clippy, above) |
 | `npm run test:web` | 48 files, 506 tests passed |
@@ -178,5 +178,5 @@ after the merges), a release build of the desktop crate.
 - `cargo deny` reports `rustybuzz` and `ttf-parser` as unmaintained with no safe upgrade. Accept them for now with a dated
   ignore in `deny.toml`, or plan a move to a maintained shaper? This comes from the screenplay PDF fonts work, not from this
   branch.
-- The team password must be set as the `OPENFRAME_TEAM_PASSWORD` repository secret before an internal release build, and
+- The team password must be set as the `STRAFT_TEAM_PASSWORD` repository secret before an internal release build, and
   ADR-0024 asks for a new password because the first one was typed in a chat. Only the owner can do that.

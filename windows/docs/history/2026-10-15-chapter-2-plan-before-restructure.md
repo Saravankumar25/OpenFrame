@@ -6,7 +6,7 @@
 
 ## 1. Goal
 
-A small, fast, cheap-to-run static website for OpenFrame Studio, hosted on Cloudflare Pages, that tells the truth about the
+A small, fast, cheap-to-run static website for Straft Studio, hosted on Cloudflare Pages, that tells the truth about the
 product: what it does, how to start, how to get help, and what the legal terms are.
 
 ## 2. Pages

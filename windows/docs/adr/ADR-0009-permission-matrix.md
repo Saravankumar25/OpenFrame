@@ -1,6 +1,6 @@
 # ADR-0009: Permission matrix: decisions for cells the Security spec leaves open
 
-- **Status:** Accepted (implemented in `crates/openframe-domain/src/auth.rs`, `Role::allows`)
+- **Status:** Accepted (implemented in `crates/straft-domain/src/auth.rs`, `Role::allows`)
 - **Date:** 2026-09-30
 - **Related:** Security spec §5–§8, §16.4, SEC-004..009 (digest `docs/history/2026-09-spec-digest/security.md` §6.3, §26 item 9);
   FSD §46; ADR-0007 (LAN removed)

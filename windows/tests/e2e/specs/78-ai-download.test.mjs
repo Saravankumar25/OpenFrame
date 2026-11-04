@@ -2,7 +2,7 @@
 // @e2e-needs-test-host: starts the download from the local model host and reads its request log
 // @e2e-ai-models: none
 //
-// Download OpenFrame AI after install (ADR-0026 decisions 3, 5, 7 and 10; Windows phase W8), on the
+// Download Straft AI after install (ADR-0026 decisions 3, 5, 7 and 10; Windows phase W8), on the
 // release executable as it ships: the app is compiled with the local test host (run.mjs) and starts
 // with nothing downloaded. Release-capable: no test switch.
 //
@@ -32,14 +32,14 @@ const CHAT = files.find((f) => f.role === "chat").path;
 
 /** The download card wherever it shows (panel or Settings). */
 const cardText = () =>
-  browser.execute(() => document.querySelector('section[aria-label="Download OpenFrame AI"]')?.textContent?.replace(/\s+/g, " ").trim() ?? "");
+  browser.execute(() => document.querySelector('section[aria-label="Download Straft AI"]')?.textContent?.replace(/\s+/g, " ").trim() ?? "");
 
-/** Wait until the panel offers the question box: OpenFrame AI is ready. */
+/** Wait until the panel offers the question box: Straft AI is ready. */
 async function ready(timeout = ANSWER_TIMEOUT) {
   await openAssistant(browser);
   await (await browser.$(`${panel}//textarea[@aria-label="Ask or command"]`)).waitForDisplayed({
     timeout,
-    timeoutMsg: `OpenFrame AI was not ready; the card says: ${await cardText()}`,
+    timeoutMsg: `Straft AI was not ready; the card says: ${await cardText()}`,
   });
 }
 
@@ -47,7 +47,7 @@ async function waitForCard(re, timeout = 120_000) {
   await browser.waitUntil(async () => re.test(await cardText()), { timeout, interval: 250, timeoutMsg: `the download card never showed ${re}: ${await cardText()}` });
 }
 
-describe("download OpenFrame AI after install", () => {
+describe("download Straft AI after install", () => {
   before(async () => {
     steerHost({});
     browser = await launchApp();
@@ -61,7 +61,7 @@ describe("download OpenFrame AI after install", () => {
     await step("not-installed", async () => {
       await firstLaunchProject(browser, "Harbour Lights");
       await openAssistant(browser);
-      await waitForCard(/Download OpenFrame AI/, 15_000);
+      await waitForCard(/Download Straft AI/, 15_000);
       const text = await cardText();
       assert.match(text, /A one-time download of [\d.]+ GB\. It needs [\d.]+ GB of free space/);
       assert.match(text, /uses the internet once/);
@@ -73,8 +73,8 @@ describe("download OpenFrame AI after install", () => {
   test("an interrupted download resumes where it stopped and AI becomes ready", async () => {
     await step("interrupted", async () => {
       steerHost({ cut: { path: CHAT, after: 300 * 1024 * 1024 } });
-      await click(browser, "Download OpenFrame AI");
-      await waitForCard(/The OpenFrame AI download stopped/);
+      await click(browser, "Download Straft AI");
+      await waitForCard(/The Straft AI download stopped/);
       await click(browser, "Try again");
       await ready();
       const asked = hostRequests().filter((r) => r.path === CHAT);
@@ -97,7 +97,7 @@ describe("download OpenFrame AI after install", () => {
     });
   });
 
-  test("a restart with the host down finds OpenFrame AI and asks the host nothing", async () => {
+  test("a restart with the host down finds Straft AI and asks the host nothing", async () => {
     await step("restart-offline", async () => {
       const before = hostRequests().length;
       await closeProject(browser);
@@ -115,13 +115,13 @@ describe("download OpenFrame AI after install", () => {
       steerHost({});
       await click(browser, "Offline AI settings");
       await menuItem(browser, "Offline AI settings");
-      await click(browser, "Remove OpenFrame AI…");
+      await click(browser, "Remove Straft AI…");
       await click(browser, "Remove");
-      await waitForText(browser, "OpenFrame AI was removed.");
+      await waitForText(browser, "Straft AI was removed.");
       await waitForText(browser, "Not downloaded");
       // The host sends the language model with a changed byte: it is refused and set aside.
       steerHost({ corrupt: CHAT });
-      await click(browser, "Download OpenFrame AI");
+      await click(browser, "Download Straft AI");
       await waitForCard(/damaged and has been set aside/, ANSWER_TIMEOUT);
       // Slowly this time, so the download can be paused, then resumed where it stopped.
       steerHost({ throttle: 40 * 1024 * 1024 });

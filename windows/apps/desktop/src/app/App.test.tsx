@@ -16,7 +16,7 @@ vi.mock("../ipc/client", async (orig) => {
     call: vi.fn(async (op: string) => {
       calls.push(op);
       if (op === "project.current") {
-        throw new real.OpError(op, { code: "permission.licence_required", message: "Buy OpenFrame Studio or restore your purchase.", retryable: false });
+        throw new real.OpError(op, { code: "permission.licence_required", message: "Buy Straft Studio or restore your purchase.", retryable: false });
       }
       throw new Error(`unexpected operation in test: ${op}`);
     }),

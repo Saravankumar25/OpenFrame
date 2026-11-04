@@ -5,7 +5,7 @@ import { writeFileSync } from 'node:fs';
 const URL_BASE = 'http://127.0.0.1:8099';
 const here = new URL('.', import.meta.url);
 
-const POLICY = `You are the assistant inside OpenFrame Studio, a filmmaking app. Answer the user's last question using only the facts in <dossier>. Rules:
+const POLICY = `You are the assistant inside Straft Studio, a filmmaking app. Answer the user's last question using only the facts in <dossier>. Rules:
 1. Use names, numbers and dates exactly as written in the dossier. Never invent any.
 2. If the dossier does not contain the answer, say you could not find it in the project and say what you looked at. Do not guess.
 3. Answer length: ONE short sentence for a plain fact. A full paragraph (4 to 7 sentences) for an explanation, a relationship or a suggestion.
@@ -84,7 +84,7 @@ const Q = [
 
 const INTENTS = ['explain', 'relation', 'list', 'count', 'lookup', 'compare', 'schedule_budget', 'brainstorm', 'navigate', 'change', 'product_help', 'conversation'];
 const FEW = `Classify the user's message into exactly one label from: ${INTENTS.join(', ')}.
-explain = wants a description or explanation of a scene, act, character or story. relation = relationship or bond between people. list = wants a list. count = how many. lookup = one fact (who, where, which, when, contact). compare = compare two things. schedule_budget = shoot days, calendar, call sheet, money, budget, pay. brainstorm = suggest ideas or changes. navigate = open or go to a screen or scene. change = create, edit, move, delete something. product_help = how to use OpenFrame. conversation = thanks, anger, small talk, or a correction with no new question.
+explain = wants a description or explanation of a scene, act, character or story. relation = relationship or bond between people. list = wants a list. count = how many. lookup = one fact (who, where, which, when, contact). compare = compare two things. schedule_budget = shoot days, calendar, call sheet, money, budget, pay. brainstorm = suggest ideas or changes. navigate = open or go to a screen or scene. change = create, edit, move, delete something. product_help = how to use Straft Studio. conversation = thanks, anger, small talk, or a correction with no new question.
 Examples:
 "open scene 12" -> navigate
 "how many scenes are there" -> count
@@ -117,7 +117,7 @@ const INTENT_CASES = [
   ['open palette-monsoon.png in idea vault', 'navigate'],
   ['explain all three acts in beat board briefly', 'explain'],
   ['Explain all the character relationships briefly', 'relation'],
-  ['WOW BRO FUCK YOU, I AM UNINSTALLING OPENFRAME', 'conversation'],
+  ['WOW BRO FUCK YOU, I AM UNINSTALLING STRAFT STUDIO', 'conversation'],
   ['GO TO HELL', 'conversation'],
   ['what can we improve in scene 3', 'brainstorm'],
   ['how are Anjali and Appachan connected', 'relation'],

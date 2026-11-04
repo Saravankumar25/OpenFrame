@@ -3,6 +3,6 @@ import type { PackageOpenMode } from "./PackageOpenMode";
 
 export type PackageImportProjectArgs = { path: string, mode: PackageOpenMode, 
 /**
- * Folder for the opened project; defaults to Documents/OpenFrame/Projects.
+ * Folder for the opened project; defaults to Documents/Straft Studio/Projects.
  */
 parentDir: string | null, };

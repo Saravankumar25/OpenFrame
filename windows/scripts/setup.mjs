@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// OpenFrame Studio developer setup check (Windows 11 first).
+// Straft Studio developer setup check (Windows 11 first).
 //
 //   npm run setup                 check prerequisites, then `npm install`
 //   node scripts/setup.mjs --check-only   check prerequisites only
@@ -160,14 +160,14 @@ if (IS_WIN) {
 } else {
   warn(
     "Platform",
-    `${process.platform}: OpenFrame v1 targets Windows 11`,
+    `${process.platform}: Straft Studio v1 targets Windows 11`,
     "Rust/TypeScript checks and tests work here; building the desktop bundle requires Windows (see DEVELOPMENT.md).",
   );
 }
 
 // ---------------------------------------------------------------- report
 const icon = { ok: "OK  ", warn: "WARN", fail: "FAIL" };
-console.log("\nOpenFrame Studio — development prerequisites\n");
+console.log("\nStraft Studio — development prerequisites\n");
 for (const r of results) {
   console.log(`  [${icon[r.status]}] ${r.name}: ${r.detail}`);
   if (r.fix) console.log(`         fix: ${r.fix}`);

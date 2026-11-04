@@ -74,7 +74,7 @@ export const tab = { id: "shots", label: "Shot Lists", order: 60 };
 
 /** List or grid (owner change list item 21); a per-user view preference, never project data. */
 type ShotLayout = "list" | "grid";
-const LAYOUT_KEY = "openframe.shots.layout";
+const LAYOUT_KEY = "straft.shots.layout";
 function readLayout(): ShotLayout {
   try {
     return window.localStorage.getItem(LAYOUT_KEY) === "grid" ? "grid" : "list";

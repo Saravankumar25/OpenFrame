@@ -1,4 +1,4 @@
--- Global Idea Vault item tables (owned by crates/openframe-application/src/modules/idea_vault).
+-- Global Idea Vault item tables (owned by crates/straft-application/src/modules/idea_vault).
 -- IDENTICAL to migrations/project/0002_idea_vault.sql: the same module code serves
 -- both stores (FSD §5.8). Keep the two files byte-for-byte equal below this header.
 --

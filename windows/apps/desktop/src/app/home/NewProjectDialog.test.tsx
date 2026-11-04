@@ -79,14 +79,14 @@ describe("New Project validation", () => {
   });
 
   it("warns about a folder OneDrive syncs and offers a folder on this computer (W2)", async () => {
-    const LOCAL = "C:\\Users\\me\\OpenFrame Projects";
+    const LOCAL = "C:\\Users\\me\\Straft Studio Projects";
     const user = userEvent.setup();
     const check = vi.fn((a: Record<string, unknown>) =>
       String(a.path).includes("OneDrive")
         ? { cloudService: "OneDrive", localAlternative: LOCAL }
         : notSynced,
     );
-    const synced = { ...info, projectsDir: "C:\\Users\\me\\OneDrive\\Documents\\OpenFrame\\Projects" };
+    const synced = { ...info, projectsDir: "C:\\Users\\me\\OneDrive\\Documents\\Straft Studio\\Projects" };
     callMock.mockImplementation(answerFrom({ "app.info": synced, "project.location_check": check }) as typeof call);
     renderWithClient(<NewProjectDialog onClose={() => undefined} />);
     expect(await screen.findByText("This folder is synced by OneDrive.")).toBeInTheDocument();

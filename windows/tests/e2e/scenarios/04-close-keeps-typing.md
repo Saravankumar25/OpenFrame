@@ -11,7 +11,7 @@ Before: an empty data folder of its own. The app starts for the first time.
 The rounds repeat 20 times by default (the runner setting `E2E_CLOSE_ROUNDS` changes the count). Each round closes the window once by its close button and once by Alt+F4.
 
 1. Do the first launch: type 'E2E Tester' as the name, click Continue, click Create Project, type 'Last Words' as the title, click Create.
-2. Check: the project opens and the window title is "Last Words - OpenFrame Studio".
+2. Check: the project opens and the window title is "Last Words - Straft Studio".
 3. Click Screenplay in the Workspaces navigation.
 4. Click New Screenplay.
 5. Check: the editor opens with at least one element.

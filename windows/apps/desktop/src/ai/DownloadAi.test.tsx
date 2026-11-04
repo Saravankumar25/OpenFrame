@@ -72,20 +72,20 @@ beforeEach(() => {
   imported = { complete: true };
 });
 
-describe("Download OpenFrame AI", () => {
+describe("Download Straft AI", () => {
   it("shows the size, the space needed and the internet use before any click, and starts only on the click", async () => {
     show();
     expect(await screen.findByText(/A one-time download of 1.1 GB\. It needs 1.6 GB of free space \(40 GB free on this drive\)\./)).toBeTruthy();
     expect(screen.getByText(/uses the internet once/)).toBeTruthy();
     expect(calls).not.toContain("ai.download.start");
-    await userEvent.click(screen.getByRole("button", { name: "Download OpenFrame AI" }));
+    await userEvent.click(screen.getByRole("button", { name: "Download Straft AI" }));
     await waitFor(() => expect(calls).toContain("ai.download.start"));
   });
 
   it("shows progress with Pause while it downloads", async () => {
     dl = base({ phase: "Downloading", doneBytes: 0.55 * GB, totalBytes: 1.1 * GB });
     show();
-    const bar = await screen.findByRole("progressbar", { name: "OpenFrame AI download" });
+    const bar = await screen.findByRole("progressbar", { name: "Straft AI download" });
     expect(bar.getAttribute("aria-valuenow")).toBe("50");
     expect(screen.getByText("Downloading: 564 MB of 1.1 GB")).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "Pause" }));
@@ -97,9 +97,9 @@ describe("Download OpenFrame AI", () => {
     const { unmount } = show();
     expect(await screen.findByRole("button", { name: "Resume download" })).toBeTruthy();
     unmount();
-    dl = base({ phase: "Failed", problem: { code: "ai.file_damaged", message: "A downloaded OpenFrame AI file was damaged and has been set aside.", retryable: false } });
+    dl = base({ phase: "Failed", problem: { code: "ai.file_damaged", message: "A downloaded Straft AI file was damaged and has been set aside.", retryable: false } });
     show();
-    expect(await screen.findByText("A downloaded OpenFrame AI file was damaged and has been set aside.")).toBeTruthy();
+    expect(await screen.findByText("A downloaded Straft AI file was damaged and has been set aside.")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Try again" })).toBeTruthy();
   });
 
@@ -107,19 +107,19 @@ describe("Download OpenFrame AI", () => {
     dl = base({ freeBytes: 1 * GB });
     show();
     expect(await screen.findByText(/not enough free space/)).toBeTruthy();
-    expect((screen.getByRole("button", { name: "Download OpenFrame AI" }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole("button", { name: "Download Straft AI" }) as HTMLButtonElement).disabled).toBe(true);
     expect(tooLittleSpace(base({ phase: "Paused", freeBytes: 1 * GB, doneBytes: 0.7 * GB }))).toBe(false);
   });
 
   it("removes a damaged set before downloading it again, but resumes a paused download of it", async () => {
-    const { unmount } = show("An OpenFrame AI file is missing or damaged.");
-    expect(await screen.findByText("An OpenFrame AI file is missing or damaged.")).toBeTruthy();
+    const { unmount } = show("A Straft AI file is missing or damaged.");
+    expect(await screen.findByText("A Straft AI file is missing or damaged.")).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "Download again" }));
     await waitFor(() => expect(calls.filter((c) => c !== "ai.download.status")).toEqual(["ai.download.remove", "ai.download.start"]));
     unmount();
     calls.length = 0;
     dl = base({ phase: "Paused", doneBytes: 0.3 * GB, totalBytes: 1.1 * GB });
-    show("An OpenFrame AI file is missing or damaged.");
+    show("A Straft AI file is missing or damaged.");
     await userEvent.click(await screen.findByRole("button", { name: "Resume download" }));
     await waitFor(() => expect(calls).toContain("ai.download.start"));
     expect(calls).not.toContain("ai.download.remove");
@@ -128,7 +128,7 @@ describe("Download OpenFrame AI", () => {
   it("announces the phase, not every byte, and says so plainly when the status cannot be read", async () => {
     dl = base({ phase: "Downloading", doneBytes: 0.55 * GB, totalBytes: 1.1 * GB });
     show();
-    expect((await screen.findByRole("status")).textContent).toBe("Downloading OpenFrame AI.");
+    expect((await screen.findByRole("status")).textContent).toBe("Downloading Straft AI.");
     expect(tooLittleSpace(base({ freeBytes: 1 * GB }), true)).toBe(false);
     expect(tooLittleSpace(base({ phase: "Failed", freeBytes: 1.2 * GB, doneBytes: 0.5 * GB }))).toBe(false);
   });
@@ -136,8 +136,8 @@ describe("Download OpenFrame AI", () => {
   it("says plainly when this copy cannot download", async () => {
     dl = base({ canDownload: false });
     show();
-    expect(await screen.findByText(/cannot download OpenFrame AI/)).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Download OpenFrame AI" })).toBeNull();
+    expect(await screen.findByText(/cannot download Straft AI/)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Download Straft AI" })).toBeNull();
     expect(screen.getByRole("button", { name: "Import a model file…" })).toBeTruthy();
     expect(downloadLine(base({ phase: "Checking" }))).toBe("Getting ready to download…");
   });
@@ -163,11 +163,11 @@ describe("Download OpenFrame AI", () => {
     const { OpError } = await import("../ipc/client");
     imported = new OpError("ai.download.import", {
       code: "ai.not_a_model",
-      message: "This file is not an OpenFrame AI model file, so it was not used. Nothing was changed.",
+      message: "This file is not a Straft AI model file, so it was not used. Nothing was changed.",
       retryable: false,
     });
     await userEvent.click(screen.getByRole("button", { name: "Import a model file…" }));
-    await waitFor(() => expect(toasts).toContain("err This file is not an OpenFrame AI model file, so it was not used. Nothing was changed."));
+    await waitFor(() => expect(toasts).toContain("err This file is not a Straft AI model file, so it was not used. Nothing was changed."));
     expect((screen.getByRole("button", { name: "Import a model file…" }) as HTMLButtonElement).disabled).toBe(false);
   });
 

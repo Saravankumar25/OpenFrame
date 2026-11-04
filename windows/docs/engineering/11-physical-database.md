@@ -1,16 +1,16 @@
 # 11: Physical Database (SQLite) Specification
 
 > **Status legend:** ✅ implemented · 🚧 in development (module branch) · 📋 planned.
-> This document describes the code as it is. Source: `crates/openframe-persistence`, `migrations/`,
-> `crates/openframe-application/src/{schema.rs,store.rs}`. Decisions: ADR-0002, ADR-0005, ADR-0011.
+> This document describes the code as it is. Source: `crates/straft-persistence`, `migrations/`,
+> `crates/straft-application/src/{schema.rs,store.rs}`. Decisions: ADR-0002, ADR-0005, ADR-0011.
 
 ## 1. Databases
 
 | Database | Path | Migrations | Contents | Undo-tracked |
 |---|---|---|---|---|
-| Project ✅ | `<Title>.openframe/project.sqlite` | `migrations/project/0001…0009` | All canonical project data | Yes (canonical tables) |
-| Global Idea Vault ✅ | `Documents/OpenFrame/Global Idea Vault/vault.sqlite` | `migrations/global/0001…0002` | Global vault items, their assets, trash, search | Yes |
-| Application ✅ | `%LOCALAPPDATA%/OpenFrame/app.sqlite` | `migrations/app/0001` | Local profile, recent projects registry, settings, global templates. **Never project content.** | No |
+| Project ✅ | `<Title>.straft/project.sqlite` | `migrations/project/0001…0009` | All canonical project data | Yes (canonical tables) |
+| Global Idea Vault ✅ | `Documents/Straft Studio/Global Idea Vault/vault.sqlite` | `migrations/global/0001…0002` | Global vault items, their assets, trash, search | Yes |
+| Application ✅ | `%LOCALAPPDATA%/Straft/app.sqlite` | `migrations/app/0001` | Local profile, recent projects registry, settings, global templates. **Never project content.** | No |
 
 Migrations are embedded in the binary (`include_str!` in `schema.rs`). The migration number is fixed per module so
 modules can be developed independently:
@@ -35,7 +35,7 @@ modules can be developed independently:
 | 16 | `0016_callsheets_budget.sql` | `modules/schedule`: `budget_line.actual` (Actual next to the Planned `amount`; every earlier amount is Planned), call sheet status words mapped to Draft, Needs refresh and Final (owner decision 2026-10-07; "Needs refresh" is derived, so only Draft and Final are stored). Contract: 33-production-depth-contract.md sections 5 and 6 | ✅ |
 | 17 | `0017_story_page.sql` | `modules/story/page.rs`: `story_page`, one row holding the free text of the Story page (Story tab). Not linked to any other table; saves are not undoable, write no activity entry and are not offered to the assistant. Backup and Full Project Packages carry it; exchange packages do not (`modules/packages/coverage.rs`) | ✅ |
 | 18 | `0018_ai_memory.sql` | `modules/ai/memory`: `ai_memory`, the assistant's long-term memory of what a person stated or confirmed. Personal (every query filters by `user_id`), emptied in a Full Project Package, deleting wipes the text | ✅ |
-| 19 | `0019_story_page_format.sql` | `modules/story/page.rs`: `story_page.format`, the formatting of the Story page (runs per line with bold, italic, underline, highlight and size; `openframe-import-export/src/prose.rs`). `body` stays the plain text; a format that does not match its text is never applied | ✅ |
+| 19 | `0019_story_page_format.sql` | `modules/story/page.rs`: `story_page.format`, the formatting of the Story page (runs per line with bold, italic, underline, highlight and size; `straft-import-export/src/prose.rs`). `body` stays the plain text; a format that does not match its text is never applied | ✅ |
 
 ## 2. Connection policy ✅ (`open_connection`)
 
@@ -73,7 +73,7 @@ Rules enforced by code or review:
 3. **No `ON DELETE CASCADE`** and no triggers that delete other canonical rows. Generic undo must see every row change
    (review rule).
 4. Booleans are `INTEGER` 0/1. Enumerations are `TEXT` with a `CHECK` constraint when the set is closed. Values match
-   the `openframe_domain::enums` text exactly (e.g. `"Extras / Background"`).
+   the `straft_domain::enums` text exactly (e.g. `"Extras / Background"`).
 5. Structured side data is `*_json TEXT` (e.g. `settings_json`, `anchor_json`). It is validated in Rust before writing
    and is never queried for business rules.
 6. Text length limits are enforced in Rust (`util::required_text` / `optional_text` / `body_text`), not in DDL, so the

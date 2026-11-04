@@ -10,14 +10,14 @@
 
 The owner approved removal in chat on 2026-10-16 ("if it is safe you can remove the w1 working trees"). Option 1 was
 done: no folder held a junction or link; the 65 files of section 2 (without models and llama.cpp builds) were copied to
-`C:OpenFrame.build-cachesalvage-2026-09-30` (773 KB); the 39 folders were removed and `git worktree prune` run.
-`git worktree list` shows only `C:OpenFrame`. About 4.0 GB freed.
+`C:Straft Studio.build-cachesalvage-2026-09-30` (773 KB); the 39 folders were removed and `git worktree prune` run.
+`git worktree list` shows only `C:Straft Studio`. About 4.0 GB freed.
 
 ## 1. What was found
 
-- `C:\OpenFrame\.claude\worktrees` holds 39 folders, about 4.0 GB, all last changed on 2026-09-29 or 2026-09-30.
-- Each folder's `.git` file points at `C:/dev/OpenFrame/.git`, which no longer exists. Git cannot see these folders
-  (`git worktree list` shows only `C:\OpenFrame`), and the 31 agent branches they were on no longer exist anywhere. Their
+- `C:\Straft\.claude\worktrees` holds 39 folders, about 4.0 GB, all last changed on 2026-09-29 or 2026-09-30.
+- Each folder's `.git` file points at `C:/dev/Straft/.git`, which no longer exists. Git cannot see these folders
+  (`git worktree list` shows only `C:\Straft`), and the 31 agent branches they were on no longer exist anywhere. Their
   commits cannot be recovered; only the files on disk remain.
 - None has a `node_modules` folder or junction, so removing them cannot touch the main checkout's files. One folder
   (`agent-a30f8e94eba53611c`, 2.67 GB) holds downloaded model files and llama.cpp builds in `.dev-models/`.
@@ -29,10 +29,10 @@ done: no folder held a junction or link; the 65 files of section 2 (without mode
 
 | Files | In how many folders | Why they might matter |
 |---|---|---|
-| `crates/openframe-ai/src/{download,manifest,job}.rs`, `tests/{download,install,lifecycle,security_ai}.rs`, `tools/sign-manifest.mjs`, `manifest/dev-manifest.json(.sig)`, `keys/manifest-dev.pub` | 29 | The model download, signed manifest and install code removed under ADR-0025. ADR-0026 brings the download back in phase W8, so this is a useful reference (the dev key is a test key, not a secret) |
+| `crates/straft-ai/src/{download,manifest,job}.rs`, `tests/{download,install,lifecycle,security_ai}.rs`, `tools/sign-manifest.mjs`, `manifest/dev-manifest.json(.sig)`, `keys/manifest-dev.pub` | 29 | The model download, signed manifest and install code removed under ADR-0025. ADR-0026 brings the download back in phase W8, so this is a useful reference (the dev key is a test key, not a secret) |
 | `apps/desktop/src/ai/OfflineAiSetup.tsx` (with test and styles) | 9 | The old download screen; reference for W8 |
 | `docs/manual-audit/*.md` (10 chapters) and tests named `*_manual_audit.rs`, `manual_ch1_projects.rs`, `schedule_manual.rs`, `screenplay_manual_ch4b.rs` | 1 to 2 | A chapter-by-chapter audit of the user manual against the app |
-| `crates/openframe-application/src/modules/{access,project_tools}.rs`, `modules/ai/direct.rs`, `modules/idea_vault/{export,links,preview}.rs`, `modules/screenplay/paste.rs`, `crates/openframe-import-export/src/sheet.rs`, `tests/{access,ai_eval,ai_security}.rs`, `crates/openframe-test-support/src/{eval,real_ai}.rs` and a few screens | 1 to 2 | Earlier versions of modules that were later merged, renamed or dropped. `ai_eval.rs` and `eval.rs` may help the W5 evaluation harness |
+| `crates/straft-application/src/modules/{access,project_tools}.rs`, `modules/ai/direct.rs`, `modules/idea_vault/{export,links,preview}.rs`, `modules/screenplay/paste.rs`, `crates/straft-import-export/src/sheet.rs`, `tests/{access,ai_eval,ai_security}.rs`, `crates/straft-test-support/src/{eval,real_ai}.rs` and a few screens | 1 to 2 | Earlier versions of modules that were later merged, renamed or dropped. `ai_eval.rs` and `eval.rs` may help the W5 evaluation harness |
 | `.dev-models/*.gguf`, llama.cpp CPU and Vulkan builds, `bench-cpu.log`, `benchmark-cpu.json` | 1 | Model files (re-downloadable) and the 2026-09-30 benchmark output |
 
 Not worth keeping: `apps/desktop/dist/` (build output), `apps/desktop/src/ipc/generated/` (generated), `tests/e2e/.run/`
@@ -41,7 +41,7 @@ and `tests/e2e/artifacts/` (old test runs), `docs/spec-digest/` and the root spe
 ## 3. Options for the owner
 
 1. **Recommended:** copy the files of section 2 (without the model files and llama.cpp builds) into one git-ignored folder,
-   `C:\OpenFrame\.build-cache\salvage-2026-09-30\`, keep the two benchmark files with them, then remove the 39 folders.
+   `C:\Straft\.build-cache\salvage-2026-09-30\`, keep the two benchmark files with them, then remove the 39 folders.
    Frees about 4.0 GB and keeps every file that might still matter.
 2. Remove the 39 folders without copying anything. Frees about 4.0 GB; the download code would be rewritten in W8.
 3. Keep everything for now.
