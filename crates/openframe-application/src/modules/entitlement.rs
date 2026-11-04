@@ -545,11 +545,8 @@ pub const EDIT_LOCKED_MESSAGE: &str = "OpenFrame Studio needs to check your purc
 
 /// Commands that keep working while editing waits for a check: opening and closing a project and
 /// settling a recovery, because Open must work.
-pub const COMMANDS_ALLOWED_WITHOUT_EDIT: &[&str] = &[
-    "project.open",
-    "project.close",
-    "project.resolve_recovery",
-];
+pub const COMMANDS_ALLOWED_WITHOUT_EDIT: &[&str] =
+    &["project.open", "project.close", "project.resolve_recovery"];
 
 /// App-level commands that bring a new project into being, which wait with the other changes.
 pub const NEW_PROJECT_COMMANDS: &[&str] = &["project.create", "project.duplicate"];
@@ -590,8 +587,10 @@ impl EntitlementService {
         {
             return Ok(());
         }
-        Err(AppError::new("permission.licence_required", EDIT_LOCKED_MESSAGE)
-            .with_detail(format!("{op} refused: {}", state_name(self.state()))))
+        Err(
+            AppError::new("permission.licence_required", EDIT_LOCKED_MESSAGE)
+                .with_detail(format!("{op} refused: {}", state_name(self.state()))),
+        )
     }
 }
 

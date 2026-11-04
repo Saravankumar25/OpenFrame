@@ -500,8 +500,12 @@ impl Registry {
         // Exports and packages write copies elsewhere and stay allowed, as reads do.
         let changes_project = entry.meta.as_ref().is_some_and(|m| {
             matches!(m.operation_class, OpClass::Mutate)
-                && m.required_capability
-                    .is_some_and(|c| !matches!(c, Capability::View | Capability::Export | Capability::CreatePackage))
+                && m.required_capability.is_some_and(|c| {
+                    !matches!(
+                        c,
+                        Capability::View | Capability::Export | Capability::CreatePackage
+                    )
+                })
         });
         core.entitlement.check_edit(name, changes_project)?;
         // Defence in depth (Windows phase W3): the capability an operation declares is checked

@@ -15,7 +15,9 @@ use ts_rs::TS;
 
 use super::approx_tokens;
 use super::rules::{Candidate, Kind};
-use crate::modules::ai::index::normalize;
+use crate::modules::ai::index::{EntityIndex, normalize};
+use crate::modules::ai::sections::Selection;
+use crate::modules::ai::turn::leaf_hints;
 
 /// Entries kept per person and project. A full memory saves nothing new until the person deletes some.
 pub const MAX_ENTRIES: usize = 200;
@@ -110,15 +112,59 @@ fn content_words(text: &str) -> HashSet<String> {
 
 /// The entries to offer this turn, best match first. `ids` are the things the message and the
 /// conversation focus name.
+#[cfg(test)]
 pub fn retrieve(
     c: &Connection,
     user_id: &str,
     message: &str,
     ids: &[String],
 ) -> AppResult<Vec<MemoryEntry>> {
+    retrieve_where(c, user_id, message, ids, |_| true)
+}
+
+/// May an entry reach a turn that reads these sections? Its references hold what the message named
+/// and what the conversation was about then, so the things its own words name say more: each of them
+/// must be something a picked section can answer about. The focus adds the screenplay to nearly every
+/// entry, so the screenplay alone says nothing. A preference that names nothing stays: it holds no
+/// fact of the project. Any other entry goes by the rest of its references, then by its words when
+/// they point at a section.
+pub fn homed_in(e: &MemoryEntry, sel: &Selection, names: Option<&EntityIndex>) -> bool {
+    let refs: Vec<_> = names.map_or_else(Vec::new, |ix| {
+        e.entity_refs.iter().filter_map(|r| ix.entity(r)).collect()
+    });
+    let text = normalize(&e.text);
+    let spoken: Vec<_> = refs
+        .iter()
+        .filter(|x| text.contains(&normalize(&x.name)))
+        .collect();
+    if !spoken.is_empty() {
+        return spoken.iter().all(|x| sel.takes(x.kind));
+    }
+    if e.kind == Kind::Preference {
+        return true;
+    }
+    if !refs.is_empty() {
+        return refs.iter().all(|x| sel.takes(x.kind));
+    }
+    let hints = leaf_hints(&e.text);
+    hints.is_empty()
+        || hints
+            .iter()
+            .any(|h| h.leaves.iter().any(|leaf| sel.has(leaf)))
+}
+
+/// [`retrieve`], offering only the entries `allow` lets through.
+pub fn retrieve_where(
+    c: &Connection,
+    user_id: &str,
+    message: &str,
+    ids: &[String],
+    allow: impl Fn(&MemoryEntry) -> bool,
+) -> AppResult<Vec<MemoryEntry>> {
     let words = content_words(message);
     let mut scored: Vec<(usize, MemoryEntry)> = list(c, user_id)?
         .into_iter()
+        .filter(|e| allow(e))
         .filter_map(|e| {
             let about = e.entity_refs.iter().filter(|r| ids.contains(r)).count();
             let shared = content_words(&e.text).intersection(&words).count();

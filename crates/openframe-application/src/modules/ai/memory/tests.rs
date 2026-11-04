@@ -340,7 +340,7 @@ fn the_last_eight_turns_are_kept_word_for_word_oldest_dropped_first() {
         "Answer",
         "{}",
     );
-    let m = short::load(&c, &actor("u1"), "conv", &Focus::default(), None).unwrap();
+    let m = short::load(&c, &actor("u1"), "conv", &Focus::default(), None, None).unwrap();
     assert!(m.recent.len() <= RECENT_TURNS);
     let used: usize = m
         .recent
@@ -381,7 +381,7 @@ fn eight_short_turns_all_fit() {
             "{}",
         );
     }
-    let m = short::load(&c, &actor("u1"), "conv", &Focus::default(), None).unwrap();
+    let m = short::load(&c, &actor("u1"), "conv", &Focus::default(), None, None).unwrap();
     assert_eq!(m.recent.len(), RECENT_TURNS);
     assert_eq!(m.recent[0].asked, "Question 2");
     assert_eq!(
@@ -449,7 +449,7 @@ fn older_turns_become_summary_lines_written_by_code() {
         );
     }
     let ix = index();
-    let m = short::load(&c, &actor("u1"), "conv", &Focus::default(), Some(&ix)).unwrap();
+    let m = short::load(&c, &actor("u1"), "conv", &Focus::default(), Some(&ix), None).unwrap();
     assert_eq!(m.recent.len(), RECENT_TURNS);
     assert_eq!(
         m.summary_lines,
@@ -462,7 +462,7 @@ fn older_turns_become_summary_lines_written_by_code() {
     );
     assert!(m.summary_text().starts_with("Earlier: looked something up"));
     // No names, no summary; a conversation with nothing older has none either.
-    let none = short::load(&c, &actor("u1"), "conv", &Focus::default(), None).unwrap();
+    let none = short::load(&c, &actor("u1"), "conv", &Focus::default(), None, None).unwrap();
     assert!(none.summary_lines.is_empty());
 }
 
@@ -491,7 +491,7 @@ fn only_a_plain_short_answer_can_be_confirmed() {
     );
     request(&c, "u1", "c", 1, "q", &"long ".repeat(100), "Answer", "{}");
     let ok = |conv| {
-        short::load(&c, &actor("u1"), conv, &Focus::default(), None)
+        short::load(&c, &actor("u1"), conv, &Focus::default(), None, None)
             .unwrap()
             .recent[0]
             .confirmable

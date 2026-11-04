@@ -794,6 +794,7 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
         answer.push_str(it["label"].as_str().unwrap_or_default());
     }
     o.answer = answer;
+    o.pointer = r["pointer"]["leaf"].as_str().map(str::to_string);
     // The lane and intent numbers of this request, from its trace row.
     if let Some(request_id) = x["requestId"].as_str() {
         o.route = core

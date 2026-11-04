@@ -8,6 +8,10 @@
 //! thing. The match ignores case and the digit grouping of amounts (`1,64,60,000` is `16460000`).
 //! This measures the fetch plans, not the writer: a fact that is in the dossier can still be
 //! written wrongly, and S7 and the checker measure that.
+//!
+//! A case with `sections` (ADR-0041) reads only those sections, through the same picks and leaf-scoped
+//! text search a request uses. The out-of-section pointer is code, so its precision, recall and
+//! false-pointer rate are measured here with no model at all.
 
 use std::collections::BTreeMap;
 use std::fmt::Write as _;
@@ -16,10 +20,11 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use openframe_ai::InferenceProvider;
-use openframe_ai_eval::Case;
-use openframe_ai_eval::turn::{from_cases, index_of, read_conv_resolved};
+use openframe_ai_eval::turn::{from_cases, index_of, picks_of, read_conv_resolved};
+use openframe_ai_eval::{Case, PointerCheck, PointerMetrics};
 use openframe_application::core::AppCore;
-use openframe_application::modules::ai::{dossier, intelligence, turn};
+use openframe_application::modules::ai::sections;
+use openframe_application::modules::ai::{dossier, intelligence, pointer, turn};
 use serde_json::{Value, json};
 
 /// How long one message may wait for the embedding model (the first one starts it).
@@ -92,6 +97,10 @@ struct Row {
     build_ms: f64,
     guard_notes: usize,
     text: String,
+    /// What the pointer named against what the case wants, on a case with sections.
+    pointer: Option<PointerCheck>,
+    /// The reply code chose instead of the writer, on a case with sections.
+    verdict: String,
 }
 
 pub fn run(
@@ -102,7 +111,7 @@ pub fn run(
 ) -> Result<(), String> {
     let cases: Vec<&Case> = cases
         .iter()
-        .filter(|c| c.id.starts_with("conv-lt-"))
+        .filter(|c| c.id.starts_with("conv-lt-") || c.id.starts_with("sec-"))
         .collect();
     let owned: Vec<Case> = cases.iter().map(|c| (*c).clone()).collect();
     let convs = from_cases(&owned);
@@ -153,11 +162,22 @@ pub fn run(
                     ix.scene(&sp.id, n as u32).map(|e| e.id.clone())
                 });
             let message = &conv.turns[m.turn];
+            let selection = picks_of(core, case, &ix)?;
+            // The same text search a request runs: it opens the store itself, so it goes first.
+            let retrieved = selection
+                .as_ref()
+                .map(|sel| sections::retrieve(core, &actor, sel, message));
+            let leaf_read = selection.as_ref().map(|sel| dossier::LeafRead {
+                selection: sel,
+                passages: retrieved
+                    .as_ref()
+                    .map_or(&[][..], |r| r.passages.as_slice()),
+            });
             let started = Instant::now();
-            let d = session
+            let (d, verdict) = session
                 .store
                 .read(|c| {
-                    Ok(dossier::build(&dossier::Input {
+                    let input = dossier::Input {
                         conn: c,
                         actor: &actor,
                         index: &ix,
@@ -168,8 +188,13 @@ pub fn run(
                         selected_scene: selected.as_deref(),
                         focus: Some(focus),
                         previous_message: m.turn.checked_sub(1).map(|i| conv.turns[i].as_str()),
-                        sections: None,
-                    }))
+                        sections: leaf_read.as_ref(),
+                    };
+                    let d = dossier::build(&input);
+                    let verdict = selection
+                        .as_ref()
+                        .map(|sel| pointer::decide(&input, sel, &d));
+                    Ok((d, verdict))
                 })
                 .map_err(|e| e.message)?;
             let build_ms = started.elapsed().as_secs_f64() * 1000.0;
@@ -213,6 +238,11 @@ pub fn run(
                 build_ms,
                 guard_notes: d.notes_on_guard,
                 text,
+                pointer: verdict.as_ref().map(|v| PointerCheck {
+                    want: case.expect.pointer.clone(),
+                    got: v.pointer().map(|p| p.leaf.id.to_string()),
+                }),
+                verdict: verdict.map_or_else(String::new, |v| format!("{v:?}")),
             });
         }
     }
@@ -227,7 +257,9 @@ pub fn run(
                 "domains": r.domains, "facts": r.facts, "tokens": r.tokens, "required": r.required,
                 "missing": r.missing, "wanted": r.wanted, "found": r.found, "misses": r.misses,
                 "abstain": r.abstain, "buildMs": r.build_ms, "guardNotes": r.guard_notes,
-                "dossier": r.text })
+                "pointerWant": r.pointer.as_ref().and_then(|p| p.want.clone()),
+                "pointerGot": r.pointer.as_ref().and_then(|p| p.got.clone()),
+                "verdict": r.verdict, "dossier": r.text })
         );
     }
     std::fs::write(out.join("dossier-results.jsonl"), lines).map_err(|e| e.to_string())?;
@@ -296,6 +328,15 @@ fn report(rows: &[Row]) -> String {
     for r in rows {
         all.add(r);
         fam.entry(r.family.as_str()).or_default().add(r);
+    }
+    let mut metrics = PointerMetrics::default();
+    for p in rows.iter().filter_map(|r| r.pointer.as_ref()) {
+        metrics.add(p);
+    }
+    if metrics.expected + metrics.quiet_cases > 0 {
+        t.push_str("## Out-of-section pointer (ADR-0041), code only\n\n");
+        t.push_str(&metrics.table());
+        t.push('\n');
     }
     let refs: Vec<&Row> = rows.iter().collect();
     t.push_str("| Family | Cases | Recall | Cases fully covered | Abstain | Mean facts | Mean tokens | p95 tokens |\n|---|---|---|---|---|---|---|---|\n");

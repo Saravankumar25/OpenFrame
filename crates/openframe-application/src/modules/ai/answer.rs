@@ -35,6 +35,7 @@ use openframe_domain::AppResult;
 use super::dossier::{Dossier, Fact};
 use super::index::{EntityIndex, Focus, Resolved};
 use super::memory::TurnMemory;
+use super::sections::Selection;
 use super::turn::{AnswerType, Group, TurnRead};
 use super::{queries, text};
 use check::{Expect, Material, Offence};
@@ -67,7 +68,7 @@ pub(crate) fn language_name(code: &str) -> Option<&'static str> {
 }
 
 /// The language of a message when it is one the check knows and is not English.
-pub(super) fn language_of(message: &str) -> Option<&'static str> {
+pub(crate) fn language_of(message: &str) -> Option<&'static str> {
     checks::detect_language(message).filter(|l| *l != "en" && language_name(l).is_some())
 }
 
@@ -83,6 +84,10 @@ pub(super) struct Input<'a> {
     /// The index, for the focus line and the project map.
     pub index: Option<&'a EntityIndex>,
     pub focus: &'a Focus,
+    /// The sections of this request: the map and the focus hold nothing from outside them.
+    pub sections: Option<&'a Selection>,
+    /// Part of the request belongs to a section that is not picked.
+    pub partial: bool,
     pub started: Instant,
     /// True once the person pressed Stop.
     pub stopped: &'a dyn Fn() -> bool,
@@ -199,10 +204,12 @@ fn context_text(i: &Input<'_>) -> String {
         c.push_str(&t.answered);
         c.push('\n');
     }
-    c.push_str(&prompt::focus_text(i.focus, i.index));
+    c.push_str(&prompt::focus_text(i.focus, i.index, i.sections));
     c.push('\n');
-    if let Some(ix) = i.index {
-        c.push_str(&prompt::map_titles(ix));
+    match (i.sections, i.index) {
+        (Some(sel), _) => c.push_str(&prompt::section_map(sel)),
+        (None, Some(ix)) => c.push_str(&prompt::map_titles(ix)),
+        (None, None) => {}
     }
     c
 }
@@ -240,8 +247,11 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
         language: language_of(i.message),
     };
 
-    let map = i.index.map(prompt::project_map).unwrap_or_default();
-    let focus = prompt::focus_text(i.focus, i.index);
+    let map = match i.sections {
+        Some(sel) => prompt::section_map(sel),
+        None => i.index.map(prompt::project_map).unwrap_or_default(),
+    };
+    let focus = prompt::focus_text(i.focus, i.index, i.sections);
     let base = prompt::build(&prompt::Parts {
         group,
         class,
@@ -252,6 +262,7 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
         resolved: i.resolved,
         message: i.message,
         language: expect.language,
+        partial: i.partial,
     });
 
     let say = prompt::length_say(class);

@@ -39,7 +39,7 @@ use serde::{Deserialize, Serialize};
 
 use super::index::Resolved;
 
-pub use domains::Domain;
+pub use domains::{Domain, LeafHint, leaf_hints};
 
 /// The domains a message touches once its names are known: what the dossier fetches from.
 pub fn domains_for(message: &str, resolved: &Resolved, answer_type: AnswerType) -> Vec<Domain> {

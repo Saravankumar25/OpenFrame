@@ -11,8 +11,9 @@ use serde_json::Value;
 
 use super::approx_tokens;
 use super::rules;
-use crate::modules::ai::index::{EntityIndex, Focus};
+use crate::modules::ai::index::{EntityIndex, Focus, Kind};
 use crate::modules::ai::queries::truncate_chars;
+use crate::modules::ai::sections::Selection;
 use crate::modules::ai::types::{AiResultKind, AiResultStatus};
 
 /// Turns kept word for word.
@@ -63,7 +64,9 @@ fn answer_phrase(code: &str) -> &'static str {
         "lookup" => "looked something up",
         "list" => "asked for a list",
         "count" => "asked for a count",
-        "explain" => "asked for an explanation",
+        "explain" | "story" => "asked for an explanation",
+        "describe" => "asked for a description",
+        "brief" => "asked for a brief",
         "relation" => "asked how things relate",
         "compare" => "compared things",
         "brainstorm" => "brainstormed",
@@ -75,32 +78,41 @@ fn answer_phrase(code: &str) -> &'static str {
 }
 
 /// "asked for a count about scene 35 of LOW TIDE RADIO, Young Anjali (Aadhya Varma)" from the focus
-/// stored with a turn. `None` when the focus names nothing the project still has.
-fn line(focus: &Focus, names: Option<&EntityIndex>) -> Option<String> {
+/// stored with a turn. `None` when the focus names nothing the project still has. With sections
+/// picked, a name is written only when a picked section can answer about that kind of thing.
+fn line(focus: &Focus, names: Option<&EntityIndex>, within: Option<&Selection>) -> Option<String> {
     let ix = names?;
+    let takes = |k: Kind| within.is_none_or(|sel| sel.takes(k));
     let mut about: Vec<String> = Vec::new();
     let title = focus
         .screenplay
         .as_deref()
         .and_then(|id| ix.screenplay(id))
-        .map(|s| s.title.clone());
+        .map(|s| s.title.clone())
+        .filter(|_| takes(Kind::Scene));
     match (focus.scene, &title) {
         (Some(n), Some(t)) => about.push(format!("scene {n} of {t}")),
         (None, Some(t)) => about.push(t.clone()),
         _ => {}
     }
-    for id in focus.characters.iter().take(2) {
-        if let Some(e) = ix.entity(id) {
-            let players = ix.played_by(id);
-            match players.as_slice() {
-                [one] => about.push(format!("{} ({})", e.name, one.name)),
-                _ => about.push(e.name.clone()),
+    if takes(Kind::Character) {
+        for id in focus.characters.iter().take(2) {
+            if let Some(e) = ix.entity(id) {
+                let players = ix.played_by(id);
+                match players.as_slice() {
+                    [one] if takes(Kind::Person) => {
+                        about.push(format!("{} ({})", e.name, one.name));
+                    }
+                    _ => about.push(e.name.clone()),
+                }
             }
         }
     }
-    for id in focus.persons.iter().take(2) {
-        if let Some(e) = ix.entity(id) {
-            about.push(e.name.clone());
+    if takes(Kind::Person) {
+        for id in focus.persons.iter().take(2) {
+            if let Some(e) = ix.entity(id) {
+                about.push(e.name.clone());
+            }
         }
     }
     if about.is_empty() {
@@ -118,6 +130,20 @@ fn focus_of(scope_json: &str) -> Focus {
         .ok()
         .and_then(|v| serde_json::from_value(v.get("focus")?.clone()).ok())
         .unwrap_or_default()
+}
+
+/// The sections a turn was asked under, or `None` for a turn with no record of them.
+fn sections_of(scope_json: &str) -> Option<Vec<String>> {
+    let v: Value = serde_json::from_str(scope_json).ok()?;
+    serde_json::from_value(v.get("sections")?.clone()).ok()
+}
+
+/// A turn read other sections than these are picked now: its words stay out of the prompt.
+fn turn_fits(scope_json: &str, within: Option<&Selection>) -> bool {
+    let Some(sel) = within else {
+        return true;
+    };
+    sections_of(scope_json).is_some_and(|read| read.iter().all(|leaf| sel.has(leaf)))
 }
 
 /// The newest result of a request: kind, content, status and whether it rests on a private note.
@@ -150,6 +176,7 @@ pub fn load(
     conversation: &str,
     focus: &Focus,
     names: Option<&EntityIndex>,
+    within: Option<&Selection>,
 ) -> AppResult<ConversationMemory> {
     let mut st = c.prepare(
         "SELECT id, request_text, scope_json FROM ai_request
@@ -178,10 +205,13 @@ pub fn load(
     let mut recent: Vec<RecentTurn> = Vec::new();
     let mut used = 0;
     let mut older_from = rows.len();
-    for (i, (id, asked, _)) in rows.iter().enumerate() {
+    for (i, (id, asked, scope_json)) in rows.iter().enumerate() {
         if recent.len() >= RECENT_TURNS {
             older_from = i;
             break;
+        }
+        if !turn_fits(scope_json, within) {
+            continue;
         }
         let Some(answer) = shown(c, id)? else {
             // Still running, or it ended before an answer was stored: nothing to remember of it.
@@ -206,7 +236,10 @@ pub fn load(
     // The older turns, oldest first, one line each; a line equal to the one before it adds nothing.
     let mut lines: Vec<String> = Vec::new();
     for (_, _, scope_json) in rows[older_from.min(rows.len())..].iter().rev() {
-        if let Some(l) = line(&focus_of(scope_json), names)
+        if !turn_fits(scope_json, within) {
+            continue;
+        }
+        if let Some(l) = line(&focus_of(scope_json), names, within)
             && lines.last() != Some(&l)
         {
             lines.push(l);

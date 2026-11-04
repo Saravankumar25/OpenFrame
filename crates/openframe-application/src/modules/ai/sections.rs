@@ -229,6 +229,16 @@ impl PartialEq for Leaf {
 }
 
 impl Leaf {
+    /// How the pointer and the Add button name it: "Production > Budget", or "Files" when the branch
+    /// holds one leaf of the same name.
+    pub fn path(&self) -> String {
+        if self.branch == self.label {
+            self.label.to_string()
+        } else {
+            format!("{} > {}", self.branch, self.label)
+        }
+    }
+
     /// May this fact pass for this leaf? Statements of what is missing, and the note on which
     /// screenplay was assumed, are not facts of an area: `Missing` and `Count` are checked by their
     /// words, `Assumed` only where a leaf can read scenes.
@@ -878,7 +888,7 @@ pub fn leaf(id: &str) -> Option<&'static Leaf> {
     LEAVES.iter().find(|l| l.id == id)
 }
 
-/// The leaf where a kind of name lives, for the pointer of a later slice.
+/// The leaf where a kind of name lives, for the pointer.
 pub fn home_of(kind: Kind) -> &'static str {
     match kind {
         K::Scene => "screenplay/scenes",
@@ -978,6 +988,11 @@ pub struct Selection {
 impl Selection {
     pub fn takes(&self, kind: Kind) -> bool {
         self.picks.iter().any(|p| p.leaf.takes(kind))
+    }
+
+    /// Is this leaf one of the picks?
+    pub fn has(&self, leaf: &str) -> bool {
+        self.picks.iter().any(|p| p.leaf.id == leaf)
     }
 
     /// The picked sections as a place to have looked in: "Budget and Cast & Crew".
@@ -1298,6 +1313,10 @@ pub struct SectionsTrace {
     pub retrieval: String,
     pub degraded: bool,
     pub outside: usize,
+    /// The leaf the pointer named, when it fired.
+    pub pointer: Option<String>,
+    /// What fired it: `name`, `topic`, `exists`, `help`, `tool` or `open`.
+    pub pointer_trigger: Option<String>,
 }
 
 impl SectionsTrace {
@@ -1478,6 +1497,8 @@ pub fn stage_json(trace: &SectionsTrace) -> Value {
         "retrieval": trace.retrieval,
         "degraded": trace.degraded,
         "outside": trace.outside,
+        "pointer": trace.pointer,
+        "pointerTrigger": trace.pointer_trigger,
     })
 }
 
@@ -1802,6 +1823,20 @@ mod tests {
     }
 
     #[test]
+    fn a_leaf_is_named_by_its_branch_unless_they_are_the_same() {
+        assert_eq!(
+            leaf("production/budget").unwrap().path(),
+            "Production > Budget"
+        );
+        assert_eq!(leaf("files/files").unwrap().path(), "Files");
+        assert_eq!(
+            leaf("screenplay/scenes").unwrap().path(),
+            "Screenplay > Scenes"
+        );
+        assert_eq!(leaf("callsheets/callsheets").unwrap().path(), "Call Sheets");
+    }
+
+    #[test]
     fn every_kind_of_name_has_a_home_that_can_answer_about_it() {
         for k in [
             K::Scene,
@@ -1880,10 +1915,14 @@ mod tests {
             retrieval: "full_text".into(),
             degraded: true,
             outside: 1,
+            pointer: Some("production/budget".into()),
+            pointer_trigger: Some("name".into()),
         };
         let v: Value = serde_json::from_str(&t.to_json()).unwrap();
         assert_eq!(v["leaves"][0], "production/budget");
         assert_eq!(v["retrieval"], "full_text");
         assert_eq!(stage_json(&t)["tokens"][0], 120);
+        assert_eq!(stage_json(&t)["pointer"], "production/budget");
+        assert_eq!(v["pointer_trigger"], "name");
     }
 }

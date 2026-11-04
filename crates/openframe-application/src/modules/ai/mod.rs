@@ -29,6 +29,7 @@ pub mod knowledge;
 pub mod memory;
 pub mod offline;
 pub mod orchestrator;
+pub mod pointer;
 pub mod queries;
 pub mod records;
 pub mod retrieval;

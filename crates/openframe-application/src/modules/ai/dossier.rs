@@ -47,7 +47,7 @@ use super::turn::{self, Group, LengthClass, TurnRead};
 use crate::core::AppCore;
 
 pub use ctx::FetchCtx;
-pub use leaves::{LeafRead, LeafTokens, OutsideName, split_budget};
+pub use leaves::{LeafRead, LeafTokens, OutsideName, probe, split_budget};
 pub use registry::{FETCHERS, FetchFn, Fetcher};
 
 /// How much a fact matters when the dossier is over its cap. A fact with a required value is never

@@ -4,6 +4,7 @@
 //!
 //! 1. the policy of the answer group (fixed text),
 //! 2. the project map (screenplay titles and scene counts; changes only when the project is written),
+//!    or, with sections picked, the names of those sections and nothing about the project,
 //!
 //! both in the system message, byte for byte the same on every turn of that group. Then, in the user
 //! message and from the most stable to the least:
@@ -22,9 +23,11 @@
 use openframe_ai::client::ChatMessage;
 
 use super::super::dossier::Dossier;
-use super::super::index::{EntityIndex, Focus, Hit, How, Resolved};
+use super::super::index::{EntityIndex, Focus, Hit, How, Kind, Resolved};
 use super::super::memory::TurnMemory;
 use super::super::orchestrator::escape_untrusted;
+use super::super::queries;
+use super::super::sections::Selection;
 use super::super::turn::{Group, LengthClass};
 
 /// Facts, narrative and help. Rule 6 and 7 are the two lines round 2 added.
@@ -43,6 +46,9 @@ pub(super) const BRAINSTORM: &str = "You are a story collaborator inside OpenFra
 
 /// Small talk, thanks, anger: brief, calm, no data.
 pub(super) const CHAT: &str = "You are the assistant inside OpenFrame Studio, a filmmaking app. The person sent a message that is not a question about the project. Reply in one or two short, calm sentences. If they are upset, apologise once without excuses and offer to try their last question again. Do not list project data. Do not ask what they meant by an insult.";
+
+/// Part of the request lives in a section that is not picked. The writer answers the rest.
+pub(super) const PARTIAL_NOTE: &str = "Part of the request is about a section that was not picked. Answer only the part the facts answer and say nothing about the rest.";
 
 /// The fixed policy of an answer group.
 pub(super) fn policy(group: Group) -> &'static str {
@@ -104,6 +110,16 @@ pub(super) fn project_map(ix: &EntityIndex) -> String {
     )
 }
 
+/// Part 2 with sections picked (ADR-0041): small, and only the sections themselves. A title or a scene
+/// count would be a fact from the Screenplay whatever was picked.
+pub(super) fn section_map(sel: &Selection) -> String {
+    let names: Vec<String> = sel.picks.iter().map(|p| p.leaf.title.to_string()).collect();
+    format!(
+        "For orientation only, not a source for your answer: the person chose to read {}.",
+        queries::join_and(&names)
+    )
+}
+
 fn map_title(title: &str) -> String {
     let one_line = title.split_whitespace().collect::<Vec<_>>().join(" ");
     let escaped = escape_untrusted(&one_line);
@@ -123,27 +139,36 @@ pub(super) fn map_titles(ix: &EntityIndex) -> String {
         .join("\n")
 }
 
-/// Part 5: what the conversation is about, in words.
-pub(super) fn focus_text(focus: &Focus, ix: Option<&EntityIndex>) -> String {
+/// Part 5: what the conversation is about, in words. With sections picked, only what a picked section
+/// can answer about is written: the focus keeps the other ids for a follow-up, never their text.
+pub(super) fn focus_text(
+    focus: &Focus,
+    ix: Option<&EntityIndex>,
+    within: Option<&Selection>,
+) -> String {
     let Some(ix) = ix else {
         return String::new();
     };
+    let takes = |k: Kind| within.is_none_or(|sel| sel.takes(k));
     let mut about: Vec<String> = Vec::new();
     let title = focus
         .screenplay
         .as_deref()
         .and_then(|id| ix.screenplay(id))
-        .map(|s| s.title.clone());
+        .map(|s| s.title.clone())
+        .filter(|_| takes(Kind::Scene));
     match (focus.scene, &title) {
         (Some(n), Some(t)) => about.push(format!("scene {n} of {t}")),
         (None, Some(t)) => about.push(t.clone()),
         _ => {}
     }
     for id in focus.characters.iter().chain(&focus.persons) {
-        if let Some(e) = ix.entity(id) {
+        if let Some(e) = ix.entity(id).filter(|e| takes(e.kind)) {
             let players = ix.played_by(id);
             match players.as_slice() {
-                [one] => about.push(format!("{} (played by {})", e.name, one.name)),
+                [one] if takes(Kind::Person) => {
+                    about.push(format!("{} (played by {})", e.name, one.name));
+                }
                 _ => about.push(e.name.clone()),
             }
         }
@@ -215,6 +240,8 @@ pub(super) struct Parts<'a> {
     pub message: &'a str,
     /// The language to write in when it is not English.
     pub language: Option<&'static str>,
+    /// Part of the request belongs to a section that is not picked; code adds the pointer sentence.
+    pub partial: bool,
 }
 
 /// The system message (parts 1 and 2) and the user message (parts 3 to 7).
@@ -254,6 +281,10 @@ pub(super) fn build(p: &Parts<'_>) -> Vec<ChatMessage> {
                 "The message spelled a name differently; say once that you took it to mean {name}.\n"
             ));
         }
+    }
+    if p.partial {
+        user.push_str(PARTIAL_NOTE);
+        user.push('\n');
     }
     if let Some(lang) = p.language.and_then(super::language_name) {
         user.push_str(&format!("Write the whole answer in {lang}.\n"));

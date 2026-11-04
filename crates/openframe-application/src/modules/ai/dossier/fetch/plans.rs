@@ -8,6 +8,7 @@ use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
 use crate::modules::ai::index::{Resolved, normalize};
 use crate::modules::ai::turn::{AnswerType, TurnRead};
 use crate::modules::production::source::read_overview;
+use crate::modules::schedule::board;
 use crate::modules::schedule::docs::{REPORT_TYPES, ScheduleSidesContent, build_report};
 use crate::modules::schedule::dood::{self, ScheduleDoodArgs};
 use crate::modules::schedule::ops::daily_view;
@@ -55,8 +56,86 @@ pub fn overview(ctx: &FetchCtx<'_>, _read: &TurnRead, _r: &Resolved) -> Vec<Fact
                 clip(&o.unresolved_characters.join(", "), 300),
             );
         }
-        Ok(vec![f])
+        Ok(vec![plan_counts(ctx, f)])
     })
+}
+
+/// The rest of what the Overview and Home screens sum up: the shoot, its warnings, the call sheets,
+/// the crew, the shots and the budget's currency. A table that cannot be read leaves its number out.
+fn plan_counts(ctx: &FetchCtx<'_>, mut f: Fact) -> Fact {
+    let number = |sql: &str| -> Option<i64> { ctx.conn.query_row(sql, [], |r| r.get(0)).ok() };
+    let mut count = |name: &str, sql: &str| {
+        if let Some(n) = number(sql) {
+            f = std::mem::replace(&mut f, Fact::new("", "")).f(name, n.to_string());
+        }
+    };
+    count(
+        "crew members",
+        "SELECT count(*) FROM crew_member WHERE deleted_at IS NULL AND archived = 0",
+    );
+    count(
+        "call sheets",
+        "SELECT count(*) FROM call_sheet WHERE deleted_at IS NULL AND superseded_by IS NULL",
+    );
+    count(
+        "shots",
+        "SELECT count(*) FROM shot WHERE deleted_at IS NULL",
+    );
+    let Some(schedule) = board::current_schedule(ctx.conn).ok().flatten() else {
+        return f;
+    };
+    let id = schedule.id.clone();
+    let on_board = |test: &str| -> Option<i64> {
+        ctx.conn
+            .query_row(
+                &format!(
+                    "SELECT count(*) FROM schedule_strip WHERE schedule_id = ?1
+                     AND deleted_at IS NULL AND archived = 0 AND {test}"
+                ),
+                [&id],
+                |r| r.get(0),
+            )
+            .ok()
+    };
+    let scheduled = on_board("day_id IS NOT NULL");
+    let unscheduled = on_board("day_id IS NULL");
+    let days = ctx.days();
+    let shoot: Vec<_> = days.iter().filter(|d| d.number.is_some()).collect();
+    f = f.f("shoot days", shoot.len().to_string());
+    if let (Some(first), Some(last)) = (
+        shoot.iter().filter_map(|d| d.date.as_deref()).min(),
+        shoot.iter().filter_map(|d| d.date.as_deref()).max(),
+    ) {
+        f = f.f("shoot dates", format!("{first} to {last}"));
+    }
+    if let Some(n) = scheduled {
+        f = f.f("scenes scheduled", n.to_string());
+    }
+    if let Some(n) = unscheduled {
+        f = f.f("scenes unscheduled", n.to_string());
+    }
+    if let Ok(b) = board::Board::load(ctx.conn, schedule)
+        && let Ok(acks) = board::load_acks(ctx.conn, &b.schedule.id)
+    {
+        let open = b
+            .warnings(&acks)
+            .iter()
+            .filter(|w| w.decision.is_none())
+            .count();
+        f = f.f("open schedule warnings", open.to_string());
+    }
+    let currency: Option<String> = ctx
+        .conn
+        .query_row(
+            "SELECT currency FROM budget_snapshot WHERE deleted_at IS NULL AND is_current = 1 LIMIT 1",
+            [],
+            |r| r.get(0),
+        )
+        .ok();
+    if let Some(c) = currency {
+        f = f.f("budget currency", c);
+    }
+    f
 }
 
 // ------------------------------------------------------------------ Catalog

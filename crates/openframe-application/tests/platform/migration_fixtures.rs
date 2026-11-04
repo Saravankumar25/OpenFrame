@@ -326,13 +326,20 @@ fn m1_04_every_project_schema_version_upgrades_with_content_backup_search_and_ex
             }
         }
         if version >= 3 {
-            let hits = core
-                .dispatch(&actor, "search.query", json!({ "text": "station" }))
-                .unwrap();
-            assert!(
-                !hits.as_array().unwrap().is_empty(),
-                "v{version}: search was not rebuilt"
-            );
+            // The rebuild runs on its own thread after the open returns, and the screens hear of it
+            // by an event. Closing waits for it, so only this read has to wait.
+            let until = Instant::now() + Duration::from_secs(60);
+            let rebuilt = loop {
+                let hits = core
+                    .dispatch(&actor, "search.query", json!({ "text": "station" }))
+                    .unwrap();
+                let found = !hits.as_array().unwrap().is_empty();
+                if found || Instant::now() >= until {
+                    break found;
+                }
+                std::thread::sleep(Duration::from_millis(20));
+            };
+            assert!(rebuilt, "v{version}: search was not rebuilt");
             core.dispatch(
                 &actor,
                 "story.export_board",

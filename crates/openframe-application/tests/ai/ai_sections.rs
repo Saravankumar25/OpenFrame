@@ -1,6 +1,7 @@
 //! The section-scoped assistant (ADR-0041, slices R1 to R3) on a small real project: the rules of the
 //! picks, the leaf registry's fetchers, the split budget, text search held to the picked leaves, the
 //! truthful label and the trace. No real model: a scripted one records what the writer is shown.
+//! Also what stays out of the prompt when the picks change, and the out-of-section pointer (R4).
 
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
@@ -995,4 +996,436 @@ fn one_large_leaf_cannot_starve_the_others_and_required_facts_stay() {
     let found = d.facts.iter().filter(|x| x.kind == "Found").count();
     assert!(found > 0, "spare share flows to the text");
     assert!(found < 40, "the text was cut");
+}
+
+// ------------------------------------------------------------------ nothing from outside the picks
+
+fn prompt_of(model: &ScriptedModel, call: usize) -> String {
+    let seen = model.seen.lock().unwrap();
+    seen[call]
+        .messages
+        .iter()
+        .map(|m| m.content.clone())
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn ask_in(env: &TestEnv, conversation: &str, text: &str, picks: Value) -> Value {
+    env.ok(
+        "ai.ask",
+        json!({ "text": text, "scope": { "kind": "WholeProject" }, "conversationId": conversation, "sections": picks }),
+    )
+}
+
+#[test]
+fn no_fact_from_an_unpicked_section_reaches_the_prompt_when_the_picks_change() {
+    let f = film();
+    let model = attach(&f.env);
+    let conversation = "c-picks";
+    model
+        .replies
+        .lock()
+        .unwrap()
+        .push_back("Karthik Menon plays Arjun.".to_string());
+    // The person told the assistant two things earlier: a fact about a person and a preference.
+    let cast = json!([{ "leaf": "production/cast-crew" }]);
+    ask_in(&f.env, conversation, "Who plays Arjun?", cast.clone());
+    ask_in(
+        &f.env,
+        conversation,
+        "Remember that Karthik Menon has a bad back",
+        cast.clone(),
+    );
+    ask_in(
+        &f.env,
+        conversation,
+        "Always answer in short sentences",
+        cast.clone(),
+    );
+    let first_prompt = prompt_of(&model, 0);
+    assert!(
+        first_prompt.contains("the person chose to read Cast & Crew"),
+        "the map lists the picks: {first_prompt}"
+    );
+    assert!(!first_prompt.contains("Black Rain"), "{first_prompt}");
+
+    let before = model.calls();
+    ask_in(
+        &f.env,
+        conversation,
+        "What does the Camera cost?",
+        json!([{ "leaf": "production/budget" }]),
+    );
+    assert!(model.calls() > before, "the writer ran");
+    let prompt = prompt_of(&model, before);
+    assert!(prompt.contains("Camera"), "the pick is read: {prompt}");
+    assert!(
+        prompt.contains("the person chose to read Budget"),
+        "{prompt}"
+    );
+    for outside in [
+        "Karthik Menon",
+        "bad back",
+        "Arjun",
+        "Black Rain",
+        "3 scenes",
+        "played by",
+    ] {
+        assert!(!prompt.contains(outside), "{outside} reached: {prompt}");
+    }
+    assert!(
+        prompt.contains("short sentences"),
+        "a preference holds no fact of the project and stays: {prompt}"
+    );
+
+    // Back on the section the fact belongs to, the earlier turn and the memory are there again.
+    let before = model.calls();
+    ask_in(&f.env, conversation, "And who is the lead?", cast);
+    let prompt = prompt_of(&model, before);
+    assert!(prompt.contains("Karthik Menon plays Arjun"), "{prompt}");
+    assert!(prompt.contains("bad back"), "{prompt}");
+}
+
+#[test]
+fn the_focus_keeps_its_ids_for_a_follow_up_but_gives_no_text_outside_the_picks() {
+    let f = film();
+    let model = attach(&f.env);
+    let conversation = "c-focus";
+    ask_in(
+        &f.env,
+        conversation,
+        "Who plays Arjun in scene 2?",
+        json!([{ "leaf": "production/cast-crew" }, { "leaf": "screenplay/scenes" }]),
+    );
+    let before = model.calls();
+    ask_in(
+        &f.env,
+        conversation,
+        "What is the planned total?",
+        json!([{ "leaf": "production/budget" }]),
+    );
+    let prompt = prompt_of(&model, before);
+    assert!(!prompt.contains("<focus>"), "{prompt}");
+    assert!(!prompt.contains("Arjun"), "{prompt}");
+    // The ids stayed: with the people picked again, "he" finds him.
+    let before = model.calls();
+    ask_in(
+        &f.env,
+        conversation,
+        "Who plays him?",
+        json!([{ "leaf": "production/cast-crew" }]),
+    );
+    let prompt = prompt_of(&model, before);
+    assert!(prompt.contains("Karthik Menon"), "{prompt}");
+}
+
+#[test]
+fn the_summary_of_older_turns_names_only_what_the_picks_can_answer_about() {
+    let f = film();
+    let model = attach(&f.env);
+    let conversation = "c-summary";
+    let both = json!([{ "leaf": "production/cast-crew" }, { "leaf": "production/budget" }]);
+    // More turns than are kept word for word, each naming a person.
+    for _ in 0..10 {
+        ask_in(&f.env, conversation, "Who plays Arjun?", both.clone());
+    }
+    let before = model.calls();
+    ask_in(
+        &f.env,
+        conversation,
+        "What is the planned total?",
+        json!([{ "leaf": "production/budget" }]),
+    );
+    let prompt = prompt_of(&model, before);
+    assert!(!prompt.contains("Arjun"), "{prompt}");
+    assert!(!prompt.contains("Karthik"), "{prompt}");
+}
+
+// ------------------------------------------------------------------ the pointer
+
+const POINT_AT_CAST: &str =
+    "That is in Production > Cast & Crew. Add it to your selection and ask again.";
+
+#[test]
+fn a_name_that_lives_elsewhere_gets_the_fixed_sentence_with_no_model() {
+    let f = film();
+    let model = attach(&f.env);
+    let x = ask(
+        &f.env,
+        "Who plays Arjun?",
+        json!([{ "leaf": "production/budget" }]),
+    );
+    assert_eq!(x["result"]["content"], POINT_AT_CAST);
+    assert_eq!(model.calls(), 0, "no model call");
+    assert_eq!(x["result"]["pointer"]["leaf"], "production/cast-crew");
+    assert_eq!(x["result"]["pointer"]["label"], "Production > Cast & Crew");
+    assert_eq!(x["result"]["lane"], "fixed");
+    let raw = x.to_string();
+    assert!(!raw.contains("Karthik"), "no fact of the other leaf: {raw}");
+    let t = trace_sections(&f.env, x["requestId"].as_str().unwrap());
+    assert_eq!(t["pointer"], "production/cast-crew");
+    assert_eq!(t["pointer_trigger"], "name");
+    assert!(!t.to_string().contains("Arjun"), "codes only: {t}");
+}
+
+#[test]
+fn a_name_goes_to_its_home_when_no_word_says_otherwise() {
+    let f = film();
+    let model = attach(&f.env);
+    let x = ask(
+        &f.env,
+        "Tell me about Meera",
+        json!([{ "leaf": "notes/tasks" }]),
+    );
+    assert_eq!(x["result"]["pointer"]["leaf"], "story/characters");
+    assert_eq!(model.calls(), 0);
+}
+
+#[test]
+fn a_topic_word_points_only_when_the_picks_returned_nothing_that_answers() {
+    let f = film();
+    let model = attach(&f.env);
+    let x = ask(
+        &f.env,
+        "Who is the director?",
+        json!([{ "leaf": "production/budget" }]),
+    );
+    assert_eq!(x["result"]["pointer"]["leaf"], "production/cast-crew");
+    assert_eq!(model.calls(), 0);
+    let t = trace_sections(&f.env, x["requestId"].as_str().unwrap());
+    assert_eq!(t["pointer_trigger"], "topic");
+    // A budget line holds the word: the topic word does not override what the pick found.
+    let v = f.env.ok("ai.sections", json!({}));
+    assert!(v["branches"].is_array());
+    let budget = f
+        .env
+        .core
+        .project()
+        .unwrap()
+        .store
+        .read(|c| {
+            Ok(c.query_row(
+                "SELECT id FROM budget_snapshot WHERE deleted_at IS NULL LIMIT 1",
+                [],
+                |r| r.get::<_, String>(0),
+            )?)
+        })
+        .unwrap();
+    f.env.ok(
+        "budget.add_line",
+        json!({ "budgetId": budget, "category": "Crew", "description": "Director fee", "planned": 5_000_000_i64, "actual": null }),
+    );
+    let x = ask(
+        &f.env,
+        "Who is the director?",
+        json!([{ "leaf": "production/budget" }]),
+    );
+    assert!(x["result"].get("pointer").is_none(), "{x}");
+    assert!(model.calls() >= 1, "the writer answers from the pick");
+}
+
+#[test]
+fn a_word_that_points_at_a_pick_keeps_every_other_word_from_pointing() {
+    let f = film();
+    let _model = attach(&f.env);
+    for (text, leaf) in [
+        ("What was planned for Day 1?", "production/schedule"),
+        (
+            "What is the planned cost of the camera?",
+            "production/budget",
+        ),
+        ("Which task is about the call sheet?", "notes/tasks"),
+        ("Is there a timeline for the story?", "story/timeline"),
+        (
+            "How many shots are planned for scene 1?",
+            "production/shots",
+        ),
+    ] {
+        let x = ask(&f.env, text, json!([{ "leaf": leaf }]));
+        assert!(x["result"].get("pointer").is_none(), "{text}: {x}");
+    }
+}
+
+#[test]
+fn a_word_with_no_topic_is_looked_for_in_the_index_of_the_other_sections() {
+    let f = film();
+    let model = attach(&f.env);
+    // The word is in one project note and nowhere near a topic word.
+    f.env.ok(
+        "notes.create",
+        json!({ "title": "Quarry", "body": "Marigold quarry access stays closed.", "pinned": false }),
+    );
+    let x = ask(
+        &f.env,
+        "Marigold quarry access?",
+        json!([{ "leaf": "production/shots" }]),
+    );
+    assert_eq!(x["result"]["pointer"]["leaf"], "notes/notes");
+    assert_eq!(model.calls(), 0);
+    let t = trace_sections(&f.env, x["requestId"].as_str().unwrap());
+    assert_eq!(t["pointer_trigger"], "exists");
+    assert!(!x.to_string().contains("stays closed"), "{x}");
+}
+
+#[test]
+fn part_of_a_question_that_fits_is_written_and_the_rest_gets_the_sentence() {
+    let f = film();
+    let model = attach(&f.env);
+    model.replies.lock().unwrap().push_back(
+        "The Camera is planned at INR 18,00,000, and no actual amount is recorded.".to_string(),
+    );
+    let x = ask(
+        &f.env,
+        "Who plays Arjun, and what does the Camera cost?",
+        json!([{ "leaf": "production/budget" }]),
+    );
+    let content = x["result"]["content"].as_str().unwrap();
+    assert!(content.starts_with("The Camera"), "{content}");
+    assert!(content.ends_with(POINT_AT_CAST), "{content}");
+    assert_eq!(x["result"]["pointer"]["leaf"], "production/cast-crew");
+    assert!(model.calls() >= 1, "the writer answered the part that fits");
+    let prompt = prompt_of(&model, 0);
+    assert!(
+        prompt.contains("Part of the request is about a section"),
+        "{prompt}"
+    );
+    assert!(prompt.contains("Camera"), "{prompt}");
+    assert!(!prompt.contains("Karthik"), "{prompt}");
+    assert_eq!(x["result"]["lane"], "write");
+}
+
+#[test]
+fn a_clause_on_a_topic_of_the_pick_is_written_and_a_clause_on_another_gets_the_sentence() {
+    let f = film();
+    let model = attach(&f.env);
+    model
+        .replies
+        .lock()
+        .unwrap()
+        .push_back("The planned total is what the project records.".to_string());
+    let x = ask(
+        &f.env,
+        "What does the budget total, and who is the director?",
+        json!([{ "leaf": "production/budget" }]),
+    );
+    let content = x["result"]["content"].as_str().unwrap();
+    assert!(content.ends_with(POINT_AT_CAST), "{content}");
+    assert!(model.calls() >= 1);
+    let t = trace_sections(&f.env, x["requestId"].as_str().unwrap());
+    assert_eq!(t["pointer_trigger"], "topic");
+}
+
+#[test]
+fn the_pointer_never_tells_a_viewer_where_contact_details_are() {
+    let f = film();
+    let _model = attach(&f.env);
+    f.env.ok(
+        "cast.create",
+        json!({ "personName": "Maya Rao", "characterName": "Meera", "primary": true, "contact": "email maya.rao@example.test" }),
+    );
+    let sections = json!({
+        "text": "What is the email of Maya Rao?",
+        "scope": { "kind": "WholeProject" },
+        "sections": [{ "leaf": "production/budget" }],
+    });
+    let owner = f.env.ok("ai.ask", sections.clone());
+    assert_eq!(owner["result"]["pointer"]["leaf"], "production/cast-crew");
+    let viewer = f.env.actor_with_role(Role::Viewer);
+    let x = f
+        .env
+        .core
+        .dispatch(&viewer, "ai.ask", sections)
+        .expect("a viewer may ask");
+    let content = x["result"]["content"].as_str().unwrap();
+    assert!(content.starts_with("I could not find"), "{content}");
+    assert!(content.ends_with("I looked in Budget."), "{content}");
+    assert!(x["result"].get("pointer").is_none(), "{x}");
+    assert!(!content.contains("Cast"), "{content}");
+}
+
+#[test]
+fn another_persons_private_note_is_never_pointed_at_and_its_owner_may_be() {
+    let question = json!({
+        "text": "saffron scarf worry?",
+        "scope": { "kind": "WholeProject" },
+        "sections": [{ "leaf": "production/shots" }],
+    });
+    let f = film();
+    let _model = attach(&f.env);
+    let other = Actor {
+        user_id: "someone-else".into(),
+        ..f.env.actor()
+    };
+    let with_note = f
+        .env
+        .core
+        .dispatch(&other, "ai.ask", question.clone())
+        .unwrap();
+    assert!(with_note["result"].get("pointer").is_none(), "{with_note}");
+    let mine = f.env.ok("ai.ask", question.clone());
+    assert_eq!(mine["result"]["pointer"]["leaf"], "screenplay/scenes");
+
+    // What the other person reads does not depend on whether the note exists.
+    exec(
+        &f.env,
+        "UPDATE private_note SET deleted_at = 1 WHERE id = 'pn1'",
+    );
+    f.env.ok("search.rebuild", json!({}));
+    let without_note = f.env.core.dispatch(&other, "ai.ask", question).unwrap();
+    assert_eq!(
+        with_note["result"]["content"], without_note["result"]["content"],
+        "the reply gives the note away"
+    );
+}
+
+#[test]
+fn nothing_found_anywhere_gives_the_sentence_with_the_picks_and_no_model() {
+    let f = film();
+    let model = attach(&f.env);
+    let x = ask(
+        &f.env,
+        "Who is Marcus?",
+        json!([{ "leaf": "story/characters" }, { "leaf": "production/cast-crew" }]),
+    );
+    let content = x["result"]["content"].as_str().unwrap();
+    assert_eq!(
+        content,
+        "I could not find a character called Marcus. I looked in Characters and Cast & Crew."
+    );
+    assert_eq!(model.calls(), 0);
+    assert!(x["result"].get("pointer").is_none(), "{x}");
+}
+
+#[test]
+fn an_empty_section_is_not_pointed_at() {
+    let env = TestEnv::with_project("Empty", "Feature Film");
+    let model = attach(&env);
+    let x = ask(
+        &env,
+        "What is the total planned budget?",
+        json!([{ "leaf": "notes/tasks" }]),
+    );
+    let content = x["result"]["content"].as_str().unwrap();
+    assert!(content.starts_with("I could not find"), "{content}");
+    assert!(content.ends_with("I looked in Tasks."), "{content}");
+    assert!(x["result"].get("pointer").is_none(), "{x}");
+    assert_eq!(model.calls(), 0);
+}
+
+#[test]
+fn a_pointer_reply_keeps_its_section_when_the_conversation_is_read_again() {
+    let f = film();
+    let _model = attach(&f.env);
+    let x = ask_in(
+        &f.env,
+        "c-again",
+        "Who plays Arjun?",
+        json!([{ "leaf": "production/budget" }]),
+    );
+    let again = f
+        .env
+        .ok("ai.history", json!({ "conversationId": "c-again" }));
+    let raw = again.to_string();
+    assert!(raw.contains("production/cast-crew"), "{raw}");
+    assert_eq!(x["result"]["pointer"]["label"], "Production > Cast & Crew");
 }

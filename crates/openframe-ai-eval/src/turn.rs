@@ -8,7 +8,9 @@ use std::sync::Arc;
 
 use openframe_application::core::AppCore;
 use openframe_application::modules::ai::index::{self, EntityIndex, Focus};
+use openframe_application::modules::ai::sections::{self, SectionPick, Selection};
 use openframe_application::modules::ai::turn;
+use openframe_application::modules::schedule;
 use serde::Deserialize;
 use serde_json::{Value, json};
 
@@ -207,4 +209,56 @@ pub fn read_conv_resolved(
         reads.push((resolved, r, focus.clone()));
     }
     reads
+}
+
+/// The picks of a case: a scene ordinal and a day number become their ids.
+pub fn picks_of(
+    core: &AppCore,
+    case: &Case,
+    ix: &EntityIndex,
+) -> Result<Option<Selection>, String> {
+    let Some(list) = &case.sections else {
+        return Ok(None);
+    };
+    let session = core.project().map_err(|e| e.message)?;
+    let mut picks = Vec::with_capacity(list.len());
+    for p in list {
+        let mut pick = SectionPick {
+            leaf: p.leaf.clone(),
+            ..SectionPick::default()
+        };
+        if let Some(n) = p.scene {
+            let sp = ix
+                .screenplays
+                .iter()
+                .max_by_key(|s| s.scene_count)
+                .ok_or_else(|| format!("case {}: no screenplay", case.id))?;
+            let scene = ix
+                .scene(&sp.id, n as u32)
+                .ok_or_else(|| format!("case {}: no scene {n}", case.id))?;
+            pick.scene_id = Some(scene.id.clone());
+        }
+        if let Some(n) = p.day {
+            let id = session
+                .store
+                .read(|c| {
+                    let Some(s) = schedule::board::current_schedule(c)? else {
+                        return Ok(None);
+                    };
+                    Ok(schedule::board::load_days(c, &s.id)?
+                        .into_iter()
+                        .find(|d| d.number == Some(i64::from(n)))
+                        .map(|d| d.id))
+                })
+                .map_err(|e| e.message)?;
+            pick.shooting_day_id =
+                Some(id.ok_or_else(|| format!("case {}: no shoot day {n}", case.id))?);
+        }
+        picks.push(pick);
+    }
+    session
+        .store
+        .read(|c| sections::resolve_picks(c, &picks))
+        .map(Some)
+        .map_err(|e| format!("case {}: {}", case.id, e.message))
 }

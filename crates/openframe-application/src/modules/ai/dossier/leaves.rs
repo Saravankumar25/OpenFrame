@@ -12,7 +12,7 @@ use super::fetch::story;
 use super::{Dossier, Fact, Input, cap_tokens, dedupe, guard, names, registry, trim, words};
 use crate::modules::ai::index::{self, Hit, How, Kind, Resolved, SceneHit};
 use crate::modules::ai::queries;
-use crate::modules::ai::sections::{PickedLeaf, Selection, home_of};
+use crate::modules::ai::sections::{Leaf, PickedLeaf, Selection, home_of};
 
 /// The least share of the budget a picked leaf gets, in percent, when more than one is picked.
 const MIN_SHARE_PERCENT: usize = 20;
@@ -425,6 +425,30 @@ pub fn build(input: &Input<'_>, read: &LeafRead<'_>) -> Dossier {
         outside,
         leaf_tokens,
     }
+}
+
+/// What one section holds for this message, read under the same guards as an answer. Only for the
+/// pointer to count: nothing it returns may reach a reply or a prompt.
+pub fn probe(input: &Input<'_>, leaf: &'static Leaf) -> Dossier {
+    let selection = Selection {
+        picks: vec![PickedLeaf {
+            leaf,
+            screenplay_id: None,
+            draft: None,
+            scene: None,
+            day: None,
+            call_sheet: None,
+            label: String::new(),
+        }],
+        label: String::new(),
+    };
+    build(
+        input,
+        &LeafRead {
+            selection: &selection,
+            passages: &[],
+        },
+    )
 }
 
 /// With a screenplay chosen, the question of which screenplay is settled and a scene number is read

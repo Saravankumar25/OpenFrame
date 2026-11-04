@@ -34,6 +34,7 @@ use super::answer::{self, Answered, Shown};
 use super::dossier::{self, Dossier, Fact};
 use super::index::{self, EntityIndex, Focus, Resolved};
 use super::memory::{self, TurnMemory};
+use super::pointer::{self, Pointer, Verdict};
 use super::queries;
 use super::records::{self, NewRequest, NewResult, NewStep, RequestOutcome, ai_meta};
 use super::retrieval;
@@ -173,6 +174,8 @@ pub(super) struct Outcome {
     pub written: Option<Written>,
     /// The facts the answer rests on, shown behind the sources button.
     pub sources: Vec<Fact>,
+    /// The section the reply points at (ADR-0041).
+    pub pointer: Option<Pointer>,
 }
 
 impl Outcome {
@@ -191,6 +194,7 @@ impl Outcome {
             path,
             written: None,
             sources: Vec::new(),
+            pointer: None,
         }
     }
 }
@@ -467,6 +471,10 @@ struct Turn<'a> {
     max_steps: usize,
     ids: &'a Ids<'a>,
     started: std::time::Instant,
+    /// The sections the person picked, when they did.
+    selection: Option<&'a Selection>,
+    /// What code decided about the sections before the writer runs.
+    verdict: &'a Verdict,
 }
 
 /// A fixed answer: a refusal or a question. No model, no sources.
@@ -481,6 +489,13 @@ fn model_failed(e: &AppError) -> Outcome {
     let (o, status) = from_tool_error(e);
     let mut out = Outcome::of(o, status, path::WRITE);
     out.error_code = Some(e.code_str().to_string());
+    out
+}
+
+/// A reply that names the section to add, with no model.
+fn pointed(p: Pointer) -> Outcome {
+    let mut out = fixed(AiResultKind::Answer, p.sentence());
+    out.pointer = Some(p);
     out
 }
 
@@ -542,6 +557,11 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
     {
         return fixed(AiResultKind::Clarify, q.text.clone());
     }
+    match t.verdict {
+        Verdict::Point(p) => return pointed(*p),
+        Verdict::NotFound(text) => return fixed(AiResultKind::Answer, text.clone()),
+        Verdict::Write | Verdict::Partial(_) => {}
+    }
     if t.read.group != Group::Chat && t.dossier.is_none() {
         let e = AppError::ai(
             "unavailable",
@@ -560,6 +580,8 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
         memory: t.memory,
         index: t.index,
         focus: t.focus,
+        sections: t.selection,
+        partial: matches!(t.verdict, Verdict::Partial(_)),
         started: t.started,
         stopped: &stopped,
         progress: &progress,
@@ -586,6 +608,13 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
         );
     }
     let mut out = Outcome::of(o, AiResultStatus::Informational, path::WRITE);
+    // The part that fits the picks is answered; the rest gets the sentence, built by code.
+    if let Verdict::Partial(p) = t.verdict
+        && answered.shown != Shown::Stopped
+    {
+        out.output.content = format!("{} {}", out.output.content.trim_end(), p.sentence());
+        out.pointer = Some(*p);
+    }
     out.model_ran = true;
     out.sources = answered.sources.clone();
     out.written = Some(Written {
@@ -845,14 +874,14 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             .as_ref()
             .map_or(&[][..], |r| r.passages.as_slice()),
     });
-    let dossier = reading.as_ref().and_then(|r| {
+    let built = reading.as_ref().and_then(|r| {
         let ix = project_ix.as_ref()?;
         if matches!(turn_read.group, Group::Chat | Group::Change) {
             return None;
         }
         s.store
             .read(|c| {
-                Ok(dossier::try_build(&dossier::Input {
+                let input = dossier::Input {
                     conn: c,
                     actor,
                     index: ix,
@@ -864,11 +893,22 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
                     focus: Some(&r.focus_after),
                     previous_message: r.previous_message.as_deref(),
                     sections: leaf_read.as_ref(),
-                }))
+                };
+                let d = dossier::try_build(&input);
+                // Permission comes first inside: a pointer never reveals what the person may not read.
+                let verdict = match (&selection, &d) {
+                    (Some(sel), Some(d)) => pointer::try_decide(&input, sel, d),
+                    _ => Verdict::Write,
+                };
+                Ok(d.map(|d| (d, verdict)))
             })
             .ok()
             .flatten()
     });
+    let (dossier, verdict) = match built {
+        Some((d, v)) => (Some(d), v),
+        None => (None, Verdict::Write),
+    };
     let dossier_ms = dossier_started.elapsed().as_millis() as u64;
     let dossier_summary = dossier.as_ref().map(Dossier::summary);
     // The screenplay the request will read is the one the conversation is about from now on, and
@@ -896,6 +936,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             focus: &focus_after,
             entity_ids: &memory_ids,
             names: project_ix.as_deref(),
+            sections: selection.as_ref(),
         })
     })?;
     let mut scope_refs = scope.refs_json();
@@ -975,8 +1016,13 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         max_steps,
         ids: &ids,
         started,
+        selection: selection.as_ref(),
+        verdict: &verdict,
     });
     put_path(&mut outcome.output, outcome.path);
+    if let Some(p) = &outcome.pointer {
+        put_pointer(&mut outcome.output, p);
+    }
     // Full text stood in for the hybrid search: the answer says the context is still being prepared.
     if retrieved.as_ref().is_some_and(|r| r.degraded) && outcome.written.is_some() {
         outcome
@@ -1030,6 +1076,8 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             .to_string(),
         degraded: retrieved.as_ref().is_some_and(|r| r.degraded),
         outside: dossier.as_ref().map_or(0, |d| d.outside.len()),
+        pointer: outcome.pointer.map(|p| p.leaf.id.to_string()),
+        pointer_trigger: outcome.pointer.map(|p| p.trigger.to_string()),
     });
     if let Some(t) = &sections_trace {
         stages["sections"] = sections::stage_json(t);
@@ -1094,6 +1142,15 @@ fn put_path(out: &mut ToolOutput, path: &str) {
     let mut data = out.structured.take().unwrap_or_else(|| json!({}));
     if let Value::Object(m) = &mut data {
         m.insert("lane".into(), json!(path));
+    }
+    out.structured = Some(data);
+}
+
+/// The section the reply points at, in the structured data the screens read.
+fn put_pointer(out: &mut ToolOutput, p: &Pointer) {
+    let mut data = out.structured.take().unwrap_or_else(|| json!({}));
+    if let Value::Object(m) = &mut data {
+        m.insert("pointer".into(), p.structured());
     }
     out.structured = Some(data);
 }

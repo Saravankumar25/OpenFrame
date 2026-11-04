@@ -367,10 +367,14 @@ fn load_result(c: &Connection, actor: &Actor, request_id: &str) -> AppResult<Opt
         .and_then(|d| d.get("lane"))
         .and_then(Value::as_str)
         .map(str::to_string);
+    let pointer = data
+        .and_then(|d| d.get("pointer"))
+        .and_then(|p| serde_json::from_value(p.clone()).ok());
     Ok(Some(AiResultDto {
         steps: load_steps(c, request_id)?,
         task_id,
         lane,
+        pointer,
         id,
         kind: AiResultKind::parse(&kind),
         status: AiResultStatus::parse(&status),

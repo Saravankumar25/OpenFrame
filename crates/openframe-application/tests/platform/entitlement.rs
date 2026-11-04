@@ -732,14 +732,26 @@ fn plat_014_a_mac_trial_that_ended_locks_open_edit_and_export_and_a_restore_unlo
         );
         open_read_export(&core, dir.path(), &path, card);
         let who = core.local_actor();
-        let edit = core.dispatch(&who, "story.page.save", json!({ "text": "x", "expectedRev": 0 }));
-        assert_eq!(edit.unwrap_err().code_str(), "permission.licence_required", "{state}");
+        let edit = core.dispatch(
+            &who,
+            "story.page.save",
+            json!({ "text": "x", "expectedRev": 0 }),
+        );
+        assert_eq!(
+            edit.unwrap_err().code_str(),
+            "permission.licence_required",
+            "{state}"
+        );
         let new = core.dispatch(
             &who,
             "project.create",
             json!({ "title": "Waits", "projectType": "Feature Film" }),
         );
-        assert_eq!(new.unwrap_err().code_str(), "permission.licence_required", "{state}");
+        assert_eq!(
+            new.unwrap_err().code_str(),
+            "permission.licence_required",
+            "{state}"
+        );
     }
     call(
         &core,
