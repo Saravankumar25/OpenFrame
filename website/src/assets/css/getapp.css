@@ -3,7 +3,7 @@
 
 html.gp-open{overflow:hidden}
 .gp-dlg{padding:0;border:0;background:transparent;color:var(--ink);width:min(520px,100% - 24px);max-width:none;max-height:none;margin:auto;overflow:visible}
-.gp-dlg::backdrop{background:rgba(28,27,26,.55);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.gp-dlg::backdrop{background:rgba(28,27,26,.55)}
 .gp-box{position:relative;max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain;background:var(--surface);border:1px solid var(--line2);border-radius:20px;box-shadow:var(--shadow)}
 .gp-top{padding:32px 32px 22px;border-bottom:1px solid var(--line)}
 .gp-top h2{font-size:clamp(25px,6vw,32px);line-height:1.15;padding-right:34px}

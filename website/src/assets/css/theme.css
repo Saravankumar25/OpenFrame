@@ -11,7 +11,6 @@
   --line:#353431; --line2:#4a4945; --ink:#f2f0e9; --ink2:#cfcdc4; --muted:#a5a39a;
   --accent:#d97757; --accent-d:#c6613f; --on-accent:#141413; --accent-soft:#3a2419; --accent-ink:#d97757; --ok:#2fb489;
   --dark:#232220; --dark2:#2d2c29; --solid:#f2f0e9; --on-solid:#1c1b1a; --solid-h:#faf9f5;
-  --header-bg:rgba(28,27,26,.86);
   --shadow:0 4px 16px rgba(0,0,0,.4);
 }
 :root[data-theme=dark] body{background:var(--bg)}
@@ -119,7 +118,7 @@ a.tut{text-decoration:none}
 .f-company span{font-size:13.5px;line-height:1.4}
 @media (max-width:760px){.founders{grid-template-columns:1fr}}
 
-.skip{position:absolute;left:-999px;top:8px;z-index:200;background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:10px}
+.skip{position:fixed;left:-999px;top:8px;z-index:200;background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:10px}
 .skip:focus{left:8px}
 .prose p+p{margin-top:14px}
 .prose p{color:var(--ink2)}
@@ -194,16 +193,10 @@ svg.defs{position:absolute;width:0;height:0;overflow:hidden}
 .pcard .ticks+.btn,.panel p+.btn{margin-top:26px}
 .price-note{margin-top:18px}
 
-/* ===== glass header: one floating bar with the site sections and the three controls (owner request 2026-10-31) */
-.site-h{position:sticky;top:12px;z-index:50;margin:12px auto 0;width:min(1280px,100% - 24px);border-radius:20px;
-  background:rgba(250,249,245,.86);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-  border:1px solid var(--line)}
-:root[data-theme=dark] .site-h{background:rgba(28,27,26,.86)}
-.site-h .wrap.nav{width:100%;padding:0 14px 0 20px;height:66px;gap:16px}
-.hero,.phero{margin-top:-78px;padding-top:150px}
+/* ===== header: one flat full-width bar fixed to the top edge (owner request 2026-11-04: no float, no gap, no glass). The bar's
+   height is --nav-h (site.css); body, anchors and the home hero are offset by it. */
+.site-h .wrap.nav{width:100%;padding:0 14px 0 20px;gap:16px}
 .mega{padding-top:16px}
-.mega-in{background:rgba(253,252,249,.96);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
-:root[data-theme=dark] .mega-in{background:rgba(38,37,35,.96)}
 .menu>li>a,.menu>li>button{font-size:15px}
 /* controls inside the glass bar */
 .ctls.nav-ctls{display:flex;gap:6px;flex:none}
@@ -219,11 +212,10 @@ svg.defs{position:absolute;width:0;height:0;overflow:hidden}
 @media (max-width:1240px){.nav-cta .btn-ghost{display:none}.ctl-ic{display:none}}
 @media (max-width:1020px){
   .ctls.nav-ctls{display:none}
-  .menu.open-m{top:calc(100% + 8px);left:0;right:0;border-radius:18px;height:auto;max-height:calc(100dvh - 110px);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
   .menu.open-m .menu-ctls{display:flex;flex-wrap:wrap;gap:10px;padding:16px 8px 6px}
   .menu-ctls .ctl-ic{display:inline-grid}
 }
-@media (max-width:640px){.site-h{top:8px;margin-top:8px;width:calc(100% - 16px);border-radius:16px}.site-h .wrap.nav{height:60px;padding:0 10px 0 14px}.hero,.phero{margin-top:-68px;padding-top:120px}}
+@media (max-width:640px){.site-h .wrap.nav{padding:0 10px 0 14px}}
 @media (max-width:1020px){.menu.open-m{padding:8px 20px 16px}}
 /* clearer group icons; tidy phone menu */
 .ctl-ic{color:var(--ink2);opacity:.75}
@@ -244,11 +236,8 @@ svg.defs{position:absolute;width:0;height:0;overflow:hidden}
 /* nav: one primary action, current section marked, bar tightens on scroll */
 .nav-get{flex:none;margin-left:4px}
 .menu>li>button.is-current,.menu>li>a[aria-current]{background:var(--tint);color:var(--ink)}
-.site-h,.site-h .wrap.nav{transition:height .25s var(--ease),background .25s,top .25s}
-.site-h.scrolled{top:8px}
 @media (max-width:1180px){.nav-get{padding:10px 14px}}
 @media (max-width:640px){.nav-get{display:none}}
-@media (prefers-reduced-motion:reduce){.site-h,.site-h .wrap.nav{transition:none}}
 /* store buttons: both marks the same size and colour as the label */
 .btn svg.logo{width:20px;height:20px;flex:none;fill:currentColor}
 .btn-sm svg.logo{width:17px;height:17px}
@@ -377,7 +366,7 @@ h3{font-weight:560;letter-spacing:-.018em}
   .menu{display:none}
   .menu-tg{display:block;margin-left:8px}
   .ctls.nav-ctls{display:none}
-  .menu.open-m{display:flex;position:absolute;top:calc(100% + 8px);left:0;right:0;height:auto;max-height:calc(100dvh - 110px);background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);flex-direction:column;padding:10px 18px 18px;margin:0;overflow:auto;gap:0}
+  .menu.open-m{display:flex;position:fixed;top:var(--nav-h);left:0;right:0;height:auto;max-height:calc(100dvh - var(--nav-h));background:var(--surface);border:0;border-bottom:1px solid var(--line);border-radius:0;flex-direction:column;padding:10px 18px 18px;margin:0;overflow:auto;gap:0}
   .menu.open-m>li>a,.menu.open-m>li>button{width:100%;justify-content:space-between;font-size:19px;padding:16px 8px;border-bottom:1px solid var(--line);border-radius:0}
   .menu.open-m .mega{position:static;visibility:visible;opacity:1;transform:none;padding:0;display:none}
   .menu.open-m li.open>.mega{display:block}
@@ -393,8 +382,12 @@ h3{font-weight:560;letter-spacing:-.018em}
 @media (min-width:1100px){
   .menu>li.has-mega:first-child{position:static}
   .menu>li.has-mega:first-child>.mega{left:0;right:0;padding-top:14px}
-  .menu>li.has-mega:first-child .mega-in{width:auto}
+  .menu>li.has-mega:first-child .mega-in{width:min(1180px,100% - 40px);margin-inline:auto}
 }
+
+/* home hero below the fixed bar: the tiles start at the bar's bottom edge and the Skip control stays on the first screen */
+.hero.center .hero-top{padding-top:72px;min-height:max(720px,calc(100svh - var(--nav-h)))}
+@media (max-width:640px){.hero.center .hero-top{padding-top:48px}}
 
 /* Themes page: starter theme cards, numbered steps, code boxes */
 .tnav{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
