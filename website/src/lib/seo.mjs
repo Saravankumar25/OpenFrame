@@ -5,7 +5,7 @@ import { FOUNDERS } from '../content/founders.mjs';
 import { SITE_URL, SITE_NAME } from '../../site.config.mjs';
 
 export const OG = { path: '/og.png', width: 1200, height: 630, type: 'image/png',
-  alt: 'OpenFrame Studio logo, the headline "A film production software for all your needs" and the app Home screen.' };
+  alt: 'Straft Studio logo, the headline "A film production software for all your needs" and the app Home screen.' };
 const ID = { org: `${SITE_URL}/#organization`, site: `${SITE_URL}/#website`, app: `${SITE_URL}/#software` };
 const DESC = 'A local-first desktop app for writers, screenwriters and film production teams: ideas, story, screenplay, breakdown, schedule, call sheets and reports in one project.';
 
@@ -23,7 +23,7 @@ export const APP = (ctx = { SITE_URL }, os, p = '/') => ({ '@context': 'https://
   applicationCategory: 'MultimediaApplication', applicationSubCategory: 'Screenwriting and film production planning', operatingSystem: os,
   description: DESC, image: ctx.SITE_URL + OG.path, inLanguage: 'en',
   publisher: { '@type': 'Organization', '@id': ID.org, name: SITE_NAME }, offers: OFFERS(ctx.SITE_URL + '/pricing/') });
-export const WEBSITE = (ctx = { SITE_URL }) => ({ '@context': 'https://schema.org', '@type': 'WebSite', '@id': ID.site, name: SITE_NAME, alternateName: 'OpenFrame', url: ctx.SITE_URL + '/', inLanguage: 'en',
+export const WEBSITE = (ctx = { SITE_URL }) => ({ '@context': 'https://schema.org', '@type': 'WebSite', '@id': ID.site, name: SITE_NAME, alternateName: 'Straft', url: ctx.SITE_URL + '/', inLanguage: 'en',
   publisher: { '@type': 'Organization', '@id': ID.org, name: SITE_NAME },
   potentialAction: { '@type': 'SearchAction', target: { '@type': 'EntryPoint', urlTemplate: ctx.SITE_URL + '/search/?q={search_term_string}' }, 'query-input': 'required name=search_term_string' } });
 
@@ -54,7 +54,7 @@ export function trimWords(s, max) {
   return cut;
 }
 /** Add the brand when the title has none and the result still fits the 60 characters search results show. */
-export const fitTitle = (t) => (/OpenFrame/.test(t) || t.length + SITE_NAME.length + 3 > 60 ? t : `${t} | ${SITE_NAME}`);
+export const fitTitle = (t) => (/Straft/.test(t) || t.length + SITE_NAME.length + 3 > 60 ? t : `${t} | ${SITE_NAME}`);
 
 // ---------- <head> tags
 export function headMeta(page) {

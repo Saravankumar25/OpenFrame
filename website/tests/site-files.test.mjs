@@ -12,7 +12,7 @@ test('error pages 403, 404, 500 and 503 exist, are noindex, name their code and 
     const s = read(file(`${code}.html`));
     assert.match(s, /<meta name="robots" content="noindex">/, code);
     assert.match(s, new RegExp(`aria-label="Error ${code}">${code}</p>`), code);
-    assert.match(s, /class="err-mark"[^>]*><svg class="mk"/, `${code} shows the OpenFrame icon`);
+    assert.match(s, /class="err-mark"[^>]*><svg class="mk"/, `${code} shows the Straft icon`);
     assert.match(s, /href="\/"/, code);
     assert.ok(!read(file('sitemap.xml')).includes(`/${code}.html`), `${code} not in the sitemap`);
   }
@@ -29,7 +29,7 @@ test('every page carries the loading icon, and no page uses a generic spinner', 
 test('icon set, manifest, security.txt and humans.txt are published and consistent', { skip: SKIP }, () => {
   for (const f of ['favicon.svg', 'favicon.ico', 'favicon-16x16.png', 'favicon-32x32.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'og.png']) assert.ok(existsSync(file(f)), f);
   const m = JSON.parse(read(file('site.webmanifest')));
-  assert.equal(m.name, 'OpenFrame Studio');
+  assert.equal(m.name, 'Straft Studio');
   for (const i of m.icons) assert.ok(existsSync(file(i.src.slice(1))), i.src);
   assert.ok(m.icons.some((i) => i.purpose === 'maskable'));
   const sec = read(file('.well-known', 'security.txt'));

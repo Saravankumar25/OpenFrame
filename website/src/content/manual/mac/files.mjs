@@ -5,7 +5,7 @@ export default {
   part: `Project and data`,
   intro: [
     `Files is the file cabinet of your project. Contracts, permits, research, pitch decks: anything that belongs with the film can live here, next to your screenplay and plans. The page is called Project Files and asks What files belong with this film?`,
-    `A file can be held in two ways. A stored file is a copy kept inside the project folder, so it travels with the project. A linked file stays where it is on your Mac or on a drive, and OpenFrame keeps a reference to it. If a linked file is moved or renamed outside OpenFrame, the reference breaks until you relink it. The reference itself is never deleted.`,
+    `A file can be held in two ways. A stored file is a copy kept inside the project folder, so it travels with the project. A linked file stays where it is on your Mac or on a drive, and Straft keeps a reference to it. If a linked file is moved or renamed outside Straft, the reference breaks until you relink it. The reference itself is never deleted.`,
     `You can sort files into folders, search them by name, switch between a list and a grid, and write a note about each file in its details panel. A file or folder you delete goes to Recently Deleted, where you can restore it.`,
     `Open Files from the sidebar, from Open Files on Project Home, or from the Go menu.`,
   ],
@@ -152,14 +152,14 @@ export default {
     {
       id: `files-rename-note`,
       title: `Rename a file and write a note about it`,
-      purpose: `Give a file a clearer name inside OpenFrame and record why it matters.`,
+      purpose: `Give a file a clearer name inside Straft and record why it matters.`,
       level: `Beginner`,
       prerequisites: [`A file is selected and its details are open.`],
       steps: [
         {
           screen: `pages-files-selected`,
           do: `In the details panel, edit the Name box.`,
-          explain: `The note under the box says: The name shown in OpenFrame. The file itself is not renamed. The original file name is still shown lower down.`,
+          explain: `The note under the box says: The name shown in Straft. The file itself is not renamed. The original file name is still shown lower down.`,
         },
         {
           screen: `pages-files-details-notes`,
@@ -169,7 +169,7 @@ export default {
       ],
       result: `The file shows your name for it and carries your note.`,
       cautions: [
-        `Renaming here changes only the name OpenFrame shows. The file on disk keeps its own name.`,
+        `Renaming here changes only the name Straft shows. The file on disk keeps its own name.`,
       ],
       related: [`files-open-details`],
     },
@@ -301,7 +301,7 @@ export default {
         {
           screen: `pages-files-unavailable`,
           do: `Find the row with the red label Unavailable.`,
-          explain: `In place of Open, the row has a Relink button. The original is not where OpenFrame expects it.`,
+          explain: `In place of Open, the row has a Relink button. The original is not where Straft expects it.`,
         },
         {
           screen: `pages-files-unavailable-menu`,
@@ -345,7 +345,7 @@ export default {
       ],
       result: `You have a copy outside the project, or you can see the file in Finder.`,
       cautions: [
-        `Do not rename or delete files inside the project folder in Finder. Use Files in OpenFrame for that.`,
+        `Do not rename or delete files inside the project folder in Finder. Use Files in Straft for that.`,
       ],
       related: [`files-open-details`],
     },
@@ -416,7 +416,7 @@ export default {
   limits: [
     `Files holds documents and attachments. It does not edit them: Open uses the app on your Mac that opens that kind of file.`,
     `A linked file is only a reference. The original is never copied unless you choose Copy into project… or a portable backup.`,
-    `Renaming a file in OpenFrame changes the name shown here, not the name of the file on disk.`,
+    `Renaming a file in Straft changes the name shown here, not the name of the file on disk.`,
     `Search files looks at file names.`,
   ],
   troubleshooting: [
@@ -434,7 +434,7 @@ export default {
     },
     {
       problem: `I renamed a file but Finder still shows the old name.`,
-      fix: `OpenFrame changes only the name it shows. The file on disk keeps its original name, which is listed in the details panel.`,
+      fix: `Straft changes only the name it shows. The file on disk keeps its original name, which is listed in the details panel.`,
     },
     {
       problem: `A search finds nothing but I know the file is here.`,

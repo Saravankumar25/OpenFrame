@@ -7,7 +7,7 @@ export const PRICES = { in: '₹2,999', eu: '€89', us: 'US$89' };
 // [action, Windows, Mac]. null means the platform has no shortcut for it.
 export const SHORTCUTS = [
   ['Search the project', 'Ctrl+K', 'Cmd+K'],
-  ['Open or close OpenFrame AI', 'Ctrl+J', 'Cmd+J'],
+  ['Open or close Straft AI', 'Ctrl+J', 'Cmd+J'],
   ['Save a checkpoint now', 'Ctrl+S', null],
   ['Undo a project change', 'Ctrl+Z', 'Cmd+Opt+Z (Cmd+Z undoes text)'],
   ['Redo a project change', 'Ctrl+Y or Ctrl+Shift+Z', 'Cmd+Opt+Shift+Z'],
@@ -59,7 +59,7 @@ export const EXPORTS = [
 ];
 
 export const THEMES = [
-  'OpenFrame Default', 'Black and White', 'Studio Amber', 'Slate Noir', 'Midnight Reel', 'Teal & Orange',
+  'Straft Default', 'Black and White', 'Studio Amber', 'Slate Noir', 'Midnight Reel', 'Teal & Orange',
   'Courier & Cream', 'Cutting Room', 'Velvet Curtain', 'Sunset Boulevard', 'Arctic Frame', 'Neon Reel',
   'Location Scout', 'Desert Dune', 'Colorist Neutral', 'Silver Screen', 'High Contrast',
 ];
@@ -67,7 +67,7 @@ export const THEMES = [
 // FAQ: [group, [[question, answer in md], ...]]
 export const FAQ = [
   ['Product', [
-    ['What is OpenFrame Studio?',
+    ['What is Straft Studio?',
       'A desktop app for writers, screenwriters and production teams. One project holds your ideas, story, screenplay and production plan, from breakdown and schedule to call sheets. Everything is stored on your own computer.'],
     ['Who is it for?',
       'Writers, screenwriters and production teams. There is one app for everyone and no separate editions. You can use only the parts you need, for example the Idea Vault and the screenplay editor.'],
@@ -82,33 +82,33 @@ export const FAQ = [
     ['Is the Mac app different from the Windows app?',
       'It does the same work on the same kind of project, in a native Mac app: the Mac menu bar, sheets instead of dialog windows, and Command shortcuts. The [Mac tutorials](/mac/tutorials/) use the real Mac screens.'],
     ['What does it need?',
-      'Windows 11 on a 64-bit computer, or macOS 14 on Apple silicon. OpenFrame AI downloads about 1.2 GB, and its chat model needs at least 4 GB of memory (8 GB recommended).'],
+      'Windows 11 on a 64-bit computer, or macOS 14 on Apple silicon. Straft AI downloads about 1.2 GB, and its chat model needs at least 4 GB of memory (8 GB recommended).'],
   ]],
   ['Privacy and data', [
     ['Where are my files stored?',
-      'In a project folder on your computer, by default in Documents, under OpenFrame. Nothing is stored on an OpenFrame server, because there is none.'],
+      'In a project folder on your computer, by default in Documents, under Straft. Nothing is stored on a Straft server, because there is none.'],
     ['Do I need an account or the internet?',
-      'No OpenFrame account and no internet connection to work. The app works fully offline. OpenFrame AI download, which you start yourself, needs the internet. The store handles the trial and the purchase.'],
+      'No Straft account and no internet connection to work. The app works fully offline. Straft AI download, which you start yourself, needs the internet. The store handles the trial and the purchase.'],
     ['Does the app send usage data?',
       'No. There is no telemetry, no analytics and no crash upload. A diagnostics bundle exists, but only you can create it, and you can open and read it before sending it to anyone.'],
     ['Are my projects encrypted?',
-      'No. OpenFrame does not encrypt projects. Anyone who can open your project folder can read it. Use your operating system disk encryption if you need that.'],
+      'No. Straft does not encrypt projects. Anyone who can open your project folder can read it. Use your operating system disk encryption if you need that.'],
     ['What happens if the computer crashes or I delete something by mistake?',
       'The app saves as you work and offers to recover after a crash. Deleted items wait in Recently Deleted, and project-wide undo and redo are available.'],
   ]],
-  ['OpenFrame AI', [
+  ['Straft AI', [
     ['Is there AI, and is it required?',
-      'There is OpenFrame AI. Nothing in the app needs it, and the app works fully before you download it and after you remove it.'],
-    ['Does OpenFrame AI send my project anywhere?',
+      'There is Straft AI. Nothing in the app needs it, and the app works fully before you download it and after you remove it.'],
+    ['Does Straft AI send my project anywhere?',
       'No. After a one-time download of about 1.2 GB, it runs on your computer. It talks only to your own machine, and no cloud AI service is used.'],
     ['Will it change my screenplay by itself?',
       'Never. It answers questions about the open project and shows sources, or it proposes changes in a Proposed Changes card. Nothing changes until you read the proposal and choose Apply, and you can undo it afterwards.'],
   ]],
   ['Files and formats', [
     ['Which scripts can I import?',
-      'Final Draft (.fdx), Fountain, Word (.docx), plain text and pasted text, plus PDF on a best-effort basis. A preview shows what will be imported before anything changes. See [Switch to OpenFrame Studio](/switch/).'],
+      'Final Draft (.fdx), Fountain, Word (.docx), plain text and pasted text, plus PDF on a best-effort basis. A preview shows what will be imported before anything changes. See [Switch to Straft Studio](/switch/).'],
     ['What can I export?',
-      'Screenplays as PDF, Final Draft, Fountain, Word and plain text. Production documents as PDF, CSV or XLSX. Screenplay files carry no OpenFrame branding.'],
+      'Screenplays as PDF, Final Draft, Fountain, Word and plain text. Production documents as PDF, CSV or XLSX. Screenplay files carry no Straft branding.'],
     ['Can I write in Hindi, Telugu, Tamil, Kannada or Malayalam?',
       'Yes. You can type, save, search and export those scripts, and the screenplay PDF embeds fonts for them. The app screens themselves are in English. Scripts such as Chinese, Japanese, Korean and Arabic can be typed and exported to other formats, but the screenplay PDF export refuses them with a clear message.'],
   ]],
@@ -116,7 +116,7 @@ export const FAQ = [
     ['How much does it cost?',
       'One payment of ₹2,999 in India, €89 in Europe, or US$89 in other countries. It is a lifetime purchase, not a subscription, and Windows and Mac are bought separately. The store shows the final checkout amount, which can include taxes that apply where you live. See [Pricing](/pricing/).'],
     ['Is there a free trial?',
-      'Yes. Every new install starts a 7-day free trial with the whole app. After the trial, buy OpenFrame Studio in the store to keep using its full functionality.'],
+      'Yes. Every new install starts a 7-day free trial with the whole app. After the trial, buy Straft Studio in the store to keep using its full functionality.'],
     ['Is there a subscription?',
       'No. Pay once and keep it.'],
     ['What happens to my projects if I do not buy?',

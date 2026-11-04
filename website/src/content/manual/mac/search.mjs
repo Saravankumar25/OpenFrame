@@ -20,12 +20,12 @@ export default {
       title: `Open Search and Commands and run a command`,
       purpose: `Find a command by name or by looking at the list, and run it.`,
       level: `Beginner`,
-      prerequisites: [`OpenFrame Studio is open on Application Home or in a project.`],
+      prerequisites: [`Straft Studio is open on Application Home or in a project.`],
       steps: [
         {
           screen: `search-palette-home`,
           do: `On Application Home, press Command-K.`,
-          explain: `The window opens over the page with the box empty. It lists five commands: New Project (Command-N), Open Project… (Command-O), Settings (Command-comma), Keyboard Shortcuts and About OpenFrame Studio. Choose one to run it.`,
+          explain: `The window opens over the page with the box empty. It lists five commands: New Project (Command-N), Open Project… (Command-O), Settings (Command-comma), Keyboard Shortcuts and About Straft Studio. Choose one to run it.`,
         },
         {
           screen: `search-palette-home-commands`,
@@ -104,7 +104,7 @@ export default {
     },
   ],
   screens: {
-    'search-palette-home': `Search and Commands over Application Home with an empty box. It lists New Project (Command-N), Open Project… (Command-O), Settings (Command-comma), Keyboard Shortcuts and About OpenFrame Studio. Used in search-open-and-run-commands.`,
+    'search-palette-home': `Search and Commands over Application Home with an empty box. It lists New Project (Command-N), Open Project… (Command-O), Settings (Command-comma), Keyboard Shortcuts and About Straft Studio. Used in search-open-and-run-commands.`,
     'search-palette-home-commands': `The window with settings typed. Only the Settings command is listed. Used in search-open-and-run-commands.`,
     'search-palette-empty': `The window with a word that matches nothing. It says No matches. Search looks at titles, text, notes, file names and tags. Used in search-nothing-found.`,
     'search-palette-project': `Search and Commands inside a project with an empty box. It lists project commands such as New Project, Close Project, the Go to commands with their keys, and Go to Production · Overview and Catalog. Used in search-open-and-run-commands and search-find-in-project.`,

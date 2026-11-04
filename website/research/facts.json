@@ -3,13 +3,13 @@
     "audited": "2026-10-21",
     "method": "Read-only audit of source code first, documents second. Code wins where they disagree.",
     "roots": {
-      "W": "C:\\OpenFrame (Windows app and shared Rust core, main at 1711450)",
+      "W": "C:\\Straft (Windows app and shared Rust core, main at 1711450)",
       "M": "C:\\Users\\SARAVA~1\\AppData\\Local\\Temp\\claude\\C--Users-Saravan-Kumar--claude-spares-spare-OBdvmq\\9cc92431-6d5c-49b4-9ce4-11e16ae79ad1\\scratchpad\\mac\\mac (Mac app, branch mac/windows-parity)"
     },
     "confidence_scale": "high = read in code or a pinned file; medium = current document consistent with code; low = document only, or documents disagree"
   },
   "productName": {
-    "value": "OpenFrame Studio",
+    "value": "Straft Studio",
     "evidence": "W:apps/desktop/src-tauri/tauri.conf.json:3",
     "confidence": "high"
   },
@@ -46,14 +46,14 @@
   },
   "installerFormats": {
     "internal_windows": {
-      "value": "Unsigned NSIS .exe, per-user install, about 27 MB (OpenFrame-3.exe, 27,141,213 bytes, built 2026-10-20)",
-      "note": "Tauri config also lists an MSI target, but only the .exe is used for the team. Next build would be OpenFrame-4.exe, only on the owner's word.",
-      "evidence": "W:apps/desktop/src-tauri/tauri.conf.json:37-54; W:release-out/OpenFrame-3.json; W:docs/implementation/handoff.md (State item 4)",
+      "value": "Unsigned NSIS .exe, per-user install, about 27 MB (Straft-3.exe, 27,141,213 bytes, built 2026-10-20)",
+      "note": "Tauri config also lists an MSI target, but only the .exe is used for the team. Next build would be Straft-4.exe, only on the owner's word.",
+      "evidence": "W:apps/desktop/src-tauri/tauri.conf.json:37-54; W:release-out/Straft-3.json; W:docs/implementation/handoff.md (State item 4)",
       "confidence": "high"
     },
     "internal_mac": {
       "value": "Unsigned, not notarized .dmg, planned for Mac phase M9",
-      "note": "Not built. release-out/openframe-dmg.zip is a source handoff package for the Mac machine, not a disk image.",
+      "note": "Not built. release-out/straft-dmg.zip is a source handoff package for the Mac machine, not a disk image.",
       "evidence": "M:docs/roadmap/chapter-1b-mac-phases.md:155-164; M:docs/implementation/handoff.md (Next three items 1); W:docs/implementation/progress-log.md:229",
       "confidence": "high"
     },
@@ -64,7 +64,7 @@
     }
   },
   "releaseStatus": {
-    "value": "Internal testing only. Windows track closed at phase W9; W10 (team hand test of OpenFrame-3.exe) is next. Mac app built on a separate branch, not merged, no .dmg. No public download, no signed build, no store listing, no website yet.",
+    "value": "Internal testing only. Windows track closed at phase W9; W10 (team hand test of Straft-3.exe) is next. Mac app built on a separate branch, not merged, no .dmg. No public download, no signed build, no store listing, no website yet.",
     "unsigned": true,
     "team_password_required": true,
     "public_download": false,
@@ -73,8 +73,8 @@
   },
   "appVersion": {
     "value": "0.1.0",
-    "note": "Same in Cargo workspace, Tauri config and package.json. Installers are numbered by build (OpenFrame-1 to OpenFrame-3), not by version. Mac CFBundleVersion is version plus commit.",
-    "evidence": "W:Cargo.toml:21; W:apps/desktop/src-tauri/tauri.conf.json:4; W:release-out/OpenFrame-3.json:5; M:apps/macos/scripts/build-release-app.sh:90-91",
+    "note": "Same in Cargo workspace, Tauri config and package.json. Installers are numbered by build (Straft-1 to Straft-3), not by version. Mac CFBundleVersion is version plus commit.",
+    "evidence": "W:Cargo.toml:21; W:apps/desktop/src-tauri/tauri.conf.json:4; W:release-out/Straft-3.json:5; M:apps/macos/scripts/build-release-app.sh:90-91",
     "confidence": "high"
   },
   "systemRequirements": {
@@ -82,13 +82,13 @@
     "ram": {
       "value": null,
       "known": "No app-wide minimum is documented. The AI chat model needs 4 GB RAM minimum and 8 GB recommended. The team test plan wants one tester on an 8 GB laptop. A larger AI tier for 16 GB machines is decided but not built.",
-      "evidence": "W:packaging/ai/ai-assets.lock.json:287-288; W:docs/testing/internal-test-plan.md:30; W:docs/adr/ADR-0028-ai-quality-program-and-harness.md:39; W:crates/openframe-ai/src/download.rs:18",
+      "evidence": "W:packaging/ai/ai-assets.lock.json:287-288; W:docs/testing/internal-test-plan.md:30; W:docs/adr/ADR-0028-ai-quality-program-and-harness.md:39; W:crates/straft-ai/src/download.rs:18",
       "confidence": "medium"
     },
     "disk": {
       "value": null,
       "known": "Installer about 27 MB; optional AI download 1,238,430,528 bytes (shown as 1.2 GB) plus free space the app checks before downloading. No installed-size figure is documented.",
-      "evidence": "W:release-out/OpenFrame-3.json:4; W:packaging/ai/ai-assets.lock.json:296,321,348; W:apps/desktop/src/ai/DownloadAi.tsx:35",
+      "evidence": "W:release-out/Straft-3.json:4; W:packaging/ai/ai-assets.lock.json:296,321,348; W:apps/desktop/src/ai/DownloadAi.tsx:35",
       "confidence": "medium"
     },
     "cpu": {
@@ -121,12 +121,12 @@
     },
     "downloadSize": {
       "value": "1,238,430,528 bytes, displayed in the app as 1.2 GB",
-      "evidence": "W:packaging/ai/ai-assets.lock.json:296,321,348; W:crates/openframe-ai/src/download.rs:43-66; W:apps/desktop/src/ai/model.ts:106-113",
+      "evidence": "W:packaging/ai/ai-assets.lock.json:296,321,348; W:crates/straft-ai/src/download.rs:43-66; W:apps/desktop/src/ai/model.ts:106-113",
       "confidence": "high"
     },
     "downloadAfterInstall": {
-      "value": "Yes. One click (Download OpenFrame AI) fetches the files from public Hugging Face repositories at pinned commits; each file is checked against size and SHA-256 compiled into the app; resumable; model files can also be imported by hand. The runtime (llama.cpp b11259) ships inside the app.",
-      "evidence": "W:docs/adr/ADR-0026-offline-ai-download-after-install.md; W:docs/adr/ADR-0032-models-from-hugging-face.md; W:crates/openframe-ai/src/download.rs:1-6; W:crates/openframe-ai/src/fetch.rs:4-10,102; W:apps/desktop/src/ai/DownloadAi.tsx:1-4",
+      "value": "Yes. One click (Download Straft AI) fetches the files from public Hugging Face repositories at pinned commits; each file is checked against size and SHA-256 compiled into the app; resumable; model files can also be imported by hand. The runtime (llama.cpp b11259) ships inside the app.",
+      "evidence": "W:docs/adr/ADR-0026-offline-ai-download-after-install.md; W:docs/adr/ADR-0032-models-from-hugging-face.md; W:crates/straft-ai/src/download.rs:1-6; W:crates/straft-ai/src/fetch.rs:4-10,102; W:apps/desktop/src/ai/DownloadAi.tsx:1-4",
       "confidence": "high"
     },
     "offline": {
@@ -146,7 +146,7 @@
     },
     "whatItNeverDoes": {
       "value": "Never changes a project without the person's Apply; never sends project data off the computer; never reads other people's private notes or the Story page; refuses licence, payment and team-password requests; the person never picks a model by name; no model judges answers at run time.",
-      "evidence": "W:docs/product/vision-and-scope.md:99-100; W:crates/openframe-application/src/modules/ai/commands.rs:493-497,668; M:docs/roadmap/mac-windows-structure-parity.md:114; W:CLAUDE.md (AI rules)",
+      "evidence": "W:docs/product/vision-and-scope.md:99-100; W:crates/straft-application/src/modules/ai/commands.rs:493-497,668; M:docs/roadmap/mac-windows-structure-parity.md:114; W:CLAUDE.md (AI rules)",
       "confidence": "high"
     },
     "measuredQuality": {
@@ -161,14 +161,14 @@
     }
   },
   "dataStorage": {
-    "value": "Each project is a folder <Title>.openframe containing openframe.json (manifest), project.sqlite (SQLite), assets/, cache/, recovery/, backups/ and a .lock file. Default location Documents\\OpenFrame\\Projects on Windows and ~/Documents/OpenFrame on the Mac; app settings in %LOCALAPPDATA%\\OpenFrame\\app.sqlite or ~/Library/Application Support/OpenFrame. Global Idea Vault in Documents\\OpenFrame\\Global Idea Vault. Network (UNC) paths are refused; cloud-synced folders get a warning.",
+    "value": "Each project is a folder <Title>.straft containing straft.json (manifest), project.sqlite (SQLite), assets/, cache/, recovery/, backups/ and a .lock file. Default location Documents\\Straft\\Projects on Windows and ~/Documents/Straft on the Mac; app settings in %LOCALAPPDATA%\\Straft\\app.sqlite or ~/Library/Application Support/Straft. Global Idea Vault in Documents\\Straft\\Global Idea Vault. Network (UNC) paths are refused; cloud-synced folders get a warning.",
     "encryptedAtRest": false,
-    "evidence": "W:crates/openframe-project-format/src/lib.rs:1-27; W:crates/openframe-platform/src/dirs.rs:1-16; W:crates/openframe-platform/src/cloud.rs:100-104; W:README.md:22-23,29; W:docs/product/vision-and-scope.md:101",
+    "evidence": "W:crates/straft-project-format/src/lib.rs:1-27; W:crates/straft-platform/src/dirs.rs:1-16; W:crates/straft-platform/src/cloud.rs:100-104; W:README.md:22-23,29; W:docs/product/vision-and-scope.md:101",
     "confidence": "high"
   },
   "networkAndTelemetry": {
     "value": "No telemetry, analytics, crash upload or update check. No account or sign-in. No network listener reachable from other computers. Network is used only for (1) the AI model download the person starts (huggingface.co and its CDN only), (2) opening a saved Idea Vault link in the default browser, (3) the Windows installer fetching Microsoft's WebView2 bootstrapper if missing. WebView2 background networking is switched off. Diagnostics bundle is user-started only; local logs kept 14 days.",
-    "evidence": "W:README.md:22-28; W:docs/adr/ADR-0021-diagnostics-telemetry-analytics-policy.md; W:apps/desktop/src-tauri/tauri.conf.json:25-30,49; W:crates/openframe-ai/src/fetch.rs:4-10,102; W:docs/implementation/feature-status.md:68-70",
+    "evidence": "W:README.md:22-28; W:docs/adr/ADR-0021-diagnostics-telemetry-analytics-policy.md; W:apps/desktop/src-tauri/tauri.conf.json:25-30,49; W:crates/straft-ai/src/fetch.rs:4-10,102; W:docs/implementation/feature-status.md:68-70",
     "confidence": "high"
   },
   "importFormats": {
@@ -176,7 +176,7 @@
     "refused": [".doc", ".rtf", ".celtx", ".wps", ".pages", ".odt", ".sexp", ".fadein", ".highland"],
     "packagesOpened": [".ofbackup", ".ofproject", ".ofscriptreview", ".ofstory", ".ofresponse", "older .ofbreakdown, .ofshots, .ofschedule, .ofcallreview still import"],
     "ideaVaultFiles": "Notes, images, links, any file, voice notes (recorded in the app), video",
-    "evidence": "W:crates/openframe-import-export/src/lib.rs:55-175; W:apps/desktop/src/features/interchange/model.ts:35; W:crates/openframe-application/src/modules/packages/format.rs:60-90; W:docs/ux/feature-preservation-matrix.md:32",
+    "evidence": "W:crates/straft-import-export/src/lib.rs:55-175; W:apps/desktop/src/features/interchange/model.ts:35; W:crates/straft-application/src/modules/packages/format.rs:60-90; W:docs/ux/feature-preservation-matrix.md:32",
     "confidence": "high"
   },
   "exportFormats": {
@@ -187,21 +187,21 @@
     "moodboard_storyboard_callSheet_sides": ["PDF"],
     "dailyView": ["PDF", "TXT (Windows core; Mac core reported PDF, CSV, XLSX)"],
     "packages": [".ofbackup", ".ofproject", ".ofscriptreview", ".ofstory", ".ofresponse"],
-    "branding": "Screenplay files carry no OpenFrame branding; production PDFs carry a small 'Created using OpenFrame' line; CSV is clean.",
-    "evidence": "W:apps/desktop/src/features/interchange/model.ts:9,22-26; W:crates/openframe-application/src/modules/exports/mod.rs:5-40; W:apps/desktop/src/features/packages/api.ts:37; M:docs/implementation/handoff.md (schedule.export_daily)",
+    "branding": "Screenplay files carry no Straft branding; production PDFs carry a small 'Created using Straft' line; CSV is clean.",
+    "evidence": "W:apps/desktop/src/features/interchange/model.ts:9,22-26; W:crates/straft-application/src/modules/exports/mod.rs:5-40; W:apps/desktop/src/features/packages/api.ts:37; M:docs/implementation/handoff.md (schedule.export_daily)",
     "confidence": "high"
   },
   "writingLanguages": {
     "value": "Any Unicode text can be typed, saved, searched and exported to FDX, Fountain and DOCX. Screenplay PDF embeds and shapes Latin (Courier Prime), Devanagari, Telugu, Tamil, Kannada and Malayalam; other scripts (for example Chinese, Japanese, Korean, Arabic) are refused by PDF export with a clear message. Production PDFs use base-14 Latin fonts. Spell check uses dictionaries installed in the operating system, with a main and a second language. App screens are English only.",
-    "evidence": "W:crates/openframe-import-export/fonts/ (file list); W:crates/openframe-import-export/src/fonts.rs:261-326; W:crates/openframe-application/src/modules/exports/mod.rs:29-30; W:apps/desktop/src/workspaces/settings/Writing.tsx:4,107-128; W:docs/product/vision-and-scope.md:43",
+    "evidence": "W:crates/straft-import-export/fonts/ (file list); W:crates/straft-import-export/src/fonts.rs:261-326; W:crates/straft-application/src/modules/exports/mod.rs:29-30; W:apps/desktop/src/workspaces/settings/Writing.tsx:4,107-128; W:docs/product/vision-and-scope.md:43",
     "confidence": "high"
   },
   "themes": {
     "value": 17,
-    "names": ["OpenFrame Default", "Black and White", "Studio Amber", "Slate Noir", "Midnight Reel", "Teal & Orange", "Courier & Cream", "Cutting Room", "Velvet Curtain", "Sunset Boulevard", "Arctic Frame", "Neon Reel", "Location Scout", "Desert Dune", "Colorist Neutral", "Silver Screen", "High Contrast"],
+    "names": ["Straft Default", "Black and White", "Studio Amber", "Slate Noir", "Midnight Reel", "Teal & Orange", "Courier & Cream", "Cutting Room", "Velvet Curtain", "Sunset Boulevard", "Arctic Frame", "Neon Reel", "Location Scout", "Desert Dune", "Colorist Neutral", "Silver Screen", "High Contrast"],
     "modes": "Light, Dark, System; custom themes can be imported, pasted, renamed, exported",
     "note": "feature-status row text still says 15 (stale).",
-    "evidence": "W:crates/openframe-application/src/modules/appearance/themes.json; W:docs/implementation/feature-status.md:232-239",
+    "evidence": "W:crates/straft-application/src/modules/appearance/themes.json; W:docs/implementation/feature-status.md:232-239",
     "confidence": "high"
   },
   "pricing": {
@@ -216,7 +216,7 @@
     "live": false,
     "chapter": 3,
     "note": "Trial code exists and is tested only with fakes. Internal builds have no trial, price, purchase or lock. After the trial ends without purchase the store builds block the app except Buy and Restore.",
-    "evidence": "W:docs/implementation/owner-decisions.md:18,21-22; W:crates/openframe-entitlement/src/lib.rs:9-31; W:docs/implementation/feature-status.md:286",
+    "evidence": "W:docs/implementation/owner-decisions.md:18,21-22; W:crates/straft-entitlement/src/lib.rs:9-31; W:docs/implementation/feature-status.md:286",
     "confidence": "high"
   },
   "storePlans": {
@@ -226,7 +226,7 @@
   },
   "companyLegalContact": {
     "value": null,
-    "known": "Not decided. Publisher, legal entity, privacy contact, support e-mail, domain and company e-mail are all owner tasks for Chapters 2 and 3. Tauri config publisher is a placeholder 'OpenFrame Studio contributors'. Website hosting proposed on Cloudflare Pages. EULA not written (LICENSE-PENDING). The product is paid and closed source.",
+    "known": "Not decided. Publisher, legal entity, privacy contact, support e-mail, domain and company e-mail are all owner tasks for Chapters 2 and 3. Tauri config publisher is a placeholder 'Straft Studio contributors'. Website hosting proposed on Cloudflare Pages. EULA not written (LICENSE-PENDING). The product is paid and closed source.",
     "evidence": "W:docs/implementation/owner-decisions.md:25,115,117,148-149,154; W:apps/desktop/src-tauri/tauri.conf.json:38; W:docs/store/privacy-policy.md:22-23,143",
     "confidence": "high"
   },
@@ -237,8 +237,8 @@
     "confidence": "high"
   },
   "screenEvidence": {
-    "windows": {"count": 809, "modes": "Light and Dark", "commit": "0dd87ae", "evidence": "C:\\OpenFrameWebsite\\research\\WindowsHTML-src\\README.md"},
-    "mac": {"count": 692, "areas": 26, "modes": "Light and Dark", "commit": "8d40f4e", "evidence": "C:\\OpenFrameWebsite\\research\\MacHTML-src\\README.md; C:\\OpenFrameWebsite\\research\\MacHTML-src\\light\\pages.json"},
+    "windows": {"count": 809, "modes": "Light and Dark", "commit": "0dd87ae", "evidence": "C:\\StraftWebsite\\research\\WindowsHTML-src\\README.md"},
+    "mac": {"count": 692, "areas": 26, "modes": "Light and Dark", "commit": "8d40f4e", "evidence": "C:\\StraftWebsite\\research\\MacHTML-src\\README.md; C:\\StraftWebsite\\research\\MacHTML-src\\light\\pages.json"},
     "warning": "WindowsHTML screens 416 to 433 (licence, trial, Buy) come from a simulated store state; they are not live in any build.",
     "confidence": "high"
   },

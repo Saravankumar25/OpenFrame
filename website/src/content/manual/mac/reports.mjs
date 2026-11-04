@@ -6,7 +6,7 @@ export default {
   intro: [
     `Reports answer the question: What concise production information do I need to see or send? There are six, each a table built from your breakdown and schedule: the Scene Report, Location Report, Cast Scene Report, Prop Report, Schedule Report and Breakdown Completeness.`,
     `Reports is a page of the Production workspace. Click Production in the sidebar, then choose Reports in the picker at the top of the page, next to the word Production. The list of six reports sits at the top of the page and the table of the report you pick is below it. In a wider window the list sits at the left and the table beside it.`,
-    `Reports are live. They are rebuilt from your project each time you open them, and the line above each table says what the report was built from and when it was generated. To keep a copy that will not change, save a snapshot. To send one outside OpenFrame, export it as a PDF, CSV or spreadsheet.`,
+    `Reports are live. They are rebuilt from your project each time you open them, and the line above each table says what the report was built from and when it was generated. To keep a copy that will not change, save a snapshot. To send one outside Straft, export it as a PDF, CSV or spreadsheet.`,
     `Reports only read your project. Filtering, saving a snapshot and exporting never change your breakdown, schedule or anything else.`,
   ],
   layout: [

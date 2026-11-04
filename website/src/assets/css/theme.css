@@ -3,6 +3,7 @@
 @font-face{font-family:Inter;font-style:normal;font-weight:100 900;font-display:swap;src:url(/assets/fonts/inter-latin-wght-normal.woff2) format("woff2")}
 @font-face{font-family:Newsreader;font-style:normal;font-weight:200 800;font-display:swap;src:url(/assets/fonts/newsreader-latin-wght-normal.woff2) format("woff2")}
 @font-face{font-family:Sora;font-style:normal;font-weight:100 800;font-display:swap;src:url(/assets/fonts/sora-latin-wght-normal.woff2) format("woff2")}
+@font-face{font-family:Manrope;font-style:normal;font-weight:200 800;font-display:swap;src:url(/assets/fonts/manrope-latin-wght-normal.woff2) format("woff2")}
 
 :root[data-theme=dark]{
   color-scheme:dark;
@@ -284,7 +285,7 @@ svg.defs{position:absolute;width:0;height:0;overflow:hidden}
 /* type, three families (owner direction 2026-10-31), all self-hosted:
    Newsreader (editorial serif) for h1 page titles and the large editorial lines,
    Sora (geometric sans) for h2 and h3 and the big figures,
-   Inter for body text, buttons, navigation and labels. The wordmark keeps the brand's own lettering (Inter). */
+   Inter for body text, buttons, navigation and labels. The wordmark keeps the brand's own lettering (Manrope, from the logo). */
 :root{--font:Inter,"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
   --font-title:Newsreader,"Iowan Old Style",Georgia,"Times New Roman",serif;
   --font-head:Sora,Inter,"Segoe UI",system-ui,sans-serif}
@@ -305,12 +306,13 @@ h3{font-weight:560;letter-spacing:-.018em}
 .tut h3,.faq-item summary,.btn,.menu,.founder .role{font-family:var(--font)}
 .tut h3{font-weight:600}
 .tut h3,.founder h3{letter-spacing:-.012em}
-.brand .wm,.brand .wm b{font-family:Inter}.brand .wm b{font-weight:680}
+.brand .wm,.brand .wm b,.brand .wm i{font-family:Manrope,Inter,system-ui,sans-serif}.brand .wm b{font-weight:700}.brand .wm i{font-weight:400}
+:root[data-theme=dark] .brand .wm i{color:#ff9a3d}
 /* Ideate, Write, Plan, Shoot: labels, no full stops; room between the active underline and the screen */
 .stages{margin:26px 0 30px}
 .stages button::after{bottom:-6px}
 
-/* ===== loading: always the OpenFrame icon drawing itself, never a generic spinner ===== */
+/* ===== loading: always the Straft icon drawing itself, never a generic spinner ===== */
 .loader{position:fixed;inset:0;z-index:300;display:grid;place-items:center;background:var(--bg);transition:opacity .5s var(--ease),visibility .5s}
 :root:not(.js) .loader{display:none}
 :root.ready .loader{opacity:0;visibility:hidden;pointer-events:none}

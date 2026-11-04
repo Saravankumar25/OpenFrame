@@ -533,7 +533,7 @@
     "key": null
    }
   ],
-  "notes": "Mac. Production > Budget. Heading \"Budget\", subtitle \"What did we plan to spend, and what have we spent?\", note \"Use a simple estimate for planning. Formal accounting is outside OpenFrame\". Start: \"Start a budget\", pop-up \"Currency\", \"Start Budget\" (\"Optional. You can ignore the budget entirely.\"). Toolbar \"Export\", \"Save Snapshot\", \"Add Line\"; cards PLANNED, ACTUAL, DIFFERENCE; \"Edit Plan\" (overall plan, contingency, notes). Sheet \"Add Line\": pop-up \"Category\", \"Line item\", \"Planned (INR)\", \"Actual (INR)\" (\"Leave empty until the money is spent.\"), \"Notes\", Cancel, \"Add Line\". Example: Camera team, 25000 planned, 21000 actual. An overspend shows as \"₹2,500 over plan\". \"Budget values never change automatically.\" Seeded project: Night Bus, in rupees."
+  "notes": "Mac. Production > Budget. Heading \"Budget\", subtitle \"What did we plan to spend, and what have we spent?\", note \"Use a simple estimate for planning. Formal accounting is outside Straft\". Start: \"Start a budget\", pop-up \"Currency\", \"Start Budget\" (\"Optional. You can ignore the budget entirely.\"). Toolbar \"Export\", \"Save Snapshot\", \"Add Line\"; cards PLANNED, ACTUAL, DIFFERENCE; \"Edit Plan\" (overall plan, contingency, notes). Sheet \"Add Line\": pop-up \"Category\", \"Line item\", \"Planned (INR)\", \"Actual (INR)\" (\"Leave empty until the money is spent.\"), \"Notes\", Cancel, \"Add Line\". Example: Camera team, 25000 planned, 21000 actual. An overspend shows as \"₹2,500 over plan\". \"Budget values never change automatically.\" Seeded project: Night Bus, in rupees."
  },
  {
   "id": "tasks",
@@ -696,7 +696,7 @@
     "screen": "003-home-empty.html",
     "action": "click",
     "target": "[data-id=\"home-settings\"]",
-    "label": "Click Settings (or choose OpenFrame Studio > Settings…, Cmd+,)",
+    "label": "Click Settings (or choose Straft Studio > Settings…, Cmd+,)",
     "text": null,
     "key": null
    },
@@ -725,7 +725,7 @@
     "key": null
    }
   ],
-  "notes": "Mac. Settings is its own Settings window (OpenFrame Studio menu > Settings…, the standard Cmd+,) with the pages General, Appearance, Keyboard Shortcuts, Offline AI, Diagnostics. Appearance: \"Mode\" control \"System\" / \"Light\" / \"Dark\" (\"System follows your Mac. Light and Dark stay as you set them.\"). \"Theme\" cards: OpenFrame Default, Black and White, Studio Amber, Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain. Scrolling down shows \"My Themes\" and a Paste Theme sheet (screens 023, 025, 026). Project Settings also has an Appearance page (screen 629). The Home screen here is the empty Application Home, before any project exists."
+  "notes": "Mac. Settings is its own Settings window (Straft Studio menu > Settings…, the standard Cmd+,) with the pages General, Appearance, Keyboard Shortcuts, Offline AI, Diagnostics. Appearance: \"Mode\" control \"System\" / \"Light\" / \"Dark\" (\"System follows your Mac. Light and Dark stay as you set them.\"). \"Theme\" cards: Straft Default, Black and White, Studio Amber, Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain. Scrolling down shows \"My Themes\" and a Paste Theme sheet (screens 023, 025, 026). Project Settings also has an Appearance page (screen 629). The Home screen here is the empty Application Home, before any project exists."
  },
  {
   "id": "settings",
@@ -736,7 +736,7 @@
     "screen": "003-home-empty.html",
     "action": "click",
     "target": "[data-id=\"home-settings\"]",
-    "label": "Click Settings (or choose OpenFrame Studio > Settings…, Cmd+,)",
+    "label": "Click Settings (or choose Straft Studio > Settings…, Cmd+,)",
     "text": null,
     "key": null
    },
@@ -781,7 +781,7 @@
     "key": null
    }
   ],
-  "notes": "Mac. Settings window (OpenFrame Studio menu > Settings…, Cmd+,) with the pages \"General\", \"Appearance\", \"Keyboard Shortcuts\", \"Offline AI\", \"Diagnostics\". General: heading \"You\", \"Display name\" with \"Save Name\" (\"This name appears on your notes, comments and history\"), \"Data folder\" with \"Projects\", \"Shared library\" and \"Show in Finder\", \"Version\". Keyboard Shortcuts: \"Filter commands\", \"23 commands\", \"Restore all defaults\", rows such as Search (Cmd+K), \"Open or close the assistant\" (Cmd+J), \"Open Project Settings\" (Shift+Cmd+,), New Scene Card (Cmd+N), \"Quick Capture (new idea)\" (Shift+Cmd+N), screenplay elements from Cmd+1; each row can add, remove or restore keys. Settings for one project are separate: Project Settings (toolbar Settings button in a project, or Shift+Cmd+,) with General, Writing, Keyboard shortcuts, Offline AI, Advanced, Appearance (screens 619 to 631)."
+  "notes": "Mac. Settings window (Straft Studio menu > Settings…, Cmd+,) with the pages \"General\", \"Appearance\", \"Keyboard Shortcuts\", \"Offline AI\", \"Diagnostics\". General: heading \"You\", \"Display name\" with \"Save Name\" (\"This name appears on your notes, comments and history\"), \"Data folder\" with \"Projects\", \"Shared library\" and \"Show in Finder\", \"Version\". Keyboard Shortcuts: \"Filter commands\", \"23 commands\", \"Restore all defaults\", rows such as Search (Cmd+K), \"Open or close the assistant\" (Cmd+J), \"Open Project Settings\" (Shift+Cmd+,), New Scene Card (Cmd+N), \"Quick Capture (new idea)\" (Shift+Cmd+N), screenplay elements from Cmd+1; each row can add, remove or restore keys. Settings for one project are separate: Project Settings (toolbar Settings button in a project, or Shift+Cmd+,) with General, Writing, Keyboard shortcuts, Offline AI, Advanced, Appearance (screens 619 to 631)."
  },
  {
   "id": "add-crew-member",

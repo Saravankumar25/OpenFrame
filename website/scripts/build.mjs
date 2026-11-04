@@ -120,7 +120,7 @@ fs.writeFileSync(rel('docs', 'tutorial-screen-map.json'), JSON.stringify(map, nu
 const today = new Date().toISOString().slice(0, 10);
 writeSitemapAndRobots(DIST, pages); // sitemap.xml and robots.txt (scripts/seo-files.mjs)
 // ---------- standard site files
-const webmanifest = { name: SITE_NAME, short_name: 'OpenFrame', description: 'Film production software for ideas, scripts, schedules and call sheets.', start_url: '/', scope: '/', display: 'browser',
+const webmanifest = { name: SITE_NAME, short_name: 'Straft', description: 'Film production software for ideas, scripts, schedules and call sheets.', start_url: '/', scope: '/', display: 'browser',
   background_color: '#0e0d15', theme_color: '#1d1a2e', lang: 'en',
   icons: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png' }, { src: '/icon-512.png', sizes: '512x512', type: 'image/png' }, { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }] };
 fs.writeFileSync(path.join(DIST, 'site.webmanifest'), JSON.stringify(webmanifest, null, 2));
@@ -151,7 +151,7 @@ const OLD = { 'index.html': '/', 'pricing.html': '/pricing/', 'download.html': '
   'compare.html': '/compare/', 'why-local.html': '/local-and-private/', 'themes.html': '/themes/', 'about.html': '/about/', 'contact.html': '/contact/',
   'privacy.html': '/legal/privacy/', 'terms.html': '/legal/terms/', 'features/index.html': '/features/' };
 const OLD_TUTORIALS = ['ai-assistant-ask', 'ai-assistant-setup', 'backup-restore', 'breakdown', 'budget', 'call-sheet', 'cast-crew', 'characters', 'create-project', 'drafts-revisions', 'export-script', 'files', 'first-launch', 'idea-vault', 'import-script', 'locations', 'manage-projects', 'moodboard', 'pages-templates', 'project-tour', 'recently-deleted', 'reports', 'schedule', 'screenplay-notes', 'settings', 'shot-list', 'sides', 'story-board', 'storyboard', 'tasks', 'themes-appearance', 'write-screenplay'];
-const redirects = ['/features/ai-assistant/ /features/openframe-ai/ 301', '/features/ai-assistant.html /features/openframe-ai/ 301'].concat(Object.entries(OLD).map(([a, b]) => `/${a} ${b} 301`)).concat(FEATURES.map((f) => `/features/${f.slug}.html /features/${f.slug}/ 301`));
+const redirects = ['/features/ai-assistant/ /features/straft-ai/ 301', '/features/ai-assistant.html /features/straft-ai/ 301'].concat(Object.entries(OLD).map(([a, b]) => `/${a} ${b} 301`)).concat(FEATURES.map((f) => `/features/${f.slug}.html /features/${f.slug}/ 301`));
 for (const plat of ['win', 'mac']) for (const id of OLD_TUTORIALS) {
   const p = `/${OS[plat].slug}/tutorials/${id}/`;
   if (!paths.has(p)) redirects.push(`${p} /${OS[plat].slug}/tutorials/ 302`);

@@ -4,7 +4,7 @@ export default {
   order: 9,
   part: `Plan`,
   intro: [
-    `Breakdown is where you read each scene of your screenplay and list what it needs to be shot: the cast, extras, locations, props, wardrobe, vehicles, hair and makeup, special effects, VFX, sound and animals. You tag words in the script, accept suggestions that OpenFrame finds in the scene text, or add an element by hand. Every element you add also goes into the production catalog, so other scenes can reuse it.`,
+    `Breakdown is where you read each scene of your screenplay and list what it needs to be shot: the cast, extras, locations, props, wardrobe, vehicles, hair and makeup, special effects, VFX, sound and animals. You tag words in the script, accept suggestions that Straft finds in the scene text, or add an element by hand. Every element you add also goes into the production catalog, so other scenes can reuse it.`,
     `Breakdown always works on one screenplay draft, called the production source. You choose it the first time you open Breakdown. The same scene list then feeds shot lists, storyboards and the schedule, so you never recreate a scene by hand. Your screenplay is not changed by anything you do in Breakdown.`,
     `The screen has three columns under a blue bar. The scene list is on the left, the script of the open scene is in the middle, and the breakdown of that scene is on the right. You can hide the scene list and the panel when you want more room to read.`,
     `Open Breakdown from the sidebar of your project. Suggestions never become production data until you accept them, and you can undo most changes from the message that appears at the bottom of the window.`,
@@ -15,7 +15,7 @@ export default {
     { name: `Script`, text: `The middle column shows the open scene in screenplay format. Tagged words are underlined in the colour of their category. At the top right is the Tag Selection as menu, which is greyed out until you select some words.` },
     { name: `Scene breakdown panel`, text: `The right column, headed Scene 1 breakdown (the number follows the scene you open). Mark Complete is at the top right. Under it are the scene's INT or EXT, its time of day and its location. Below are the elements grouped by category, then Add Element and Suggest Elements. Tag Selection appears beside them when words are selected.` },
     { name: `Element rows`, text: `Each element shows a coloured dot, its name, an optional note, a Required label and an Actions button. A category heading shows its icon, its colour and the number of elements. Click the arrow beside a heading to collapse or expand the group.` },
-    { name: `Suggestion banner`, text: `Shown at the top of the panel when OpenFrame has found suggestions, for example Suggested elements: 10 with a Review… button. Suggested items appear below it, marked Suggested, with Accept, Edit and Reject.` },
+    { name: `Suggestion banner`, text: `Shown at the top of the panel when Straft has found suggestions, for example Suggested elements: 10 with a Review… button. Suggested items appear below it, marked Suggested, with Accept, Edit and Reject.` },
     { name: `Quick reuse`, text: `For a scene with few elements, a row of buttons headed Quick reuse from nearby scenes offers items already used in neighbouring scenes.` },
   ],
   workflows: [
@@ -34,7 +34,7 @@ export default {
         {
           screen: `breakdown-source-sheet`,
           do: `In the sheet Handing the script over to production., click the draft you want under Screenplay drafts.`,
-          explain: `Each draft shows its name and whether it is locked, with its number of scenes, for example Not locked · 10 scenes. The chosen draft has a tick. Below the list, OpenFrame will create or initialise says what happens: Breakdown scenes, one per screenplay scene and numbered automatically, the Production catalog, and the scene list used by shot lists, storyboards and the schedule. A line repeats: You will not recreate any scene by hand. Your screenplay is not changed.`,
+          explain: `Each draft shows its name and whether it is locked, with its number of scenes, for example Not locked · 10 scenes. The chosen draft has a tick. Below the list, Straft will create or initialise says what happens: Breakdown scenes, one per screenplay scene and numbered automatically, the Production catalog, and the scene list used by shot lists, storyboards and the schedule. A line repeats: You will not recreate any scene by hand. Your screenplay is not changed.`,
         },
         {
           screen: `breakdown-source-sheet-reason`,
@@ -182,8 +182,8 @@ export default {
     },
     {
       id: `breakdown-suggest-elements`,
-      title: `Ask OpenFrame to suggest elements for a scene`,
-      purpose: `Let OpenFrame read the scene text and list the elements it thinks the scene needs.`,
+      title: `Ask Straft to suggest elements for a scene`,
+      purpose: `Let Straft read the scene text and list the elements it thinks the scene needs.`,
       level: `Beginner`,
       prerequisites: [`A scene is open in Breakdown.`],
       steps: [
@@ -212,7 +212,7 @@ export default {
       title: `Accept, edit or reject suggestions`,
       purpose: `Turn the suggestions you agree with into elements and dismiss the rest.`,
       level: `Intermediate`,
-      prerequisites: [`The scene has suggestions. See Ask OpenFrame to suggest elements for a scene.`],
+      prerequisites: [`The scene has suggestions. See Ask Straft to suggest elements for a scene.`],
       steps: [
         {
           screen: `breakdown-review-sheet`,
@@ -543,7 +543,7 @@ export default {
     'ai-sim-breakdown-removed-scenes': `The Removed scenes list with the note that the breakdown is kept for reference. Used in breakdown-removed-scenes.`,
     'ai-sim-catalog-export': `The Export Catalog dialog with PDF, CSV file and Excel workbook. Used in breakdown-export-catalog.`,
     'breakdown-no-source': `Breakdown before a production source is set. It says Choose a screenplay source to begin the breakdown. and offers Select Source and Import Screenplay. A message confirms a screenplay import. Used in breakdown-choose-source.`,
-    'breakdown-source-sheet': `The sheet Handing the script over to production., with the screenplay drafts, what OpenFrame will create or initialise, and Cancel and Set as Production Source. Used in breakdown-choose-source.`,
+    'breakdown-source-sheet': `The sheet Handing the script over to production., with the screenplay drafts, what Straft will create or initialise, and Cancel and Set as Production Source. Used in breakdown-choose-source.`,
     'breakdown-source-sheet-reason': `The same sheet with a reason typed in the box under the list. Variant, part of breakdown-choose-source.`,
     'breakdown-scenes': `Breakdown right after the source is set, with Scene 1 open and nothing broken down yet. A message confirms the source and offers Undo. Used in breakdown-choose-source and breakdown-suggest-elements.`,
     'breakdown-scene-3': `Breakdown with scene 3 selected in the list and its script in the middle. Used in breakdown-tour.`,

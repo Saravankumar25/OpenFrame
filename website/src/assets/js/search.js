@@ -1,4 +1,4 @@
-/* OpenFrame site search: a command palette in the header, the /search/ page and the filter box on the tutorial lists.
+/* Straft site search: a command palette in the header, the /search/ page and the filter box on the tutorial lists.
    One same-origin file (/search-index.json) is fetched the first time search opens. No libraries, nothing is sent anywhere.
    Part 1 is the matching engine (also loaded by tests/search.test.mjs). Part 2 is the interface. */
 var Core = (function () {
@@ -8,7 +8,7 @@ var Core = (function () {
   // Product synonyms. "a = b = c" are the same thing; "a > b | c" means a search for a also finds b and c, not the other way round.
   var SYNONYMS = [
     'delete = remove = trash = erase = discard = recently deleted', 'export = save as = pdf = output', 'import = bring in = load', 'open > import',
-    'script = screenplay = screen play', 'ai = openframe ai = assistant', 'call sheet = callsheet = call sheets',
+    'script = screenplay = screen play', 'ai = straft ai = assistant', 'call sheet = callsheet = call sheets',
     'schedule = stripboard = shooting day = shooting schedule = strips', 'shortcut = shortcuts = keyboard = hotkey = key binding',
     'theme = appearance = dark mode = light mode', 'backup = back up = restore = recover = recovery', 'backup > snapshot',
     'share > package | send', 'send > package', 'package = pack = zip', 'color = colour', 'organize = organise', 'catalog = catalogue',
@@ -262,7 +262,7 @@ var Core = (function () {
 function ui(Core) {
   'use strict';
   var doc = document.documentElement, KEY = 'of_recent_search', ix = null, loading = null, esc = Core.esc;
-  var SUGGEST = ['call sheet', 'export pdf', 'import a script', 'shooting schedule', 'backup', 'OpenFrame AI', 'keyboard shortcuts'];
+  var SUGGEST = ['call sheet', 'export pdf', 'import a script', 'shooting schedule', 'backup', 'Straft AI', 'keyboard shortcuts'];
   var ICON_S = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>';
   var ICON_C = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
   var os = function () { return doc.getAttribute('data-os') === 'mac' ? 'mac' : 'win'; };
@@ -409,7 +409,7 @@ function ui(Core) {
       try { history[push ? 'pushState' : 'replaceState'](null, '', u); } catch (e) {}
       title();
     }
-    function title() { document.title = (S.q ? S.q + ' | ' : '') + 'Search | OpenFrame Studio'; }
+    function title() { document.title = (S.q ? S.q + ' | ' : '') + 'Search | Straft Studio'; }
     function filt() { return { os: S.os === 'cur' ? os() : S.os, pref: os(), type: S.type, part: S.part, area: S.area }; }
     function controls() {
       root.querySelectorAll('[data-f]').forEach(function (b) { b.setAttribute('aria-pressed', String((b.getAttribute('data-f') === 'os' ? S.os : S.type) === b.getAttribute('data-v'))); });

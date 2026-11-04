@@ -4,17 +4,17 @@ export default {
   order: 27,
   part: `Project and data`,
   intro: [
-    `Settings holds everything that belongs to you and to this Mac, not to one project: your display name, the look of the app, your keyboard shortcuts, where OpenFrame keeps your work, the optional offline AI and a support bundle. What you change here applies in every project.`,
-    `Open the Settings window from the Settings button on Application Home, from the OpenFrame Studio menu in the menu bar, or by pressing Command+, (comma). It is a normal Mac window with six tabs along the top: General, Appearance, Keyboard Shortcuts, Storage, Offline AI and Diagnostics.`,
+    `Settings holds everything that belongs to you and to this Mac, not to one project: your display name, the look of the app, your keyboard shortcuts, where Straft keeps your work, the optional offline AI and a support bundle. What you change here applies in every project.`,
+    `Open the Settings window from the Settings button on Application Home, from the Straft Studio menu in the menu bar, or by pressing Command+, (comma). It is a normal Mac window with six tabs along the top: General, Appearance, Keyboard Shortcuts, Storage, Offline AI and Diagnostics.`,
     `Settings for one project, such as its title, status, spelling dictionary and breakdown colours, are a separate place called Project Settings. Inside a project, the App Settings… button at the bottom of Project Settings brings you back here. The Keyboard Shortcuts list can also be opened as a sheet from the Help menu, with a Done button, without opening the whole Settings window.`,
     `Everything stays on this Mac. Nothing in Settings sends anything anywhere: the AI health figures are saved to a file only when you ask, and you choose where.`,
   ],
   layout: [
     { name: `Tab bar`, text: `Six tabs under the window title: General, Appearance, Keyboard Shortcuts, Storage, Offline AI and Diagnostics. The title of the window changes to the name of the tab you are on.` },
-    { name: `General`, text: `The You card has a Display name box and a Save Name button. The Version card lists OpenFrame Studio and Core with their version numbers.` },
+    { name: `General`, text: `The You card has a Display name box and a Save Name button. The Version card lists Straft Studio and Core with their version numbers.` },
     { name: `Appearance`, text: `Mode (System, Light or Dark), then Theme cards in a grid, then My Themes with Import Theme File…, Paste Theme… and Export Selected Theme….` },
     { name: `Keyboard Shortcuts`, text: `A Filter commands or keys box, a count of commands (23 commands), Restore all defaults, then the commands in groups. Each command shows where it is on screen, its Current keys with a Remove button, its Default keys, a Conflict note, an Add button and Restore default.` },
-    { name: `Storage`, text: `Cards for Your OpenFrame library, Folder for new projects, Global Idea Vault and This project. Each shows a folder and the buttons that act on it.` },
+    { name: `Storage`, text: `Cards for Your Straft library, Folder for new projects, Global Idea Vault and This project. Each shows a folder and the buttons that act on it.` },
     { name: `Offline AI`, text: `The Offline AI card with its state, AI health with Export AI report…, and Assistant memory.` },
     { name: `Diagnostics`, text: `A short explanation and the list of files a diagnostics bundle includes.` },
   ],
@@ -24,11 +24,11 @@ export default {
       title: `Open Settings and find the right tab`,
       purpose: `Open the Settings window and know which tab holds which setting.`,
       level: `Beginner`,
-      prerequisites: [`OpenFrame Studio is open.`],
+      prerequisites: [`Straft Studio is open.`],
       steps: [
         {
           screen: `settings-general`,
-          do: `Click Settings on Application Home, or choose Settings from the OpenFrame Studio menu, or press Command+,.`,
+          do: `Click Settings on Application Home, or choose Settings from the Straft Studio menu, or press Command+,.`,
           explain: `The Settings window opens on General. It is a separate window, so your project stays open behind it. The tabs are General, Appearance, Keyboard Shortcuts, Storage, Offline AI and Diagnostics.`,
         },
         {
@@ -43,7 +43,7 @@ export default {
         },
         {
           screen: `settings-offline-ai`,
-          do: `Click Offline AI for OpenFrame AI's engine, health figures and memory, and Diagnostics for the support bundle.`,
+          do: `Click Offline AI for Straft AI's engine, health figures and memory, and Diagnostics for the support bundle.`,
           explain: `Storage, the tab between them, shows where your library and projects are kept. Each has its own workflow below.`,
         },
       ],
@@ -80,18 +80,18 @@ export default {
     {
       id: `settings-version`,
       title: `Check the version and open About`,
-      purpose: `Find the version of OpenFrame Studio and its core.`,
+      purpose: `Find the version of Straft Studio and its core.`,
       level: `Beginner`,
-      prerequisites: [`OpenFrame Studio is open.`],
+      prerequisites: [`Straft Studio is open.`],
       steps: [
         {
           screen: `settings-general`,
           do: `Open Settings and look at the Version card on General.`,
-          explain: `Two lines: OpenFrame Studio and Core, each with its version number. Quote both when you ask for support.`,
+          explain: `Two lines: Straft Studio and Core, each with its version number. Quote both when you ask for support.`,
         },
         {
           screen: `about`,
-          do: `Choose About OpenFrame Studio from the OpenFrame Studio menu.`,
+          do: `Choose About Straft Studio from the Straft Studio menu.`,
           explain: `A small window shows the app icon, the name, Version and Core numbers, and the line Your work is stored on this Mac.`,
         },
       ],
@@ -109,7 +109,7 @@ export default {
         {
           screen: `settings-appearance`,
           do: `Click Appearance. Under Mode, click System, Light or Dark.`,
-          explain: `System follows your Mac. Light and Dark stay as you set them. Under Theme, each card shows a small preview, the theme name and a one line description. The theme in use has an orange outline and a tick: here OpenFrame Default.`,
+          explain: `System follows your Mac. Light and Dark stay as you set them. Under Theme, each card shows a small preview, the theme name and a one line description. The theme in use has an orange outline and a tick: here Straft Default.`,
         },
         {
           screen: `settings-appearance-theme-chosen`,
@@ -119,7 +119,7 @@ export default {
         {
           screen: `settings-appearance-scrolled`,
           do: `Scroll down to see the rest of the themes and My Themes.`,
-          explain: `The built in themes are OpenFrame Default, Black and White, Studio Amber, Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain, Sunset Boulevard, Arctic Frame, Neon Reel, Location Scout, Desert Dune, Colorist Neutral, Silver Screen and High Contrast. High Contrast uses hard black and white edges with a signal yellow accent.`,
+          explain: `The built in themes are Straft Default, Black and White, Studio Amber, Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain, Sunset Boulevard, Arctic Frame, Neon Reel, Location Scout, Desert Dune, Colorist Neutral, Silver Screen and High Contrast. High Contrast uses hard black and white edges with a signal yellow accent.`,
         },
       ],
       result: `The app uses the mode and theme you picked.`,
@@ -134,17 +134,17 @@ export default {
       title: `Import a theme from a file or by pasting its text`,
       purpose: `Add a theme made by someone else to My Themes.`,
       level: `Intermediate`,
-      prerequisites: [`You have an OpenFrame theme file (a small .json file, for example from the OpenFrame website) or its text.`],
+      prerequisites: [`You have a Straft theme file (a small .json file, for example from the Straft website) or its text.`],
       steps: [
         {
           screen: `settings-appearance-scrolled`,
           do: `On Appearance, scroll to My Themes. Click Import Theme File… to pick a file on your Mac, or Paste Theme… to paste its text.`,
-          explain: `Until you add one, My Themes says: No imported themes yet. Theme files are small .json files, for example from the OpenFrame website.`,
+          explain: `Until you add one, My Themes says: No imported themes yet. Theme files are small .json files, for example from the Straft website.`,
         },
         {
           screen: `settings-theme-paste-sheet`,
           do: `If you chose Paste Theme…, click in the Theme text box and paste the text.`,
-          explain: `The sheet is called Import theme and says: Paste the text of an OpenFrame theme file. It is checked before anything is saved. A counter under the box reads 0.0 KB of 10 KB. and shows how much you have pasted. Ten kilobytes is the limit.`,
+          explain: `The sheet is called Import theme and says: Paste the text of a Straft theme file. It is checked before anything is saved. A counter under the box reads 0.0 KB of 10 KB. and shows how much you have pasted. Ten kilobytes is the limit.`,
         },
         {
           screen: `settings-theme-paste-error`,
@@ -282,12 +282,12 @@ export default {
         {
           screen: `project-settings-storage`,
           do: `Click Storage.`,
-          explain: `The page says: Where your work is kept on this computer, and how to move, back up or reconnect it. The first card, Your OpenFrame library, shows the folder. Back up this folder: it holds library.json, which remembers who you are on this computer and where your work is, so a reinstall finds everything again. By default it also holds your projects and the Global Idea Vault.`,
+          explain: `The page says: Where your work is kept on this computer, and how to move, back up or reconnect it. The first card, Your Straft library, shows the folder. Back up this folder: it holds library.json, which remembers who you are on this computer and where your work is, so a reinstall finds everything again. By default it also holds your projects and the Global Idea Vault.`,
         },
         {
           screen: `project-settings-storage`,
           do: `Click Open Folder to show the library folder in Finder.`,
-          explain: `Move Library… moves the whole library to another place. Locate Existing Library… connects OpenFrame to a library you already have, for example after a reinstall.`,
+          explain: `Move Library… moves the whole library to another place. Locate Existing Library… connects Straft to a library you already have, for example after a reinstall.`,
         },
         {
           screen: `project-settings-storage`,
@@ -317,7 +317,7 @@ export default {
         {
           screen: `project-settings-storage`,
           do: `Click the button for what you want.`,
-          explain: `The card offers Back Up…, Export Package…, Restore…, Move… and Locate Existing Vault…. Locate Existing Vault… connects OpenFrame to a vault you already have.`,
+          explain: `The card offers Back Up…, Export Package…, Restore…, Move… and Locate Existing Vault…. Locate Existing Vault… connects Straft to a vault you already have.`,
         },
       ],
       result: `Your vault is backed up, moved or reconnected as you chose.`,
@@ -357,19 +357,19 @@ export default {
     {
       id: `settings-offline-ai`,
       title: `Check the offline AI and its health figures`,
-      purpose: `See whether the offline AI is ready, export its health figures and review what OpenFrame AI remembers.`,
+      purpose: `See whether the offline AI is ready, export its health figures and review what Straft AI remembers.`,
       level: `Intermediate`,
       prerequisites: [`The Settings window is open.`],
       steps: [
         {
           screen: `settings-offline-ai`,
           do: `Click Offline AI.`,
-          explain: `The first card shows the state beside the title, here Needs a reinstall. The text says OpenFrame AI runs on this computer after a one-time download, and that your project data is not sent to OpenFrame or to an AI cloud service. When the engine is missing, a red message says: Offline AI is missing from this installation, so it can't start. Reinstall OpenFrame Studio to repair it. Your projects were not changed. The card ends: OpenFrame works normally without OpenFrame AI.`,
+          explain: `The first card shows the state beside the title, here Needs a reinstall. The text says Straft AI runs on this computer after a one-time download, and that your project data is not sent to Straft or to an AI cloud service. When the engine is missing, a red message says: Offline AI is missing from this installation, so it can't start. Reinstall Straft Studio to repair it. Your projects were not changed. The card ends: Straft works normally without Straft AI.`,
         },
         {
           screen: `settings-offline-ai`,
           do: `Look at AI health.`,
-          explain: `Before you use OpenFrame AI it says: No requests yet. The figures appear after you use OpenFrame AI. Only numbers are kept on this computer: no questions, answers or project text. Nothing is sent.`,
+          explain: `Before you use Straft AI it says: No requests yet. The figures appear after you use Straft AI. Only numbers are kept on this computer: no questions, answers or project text. Nothing is sent.`,
         },
         {
           screen: `settings-offline-ai`,
@@ -379,13 +379,13 @@ export default {
         {
           screen: `settings-offline-ai`,
           do: `Look at Assistant memory.`,
-          explain: `With no project open it says: Open a project to see what OpenFrame AI remembers in it. Memory is saved on this Mac, in the project, for you only, and only when you state a fact or confirm an answer. Delete an entry and OpenFrame AI forgets it.`,
+          explain: `With no project open it says: Open a project to see what Straft AI remembers in it. Memory is saved on this Mac, in the project, for you only, and only when you state a fact or confirm an answer. Delete an entry and Straft AI forgets it.`,
         },
       ],
       result: `You know the state of the offline AI and can export the figures.`,
       cautions: [
-        `OpenFrame AI is optional. Every other part of the app works without it.`,
-        `If it says Needs a reinstall, reinstall OpenFrame Studio. Your projects are not changed.`,
+        `Straft AI is optional. Every other part of the app works without it.`,
+        `If it says Needs a reinstall, reinstall Straft Studio. Your projects are not changed.`,
       ],
       related: [`settings-diagnostics-bundle`],
     },
@@ -416,15 +416,15 @@ export default {
   ],
   screens: {
     'home-shortcuts-sheet': `Keyboard Shortcuts opened from the Help menu over Application Home. A sheet with a Filter commands or keys box, the number of commands, Restore all defaults and a Done button. Used in the workflow Find a command and see its keys.`,
-    'about': `The About OpenFrame Studio window with the app icon, the name, Version and Core numbers and the line Your work is stored on this Mac. Used in Check the version and open About.`,
-    'settings-general': `Settings on General. The You card has the Display name and a greyed Save Name, and the Version card lists OpenFrame Studio and Core. Used in Open Settings and find the right tab.`,
+    'about': `The About Straft Studio window with the app icon, the name, Version and Core numbers and the line Your work is stored on this Mac. Used in Check the version and open About.`,
+    'settings-general': `Settings on General. The You card has the Display name and a greyed Save Name, and the Version card lists Straft Studio and Core. Used in Open Settings and find the right tab.`,
     'settings-general-name-edited': `General with a new display name typed and Save Name ready. Used in Change your display name.`,
-    'settings-appearance': `Appearance with the Mode control (System, Light, Dark) and the first Theme cards. OpenFrame Default is selected. Used in Choose Light, Dark or System, and a theme.`,
+    'settings-appearance': `Appearance with the Mode control (System, Light, Dark) and the first Theme cards. Straft Default is selected. Used in Choose Light, Dark or System, and a theme.`,
     'settings-appearance-scrolled': `Appearance scrolled to the end: the last theme cards and My Themes with Import Theme File…, Paste Theme… and Export Selected Theme…. Used in the theme workflows.`,
     'settings-appearance-theme-chosen': `Appearance after another theme card has been clicked, with the new theme applied. Used in Choose Light, Dark or System, and a theme.`,
     'settings-theme-paste-sheet': `The Import theme sheet, empty, with the Theme text box and the 0.0 KB of 10 KB counter. Used in Import a theme.`,
     'settings-theme-paste-error': `The Import theme sheet after pasting text that is not a theme: This theme cannot be used. Nothing was changed, the reasons and Edit the text. Used in Import a theme.`,
-    'settings-keyboard-shortcuts': `Keyboard Shortcuts with the command list at the top, showing Search, Open or close OpenFrame AI, Open Project Settings, New Scene Card and Quick Capture (new idea). Used in the shortcut workflows.`,
+    'settings-keyboard-shortcuts': `Keyboard Shortcuts with the command list at the top, showing Search, Open or close Straft AI, Open Project Settings, New Scene Card and Quick Capture (new idea). Used in the shortcut workflows.`,
     'settings-keyboard-shortcuts-scrolled': `Keyboard Shortcuts scrolled to Screenplay elements, from Parenthetical to General note (not printed). Used in Find a command and see its keys.`,
     'settings-shortcuts-filtered': `Keyboard Shortcuts filtered by the word project, 5 commands, with Search projects showing two keys. Used in Find a command and Change, add or remove keys.`,
     'settings-shortcuts-none': `Keyboard Shortcuts when no command matches the filter, with a message and 0 commands. Used in Find a command and see its keys.`,
@@ -432,7 +432,7 @@ export default {
     'settings-offline-ai': `The Offline AI tab with the state card, AI health with Export AI report… and Assistant memory. Used in Check the offline AI.`,
     'settings-diagnostics': `The Diagnostics tab with its explanation and the list of files a bundle includes. Used in Read what a diagnostics bundle includes.`,
     'project-shortcuts-sheet': `The Keyboard Shortcuts sheet opened over a project. It is the same list as in Settings. Used in Find a command and see its keys.`,
-    'project-settings-storage': `The Storage tab, shown inside Project Settings: Your OpenFrame library, Folder for new projects and Global Idea Vault with their buttons. Used in the Storage workflows.`,
+    'project-settings-storage': `The Storage tab, shown inside Project Settings: Your Straft library, Folder for new projects and Global Idea Vault with their buttons. Used in the Storage workflows.`,
     'storage-move-project-confirm': `The Move This Project confirmation with the new folder, an explanation and the buttons Cancel and Move Project. Used in Move a project to another folder.`,
     'storage-move-project-done': `The Move This Project dialog after the move, with a green message giving the new path and a Close button. Used in Move a project to another folder.`,
   },
@@ -440,7 +440,7 @@ export default {
     [`Command+,`, `Open the Settings window`],
     [`Shift+Command+,`, `Open Project Settings`],
     [`Command+K`, `Search (default, changeable)`],
-    [`Command+J`, `Open or close OpenFrame AI (default, changeable)`],
+    [`Command+J`, `Open or close Straft AI (default, changeable)`],
     [`Command+N`, `New Scene Card in a project, New Project on Application Home (defaults, changeable)`],
     [`Command+O`, `Open Project (default, changeable)`],
     [`Command+F and Command+K`, `Search projects on Application Home (defaults, changeable)`],
@@ -458,7 +458,7 @@ export default {
     { problem: `A shortcut does not work after I changed it.`, fix: `Open Keyboard Shortcuts and check the Conflict note on its row. Remove the clash or click Restore default.` },
     { problem: `Save Name is greyed out.`, fix: `It is ready only after you change the Display name. Type a different name first.` },
     { problem: `The pasted theme is refused.`, fix: `Read the list in the sheet. It names the missing parts, such as formatVersion, id or seeds. Click Edit the text, fix it or paste a new copy.` },
-    { problem: `Offline AI says Needs a reinstall.`, fix: `The engine is missing from this installation. Reinstall OpenFrame Studio. Your projects are not changed and the rest of the app keeps working.` },
+    { problem: `Offline AI says Needs a reinstall.`, fix: `The engine is missing from this installation. Reinstall Straft Studio. Your projects are not changed and the rest of the app keeps working.` },
     { problem: `I cannot find a project's title or spelling dictionary here.`, fix: `Those are in Project Settings. Open a project and press Shift+Command+, or click its Settings button.` },
   ],
 };

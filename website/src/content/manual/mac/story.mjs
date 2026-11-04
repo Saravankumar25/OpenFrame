@@ -280,7 +280,7 @@ export default {
       ],
       result: `The card carries a heading, a description and notes, ready to be built into a screenplay scene.`,
       cautions: [
-        `OpenFrame never makes up a scene heading. Write your own, such as INT. POLICE STATION - NIGHT, before you build.`,
+        `Straft never makes up a scene heading. Write your own, such as INT. POLICE STATION - NIGHT, before you build.`,
       ],
       related: [`story-build-screenplay`, `story-park-cards`],
     },
@@ -624,7 +624,7 @@ export default {
         {
           screen: `story-build-sheet`,
           do: `Read the sheet Build Screenplay from Beat Board.`,
-          explain: `It says: Preview the order before anything is created. Cards are used in Beat Board order, Parking Lot cards are excluded, and nothing is created until you confirm. A yellow warning appears when cards have no valid scene heading. It says OpenFrame never makes up a heading.`,
+          explain: `It says: Preview the order before anything is created. Cards are used in Beat Board order, Parking Lot cards are excluded, and nothing is created until you confirm. A yellow warning appears when cards have no valid scene heading. It says Straft never makes up a heading.`,
         },
         {
           screen: `story-build-sheet`,
@@ -762,7 +762,7 @@ export default {
       ],
       result: `The character is in the directory, with its role and description.`,
       cautions: [
-        `OpenFrame warns about a possible match so you do not add the same person twice.`,
+        `Straft warns about a possible match so you do not add the same person twice.`,
       ],
       related: [`story-read-character`, `story-edit-character`],
     },
@@ -1069,7 +1069,7 @@ export default {
     `Build Screenplay never makes up a scene heading. Every card you include needs one.`,
     `A character's scene list comes from dialogue cues in the current draft. Names in action text do not count.`,
     `Relationships and linked scene cards are notes for you. They do not change the screenplay.`,
-    `OpenFrame AI cannot read or change the Story page.`,
+    `Straft AI cannot read or change the Story page.`,
     `Story days on the Timeline belong to screenplay scenes. Beat Board cards have none.`,
   ],
   troubleshooting: [

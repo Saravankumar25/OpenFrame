@@ -7,10 +7,10 @@ export default {
     `Application Home is the page you see when no project is open. It lists your projects as cards, and it is where you create, open, rename, pin, archive, back up and delete them. It is also the way into the Global Idea Vault, your settings and your name.`,
     `The very first time, with no projects yet, the page is empty and says Create your first project. with three buttons: Create Project, Open Existing Project and Restore Backup or Package…. Once you have projects, the page is titled Your projects and the buttons move to the top right: Open Project, Restore Backup or Package… and New Project.`,
     `Everything is stored on this computer. The bar at the bottom of the window says so: Offline · Your projects stay on this computer. The left side of that bar reads No project open until you open one.`,
-    `Settings are on this page too. The gear at the top right opens a dialog with four tabs: Appearance, Keyboard shortcuts, Storage and About and support. Settings here apply to OpenFrame on this computer. Each project has its own settings once you open it.`,
+    `Settings are on this page too. The gear at the top right opens a dialog with four tabs: Appearance, Keyboard shortcuts, Storage and About and support. Settings here apply to Straft on this computer. Each project has its own settings once you open it.`,
   ],
   layout: [
-    { name: `Top bar`, text: `The OpenFrame logo on the left. On the right: Global Idea Vault, the Settings gear and your round avatar with your initials. Click the avatar to change your name.` },
+    { name: `Top bar`, text: `The Straft logo on the left. On the right: Global Idea Vault, the Settings gear and your round avatar with your initials. Click the avatar to change your name.` },
     { name: `Empty Home`, text: `Shown before you have any project. The message Create your first project. and the buttons Create Project, Open Existing Project and Restore Backup or Package….` },
     { name: `Your projects`, text: `The heading and the line Pick up where you left off, or start something new. Beside it: a Search projects box, Open Project, Restore Backup or Package… and New Project.` },
     { name: `Project cards`, text: `One card per project, with a coloured cover, the title, the type (Feature Film or Short Film), the status (for example Idea) and Last modified. The ... button on the card opens the card menu. A pinned project shows a Pinned label and sits under the PINNED heading, above RECENT PROJECTS.` },
@@ -23,7 +23,7 @@ export default {
       title: `Create your first project`,
       purpose: `Create a project with a title and a type, and open its Home page.`,
       level: `Beginner`,
-      prerequisites: [`OpenFrame Studio is open on the empty Application Home, after the welcome and library steps.`],
+      prerequisites: [`Straft Studio is open on the empty Application Home, after the welcome and library steps.`],
       steps: [
         {
           screen: `app-home-empty`,
@@ -117,7 +117,7 @@ export default {
         {
           screen: `apphome-projects`,
           do: `To open a project that is not shown as a card, click Open Project (Ctrl+O) and pick it in the Windows window that opens.`,
-          explain: `A card on this page opens with one click, so Open Project is only for projects that are not listed. Projects end in .openframe.`,
+          explain: `A card on this page opens with one click, so Open Project is only for projects that are not listed. Projects end in .straft.`,
         },
         {
           screen: `apphome-projects`,
@@ -210,7 +210,7 @@ export default {
       ],
       result: `The project card shows its new title.`,
       cautions: [
-        `Renaming changes only the name OpenFrame shows. The project folder and its contents stay where they are.`,
+        `Renaming changes only the name Straft shows. The project folder and its contents stay where they are.`,
       ],
       related: [`use-card-menu`, `edit-project-details`],
     },
@@ -239,12 +239,12 @@ export default {
         {
           screen: `apphome-card-menu`,
           do: `Choose Reveal in File Manager to see the project in Windows File Explorer.`,
-          explain: `Use this when you want to copy the project to a drive. Do not rename or delete the folder by hand. Use OpenFrame for that.`,
+          explain: `Use this when you want to copy the project to a drive. Do not rename or delete the folder by hand. Use Straft for that.`,
         },
       ],
       result: `You can reach every action for a project from its card.`,
       cautions: [
-        `Rename, archive and delete from OpenFrame, not in File Explorer, so the project list stays correct.`,
+        `Rename, archive and delete from Straft, not in File Explorer, so the project list stays correct.`,
       ],
       related: [`rename-project`, `pin-project`, `archive-project`, `delete-project`],
     },
@@ -383,7 +383,7 @@ export default {
         {
           screen: `apphome-delete-dialog`,
           do: `Read the dialog Delete “Empty Short”?`,
-          explain: `It warns that this is the most destructive action in OpenFrame and that the whole project will be removed from this computer. The project folder (ideas, story, screenplay, production plans and stored files) is moved to the Windows Recycle Bin. Files linked from other folders are not touched. Delete Project is greyed out until you type the name. Archive Instead keeps everything and only hides the project from your recent list.`,
+          explain: `It warns that this is the most destructive action in Straft and that the whole project will be removed from this computer. The project folder (ideas, story, screenplay, production plans and stored files) is moved to the Windows Recycle Bin. Files linked from other folders are not touched. Delete Project is greyed out until you type the name. Archive Instead keeps everything and only hides the project from your recent list.`,
         },
         {
           screen: `apphome-delete-typed`,
@@ -398,14 +398,14 @@ export default {
       ],
       result: `The project is removed from your list and its folder is moved to the Windows Recycle Bin.`,
       cautions: [
-        `This is the most destructive action in OpenFrame. If you are not sure, click Archive Instead.`,
+        `This is the most destructive action in Straft. If you are not sure, click Archive Instead.`,
         `The folder is moved to the Windows Recycle Bin, where Windows keeps it until the bin is emptied.`,
       ],
       related: [`archive-project`],
     },
     {
       id: `change-your-name`,
-      title: `Change the name OpenFrame uses for you`,
+      title: `Change the name Straft uses for you`,
       purpose: `Replace your display name on notes, tasks and project activity.`,
       level: `Beginner`,
       prerequisites: [`You are on Application Home, or inside any project.`],
@@ -479,7 +479,7 @@ export default {
         {
           screen: `apphome-settings-appearance`,
           do: `Click the Settings gear at the top right. The Settings dialog opens on the Appearance tab.`,
-          explain: `The dialog says: These settings apply to OpenFrame on this computer. Open a project to change its own settings. The tabs are Appearance, Keyboard shortcuts, Storage and About and support. Done closes the dialog.`,
+          explain: `The dialog says: These settings apply to Straft on this computer. Open a project to change its own settings. The tabs are Appearance, Keyboard shortcuts, Storage and About and support. Done closes the dialog.`,
         },
         {
           screen: `apphome-settings-appearance`,
@@ -489,12 +489,12 @@ export default {
         {
           screen: `apphome-settings-appearance`,
           do: `Under THEME, click a theme.`,
-          explain: `There are seventeen: OpenFrame Default, Black and White, Studio Amber, Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain, Sunset Boulevard, Arctic Frame, Neon Reel, Location Scout, Desert Dune, Colorist Neutral, Silver Screen and High Contrast. Each has a one-line description, for example Studio Amber is warm and neutral, and High Contrast has hard black and white edges with a signal-yellow accent. Themes change colours only. Your screenplay pages, PDFs and printed call sheets always stay black on white.`,
+          explain: `There are seventeen: Straft Default, Black and White, Studio Amber, Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain, Sunset Boulevard, Arctic Frame, Neon Reel, Location Scout, Desert Dune, Colorist Neutral, Silver Screen and High Contrast. Each has a one-line description, for example Studio Amber is warm and neutral, and High Contrast has hard black and white edges with a signal-yellow accent. Themes change colours only. Your screenplay pages, PDFs and printed call sheets always stay black on white.`,
         },
         {
           screen: `apphome-settings-appearance`,
           do: `To add a theme from a file, click Import Theme File…, or click Paste Theme… to paste one.`,
-          explain: `My Themes lists the themes you have added. It says No imported themes yet until you add one. Theme files are small .json files, for example from the OpenFrame website.`,
+          explain: `My Themes lists the themes you have added. It says No imported themes yet until you add one. Theme files are small .json files, for example from the Straft website.`,
         },
         {
           screen: `apphome-settings-appearance`,
@@ -502,7 +502,7 @@ export default {
           explain: `Your choice is kept on this computer.`,
         },
       ],
-      result: `OpenFrame uses the mode and theme you picked.`,
+      result: `Straft uses the mode and theme you picked.`,
       cautions: [
         `A theme never changes how a printed or exported document looks. Pages and PDFs stay black on white.`,
       ],
@@ -544,8 +544,8 @@ export default {
     },
     {
       id: `check-storage`,
-      title: `See where OpenFrame keeps your files`,
-      purpose: `Read the folders OpenFrame uses, open them in Windows, and reach the move and back up buttons.`,
+      title: `See where Straft keeps your files`,
+      purpose: `Read the folders Straft uses, open them in Windows, and reach the move and back up buttons.`,
       level: `Intermediate`,
       prerequisites: [`The Settings dialog is open.`],
       steps: [
@@ -556,8 +556,8 @@ export default {
         },
         {
           screen: `apphome-settings-storage`,
-          do: `Read YOUR OPENFRAME LIBRARY. Use Open Folder to see it in Windows.`,
-          explain: `It says: Back up this folder. It holds library.json, which remembers who you are on this computer and where your work is, so a reinstall finds everything again. By default it also holds your projects and the Global Idea Vault. Move Library… moves it, and Locate Existing Library… points OpenFrame at a library you already have.`,
+          do: `Read YOUR STRAFT LIBRARY. Use Open Folder to see it in Windows.`,
+          explain: `It says: Back up this folder. It holds library.json, which remembers who you are on this computer and where your work is, so a reinstall finds everything again. By default it also holds your projects and the Global Idea Vault. Move Library… moves it, and Locate Existing Library… points Straft at a library you already have.`,
         },
         {
           screen: `apphome-settings-storage`,
@@ -572,12 +572,12 @@ export default {
         {
           screen: `apphome-settings-storage`,
           do: `Read APP DATA, then click Done.`,
-          explain: `App data holds settings, the recent project list, OpenFrame AI's files and logs. It is not your work: uninstalling may remove it, and your library stays.`,
+          explain: `App data holds settings, the recent project list, Straft AI's files and logs. It is not your work: uninstalling may remove it, and your library stays.`,
         },
       ],
       result: `You know where your work is stored and which folder to back up.`,
       cautions: [
-        `Back up the library folder. OpenFrame stores everything on this computer and has no cloud copy.`,
+        `Back up the library folder. Straft stores everything on this computer and has no cloud copy.`,
       ],
       related: [`customize-shortcuts`],
     },
@@ -591,7 +591,7 @@ export default {
         {
           screen: `apphome-settings-about`,
           do: `Open Settings and click the About and support tab.`,
-          explain: `The page has three sections. LICENCE tells you about your licence and where OpenFrame was installed from. ABOUT OPENFRAME STUDIO shows the version number. SUPPORT explains diagnostics.`,
+          explain: `The page has three sections. LICENCE tells you about your licence and where Straft was installed from. ABOUT STRAFT STUDIO shows the version number. SUPPORT explains diagnostics.`,
         },
         {
           screen: `apphome-settings-about-support`,
@@ -601,7 +601,7 @@ export default {
       ],
       result: `You have a diagnostics file you can read and attach to a support message.`,
       cautions: [
-        `OpenFrame never sends diagnostics on its own. You choose whether to share the file.`,
+        `Straft never sends diagnostics on its own. You choose whether to share the file.`,
       ],
       related: [`check-storage`],
     },
@@ -667,8 +667,8 @@ export default {
     'apphome-settings-shortcuts': `The Settings dialog on Keyboard shortcuts: a Filter commands box, Restore all defaults and a table of 25 commands with DEFAULT, CURRENT, CONFLICT and ACTIONS. Used in customize-shortcuts.`,
     'apphome-settings-shortcuts-filtered': `The shortcuts tab filtered by the word save, leaving one command, Save now, with Ctrl+S. Used in customize-shortcuts.`,
     'apphome-settings-shortcuts-recording': `The shortcuts tab while a new key is being recorded for Search. The row says Press the new keys… (Esc cancels). Used in customize-shortcuts.`,
-    'apphome-settings-storage': `The Settings dialog on Storage: YOUR OPENFRAME LIBRARY, FOLDER FOR NEW PROJECTS, GLOBAL IDEA VAULT and APP DATA, each with its folder and buttons. Used in check-storage.`,
-    'apphome-settings-about': `The Settings dialog on About and support: LICENCE, ABOUT OPENFRAME STUDIO with the version, and SUPPORT with Export Diagnostics…. Used in about-and-diagnostics.`,
+    'apphome-settings-storage': `The Settings dialog on Storage: YOUR STRAFT LIBRARY, FOLDER FOR NEW PROJECTS, GLOBAL IDEA VAULT and APP DATA, each with its folder and buttons. Used in check-storage.`,
+    'apphome-settings-about': `The Settings dialog on About and support: LICENCE, ABOUT STRAFT STUDIO with the version, and SUPPORT with Export Diagnostics…. Used in about-and-diagnostics.`,
     'apphome-settings-about-support': `The same About and support tab with the SUPPORT section in view. It says you can read everything in the diagnostics bundle before you save it and that nothing is sent automatically. Variant, part of about-and-diagnostics.`,
     'apphome-display-name-dialog': `The Your name dialog from the avatar. It has the Your name * box, a note that there is no account and that the name stays on this computer, and Cancel and Save. Used in change-your-name.`,
     'apphome-display-name-empty-error': `The Your name dialog with the box empty. Enter your name. shows and Save is greyed out. Variant, part of change-your-name.`,
@@ -691,7 +691,7 @@ export default {
     `Application Home lists the projects in your library. It does not sync projects to any cloud service.`,
     `Delete Project moves the project folder to the Windows Recycle Bin. Files linked from other folders are not touched.`,
     `Search on this page looks at project names. Search inside a project is in the project window.`,
-    `Settings on this page apply to OpenFrame on this computer. Project settings belong to each project.`,
+    `Settings on this page apply to Straft on this computer. Project settings belong to each project.`,
   ],
   troubleshooting: [
     {

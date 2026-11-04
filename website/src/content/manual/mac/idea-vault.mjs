@@ -145,7 +145,7 @@ export default {
         {
           screen: `vault-add-url`,
           do: `In the Add URL sheet, click the Link box and type or paste the address.`,
-          explain: `The sheet says: Paste a link. The link itself is what matters; a preview is just a bonus. The Link box shows https://… as a hint. Add URL stays greyed out until the link is valid. Your note is an optional box for your own words. A line under the boxes says: OpenFrame stores the link as you entered it. Nothing is downloaded.`,
+          explain: `The sheet says: Paste a link. The link itself is what matters; a preview is just a bonus. The Link box shows https://… as a hint. Add URL stays greyed out until the link is valid. Your note is an optional box for your own words. A line under the boxes says: Straft stores the link as you entered it. Nothing is downloaded.`,
         },
         {
           screen: `vault-add-url-error`,
@@ -165,7 +165,7 @@ export default {
       ],
       result: `A link card is in the vault with your note, ready to open in your browser.`,
       cautions: [
-        `OpenFrame keeps the link as you typed it and does not download the page.`,
+        `Straft keeps the link as you typed it and does not download the page.`,
         `Add URL stays greyed out until the address looks like a web link.`,
       ],
       related: [`idea-vault-research-flag`, `idea-vault-add-quote`],
@@ -248,7 +248,7 @@ export default {
       ],
       result: `The recording is in the vault as an item, kept exactly as recorded.`,
       cautions: [
-        `If your Mac asks whether OpenFrame may use the microphone, allow it, or the recording cannot start.`,
+        `If your Mac asks whether Straft may use the microphone, allow it, or the recording cannot start.`,
       ],
       related: [`idea-vault-add-files`],
     },
@@ -350,7 +350,7 @@ export default {
         {
           screen: `vault-drawer-note`,
           do: `Open an item and find Research flag in the inspector.`,
-          explain: `It is a menu that reads No flag until you choose one. Under it a note says: Verification flags are yours to set. OpenFrame never marks research as true just because you imported it.`,
+          explain: `It is a menu that reads No flag until you choose one. Under it a note says: Verification flags are yours to set. Straft never marks research as true just because you imported it.`,
         },
         {
           screen: `vault-drawer-flag-menu`,
@@ -375,7 +375,7 @@ export default {
       ],
       result: `The item carries the flag you set, and it shows on its card.`,
       cautions: [
-        `Flags are yours to set. OpenFrame never marks research as true or checked for you.`,
+        `Flags are yours to set. Straft never marks research as true or checked for you.`,
       ],
       related: [`idea-vault-tags`],
     },
@@ -530,7 +530,7 @@ export default {
         {
           screen: `vault-new-collection-sheet`,
           do: `Click New Collection under Collections in the list at the left.`,
-          explain: `The New collection sheet has a Name box. It lists examples: Ending ideas, Visual References, Crazy scenes, Locations, Research, Music, Things to remember. It adds that OpenFrame never prescribes names, so use your own. Cancel and Create are at the bottom.`,
+          explain: `The New collection sheet has a Name box. It lists examples: Ending ideas, Visual References, Crazy scenes, Locations, Research, Music, Things to remember. It adds that Straft never prescribes names, so use your own. Cancel and Create are at the bottom.`,
         },
         {
           screen: `vault-collection-empty`,
@@ -761,7 +761,7 @@ export default {
         },
       ],
       result: `The item is linked to the file again, or you know where to look.`,
-      cautions: [`OpenFrame never deletes the item because a file went missing.`],
+      cautions: [`Straft never deletes the item because a file went missing.`],
       related: [],
     },
   ],
@@ -837,7 +837,7 @@ export default {
   ],
   limits: [
     `The vault does not classify what you add and does not sync it to the screenplay. Send to Story makes a copy on the Beat Board only when you ask.`,
-    `OpenFrame stores a link as you enter it and does not download the page.`,
+    `Straft stores a link as you enter it and does not download the page.`,
     `Folders only organise and collections are references. Neither copies or changes an item.`,
     `A copy between the project vault and the Global Idea Vault is independent. Editing one does not change the other.`,
     `Search looks at titles, note text, captions, file names and tags in the vault you have selected.`,
@@ -870,7 +870,7 @@ export default {
     },
     {
       problem: `The recording will not start.`,
-      fix: `Your Mac may be waiting for permission to use the microphone. Allow OpenFrame to use it and try Start Recording again.`,
+      fix: `Your Mac may be waiting for permission to use the microphone. Allow Straft to use it and try Start Recording again.`,
     },
   ],
 };

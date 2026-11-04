@@ -1,4 +1,4 @@
-// Get OpenFrame dialog and pill: when it opens, who sees it, platform order, regional price, wording, axe, fit at phone width.
+// Get Straft dialog and pill: when it opens, who sees it, platform order, regional price, wording, axe, fit at phone width.
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -76,7 +76,7 @@ test('the pill opens the dialog, Escape closes it, focus returns to the pill, th
   await page.keyboard.press('Enter');
   await page.waitForSelector('dialog.gp-dlg[open]');
   assert.equal(await page.evaluate(() => document.activeElement.closest('dialog.gp-dlg') !== null), true, 'focus moves into the dialog');
-  assert.equal(await page.evaluate(() => document.querySelector('dialog.gp-dlg h2').textContent), 'Try OpenFrame Studio free for 7 days');
+  assert.equal(await page.evaluate(() => document.querySelector('dialog.gp-dlg h2').textContent), 'Try Straft Studio free for 7 days');
   await page.keyboard.press('Escape');
   assert.equal(await isOpen(page), false);
   assert.equal(await page.evaluate(() => document.activeElement.classList.contains('gp-pill')), true, 'focus is back on the pill');

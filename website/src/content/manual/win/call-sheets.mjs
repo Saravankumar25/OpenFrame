@@ -4,7 +4,7 @@ export default {
   order: 20,
   part: `Shoot`,
   intro: [
-    `A call sheet is the one page that tells cast and crew where to be and when on a single shooting day. In OpenFrame Studio you make a call sheet from a shooting day in the schedule. The scenes, the cast, the locations, the meals and the day times are filled in for you, and you add the things only you know: the call times, the weather, the hospital, the notes for each department.`,
+    `A call sheet is the one page that tells cast and crew where to be and when on a single shooting day. In Straft Studio you make a call sheet from a shooting day in the schedule. The scenes, the cast, the locations, the meals and the day times are filled in for you, and you add the things only you know: the call times, the weather, the hospital, the notes for each department.`,
     `The area has two screens. The list shows every call sheet in the project with its status: Draft, Needs refresh or Final. The editor opens one call sheet as a paper page you type on, with a Source panel on the right that holds the buttons: Add Section, Refresh from schedule, Finalize…, Export PDF and Delete call sheet.`,
     `A call sheet follows the schedule, not the other way round. If the schedule changes after you prepared a sheet, the sheet says Needs refresh and waits until you review the update. When you are ready to send it you finalize it. A final call sheet never changes again. If the schedule moves after that, you start a new revision, and the final one stays as a record.`,
     `Anything nobody has typed yet reads Needs input in red, so you can see what is still missing. Editing a call sheet never changes your screenplay, your breakdown or your schedule.`,
@@ -39,7 +39,7 @@ export default {
         {
           screen: `cs-create-dialog`,
           do: `The Create Call Sheet dialog opens. Look at the Source shooting day * box.`,
-          explain: `The box is a list of the shooting days that do not yet have a call sheet, for example Shoot Day 3 · Wed 11 Nov 2026. Days that already have one, and off days, are not offered. Under it, WILL BE FILLED IN AUTOMATICALLY lists what OpenFrame brings over: the title, date, day number and day times, the scene schedule with start times, meals and travel rows, the talent with their cast ID numbers, the locations with address, parking and access, and extras, department notes, the advance schedule and crew when the project has them. A note says You add call times, weather and day-specific notes. Anything nobody has entered reads Needs input.`,
+          explain: `The box is a list of the shooting days that do not yet have a call sheet, for example Shoot Day 3 · Wed 11 Nov 2026. Days that already have one, and off days, are not offered. Under it, WILL BE FILLED IN AUTOMATICALLY lists what Straft brings over: the title, date, day number and day times, the scene schedule with start times, meals and travel rows, the talent with their cast ID numbers, the locations with address, parking and access, and extras, department notes, the advance schedule and crew when the project has them. A note says You add call times, weather and day-specific notes. Anything nobody has entered reads Needs input.`,
         },
         {
           screen: `cs-create-dialog-day-chosen`,
@@ -177,7 +177,7 @@ export default {
         {
           screen: `cs-editor-draft-lower`,
           do: `Type in any dashed box and stop.`,
-          explain: `OpenFrame saves the sheet by itself a moment after you stop typing, and the Source panel shows Saving… while it does. There is no Save button. Going back to the list, finalizing or refreshing also saves first.`,
+          explain: `Straft saves the sheet by itself a moment after you stop typing, and the Source panel shows Saving… while it does. There is no Save button. Going back to the list, finalizing or refreshing also saves first.`,
         },
         {
           screen: `cs-editor-draft`,
@@ -201,7 +201,7 @@ export default {
         {
           screen: `cs-editor-draft`,
           do: `Click the large Crew call box in the tinted band and type the time, for example 07:00.`,
-          explain: `The box reads Needs input until you type something. Crew call is the only value OpenFrame insists on before you finalize. Type the time in whatever form your crew uses.`,
+          explain: `The box reads Needs input until you type something. Crew call is the only value Straft insists on before you finalize. Type the time in whatever form your crew uses.`,
         },
         {
           screen: `cs-editor-draft`,
@@ -354,7 +354,7 @@ export default {
         {
           screen: `cs-section-weather`,
           do: `After you choose, look at the paper.`,
-          explain: `A message at the bottom says Added followed by the section name and has an Undo button. The new section appears in its place on the paper: Extras, Crew and Department notes under Cast & Crew, and the others under Production notes. Where the project already has the information, such as the crew, OpenFrame fills the section in for you.`,
+          explain: `A message at the bottom says Added followed by the section name and has an Undo button. The new section appears in its place on the paper: Extras, Crew and Department notes under Cast & Crew, and the others under Production notes. Where the project already has the information, such as the crew, Straft fills the section in for you.`,
         },
       ],
       result: `The section is on the sheet and ready to fill in. It will print in the PDF.`,
@@ -413,7 +413,7 @@ export default {
         {
           screen: `cs-section-weather`,
           do: `Choose Weather from Add Section and type the Forecast, Sunrise and Sunset.`,
-          explain: `The section says Type the forecast, sunrise and sunset. OpenFrame never looks them up online. Forecast, Sunrise and Sunset each read Needs input until you type them. The picture shows a forecast typed in as an example.`,
+          explain: `The section says Type the forecast, sunrise and sunset. Straft never looks them up online. Forecast, Sunrise and Sunset each read Needs input until you type them. The picture shows a forecast typed in as an example.`,
         },
         {
           screen: `cs-section-advance`,
@@ -731,7 +731,7 @@ export default {
       result: `A PDF of the call sheet is saved where you chose.`,
       cautions: [
         `A PDF of a draft is a snapshot of the draft. Finalize first so you send the version you mean to send. On a final sheet the note instead says the PDF is made from its frozen snapshot and never changes it.`,
-        `Printed and exported call sheets are black on white whatever theme you use in OpenFrame.`,
+        `Printed and exported call sheets are black on white whatever theme you use in Straft.`,
       ],
       related: [`call-sheets-finalize`, `call-sheets-row-menu`],
     },
@@ -874,8 +874,8 @@ export default {
     `You can edit call times, notes, contacts and the added sections. You cannot change the scene order, the scene headings, the cast list or the location list here. Change them in the schedule, the breakdown or the Cast and crew list, then refresh the sheet.`,
     `Edits to a call sheet never change the screenplay, the breakdown or the schedule.`,
     `A final call sheet never changes. To update it you start a new revision, and the final sheet stays as a record.`,
-    `The only export format is PDF. OpenFrame does not send the sheet for you. Export the PDF, then send or print it yourself.`,
-    `Weather, sunrise and sunset are typed by you. OpenFrame never looks them up online.`,
+    `The only export format is PDF. Straft does not send the sheet for you. Export the PDF, then send or print it yourself.`,
+    `Weather, sunrise and sunset are typed by you. Straft never looks them up online.`,
     `Private notes are never included in a call sheet PDF.`,
   ],
   troubleshooting: [

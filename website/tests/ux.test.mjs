@@ -159,7 +159,7 @@ test('a primary call to action is reachable from phone to wide desktop (1100 to 
     if (bar) continue;
     // otherwise it is inside the drawer
     await page.click('#menutg').catch(() => {});
-    assert.ok(await page.isVisible('#menu .menu-get a'), `no Get OpenFrame at ${w}px`);
+    assert.ok(await page.isVisible('#menu .menu-get a'), `no Get Straft at ${w}px`);
   }
 }));
 

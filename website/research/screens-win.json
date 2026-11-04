@@ -7,15 +7,15 @@
   "area": "Library setup",
   "layer": "window",
   "layerTitle": "",
-  "workspace": "Set up your OpenFrame library",
+  "workspace": "Set up your Straft library",
   "current": [],
   "headings": [
-   "Set up your OpenFrame library"
+   "Set up your Straft library"
   ],
   "buttons": [
    "Use the default location",
    "Choose a new location",
-   "Locate existing OpenFrame data",
+   "Locate existing Straft data",
    "Create Library Here"
   ],
   "fields": [],
@@ -29,7 +29,7 @@
     "on": false
    },
    {
-    "label": "Locate existing OpenFrame data",
+    "label": "Locate existing Straft data",
     "on": false
    }
   ],
@@ -47,15 +47,15 @@
   "area": "Library setup",
   "layer": "window",
   "layerTitle": "",
-  "workspace": "Set up your OpenFrame library",
+  "workspace": "Set up your Straft library",
   "current": [],
   "headings": [
-   "Set up your OpenFrame library"
+   "Set up your Straft library"
   ],
   "buttons": [
    "Use the default location",
    "Choose a new location",
-   "Locate existing OpenFrame data",
+   "Locate existing Straft data",
    "Choose Folder…"
   ],
   "fields": [],
@@ -69,7 +69,7 @@
     "on": true
    },
    {
-    "label": "Locate existing OpenFrame data",
+    "label": "Locate existing Straft data",
     "on": false
    }
   ],
@@ -87,15 +87,15 @@
   "area": "Library setup",
   "layer": "window",
   "layerTitle": "",
-  "workspace": "Set up your OpenFrame library",
+  "workspace": "Set up your Straft library",
   "current": [],
   "headings": [
-   "Set up your OpenFrame library"
+   "Set up your Straft library"
   ],
   "buttons": [
    "Use the default location",
    "Choose a new location",
-   "Locate existing OpenFrame data",
+   "Locate existing Straft data",
    "Choose Folder…"
   ],
   "fields": [],
@@ -109,7 +109,7 @@
     "on": false
    },
    {
-    "label": "Locate existing OpenFrame data",
+    "label": "Locate existing Straft data",
     "on": true
    }
   ],
@@ -126,11 +126,11 @@
   "title": "Welcome",
   "area": "First launch",
   "layer": "dialog",
-  "layerTitle": "Welcome to OpenFrame Studio",
+  "layerTitle": "Welcome to Straft Studio",
   "workspace": "",
   "current": [],
   "headings": [
-   "Welcome to OpenFrame Studio"
+   "Welcome to Straft Studio"
   ],
   "buttons": [
    "Continue"
@@ -155,11 +155,11 @@
   "title": "Name required",
   "area": "First launch",
   "layer": "dialog",
-  "layerTitle": "Welcome to OpenFrame Studio",
+  "layerTitle": "Welcome to Straft Studio",
   "workspace": "",
   "current": [],
   "headings": [
-   "Welcome to OpenFrame Studio"
+   "Welcome to Straft Studio"
   ],
   "buttons": [
    "Continue"
@@ -2803,7 +2803,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "This is the most destructive action in OpenFrame. The whole project will be removed from this computer."
+   "This is the most destructive action in Straft. The whole project will be removed from this computer."
   ],
   "width": 1600,
   "height": 1000
@@ -2837,7 +2837,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "This is the most destructive action in OpenFrame. The whole project will be removed from this computer."
+   "This is the most destructive action in Straft. The whole project will be removed from this computer."
   ],
   "width": 1600,
   "height": 1000
@@ -3185,7 +3185,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "This is the most destructive action in OpenFrame. The whole project will be removed from this computer."
+   "This is the most destructive action in Straft. The whole project will be removed from this computer."
   ],
   "width": 1600,
   "height": 1000
@@ -3533,7 +3533,7 @@
    "Light",
    "Dark",
    "System",
-   "OpenFrame Default The standard OpenFrame look.",
+   "Straft Default The standard Straft look.",
    "Black and White Black text on white in Light mode, white text on black in Dark mode.",
    "Studio Amber Warm and neutral. An all-day workhorse.",
    "Slate Noir Graphite and steel. The interface steps back so the story leads.",
@@ -3569,7 +3569,7 @@
     "on": false
    },
    {
-    "label": "OpenFrame Default The standard OpenFrame look.",
+    "label": "Straft Default The standard Straft look.",
     "on": true
    },
    {
@@ -4033,7 +4033,7 @@
   "headings": [
    "Settings",
    "LICENCE",
-   "ABOUT OPENFRAME STUDIO",
+   "ABOUT STRAFT STUDIO",
    "SUPPORT"
   ],
   "buttons": [
@@ -4083,7 +4083,7 @@
   "headings": [
    "Settings",
    "LICENCE",
-   "ABOUT OPENFRAME STUDIO",
+   "ABOUT STRAFT STUDIO",
    "SUPPORT"
   ],
   "buttons": [
@@ -10084,7 +10084,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "File unavailable. The original file could not be found at C:\\OpenFrame\\tests\\e2e\\.run\\2026-10-30T18-57-27-859Z-49732\\zz-capture\\capture-vault-F3UngD\\Harbour notes.txt. OpenFrame keeps this item and its notes. Nothing has been deleted. Relink… Open Location",
+   "File unavailable. The original file could not be found at C:\\Straft\\tests\\e2e\\.run\\2026-10-30T18-57-27-859Z-49732\\zz-capture\\capture-vault-F3UngD\\Harbour notes.txt. Straft keeps this item and its notes. Nothing has been deleted. Relink… Open Location",
    "Saved automatically"
   ],
   "width": 1600,
@@ -14032,7 +14032,7 @@
   "items": [],
   "alerts": [
    "Cards are used in Beat Board order. Parking Lot cards are excluded. Nothing is created until you confirm.",
-   "1 card has no valid scene heading. Add a heading (for example INT. POLICE STATION - NIGHT) or leave the card out. OpenFrame never makes up a heading."
+   "1 card has no valid scene heading. Add a heading (for example INT. POLICE STATION - NIGHT) or leave the card out. Straft never makes up a heading."
   ],
   "width": 1600,
   "height": 1000
@@ -19927,7 +19927,7 @@
    },
    {
     "label": "Written by",
-    "value": "OpenFrame Studio"
+    "value": "Straft Studio"
    },
    {
     "label": "Credit line",
@@ -19967,7 +19967,7 @@
    },
    {
     "label": "Other contact details",
-    "value": "OpenFrame Studio Sample scripts folder"
+    "value": "Straft Studio Sample scripts folder"
    },
    {
     "label": "Representation",
@@ -19979,7 +19979,7 @@
    },
    {
     "label": "Copyright",
-    "value": "Copyright 2026 OpenFrame Studio. Fictional sample written for OpenFrame; you may use it to learn the app."
+    "value": "Copyright 2026 Straft Studio. Fictional sample written for Straft; you may use it to learn the app."
    }
   ],
   "toggles": [
@@ -20021,7 +20021,7 @@
    },
    {
     "label": "Written by",
-    "value": "OpenFrame Studio"
+    "value": "Straft Studio"
    },
    {
     "label": "Credit line",
@@ -20061,7 +20061,7 @@
    },
    {
     "label": "Other contact details",
-    "value": "OpenFrame Studio Sample scripts folder"
+    "value": "Straft Studio Sample scripts folder"
    },
    {
     "label": "Representation",
@@ -20073,7 +20073,7 @@
    },
    {
     "label": "Copyright",
-    "value": "Copyright 2026 OpenFrame Studio. Fictional sample written for OpenFrame; you may use it to learn the app."
+    "value": "Copyright 2026 Straft Studio. Fictional sample written for Straft; you may use it to learn the app."
    }
   ],
   "toggles": [
@@ -27854,7 +27854,7 @@
   "name": "ai-panel-ready",
   "file": "384-ai-panel-ready.html",
   "title": "Panel ready",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Night Bus",
@@ -27928,7 +27928,7 @@
   "name": "ai-settings-menu",
   "file": "385-ai-settings-menu.html",
   "title": "Settings menu",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "menu",
   "layerTitle": "",
   "workspace": "Night Bus",
@@ -27953,7 +27953,7 @@
   "name": "ai-scope-current-screenplay",
   "file": "386-ai-scope-current-screenplay.html",
   "title": "Scope current screenplay",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Night Bus",
@@ -28027,7 +28027,7 @@
   "name": "ai-scope-beat-board",
   "file": "387-ai-scope-beat-board.html",
   "title": "Scope beat board",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Night Bus",
@@ -28101,7 +28101,7 @@
   "name": "ai-offline-settings",
   "file": "388-ai-offline-settings.html",
   "title": "Offline settings",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Offline AI",
@@ -28137,7 +28137,7 @@
    "Appearance",
    "Storage",
    "Stop Offline AI (free memory)",
-   "Remove OpenFrame AI…",
+   "Remove Straft AI…",
    "Automatic",
    "Off",
    "Export AI report",
@@ -28214,7 +28214,7 @@
   "name": "ai-offline-technical-details",
   "file": "389-ai-offline-technical-details.html",
   "title": "Offline technical details",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Offline AI",
@@ -28250,7 +28250,7 @@
    "Appearance",
    "Storage",
    "Stop Offline AI (free memory)",
-   "Remove OpenFrame AI…",
+   "Remove Straft AI…",
    "Automatic",
    "Off",
    "Export AI report",
@@ -28327,13 +28327,13 @@
   "name": "ai-offline-remove-confirm",
   "file": "390-ai-offline-remove-confirm.html",
   "title": "Offline remove confirm",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "dialog",
-  "layerTitle": "Remove OpenFrame AI?",
+  "layerTitle": "Remove Straft AI?",
   "workspace": "Offline AI",
   "current": [],
   "headings": [
-   "Remove OpenFrame AI?"
+   "Remove Straft AI?"
   ],
   "buttons": [
    "Close",
@@ -28355,7 +28355,7 @@
   "name": "ai-question-typed",
   "file": "391-ai-question-typed.html",
   "title": "Question typed",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Night Bus",
@@ -28429,7 +28429,7 @@
   "name": "ai-working",
   "file": "392-ai-working.html",
   "title": "Working",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Night Bus",
@@ -28507,7 +28507,7 @@
   "name": "ai-answer-characters",
   "file": "393-ai-answer-characters.html",
   "title": "Answer characters",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Night Bus",
@@ -28582,7 +28582,7 @@
   "name": "ai-answer-characters-sources",
   "file": "394-ai-answer-characters-sources.html",
   "title": "Answer characters sources",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Night Bus",
@@ -28660,7 +28660,7 @@
   "name": "ai-panel-screenplay",
   "file": "395-ai-panel-screenplay.html",
   "title": "Panel screenplay",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "",
@@ -28769,7 +28769,7 @@
   "name": "ai-answer-locations",
   "file": "396-ai-answer-locations.html",
   "title": "Answer locations",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "",
@@ -28879,7 +28879,7 @@
   "name": "ai-answer-locations-sources-open",
   "file": "397-ai-answer-locations-sources-open.html",
   "title": "Answer locations sources open",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "",
@@ -28991,7 +28991,7 @@
   "name": "ai-answer-scene-count",
   "file": "398-ai-answer-scene-count.html",
   "title": "Answer scene count",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "",
@@ -29100,7 +29100,7 @@
   "name": "ai-proposed-changes",
   "file": "399-ai-proposed-changes.html",
   "title": "Proposed changes",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "",
@@ -29211,7 +29211,7 @@
   "name": "ai-proposal-rejected",
   "file": "400-ai-proposal-rejected.html",
   "title": "Proposal rejected",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "",
@@ -29322,7 +29322,7 @@
   "name": "ai-proposed-changes-second",
   "file": "401-ai-proposed-changes-second.html",
   "title": "Proposed changes second",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "",
@@ -29433,7 +29433,7 @@
   "name": "ai-proposal-applied",
   "file": "402-ai-proposal-applied.html",
   "title": "Proposal applied",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "",
@@ -29547,7 +29547,7 @@
   "name": "ai-answer-delete-request",
   "file": "403-ai-answer-delete-request.html",
   "title": "Answer delete request",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "",
@@ -29658,7 +29658,7 @@
   "name": "ai-panel-story",
   "file": "404-ai-panel-story.html",
   "title": "Panel story",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Story",
@@ -29758,7 +29758,7 @@
   "name": "ai-panel-breakdown",
   "file": "405-ai-panel-breakdown.html",
   "title": "Panel breakdown",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "listbox",
   "layerTitle": "Scenes in the Production Source",
   "workspace": "",
@@ -29857,7 +29857,7 @@
   "name": "ai-panel-production",
   "file": "406-ai-panel-production.html",
   "title": "Panel production",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Production",
@@ -29936,7 +29936,7 @@
   "name": "ai-panel-vault",
   "file": "407-ai-panel-vault.html",
   "title": "Panel vault",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Idea Vault",
@@ -30051,7 +30051,7 @@
   "name": "ai-offline-health-filled",
   "file": "408-ai-offline-health-filled.html",
   "title": "Offline health filled",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Offline AI",
@@ -30087,7 +30087,7 @@
    "Appearance",
    "Storage",
    "Stop Offline AI (free memory)",
-   "Remove OpenFrame AI…",
+   "Remove Straft AI…",
    "Automatic",
    "Off",
    "Export AI report",
@@ -30154,7 +30154,7 @@
   ],
   "items": [],
   "alerts": [
-   "Runs on the processor. The graphics card does not have enough memory for OpenFrame AI. Automatic uses a graphics card only after it passes a short check; the processor is always the fallback."
+   "Runs on the processor. The graphics card does not have enough memory for Straft AI. Automatic uses a graphics card only after it passes a short check; the processor is always the fallback."
   ],
   "width": 1600,
   "height": 1000
@@ -30164,7 +30164,7 @@
   "name": "ai-panel-empty-project",
   "file": "409-ai-panel-empty-project.html",
   "title": "Panel empty project",
-  "area": "OpenFrame AI",
+  "area": "Straft AI",
   "layer": "window",
   "layerTitle": "",
   "workspace": "Empty Short",
@@ -31661,7 +31661,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Close OpenFrame (or Create Backup) before copying so files are complete. An external drive works as well as Google Drive."
+   "Close Straft (or Create Backup) before copying so files are complete. An external drive works as well as Google Drive."
   ],
   "width": 1600,
   "height": 1000
@@ -31691,7 +31691,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Linked external files (for example a reference photo on another drive) must be copied too. OpenFrame lists missing ones after opening."
+   "Linked external files (for example a reference photo on another drive) must be copied too. Straft lists missing ones after opening."
   ],
   "width": 1600,
   "height": 1000
@@ -31785,13 +31785,13 @@
   "title": "Welcome family",
   "area": "Trial and purchase",
   "layer": "dialog",
-  "layerTitle": "Welcome to the OpenFrame Studio family",
+  "layerTitle": "Welcome to the Straft Studio family",
   "workspace": "Night Bus",
   "current": [
    "Home"
   ],
   "headings": [
-   "Welcome to the OpenFrame Studio family"
+   "Welcome to the Straft Studio family"
   ],
   "buttons": [
    "Close",
@@ -45823,7 +45823,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame."
+   "Use a simple estimate for planning. Formal accounting is outside Straft."
   ],
   "width": 1600,
   "height": 1000
@@ -45875,7 +45875,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame."
+   "Use a simple estimate for planning. Formal accounting is outside Straft."
   ],
   "width": 1600,
   "height": 1000
@@ -45927,7 +45927,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame.",
+   "Use a simple estimate for planning. Formal accounting is outside Straft.",
    "A line needs a description."
   ],
   "width": 1600,
@@ -45980,7 +45980,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame.",
+   "Use a simple estimate for planning. Formal accounting is outside Straft.",
    "Enter the planned amount as a non-negative number, for example 12,000 or 1500.50."
   ],
   "width": 1600,
@@ -46033,7 +46033,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame.",
+   "Use a simple estimate for planning. Formal accounting is outside Straft.",
    "Enter the planned amount as a non-negative number, for example 12,000 or 1500.50."
   ],
   "width": 1600,
@@ -46114,7 +46114,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame.",
+   "Use a simple estimate for planning. Formal accounting is outside Straft.",
    "Added “Colour grade and sound mix” Undo ×"
   ],
   "width": 1600,
@@ -46167,7 +46167,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame."
+   "Use a simple estimate for planning. Formal accounting is outside Straft."
   ],
   "width": 1600,
   "height": 1000
@@ -46226,7 +46226,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame."
+   "Use a simple estimate for planning. Formal accounting is outside Straft."
   ],
   "width": 1600,
   "height": 1000
@@ -46285,7 +46285,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame.",
+   "Use a simple estimate for planning. Formal accounting is outside Straft.",
    "Contingency must be between 0% and 100%."
   ],
   "width": 1600,
@@ -46322,7 +46322,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame."
+   "Use a simple estimate for planning. Formal accounting is outside Straft."
   ],
   "width": 1600,
   "height": 1000
@@ -46400,7 +46400,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame."
+   "Use a simple estimate for planning. Formal accounting is outside Straft."
   ],
   "width": 1600,
   "height": 1000
@@ -46430,7 +46430,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame."
+   "Use a simple estimate for planning. Formal accounting is outside Straft."
   ],
   "width": 1600,
   "height": 1000
@@ -46478,7 +46478,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame.",
+   "Use a simple estimate for planning. Formal accounting is outside Straft.",
    "Private notes excluded. Export creates a snapshot and does not change your project."
   ],
   "width": 1600,
@@ -59514,7 +59514,7 @@
   "tabs": [],
   "items": [],
   "alerts": [
-   "Use a simple estimate for planning. Formal accounting is outside OpenFrame."
+   "Use a simple estimate for planning. Formal accounting is outside Straft."
   ],
   "width": 1600,
   "height": 1000
@@ -64649,7 +64649,7 @@
   "headings": [
    "Project settings",
    "LICENCE",
-   "ABOUT OPENFRAME STUDIO",
+   "ABOUT STRAFT STUDIO",
    "SUPPORT"
   ],
   "buttons": [
@@ -64772,7 +64772,7 @@
   "headings": [
    "Project settings",
    "LICENCE",
-   "ABOUT OPENFRAME STUDIO",
+   "ABOUT STRAFT STUDIO",
    "SUPPORT"
   ],
   "buttons": [
@@ -64895,7 +64895,7 @@
   "headings": [
    "Project settings",
    "LICENCE",
-   "ABOUT OPENFRAME STUDIO",
+   "ABOUT STRAFT STUDIO",
    "SUPPORT"
   ],
   "buttons": [
@@ -65020,7 +65020,7 @@
   "headings": [
    "Project settings",
    "LICENCE",
-   "ABOUT OPENFRAME STUDIO",
+   "ABOUT STRAFT STUDIO",
    "SUPPORT"
   ],
   "buttons": [
@@ -67589,7 +67589,7 @@
    "Appearance",
    "Storage",
    "Stop Offline AI (free memory)",
-   "Remove OpenFrame AI…",
+   "Remove Straft AI…",
    "Automatic",
    "Off",
    "Export AI report",
@@ -67654,11 +67654,11 @@
   "title": "Offline ai remove confirm",
   "area": "Settings",
   "layer": "dialog",
-  "layerTitle": "Remove OpenFrame AI?",
+  "layerTitle": "Remove Straft AI?",
   "workspace": "Offline AI",
   "current": [],
   "headings": [
-   "Remove OpenFrame AI?"
+   "Remove Straft AI?"
   ],
   "buttons": [
    "Close",
@@ -67716,7 +67716,7 @@
    "Appearance",
    "Storage",
    "Stop Offline AI (free memory)",
-   "Remove OpenFrame AI…",
+   "Remove Straft AI…",
    "Automatic",
    "Off",
    "Export AI report",
@@ -67815,7 +67815,7 @@
    "Appearance",
    "Storage",
    "Stop Offline AI (free memory)",
-   "Remove OpenFrame AI…",
+   "Remove Straft AI…",
    "Automatic",
    "Off",
    "Export AI report",
@@ -67916,7 +67916,7 @@
    "Appearance",
    "Storage",
    "Stop Offline AI (free memory)",
-   "Remove OpenFrame AI…",
+   "Remove Straft AI…",
    "Automatic",
    "Off",
    "Export AI report",
@@ -67971,7 +67971,7 @@
   "items": [],
   "alerts": [
    "Decided before the first answer. Automatic uses a graphics card only after it passes a short check; the processor is always the fallback.",
-   "OpenFrame AI will run on the processor. ×"
+   "Straft AI will run on the processor. ×"
   ],
   "width": 1600,
   "height": 1000
@@ -68366,7 +68366,7 @@
    "Light",
    "Dark",
    "System",
-   "OpenFrame Default The standard OpenFrame look.",
+   "Straft Default The standard Straft look.",
    "Black and White Black text on white in Light mode, white text on black in Dark mode.",
    "Studio Amber Warm and neutral. An all-day workhorse.",
    "Slate Noir Graphite and steel. The interface steps back so the story leads.",
@@ -68402,7 +68402,7 @@
     "on": false
    },
    {
-    "label": "OpenFrame Default The standard OpenFrame look.",
+    "label": "Straft Default The standard Straft look.",
     "on": true
    },
    {
@@ -68555,7 +68555,7 @@
    "Light",
    "Dark",
    "System",
-   "OpenFrame Default The standard OpenFrame look.",
+   "Straft Default The standard Straft look.",
    "Black and White Black text on white in Light mode, white text on black in Dark mode.",
    "Studio Amber Warm and neutral. An all-day workhorse.",
    "Slate Noir Graphite and steel. The interface steps back so the story leads.",
@@ -68591,7 +68591,7 @@
     "on": false
    },
    {
-    "label": "OpenFrame Default The standard OpenFrame look.",
+    "label": "Straft Default The standard Straft look.",
     "on": true
    },
    {
@@ -68959,7 +68959,7 @@
    "Light",
    "Dark",
    "System",
-   "OpenFrame Default The standard OpenFrame look.",
+   "Straft Default The standard Straft look.",
    "Black and White Black text on white in Light mode, white text on black in Dark mode.",
    "Studio Amber Warm and neutral. An all-day workhorse.",
    "Slate Noir Graphite and steel. The interface steps back so the story leads.",
@@ -69000,7 +69000,7 @@
     "on": false
    },
    {
-    "label": "OpenFrame Default The standard OpenFrame look.",
+    "label": "Straft Default The standard Straft look.",
     "on": true
    },
    {
@@ -69212,7 +69212,7 @@
    "Light",
    "Dark",
    "System",
-   "OpenFrame Default The standard OpenFrame look.",
+   "Straft Default The standard Straft look.",
    "Black and White Black text on white in Light mode, white text on black in Dark mode.",
    "Studio Amber Warm and neutral. An all-day workhorse.",
    "Slate Noir Graphite and steel. The interface steps back so the story leads.",
@@ -69249,7 +69249,7 @@
     "on": false
    },
    {
-    "label": "OpenFrame Default The standard OpenFrame look.",
+    "label": "Straft Default The standard Straft look.",
     "on": true
    },
    {

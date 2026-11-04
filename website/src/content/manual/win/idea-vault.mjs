@@ -123,7 +123,7 @@ export default {
         {
           screen: `vault-add-url-dialog`,
           do: `Click Add, then URL.`,
-          explain: `The Add URL dialog says: Paste a link. The link itself is what matters; a preview is just a bonus. It has Link and Your note. A line at the bottom says OpenFrame stores the link as you entered it. Nothing is downloaded. Add URL stays greyed out until you type a link.`,
+          explain: `The Add URL dialog says: Paste a link. The link itself is what matters; a preview is just a bonus. It has Link and Your note. A line at the bottom says Straft stores the link as you entered it. Nothing is downloaded. Add URL stays greyed out until you type a link.`,
         },
         {
           screen: `vault-add-url-invalid`,
@@ -143,7 +143,7 @@ export default {
       ],
       result: `The link is saved as an item, and Open takes you to it in your browser.`,
       cautions: [
-        `OpenFrame does not download the page. If the page disappears online, you keep the link and your note only.`,
+        `Straft does not download the page. If the page disappears online, you keep the link and your note only.`,
       ],
       related: [`vault-edit-item`],
     },
@@ -197,7 +197,7 @@ export default {
         {
           screen: `vault-drawer-file`,
           do: `Open a plain file item such as a .csv list.`,
-          explain: `Files that OpenFrame cannot show are stored the same way: a tile, its size, Open externally and the same fields. Here the item is Crew contacts.`,
+          explain: `Files that Straft cannot show are stored the same way: a tile, its size, Open externally and the same fields. Here the item is Crew contacts.`,
         },
       ],
       result: `Your files are in the vault with their own tiles and drawers.`,
@@ -209,7 +209,7 @@ export default {
     },
     {
       id: `vault-fix-unavailable-file`,
-      title: `Reconnect a file OpenFrame cannot find`,
+      title: `Reconnect a file Straft cannot find`,
       purpose: `Point an item at its file again after the file was moved or the drive was unplugged.`,
       level: `Intermediate`,
       prerequisites: [`An item is marked Unavailable in the vault.`],
@@ -217,12 +217,12 @@ export default {
         {
           screen: `vault-grid-all-types`,
           do: `Look for a card with a red Unavailable badge. Here it is Harbour notes.txt, shown as (file unavailable).`,
-          explain: `The badge means OpenFrame cannot reach the original file. The item and your notes are still there.`,
+          explain: `The badge means Straft cannot reach the original file. The item and your notes are still there.`,
         },
         {
           screen: `vault-drawer-file-unavailable`,
           do: `Open the item and read the red message.`,
-          explain: `It says File unavailable. The original file could not be found, shows where OpenFrame looked, and adds: OpenFrame keeps this item and its notes. Nothing has been deleted. For a file that lives outside the project there are two buttons: Relink… and Open Location.`,
+          explain: `It says File unavailable. The original file could not be found, shows where Straft looked, and adds: Straft keeps this item and its notes. Nothing has been deleted. For a file that lives outside the project there are two buttons: Relink… and Open Location.`,
         },
         {
           screen: `vault-drawer-file-unavailable`,
@@ -241,7 +241,7 @@ export default {
       title: `Record a voice note`,
       purpose: `Record yourself and keep the recording exactly as you spoke it.`,
       level: `Beginner`,
-      prerequisites: [`A microphone is connected and Windows allows OpenFrame to use it.`],
+      prerequisites: [`A microphone is connected and Windows allows Straft to use it.`],
       steps: [
         {
           screen: `vault-record-note-dialog`,
@@ -261,7 +261,7 @@ export default {
       ],
       result: `The voice note is in the vault and plays from its drawer.`,
       cautions: [
-        `If the microphone cannot be used, the dialog says OpenFrame couldn't use the microphone and tells you to check that one is connected and that Windows allows apps to use it (Settings, Privacy and security, Microphone). Click Choose an audio file… to add a recording you already have.`,
+        `If the microphone cannot be used, the dialog says Straft couldn't use the microphone and tells you to check that one is connected and that Windows allows apps to use it (Settings, Privacy and security, Microphone). Click Choose an audio file… to add a recording you already have.`,
         `If you stop before anything was recorded the dialog says Nothing was recorded.`,
       ],
       related: [`vault-add-files`],
@@ -315,7 +315,7 @@ export default {
         {
           screen: `vault-drawer-note`,
           do: `Choose a value in Research flag.`,
-          explain: `The options are No flag, Unchecked, Checked and Needs Expert Check. The note under it says Verification flags are yours to set. OpenFrame never marks research as true just because you imported it. A flag shows as a label on the item card.`,
+          explain: `The options are No flag, Unchecked, Checked and Needs Expert Check. The note under it says Verification flags are yours to set. Straft never marks research as true just because you imported it. A flag shows as a label on the item card.`,
         },
         {
           screen: `vault-drawer-note`,
@@ -400,7 +400,7 @@ export default {
           explain: `The path now reads All items then Locations, and only the items inside show. Click All items in the path to go back up.`,
         },
       ],
-      result: `You can look at the vault in any of the four layouts. OpenFrame remembers your choice.`,
+      result: `You can look at the vault in any of the four layouts. Straft remembers your choice.`,
       cautions: [
         `The view only changes how items are shown. It never moves or changes an item.`,
       ],
@@ -479,7 +479,7 @@ export default {
         {
           screen: `vault-new-collection-dialog`,
           do: `Click New Collection in the side panel.`,
-          explain: `The dialog asks for Name *. A hint shows examples such as Ending ideas, Visual References, Crazy scenes, Locations, Research, Music and Things to remember, and says OpenFrame never prescribes names. Create is the button that confirms. Collections are references: an item can be in several collections and stays where it is.`,
+          explain: `The dialog asks for Name *. A hint shows examples such as Ending ideas, Visual References, Crazy scenes, Locations, Research, Music and Things to remember, and says Straft never prescribes names. Create is the button that confirms. Collections are references: an item can be in several collections and stays where it is.`,
         },
         {
           screen: `vault-new-collection-name-required`,
@@ -834,7 +834,7 @@ export default {
   limits: [
     `Nothing in the Idea Vault is classified or synced to the screenplay. To use an idea in your story, send a copy to the Beat Board.`,
     `The Global vault and a project vault are separate. A copy never stays linked to its original.`,
-    `A link is stored as you typed it. OpenFrame does not download the page.`,
+    `A link is stored as you typed it. Straft does not download the page.`,
     `A saved sketch cannot be edited. Draw a new one.`,
     `Send to Story works on one item at a time.`,
     `Deleted items are removed for good after 30 days.`,
@@ -850,7 +850,7 @@ export default {
     },
     {
       problem: `An item shows an Unavailable badge.`,
-      fix: `OpenFrame cannot find the file. Open the item and click Relink…, or reconnect the drive. Your notes are kept.`,
+      fix: `Straft cannot find the file. Open the item and click Relink…, or reconnect the drive. Your notes are kept.`,
     },
     {
       problem: `The Record Note dialog says it could not use the microphone.`,
@@ -858,7 +858,7 @@ export default {
     },
     {
       problem: `A banner says files in the vault folder are not in the vault.`,
-      fix: `Click Add Them Back and OpenFrame adds those files to the vault again.`,
+      fix: `Click Add Them Back and Straft adds those files to the vault again.`,
     },
     {
       problem: `Search finds nothing.`,

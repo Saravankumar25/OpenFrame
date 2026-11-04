@@ -108,13 +108,13 @@ test('privacy, cookies and refunds state the verified facts', { skip: SKIP }, ()
   assert.match(page('/legal/terms/'), /apple\.com\/legal\/internet-services\/itunes\/dev\/stdeula\//);
 });
 
-test('notices publish the three font licences', { skip: SKIP }, () => {
+test('notices publish the four font licences', { skip: SKIP }, () => {
   const h = page('/legal/notices/');
-  for (const f of ['OFL-Inter.txt', 'OFL-Newsreader.txt', 'OFL-Sora.txt']) {
+  for (const f of ['OFL-Inter.txt', 'OFL-Manrope.txt', 'OFL-Newsreader.txt', 'OFL-Sora.txt']) {
     assert.ok(h.includes(`/assets/fonts/${f}`), f);
     assert.ok(resolvesInDist(`/assets/fonts/${f}`), f);
   }
-  assert.equal((h.match(/SIL OPEN FONT LICENSE Version 1\.1/g) || []).length, 3);
+  assert.equal((h.match(/SIL OPEN FONT LICENSE Version 1\.1/g) || []).length, 4);
 });
 
 test('the old privacy, terms and contact pages are gone from info.mjs', () => {

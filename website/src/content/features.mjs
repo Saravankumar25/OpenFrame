@@ -5,7 +5,7 @@
 export const FEATURE_PAGES = {
   'idea-vault': {
     title: 'Idea Vault',
-    description: 'Collect notes, images, links, files, voice notes and video in the Idea Vault of OpenFrame Studio. No title or folder needed. Send ideas to the Beat Board.',
+    description: 'Collect notes, images, links, files, voice notes and video in the Idea Vault of Straft Studio. No title or folder needed. Send ideas to the Beat Board.',
     h1: 'Catch every idea. Decide what it is later.',
     lead: 'The Idea Vault holds everything about the film before it has a shape: notes, images, links, files, voice notes and video. Nothing needs a title, a folder or a category.',
     hero: { win: '151-vault-grid-all-types', mac: '288-vault-view-card' },
@@ -61,7 +61,7 @@ export const FEATURE_PAGES = {
     good: [
       'The Story page exports as TXT, PDF or Word. The Beat Board exports as PDF, TXT or CSV.',
       'A Beat Board can be shared for review as a package file. There is no live shared editing.',
-      'OpenFrame AI never reads or changes the Story page.',
+      'Straft AI never reads or changes the Story page.',
     ],
     platform: [],
     related: ['idea-vault', 'screenplay', 'drafts-revisions'],
@@ -70,7 +70,7 @@ export const FEATURE_PAGES = {
 
   moodboards: {
     title: 'Moodboards',
-    description: 'Pin the look of the film on a moodboard canvas of images, notes and links in OpenFrame Studio, pull pictures from the Idea Vault and export a clean PDF sheet.',
+    description: 'Pin the look of the film on a moodboard canvas of images, notes and links in Straft Studio, pull pictures from the Idea Vault and export a clean PDF sheet.',
     h1: 'Pin the look of the film.',
     lead: 'A moodboard is a free canvas of images, notes and links. Make one for the whole film or one for a scene, and export it as a PDF for the people you work with.',
     hero: { win: '480-prod-moodboard', mac: '526-plan-moodboard-canvas-items' },
@@ -81,7 +81,7 @@ export const FEATURE_PAGES = {
         shots: { win: '489-prod-moodboard-vault-dialog', mac: '522-plan-moodboard-vault-sheet' } },
       { heading: 'Share it as a PDF',
         text: 'Export a moodboard as a PDF sheet to send to your cinematographer, designer or wardrobe team by any means you like.',
-        bullets: ['Production PDFs carry a small Created using OpenFrame line'],
+        bullets: ['Production PDFs carry a small Created using Straft line'],
         shots: { win: '498-prod-moodboard-export-dialog', mac: '533-plan-moodboard-export-sheet' } },
     ],
     flow: 'Moodboards live in the Production workspace beside storyboards and shot lists, and draw on images from the Idea Vault.',
@@ -96,7 +96,7 @@ export const FEATURE_PAGES = {
 
   screenplay: {
     title: 'Screenplay Editor',
-    description: 'Write in industry screenplay format as you type in OpenFrame Studio: eight elements, smart suggestions, page setup, title page, comments and private notes.',
+    description: 'Write in industry screenplay format as you type in Straft Studio: eight elements, smart suggestions, page setup, title page, comments and private notes.',
     h1: 'Write. The formatting keeps up.',
     lead: 'Type a screenplay with eight elements: Scene Heading, Action, Character, Parenthetical, Dialogue, Transition, Shot and General. Tab and Enter move you to the element that comes next.',
     hero: { win: '254-sp-editor-scrolled-mid-script', mac: '101-screenplay-editor-selection' },
@@ -107,7 +107,7 @@ export const FEATURE_PAGES = {
         shots: { win: '258-sp-suggestion-list', mac: '114-screenplay-empty-suggestions' } },
       { heading: 'Notes beside the page',
         text: 'The Writing Room opens panels next to the script: scene notes, characters, comments and the Beat Board. Private notes are seen only by the person who wrote them.',
-        bullets: ['Comments with replies, resolve and reopen', 'Focus mode hides everything but the page', 'Private notes are never exported and never read by OpenFrame AI'],
+        bullets: ['Comments with replies, resolve and reopen', 'Focus mode hides everything but the page', 'Private notes are never exported and never read by Straft AI'],
         shots: { win: '293-sp-writing-room-two-panels', mac: '129-screenplay-comments-two-open' } },
       { heading: 'Pages that look right',
         text: 'Page setup offers Letter or A4, font, size and spacing, with header and footer. MORE and CONT\'D are added for you. Fill in a structured title page and see it as you type.',
@@ -131,7 +131,7 @@ export const FEATURE_PAGES = {
 
   'drafts-revisions': {
     title: 'Drafts and Revisions',
-    description: 'Save named screenplay drafts, compare two drafts scene by scene or as text, lock a shooting draft and track coloured revisions with OpenFrame Studio.',
+    description: 'Save named screenplay drafts, compare two drafts scene by scene or as text, lock a shooting draft and track coloured revisions with Straft Studio.',
     h1: 'Every draft kept. Every change visible.',
     lead: 'Save named drafts as the script grows, compare any two of them, then lock a shooting draft and track revisions the way a production expects.',
     hero: { win: '329-sp-revision-draft-editor', mac: '145-screenplay-compare-text-only' },
@@ -157,7 +157,7 @@ export const FEATURE_PAGES = {
 
   'import-export': {
     title: 'Import and Export',
-    description: 'Bring scripts into OpenFrame Studio from Final Draft, Fountain, Word, PDF or plain text with a preview first, and export to PDF, FDX, Fountain, Word or text.',
+    description: 'Bring scripts into Straft Studio from Final Draft, Fountain, Word, PDF or plain text with a preview first, and export to PDF, FDX, Fountain, Word or text.',
     h1: 'Bring your scripts. Take them anywhere.',
     lead: 'Import a screenplay from Final Draft, Fountain, Word, PDF or plain text, and see what will arrive before anything changes. Export the same way, with no branding on your script.',
     hero: { win: '015-sp-import-complete', mac: '083-screenplay-draft-example-short-imported' },
@@ -168,7 +168,7 @@ export const FEATURE_PAGES = {
         shots: { win: '009-sp-import-source', mac: '034-home-import-toast' } },
       { heading: 'Export in the format people ask for',
         text: 'Export a draft as PDF, Final Draft, Fountain, Word or plain text, the whole script or only the scenes you choose. Print preview matches the PDF page for page.',
-        bullets: ['Screenplay files carry no OpenFrame branding', 'Title page on or off', 'Revision marks can be included'],
+        bullets: ['Screenplay files carry no Straft branding', 'Title page on or off', 'Revision marks can be included'],
         shots: { win: '325-sp-export-more-formats', mac: '166-screenplay-export-fdx' } },
     ],
     flow: 'Imported scripts become screenplays you can edit, lock and break down. Production documents such as schedules, reports and budgets export to PDF, CSV and Excel.',
@@ -182,27 +182,27 @@ export const FEATURE_PAGES = {
     tutorials: ['import-script', 'export-script'],
   },
 
-  'openframe-ai': {
-    title: 'OpenFrame AI',
-    description: 'OpenFrame AI that runs on your own computer after one 1.2 GB download. It answers with sources and proposes changes you apply yourself, or reject.',
-    h1: 'OpenFrame AI that stays on your computer.',
-    lead: 'OpenFrame AI is optional. After a one-time download of about 1.2 GB it runs on your computer, answers questions about your project, and suggests changes. Nothing changes until you press Apply.',
+  'straft-ai': {
+    title: 'Straft AI',
+    description: 'Straft AI that runs on your own computer after one 1.2 GB download. It answers with sources and proposes changes you apply yourself, or reject.',
+    h1: 'Straft AI that stays on your computer.',
+    lead: 'Straft AI is optional. After a one-time download of about 1.2 GB it runs on your computer, answers questions about your project, and suggests changes. Nothing changes until you press Apply.',
     hero: { win: '384-ai-answer-characters-sources', mac: '694-ai-panel-story' },
     rows: [
       { heading: 'Ask about your project in plain words',
-        text: 'Open OpenFrame AI with Ctrl+J, or Cmd+J on the Mac, and ask. It searches the project and answers with the sources behind See sources, so you can check every claim.',
+        text: 'Open Straft AI with Ctrl+J, or Cmd+J on the Mac, and ask. It searches the project and answers with the sources behind See sources, so you can check every claim.',
         bullets: ['Works in Idea Vault, Story, Screenplay, Breakdown and Production', 'Answers in the language of your question; English is the best tested'],
         shots: { win: '387-ai-answer-locations-sources-open', mac: 'ai-panel' } },
       { heading: 'It proposes. You decide.',
-        text: 'When you ask for a change, OpenFrame AI shows one set of Proposed Changes. Read it, then apply it or reject it. Applied changes can be undone like any other.',
+        text: 'When you ask for a change, Straft AI shows one set of Proposed Changes. Read it, then apply it or reject it. Applied changes can be undone like any other.',
         bullets: ['Never changes a project without your Apply', 'Never reads other people\'s private notes or the Story page'],
         shots: { win: '389-ai-proposed-changes', mac: null } },
       { heading: 'Download once, then work offline',
-        text: 'Settings, Offline AI downloads the files OpenFrame AI needs and checks each one before use. You can also import the files by hand, and remove them any time.',
+        text: 'Settings, Offline AI downloads the files Straft AI needs and checks each one before use. You can also import the files by hand, and remove them any time.',
         bullets: ['No account, no API key, no cloud AI', 'Project data is never sent anywhere', 'The app works fully without it'],
         shots: { win: '789-settings-offline-ai-ready', mac: 'ai-offline-ai-settings' } },
     ],
-    flow: 'OpenFrame AI can read across the project and propose scenes, cards, characters, catalog items, notes, tasks, schedule changes and shots. Every proposal goes through you.',
+    flow: 'Straft AI can read across the project and propose scenes, cards, characters, catalog items, notes, tasks, schedule changes and shots. Every proposal goes through you.',
     good: [
       'A one-time download of about 1.2 GB.',
       'The chat model needs 4 GB of memory at minimum; 8 GB is recommended.',
@@ -214,12 +214,12 @@ export const FEATURE_PAGES = {
       'On the Mac it uses the graphics of Apple silicon.',
     ],
     related: ['screenplay', 'breakdown', 'scheduling'],
-    tutorials: ['openframe-ai-setup', 'openframe-ai-ask'],
+    tutorials: ['straft-ai-setup', 'straft-ai-ask'],
   },
 
   breakdown: {
     title: 'Script Breakdown',
-    description: 'Break down a locked script in OpenFrame Studio: tag cast, props, wardrobe and more in each scene, review suggestions, and keep a catalog of every scene.',
+    description: 'Break down a locked script in Straft Studio: tag cast, props, wardrobe and more in each scene, review suggestions, and keep a catalog of every scene.',
     h1: 'Break down the script, scene by scene.',
     lead: 'Choose the screenplay draft production is based on, then tag what each scene needs. Suggestions help, and you accept or reject every one.',
     hero: { win: '341-bd-main', mac: '309-breakdown-scenes' },
@@ -249,7 +249,7 @@ export const FEATURE_PAGES = {
 
   'cast-crew-locations': {
     title: 'Cast, Crew and Locations',
-    description: 'Keep cast, crew and locations in one project in OpenFrame Studio: actors linked to characters, contacts, availability, and locations with access notes.',
+    description: 'Keep cast, crew and locations in one project in Straft Studio: actors linked to characters, contacts, availability, and locations with access notes.',
     h1: 'The people and places, linked to the scenes.',
     lead: 'Cast, crew and locations live in the Production workspace, linked to the scenes they belong to, so the schedule and call sheets already know who and where.',
     hero: { win: '468-prod-locations', mac: '507-plan-cast-linked' },
@@ -275,7 +275,7 @@ export const FEATURE_PAGES = {
 
   'shot-lists-storyboards': {
     title: 'Shot Lists and Storyboards',
-    description: 'Plan every shot before the shoot in OpenFrame Studio: shot lists per scene in list or grid view, and storyboard panels from images or the built-in sketch tool.',
+    description: 'Plan every shot before the shoot in Straft Studio: shot lists per scene in list or grid view, and storyboard panels from images or the built-in sketch tool.',
     h1: 'Plan every shot before the shoot.',
     lead: 'Shot lists per scene and storyboard panels you draw or import, kept next to the script they come from.',
     hero: { win: '540-prod-shots-scene-actions-menu', mac: '593-plan-shots-more-menu' },
@@ -302,7 +302,7 @@ export const FEATURE_PAGES = {
 
   scheduling: {
     title: 'Shooting Schedule',
-    description: 'Build the shooting schedule on a stripboard in OpenFrame Studio: drag scenes into days, plan each day hour by hour, and get warnings before problems.',
+    description: 'Build the shooting schedule on a stripboard in Straft Studio: drag scenes into days, plan each day hour by hour, and get warnings before problems.',
     h1: 'A stripboard that warns you first.',
     lead: 'Drag scenes from the Unscheduled pool into shooting days. The schedule checks availability and points out conflicts, and it never moves a scene on its own.',
     hero: { win: '563-prod-schedule-strip-moved', mac: '389-schedule-board-three-days' },
@@ -329,7 +329,7 @@ export const FEATURE_PAGES = {
 
   'call-sheets': {
     title: 'Call Sheets',
-    description: 'Create a call sheet from a shooting day in OpenFrame Studio, fill in only what is missing, refresh it when the schedule moves, finalize and export to PDF.',
+    description: 'Create a call sheet from a shooting day in Straft Studio, fill in only what is missing, refresh it when the schedule moves, finalize and export to PDF.',
     h1: 'From shooting day to call sheet.',
     lead: 'Create a call sheet from a day on the schedule. Scenes, cast and locations are filled in for you; you add call times and the practical notes.',
     hero: { win: '677-cs-final', mac: '470-callsheet-finalized' },
@@ -345,7 +345,7 @@ export const FEATURE_PAGES = {
     ],
     flow: 'Call sheets are made from shooting days on the schedule, using the cast, crew and locations of the project. Sides can use the call sheet as a cover page.',
     good: [
-      'Call sheets export as PDF, with a small Created using OpenFrame line.',
+      'Call sheets export as PDF, with a small Created using Straft line.',
       'Share the PDF by email or any messaging app you already use. The app does not send it for you.',
     ],
     platform: [],
@@ -355,7 +355,7 @@ export const FEATURE_PAGES = {
 
   'sides-daily-view': {
     title: 'Sides and Daily View',
-    description: 'Make sides of the day\'s scenes in screenplay format and see a shooting day at a glance with Daily View in OpenFrame Studio. Export both to hand out.',
+    description: 'Make sides of the day\'s scenes in screenplay format and see a shooting day at a glance with Daily View in Straft Studio. Export both to hand out.',
     h1: 'Just the day\'s pages, ready to hand out.',
     lead: 'Sides gather the scenes of one shooting day in screenplay format. Daily View shows everything about that day on one page.',
     hero: { win: '603-prod-sides-day-4', mac: '401-schedule-sides' },
@@ -378,7 +378,7 @@ export const FEATURE_PAGES = {
 
   'reports-budget': {
     title: 'Reports and Budget',
-    description: 'Six production reports and a light budget with planned and actual columns in OpenFrame Studio, with saved snapshots and export to PDF, CSV and Excel.',
+    description: 'Six production reports and a light budget with planned and actual columns in Straft Studio, with saved snapshots and export to PDF, CSV and Excel.',
     h1: 'Reports and a budget you can read.',
     lead: 'Six production reports drawn from the project, and a light budget that compares what you planned with what you spent.',
     hero: { win: '631-prod-reports-live-with-snapshots', mac: '408-schedule-reports-scene' },
@@ -401,7 +401,7 @@ export const FEATURE_PAGES = {
 
   'backups-recovery': {
     title: 'Backups and Recovery',
-    description: 'Autosave, project undo, Recently Deleted for 30 days, crash recovery and backup files you control. How OpenFrame Studio keeps your work from being lost.',
+    description: 'Autosave, project undo, Recently Deleted for 30 days, crash recovery and backup files you control. How Straft Studio keeps your work from being lost.',
     h1: 'Nothing lost by accident.',
     lead: 'Your work is saved as you type. Deleted items wait in Recently Deleted. Undo works across the project. Backups are files you keep wherever you like.',
     hero: { win: '035-shell-toast-saved', mac: '662-pages-deleted-restored' },
@@ -418,7 +418,7 @@ export const FEATURE_PAGES = {
     flow: 'Every workspace uses the same safety net: autosave, project undo and Recently Deleted. Backups and packages move a project between computers or people.',
     good: [
       'Recently Deleted keeps items for 30 days.',
-      'Projects are not encrypted by OpenFrame. Use your computer\'s disk encryption if you need it.',
+      'Projects are not encrypted by Straft. Use your computer\'s disk encryption if you need it.',
       'Projects on network paths are refused. Cloud-synced folders get a warning.',
     ],
     platform: [

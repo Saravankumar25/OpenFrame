@@ -4,20 +4,20 @@ export default {
   order: 30,
   part: `Project and data`,
   intro: [
-    `Settings is where you set up one project and how OpenFrame looks and behaves on this computer. Open a project and click the Settings gear at the top right (the project menu also has Project settings and Appearance). A row of tabs runs along the top: Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance and Storage.`,
-    `Some settings belong to the project and some belong to this computer. Project settings holds the project's title, type and details. Spell checking and its languages are kept with the project. Your keyboard shortcuts, your personal dictionary, your mode and theme and your Offline AI choices apply to OpenFrame on this computer, in every project. Everything stays on this computer. Nothing here is sent anywhere.`,
+    `Settings is where you set up one project and how Straft looks and behaves on this computer. Open a project and click the Settings gear at the top right (the project menu also has Project settings and Appearance). A row of tabs runs along the top: Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance and Storage.`,
+    `Some settings belong to the project and some belong to this computer. Project settings holds the project's title, type and details. Spell checking and its languages are kept with the project. Your keyboard shortcuts, your personal dictionary, your mode and theme and your Offline AI choices apply to Straft on this computer, in every project. Everything stays on this computer. Nothing here is sent anywhere.`,
     `The gear on Application Home opens a smaller Settings dialog for the settings that do not need a project: Appearance, Keyboard shortcuts, Storage and About and support. The Application Home chapter covers it. This chapter covers the full Settings page inside a project.`,
     `The Templates tab has its own chapter, Templates. Every other tab is taught here.`,
   ],
   layout: [
     { name: `Tab row`, text: `Eight tabs under the top bar: Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance and Storage. The tab you are on is underlined. The status bar at the bottom names the page, for example Project settings · Writing.` },
-    { name: `Project settings tab`, text: `A form with Title *, Type *, Language, Genre, Creator, Status, Logline and Project notes, and a Save button at the top right. To its right, a Stored on this computer card with Open project location and Move or back up…. Below the form are three sections: LICENCE, ABOUT OPENFRAME STUDIO and SUPPORT, with Export Diagnostics….` },
+    { name: `Project settings tab`, text: `A form with Title *, Type *, Language, Genre, Creator, Status, Logline and Project notes, and a Save button at the top right. To its right, a Stored on this computer card with Open project location and Move or back up…. Below the form are three sections: LICENCE, ABOUT STRAFT STUDIO and SUPPORT, with Export Diagnostics….` },
     { name: `Writing tab`, text: `A SPELLING card with the Check spelling as I write checkbox, Main language and Second language, and a PERSONAL DICTIONARY card with an Add a word box, an Add button, a Filter words box and a list of your words.` },
     { name: `Keyboard shortcuts tab`, text: `A Filter commands or keys box with a count of commands, Restore all defaults at the top right, and a table with the columns COMMAND, DEFAULT, CURRENT and CONFLICT. Commands are grouped under General, Project list, Idea Vault, Screenplay and Screenplay elements. Each row ends with Add and Restore default.` },
-    { name: `Offline AI tab`, text: `Three cards side by side: OFFLINE AI (status, Stop Offline AI (free memory), Remove OpenFrame AI… and the Graphics card choice), AI HEALTH (figures and Export AI report) and ASSISTANT MEMORY (what OpenFrame AI remembers). Below them a TECHNICAL DETAILS section that opens and closes.` },
+    { name: `Offline AI tab`, text: `Three cards side by side: OFFLINE AI (status, Stop Offline AI (free memory), Remove Straft AI… and the Graphics card choice), AI HEALTH (figures and Export AI report) and ASSISTANT MEMORY (what Straft AI remembers). Below them a TECHNICAL DETAILS section that opens and closes.` },
     { name: `Advanced tab`, text: `The Breakdown category colours and icons, one row per category, with twelve colour dots and sixteen icons on each row, and Restore Defaults at the top right.` },
     { name: `Appearance tab`, text: `MODE (Light, Dark, System), THEME (seventeen theme cards) and My Themes, with Import Theme File… and Paste Theme….` },
-    { name: `Storage tab`, text: `Where OpenFrame keeps your work on this computer: your library, the folder for new projects, the Global Idea Vault, the open project and app data, each with its folder and buttons.` },
+    { name: `Storage tab`, text: `Where Straft keeps your work on this computer: your library, the folder for new projects, the Global Idea Vault, the open project and app data, each with its folder and buttons.` },
   ],
   workflows: [
     {
@@ -45,7 +45,7 @@ export default {
         {
           screen: `settings-offline-ai-ready`,
           do: `Click Offline AI.`,
-          explain: `This tab shows whether OpenFrame AI is ready, lets you stop or remove it, and shows how it is doing. The AI is optional. OpenFrame works normally without it.`,
+          explain: `This tab shows whether Straft AI is ready, lets you stop or remove it, and shows how it is doing. The AI is optional. Straft works normally without it.`,
         },
         {
           screen: `settings-advanced`,
@@ -55,7 +55,7 @@ export default {
         {
           screen: `settings-appearance`,
           do: `Click Appearance.`,
-          explain: `Appearance sets the mode and theme for OpenFrame on this computer. The Templates and Storage tabs sit beside it. Templates has its own chapter. Storage is covered in See where your files are kept and move the project.`,
+          explain: `Appearance sets the mode and theme for Straft on this computer. The Templates and Storage tabs sit beside it. Templates has its own chapter. Storage is covered in See where your files are kept and move the project.`,
         },
       ],
       result: `You know where each group of settings lives and can jump between tabs with one click.`,
@@ -102,7 +102,7 @@ export default {
     {
       id: `settings-project-info-version`,
       title: `Read where the project is stored, your licence and the version`,
-      purpose: `Use the side card and the sections below the form to find the project folder, your licence line and the OpenFrame version.`,
+      purpose: `Use the side card and the sections below the form to find the project folder, your licence line and the Straft version.`,
       level: `Beginner`,
       prerequisites: [`A project is open and you are on the Project settings tab.`],
       steps: [
@@ -113,8 +113,8 @@ export default {
         },
         {
           screen: `settings-general-lower`,
-          do: `Scroll down the page to LICENCE and ABOUT OPENFRAME STUDIO.`,
-          explain: `LICENCE gives a short summary of the licence of this copy of OpenFrame and says where it was installed from. ABOUT OPENFRAME STUDIO shows the version number. Quote the version if you contact support.`,
+          do: `Scroll down the page to LICENCE and ABOUT STRAFT STUDIO.`,
+          explain: `LICENCE gives a short summary of the licence of this copy of Straft and says where it was installed from. ABOUT STRAFT STUDIO shows the version number. Quote the version if you contact support.`,
         },
       ],
       result: `You can find the project folder and tell support which version you run.`,
@@ -138,7 +138,7 @@ export default {
         {
           screen: `settings-export-diagnostics-dialog`,
           do: `In the Export Diagnostics dialog, read FILES IN THE BUNDLE and NEVER INCLUDED.`,
-          explain: `The purple note says: Nothing is sent automatically. The bundle is saved on this computer, and you decide whether to share it. Six files are listed with their sizes: manifest.json, summary.json, errors.json, timings.json, log-tail.txt and ai-status.json. Each has a one-line description. NEVER INCLUDED lists screenplay text, notes, comments and other project content, project titles, file names and folder paths, names, contacts and e-mail addresses, OpenFrame AI questions and answers, and passwords, keys and tokens.`,
+          explain: `The purple note says: Nothing is sent automatically. The bundle is saved on this computer, and you decide whether to share it. Six files are listed with their sizes: manifest.json, summary.json, errors.json, timings.json, log-tail.txt and ai-status.json. Each has a one-line description. NEVER INCLUDED lists screenplay text, notes, comments and other project content, project titles, file names and folder paths, names, contacts and e-mail addresses, Straft AI questions and answers, and passwords, keys and tokens.`,
         },
         {
           screen: `settings-export-diagnostics-contents`,
@@ -148,12 +148,12 @@ export default {
         {
           screen: `settings-export-diagnostics-dialog`,
           do: `Click Export… and choose where to save the ZIP file in the Windows save window.`,
-          explain: `OpenFrame suggests a file name. Cancel closes the dialog without saving. When the file is saved, a window says Export complete with the file name, the number of files, the size and the location, and a line that says Nothing was sent. Reveal in File Manager shows the file in File Explorer and Close ends the dialog.`,
+          explain: `Straft suggests a file name. Cancel closes the dialog without saving. When the file is saved, a window says Export complete with the file name, the number of files, the size and the location, and a line that says Nothing was sent. Reveal in File Manager shows the file in File Explorer and Close ends the dialog.`,
         },
       ],
       result: `You have a ZIP file saved on this computer that you can attach to a message to support.`,
       cautions: [
-        `OpenFrame never sends the file. You decide whether to share it.`,
+        `Straft never sends the file. You decide whether to share it.`,
         `If the dialog shows a red message instead of the file list, the diagnostics could not be collected. Close the dialog and try again.`,
       ],
       related: [`settings-project-info-version`],
@@ -161,7 +161,7 @@ export default {
     {
       id: `settings-storage-and-move`,
       title: `See where your files are kept and move the project`,
-      purpose: `Read the folders OpenFrame uses and reach the buttons that open, move or back up your work.`,
+      purpose: `Read the folders Straft uses and reach the buttons that open, move or back up your work.`,
       level: `Intermediate`,
       prerequisites: [`A project is open.`],
       steps: [
@@ -173,7 +173,7 @@ export default {
         {
           screen: `apphome-settings-storage`,
           do: `On the Storage tab, read each section. The picture shows the same panel from the Settings dialog on Application Home.`,
-          explain: `YOUR OPENFRAME LIBRARY is the folder to back up. FOLDER FOR NEW PROJECTS has Change Folder…. GLOBAL IDEA VAULT has its own back up, export, restore and move buttons. APP DATA holds settings, the recent project list, OpenFrame AI's files and logs, and is not your work. Inside a project the tab also shows a This project section with Open Folder and Move Project…. Open Folder shows the project folder in File Explorer.`,
+          explain: `YOUR STRAFT LIBRARY is the folder to back up. FOLDER FOR NEW PROJECTS has Change Folder…. GLOBAL IDEA VAULT has its own back up, export, restore and move buttons. APP DATA holds settings, the recent project list, Straft AI's files and logs, and is not your work. Inside a project the tab also shows a This project section with Open Folder and Move Project…. Open Folder shows the project folder in File Explorer.`,
         },
         {
           screen: `apphome-settings-storage`,
@@ -183,7 +183,7 @@ export default {
       ],
       result: `You know which folder holds what, and the project is in the place you chose if you moved it.`,
       cautions: [
-        `Back up the library folder. OpenFrame keeps everything on this computer and has no cloud copy.`,
+        `Back up the library folder. Straft keeps everything on this computer and has no cloud copy.`,
         `Changing the folder for new projects does not move the projects you already have.`,
       ],
       related: [`settings-project-info-version`],
@@ -214,14 +214,14 @@ export default {
       result: `The screenplay underlines misspelled words in the languages you chose, or nothing when checking is off.`,
       cautions: [
         `Words in a writing system with no installed dictionary, for example Telugu or Hindi on most computers, are never underlined. Character names in the script are never underlined.`,
-        `Spell checking uses the dictionaries of Windows. OpenFrame does not download any.`,
+        `Spell checking uses the dictionaries of Windows. Straft does not download any.`,
       ],
       related: [`settings-dictionary-add`],
     },
     {
       id: `settings-dictionary-add`,
       title: `Add a word to your personal dictionary`,
-      purpose: `Stop OpenFrame underlining a name or word you use on purpose.`,
+      purpose: `Stop Straft underlining a name or word you use on purpose.`,
       level: `Beginner`,
       prerequisites: [`The Writing tab is open.`],
       steps: [
@@ -318,7 +318,7 @@ export default {
         {
           screen: `settings-shortcut-recording`,
           do: `Press the keys you want. The row shows Press the new keys… (Esc cancels).`,
-          explain: `The picture shows the recorder for Open or close OpenFrame AI. Press Esc to stop without a change. Pressing Tab or clicking elsewhere also stops it. Pressing a lone Ctrl, Alt or Shift keeps it listening until you press a real key with it.`,
+          explain: `The picture shows the recorder for Open or close Straft AI. Press Esc to stop without a change. Pressing Tab or clicking elsewhere also stops it. Pressing a lone Ctrl, Alt or Shift keeps it listening until you press a real key with it.`,
         },
         {
           screen: `settings-shortcut-invalid-plain-key`,
@@ -328,12 +328,12 @@ export default {
         {
           screen: `settings-shortcut-invalid-reserved`,
           do: `If you press Ctrl+A, Ctrl+C, Ctrl+V or Ctrl+X, the row says Ctrl+C: That shortcut is kept for copy, cut, paste and select all. Choose a different key.`,
-          explain: `Those four are never available. Ctrl+Alt+1 to Ctrl+Alt+9 are also taken, by the screenplay's custom elements, and OpenFrame says so. Other combinations it cannot use say That key combination can't be used.`,
+          explain: `Those four are never available. Ctrl+Alt+1 to Ctrl+Alt+9 are also taken, by the screenplay's custom elements, and Straft says so. Other combinations it cannot use say That key combination can't be used.`,
         },
         {
           screen: `settings-shortcut-changed`,
           do: `Press a free key, for example F9. The key joins the command.`,
-          explain: `A message says Open or close OpenFrame AI: F9. The new key sits beside the old ones and the row shows (changed). Restore default is now available on that row.`,
+          explain: `A message says Open or close Straft AI: F9. The new key sits beside the old ones and the row shows (changed). Restore default is now available on that row.`,
         },
         {
           screen: `settings-shortcut-changed`,
@@ -362,7 +362,7 @@ export default {
         {
           screen: `settings-shortcut-conflict-dialog`,
           do: `If you add a key that a different command uses, a dialog asks whether to move it. Read it, then click Move it here.`,
-          explain: `The picture shows Ctrl+K is already used. It says Ctrl+K runs Search, asks Move it to Save now?, and promises that Search will keep any other shortcuts and its on-screen route. Cancel keeps things as they were. OpenFrame never takes a key from another command silently.`,
+          explain: `The picture shows Ctrl+K is already used. It says Ctrl+K runs Search, asks Move it to Save now?, and promises that Search will keep any other shortcuts and its on-screen route. Cancel keeps things as they were. Straft never takes a key from another command silently.`,
         },
         {
           screen: `settings-shortcut-moved`,
@@ -418,14 +418,14 @@ export default {
     {
       id: `settings-offline-ai-status`,
       title: `Check that the offline AI is ready`,
-      purpose: `Read the status of OpenFrame AI and open its technical details.`,
+      purpose: `Read the status of Straft AI and open its technical details.`,
       level: `Beginner`,
       prerequisites: [`A project is open and you are on the Offline AI tab.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
           do: `Read the OFFLINE AI card.`,
-          explain: `A green chip says AI Ready when OpenFrame AI can answer. The text says: OpenFrame AI runs on this computer after a one-time download. Your project data is not sent to OpenFrame or to an AI cloud service. The card ends with: OpenFrame works normally without OpenFrame AI. Other states you may see are Not downloaded, Checking its files…, Needs a new download, Needs a reinstall and Not available on this computer. When it is not downloaded the page offers the download. OpenFrame AI chapter walks through it.`,
+          explain: `A green chip says AI Ready when Straft AI can answer. The text says: Straft AI runs on this computer after a one-time download. Your project data is not sent to Straft or to an AI cloud service. The card ends with: Straft works normally without Straft AI. Other states you may see are Not downloaded, Checking its files…, Needs a new download, Needs a reinstall and Not available on this computer. When it is not downloaded the page offers the download. Straft AI chapter walks through it.`,
         },
         {
           screen: `settings-offline-ai-technical-details`,
@@ -433,23 +433,23 @@ export default {
           explain: `A table lists each component with its Licence and Size: the AI engine, the language model and two search models, each with its version. A note names the licence of the language model. Below the table are lines showing the package, whether the files are checked, how much memory and which processor this computer has, where the engine is installed and the log file. The last line says: Everything runs on this computer. Prompts, project text and answers are never sent anywhere. The only network use is the model download you start.`,
         },
       ],
-      result: `You know whether OpenFrame AI is ready and what it is made of.`,
+      result: `You know whether Straft AI is ready and what it is made of.`,
       cautions: [
-        `OpenFrame AI is optional. If it is not ready, every other part of OpenFrame still works.`,
+        `Straft AI is optional. If it is not ready, every other part of Straft still works.`,
       ],
       related: [`settings-offline-ai-stop-graphics`, `settings-offline-ai-health`],
     },
     {
       id: `settings-offline-ai-stop-graphics`,
       title: `Free memory or choose how the AI runs`,
-      purpose: `Stop OpenFrame AI to free memory, and choose whether it may use the graphics card.`,
+      purpose: `Stop Straft AI to free memory, and choose whether it may use the graphics card.`,
       level: `Intermediate`,
-      prerequisites: [`OpenFrame AI is downloaded and shows AI Ready.`],
+      prerequisites: [`Straft AI is downloaded and shows AI Ready.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
           do: `Click Stop Offline AI (free memory).`,
-          explain: `OpenFrame AI keeps its models in memory so answers start fast. Stopping releases that memory.`,
+          explain: `Straft AI keeps its models in memory so answers start fast. Stopping releases that memory.`,
         },
         {
           screen: `settings-offline-ai-stopped-toast`,
@@ -463,13 +463,13 @@ export default {
         },
         {
           screen: `settings-offline-ai-graphics-off`,
-          do: `After clicking Off, read the message at the bottom: OpenFrame AI will run on the processor.`,
-          explain: `Off is now the selected button. Choosing Automatic again says OpenFrame AI will use a checked graphics card when there is one.`,
+          do: `After clicking Off, read the message at the bottom: Straft AI will run on the processor.`,
+          explain: `Off is now the selected button. Choosing Automatic again says Straft AI will use a checked graphics card when there is one.`,
         },
       ],
-      result: `Memory is free again, and OpenFrame AI runs where you chose.`,
+      result: `Memory is free again, and Straft AI runs where you chose.`,
       cautions: [
-        `Choose Off if answers stall or the screen stutters while OpenFrame AI works.`,
+        `Choose Off if answers stall or the screen stutters while Straft AI works.`,
       ],
       related: [`settings-offline-ai-status`, `settings-offline-ai-remove`],
     },
@@ -478,20 +478,20 @@ export default {
       title: `Remove the offline AI to free disk space`,
       purpose: `Delete the downloaded AI models from this computer.`,
       level: `Intermediate`,
-      prerequisites: [`OpenFrame AI is downloaded and shows AI Ready.`],
+      prerequisites: [`Straft AI is downloaded and shows AI Ready.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
-          do: `Click Remove OpenFrame AI….`,
+          do: `Click Remove Straft AI….`,
           explain: `Nothing is deleted yet. A question opens first.`,
         },
         {
           screen: `settings-offline-ai-remove-confirm`,
-          do: `Read Remove OpenFrame AI? and click Remove.`,
+          do: `Read Remove Straft AI? and click Remove.`,
           explain: `It says: This frees the space the AI models use on this computer. AI stays off until you download it again. Your projects are not changed. Cancel closes it and keeps the AI.`,
         },
       ],
-      result: `The models are gone, a message says OpenFrame AI was removed, and the page offers the download again.`,
+      result: `The models are gone, a message says Straft AI was removed, and the page offers the download again.`,
       cautions: [
         `Your projects are not touched. You can download the AI again later from this tab.`,
       ],
@@ -500,22 +500,22 @@ export default {
     {
       id: `settings-offline-ai-health`,
       title: `Read AI health and export an AI report`,
-      purpose: `See how OpenFrame AI has been doing, and save the figures to a file.`,
+      purpose: `See how Straft AI has been doing, and save the figures to a file.`,
       level: `Intermediate`,
       prerequisites: [`The Offline AI tab is open.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
           do: `Read the AI HEALTH card.`,
-          explain: `Before you use OpenFrame AI it says: No requests yet. The figures appear after you use OpenFrame AI. Afterwards it lists Requests counted, Typical answer time, Proposals applied, Checks per answer, Errors, Runs on and Weakest tool. Only numbers are kept: no questions, answers or project text, and nothing is sent.`,
+          explain: `Before you use Straft AI it says: No requests yet. The figures appear after you use Straft AI. Afterwards it lists Requests counted, Typical answer time, Proposals applied, Checks per answer, Errors, Runs on and Weakest tool. Only numbers are kept: no questions, answers or project text, and nothing is sent.`,
         },
         {
           screen: `settings-offline-ai-ready`,
           do: `Click Export AI report and choose where to save the JSON file.`,
-          explain: `The Windows save window suggests openframe-ai-report.json. When it is saved, a message says Saved with the file name and the number of requests. Share the file only if you want to.`,
+          explain: `The Windows save window suggests straft-ai-report.json. When it is saved, a message says Saved with the file name and the number of requests. Share the file only if you want to.`,
         },
       ],
-      result: `You have a numbers-only file describing how OpenFrame AI performed.`,
+      result: `You have a numbers-only file describing how Straft AI performed.`,
       cautions: [
         `The report contains no questions, answers or project text.`,
       ],
@@ -523,20 +523,20 @@ export default {
     },
     {
       id: `settings-assistant-memory`,
-      title: `See and delete what OpenFrame AI remembers`,
-      purpose: `Review the facts and preferences OpenFrame AI has kept about you in this project and delete any of them.`,
+      title: `See and delete what Straft AI remembers`,
+      purpose: `Review the facts and preferences Straft AI has kept about you in this project and delete any of them.`,
       level: `Intermediate`,
       prerequisites: [`The Offline AI tab is open.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
           do: `Read the ASSISTANT MEMORY card.`,
-          explain: `When nothing is kept it says: Nothing is remembered yet. OpenFrame AI keeps a fact or preference only when you state it outright, or confirm one of its answers. Entries it has kept are listed with the words Fact or Preference and the date they were saved. Click Delete beside an entry and a message says Forgotten. The card ends with: Saved on this computer, in this project, for you only. Delete an entry and OpenFrame AI forgets it.`,
+          explain: `When nothing is kept it says: Nothing is remembered yet. Straft AI keeps a fact or preference only when you state it outright, or confirm one of its answers. Entries it has kept are listed with the words Fact or Preference and the date they were saved. Click Delete beside an entry and a message says Forgotten. The card ends with: Saved on this computer, in this project, for you only. Delete an entry and Straft AI forgets it.`,
         },
       ],
-      result: `OpenFrame AI keeps only what you want it to keep.`,
+      result: `Straft AI keeps only what you want it to keep.`,
       cautions: [
-        `Deleting an entry cannot be undone from the message. If OpenFrame AI should know it again, tell it again.`,
+        `Deleting an entry cannot be undone from the message. If Straft AI should know it again, tell it again.`,
       ],
       related: [`settings-offline-ai-health`],
     },
@@ -572,7 +572,7 @@ export default {
     {
       id: `settings-choose-mode-theme`,
       title: `Choose Light, Dark or System and a theme`,
-      purpose: `Set how OpenFrame looks on this computer.`,
+      purpose: `Set how Straft looks on this computer.`,
       level: `Beginner`,
       prerequisites: [`The Appearance tab is open.`],
       steps: [
@@ -584,7 +584,7 @@ export default {
         {
           screen: `settings-appearance`,
           do: `Under THEME, click a card to choose a theme.`,
-          explain: `There are seventeen: OpenFrame Default, Black and White, Studio Amber, Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain, Sunset Boulevard, Arctic Frame, Neon Reel, Location Scout, Desert Dune, Colorist Neutral, Silver Screen and High Contrast. Each card has a small preview and a one-line description. The chosen theme has a tick. You can move between cards with the arrow keys.`,
+          explain: `There are seventeen: Straft Default, Black and White, Studio Amber, Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain, Sunset Boulevard, Arctic Frame, Neon Reel, Location Scout, Desert Dune, Colorist Neutral, Silver Screen and High Contrast. Each card has a small preview and a one-line description. The chosen theme has a tick. You can move between cards with the arrow keys.`,
         },
         {
           screen: `settings-appearance`,
@@ -592,7 +592,7 @@ export default {
           explain: `It says: Themes change colours only. Your screenplay pages, PDFs and printed call sheets always stay black on white. Your projects are not changed.`,
         },
       ],
-      result: `OpenFrame uses the mode and theme you picked, in every project on this computer.`,
+      result: `Straft uses the mode and theme you picked, in every project on this computer.`,
       cautions: [
         `A theme never changes how a printed or exported page looks.`,
         `If text is hard to read, try High Contrast.`,
@@ -604,17 +604,17 @@ export default {
       title: `Add a theme by pasting its text`,
       purpose: `Check a theme you pasted for readability and save it to My Themes.`,
       level: `Advanced`,
-      prerequisites: [`The Appearance tab is open and you have the text of an OpenFrame theme file.`],
+      prerequisites: [`The Appearance tab is open and you have the text of a Straft theme file.`],
       steps: [
         {
           screen: `settings-appearance-my-themes-empty`,
           do: `Under My Themes, click Paste Theme….`,
-          explain: `Until you add a theme My Themes says: No imported themes yet. Theme files are small .json files, for example from the OpenFrame website.`,
+          explain: `Until you add a theme My Themes says: No imported themes yet. Theme files are small .json files, for example from the Straft website.`,
         },
         {
           screen: `settings-theme-paste-dialog`,
           do: `In the Import theme dialog, click the Theme text box and paste the text.`,
-          explain: `The dialog says: Paste the text of an OpenFrame theme file. It is checked before anything is saved. Check Theme stays greyed out while the box is empty.`,
+          explain: `The dialog says: Paste the text of a Straft theme file. It is checked before anything is saved. Check Theme stays greyed out while the box is empty.`,
         },
         {
           screen: `settings-theme-paste-filled`,
@@ -634,7 +634,7 @@ export default {
         {
           screen: `settings-theme-check-corrected`,
           do: `If a blue note says Small changes were made so text stays readable, read what was changed.`,
-          explain: `OpenFrame adjusts a colour by a small step when that is enough, for example making the accent colour darker by one point so button text stays readable. The theme is still usable.`,
+          explain: `Straft adjusts a colour by a small step when that is enough, for example making the accent colour darker by one point so button text stays readable. The theme is still usable.`,
         },
         {
           screen: `settings-theme-check-rejected`,
@@ -650,7 +650,7 @@ export default {
       result: `The theme is in My Themes, and in use if you chose Save and Apply.`,
       cautions: [
         `Nothing is saved until you click a Save button.`,
-        `Only paste themes from a source you trust. OpenFrame still checks the format and the readability.`,
+        `Only paste themes from a source you trust. Straft still checks the format and the readability.`,
       ],
       related: [`settings-import-theme-file`, `settings-my-themes`],
     },
@@ -708,12 +708,12 @@ export default {
         {
           screen: `settings-my-themes-delete-confirm`,
           do: `Click Delete. Read the question and click Delete Theme.`,
-          explain: `It says the theme is removed from My Themes, that this cannot be undone and that you should export it first if you may want it again. If the theme is in use it adds that OpenFrame Default is applied. Your projects are not affected. Cancel keeps the theme.`,
+          explain: `It says the theme is removed from My Themes, that this cannot be undone and that you should export it first if you may want it again. If the theme is in use it adds that Straft Default is applied. Your projects are not affected. Cancel keeps the theme.`,
         },
         {
           screen: `settings-my-themes-deleted-toast`,
           do: `Look at the message at the bottom: Theme deleted.`,
-          explain: `If the deleted theme was in use the message says Theme deleted. OpenFrame Default is applied. My Themes goes back to its empty note.`,
+          explain: `If the deleted theme was in use the message says Theme deleted. Straft Default is applied. My Themes goes back to its empty note.`,
         },
       ],
       result: `My Themes holds only the themes you want, and the window uses the theme you chose.`,
@@ -725,10 +725,10 @@ export default {
     },
   ],
   screens: {
-    'settings-general': `The Project settings tab: the form with Title *, Type *, Language, Genre, Creator, Status, Logline and Project notes, a greyed Save, the Stored on this computer card with Open project location and Move or back up…, and the LICENCE, ABOUT OPENFRAME STUDIO and SUPPORT sections. Used in settings-open-and-tour, settings-edit-project-details, settings-project-info-version and settings-storage-and-move.`,
+    'settings-general': `The Project settings tab: the form with Title *, Type *, Language, Genre, Creator, Status, Logline and Project notes, a greyed Save, the Stored on this computer card with Open project location and Move or back up…, and the LICENCE, ABOUT STRAFT STUDIO and SUPPORT sections. Used in settings-open-and-tour, settings-edit-project-details, settings-project-info-version and settings-storage-and-move.`,
     'settings-general-dirty': `The Project settings tab after a change: Genre and Logline are filled in and Save is orange. Used in settings-edit-project-details.`,
     'settings-general-title-error': `The Project settings tab with the title cleared. The Title * box is red and A title is required. shows under it. Variant, part of settings-edit-project-details.`,
-    'settings-general-lower': `The Project settings tab scrolled down to LICENCE, ABOUT OPENFRAME STUDIO and SUPPORT with Export Diagnostics…. Used in settings-project-info-version and settings-export-diagnostics.`,
+    'settings-general-lower': `The Project settings tab scrolled down to LICENCE, ABOUT STRAFT STUDIO and SUPPORT with Export Diagnostics…. Used in settings-project-info-version and settings-export-diagnostics.`,
     'settings-export-diagnostics-dialog': `The Export Diagnostics dialog. A note says nothing is sent automatically. It lists six files with their sizes and a Show contents button each, then the NEVER INCLUDED list, with Cancel and Export… at the bottom. Used in settings-export-diagnostics.`,
     'settings-export-diagnostics-contents': `The same dialog with the contents of manifest.json open under its row and the button reading Hide contents. Used in settings-export-diagnostics.`,
     'settings-writing': `The Writing tab: the SPELLING card with the Check spelling as I write box ticked, Main language (English (United States)) and Second language (None), and an empty PERSONAL DICTIONARY card with Add a word and Add. Used in settings-open-and-tour, settings-spell-check and settings-dictionary-add.`,
@@ -741,27 +741,27 @@ export default {
     'settings-shortcuts': `The Keyboard shortcuts tab: Filter commands or keys, 25 commands, Restore all defaults and the table with COMMAND, DEFAULT, CURRENT and CONFLICT, grouped under General, Project list, Idea Vault and Screenplay. Used in settings-open-and-tour, settings-find-shortcut and settings-add-shortcut.`,
     'settings-shortcuts-filtered': `The shortcuts table filtered by undo, leaving the Undo command with Ctrl+Z. Used in settings-find-shortcut.`,
     'settings-shortcuts-no-match': `The shortcuts table filtered by text that matches nothing. The page says No command matches “zzzz” and the count is 0 commands. Variant, part of settings-find-shortcut.`,
-    'settings-shortcut-recording': `The shortcuts table while a key is being recorded for Open or close OpenFrame AI. A pill says Press the new keys… (Esc cancels). Used in settings-add-shortcut.`,
+    'settings-shortcut-recording': `The shortcuts table while a key is being recorded for Open or close Straft AI. A pill says Press the new keys… (Esc cancels). Used in settings-add-shortcut.`,
     'settings-shortcut-invalid-plain-key': `The recording state after a plain letter A was pressed. A red message says to add Ctrl or Alt to that key. Used in settings-add-shortcut.`,
     'settings-shortcut-invalid-reserved': `The recording state after Ctrl+C was pressed. A red message says that shortcut is kept for copy, cut, paste and select all. Used in settings-add-shortcut.`,
     'settings-shortcut-duplicate-error': `The Search row after Ctrl+K was pressed again. A message says Ctrl+K is already a shortcut for Search. Used in settings-shortcut-conflicts.`,
-    'settings-shortcut-changed': `The table after F9 was added to Open or close OpenFrame AI. The row shows Ctrl+J, F9 and (changed), a message reads Open or close OpenFrame AI: F9, and Restore default is active. Used in settings-add-shortcut and settings-restore-shortcuts.`,
+    'settings-shortcut-changed': `The table after F9 was added to Open or close Straft AI. The row shows Ctrl+J, F9 and (changed), a message reads Open or close Straft AI: F9, and Restore default is active. Used in settings-add-shortcut and settings-restore-shortcuts.`,
     'settings-shortcut-conflict-dialog': `The Ctrl+K is already used dialog. It asks whether to move Ctrl+K from Search to Save now, with Cancel and Move it here. Used in settings-shortcut-conflicts.`,
     'settings-shortcut-moved': `The table after Move it here. A message reads Shortcuts updated, Save now has Ctrl+S and Ctrl+K, and Search has no key. Used in settings-shortcut-conflicts.`,
     'settings-shortcut-restore-conflict-dialog': `The Restore the default? dialog. It says Ctrl+K is now used by Save now and that restoring gives it back to Search, with Cancel and Restore and move. Used in settings-shortcut-conflicts.`,
     'settings-shortcut-restore-all-confirm': `The Restore all keyboard shortcuts? dialog with a red Restore all defaults and Cancel. Used in settings-restore-shortcuts.`,
     'settings-shortcuts-restored-toast': `The table after Restore all defaults. A message reads All shortcuts are back to their defaults. Used in settings-restore-shortcuts.`,
     'settings-shortcuts-conflict-banner': `The table with a yellow banner: Some shortcuts are used by two commands. Search and Save now both show Ctrl+K and each says Also used by the other in CONFLICT. Used in settings-shortcut-conflicts.`,
-    'settings-offline-ai-ready': `The Offline AI tab with OpenFrame AI ready: the OFFLINE AI card with an AI Ready chip, Stop Offline AI (free memory), Remove OpenFrame AI… and Graphics card (Automatic, Off), the AI HEALTH card, the ASSISTANT MEMORY card and a closed TECHNICAL DETAILS section. Used in settings-open-and-tour, settings-offline-ai-status, settings-offline-ai-stop-graphics, settings-offline-ai-remove, settings-offline-ai-health and settings-assistant-memory.`,
-    'settings-offline-ai-remove-confirm': `The Remove OpenFrame AI? dialog with Cancel and a red Remove. Used in settings-offline-ai-remove.`,
+    'settings-offline-ai-ready': `The Offline AI tab with Straft AI ready: the OFFLINE AI card with an AI Ready chip, Stop Offline AI (free memory), Remove Straft AI… and Graphics card (Automatic, Off), the AI HEALTH card, the ASSISTANT MEMORY card and a closed TECHNICAL DETAILS section. Used in settings-open-and-tour, settings-offline-ai-status, settings-offline-ai-stop-graphics, settings-offline-ai-remove, settings-offline-ai-health and settings-assistant-memory.`,
+    'settings-offline-ai-remove-confirm': `The Remove Straft AI? dialog with Cancel and a red Remove. Used in settings-offline-ai-remove.`,
     'settings-offline-ai-technical-details': `The Offline AI tab with TECHNICAL DETAILS open: the component table (Component, Licence, Size), the model licence note and the lines about the package, this computer, the engine and the log. Used in settings-offline-ai-status.`,
     'settings-offline-ai-stopped-toast': `The Offline AI tab after Stop Offline AI. A message reads Offline AI stopped. It starts again when you ask something. Used in settings-offline-ai-stop-graphics.`,
-    'settings-offline-ai-graphics-off': `The Offline AI tab with Graphics card set to Off. A message reads OpenFrame AI will run on the processor. Used in settings-offline-ai-stop-graphics.`,
+    'settings-offline-ai-graphics-off': `The Offline AI tab with Graphics card set to Off. A message reads Straft AI will run on the processor. Used in settings-offline-ai-stop-graphics.`,
     'settings-advanced': `The Advanced tab: one row for each Breakdown category with twelve colour dots and sixteen icons, and Restore Defaults at the top right. Used in settings-open-and-tour and settings-category-look.`,
     'settings-advanced-changed-toast': `The Advanced tab after Cast was given another colour and icon. Its row shows a Changed chip and a message reads Changed the look of Cast with Undo. Used in settings-category-look.`,
     'settings-advanced-restored-toast': `The Advanced tab after Restore Defaults. A message reads Restored the default category colours and icons with Undo. Used in settings-category-look.`,
     'settings-appearance': `The Appearance tab: MODE (Light, Dark, System), THEME with the seventeen theme cards, and My Themes with Import Theme File… and Paste Theme…. Used in settings-open-and-tour, settings-choose-mode-theme and settings-import-theme-file.`,
-    'settings-appearance-my-themes-empty': `The Appearance tab with nothing in My Themes. It says No imported themes yet. Theme files are small .json files, for example from the OpenFrame website. Used in settings-import-theme-paste.`,
+    'settings-appearance-my-themes-empty': `The Appearance tab with nothing in My Themes. It says No imported themes yet. Theme files are small .json files, for example from the Straft website. Used in settings-import-theme-paste.`,
     'settings-theme-paste-dialog': `The Import theme dialog opened by Paste Theme…, with an empty Theme text box, Cancel and a greyed Check Theme. Used in settings-import-theme-paste.`,
     'settings-theme-too-large': `The Import theme dialog with text over 10 KB. The box is red and says This is larger than 10 KB. Theme files are small; this is not one. Variant, part of settings-import-theme-paste.`,
     'settings-theme-paste-filled': `The Import theme dialog with a small theme pasted into the Theme text box, ready for Check Theme. Used in settings-import-theme-paste.`,
@@ -776,7 +776,7 @@ export default {
   },
   shortcuts: [
     [`Ctrl+K`, `Search the project`],
-    [`Ctrl+J`, `Open or close OpenFrame AI`],
+    [`Ctrl+J`, `Open or close Straft AI`],
     [`Ctrl+S`, `Save now`],
     [`Ctrl+Z`, `Undo`],
     [`Ctrl+Y or Ctrl+Shift+Z`, `Redo`],
@@ -829,12 +829,12 @@ export default {
       fix: `The command already has four shortcuts, or a key is being recorded on it. Remove a key with the x, or press Esc to stop recording.`,
     },
     {
-      problem: `OpenFrame AI does not show AI Ready.`,
+      problem: `Straft AI does not show AI Ready.`,
       fix: `Read the chip on the OFFLINE AI card. Not downloaded means the models have not been downloaded yet, and the page offers the download. Needs a new download means the files were damaged. Open TECHNICAL DETAILS for the line that explains the state.`,
     },
     {
-      problem: `OpenFrame AI is slow or my screen stutters while it works.`,
-      fix: `Under Graphics card click Off so OpenFrame AI runs on the processor, or click Stop Offline AI (free memory) to release memory. It starts again when you ask something.`,
+      problem: `Straft AI is slow or my screen stutters while it works.`,
+      fix: `Under Graphics card click Off so Straft AI runs on the processor, or click Stop Offline AI (free memory) to release memory. It starts again when you ask something.`,
     },
     {
       problem: `My imported theme was refused.`,

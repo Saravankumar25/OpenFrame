@@ -11,7 +11,7 @@ const nameOf = (s) => (s ? s.replace(/^\d+-/, '') : s);
 const LEARN = {
   'idea-vault': [/^idea-vault$/, null], 'story-board': [/^story$/, null], moodboards: [/^moodboards$/, /\bmoodboards?\b/i],
   screenplay: [/^screenplay$/, null], 'drafts-revisions': [/^$/, /\b(drafts?|revisions?|compare|lock|review|comments?)\b/i],
-  'import-export': [/^import-screenplay$/, /\b(import|export)/i], 'openframe-ai': [/^openframe-ai$/, null], breakdown: [/^breakdown$/, null],
+  'import-export': [/^import-screenplay$/, /\b(import|export)/i], 'straft-ai': [/^straft-ai$/, null], breakdown: [/^breakdown$/, null],
   'cast-crew-locations': [/^(locations|cast-and-crew)$/, /\b(cast|crew|locations?)\b/i], 'shot-lists-storyboards': [/^(storyboards|shot-lists)$/, /\b(shots?|storyboards?)\b/i],
   scheduling: [/^(shooting-schedule|schedule|day-out-of-days)$/, null], 'call-sheets': [/^call-sheets$/, null],
   'sides-daily-view': [/^(sides|daily-view)$/, null], 'reports-budget': [/^(reports|budget)$/, null],
@@ -86,7 +86,7 @@ ${page.related.map((s) => ctx.FEATURES.find((x) => x.slug === s)).filter(Boolean
 ${ctx.cta()}`;
   return {
     path: `/features/${slug}/`, nav: 'features', os: null, alternates: null,
-    title: `${page.title} | OpenFrame Studio`, description: page.description, body,
+    title: `${page.title} | Straft Studio`, description: page.description, body,
     breadcrumbs: [['Features', '/features/'], [meta.title, `/features/${slug}/`]],
   };
 }
@@ -96,7 +96,7 @@ function indexPage(ctx) {
   const count = Object.values(CATALOG).reduce((n, l) => n + l.length, 0);
   const body = html`
 <section class="phero"><div class="wrap"><span class="eyebrow">All features</span><h1>One film, moving forward.</h1>
-<p class="lead">From the first scrap of an idea to the final call sheet. Every part of OpenFrame talks to every other part, so you never retype anything.</p>
+<p class="lead">From the first scrap of an idea to the final call sheet. Every part of Straft talks to every other part, so you never retype anything.</p>
 <p class="tmeta">Each feature is marked for Windows and Mac.</p></div></section>
 <section class="sec-s pt30"><div class="wrap">
 ${ctx.FEATURE_GROUPS.map(([group, items]) => html`<div class="cat-group"><h2>${group}</h2><div class="grid3 mt18">
@@ -110,8 +110,8 @@ ${CATALOG[slug].map((f) => html`<li><b><a href="/features/${slug}/#${f.id}">${f.
 ${ctx.cta()}`;
   return {
     path: '/features/', nav: 'features', os: null, alternates: null,
-    title: 'Features | OpenFrame Studio',
-    description: 'Every feature of OpenFrame Studio: Idea Vault, Beat Board, screenplay editor, breakdown, schedule, call sheets, sides, reports, budget and backups.',
+    title: 'Features | Straft Studio',
+    description: 'Every feature of Straft Studio: Idea Vault, Beat Board, screenplay editor, breakdown, schedule, call sheets, sides, reports, budget and backups.',
     body, breadcrumbs: [['Features', '/features/']],
     jsonld: [{ ...APP(ctx, 'Windows 11, macOS 14 or later', '/features/'), featureList: Object.values(CATALOG).flat().map((f) => f.name) }],
   };

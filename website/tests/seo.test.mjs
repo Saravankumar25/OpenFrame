@@ -122,7 +122,7 @@ test('structured data matches the page: FAQ answers, prices, founders and the si
   for (const q of f.mainEntity) assert.ok(text.includes(q.name), `question not on the page: ${q.name}`);
   const home = ldOf(pages.find((p) => p.path === '/').s);
   const org = home.find((o) => o['@type'] === 'Organization');
-  assert.equal(org.name, 'OpenFrame Studio');
+  assert.equal(org.name, 'Straft Studio');
   assert.equal(org.founder, undefined, 'founders are named on /about/ only');
   const site = home.find((o) => o['@type'] === 'WebSite');
   assert.equal(site.potentialAction['@type'], 'SearchAction');
@@ -148,16 +148,16 @@ test('structured data matches the page: FAQ answers, prices, founders and the si
 test('title and description helpers cut at word boundaries', () => {
   assert.equal(trimWords('Set a scene time and page count on the Mac today', 30), 'Set a scene time and page');
   assert.equal(trimWords('short', 30), 'short');
-  assert.equal(fitTitle('Build a call sheet on Windows'), 'Build a call sheet on Windows | OpenFrame Studio');
+  assert.equal(fitTitle('Build a call sheet on Windows'), 'Build a call sheet on Windows | Straft Studio');
   assert.equal(fitTitle('Open Notes and Tasks and start from an empty page on Windows'), 'Open Notes and Tasks and start from an empty page on Windows');
-  assert.equal(fitTitle('Pricing | OpenFrame Studio'), 'Pricing | OpenFrame Studio');
+  assert.equal(fitTitle('Pricing | Straft Studio'), 'Pricing | Straft Studio');
 });
 
 test('llms.txt and llms-full.txt are accurate, plain, and free of company and technology details', { skip: SKIP }, () => {
   const stack = /\b(Rust|SQLite|Tauri|React|TypeScript|SwiftUI|UniFFI|llama\.cpp|Gemma|Vulkan|Hugging Face|SHA-256|Vighnajith|Pvt|Private Limited)\b|[–—]/;
   const short = read(path.join(DIST, 'llms.txt')), full = read(path.join(DIST, 'llms-full.txt'));
   for (const s of [short, full]) { assert.doesNotMatch(s, stack); assert.match(s, /₹2,999/); assert.match(s, /US\$89/); assert.match(s, /7-day free trial/); }
-  assert.match(short, /^# OpenFrame Studio\n\n> /);
+  assert.match(short, /^# Straft Studio\n\n> /);
   assert.match(short, /€89 in Europe/, 'Europe has its own price (owner, 2026-10-31)');
   for (const m of (short + full).matchAll(/\]\((https?:\/\/[^)]+)\)/g)) {
     assert.ok(m[1].startsWith(SITE_URL), m[1]);

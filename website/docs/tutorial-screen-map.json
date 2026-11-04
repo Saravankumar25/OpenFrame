@@ -27,7 +27,7 @@
    "id": "reconnect-existing-library",
    "platform": "win",
    "area": "Library setup",
-   "title": "Reconnect an existing OpenFrame library",
+   "title": "Reconnect an existing Straft library",
    "url": "/windows/tutorials/reconnect-existing-library/",
    "screens": [
     "app-library-setup-default",
@@ -38,7 +38,7 @@
    "id": "enter-your-name",
    "platform": "win",
    "area": "First launch",
-   "title": "Tell OpenFrame your name",
+   "title": "Tell Straft your name",
    "url": "/windows/tutorials/enter-your-name/",
    "screens": [
     "app-first-launch-welcome",
@@ -190,7 +190,7 @@
    "id": "change-your-name",
    "platform": "win",
    "area": "Application Home",
-   "title": "Change the name OpenFrame uses for you",
+   "title": "Change the name Straft uses for you",
    "url": "/windows/tutorials/change-your-name/",
    "screens": [
     "apphome-projects",
@@ -243,7 +243,7 @@
    "id": "check-storage",
    "platform": "win",
    "area": "Application Home",
-   "title": "See where OpenFrame keeps your files",
+   "title": "See where Straft keeps your files",
    "url": "/windows/tutorials/check-storage/",
    "screens": [
     "apphome-settings-storage",
@@ -555,7 +555,7 @@
    "id": "vault-fix-unavailable-file",
    "platform": "win",
    "area": "Idea Vault",
-   "title": "Reconnect a file OpenFrame cannot find",
+   "title": "Reconnect a file Straft cannot find",
    "url": "/windows/tutorials/vault-fix-unavailable-file/",
    "screens": [
     "vault-grid-all-types",
@@ -3675,11 +3675,11 @@
    ]
   },
   {
-   "id": "openframe-ai-open-panel",
+   "id": "straft-ai-open-panel",
    "platform": "win",
-   "area": "OpenFrame AI",
-   "title": "Open, close and resize OpenFrame AI",
-   "url": "/windows/tutorials/openframe-ai-open-panel/",
+   "area": "Straft AI",
+   "title": "Open, close and resize Straft AI",
+   "url": "/windows/tutorials/straft-ai-open-panel/",
    "screens": [
     "ai-panel-ready",
     "ai-panel-empty-project",
@@ -3689,11 +3689,11 @@
    ]
   },
   {
-   "id": "openframe-ai-ask-question",
+   "id": "straft-ai-ask-question",
    "platform": "win",
-   "area": "OpenFrame AI",
+   "area": "Straft AI",
    "title": "Ask a question about your project",
-   "url": "/windows/tutorials/openframe-ai-ask-question/",
+   "url": "/windows/tutorials/straft-ai-ask-question/",
    "screens": [
     "ai-panel-ready",
     "ai-question-typed",
@@ -3703,11 +3703,11 @@
    ]
   },
   {
-   "id": "openframe-ai-check-sources",
+   "id": "straft-ai-check-sources",
    "platform": "win",
-   "area": "OpenFrame AI",
+   "area": "Straft AI",
    "title": "Check what an answer is based on",
-   "url": "/windows/tutorials/openframe-ai-check-sources/",
+   "url": "/windows/tutorials/straft-ai-check-sources/",
    "screens": [
     "ai-answer-characters",
     "ai-answer-characters-sources",
@@ -3716,11 +3716,11 @@
    ]
   },
   {
-   "id": "openframe-ai-choose-scope",
+   "id": "straft-ai-choose-scope",
    "platform": "win",
-   "area": "OpenFrame AI",
-   "title": "Choose what OpenFrame AI looks at",
-   "url": "/windows/tutorials/openframe-ai-choose-scope/",
+   "area": "Straft AI",
+   "title": "Choose what Straft AI looks at",
+   "url": "/windows/tutorials/straft-ai-choose-scope/",
    "screens": [
     "ai-panel-ready",
     "ai-scope-current-screenplay",
@@ -3733,22 +3733,22 @@
    ]
   },
   {
-   "id": "openframe-ai-open-pages",
+   "id": "straft-ai-open-pages",
    "platform": "win",
-   "area": "OpenFrame AI",
-   "title": "Ask OpenFrame AI to take you somewhere",
-   "url": "/windows/tutorials/openframe-ai-open-pages/",
+   "area": "Straft AI",
+   "title": "Ask Straft AI to take you somewhere",
+   "url": "/windows/tutorials/straft-ai-open-pages/",
    "screens": [
     "ai-panel-ready",
     "ai-panel-screenplay"
    ]
   },
   {
-   "id": "openframe-ai-ask-for-a-change",
+   "id": "straft-ai-ask-for-a-change",
    "platform": "win",
-   "area": "OpenFrame AI",
+   "area": "Straft AI",
    "title": "Ask for a change and read the Proposed Changes card",
-   "url": "/windows/tutorials/openframe-ai-ask-for-a-change/",
+   "url": "/windows/tutorials/straft-ai-ask-for-a-change/",
    "screens": [
     "ai-proposed-changes",
     "ai-proposed-changes",
@@ -3756,11 +3756,11 @@
    ]
   },
   {
-   "id": "openframe-ai-apply-and-undo",
+   "id": "straft-ai-apply-and-undo",
    "platform": "win",
-   "area": "OpenFrame AI",
+   "area": "Straft AI",
    "title": "Apply a proposed change and undo it",
-   "url": "/windows/tutorials/openframe-ai-apply-and-undo/",
+   "url": "/windows/tutorials/straft-ai-apply-and-undo/",
    "screens": [
     "ai-proposed-changes-second",
     "ai-proposal-applied",
@@ -3768,11 +3768,11 @@
    ]
   },
   {
-   "id": "openframe-ai-review-deletion",
+   "id": "straft-ai-review-deletion",
    "platform": "win",
-   "area": "OpenFrame AI",
+   "area": "Straft AI",
    "title": "Review a proposal that deletes something",
-   "url": "/windows/tutorials/openframe-ai-review-deletion/",
+   "url": "/windows/tutorials/straft-ai-review-deletion/",
    "screens": [
     "ai-answer-delete-request",
     "ai-answer-delete-request",
@@ -3780,21 +3780,21 @@
    ]
   },
   {
-   "id": "openframe-ai-stop-request",
+   "id": "straft-ai-stop-request",
    "platform": "win",
-   "area": "OpenFrame AI",
+   "area": "Straft AI",
    "title": "Stop a request that is taking too long",
-   "url": "/windows/tutorials/openframe-ai-stop-request/",
+   "url": "/windows/tutorials/straft-ai-stop-request/",
    "screens": [
     "ai-working"
    ]
   },
   {
-   "id": "openframe-ai-save-conversation",
+   "id": "straft-ai-save-conversation",
    "platform": "win",
-   "area": "OpenFrame AI",
+   "area": "Straft AI",
    "title": "Save a conversation or start a new one",
-   "url": "/windows/tutorials/openframe-ai-save-conversation/",
+   "url": "/windows/tutorials/straft-ai-save-conversation/",
    "screens": [
     "ai-panel-ready",
     "ai-answer-characters",
@@ -3803,11 +3803,11 @@
    ]
   },
   {
-   "id": "openframe-ai-panel-menu",
+   "id": "straft-ai-panel-menu",
    "platform": "win",
-   "area": "OpenFrame AI",
+   "area": "Straft AI",
    "title": "Use the panel's ... menu",
-   "url": "/windows/tutorials/openframe-ai-panel-menu/",
+   "url": "/windows/tutorials/straft-ai-panel-menu/",
    "screens": [
     "ai-settings-menu",
     "ai-offline-settings",
@@ -3815,11 +3815,11 @@
    ]
   },
   {
-   "id": "openframe-ai-offline-settings-page",
+   "id": "straft-ai-offline-settings-page",
    "platform": "win",
-   "area": "OpenFrame AI",
+   "area": "Straft AI",
    "title": "Read the Offline AI settings",
-   "url": "/windows/tutorials/openframe-ai-offline-settings-page/",
+   "url": "/windows/tutorials/straft-ai-offline-settings-page/",
    "screens": [
     "ai-offline-settings",
     "ai-offline-settings",
@@ -3828,11 +3828,11 @@
    ]
   },
   {
-   "id": "openframe-ai-graphics-card",
+   "id": "straft-ai-graphics-card",
    "platform": "win",
-   "area": "OpenFrame AI",
-   "title": "Choose whether OpenFrame AI may use the graphics card",
-   "url": "/windows/tutorials/openframe-ai-graphics-card/",
+   "area": "Straft AI",
+   "title": "Choose whether Straft AI may use the graphics card",
+   "url": "/windows/tutorials/straft-ai-graphics-card/",
    "screens": [
     "ai-offline-settings",
     "ai-offline-health-filled",
@@ -3840,11 +3840,11 @@
    ]
   },
   {
-   "id": "openframe-ai-ai-health-report",
+   "id": "straft-ai-ai-health-report",
    "platform": "win",
-   "area": "OpenFrame AI",
+   "area": "Straft AI",
    "title": "Read AI health and export a report",
-   "url": "/windows/tutorials/openframe-ai-ai-health-report/",
+   "url": "/windows/tutorials/straft-ai-ai-health-report/",
    "screens": [
     "ai-offline-settings",
     "ai-offline-health-filled",
@@ -3852,22 +3852,22 @@
    ]
   },
   {
-   "id": "openframe-ai-memory",
+   "id": "straft-ai-memory",
    "platform": "win",
-   "area": "OpenFrame AI",
-   "title": "See and delete what OpenFrame AI remembers",
-   "url": "/windows/tutorials/openframe-ai-memory/",
+   "area": "Straft AI",
+   "title": "See and delete what Straft AI remembers",
+   "url": "/windows/tutorials/straft-ai-memory/",
    "screens": [
     "ai-offline-settings",
     "ai-offline-settings"
    ]
   },
   {
-   "id": "openframe-ai-stop-or-remove",
+   "id": "straft-ai-stop-or-remove",
    "platform": "win",
-   "area": "OpenFrame AI",
-   "title": "Stop OpenFrame AI or remove OpenFrame AI",
-   "url": "/windows/tutorials/openframe-ai-stop-or-remove/",
+   "area": "Straft AI",
+   "title": "Stop Straft AI or remove Straft AI",
+   "url": "/windows/tutorials/straft-ai-stop-or-remove/",
    "screens": [
     "ai-offline-settings",
     "ai-offline-settings",
@@ -3875,11 +3875,11 @@
    ]
   },
   {
-   "id": "openframe-ai-download-models",
+   "id": "straft-ai-download-models",
    "platform": "win",
-   "area": "OpenFrame AI",
-   "title": "Download OpenFrame AI, or import model files",
-   "url": "/windows/tutorials/openframe-ai-download-models/",
+   "area": "Straft AI",
+   "title": "Download Straft AI, or import model files",
+   "url": "/windows/tutorials/straft-ai-download-models/",
    "screens": [
     "ai-offline-settings",
     "ai-offline-settings",
@@ -4768,7 +4768,7 @@
    "id": "settings-assistant-memory",
    "platform": "win",
    "area": "Settings",
-   "title": "See and delete what OpenFrame AI remembers",
+   "title": "See and delete what Straft AI remembers",
    "url": "/windows/tutorials/settings-assistant-memory/",
    "screens": [
     "settings-offline-ai-ready"
@@ -4897,7 +4897,7 @@
    "id": "check-your-purchase",
    "platform": "win",
    "area": "Trial and purchase",
-   "title": "Check your purchase when OpenFrame cannot reach the Microsoft Store",
+   "title": "Check your purchase when Straft cannot reach the Microsoft Store",
    "url": "/windows/tutorials/check-your-purchase/",
    "screens": [
     "licence-check-needed",
@@ -5120,7 +5120,7 @@
    "id": "menus-app-menu",
    "platform": "mac",
    "area": "Menus",
-   "title": "Open Settings or Project Settings from the OpenFrame Studio menu",
+   "title": "Open Settings or Project Settings from the Straft Studio menu",
    "url": "/mac/tutorials/menus-app-menu/",
    "screens": [
     "menu-app",
@@ -6525,7 +6525,7 @@
    "id": "breakdown-suggest-elements",
    "platform": "mac",
    "area": "Breakdown",
-   "title": "Ask OpenFrame to suggest elements for a scene",
+   "title": "Ask Straft to suggest elements for a scene",
    "url": "/mac/tutorials/breakdown-suggest-elements/",
    "screens": [
     "breakdown-scenes",
@@ -7892,11 +7892,11 @@
    ]
   },
   {
-   "id": "openframe-ai-open-close",
+   "id": "straft-ai-open-close",
    "platform": "mac",
-   "area": "OpenFrame AI",
-   "title": "Open and close OpenFrame AI",
-   "url": "/mac/tutorials/openframe-ai-open-close/",
+   "area": "Straft AI",
+   "title": "Open and close Straft AI",
+   "url": "/mac/tutorials/straft-ai-open-close/",
    "screens": [
     "ai-closed-home",
     "project-home-ai-panel",
@@ -7905,11 +7905,11 @@
    ]
   },
   {
-   "id": "openframe-ai-read-unavailable",
+   "id": "straft-ai-read-unavailable",
    "platform": "mac",
-   "area": "OpenFrame AI",
+   "area": "Straft AI",
    "title": "Read the message when AI is not available",
-   "url": "/mac/tutorials/openframe-ai-read-unavailable/",
+   "url": "/mac/tutorials/straft-ai-read-unavailable/",
    "screens": [
     "ai-panel",
     "ai-panel",
@@ -7917,11 +7917,11 @@
    ]
   },
   {
-   "id": "openframe-ai-offline-settings",
+   "id": "straft-ai-offline-settings",
    "platform": "mac",
-   "area": "OpenFrame AI",
-   "title": "Open Offline AI settings from OpenFrame AI",
-   "url": "/mac/tutorials/openframe-ai-offline-settings/",
+   "area": "Straft AI",
+   "title": "Open Offline AI settings from Straft AI",
+   "url": "/mac/tutorials/straft-ai-offline-settings/",
    "screens": [
     "ai-panel",
     "ai-settings-menu",
@@ -7929,11 +7929,11 @@
    ]
   },
   {
-   "id": "openframe-ai-ai-health",
+   "id": "straft-ai-ai-health",
    "platform": "mac",
-   "area": "OpenFrame AI",
+   "area": "Straft AI",
    "title": "Read AI health and export an AI report",
-   "url": "/mac/tutorials/openframe-ai-ai-health/",
+   "url": "/mac/tutorials/straft-ai-ai-health/",
    "screens": [
     "ai-offline-ai-settings",
     "ai-offline-ai-settings",
@@ -7941,11 +7941,11 @@
    ]
   },
   {
-   "id": "openframe-ai-memory",
+   "id": "straft-ai-memory",
    "platform": "mac",
-   "area": "OpenFrame AI",
-   "title": "Check what OpenFrame AI remembers",
-   "url": "/mac/tutorials/openframe-ai-memory/",
+   "area": "Straft AI",
+   "title": "Check what Straft AI remembers",
+   "url": "/mac/tutorials/straft-ai-memory/",
    "screens": [
     "ai-offline-ai-settings",
     "ai-offline-ai-settings",
@@ -7953,11 +7953,11 @@
    ]
   },
   {
-   "id": "openframe-ai-beside-workspaces",
+   "id": "straft-ai-beside-workspaces",
    "platform": "mac",
-   "area": "OpenFrame AI",
-   "title": "Keep OpenFrame AI open beside each workspace",
-   "url": "/mac/tutorials/openframe-ai-beside-workspaces/",
+   "area": "Straft AI",
+   "title": "Keep Straft AI open beside each workspace",
+   "url": "/mac/tutorials/straft-ai-beside-workspaces/",
    "screens": [
     "ai-panel-idea-vault",
     "ai-panel-story",
@@ -7972,11 +7972,11 @@
    ]
   },
   {
-   "id": "openframe-ai-small-window",
+   "id": "straft-ai-small-window",
    "platform": "mac",
-   "area": "OpenFrame AI",
-   "title": "Use OpenFrame AI in a small window",
-   "url": "/mac/tutorials/openframe-ai-small-window/",
+   "area": "Straft AI",
+   "title": "Use Straft AI in a small window",
+   "url": "/mac/tutorials/straft-ai-small-window/",
    "screens": [
     "ai-panel-sidebar-hidden",
     "ai-panel-narrow-window",
@@ -7984,22 +7984,22 @@
    ]
   },
   {
-   "id": "openframe-ai-find-via-search",
+   "id": "straft-ai-find-via-search",
    "platform": "mac",
-   "area": "OpenFrame AI",
-   "title": "Why Search does not find OpenFrame AI",
-   "url": "/mac/tutorials/openframe-ai-find-via-search/",
+   "area": "Straft AI",
+   "title": "Why Search does not find Straft AI",
+   "url": "/mac/tutorials/straft-ai-find-via-search/",
    "screens": [
     "ai-search-palette",
     "ai-search-palette"
    ]
   },
   {
-   "id": "openframe-ai-ask",
+   "id": "straft-ai-ask",
    "platform": "mac",
-   "area": "OpenFrame AI",
-   "title": "Ask OpenFrame AI about your project",
-   "url": "/mac/tutorials/openframe-ai-ask/",
+   "area": "Straft AI",
+   "title": "Ask Straft AI about your project",
+   "url": "/mac/tutorials/straft-ai-ask/",
    "screens": [
     "ai-sim-ready",
     "ai-sim-question-typed",
@@ -8010,21 +8010,21 @@
    ]
   },
   {
-   "id": "openframe-ai-scope",
+   "id": "straft-ai-scope",
    "platform": "mac",
-   "area": "OpenFrame AI",
-   "title": "Choose what OpenFrame AI looks at",
-   "url": "/mac/tutorials/openframe-ai-scope/",
+   "area": "Straft AI",
+   "title": "Choose what Straft AI looks at",
+   "url": "/mac/tutorials/straft-ai-scope/",
    "screens": [
     "ai-sim-scope-menu"
    ]
   },
   {
-   "id": "openframe-ai-proposals",
+   "id": "straft-ai-proposals",
    "platform": "mac",
-   "area": "OpenFrame AI",
-   "title": "Review, apply or reject a change OpenFrame AI proposes",
-   "url": "/mac/tutorials/openframe-ai-proposals/",
+   "area": "Straft AI",
+   "title": "Review, apply or reject a change Straft AI proposes",
+   "url": "/mac/tutorials/straft-ai-proposals/",
    "screens": [
     "ai-sim-proposed-changes",
     "ai-sim-proposal-applied",
@@ -8033,11 +8033,11 @@
    ]
   },
   {
-   "id": "openframe-ai-offline-details",
+   "id": "straft-ai-offline-details",
    "platform": "mac",
-   "area": "OpenFrame AI",
+   "area": "Straft AI",
    "title": "Manage Offline AI in Settings",
-   "url": "/mac/tutorials/openframe-ai-offline-details/",
+   "url": "/mac/tutorials/straft-ai-offline-details/",
    "screens": [
     "ai-sim-offline-ai-download",
     "ai-sim-offline-ai-ready",
@@ -8048,11 +8048,11 @@
    ]
   },
   {
-   "id": "openframe-ai-ready-beside-workspaces",
+   "id": "straft-ai-ready-beside-workspaces",
    "platform": "mac",
-   "area": "OpenFrame AI",
-   "title": "See OpenFrame AI beside each workspace",
-   "url": "/mac/tutorials/openframe-ai-ready-beside-workspaces/",
+   "area": "Straft AI",
+   "title": "See Straft AI beside each workspace",
+   "url": "/mac/tutorials/straft-ai-ready-beside-workspaces/",
    "screens": [
     "ai-sim-beside-vault",
     "ai-sim-beside-story",
@@ -8548,7 +8548,7 @@
    "id": "templates-open",
    "platform": "mac",
    "area": "Templates",
-   "title": "Open Templates and see what comes with OpenFrame",
+   "title": "Open Templates and see what comes with Straft",
    "url": "/mac/tutorials/templates-open/",
    "screens": [
     "pages-templates-from-home",
@@ -8761,7 +8761,7 @@
    "id": "recovery-after-unexpected-close",
    "platform": "mac",
    "area": "Recovery",
-   "title": "Reopen a project after OpenFrame closed unexpectedly",
+   "title": "Reopen a project after Straft closed unexpectedly",
    "url": "/mac/tutorials/recovery-after-unexpected-close/",
    "screens": [
     "home-after-crash",
@@ -11088,99 +11088,99 @@
    "budget-export"
   ],
   "win/ai-panel-ready": [
-   "openframe-ai-open-panel",
-   "openframe-ai-ask-question",
-   "openframe-ai-choose-scope",
-   "openframe-ai-open-pages",
-   "openframe-ai-save-conversation",
-   "openframe-ai-download-models"
+   "straft-ai-open-panel",
+   "straft-ai-ask-question",
+   "straft-ai-choose-scope",
+   "straft-ai-open-pages",
+   "straft-ai-save-conversation",
+   "straft-ai-download-models"
   ],
   "win/ai-panel-empty-project": [
-   "openframe-ai-open-panel"
+   "straft-ai-open-panel"
   ],
   "win/ai-panel-screenplay": [
-   "openframe-ai-open-panel",
-   "openframe-ai-choose-scope",
-   "openframe-ai-open-pages"
+   "straft-ai-open-panel",
+   "straft-ai-choose-scope",
+   "straft-ai-open-pages"
   ],
   "win/ai-question-typed": [
-   "openframe-ai-ask-question"
+   "straft-ai-ask-question"
   ],
   "win/ai-working": [
-   "openframe-ai-ask-question",
-   "openframe-ai-stop-request"
+   "straft-ai-ask-question",
+   "straft-ai-stop-request"
   ],
   "win/ai-answer-characters": [
-   "openframe-ai-ask-question",
-   "openframe-ai-check-sources",
-   "openframe-ai-save-conversation"
+   "straft-ai-ask-question",
+   "straft-ai-check-sources",
+   "straft-ai-save-conversation"
   ],
   "win/ai-answer-scene-count": [
-   "openframe-ai-ask-question"
+   "straft-ai-ask-question"
   ],
   "win/ai-answer-characters-sources": [
-   "openframe-ai-check-sources"
+   "straft-ai-check-sources"
   ],
   "win/ai-answer-locations": [
-   "openframe-ai-check-sources"
+   "straft-ai-check-sources"
   ],
   "win/ai-answer-locations-sources-open": [
-   "openframe-ai-check-sources"
+   "straft-ai-check-sources"
   ],
   "win/ai-scope-current-screenplay": [
-   "openframe-ai-choose-scope"
+   "straft-ai-choose-scope"
   ],
   "win/ai-scope-beat-board": [
-   "openframe-ai-choose-scope"
+   "straft-ai-choose-scope"
   ],
   "win/ai-panel-story": [
-   "openframe-ai-choose-scope"
+   "straft-ai-choose-scope"
   ],
   "win/ai-panel-breakdown": [
-   "openframe-ai-choose-scope"
+   "straft-ai-choose-scope"
   ],
   "win/ai-panel-production": [
-   "openframe-ai-choose-scope"
+   "straft-ai-choose-scope"
   ],
   "win/ai-panel-vault": [
-   "openframe-ai-choose-scope"
+   "straft-ai-choose-scope"
   ],
   "win/ai-proposed-changes": [
-   "openframe-ai-ask-for-a-change"
+   "straft-ai-ask-for-a-change"
   ],
   "win/ai-proposal-rejected": [
-   "openframe-ai-ask-for-a-change"
+   "straft-ai-ask-for-a-change"
   ],
   "win/ai-proposed-changes-second": [
-   "openframe-ai-apply-and-undo"
+   "straft-ai-apply-and-undo"
   ],
   "win/ai-proposal-applied": [
-   "openframe-ai-apply-and-undo"
+   "straft-ai-apply-and-undo"
   ],
   "win/ai-answer-delete-request": [
-   "openframe-ai-review-deletion"
+   "straft-ai-review-deletion"
   ],
   "win/ai-settings-menu": [
-   "openframe-ai-panel-menu"
+   "straft-ai-panel-menu"
   ],
   "win/ai-offline-settings": [
-   "openframe-ai-panel-menu",
-   "openframe-ai-offline-settings-page",
-   "openframe-ai-graphics-card",
-   "openframe-ai-ai-health-report",
-   "openframe-ai-memory",
-   "openframe-ai-stop-or-remove",
-   "openframe-ai-download-models"
+   "straft-ai-panel-menu",
+   "straft-ai-offline-settings-page",
+   "straft-ai-graphics-card",
+   "straft-ai-ai-health-report",
+   "straft-ai-memory",
+   "straft-ai-stop-or-remove",
+   "straft-ai-download-models"
   ],
   "win/ai-offline-technical-details": [
-   "openframe-ai-offline-settings-page"
+   "straft-ai-offline-settings-page"
   ],
   "win/ai-offline-health-filled": [
-   "openframe-ai-graphics-card",
-   "openframe-ai-ai-health-report"
+   "straft-ai-graphics-card",
+   "straft-ai-ai-health-report"
   ],
   "win/ai-offline-remove-confirm": [
-   "openframe-ai-stop-or-remove"
+   "straft-ai-stop-or-remove"
   ],
   "win/files-empty": [
    "files-start-empty"
@@ -13633,128 +13633,128 @@
    "budget-export"
   ],
   "mac/ai-closed-home": [
-   "openframe-ai-open-close"
+   "straft-ai-open-close"
   ],
   "mac/project-home-ai-panel": [
-   "openframe-ai-open-close"
+   "straft-ai-open-close"
   ],
   "mac/ai-panel": [
-   "openframe-ai-open-close",
-   "openframe-ai-read-unavailable",
-   "openframe-ai-offline-settings"
+   "straft-ai-open-close",
+   "straft-ai-read-unavailable",
+   "straft-ai-offline-settings"
   ],
   "mac/ai-settings-menu": [
-   "openframe-ai-offline-settings"
+   "straft-ai-offline-settings"
   ],
   "mac/ai-offline-ai-settings": [
-   "openframe-ai-offline-settings",
-   "openframe-ai-ai-health",
-   "openframe-ai-memory"
+   "straft-ai-offline-settings",
+   "straft-ai-ai-health",
+   "straft-ai-memory"
   ],
   "mac/ai-panel-idea-vault": [
-   "openframe-ai-beside-workspaces"
+   "straft-ai-beside-workspaces"
   ],
   "mac/ai-panel-story": [
-   "openframe-ai-beside-workspaces"
+   "straft-ai-beside-workspaces"
   ],
   "mac/ai-panel-screenplay": [
-   "openframe-ai-beside-workspaces"
+   "straft-ai-beside-workspaces"
   ],
   "mac/ai-closed-screenplay": [
-   "openframe-ai-beside-workspaces"
+   "straft-ai-beside-workspaces"
   ],
   "mac/ai-panel-breakdown": [
-   "openframe-ai-beside-workspaces"
+   "straft-ai-beside-workspaces"
   ],
   "mac/ai-closed-breakdown": [
-   "openframe-ai-beside-workspaces"
+   "straft-ai-beside-workspaces"
   ],
   "mac/ai-panel-production": [
-   "openframe-ai-beside-workspaces"
+   "straft-ai-beside-workspaces"
   ],
   "mac/ai-panel-schedule": [
-   "openframe-ai-beside-workspaces"
+   "straft-ai-beside-workspaces"
   ],
   "mac/ai-panel-call-sheets": [
-   "openframe-ai-beside-workspaces"
+   "straft-ai-beside-workspaces"
   ],
   "mac/ai-panel-files": [
-   "openframe-ai-beside-workspaces"
+   "straft-ai-beside-workspaces"
   ],
   "mac/ai-panel-sidebar-hidden": [
-   "openframe-ai-small-window"
+   "straft-ai-small-window"
   ],
   "mac/ai-panel-narrow-window": [
-   "openframe-ai-small-window"
+   "straft-ai-small-window"
   ],
   "mac/ai-search-palette": [
-   "openframe-ai-find-via-search"
+   "straft-ai-find-via-search"
   ],
   "mac/ai-sim-ready": [
-   "openframe-ai-ask"
+   "straft-ai-ask"
   ],
   "mac/ai-sim-question-typed": [
-   "openframe-ai-ask"
+   "straft-ai-ask"
   ],
   "mac/ai-sim-working": [
-   "openframe-ai-ask"
+   "straft-ai-ask"
   ],
   "mac/ai-sim-answer-characters": [
-   "openframe-ai-ask"
+   "straft-ai-ask"
   ],
   "mac/ai-sim-answer-scene-count": [
-   "openframe-ai-ask"
+   "straft-ai-ask"
   ],
   "mac/ai-sim-answer-sources-open": [
-   "openframe-ai-ask"
+   "straft-ai-ask"
   ],
   "mac/ai-sim-scope-menu": [
-   "openframe-ai-scope"
+   "straft-ai-scope"
   ],
   "mac/ai-sim-proposed-changes": [
-   "openframe-ai-proposals"
+   "straft-ai-proposals"
   ],
   "mac/ai-sim-proposal-applied": [
-   "openframe-ai-proposals"
+   "straft-ai-proposals"
   ],
   "mac/ai-sim-proposal-rejected": [
-   "openframe-ai-proposals"
+   "straft-ai-proposals"
   ],
   "mac/ai-sim-answer-delete-request": [
-   "openframe-ai-proposals"
+   "straft-ai-proposals"
   ],
   "mac/ai-sim-offline-ai-download": [
-   "openframe-ai-offline-details"
+   "straft-ai-offline-details"
   ],
   "mac/ai-sim-offline-ai-ready": [
-   "openframe-ai-offline-details"
+   "straft-ai-offline-details"
   ],
   "mac/ai-sim-offline-ai-technical-details": [
-   "openframe-ai-offline-details"
+   "straft-ai-offline-details"
   ],
   "mac/ai-sim-offline-ai-graphics-off": [
-   "openframe-ai-offline-details"
+   "straft-ai-offline-details"
   ],
   "mac/ai-sim-offline-ai-health": [
-   "openframe-ai-offline-details"
+   "straft-ai-offline-details"
   ],
   "mac/ai-sim-offline-ai-remove-confirm": [
-   "openframe-ai-offline-details"
+   "straft-ai-offline-details"
   ],
   "mac/ai-sim-beside-vault": [
-   "openframe-ai-ready-beside-workspaces"
+   "straft-ai-ready-beside-workspaces"
   ],
   "mac/ai-sim-beside-story": [
-   "openframe-ai-ready-beside-workspaces"
+   "straft-ai-ready-beside-workspaces"
   ],
   "mac/ai-sim-beside-screenplay": [
-   "openframe-ai-ready-beside-workspaces"
+   "straft-ai-ready-beside-workspaces"
   ],
   "mac/ai-sim-beside-breakdown": [
-   "openframe-ai-ready-beside-workspaces"
+   "straft-ai-ready-beside-workspaces"
   ],
   "mac/ai-sim-beside-production": [
-   "openframe-ai-ready-beside-workspaces"
+   "straft-ai-ready-beside-workspaces"
   ],
   "mac/files-empty": [
    "files-start",

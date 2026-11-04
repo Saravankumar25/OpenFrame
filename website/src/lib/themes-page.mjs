@@ -94,15 +94,15 @@ export const ERRORS = [
   ['The file', [
     ['Copy the theme file to this computer first (for example to Downloads), then import it.', 'The file sits in a network folder.', 'Copy it to a normal folder on this computer and pick it again.'],
     ['The theme file is larger than 10 KB. Theme files are small; this is not one.', 'A theme file is a few hundred characters. The file you picked is far bigger, so it is probably not a theme.', 'Check that you picked the right file. If it is yours, remove everything the list below does not describe.'],
-    ['This is not a theme file. OpenFrame theme files are small JSON documents.', 'The text is not written in the file layout. A missing comma, a missing quote or a missing closing brace is the usual cause.', 'Put a comma after every line except the last one in a group. Use straight double quotes. Start with { and end with }. Compare with the example above.'],
+    ['This is not a theme file. Straft theme files are small JSON documents.', 'The text is not written in the file layout. A missing comma, a missing quote or a missing closing brace is the usual cause.', 'Put a comma after every line except the last one in a group. Use straight double quotes. Start with { and end with }. Compare with the example above.'],
     ['This is not a theme file. It must be one JSON object.', 'The file starts with something other than {, for example a [ or a plain word.', 'Make the first character { and the last character }.'],
     ['The theme is empty.', 'The file or the pasted text has nothing in it.', 'Paste the whole text of the file, from { to }.'],
     ['Please choose a theme file, not a folder or device.', 'You picked something that is not a file.', 'Pick the .json file itself.'],
   ]],
   ['The top of the file', [
-    ['The file has a setting OpenFrame does not know: "colour".', 'A name in the file is not one of the allowed names. Misspellings land here.', 'Use only formatVersion, id, name, description, author, seeds and overrides, spelled exactly like that, capital letters included.'],
+    ['The file has a setting Straft does not know: "colour".', 'A name in the file is not one of the allowed names. Misspellings land here.', 'Use only formatVersion, id, name, description, author, seeds and overrides, spelled exactly like that, capital letters included.'],
     ['The file has no "formatVersion". / "formatVersion" must be 1.', 'The version line is missing or has another value.', 'Add "formatVersion": 1.'],
-    ['This theme was made for a newer version of OpenFrame. Update OpenFrame to use it.', 'The file uses a number above 1.', 'Update the app, or change the number to 1 if you wrote the file yourself.'],
+    ['This theme was made for a newer version of Straft. Update Straft to use it.', 'The file uses a number above 1.', 'Update the app, or change the number to 1 if you wrote the file yourself.'],
     ['The id "My Theme" is not allowed. Use 3 to 40 lowercase letters, digits or hyphens.', 'The id has capitals, spaces or other signs, or the wrong length.', 'Write it like my-first-theme.'],
     ['The id "ember-dusk" belongs to a built-in theme. Change the id in the file.', 'You used the id of a built-in theme.', 'Pick another id.'],
     ['A theme with the id "ember-dusk" is already in My Themes. Delete that theme first, or change the id in the file.', 'You imported this id before.', 'Change the id in the file, or delete the old one under My Themes.'],
@@ -117,7 +117,7 @@ export const ERRORS = [
     ['Seed "accentHue" is missing.', 'One of the five numbers is missing.', 'Add it.'],
     ['Seed "accentHue" must be between 0 and 360.', 'The number is outside its range. The message names the range.', 'Use a number inside the range from the table above.'],
     ['Seed "accentHue" must be a number.', 'The value is in quotes or is words.', 'Remove the quotes: 250, not "250".'],
-    ['"seeds" has a value OpenFrame does not know: "tint".', 'A seed name is misspelled or extra.', 'Use only the five names from the table.'],
+    ['"seeds" has a value Straft does not know: "tint".', 'A seed name is misspelled or extra.', 'Use only the five names from the table.'],
   ]],
   ['The overrides', [
     ['"overrides" must be an object with "light" and "dark". / "overrides" may only have "light" and "dark", not "night".', 'The group has the wrong shape or an extra name.', 'Use only "light" and "dark", each holding colours.'],
@@ -146,7 +146,7 @@ export function themesBody(ctx) {
 <li><b>Scroll to My Themes.</b> Press <b>Import Theme File…</b> and pick the .json file. The app checks it as soon as you pick it. If you have the text instead of a file, press <b>Paste Theme…</b>, paste the whole text, and press <b>Check Theme</b>.</li>
 <li><b>Read the result.</b> You see the theme in Light and in Dark. A green box says the theme is readable. A blue box lists the small readability changes the app made. A red box says the theme cannot be used and lists every problem. Nothing is saved yet.</li>
 <li><b>Choose what to do.</b> <b>Save and Apply</b> saves it and uses it now. <b>Save to My Themes</b> keeps it for later. In the red case both buttons stay off: fix the file and import it again. After pasting, <b>Edit the text</b> takes you back to the text.</li>
-<li><b>Use it later.</b> Under My Themes each theme has <b>Apply</b>, <b>Rename</b>, <b>Export</b> and <b>Delete</b>. Deleting the theme in use switches you back to OpenFrame Default.</li></ol>
+<li><b>Use it later.</b> Under My Themes each theme has <b>Apply</b>, <b>Rename</b>, <b>Export</b> and <b>Delete</b>. Deleting the theme in use switches you back to Straft Default.</li></ol>
 <div class="tshot">${mock('win', 'settings-theme-check-ok', { caption: 'The result of the check on Windows' })}</div>`;
   const mac = html`<ol class="isteps">
 <li><b>Put the file on your Mac.</b> Save it in Downloads or another normal folder.</li>
@@ -154,7 +154,7 @@ export function themesBody(ctx) {
 <li><b>Scroll to My Themes.</b> Press <b>Import Theme File…</b> and pick the .json file. The sheet checks it at once. If you have the text instead of a file, press <b>Paste Theme…</b>, paste the whole text, and press <b>Check Theme</b>.</li>
 <li><b>Read the result.</b> The sheet shows the theme in Light and in Dark, then says it is readable, lists the small readability changes the app made, or says the theme cannot be used and lists every problem. Nothing is saved yet.</li>
 <li><b>Choose what to do.</b> <b>Save and Apply</b> saves it and uses it now. <b>Save to My Themes</b> keeps it for later. If the theme cannot be used, both stay off: fix the file and import it again.</li>
-<li><b>Use it later.</b> Under My Themes each theme has <b>Apply</b>, <b>Rename</b>, <b>Export</b> and <b>Delete</b>. Deleting the theme in use switches you back to OpenFrame Default.</li></ol>
+<li><b>Use it later.</b> Under My Themes each theme has <b>Apply</b>, <b>Rename</b>, <b>Export</b> and <b>Delete</b>. Deleting the theme in use switches you back to Straft Default.</li></ol>
 <div class="tshot">${mock('mac', 'settings-theme-paste-sheet', { caption: 'The Paste Theme sheet on the Mac' })}</div>`;
   const shareWin = html`<ol class="isteps">
 <li>Open <b>Settings</b>, <b>Appearance</b>, and find the theme under <b>My Themes</b>.</li>

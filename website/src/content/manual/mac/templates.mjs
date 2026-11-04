@@ -5,14 +5,14 @@ export default {
   part: `Project and data`,
   intro: [
     `A template is a saved starting point. Instead of beginning a screenplay, a call sheet or a budget from a blank page, you start from a template and change what you need. Templates are optional: every document can also start blank.`,
-    `OpenFrame comes with eight built-in templates: Feature Film Screenplay, Short Film Screenplay, Episodic / Series, Simple Beat Board, Indie Call Sheet, Shot List, Moodboard and Lightweight Budget. You can also make your own and keep them in one project or in every project.`,
+    `Straft comes with eight built-in templates: Feature Film Screenplay, Short Film Screenplay, Episodic / Series, Simple Beat Board, Indie Call Sheet, Shot List, Moodboard and Lightweight Budget. You can also make your own and keep them in one project or in every project.`,
     `Using a template always makes an independent copy. Changing or deleting a template never changes anything you already made from it.`,
     `Templates live in Project settings. Click Templates on Project Home, or open Project settings and choose the Templates tab.`,
   ],
   layout: [
     { name: `Settings tabs`, text: `At the top of the window: Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance and Storage. Templates is chosen. Done closes the window.` },
     { name: `Header`, text: `The title Templates, the question Would a saved starting point help me begin faster? and the Create Template button.` },
-    { name: `Built-in`, text: `The section BUILT-IN: Starting points that come with OpenFrame. Use one to copy it into this project. One card per template, with its kind and a short description.` },
+    { name: `Built-in`, text: `The section BUILT-IN: Starting points that come with Straft. Use one to copy it into this project. One card per template, with its kind and a short description.` },
     { name: `Yours`, text: `The section YOURS: Kept on this computer and available in every project. It holds templates you saved to My Templates.` },
     { name: `This project`, text: `The section THIS PROJECT: Copies kept inside this project. Changing a template never changes anything already made from it.` },
     { name: `Card actions`, text: `Each card has an actions button (three dots). Clicking the card itself opens a preview.` },
@@ -21,7 +21,7 @@ export default {
   workflows: [
     {
       id: `templates-open`,
-      title: `Open Templates and see what comes with OpenFrame`,
+      title: `Open Templates and see what comes with Straft`,
       purpose: `Find the Templates page and read the eight built-in templates.`,
       level: `Beginner`,
       prerequisites: [`A project is open.`],
@@ -37,7 +37,7 @@ export default {
           explain: `The cards are Feature Film Screenplay, Short Film Screenplay and Episodic / Series (Screenplay starters), Simple Beat Board (Beat Board starter), Indie Call Sheet (Call sheet), Shot List, Moodboard and Lightweight Budget (Simple budget). Each shows its kind and a line of description, for example Indie Call Sheet: Six default sections plus weather, crew and walkie channels.`,
         },
       ],
-      result: `You know which starting points come with OpenFrame.`,
+      result: `You know which starting points come with Straft.`,
       cautions: [],
       related: [`templates-preview`, `templates-use`],
     },

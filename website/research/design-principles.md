@@ -1,4 +1,4 @@
-# Design principles checklist for the OpenFrame website
+# Design principles checklist for the Straft website
 
 Source: "Sorry, Steve" (apple-design skill by Emil Kowalski, 6-page PDF, 17 principles taken from Apple WWDC talks).
 We take principles only. We do not copy apple.com layout, photography or colors. The brand stays: warm white, ink

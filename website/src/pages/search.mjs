@@ -6,8 +6,8 @@ export default function search({ html, raw }) {
   const chip = (f, v, label) => html`<button type="button" data-f="${f}" data-v="${v}" aria-pressed="false">${label}</button>`;
   return [{
     path: '/search/', nav: 'search', noindex: true,
-    title: 'Search | OpenFrame Studio',
-    description: 'Search every OpenFrame Studio tutorial, feature and answer, and narrow the results by platform, part, area and type.',
+    title: 'Search | Straft Studio',
+    description: 'Search every Straft Studio tutorial, feature and answer, and narrow the results by platform, part, area and type.',
     body: html`<div class="sp" id="sp" role="search"><section class="phero"><div class="wrap"><span class="eyebrow">Search</span><h1>Find the help you need.</h1>
 <p class="lead">Tutorials, features and answers in one place. A mistyped word still finds what you meant.</p>
 <div class="sp-bar">${raw(SEARCH)}<input class="sp-q" id="sp-q" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search" placeholder="Search tutorials, features and answers"></div>

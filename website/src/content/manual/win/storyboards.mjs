@@ -4,7 +4,7 @@ export default {
   order: 14,
   part: `Plan`,
   intro: [
-    `A storyboard is a row of panels that shows, frame by frame, what the audience will see in a scene. The page is called Storyboards and asks: What will the audience see? Each panel can hold a picture you import, a quick sketch you draw inside OpenFrame, or nothing yet, plus a short description and optional camera details.`,
+    `A storyboard is a row of panels that shows, frame by frame, what the audience will see in a scene. The page is called Storyboards and asks: What will the audience see? Each panel can hold a picture you import, a quick sketch you draw inside Straft, or nothing yet, plus a short description and optional camera details.`,
     `Storyboards is one of the tabs inside Production. A storyboard usually belongs to a screenplay scene, so its heading comes from the script and you never type it twice. You can also make a standalone storyboard that is not tied to any scene, for example for a title sequence. A scene can have more than one storyboard.`,
     `Panels are numbered by their order. Drag a panel and the numbers follow. A panel can be linked to a shot from the Shot Lists tab, and then it shows that shot's number, for example 1A. Export makes a printable panel sheet as a PDF.`,
   ],

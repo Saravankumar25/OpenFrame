@@ -4,8 +4,8 @@ export default {
   order: 29,
   part: `Project and data`,
   intro: [
-    `OpenFrame keeps everything on your computer, so this chapter is about the files you make to protect your work and to share it. There are three kinds of file, and they are not interchangeable. A Backup Package (.ofbackup) is a recoverable copy of one project that you keep for yourself. A Full Project Package (.ofproject) moves your whole working project to another PC. Exchange packages are for working with other people: a script review package (.ofscriptreview) or a Beat Board package (.ofstory) goes out, and a response package (.ofresponse) comes back with comments.`,
-    `There is no live sharing and no account. You send a package by any normal way you like, such as a USB drive, email or a shared folder, and the other person opens it in their own OpenFrame. Nothing in a package changes your project until you choose to import it, and every import is checked first.`,
+    `Straft keeps everything on your computer, so this chapter is about the files you make to protect your work and to share it. There are three kinds of file, and they are not interchangeable. A Backup Package (.ofbackup) is a recoverable copy of one project that you keep for yourself. A Full Project Package (.ofproject) moves your whole working project to another PC. Exchange packages are for working with other people: a script review package (.ofscriptreview) or a Beat Board package (.ofstory) goes out, and a response package (.ofresponse) comes back with comments.`,
+    `There is no live sharing and no account. You send a package by any normal way you like, such as a USB drive, email or a shared folder, and the other person opens it in their own Straft. Nothing in a package changes your project until you choose to import it, and every import is checked first.`,
     `Every command in this chapter is in the project menu. Click the project name at the top left of the window. The menu has a SHARE / EXCHANGE section (Export Review Package (script)…, Beat Board Package…, Import Exchange Package…, Open Review Package…, Review Queue and Import & Export History) and a BACKUP & PORTABILITY section (Create Backup…, Export Full Project… and Open Project Package…). These items are there while a project is open. From Application Home, Restore Backup or Package… opens the same package window.`,
     `Private notes are handled with care. A backup or a Full Project Package is for you, so it includes your private notes. A review package or exchange package never includes private notes, and the dialogs say so.`,
   ],
@@ -155,14 +155,14 @@ export default {
         {
           screen: `pkg-open-project-package-dialog`,
           do: `Click the main button: Open Project, Restore or Open as Copy. For Replace Existing After Backup, confirm.`,
-          explain: `The button changes with your choice. Replace Existing After Backup opens a confirmation titled Replace the existing project?, which says the project will be backed up to the Backups folder and then replaced, and that work saved after the package was made will only be in that backup. Confirm with Back Up and Replace, or cancel. Opening another project closes the one you have open, and OpenFrame first asks about any unsaved work.`,
+          explain: `The button changes with your choice. Replace Existing After Backup opens a confirmation titled Replace the existing project?, which says the project will be backed up to the Backups folder and then replaced, and that work saved after the package was made will only be in that backup. Confirm with Back Up and Replace, or cancel. Opening another project closes the one you have open, and Straft first asks about any unsaved work.`,
         },
       ],
       result: `The project opens. The window says Project opened. or Opened as a copy., with a Validated line.`,
       cautions: [
         `Importing never silently replaces the current project. The default is a copy.`,
         `If the package holds private notes, a note tells you that they become yours. You can see and edit them, and other members of the project cannot.`,
-        `If the project came from an older version of OpenFrame, the window says it was upgraded and a safety copy was kept.`,
+        `If the project came from an older version of Straft, the window says it was upgraded and a safety copy was kept.`,
         `A file that is not a valid package is refused before anything is created. Choose a different file.`,
       ],
       related: [`backups-and-packages-create-backup`, `backups-and-packages-export-full-project`],
@@ -172,7 +172,7 @@ export default {
       title: `Move a project to another PC`,
       purpose: `Carry a project from one computer to another with a Full Project Package.`,
       level: `Intermediate`,
-      prerequisites: [`OpenFrame Studio is installed on both PCs.`, `A way to carry the file, such as a USB drive.`],
+      prerequisites: [`Straft Studio is installed on both PCs.`, `A way to carry the file, such as a USB drive.`],
       steps: [
         {
           screen: `pkg-export-project-dialog`,
@@ -232,7 +232,7 @@ export default {
         {
           screen: `pkg-export-script-dialog`,
           do: `Read THIS PACKAGE WILL CONTAIN, then click Export Package….`,
-          explain: `It lists the Project, the Target draft, the Scope, who exported it and the date, then the counts, for example 36 scenes and 4 comments, and the line Private notes: excluded. A note explains: The reviewer opens a read-only copy of this draft in OpenFrame and adds comments. They send back a Response package; nothing in your project changes until you preview it and choose what to import. A Windows window asks where to save the .ofscriptreview file.`,
+          explain: `It lists the Project, the Target draft, the Scope, who exported it and the date, then the counts, for example 36 scenes and 4 comments, and the line Private notes: excluded. A note explains: The reviewer opens a read-only copy of this draft in Straft and adds comments. They send back a Response package; nothing in your project changes until you preview it and choose what to import. A Windows window asks where to save the .ofscriptreview file.`,
         },
       ],
       result: `The dialog says Package exported. and shows where the file is. Send it by any normal way.`,

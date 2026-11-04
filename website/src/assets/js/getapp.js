@@ -1,4 +1,4 @@
-/* Get OpenFrame: a dialog with the two store buttons and the price, and a small pill that opens it.
+/* Get Straft: a dialog with the two store buttons and the price, and a small pill that opens it.
    The content comes from <template id="getapp-tpl"> (footer in layout.mjs). Nothing is sent anywhere.
    On the Home page, on screens 768 px wide and up, it opens once per browser session after the first scroll past the hero.
    Everywhere else, and after it is closed, only the pill shows. This file is loaded BEFORE site.js on purpose: the

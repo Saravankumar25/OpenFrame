@@ -151,7 +151,7 @@ export default {
       ],
       result: `The project has its new title everywhere.`,
       cautions: [
-        `Renaming changes only the name OpenFrame shows. The project folder keeps its place on disk.`,
+        `Renaming changes only the name Straft shows. The project folder keeps its place on disk.`,
       ],
       related: [`project-home-project-menu`],
     },

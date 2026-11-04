@@ -4,14 +4,14 @@ export default {
   order: 17,
   part: `Shoot`,
   intro: [
-    `Budget is a light planning tool. It answers one question: What did we plan to spend, and what have we spent? You list rough costs in groups such as Cast, Crew and Locations, give each a Planned amount, and add an Actual amount once the money is spent. OpenFrame adds it up and tells you whether you are over or under plan.`,
-    `The page says it plainly: Use a simple estimate for planning. Formal accounting is outside OpenFrame. It is not an accounting, payroll or invoicing tool, and the budget is optional. You can ignore it entirely.`,
+    `Budget is a light planning tool. It answers one question: What did we plan to spend, and what have we spent? You list rough costs in groups such as Cast, Crew and Locations, give each a Planned amount, and add an Actual amount once the money is spent. Straft adds it up and tells you whether you are over or under plan.`,
+    `The page says it plainly: Use a simple estimate for planning. Formal accounting is outside Straft. It is not an accounting, payroll or invoicing tool, and the budget is optional. You can ignore it entirely.`,
     `Budget is a page of the Production workspace. Click Production in the sidebar, then choose Budget in the picker at the top of the page, next to the word Production. The first time, you pick a currency and start the budget. After that the page shows three totals at the top, Planned, Actual and Difference, and a table of your lines below.`,
     `Budget values never change automatically. If the script or schedule changes, you review the budget yourself. You can freeze a copy of the budget as a snapshot, and export it as a PDF, CSV or Excel file.`,
   ],
   layout: [
     { name: `Page header`, text: `The title Budget and the line What did we plan to spend, and what have we spent? Before you start a budget there is nothing else. Afterwards, Export, Save Snapshot and the orange Add Line are at the top right.` },
-    { name: `Planning note`, text: `A blue bar: Use a simple estimate for planning. Formal accounting is outside OpenFrame.` },
+    { name: `Planning note`, text: `A blue bar: Use a simple estimate for planning. Formal accounting is outside Straft.` },
     { name: `Start a budget`, text: `A card with a Currency menu (INR when it opens), the Start Budget button and the line Optional. You can ignore the budget entirely.` },
     { name: `Planned card`, text: `PLANNED, the total of the Planned amounts, and a line such as Sum of the Planned amounts · 0% contingency ₹0. Once you set a plan it reads, for example, Overall plan ₹1,00,000 · 10% contingency ₹10,000. An Edit Plan button sits under it.` },
     { name: `Actual card`, text: `ACTUAL, the total of the amounts spent, and how many lines have one, for example 2 of 4 lines have an Actual amount. It reads None yet when no line has an Actual amount.` },
@@ -30,7 +30,7 @@ export default {
         {
           screen: `budget-start`,
           do: `Click Production in the sidebar, then choose Budget in the picker at the top of the page.`,
-          explain: `The page says Use a simple estimate for planning. Formal accounting is outside OpenFrame. A card called Start a budget offers a Currency menu, set to INR, and the Start Budget button. A line under it says Optional. You can ignore the budget entirely.`,
+          explain: `The page says Use a simple estimate for planning. Formal accounting is outside Straft. A card called Start a budget offers a Currency menu, set to INR, and the Start Budget button. A line under it says Optional. You can ignore the budget entirely.`,
         },
         {
           screen: `budget-currency-menu`,

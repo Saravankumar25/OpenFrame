@@ -22,8 +22,8 @@ export default function tutorials(ctx) {
   // ---------- /tutorials/ ----------
   pages.push({
     path: '/tutorials/', nav: 'tutorials',
-    title: 'Tutorials for Windows and Mac | OpenFrame Studio',
-    description: 'Step-by-step written tutorials for OpenFrame Studio on Windows and on the Mac, on the real app screens of each platform, from the first start to backups.',
+    title: 'Tutorials for Windows and Mac | Straft Studio',
+    description: 'Step-by-step written tutorials for Straft Studio on Windows and on the Mac, on the real app screens of each platform, from the first start to backups.',
     breadcrumbs: [['Tutorials', '/tutorials/']],
     body: html`<section class="phero"><div class="wrap"><span class="eyebrow">Tutorials</span><h1>Everything you can do, step by step.</h1>
 <p class="lead">Written, step-by-step tutorials on the real screens. Pick your platform.</p>
@@ -41,8 +41,8 @@ export default function tutorials(ctx) {
     // ---------- platform index ----------
     pages.push({
       path: base, os: plat, nav: 'tutorials', alternates: { [plat]: base, [other]: `/${SLUG[other]}/tutorials/` },
-      title: `${NAME[plat]} tutorials | OpenFrame Studio`,
-      description: `Explore OpenFrame Studio on ${NAME[plat]} with step-by-step tutorials, from the first start to backups, each on the real ${NAME[plat]} app screens.`,
+      title: `${NAME[plat]} tutorials | Straft Studio`,
+      description: `Explore Straft Studio on ${NAME[plat]} with step-by-step tutorials, from the first start to backups, each on the real ${NAME[plat]} app screens.`,
       breadcrumbs: [['Tutorials', '/tutorials/'], [NAME[plat], base]],
       body: html`<section class="phero"><div class="wrap"><span class="eyebrow">${NAME[plat]} tutorials</span><h1>Everything you can do, step by step.</h1>
 <p class="lead">Written, step-by-step tutorials on the real ${NAME[plat]} screens. Pick a task and follow it.</p>
@@ -74,7 +74,7 @@ ${areas.map((a) => html`<h3 class="mt26">${a.area}</h3><div class="tgrid">${a.wo
         path: `${base}${w.id}/`, os: plat, nav: 'tutorials',
         alternates: { [plat]: `${base}${w.id}/`, [other]: counterpart ? `/${SLUG[other]}/tutorials/${w.id}/` : `/${SLUG[other]}/tutorials/` },
         title: title.length > 60 ? trimWords(title, 60) : fitTitle(title),
-        description: trimWords(`${w.purpose} A step-by-step ${a.area} tutorial for OpenFrame Studio on ${NAME[plat]}.`, 160),
+        description: trimWords(`${w.purpose} A step-by-step ${a.area} tutorial for Straft Studio on ${NAME[plat]}.`, 160),
         breadcrumbs: [['Tutorials', '/tutorials/'], [NAME[plat], base], [w.title, `${base}${w.id}/`]],
         body: html`<section class="phero"><div class="wrap"><p class="crumbs"><a href="${base}">${NAME[plat]} tutorials</a> &rsaquo; ${a.area}</p>
 <span class="eyebrow">${a.area}</span><h1>${w.title}</h1><p class="lead">${web(w.purpose)}</p>

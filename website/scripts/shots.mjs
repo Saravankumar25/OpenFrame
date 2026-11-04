@@ -5,6 +5,8 @@
 // Output, in .cache/shots/pages/<win|mac>/:
 //   <light|dark>/<file>.html + <file>.css   the screen, same file names as the catalog "file"; no inline styles or scripts
 //   assets/                                 shared per platform: Windows app CSS, Mac window pictures (hard links to the 2x PNGs), Mac base CSS
+// The product name in every page, stylesheet and text asset is the website's (src/lib/brand.mjs): the apps still show the old one.
+// Pixels cannot be renamed: the Mac window pictures still show the old name where the capture drew it.
 // .cache/shots/manifest.json, per catalog name:
 //   { file, page: [w, h]       CSS size to render the page iframe at
 //     card: [x, y, w, h]       the rectangle of the page a card shows: always the whole page (owner decision 2026-11-01)
@@ -18,6 +20,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
+import { BRAND_RULES, makeRebrand, rebrand, hasOldName } from '../src/lib/brand.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const RES = path.join(ROOT, 'research');
@@ -44,22 +47,30 @@ const saveManifest = () => { // merge into whatever is on disk, so two runs (mac
   fs.writeFileSync(MANIFEST + '.tmp', JSON.stringify(cur, null, 1)); fs.renameSync(MANIFEST + '.tmp', MANIFEST);
 };
 const mtime = (f) => { try { return fs.statSync(f).mtimeMs; } catch { return 0; } };
-const stamp = Math.max(mtime(OVR), mtime(import.meta.filename));
+const BRAND_JS = path.join(ROOT, 'src', 'lib', 'brand.mjs');
+const stamp = Math.max(mtime(OVR), mtime(import.meta.filename), mtime(BRAND_JS));
 const pagePath = (plat, theme, file) => path.join(PAGES, plat, theme, file);
 const isFresh = (plat, rec, srcTime) => !FORCE && !!manifest[plat][rec.name]?.page && THEMES.every((t) => mtime(pagePath(plat, t, rec.file)) >= Math.max(srcTime, stamp));
 const round = (r) => r.map((v) => Math.round(v));
-const writeFile = (f, text) => { fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, text); };
+let leftovers = 0; // written files that still hold the old name (should stay 0)
+const writeFile = (f, text) => { // every text written into the pages gets the product name of the website
+  text = rebrand(text); if (hasOldName(text)) { leftovers++; console.error('OLD NAME LEFT', path.relative(ROOT, f)); }
+  fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, text);
+};
+const BRAND = { brand: BRAND_RULES, brandFn: makeRebrand.toString() }; // the rename rules, rebuilt inside the page
 
 // ---------- the page cleaner, run inside the browser (self-contained: Playwright ships its source) ----------
-// Strips comments, capture links, paths and account names; moves every style attribute into a class in a returned stylesheet
+// Strips comments, capture links, paths and account names; renames the product (o.brand, o.brandFn: src/lib/brand.mjs) in text,
+// every attribute and the styles; moves every style attribute into a class in a returned stylesheet
 // (so the page needs no inline styles); optionally re-roots the Mac window to the clean rectangle.
 function inPage(o) {
-  const scrub = (t) => t
+  const rb = new Function('return ' + o.brandFn)()(o.brand);
+  const scrub = (t) => rb(t
     .replace(/[A-Za-z]:\\(?:[^\\\r\n"<>]+\\)*?zz-capture\\home\\/gi, 'C:\\Users\\Maya\\')
     .replace(/[A-Za-z]:\\Users\\[^\\\r\n"<>]+/gi, 'C:\\Users\\Maya')
-    .replace(/\/(?:var|private)\/folders\/[^\s"<>]*/g, '/Users/maya/OpenFrame')
+    .replace(/\/(?:var|private)\/folders\/[^\s"<>]*/g, '/Users/maya/Straft')
     .replace(/\/Users\/(?!maya\b)[^\/\s"<>]+/g, '/Users/maya')
-    .replace(/Saravan Kumar/g, 'Maya Iyer').replace(/Saravan/g, 'Maya');
+    .replace(/Saravan Kumar/g, 'Maya Iyer').replace(/Saravan/g, 'Maya'));
   const baseStyle = document.querySelector('head style')?.textContent || '';
   const cls = document.documentElement.className;
   // comments and capture links
@@ -75,11 +86,20 @@ function inPage(o) {
     win.style.left = -o.mac.full[0] + 'px'; win.style.top = -o.mac.full[1] + 'px';
     clean.appendChild(win); root = clean;
   }
+  // a name split over inline elements (the Windows wordmark draws its first half in an <i>): one text node with the new name,
+  // the element and its class kept so the app CSS still sizes it
+  const SPLIT = /^\s*[Oo][Pp][Ee][Nn]\s*[Ff][Rr][Aa][Mm][Ee](?:\s+[Ss]tudio)?\s*$/;
+  for (const e of [...root.querySelectorAll('*')].reverse()) {
+    if (!e.firstElementChild || !SPLIT.test(e.textContent)) continue;
+    if ([...e.querySelectorAll('*')].every((d) => /^(I|B|EM|STRONG|SPAN|SMALL|U)$/.test(d.nodeName))) e.textContent = rb(e.textContent.replace(/\s+/g, ' ').trim());
+  }
   // text and attributes
   const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const texts = []; while (tw.nextNode()) texts.push(tw.currentNode);
   for (const t of texts) if (!/^(STYLE|SCRIPT)$/.test(t.parentNode.nodeName)) { const v = scrub(t.nodeValue); if (v !== t.nodeValue) t.nodeValue = v; }
   const els = [root, ...root.querySelectorAll('*')];
-  for (const e of els) for (const a of ['value', 'aria-label', 'title', 'placeholder', 'alt', 'data-id']) { const v = e.getAttribute && e.getAttribute(a); if (v) { const n = scrub(v); if (n !== v) e.setAttribute(a, n); } }
+  const SCRUBBED = ['value', 'aria-label', 'title', 'placeholder', 'alt', 'data-id'];
+  for (const e of els) for (const { name: a, value: v } of [...(e.attributes || [])]) { if (!v || a === 'style') continue; const n = SCRUBBED.includes(a) ? scrub(v) : rb(v); if (n !== v) e.setAttribute(a, n); }
+  if (document.title !== rb(document.title)) document.title = rb(document.title);
   // style elements and attributes become one stylesheet
   let css = '';
   document.querySelectorAll('style').forEach((s) => { if (!o.mac) css += s.textContent + '\n'; s.remove(); });
@@ -103,7 +123,7 @@ function inPage(o) {
     const link = document.createElement('link'); link.rel = 'stylesheet'; link.href = o.cssName; document.head.appendChild(link);
     document.documentElement.removeAttribute('style');
   }
-  return { css, baseStyle, cls, html: o.mac ? root.outerHTML : '<!doctype html>\n' + document.documentElement.outerHTML };
+  return { css: rb(css), baseStyle: rb(baseStyle), cls: rb(cls), html: rb(o.mac ? root.outerHTML : '<!doctype html>\n' + document.documentElement.outerHTML) };
 }
 
 // ---------- MAC ----------
@@ -168,7 +188,7 @@ async function macGeometry(page, file) {
 let macBaseName = null; // shared base stylesheet, one per platform, named by content
 async function macWritePage(page, theme, rec, fullR, patched) {
   await page.goto(pathToFileURL(path.join(MAC_SRC, theme, rec.file)).href);
-  const r = await page.evaluate(inPage, { mac: { full: fullR }, urlTo: `../assets/${theme}/`, needles: ['line-height:16px'] });
+  const r = await page.evaluate(inPage, { ...BRAND, mac: { full: fullR }, urlTo: `../assets/${theme}/`, needles: ['line-height:16px'] });
   const base = r.baseStyle.replace(/\[style\*="line-height:16px"\]/g, '.of-n0') + `
 html,body{margin:0!important;padding:0!important;background:transparent!important}
 .of-clean{position:relative;overflow:hidden}
@@ -179,7 +199,7 @@ html,body{margin:0!important;padding:0!important;background:transparent!importan
   const stem = rec.file.replace(/\.html$/, '');
   const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
   writeFile(pagePath('mac', theme, rec.file), `<!doctype html>
-<html lang="en" class="${r.cls}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(rec.title)}</title><link rel="stylesheet" href="../assets/${name}"><link rel="stylesheet" href="${stem}.css"></head><body>${r.html}</body></html>
+<html lang="en" class="${r.cls}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(rebrand(rec.title))}</title><link rel="stylesheet" href="../assets/${name}"><link rel="stylesheet" href="${stem}.css"></head><body>${r.html}</body></html>
 `);
   writeFile(path.join(PAGES, 'mac', theme, stem + '.css'), r.css);
   const pic = path.basename(rec.picture), dest = path.join(PAGES, 'mac', 'assets', theme, pic);
@@ -319,7 +339,7 @@ async function winOne(ctx, rec) {
     const stem = rec.file.replace(/\.html$/, '');
     for (const theme of THEMES) {
       await page.goto(url(theme)); await winPrepare(page, hideScenes);
-      const r = await page.evaluate(inPage, { cssName: stem + '.css' });
+      const r = await page.evaluate(inPage, { ...BRAND, cssName: stem + '.css' });
       writeFile(pagePath('win', theme, rec.file), r.html);
       writeFile(path.join(PAGES, 'win', theme, stem + '.css'), r.css);
     }
@@ -394,7 +414,11 @@ try {
     const cat = all.filter((r) => !MATCH || MATCH.test(r.name));
     console.log(`win: ${cat.length} screens`);
     fs.mkdirSync(path.join(PAGES, 'win', 'assets'), { recursive: true });
-    for (const f of fs.readdirSync(path.join(WIN_SRC, 'assets'))) { const d = path.join(PAGES, 'win', 'assets', f); if (!fs.existsSync(d)) fs.copyFileSync(path.join(WIN_SRC, 'assets', f), d); }
+    for (const f of fs.readdirSync(path.join(WIN_SRC, 'assets'))) { // text assets (the app CSS: theme selectors, content strings) get the product name
+      const src = path.join(WIN_SRC, 'assets', f), d = path.join(PAGES, 'win', 'assets', f);
+      if (/\.(css|js|mjs|json|svg|html?|txt|md)$/i.test(f)) { const t = rebrand(fs.readFileSync(src, 'utf8')); if (!fs.existsSync(d) || fs.readFileSync(d, 'utf8') !== t) writeFile(d, t); }
+      else if (!fs.existsSync(d)) fs.copyFileSync(src, d);
+    }
     const ctxs = await Promise.all(Array.from({ length: 3 }, () => browser.newContext({ viewport: { width: 1600, height: 1000 }, deviceScaleFactor: 1 })));
     let made = 0;
     await pool(cat, 3, async (rec, w) => { if (await winOne(ctxs[w], rec)) made++; if (made % 25 === 0) saveManifest(); });
@@ -402,4 +426,4 @@ try {
     console.log(`win: ${made} made, ${cat.length - made} up to date`);
     if (QA && !MATCH) await contactSheets('win', all, browser);
   }
-} finally { await browser.close(); saveManifest(); }
+} finally { await browser.close(); saveManifest(); if (leftovers) console.error(`${leftovers} written files still hold the old product name`); }

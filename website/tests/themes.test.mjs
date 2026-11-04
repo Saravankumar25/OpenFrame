@@ -8,7 +8,7 @@ import { DIST, ROOT, SKIP, read, resolvesInDist } from './_helpers.mjs';
 
 const STARTERS_DIR = path.join(ROOT, 'src', 'static', 'themes');
 const IDS = readdirSync(STARTERS_DIR).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5));
-const BUILT_IN = ['OpenFrame Default', 'Black and White', 'Studio Amber', 'Slate Noir', 'Midnight Reel', 'Teal & Orange',
+const BUILT_IN = ['Straft Default', 'Black and White', 'Studio Amber', 'Slate Noir', 'Midnight Reel', 'Teal & Orange',
   'Courier & Cream', 'Cutting Room', 'Velvet Curtain', 'Sunset Boulevard', 'Arctic Frame', 'Neon Reel',
   'Location Scout', 'Desert Dune', 'Colorist Neutral', 'Silver Screen', 'High Contrast'];
 const SEEDS = { neutralHue: [0, 360], neutralTint: [0, 0.04], accentHue: [0, 360], accentChroma: [0, 0.25], accentLightnessNudge: [-12, 16] };

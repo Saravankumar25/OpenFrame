@@ -4,42 +4,42 @@ export default {
   order: 3,
   part: `Start`,
   intro: [
-    `OpenFrame Studio uses the normal Mac menu bar at the top of the screen. The menus are OpenFrame Studio, File, Edit, View, Go, Window and Help. They are the same on Application Home and inside a project, with a few differences that this chapter points out.`,
+    `Straft Studio uses the normal Mac menu bar at the top of the screen. The menus are Straft Studio, File, Edit, View, Go, Window and Help. They are the same on Application Home and inside a project, with a few differences that this chapter points out.`,
     `Menus are the quickest way to find a command and to learn its keys. Each menu item that has a keyboard shortcut shows it on the right, in the usual Mac symbols: the Command key, the Shift key, the Option key and the Control key.`,
     `If you cannot remember where a command lives, press Command-K to open Search and Commands. It lists commands you can run by typing. See the Search chapter.`,
   ],
   layout: [
-    { name: `OpenFrame Studio menu`, text: `About OpenFrame Studio, Project Settings…, Settings…, Services, Hide OpenFrame Studio, Hide Others, Show All and Quit OpenFrame Studio.` },
+    { name: `Straft Studio menu`, text: `About Straft Studio, Project Settings…, Settings…, Services, Hide Straft Studio, Hide Others, Show All and Quit Straft Studio.` },
     { name: `File menu`, text: `Create, open and close projects, import and export a screenplay, back up and export a project, share for review, and print.` },
     { name: `Edit menu`, text: `Undo and Redo for text, Undo Project Change and Redo Project Change for the whole project, the editing commands, and Search and Commands….` },
     { name: `View menu`, text: `Hide Sidebar, or Show Sidebar when it is hidden.` },
     { name: `Go menu`, text: `Back and Forward, the project pages with their keys, and shortcuts to Project Settings and Keyboard Shortcuts.` },
-    { name: `Window menu`, text: `Minimize, Zoom, About OpenFrame Studio and Bring All to Front. While a project is open it also lists the project window.` },
-    { name: `Help menu`, text: `OpenFrame Studio Help and Keyboard Shortcuts….` },
+    { name: `Window menu`, text: `Minimize, Zoom, About Straft Studio and Bring All to Front. While a project is open it also lists the project window.` },
+    { name: `Help menu`, text: `Straft Studio Help and Keyboard Shortcuts….` },
   ],
   workflows: [
     {
       id: `menus-app-menu`,
-      title: `Open Settings or Project Settings from the OpenFrame Studio menu`,
+      title: `Open Settings or Project Settings from the Straft Studio menu`,
       purpose: `Find About, Settings, Project Settings and Quit in the first menu.`,
       level: `Beginner`,
-      prerequisites: [`OpenFrame Studio is the front app.`],
+      prerequisites: [`Straft Studio is the front app.`],
       steps: [
         {
           screen: `menu-app`,
-          do: `On Application Home, click OpenFrame Studio in the menu bar.`,
-          explain: `The menu lists About OpenFrame Studio, Project Settings… (Shift-Command-comma), Settings… (Command-comma), Services, Hide OpenFrame Studio (Command-H), Hide Others (Option-Command-H), Show All and Quit OpenFrame Studio (Command-Q).`,
+          do: `On Application Home, click Straft Studio in the menu bar.`,
+          explain: `The menu lists About Straft Studio, Project Settings… (Shift-Command-comma), Settings… (Command-comma), Services, Hide Straft Studio (Command-H), Hide Others (Option-Command-H), Show All and Quit Straft Studio (Command-Q).`,
         },
         {
           screen: `menu-app-project`,
-          do: `With a project open, click OpenFrame Studio again.`,
+          do: `With a project open, click Straft Studio again.`,
           explain: `The menu is the same. Settings… opens settings for the app on this Mac. Project Settings… opens the settings of the project you have open. Services, Hide and Show All are the standard Mac commands.`,
         },
       ],
       result: `You can open Settings and Project Settings from the keyboard or the menu.`,
       cautions: [
-        `Settings… applies to OpenFrame on this Mac. Project Settings… applies only to the open project.`,
-        `Quit OpenFrame Studio closes the app. Your work is saved as you go, so there is no Save command to run first.`,
+        `Settings… applies to Straft on this Mac. Project Settings… applies only to the open project.`,
+        `Quit Straft Studio closes the app. Your work is saved as you go, so there is no Save command to run first.`,
       ],
       related: [`menus-go-menu`, `menus-help-menu`],
     },
@@ -48,7 +48,7 @@ export default {
       title: `Use the File menu`,
       purpose: `Create, open, close, import, export, back up and print from one menu.`,
       level: `Beginner`,
-      prerequisites: [`OpenFrame Studio is the front app.`],
+      prerequisites: [`Straft Studio is the front app.`],
       steps: [
         {
           screen: `menu-file-home`,
@@ -82,7 +82,7 @@ export default {
       title: `Undo, redo and search from the Edit menu`,
       purpose: `Tell text undo from project undo, and open Search and Commands.`,
       level: `Beginner`,
-      prerequisites: [`OpenFrame Studio is the front app.`],
+      prerequisites: [`Straft Studio is the front app.`],
       steps: [
         {
           screen: `menu-edit-home`,
@@ -150,14 +150,14 @@ export default {
     {
       id: `menus-window-menu`,
       title: `Use the Window menu`,
-      purpose: `Minimize, zoom, and switch to the OpenFrame window.`,
+      purpose: `Minimize, zoom, and switch to the Straft window.`,
       level: `Beginner`,
-      prerequisites: [`OpenFrame Studio is the front app.`],
+      prerequisites: [`Straft Studio is the front app.`],
       steps: [
         {
           screen: `menu-window-home`,
           do: `Click Window in the menu bar.`,
-          explain: `The menu has Minimize (Command-M), Zoom, About OpenFrame Studio and Bring All to Front.`,
+          explain: `The menu has Minimize (Command-M), Zoom, About Straft Studio and Bring All to Front.`,
         },
         {
           screen: `menu-window-project`,
@@ -165,7 +165,7 @@ export default {
           explain: `The same items appear, and the project window is listed at the bottom with its name and page, for example Night Bus (Home). Choose it to bring that window to the front.`,
         },
       ],
-      result: `You can manage the OpenFrame window from the menu.`,
+      result: `You can manage the Straft window from the menu.`,
       cautions: [],
       related: [`menus-help-menu`],
     },
@@ -174,12 +174,12 @@ export default {
       title: `Open Help and the list of keyboard shortcuts`,
       purpose: `Find the help and the full list of keys.`,
       level: `Beginner`,
-      prerequisites: [`OpenFrame Studio is the front app.`],
+      prerequisites: [`Straft Studio is the front app.`],
       steps: [
         {
           screen: `menu-help-home`,
           do: `Click Help in the menu bar.`,
-          explain: `The menu has OpenFrame Studio Help (Command-?) and Keyboard Shortcuts…. Choose Keyboard Shortcuts… to see the keys for your commands.`,
+          explain: `The menu has Straft Studio Help (Command-?) and Keyboard Shortcuts…. Choose Keyboard Shortcuts… to see the keys for your commands.`,
         },
         {
           screen: `menu-help-project`,
@@ -193,8 +193,8 @@ export default {
     },
   ],
   screens: {
-    'menu-app': `The OpenFrame Studio menu on Application Home: About OpenFrame Studio, Project Settings… (Shift-Command-comma), Settings… (Command-comma), Services, Hide OpenFrame Studio, Hide Others, Show All and Quit OpenFrame Studio (Command-Q). Used in menus-app-menu.`,
-    'menu-app-project': `The OpenFrame Studio menu with a project open. It lists the same items. Used in menus-app-menu.`,
+    'menu-app': `The Straft Studio menu on Application Home: About Straft Studio, Project Settings… (Shift-Command-comma), Settings… (Command-comma), Services, Hide Straft Studio, Hide Others, Show All and Quit Straft Studio (Command-Q). Used in menus-app-menu.`,
+    'menu-app-project': `The Straft Studio menu with a project open. It lists the same items. Used in menus-app-menu.`,
     'menu-file-home': `The File menu on Application Home: New Project…, Open Project…, Close Project, Close, Close All, Import Screenplay…, Export Screenplay…, Export PDF…, Back Up Project…, Export Full Project…, Share for Review, Import Exchange Package…, Open Review Package…, Review Queue…, Import & Export History… and Print…. Used in menus-file-menu.`,
     'menu-file-project': `The File menu with Project Home showing. It adds Restore Backup or Package… above Print…. Used in menus-file-menu.`,
     'menu-file-with-project': `The File menu with the Screenplay page showing behind it, after an import. The menu is the same as on Project Home. Variant, part of menus-file-menu.`,
@@ -204,9 +204,9 @@ export default {
     'menu-view-project': `The View menu with a project open. Hide Sidebar has the keys Control-Command-S. Used in menus-view-menu.`,
     'menu-go-home': `The Go menu on Application Home: Back, Forward, Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets, Files, Notes and Tasks, Activity, Recently Deleted, Production Tab, Project Settings and Keyboard Shortcuts, with their keys. Used in menus-go-menu.`,
     'menu-go': `The Go menu with a project open, showing the keys Command-[ and Command-] and Control-Command-1 to 8. Used in menus-go-menu.`,
-    'menu-window-home': `The Window menu on Application Home: Minimize, Zoom, About OpenFrame Studio and Bring All to Front. Used in menus-window-menu.`,
+    'menu-window-home': `The Window menu on Application Home: Minimize, Zoom, About Straft Studio and Bring All to Front. Used in menus-window-menu.`,
     'menu-window-project': `The Window menu with a project open. The project window, Night Bus (Home), is listed at the bottom. Used in menus-window-menu.`,
-    'menu-help-home': `The Help menu on Application Home: OpenFrame Studio Help (Command-?) and Keyboard Shortcuts…. Used in menus-help-menu.`,
+    'menu-help-home': `The Help menu on Application Home: Straft Studio Help (Command-?) and Keyboard Shortcuts…. Used in menus-help-menu.`,
     'menu-help-project': `The Help menu with a project open. It lists the same two items. Used in menus-help-menu.`,
   },
   shortcuts: [
@@ -231,14 +231,14 @@ export default {
     [`Shift-Command-,`, `Project Settings`],
     [`Command-,`, `Settings`],
     [`Command-M`, `Minimize`],
-    [`Command-H`, `Hide OpenFrame Studio`],
+    [`Command-H`, `Hide Straft Studio`],
     [`Option-Command-H`, `Hide Others`],
-    [`Command-Q`, `Quit OpenFrame Studio`],
-    [`Command-?`, `OpenFrame Studio Help`],
+    [`Command-Q`, `Quit Straft Studio`],
+    [`Command-?`, `Straft Studio Help`],
   ],
   limits: [
-    `The menus are the Mac menu bar. OpenFrame has no separate in-window menu for these commands, apart from the Project menu in the toolbar.`,
-    `There is no Save command. OpenFrame saves your work as you type.`,
+    `The menus are the Mac menu bar. Straft has no separate in-window menu for these commands, apart from the Project menu in the toolbar.`,
+    `There is no Save command. Straft saves your work as you type.`,
   ],
   troubleshooting: [
     {
