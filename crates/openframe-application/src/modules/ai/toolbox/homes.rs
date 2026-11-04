@@ -1310,10 +1310,9 @@ pub fn missing_leaf(tool: &str, picks: &[&str]) -> Option<&'static str> {
     h.also.iter().find(|l| !picks.contains(l)).copied()
 }
 
-/// May this tool run with these picks? With no picks nothing is held back: that is the path the
-/// evaluation measures the older sets on (`AppConfig::ai_eval_any_sections`).
+/// May this tool run with these picks?
 pub fn offered(tool: &str, picks: &[&str]) -> bool {
-    picks.is_empty() || (home(tool).is_some() && missing_leaf(tool, picks).is_none())
+    home(tool).is_some() && missing_leaf(tool, picks).is_none()
 }
 
 #[cfg(test)]
@@ -1389,9 +1388,6 @@ mod tests {
             missing_leaf("suggest_breakdown", &["screenplay/scenes"]),
             Some("breakdown/breakdown")
         );
-        assert!(
-            offered("propose_budget_line", &[]),
-            "no picks: the older path"
-        );
+        assert!(!offered("propose_budget_line", &[]));
     }
 }

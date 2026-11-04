@@ -2091,12 +2091,8 @@ fn open_workspace(ws: &str, sub: Option<&str>) -> AppResult<ToolOutput> {
 }
 
 fn open_object(ctx: &ToolCtx<'_>, text: &str) -> AppResult<ToolOutput> {
-    let mut hits = search_hits(
-        ctx.conn,
-        ctx.actor,
-        text,
-        if ctx.scope.sections.is_empty() { 5 } else { 50 },
-    )?;
+    // Over-read, then hold to the picks.
+    let mut hits = search_hits(ctx.conn, ctx.actor, text, 50)?;
     hits.retain(|h| ctx.scope.reads(&h.3));
     hits.truncate(5);
     let Some((etype, title, context, nav)) = hits.first() else {

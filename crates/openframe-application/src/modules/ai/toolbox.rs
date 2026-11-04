@@ -272,7 +272,7 @@ pub fn home_of_change(
             .count()
     };
     let every_section = ResolvedScope {
-        sections: Vec::new(),
+        sections: ResolvedScope::every_section().sections,
         ..scope.clone()
     };
     let all = tools_for(core, actor, &every_section);
@@ -411,12 +411,6 @@ pub fn tools_for_request(
                 .iter()
                 .zip(&bonus)
                 .any(|(t, b)| t.mutating && *b >= SEMANTIC_TOP_BONUS));
-    // With sections picked the list is already theirs: the scope label says nothing.
-    let scope_words = if scope.sections.is_empty() {
-        words(scope.kind.label())
-    } else {
-        Vec::new()
-    };
     let mut scored: Vec<(i64, usize, &ToolDef)> = all
         .iter()
         .enumerate()
@@ -430,11 +424,6 @@ pub fn tools_for_request(
                 if name_words.contains(w) {
                     score += 3;
                 } else if desc_words.contains(w) {
-                    score += 1;
-                }
-            }
-            for w in &scope_words {
-                if name_words.contains(w) || desc_words.contains(w) {
                     score += 1;
                 }
             }

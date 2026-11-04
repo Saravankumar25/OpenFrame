@@ -7,30 +7,17 @@
 //! test then dispatches every proposed operation through the normal registry
 //! (exactly what an approved Change Set does) to prove the operations are valid.
 
-use openframe_application::modules::ai::scope::{self, AiScopeArgs, AiScopeKind, ResolvedScope};
+use openframe_application::modules::ai::scope::ResolvedScope;
 use openframe_application::modules::ai::toolbox::{self, ToolStep};
 use openframe_application::modules::ai::{ChangeSetDraft, catalog, change_set};
 use openframe_domain::{Actor, AppError, Role};
 use openframe_test_support::TestEnv;
 use serde_json::{Value, json};
 
-fn whole(env: &TestEnv, actor: &Actor) -> ResolvedScope {
+fn whole(env: &TestEnv, _actor: &Actor) -> ResolvedScope {
     let s = env.core.project().unwrap();
     s.store
-        .read(|c| {
-            scope::resolve(
-                c,
-                actor,
-                &AiScopeArgs {
-                    kind: AiScopeKind::WholeProject,
-                    draft_id: None,
-                    scene_id: None,
-                    selection: Vec::new(),
-                    shooting_day_id: None,
-                    call_sheet_id: None,
-                },
-            )
-        })
+        .read(|c| ResolvedScope::on_current_draft(c))
         .unwrap()
 }
 

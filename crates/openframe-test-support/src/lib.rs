@@ -26,7 +26,7 @@ pub struct TestEnv {
 /// expect (ADR-0041). `TestEnv::picking_sections` is the app's own rule.
 fn test_config(dir: &std::path::Path) -> AppConfig {
     AppConfig {
-        ai_eval_any_sections: true,
+        ai_eval_all_sections: true,
         ..AppConfig::isolated(dir)
     }
 }

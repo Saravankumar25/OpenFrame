@@ -211,16 +211,16 @@ pub fn read_conv_resolved(
     reads
 }
 
-/// The picks of a case: a scene ordinal and a day number become their ids.
-pub fn picks_of(
-    core: &AppCore,
-    case: &Case,
-    ix: &EntityIndex,
-) -> Result<Option<Selection>, String> {
-    let Some(list) = &case.sections else {
-        return Ok(None);
-    };
+/// The picks of a case: a scene ordinal and a day number become their ids. A case with none reads
+/// every section, as a request with no picks does under the evaluation switch.
+pub fn picks_of(core: &AppCore, case: &Case, ix: &EntityIndex) -> Result<Selection, String> {
     let session = core.project().map_err(|e| e.message)?;
+    let Some(list) = &case.sections else {
+        return session
+            .store
+            .read(sections::every_section)
+            .map_err(|e| e.message);
+    };
     let mut picks = Vec::with_capacity(list.len());
     for p in list {
         let mut pick = SectionPick {
@@ -259,6 +259,5 @@ pub fn picks_of(
     session
         .store
         .read(|c| sections::resolve_picks(c, &picks))
-        .map(Some)
         .map_err(|e| format!("case {}: {}", case.id, e.message))
 }

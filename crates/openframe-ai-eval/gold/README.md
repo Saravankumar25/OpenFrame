@@ -31,8 +31,7 @@ whatever production numbers the script carries.
 | `lang` | Language of the request (`en`, `hi`, `te`, `ta`, `kn`, `ml`, `es`, `fr`, `de`, `zh`, `ja`, `ko`). The answer must be in this language. |
 | `project` | The sample to import (table above). |
 | `setup` | Optional list of `{ "op", "args" }` run through the core before the request (for example a planted note for an injection case). `$scene:N` in a string is replaced by the id of scene N. |
-| `scope` | Optional. What the assistant panel is pointed at: `{ "kind": "scene", "scene": N }`, `{ "kind": "act", "act": "ACT TWO" }` or `{ "kind": "project" }` (the default). |
-| `sections` | optional: the sections the case picks (ADR-0041), an array of `{ "leaf": "production/budget", "scene": 4, "day": 2 }`; the harness turns `scene` (place in the draft) and `day` (shoot day number) into ids. Without it the case reads every area. |
+| `sections` | optional: the sections the case picks (ADR-0041); without it the case reads every section the project has, through the same path, over the cap of three (`AppConfig::ai_eval_all_sections`). An array of `{ "leaf": "production/budget", "scene": 4, "day": 2 }`; the harness turns `scene` (place in the draft) and `day` (shoot day number) into ids. Without it the case reads every area. |
 | `expect.pointer` | optional: the leaf the out-of-section pointer must name. Every case with `sections` and no `pointer` counts as one where it must stay quiet. |
 | `expect.no_pointer` | optional: marks a case written to catch a word that used to collide. |
 | `request` | What the person types. |
@@ -64,7 +63,7 @@ Run only this file on the real model: `--only poison-` (the harness matches case
 
 ## Held-out paraphrases (`paraphrase.jsonl`)
 
-Kind `paraphrase`, ids `para-<lang>-NNN`, 90 cases (harness plan 9.2). Twenty intents taken from `tools.en.jsonl` (counts, characters, scene and dialogue facts, navigation, search, locations, drafts, production lookups and task creation), each reworded four ways in English: one with typos, one in lower case with no punctuation, one as a fragment or in a different word order, and one in a producer's or assistant director's register (80 cases). Ten more are in hi, es, fr, de and ja, two each, with `"review": "automated review only"`. The wording does not copy the source cases, because the people who wrote the regex direct routes must not have seen it. `project`, `scope`, `setup` and `expect` come from the source case, without its `end_state` (a paraphrase is never applied).
+Kind `paraphrase`, ids `para-<lang>-NNN`, 90 cases (harness plan 9.2). Twenty intents taken from `tools.en.jsonl` (counts, characters, scene and dialogue facts, navigation, search, locations, drafts, production lookups and task creation), each reworded four ways in English: one with typos, one in lower case with no punctuation, one as a fragment or in a different word order, and one in a producer's or assistant director's register (80 cases). Ten more are in hi, es, fr, de and ja, two each, with `"review": "automated review only"`. The wording does not copy the source cases, because the people who wrote the regex direct routes must not have seen it. `project`, `sections`, `setup` and `expect` come from the source case, without its `end_state` (a paraphrase is never applied).
 
 A paraphrase is scored exactly like a `tool` case (tool offered, tool chosen, arguments, answer facts) but has its own section in the report, "Held-out paraphrases", and does not count towards the English release bar. Accuracy here is the honest estimate of accuracy on real wording.
 

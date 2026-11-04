@@ -1,22 +1,11 @@
-//! The dossier on synthetic facts: format, the cap, the guards and the plan. No database; the
+//! The dossier on synthetic facts: format, the cap and the guards. No database; the
 //! fetchers themselves are tested on a real project in `tests/ai/ai_dossier.rs`.
 
 use super::guard::{self, Guard};
 use super::words::{relation_sentence, relation_word};
 use super::*;
-use crate::modules::ai::index::{Hit, How, Kind};
-use crate::modules::ai::turn::{AnswerType, Domain, ReadHow};
-
-fn read(t: AnswerType, domains: &[Domain]) -> TurnRead {
-    TurnRead {
-        answer_type: t,
-        group: t.group(),
-        domains: domains.to_vec(),
-        length_class: t.length_class(),
-        how: ReadHow::Rule,
-        vote: 0.0,
-    }
-}
+use crate::modules::ai::index::{Hit, How};
+use crate::modules::ai::turn::AnswerType;
 
 fn fat(kind: &'static str, id: &str, chars: usize, priority: u8) -> Fact {
     Fact::new(kind, id)
@@ -290,95 +279,26 @@ fn contact_details_typed_into_free_text_are_hidden_from_a_role_that_may_not_see_
 }
 
 #[test]
-fn the_table_has_one_fetcher_for_every_domain() {
-    let all = [
-        Domain::Story,
-        Domain::Screenplay,
-        Domain::Breakdown,
-        Domain::People,
-        Domain::Production,
-        Domain::Schedule,
-        Domain::Budget,
-        Domain::Visual,
-        Domain::Files,
-        Domain::Settings,
-        Domain::Product,
-    ];
-    for d in all {
-        let n = FETCHERS.iter().filter(|f| f.domain == d).count();
-        assert_eq!(n, 1, "{}", d.code());
-    }
-    assert!(
-        FETCHERS
-            .iter()
-            .all(|f| f.cap_tokens > 0 && !f.groups.is_empty() && !f.source.is_empty())
-    );
-}
-
-#[test]
-fn chat_and_change_fetch_nothing_and_a_scene_to_explain_brings_its_breakdown_and_day() {
-    let none = Resolved::default();
+fn chat_and_change_fetch_nothing() {
     for t in [AnswerType::Chat, AnswerType::Change] {
-        assert!(!registry::wants_facts(read(t, &[]).group));
+        assert!(!wants_facts(t.group()));
     }
-    let scene = Resolved {
-        scenes: vec![crate::modules::ai::index::SceneHit {
-            screenplay_id: "sp".into(),
-            ordinal: 3,
-            scene_id: Some("s3".into()),
-            heading: None,
-            how: How::Exact,
-        }],
-        ..Resolved::default()
-    };
-    let r = read(AnswerType::Explain, &[Domain::Screenplay]);
-    let planned: Vec<Domain> = registry::plan(&r, &scene, "explain scene 3")
-        .iter()
-        .map(|f| f.domain)
-        .collect();
-    for d in [Domain::Screenplay, Domain::Breakdown, Domain::Schedule] {
-        assert!(planned.contains(&d), "{planned:?}");
+    for t in [AnswerType::Lookup, AnswerType::Explain, AnswerType::Help] {
+        assert!(wants_facts(t.group()));
     }
-    // A lookup of one fact does not fetch the whole scene.
-    let r = read(AnswerType::Lookup, &[Domain::Screenplay]);
-    let planned: Vec<Domain> = registry::plan(&r, &scene, "which scene is it")
-        .iter()
-        .map(|f| f.domain)
-        .collect();
-    assert_eq!(planned, vec![Domain::Screenplay]);
-    // Help reads the guide; a money question reads the budget.
-    let planned: Vec<Domain> = registry::plan(
-        &read(AnswerType::Help, &[]),
-        &none,
-        "how do I change the theme",
-    )
-    .iter()
-    .map(|f| f.domain)
-    .collect();
-    assert!(planned.contains(&Domain::Product));
-    let planned: Vec<Domain> = registry::plan(
-        &read(AnswerType::Lookup, &[Domain::Budget]),
-        &none,
-        "lead cast budget",
-    )
-    .iter()
-    .map(|f| f.domain)
-    .collect();
-    assert_eq!(planned, vec![Domain::Budget]);
 }
 
 #[test]
-fn a_correction_that_names_nothing_takes_the_conversation_focus_but_a_money_question_does_not() {
-    // names_nothing is the test the completion uses.
+fn a_correction_that_names_nothing_has_no_subject_of_its_own() {
+    // no_subject is the test the completion uses.
     let mut r = Resolved::default();
-    assert!(names::names_nothing(&r));
+    assert!(names::no_subject(&r));
     r.characters.push(Hit {
         id: "c".into(),
         name: "Anjali".into(),
         how: How::Exact,
     });
-    assert!(!names::names_nothing(&r));
-    let _ = Kind::Scene;
+    assert!(!names::no_subject(&r));
 }
 
 #[test]

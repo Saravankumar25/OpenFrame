@@ -4,7 +4,7 @@
 //! BM25) with an OR query over the question's significant terms; semantic hits
 //! from vector KNN over chunk embeddings; graph hits from bounded expansion of
 //! the top entities. Everything is merged by Reciprocal Rank Fusion plus
-//! explainable boosts (explicit scope, exact name, graph relation, current
+//! explainable boosts (exact name, graph relation, current
 //! draft). Privacy is filtered here AND re-checked canonically by the assembler.
 
 use std::collections::{BTreeMap, HashSet};
@@ -14,7 +14,7 @@ use openframe_domain::{Actor, AppResult};
 use openframe_search::graph::{self, TraversalLimits};
 use openframe_search::rank::{self, Candidate, RankWeights};
 use openframe_search::{SemanticIndex, SqliteVecIndex, docs};
-use rusqlite::{Connection, OptionalExtension, params};
+use rusqlite::{Connection, params};
 
 use super::documents::DocKey;
 use super::indexer::{IndexSnapshot, ProjectIndex};
@@ -103,7 +103,6 @@ pub struct Evidence {
     pub chunk: Option<i64>,
     pub graph_score: f32,
     pub graph_relation: Option<String>,
-    pub scope: bool,
     pub title: String,
 }
 
@@ -121,30 +120,6 @@ pub struct Gathered {
     pub degraded: bool,
     /// Timings in microseconds per stage (diagnostics / measurement tests).
     pub timings: BTreeMap<&'static str, u128>,
-}
-
-/// Keys of the explicit scope (open scene, selected objects).
-fn scope_keys(c: &Connection, actor: &Actor, req: &RetrieveRequest) -> AppResult<Vec<DocKey>> {
-    let Some(scope) = &req.scope else {
-        return Ok(Vec::new());
-    };
-    let mut out = Vec::new();
-    if let Some(s) = &scope.scene {
-        out.push(DocKey::new("screenplay_scene", s.id.clone()));
-    }
-    for id in &scope.selection {
-        let table: Option<String> = c
-            .query_row(
-                "SELECT source_table FROM search_doc WHERE entity_id=?1 AND (owner_user_id IS NULL OR owner_user_id=?2) LIMIT 1",
-                params![id, actor.user_id],
-                |r| r.get(0),
-            )
-            .optional()?;
-        if let Some(k) = table.and_then(|t| DocKey::from_table(&t, id)) {
-            out.push(k);
-        }
-    }
-    Ok(out)
 }
 
 fn lexical(
@@ -247,34 +222,13 @@ pub fn gather(
     ix: Option<&ProjectIndex>,
     snapshot: Option<&IndexSnapshot>,
     req: &RetrieveRequest,
-    route: RetrievalRoute,
     limit: usize,
 ) -> AppResult<Gathered> {
+    let route = req.route;
     let mut out = Gathered::default();
     let mut ev: BTreeMap<DocKey, Evidence> = BTreeMap::new();
     let terms = query_terms(&req.query);
     let query_norm = norm(&req.query);
-    let scope_draft = req
-        .scope
-        .as_ref()
-        .and_then(|s| s.draft.as_ref().map(|d| d.id.clone()));
-
-    // Explicit scope first: always relevant, whatever the route.
-    let t = Instant::now();
-    let scoped = session.store.read(|c| scope_keys(c, actor, req))?;
-    for k in scoped {
-        ev.entry(k).or_default().scope = true;
-    }
-    out.timings.insert("scope", t.elapsed().as_micros());
-
-    if matches!(
-        route,
-        RetrievalRoute::Structured | RetrievalRoute::ProductHelp
-    ) {
-        out.ranked = rank_all(ev, &query_norm, scope_draft.as_deref(), limit);
-        return Ok(out);
-    }
-
     // 1. Lexical (FTS5/BM25), canonical; available whenever the project is open.
     if route.wants_lexical() {
         let t = Instant::now();
@@ -291,7 +245,7 @@ pub fn gather(
             Err(e) => {
                 tracing::warn!(
                     code = e.code_str(),
-                    "lexical retrieval failed; using scope and tools only"
+                    "lexical retrieval failed; using the tools only"
                 );
                 out.degraded = true;
             }
@@ -340,7 +294,7 @@ pub fn gather(
                         {
                             continue;
                         }
-                        if let (Some(d), Some(k)) = (&scope_draft, &doc.scope_key)
+                        if let (Some(d), Some(k)) = (&req.draft, &doc.scope_key)
                             && d != k
                         {
                             continue;
@@ -378,7 +332,7 @@ pub fn gather(
     // 3. Graph expansion from the best entities (bounded, permission-filtered per node).
     if route == RetrievalRoute::HybridGraph {
         let t = Instant::now();
-        let prelim = rank_all(ev.clone(), &query_norm, scope_draft.as_deref(), GRAPH_SEEDS);
+        let prelim = rank_all(ev.clone(), &query_norm, GRAPH_SEEDS);
         let mut seeds: Vec<String> = prelim
             .iter()
             .map(|h| graph::node_id(h.key.kind, &h.key.id))
@@ -438,22 +392,12 @@ pub fn gather(
     }
 
     let t = Instant::now();
-    out.ranked = rank_all(
-        ev,
-        &query_norm,
-        scope_draft.as_deref(),
-        limit.max(1) * 3 + 16,
-    );
+    out.ranked = rank_all(ev, &query_norm, limit.max(1) * 3 + 16);
     out.timings.insert("rank", t.elapsed().as_micros());
     Ok(out)
 }
 
-fn rank_all(
-    ev: BTreeMap<DocKey, Evidence>,
-    query_norm: &str,
-    _scope_draft: Option<&str>,
-    take: usize,
-) -> Vec<RankedHit> {
+fn rank_all(ev: BTreeMap<DocKey, Evidence>, query_norm: &str, take: usize) -> Vec<RankedHit> {
     let w = RankWeights::default();
     let keys: Vec<(String, DocKey, Evidence)> =
         ev.into_iter().map(|(k, e)| (k.doc_id(), k, e)).collect();
@@ -464,7 +408,6 @@ fn rank_all(
             lexical_rank: e.lexical_rank,
             vector_rank: e.vector_rank,
             graph_score: e.graph_score,
-            scope_match: e.scope,
             exact_name: !e.title.is_empty() && names_exactly(query_norm, &e.title),
             // The index only holds the current draft's scenes, and the vector path
             // already dropped other-draft documents for a specific-draft scope.

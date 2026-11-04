@@ -51,7 +51,7 @@ fn checks() -> Vec<(String, String, PointerCheck)> {
             {
                 continue;
             }
-            let sel = picks_of(&core, case, &ix).unwrap().unwrap();
+            let sel = picks_of(&core, case, &ix).unwrap();
             let retrieved = sections::retrieve(&core, &actor, &sel, message);
             let leaf_read = dossier::LeafRead {
                 selection: &sel,
@@ -68,10 +68,9 @@ fn checks() -> Vec<(String, String, PointerCheck)> {
                         message,
                         read,
                         resolved,
-                        selected_scene: None,
                         focus: Some(focus),
                         previous_message: m.turn.checked_sub(1).map(|i| conv.turns[i].as_str()),
-                        sections: Some(&leaf_read),
+                        sections: &leaf_read,
                     };
                     let d = dossier::build(&input);
                     let v = pointer::decide(&input, &sel, &d);

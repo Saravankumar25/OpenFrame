@@ -95,6 +95,11 @@ pub const PROJECT_MIGRATIONS: &[Migration] = &[
         "story_page_format",
         "../../../migrations/project/0019_story_page_format.sql"
     ),
+    m!(
+        20,
+        "ai_request_no_scope",
+        "../../../migrations/project/0020_ai_request_no_scope.sql"
+    ),
 ];
 
 pub const GLOBAL_MIGRATIONS: &[Migration] = &[
@@ -158,6 +163,11 @@ pub const APP_MIGRATIONS: &[Migration] = &[
         10,
         "ai_trace_sections",
         "../../../migrations/app/0010_ai_trace_sections.sql"
+    ),
+    m!(
+        11,
+        "ai_trace_no_scope",
+        "../../../migrations/app/0011_ai_trace_no_scope.sql"
     ),
 ];
 

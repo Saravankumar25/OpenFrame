@@ -9,10 +9,10 @@
 
 use super::ctx::FetchCtx;
 use super::fetch::story;
-use super::{Dossier, Fact, Input, cap_tokens, dedupe, guard, names, registry, trim, words};
+use super::{Dossier, Fact, Input, cap_tokens, dedupe, guard, names, trim, wants_facts, words};
 use crate::modules::ai::index::{self, Hit, How, Kind, Resolved, SceneHit};
-use crate::modules::ai::queries;
-use crate::modules::ai::sections::{Leaf, PickedLeaf, Selection, home_of};
+use crate::modules::ai::sections::{Leaf, PickedLeaf, SectionPicker, Selection, home_of};
+use crate::modules::ai::{pointer, queries};
 
 /// The least share of the budget a picked leaf gets, in percent, when more than one is picked.
 const MIN_SHARE_PERCENT: usize = 20;
@@ -185,8 +185,13 @@ fn restrict(all: &Resolved, sel: &Selection) -> (Resolved, Vec<OutsideName>) {
 
 /// The one question the names left open, when a picked leaf can read what it asks about.
 fn question_applies(text: &str, sel: &Selection) -> bool {
+    // A section with no screenplay to choose reads the one with the production data. The Scenes section
+    // has that choice: chosen, the question was settled before this; not chosen, it is asked.
     if text.starts_with("Which screenplay") {
-        return sel.takes(Kind::Scene);
+        return sel
+            .picks
+            .iter()
+            .any(|p| p.leaf.picker == Some(SectionPicker::Screenplay));
     }
     for kind in [
         Kind::Scene,
@@ -309,30 +314,49 @@ fn for_leaf(all: &Resolved, p: &PickedLeaf, ix: &index::EntityIndex) -> Resolved
     r
 }
 
+/// With several sections picked, each reads its area whatever the question says. What the question did
+/// not ask for is reading around it, not something the answer must state: an answer about the scenes
+/// need not give the number of characters. A value stays demanded when the words the person typed open
+/// the fact, not the section's topic, and the fact speaks of a word of the question.
+fn only_the_asked_is_demanded(
+    got: &mut [Fact],
+    input: &Input<'_>,
+    ctx: &FetchCtx<'_>,
+    p: &PickedLeaf,
+    r: &Resolved,
+) {
+    let asked = pointer::asked_words(&ctx.message);
+    let typed: Vec<String> = if p.leaf.topic.is_empty() {
+        Vec::new()
+    } else {
+        let typed = FetchCtx::typed_for_leaf(input, p);
+        p.leaf
+            .fetchers
+            .iter()
+            .flat_map(|fetcher| (fetcher.run)(&typed, input.read, r))
+            .map(|f| f.render())
+            .collect()
+    };
+    for f in got.iter_mut() {
+        let opened = p.leaf.topic.is_empty() || typed.contains(&f.render());
+        if !opened || (!asked.is_empty() && !pointer::speaks_of(f, &asked)) {
+            f.requires.clear();
+        }
+    }
+}
+
 /// Build the dossier from the picked sections. Never fails: a fetcher that cannot read adds nothing.
 pub fn build(input: &Input<'_>, read: &LeafRead<'_>) -> Dossier {
     let sel = read.selection;
     let base = FetchCtx::new(input);
     let settled = settle_screenplay(input, sel);
-    let scoped = Input {
-        conn: input.conn,
-        actor: input.actor,
-        index: input.index,
-        core: input.core,
-        message: input.message,
-        read: input.read,
-        resolved: settled.as_ref().unwrap_or(input.resolved),
-        selected_scene: None,
-        focus: input.focus,
-        previous_message: input.previous_message,
-        sections: None,
-    };
-    let (all, assumed) = names::effective(&base, &scoped);
+    let (all, assumed) = names::effective(&base, input, settled.as_ref().unwrap_or(input.resolved));
     let (resolved, outside) = restrict(&all, sel);
     let mut missing: Vec<String> = resolved.not_found.clone();
     let mut notes_on_guard = 0;
     let mut per_leaf: Vec<Vec<Fact>> = Vec::with_capacity(sel.picks.len());
-    let wants = registry::wants_facts(input.read.group);
+    let mut leaf_gaps: Vec<Vec<String>> = Vec::with_capacity(sel.picks.len());
+    let wants = wants_facts(input.read.group);
     for (i, p) in sel.picks.iter().enumerate() {
         let ctx = FetchCtx::for_leaf(input, p);
         let r = for_leaf(&all, p, input.index);
@@ -342,6 +366,9 @@ pub fn build(input: &Input<'_>, read: &LeafRead<'_>) -> Dossier {
                 got.extend((fetcher.run)(&ctx, input.read, &r));
             }
             got.retain(|f| p.leaf.admits(f));
+            if sel.picks.len() > 1 {
+                only_the_asked_is_demanded(&mut got, input, &ctx, p, &r);
+            }
             got.extend(read.passages.get(i).cloned().unwrap_or_default());
         }
         if i == 0 {
@@ -354,18 +381,29 @@ pub fn build(input: &Input<'_>, read: &LeafRead<'_>) -> Dossier {
         }
         notes_on_guard += guard::apply(&ctx.guard, &mut got, &mut missing);
         let (gaps, mut facts): (Vec<Fact>, Vec<Fact>) = got.into_iter().partition(Fact::is_missing);
-        for g in gaps {
-            if let Some(s) = g.sentence
-                && !missing.contains(&s)
-            {
-                missing.push(s);
-            }
-        }
+        leaf_gaps.push(gaps.into_iter().filter_map(|g| g.sentence).collect());
         dedupe(&mut facts);
         per_leaf.push(facts);
     }
-    // A name the picked leaves cannot answer about says nothing here; the pointer of a later slice
-    // uses the list. A name the project does not hold at all is the Story fetcher's to state.
+    // What one pick does not hold is said when the question is about it, or when no other pick has
+    // anything: a good answer from Overview is not wrong for leaving out an empty Catalog.
+    let asked = pointer::content_words(input.message);
+    for (i, gaps) in leaf_gaps.into_iter().enumerate() {
+        let others_hold = per_leaf
+            .iter()
+            .enumerate()
+            .any(|(j, facts)| j != i && facts.iter().any(pointer::real));
+        for gap in gaps {
+            let says_why = gap == guard::NOT_FOR_YOUR_ROLE;
+            if (says_why || !others_hold || pointer::gap_concerns(&gap, &asked))
+                && !missing.contains(&gap)
+            {
+                missing.push(gap);
+            }
+        }
+    }
+    // A name the picked leaves cannot answer about says nothing here; the pointer uses the list. A name
+    // the project does not hold at all is the Story fetcher's to state.
     if wants
         && let Some(who) = story::unknown_name(&base.message, &resolved)
         && resolved.characters.is_empty()

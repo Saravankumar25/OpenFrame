@@ -80,9 +80,9 @@ fn answer_phrase(code: &str) -> &'static str {
 /// "asked for a count about scene 35 of LOW TIDE RADIO, Young Anjali (Aadhya Varma)" from the focus
 /// stored with a turn. `None` when the focus names nothing the project still has. With sections
 /// picked, a name is written only when a picked section can answer about that kind of thing.
-fn line(focus: &Focus, names: Option<&EntityIndex>, within: Option<&Selection>) -> Option<String> {
+fn line(focus: &Focus, names: Option<&EntityIndex>, within: &Selection) -> Option<String> {
     let ix = names?;
-    let takes = |k: Kind| within.is_none_or(|sel| sel.takes(k));
+    let takes = |k: Kind| within.takes(k);
     let mut about: Vec<String> = Vec::new();
     let title = focus
         .screenplay
@@ -139,11 +139,8 @@ fn sections_of(scope_json: &str) -> Option<Vec<String>> {
 }
 
 /// A turn read other sections than these are picked now: its words stay out of the prompt.
-fn turn_fits(scope_json: &str, within: Option<&Selection>) -> bool {
-    let Some(sel) = within else {
-        return true;
-    };
-    sections_of(scope_json).is_some_and(|read| read.iter().all(|leaf| sel.has(leaf)))
+fn turn_fits(scope_json: &str, within: &Selection) -> bool {
+    sections_of(scope_json).is_some_and(|read| read.iter().all(|leaf| within.has(leaf)))
 }
 
 /// The newest result of a request: kind, content, status and whether it rests on a private note.
@@ -176,7 +173,7 @@ pub fn load(
     conversation: &str,
     focus: &Focus,
     names: Option<&EntityIndex>,
-    within: Option<&Selection>,
+    within: &Selection,
 ) -> AppResult<ConversationMemory> {
     let mut st = c.prepare(
         "SELECT id, request_text, scope_json FROM ai_request

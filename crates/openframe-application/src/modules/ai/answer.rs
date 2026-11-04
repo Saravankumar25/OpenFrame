@@ -85,7 +85,7 @@ pub(super) struct Input<'a> {
     pub index: Option<&'a EntityIndex>,
     pub focus: &'a Focus,
     /// The sections of this request: the map and the focus hold nothing from outside them.
-    pub sections: Option<&'a Selection>,
+    pub sections: &'a Selection,
     /// Part of the request belongs to a section that is not picked.
     pub partial: bool,
     pub started: Instant,
@@ -206,11 +206,7 @@ fn context_text(i: &Input<'_>) -> String {
     }
     c.push_str(&prompt::focus_text(i.focus, i.index, i.sections));
     c.push('\n');
-    match (i.sections, i.index) {
-        (Some(sel), _) => c.push_str(&prompt::section_map(sel)),
-        (None, Some(ix)) => c.push_str(&prompt::map_titles(ix)),
-        (None, None) => {}
-    }
+    c.push_str(&prompt::section_map(i.sections));
     c
 }
 
@@ -248,10 +244,7 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
         narrative_words: check::NARRATIVE_WORD_CHECKS && group == Group::Narrative,
     };
 
-    let map = match i.sections {
-        Some(sel) => prompt::section_map(sel),
-        None => i.index.map(prompt::project_map).unwrap_or_default(),
-    };
+    let map = prompt::section_map(i.sections);
     let focus = prompt::focus_text(i.focus, i.index, i.sections);
     let base = prompt::build(&prompt::Parts {
         group,

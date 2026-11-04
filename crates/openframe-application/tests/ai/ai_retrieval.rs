@@ -11,7 +11,6 @@ use openframe_application::modules::ai::intelligence::{self, IndexSettings};
 use openframe_application::modules::ai::retrieval::{
     self, ContextPacket, IndexState, RetrievalRoute, RetrieveRequest,
 };
-use openframe_application::modules::ai::scope::{self, AiScopeArgs};
 use openframe_domain::auth::ActorOrigin;
 use openframe_domain::{Actor, Capability, Role, new_id, now_ms};
 use openframe_search::Embedder;
@@ -347,12 +346,13 @@ fn setup() -> (TestEnv, World, Arc<ConceptEmbedder>) {
 }
 
 fn ask(env: &TestEnv, actor: &Actor, q: &str, route: Option<RetrievalRoute>) -> ContextPacket {
+    let route = route.unwrap_or(RetrievalRoute::HybridGraph);
     retrieval::retrieve(
         &env.core,
         actor,
         &RetrieveRequest {
             query: q.into(),
-            scope: None,
+            draft: None,
             limit: 12,
             route,
             nav: None,
@@ -666,7 +666,6 @@ fn spec_19_hybrid_finds_meaning_that_keyword_search_misses() {
     );
     // Exact names still win lexically.
     let p = ask(&env, &env.actor(), "Railway Station", None);
-    assert_eq!(p.route, RetrievalRoute::Lexical);
     assert!(has(&p, "location", &w.station));
 }
 
@@ -674,14 +673,12 @@ fn spec_19_hybrid_finds_meaning_that_keyword_search_misses() {
 fn spec_18_graph_expansion_adds_related_cross_module_context() {
     let (env, w, _e) = setup();
     let q = "What props and locations does the railway station scene need on the shooting day?";
-    assert_eq!(retrieval::route_for(q), RetrievalRoute::HybridGraph);
     let without = ask(&env, &env.actor(), q, Some(RetrievalRoute::Hybrid));
     assert!(
         !has(&without, "catalog_item", &w.mustang),
         "no shared terms without the graph"
     );
     let with = ask(&env, &env.actor(), q, None);
-    assert_eq!(with.route, RetrievalRoute::HybridGraph);
     assert!(
         has(&with, "catalog_item", &w.mustang),
         "{:#?}",
@@ -1004,27 +1001,17 @@ fn spec_33_without_an_embedding_runtime_retrieval_is_fts_plus_sql() {
 }
 
 #[test]
-fn spec_20_draft_boundaries_and_explicit_scope_come_first() {
+fn spec_20_a_picked_draft_keeps_other_drafts_out() {
     let (env, w, _e) = setup();
     let actor = env.actor();
-    let s = env.core.project().unwrap();
-    let old_scope = s
-        .store
-        .read(|c| {
-            let args: AiScopeArgs =
-                serde_json::from_value(json!({ "kind": "SpecificDraft", "draftId": w.draft_old }))
-                    .unwrap();
-            scope::resolve(c, &actor, &args)
-        })
-        .unwrap();
     let p = retrieval::retrieve(
         &env.core,
         &actor,
         &RetrieveRequest {
             query: "railway station night".into(),
-            scope: Some(old_scope),
+            draft: Some(w.draft_old.clone()),
             limit: 10,
-            route: Some(RetrievalRoute::Hybrid),
+            route: RetrievalRoute::Hybrid,
             nav: None,
         },
     )
@@ -1036,50 +1023,6 @@ fn spec_20_draft_boundaries_and_explicit_scope_come_first() {
         "another draft's scenes are excluded: {:#?}",
         p.sources
     );
-    assert_eq!(p.sources[0].via, "scope");
-    assert!(p.items[0].text.contains("OLD MILL"));
-    // Current-scene scope: the scene is in the scope item and not duplicated.
-    let scene_scope = s
-        .store
-        .read(|c| {
-            let args: AiScopeArgs =
-                serde_json::from_value(json!({ "kind": "CurrentScene", "sceneId": w.scenes[0] }))
-                    .unwrap();
-            scope::resolve(c, &actor, &args)
-        })
-        .unwrap();
-    let p = retrieval::retrieve(
-        &env.core,
-        &actor,
-        &RetrieveRequest {
-            query: "Ravi suspects Anjali".into(),
-            scope: Some(scene_scope),
-            limit: 10,
-            route: Some(RetrievalRoute::Hybrid),
-            nav: None,
-        },
-    )
-    .unwrap();
-    assert_eq!(p.sources[0].via, "scope");
-    assert!(
-        !has(&p, "screenplay_scene", &w.scenes[0]),
-        "no duplicate of the scope scene"
-    );
-}
-
-#[test]
-fn spec_21_routes_structured_and_product_help_without_project_rag() {
-    let (env, _w, _e) = setup();
-    let p = ask(&env, &env.actor(), "How many scenes are there?", None);
-    assert_eq!(p.route, RetrievalRoute::Structured);
-    assert!(
-        p.items.is_empty(),
-        "exact facts come from SQL tools, not retrieved chunks"
-    );
-    let p = ask(&env, &env.actor(), "How do I lock a draft?", None);
-    assert_eq!(p.route, RetrievalRoute::ProductHelp);
-    assert!(!p.items.is_empty());
-    assert!(p.provenance.iter().all(|x| x.kind == "Product guide"));
 }
 
 #[test]
@@ -1091,9 +1034,9 @@ fn retrieval_inherits_permissions_and_bounds_its_input() {
         &export_only,
         &RetrieveRequest {
             query: "railway".into(),
-            scope: None,
+            draft: None,
             limit: 5,
-            route: None,
+            route: RetrievalRoute::HybridGraph,
             nav: None,
         },
     )
@@ -1108,9 +1051,9 @@ fn retrieval_inherits_permissions_and_bounds_its_input() {
         &env.actor(),
         &RetrieveRequest {
             query: long,
-            scope: None,
+            draft: None,
             limit: 5,
-            route: None,
+            route: RetrievalRoute::HybridGraph,
             nav: None,
         },
     )
@@ -1121,9 +1064,9 @@ fn retrieval_inherits_permissions_and_bounds_its_input() {
         &env.actor(),
         &RetrieveRequest {
             query: "station night ravi anjali mustang".into(),
-            scope: None,
+            draft: None,
             limit: 500,
-            route: Some(RetrievalRoute::HybridGraph),
+            route: RetrievalRoute::HybridGraph,
             nav: None,
         },
     )

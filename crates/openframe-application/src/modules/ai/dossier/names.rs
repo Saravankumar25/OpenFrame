@@ -1,10 +1,11 @@
 //! What the message is about, once the resolver's answer is completed with what the app knows
-//! besides the words: the scene the person has selected, the conversation focus for a correction,
-//! and the screenplay that has the production data when a scene number fits several.
+//! besides the words: the conversation focus for a correction, and the screenplay that has the
+//! production data when a scene number fits several. The scene the person chose is a pick and reaches
+//! the fetchers of that section by itself.
 //!
-//! The resolver (`index::resolve`) stays a pure function of the message and the focus. These three
-//! completions need the app's state, so they live in the fetch stage. Each one that guesses says so
-//! with an `Assumed` fact, so the writer can tell the person which screenplay it used.
+//! The resolver (`index::resolve`) stays a pure function of the message and the focus. These
+//! completions need the app's state, so they live in the fetch stage. One that guesses says so with an
+//! `Assumed` fact, so the writer can tell the person which screenplay it used.
 
 use std::sync::LazyLock;
 
@@ -14,12 +15,12 @@ use super::ctx::FetchCtx;
 use super::{Fact, Input, P_HIGH};
 use crate::modules::ai::index::{EntityIndex, Hit, How, Resolved, SceneHit};
 use crate::modules::ai::queries;
-use crate::modules::ai::turn::{Domain, ReadHow};
+use crate::modules::ai::turn::{ReadHow, leaf_hints};
 
 static SCENE_N: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?i)\bscenes?\s+#?(\d{1,4})\b").expect("valid pattern"));
 
-/// Words that point at the scene on screen.
+/// Words that lean on what the conversation was about.
 const POINTERS: &[&str] = &[
     "it", "this", "that", "here", "they", "them", "their", "there",
 ];
@@ -37,23 +38,13 @@ pub fn no_subject(r: &Resolved) -> bool {
         && r.others.is_empty()
 }
 
-/// True when the message names nothing the project holds.
-pub fn names_nothing(r: &Resolved) -> bool {
-    r.screenplays.is_empty()
-        && r.scenes.is_empty()
-        && r.persons.is_empty()
-        && r.characters.is_empty()
-        && r.locations.is_empty()
-        && r.acts.is_empty()
-        && r.days.is_empty()
-        && r.files.is_empty()
-        && r.budget_lines.is_empty()
-        && r.others.is_empty()
-}
-
 /// The resolver's answer, completed. The facts are notes about what was assumed.
-pub fn effective(ctx: &FetchCtx<'_>, input: &Input<'_>) -> (Resolved, Vec<Fact>) {
-    let mut r = input.resolved.clone();
+pub fn effective(
+    ctx: &FetchCtx<'_>,
+    input: &Input<'_>,
+    resolved: &Resolved,
+) -> (Resolved, Vec<Fact>) {
+    let mut r = resolved.clone();
     let mut notes = Vec::new();
     let ix = input.index;
 
@@ -83,7 +74,9 @@ pub fn effective(ctx: &FetchCtx<'_>, input: &Input<'_>) -> (Resolved, Vec<Fact>)
             name: sp.title.clone(),
             how: How::CurrentDraft,
         }];
-        r.ambiguous = None;
+        if any {
+            r.ambiguous = None;
+        }
         if any || input.message.to_lowercase().contains("scene") {
             notes.push(
                 Fact::new("Assumed", &sp.id)
@@ -97,32 +90,6 @@ pub fn effective(ctx: &FetchCtx<'_>, input: &Input<'_>) -> (Resolved, Vec<Fact>)
         }
     }
 
-    // The scene on screen, for "it", "this" and "they" when nothing else is named.
-    if r.scenes.is_empty()
-        && let Some(id) = input.selected_scene
-        && let Some(e) = ix.entity(id)
-        && let Some(sp) = e.screenplay_id.as_deref()
-        && let Some(n) = e.ordinal
-        && (names_nothing(&r) || ctx.m.any(POINTERS))
-    {
-        r.scenes.push(SceneHit {
-            screenplay_id: sp.to_string(),
-            ordinal: n,
-            scene_id: Some(e.id.clone()),
-            heading: Some(e.name.clone()),
-            how: How::Focus,
-        });
-        if r.screenplays.is_empty()
-            && let Some(info) = ix.screenplay(sp)
-        {
-            r.screenplays.push(Hit {
-                id: info.id.clone(),
-                name: info.title.clone(),
-                how: How::Focus,
-            });
-        }
-    }
-
     // A correction, or a message with a pointer ("that", "they") or a contact question, that names
     // no subject is about what the conversation was about. A money question is not: "that is not
     // what I asked" says nothing of the last scene.
@@ -132,7 +99,7 @@ pub fn effective(ctx: &FetchCtx<'_>, input: &Input<'_>) -> (Resolved, Vec<Fact>)
             .m
             .any(&["contact", "phone", "email", "number", "details"]);
     if continuing
-        && !input.read.domains.contains(&Domain::Budget)
+        && !asks_money(input.message, &r)
         && no_subject(&r)
         && let Some(f) = input.focus
     {
@@ -185,6 +152,14 @@ pub fn effective(ctx: &FetchCtx<'_>, input: &Input<'_>) -> (Resolved, Vec<Fact>)
         }
     }
     (r, notes)
+}
+
+/// A question about money speaks of the budget, whatever "that" or "it" said before.
+fn asks_money(message: &str, r: &Resolved) -> bool {
+    !r.budget_lines.is_empty()
+        || leaf_hints(message)
+            .iter()
+            .any(|h| h.leaves.contains(&"production/budget"))
 }
 
 /// The scene numbers of a message, read in one screenplay.

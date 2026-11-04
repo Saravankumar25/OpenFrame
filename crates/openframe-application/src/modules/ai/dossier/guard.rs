@@ -18,6 +18,9 @@ use regex::Regex;
 use super::Fact;
 use crate::modules::production::privacy::may_see_contacts;
 
+/// What the person is told when contact data was left out.
+pub const NOT_FOR_YOUR_ROLE: &str = "Contact details are not shown for your role.";
+
 /// What the plan may ask for.
 #[derive(Debug, Clone)]
 pub struct Guard {
@@ -203,7 +206,7 @@ pub fn apply(g: &Guard, facts: &mut Vec<Fact>, missing: &mut Vec<String>) -> usi
         }
     }
     if hid_contact {
-        let s = "Contact details are not shown for your role.".to_string();
+        let s = NOT_FOR_YOUR_ROLE.to_string();
         if !missing.contains(&s) {
             missing.push(s);
         }

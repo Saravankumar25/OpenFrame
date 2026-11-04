@@ -173,7 +173,7 @@ impl Soak {
         let dir = tempfile::tempdir().unwrap();
         let sink = Arc::new(Sink::default());
         let config = AppConfig {
-            ai_eval_any_sections: true,
+            ai_eval_all_sections: true,
             ..AppConfig::isolated(dir.path())
         };
         let core = AppCore::new(config, sink.clone()).unwrap();
@@ -988,7 +988,7 @@ fn phase_ai_cancel(s: &Arc<Soak>, budget: Duration) -> CancelReport {
             .store(rng.below(30) as u64, Ordering::SeqCst);
         match s.call(
             "ai.ask",
-            json!({ "text": "How many scenes are in the script?", "scope": { "kind": "WholeProject" } }),
+            json!({ "text": "How many scenes are in the script?" }),
         ) {
             Ok(v) => assert!(
                 v["result"]["kind"].is_string(),
@@ -1150,7 +1150,7 @@ fn run_soak(total: Duration) {
     s.core.shutdown();
     let sink = Arc::new(Sink::default());
     let config = AppConfig {
-        ai_eval_any_sections: true,
+        ai_eval_all_sections: true,
         ..AppConfig::isolated(&dir_path)
     };
     let core = AppCore::new(config, sink).unwrap();

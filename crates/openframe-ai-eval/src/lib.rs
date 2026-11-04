@@ -24,10 +24,8 @@ pub struct Case {
     pub project: String,
     #[serde(default)]
     pub setup: Vec<SetupOp>,
-    #[serde(default)]
-    pub scope: Option<Value>,
     /// The sections the case picks (ADR-0041), resolved by the harness to ids and sent as
-    /// `AskArgs.sections`. A case without it keeps the path that reads every area.
+    /// `AskArgs.sections`. A case without it reads every section, through the same path.
     #[serde(default)]
     pub sections: Option<Vec<CaseSection>>,
     pub request: String,
@@ -351,8 +349,6 @@ pub struct Observation {
 pub struct TurnObs {
     pub answer_type: String,
     pub group: String,
-    /// Comma separated domain codes.
-    pub domains: String,
     pub length_class: String,
     /// `rule`, `repair`, `neighbour`, `model` or `fallback`.
     pub how: String,
@@ -363,17 +359,16 @@ pub struct TurnObs {
 /// row comes from a database made before the turn columns existed.
 pub fn turn_from_trace(c: &rusqlite::Connection, request_id: &str) -> Option<TurnObs> {
     c.query_row(
-        "SELECT answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote
+        "SELECT answer_type, answer_group, length_class, turn_how, turn_vote
          FROM sys_ai_trace WHERE request_id = ?1",
         [request_id],
         |r| {
             Ok(TurnObs {
                 answer_type: r.get(0)?,
                 group: r.get(1)?,
-                domains: r.get(2)?,
-                length_class: r.get(3)?,
-                how: r.get(4)?,
-                vote: r.get(5)?,
+                length_class: r.get(2)?,
+                how: r.get(3)?,
+                vote: r.get(4)?,
             })
         },
     )
@@ -1868,23 +1863,17 @@ mod tests {
         c.execute_batch(
             "ALTER TABLE sys_ai_trace ADD COLUMN answer_type TEXT NOT NULL DEFAULT '';
              ALTER TABLE sys_ai_trace ADD COLUMN answer_group TEXT NOT NULL DEFAULT '';
-             ALTER TABLE sys_ai_trace ADD COLUMN turn_domains TEXT NOT NULL DEFAULT '';
              ALTER TABLE sys_ai_trace ADD COLUMN length_class TEXT NOT NULL DEFAULT '';
              ALTER TABLE sys_ai_trace ADD COLUMN turn_how TEXT NOT NULL DEFAULT '';
              ALTER TABLE sys_ai_trace ADD COLUMN turn_vote REAL NOT NULL DEFAULT 0;
-             INSERT INTO sys_ai_trace VALUES ('r1', 'chat', 'count', 'facts', 'budget,schedule', 'one_sentence', 'neighbour', 0.6);",
+             INSERT INTO sys_ai_trace VALUES ('r1', 'chat', 'count', 'facts', 'one_sentence', 'neighbour', 0.6);",
         )
         .unwrap();
         assert_eq!(turn_from_trace(&c, "r0"), None, "a row without a read");
         let t = turn_from_trace(&c, "r1").unwrap();
         assert_eq!(
-            (
-                t.answer_type.as_str(),
-                t.group.as_str(),
-                t.domains.as_str(),
-                t.how.as_str()
-            ),
-            ("count", "facts", "budget,schedule", "neighbour")
+            (t.answer_type.as_str(), t.group.as_str(), t.how.as_str()),
+            ("count", "facts", "neighbour")
         );
         assert!((t.vote - 0.6).abs() < 1e-9);
         assert_eq!(turn_from_trace(&c, "missing"), None);

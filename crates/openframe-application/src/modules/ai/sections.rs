@@ -22,7 +22,6 @@ use super::dossier::{Fact, FetchFn, P_LOW};
 use super::index::Kind;
 use super::queries::{self, DraftRef, SceneRow};
 use super::retrieval::{self, RetrievalRoute, RetrieveRequest};
-use super::scope::{AiScopeKind, ResolvedScope};
 use crate::core::AppCore;
 use crate::modules::production::privacy::may_see_contacts;
 use crate::modules::schedule::board;
@@ -34,6 +33,10 @@ const PASSAGES_PER_LEAF: usize = 4;
 /// Longest text of one passage.
 const PASSAGE_CHARS: usize = 900;
 /// The fixed reply to a request with no section. No model runs.
+/// How a request that reads every section is labelled. A person never sees it: only proposals checked
+/// again and the evaluation switch read every section.
+pub const EVERY_SECTION_LABEL: &str = "Using: every section";
+
 pub const PICK_A_SECTION: &str =
     "Pick a section first, then ask again. The section list is above the question box.";
 
@@ -989,6 +992,29 @@ pub struct Selection {
 }
 
 impl Selection {
+    /// Every section a project of this kind has, nothing narrowed and over the cap of a person's picks:
+    /// what a request with no picks reads under `AppConfig::ai_eval_all_sections`, so the older test
+    /// sets run the code that ships.
+    pub fn every(episodic: bool) -> Self {
+        let picks = LEAVES
+            .iter()
+            .filter(|l| available(l, episodic))
+            .map(|leaf| PickedLeaf {
+                leaf,
+                screenplay_id: None,
+                draft: None,
+                scene: None,
+                day: None,
+                call_sheet: None,
+                label: String::new(),
+            })
+            .collect();
+        Self {
+            picks,
+            label: EVERY_SECTION_LABEL.to_string(),
+        }
+    }
+
     pub fn takes(&self, kind: Kind) -> bool {
         self.picks.iter().any(|p| p.leaf.takes(kind))
     }
@@ -1000,6 +1026,9 @@ impl Selection {
 
     /// The picked sections as a place to have looked in: "Budget and Cast & Crew".
     pub fn looked_in(&self) -> String {
+        if self.picks.len() > MAX_PICKS {
+            return queries::EVERYWHERE.to_string();
+        }
         let names: Vec<String> = self
             .picks
             .iter()
@@ -1040,6 +1069,11 @@ pub fn is_episodic(c: &Connection) -> AppResult<bool> {
 /// A leaf this project has. Only Episodes depends on the project.
 fn available(l: &Leaf, episodic: bool) -> bool {
     l.id != "story/episodes" || episodic
+}
+
+/// What a request with no picks reads under `AppConfig::ai_eval_all_sections`.
+pub fn every_section(c: &Connection) -> AppResult<Selection> {
+    Ok(Selection::every(is_episodic(c)?))
 }
 
 /// Check the picks of a request. An unknown or repeated leaf, more than three, or an id that does not
@@ -1264,17 +1298,9 @@ pub fn retrieve(core: &AppCore, actor: &Actor, selection: &Selection, query: &st
             out.searched = true;
             let req = RetrieveRequest {
                 query: query.to_string(),
-                scope: p.draft.as_ref().map(|d| ResolvedScope {
-                    kind: AiScopeKind::SpecificDraft,
-                    label: String::new(),
-                    draft: Some(d.clone()),
-                    scene: None,
-                    selection: Vec::new(),
-                    context: Vec::new(),
-                    sections: Vec::new(),
-                }),
+                draft: p.draft.as_ref().map(|d| d.id.clone()),
                 limit: PASSAGES_PER_LEAF,
-                route: Some(RetrievalRoute::HybridGraph),
+                route: RetrievalRoute::HybridGraph,
                 nav: Some(p.leaf.search),
             };
             match retrieval::retrieve(core, actor, &req) {

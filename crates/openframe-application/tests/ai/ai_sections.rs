@@ -11,7 +11,7 @@ use openframe_application::MutationMeta;
 use openframe_application::modules::ai::dossier::{self, Dossier, LeafRead};
 use openframe_application::modules::ai::index::{self, Focus, Kind};
 use openframe_application::modules::ai::retrieval::{self, RetrievalRoute, RetrieveRequest};
-use openframe_application::modules::ai::scope::{AiScopeKind, ResolvedScope};
+use openframe_application::modules::ai::scope::ResolvedScope;
 use openframe_application::modules::ai::sections::{self, LEAVES, SectionPick};
 use openframe_application::modules::ai::service;
 use openframe_application::modules::ai::turn::{self, Aids, AnswerType, TurnInput};
@@ -301,10 +301,9 @@ fn dossier_with(
                 message,
                 read: &read,
                 resolved: &resolved,
-                selected_scene: None,
                 focus: None,
                 previous_message: None,
-                sections: Some(&leaf_read),
+                sections: &leaf_read,
             }))
         })
         .expect("dossier")
@@ -319,10 +318,7 @@ fn text_of(d: &Dossier) -> String {
 }
 
 fn ask(env: &TestEnv, text: &str, picks: Value) -> Value {
-    env.ok(
-        "ai.ask",
-        json!({ "text": text, "scope": { "kind": "WholeProject" }, "sections": picks }),
-    )
+    env.ok("ai.ask", json!({ "text": text, "sections": picks }))
 }
 
 fn trace_sections(env: &TestEnv, request: &str) -> Value {
@@ -432,7 +428,7 @@ fn episodes_are_available_in_a_series_and_refused_elsewhere() {
     attach(&f.env);
     let e = f.env.call(
         "ai.ask",
-        json!({ "text": "Episodes?", "scope": { "kind": "WholeProject" }, "sections": [{ "leaf": "story/episodes" }] }),
+        json!({ "text": "Episodes?", "sections": [{ "leaf": "story/episodes" }] }),
     );
     assert!(e.unwrap_err().is("validation"));
 }
@@ -446,10 +442,9 @@ fn a_request_with_no_section_gets_a_fixed_sentence_and_runs_no_model() {
         "Feature Film",
     ));
     let model = attach(&f.env);
-    let x = f.env.ok(
-        "ai.ask",
-        json!({ "text": "How many scenes are there?", "scope": { "kind": "WholeProject" } }),
-    );
+    let x = f
+        .env
+        .ok("ai.ask", json!({ "text": "How many scenes are there?" }));
     assert_eq!(x["result"]["content"], sections::PICK_A_SECTION);
     assert_eq!(model.calls(), 0, "no model call");
     assert_eq!(x["scopeLabel"], "Using: no section");
@@ -464,10 +459,9 @@ fn a_request_with_no_section_answers_even_without_the_model() {
         "Black Rain",
         "Feature Film",
     ));
-    let x = f.env.ok(
-        "ai.ask",
-        json!({ "text": "Anything?", "scope": { "kind": "WholeProject" }, "sections": [] }),
-    );
+    let x = f
+        .env
+        .ok("ai.ask", json!({ "text": "Anything?", "sections": [] }));
     assert_eq!(x["result"]["content"], sections::PICK_A_SECTION);
 }
 
@@ -477,7 +471,7 @@ fn the_evaluation_switch_reads_every_area_when_nothing_is_picked() {
     let model = attach(&f.env);
     let x = f.env.ok(
         "ai.ask",
-        json!({ "text": "What is the planned budget total?", "scope": { "kind": "WholeProject" } }),
+        json!({ "text": "What is the planned budget total?" }),
     );
     assert_ne!(x["result"]["content"], sections::PICK_A_SECTION);
     assert!(model.calls() > 0);
@@ -492,7 +486,7 @@ fn bad_picks_are_invalid_input_and_nothing_runs() {
         f.env
             .call(
                 "ai.ask",
-                json!({ "text": "How many scenes?", "scope": { "kind": "WholeProject" }, "sections": sections }),
+                json!({ "text": "How many scenes?", "sections": sections }),
             )
             .expect_err("refused")
     };
@@ -831,9 +825,9 @@ fn a_private_note_reaches_its_owner_only_in_every_leaf() {
     // The text search keeps the owner rule too.
     let req = RetrieveRequest {
         query: "saffron scarf".into(),
-        scope: None,
+        draft: None,
         limit: 8,
-        route: Some(RetrievalRoute::Lexical),
+        route: RetrievalRoute::Lexical,
         nav: Some(sections::leaf("screenplay/scenes").unwrap().search),
     };
     let mine = retrieval::retrieve(&f.env.core, &f.env.actor(), &req).unwrap();
@@ -888,9 +882,9 @@ fn text_search_is_held_to_the_picked_leaf_by_its_navigation_rules() {
             &f.env.actor(),
             &RetrieveRequest {
                 query: q.into(),
-                scope: None,
+                draft: None,
                 limit: 8,
-                route: Some(RetrievalRoute::HybridGraph),
+                route: RetrievalRoute::HybridGraph,
                 nav: Some(sections::leaf(leaf).unwrap().search),
             },
         )
@@ -1014,7 +1008,7 @@ fn prompt_of(model: &ScriptedModel, call: usize) -> String {
 fn ask_in(env: &TestEnv, conversation: &str, text: &str, picks: Value) -> Value {
     env.ok(
         "ai.ask",
-        json!({ "text": text, "scope": { "kind": "WholeProject" }, "conversationId": conversation, "sections": picks }),
+        json!({ "text": text, "conversationId": conversation, "sections": picks }),
     )
 }
 
@@ -1324,7 +1318,6 @@ fn the_pointer_never_tells_a_viewer_where_contact_details_are() {
     );
     let sections = json!({
         "text": "What is the email of Maya Rao?",
-        "scope": { "kind": "WholeProject" },
         "sections": [{ "leaf": "production/budget" }],
     });
     let owner = f.env.ok("ai.ask", sections.clone());
@@ -1346,7 +1339,6 @@ fn the_pointer_never_tells_a_viewer_where_contact_details_are() {
 fn another_persons_private_note_is_never_pointed_at_and_its_owner_may_be() {
     let question = json!({
         "text": "saffron scarf worry?",
-        "scope": { "kind": "WholeProject" },
         "sections": [{ "leaf": "production/shots" }],
     });
     let f = film();
@@ -1576,12 +1568,9 @@ fn the_tools_offered_are_the_ones_homed_in_the_picks() {
     let f = film();
     let actor = f.env.actor();
     let scope_of = |picks: &[&'static str]| ResolvedScope {
-        kind: AiScopeKind::WholeProject,
         label: String::new(),
         draft: None,
         scene: None,
-        selection: Vec::new(),
-        context: Vec::new(),
         sections: picks.to_vec(),
     };
     let names = |picks: &[&'static str]| -> Vec<String> {
@@ -1598,12 +1587,9 @@ fn the_tools_offered_are_the_ones_homed_in_the_picks() {
     assert!(budget.iter().any(|n| n == "search_project"), "{budget:?}");
     assert!(!budget.iter().any(|n| n == "propose_task"), "{budget:?}");
     assert!(!budget.iter().any(|n| n == "open_scene"), "{budget:?}");
-    let all = names(&[]);
+    let all = names(&ResolvedScope::every_section().sections);
     assert!(all.len() > budget.len());
-    assert!(
-        all.iter().any(|n| n == "propose_task"),
-        "no picks: the old path"
-    );
+    assert!(all.iter().any(|n| n == "propose_task"));
     // Every tool on offer in any pick maps to a section; a request's list is held the same way.
     let tasks = toolbox::tools_for_request(
         &f.env.core,
@@ -1645,12 +1631,9 @@ fn the_general_search_tools_read_only_inside_the_picks() {
     let f = film();
     let actor = f.env.actor();
     let scope_of = |picks: &[&'static str]| ResolvedScope {
-        kind: AiScopeKind::WholeProject,
         label: String::new(),
         draft: None,
         scene: None,
-        selection: Vec::new(),
-        context: Vec::new(),
         sections: picks.to_vec(),
     };
     let run = |tool: &str, args: Value, picks: &[&'static str]| -> String {
@@ -1788,7 +1771,7 @@ fn with_the_evaluation_switch_and_no_picks_the_old_path_still_offers_every_tool(
     let model = attach(&f.env);
     let x = f.env.ok(
         "ai.ask",
-        json!({ "text": "Create a task to scout the pier", "scope": { "kind": "WholeProject" } }),
+        json!({ "text": "Create a task to scout the pier" }),
     );
     assert_eq!(x["result"]["kind"], "Proposal", "{x}");
     assert_eq!(model.calls(), 0, "a plain command is its tool call at once");

@@ -11,9 +11,9 @@ fn tasks(g: &Gold) -> usize {
         .max(0) as usize
 }
 
-fn ask(g: &Gold, ctx: &mut Ctx, label: &str, text: &str, scope: Value) -> Value {
+fn ask(g: &Gold, ctx: &mut Ctx, label: &str, text: &str, sections: Value) -> Value {
     let started = std::time::Instant::now();
-    let x = g.ok("ai.ask", json!({ "text": text, "scope": scope }));
+    let x = g.ok("ai.ask", json!({ "text": text, "sections": sections }));
     let r = &x["result"];
     let secs = started.elapsed().as_secs_f32();
     println!(
@@ -24,7 +24,7 @@ fn ask(g: &Gold, ctx: &mut Ctx, label: &str, text: &str, scope: Value) -> Value 
     );
     let mut log = ctx.facts.get("aiLog").cloned().unwrap_or(json!([]));
     log.as_array_mut().unwrap().push(json!({
-        "label": label, "question": text, "scope": scope["kind"], "seconds": (secs * 10.0).round() / 10.0,
+        "label": label, "question": text, "sections": sections, "seconds": (secs * 10.0).round() / 10.0,
         "kind": r["kind"], "answer": r["content"], "confidence": r["confidence"],
         "sources": arr(&r["provenance"]).len(), "changeSet": r["changeSet"]["id"], "operations": r["changeSet"]["operationCount"]
     }));
@@ -80,49 +80,49 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
         ctx,
         "count",
         "How many scenes are in the script?",
-        json!({ "kind": "SpecificDraft", "draftId": ctx.id("draftBlue") }),
+        json!([{ "leaf": "screenplay/scenes", "draftId": ctx.id("draftBlue") }]),
     );
     ask(
         g,
         ctx,
         "count-current",
         "How many scenes does this screenplay have?",
-        json!({ "kind": "CurrentScreenplay" }),
+        json!([{ "leaf": "screenplay/scenes" }]),
     );
     ask(
         g,
         ctx,
         "grounded",
         "Which scenes take place at the breakwater?",
-        json!({ "kind": "WholeProject" }),
+        json!([]),
     );
     ask(
         g,
         ctx,
         "production",
         "Which shooting day has the most scenes?",
-        json!({ "kind": "Production" }),
+        json!([{ "leaf": "production/schedule" }]),
     );
     ask(
         g,
         ctx,
         "scene",
         "Who is in this scene?",
-        json!({ "kind": "CurrentScene", "sceneId": ctx.scenes[&24] }),
+        json!([{ "leaf": "screenplay/scenes", "sceneId": ctx.scenes[&24] }]),
     );
     ask(
         g,
         ctx,
         "story",
         "Summarise Act One in two sentences.",
-        json!({ "kind": "StoryBoard" }),
+        json!([{ "leaf": "story/beat-board" }]),
     );
     ask(
         g,
         ctx,
         "product",
         "How do I export the call sheet as a PDF?",
-        json!({ "kind": "WholeProject" }),
+        json!([]),
     );
 
     // Proposal 1: applied, then undone with one Undo.
@@ -132,7 +132,7 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
         ctx,
         "propose-apply-undo",
         "Create a task to confirm the rain tower water tanker for shooting day 9.",
-        json!({ "kind": "WholeProject" }),
+        json!([]),
     );
     let cs = s(&x["result"]["changeSet"]["id"]);
     if !cs.is_empty() {
@@ -150,7 +150,7 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
         ctx,
         "propose-reject",
         "Create a task to book a second Nagra recorder as a backup.",
-        json!({ "kind": "WholeProject" }),
+        json!([]),
     );
     let cs = s(&x["result"]["changeSet"]["id"]);
     if !cs.is_empty() {
@@ -167,7 +167,7 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
         ctx,
         "propose-apply-keep",
         "Create a task to print the breakwater safety plan for every department head.",
-        json!({ "kind": "WholeProject" }),
+        json!([]),
     );
     let cs = s(&x["result"]["changeSet"]["id"]);
     if !cs.is_empty() {

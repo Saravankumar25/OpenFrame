@@ -46,7 +46,7 @@ pub struct FetchCtx<'a> {
     pub message: String,
     pub m: Msg,
     pub guard: Guard,
-    /// The section this fetcher reads for, when the person picked sections (ADR-0041).
+    /// The section this fetcher reads for. `None` only for the names stage, which reads no section.
     pub picked: Option<&'a PickedLeaf>,
     drafts: RefCell<HashMap<String, Option<queries::DraftRef>>>,
     presence: RefCell<HashMap<String, Rc<Presence>>>,
@@ -87,6 +87,13 @@ impl<'a> FetchCtx<'a> {
                 .borrow_mut()
                 .insert(d.screenplay_id.clone(), Some(d.clone()));
         }
+        ctx
+    }
+
+    /// The same section read with the words the person typed alone.
+    pub fn typed_for_leaf(input: &Input<'a>, picked: &'a PickedLeaf) -> Self {
+        let mut ctx = Self::for_leaf(input, picked);
+        ctx.m = Msg::new(&ctx.message);
         ctx
     }
 

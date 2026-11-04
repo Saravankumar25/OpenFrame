@@ -27,8 +27,6 @@ pub struct Candidate {
     pub vector_rank: Option<usize>,
     /// Graph-expansion score in [0, 1] (0 = not reached through the graph).
     pub graph_score: f32,
-    /// Inside the user's explicit scope (selected object, open scene, chosen draft…).
-    pub scope_match: bool,
     /// The query names this entity exactly (e.g. a character or location name).
     pub exact_name: bool,
     /// Belongs to the draft the request is about (current draft by default).
@@ -41,7 +39,6 @@ pub struct RankWeights {
     pub lexical: f32,
     pub vector: f32,
     pub graph: f32,
-    pub scope_boost: f32,
     pub exact_boost: f32,
     pub draft_boost: f32,
 }
@@ -53,7 +50,6 @@ impl Default for RankWeights {
             lexical: 1.0,
             vector: 1.0,
             graph: 0.012,
-            scope_boost: 0.02,
             exact_boost: 0.016,
             draft_boost: 0.004,
         }
@@ -64,7 +60,7 @@ impl Default for RankWeights {
 pub struct Ranked {
     pub key: String,
     pub score: f32,
-    /// Why it ranked ("lexical", "semantic", "graph", "scope", "exact", "draft").
+    /// Why it ranked ("lexical", "semantic", "graph", "exact", "draft").
     pub reasons: Vec<&'static str>,
 }
 
@@ -82,10 +78,6 @@ pub fn score(c: &Candidate, w: &RankWeights) -> Ranked {
     if c.graph_score > 0.0 {
         s += w.graph * c.graph_score.min(1.0);
         reasons.push("graph");
-    }
-    if c.scope_match {
-        s += w.scope_boost;
-        reasons.push("scope");
     }
     if c.exact_name {
         s += w.exact_boost;
@@ -146,15 +138,15 @@ mod tests {
             lexical_rank: Some(0),
             ..Default::default()
         };
-        let scoped = Candidate {
+        let named = Candidate {
             key: "y".into(),
             lexical_rank: Some(3),
-            scope_match: true,
+            exact_name: true,
             ..Default::default()
         };
-        let ranked = rank(&[base.clone(), scoped], &w);
+        let ranked = rank(&[base.clone(), named], &w);
         assert_eq!(ranked[0].key, "y");
-        assert_eq!(ranked[0].reasons, vec!["lexical", "scope"]);
+        assert_eq!(ranked[0].reasons, vec!["lexical", "exact"]);
         // Draft freshness never creates relevance on its own.
         let only_draft = Candidate {
             key: "z".into(),

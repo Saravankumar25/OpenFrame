@@ -148,12 +148,17 @@ fn seed_screenplay(env: &TestEnv) -> Screenplay {
     Screenplay { draft, scenes }
 }
 
-fn ask(env: &TestEnv, text: &str, scope: Value) -> Value {
-    env.ok("ai.ask", json!({ "text": text, "scope": scope }))
+fn ask(env: &TestEnv, text: &str, sections: Value) -> Value {
+    env.ok("ai.ask", json!({ "text": text, "sections": sections }))
 }
 
+/// No picks: under the test switch a request reads every section.
 fn whole() -> Value {
-    json!({ "kind": "WholeProject" })
+    json!([])
+}
+
+fn scene_pick(scene: &str) -> Value {
+    json!([{ "leaf": "screenplay/scenes", "sceneId": scene }])
 }
 
 fn count(env: &TestEnv, sql: &str) -> i64 {
@@ -222,10 +227,7 @@ fn fsd_ai_001_openframe_works_fully_without_offline_ai() {
 
     // Asking without the bundled AI explains why; nothing is recorded.
     assert_eq!(
-        env.err(
-            "ai.ask",
-            json!({ "text": "Please look up the scenes.", "scope": whole() })
-        ),
+        env.err("ai.ask", json!({ "text": "Please look up the scenes." })),
         "ai.assets_missing"
     );
     assert_eq!(count(&env, "SELECT count(*) FROM ai_request"), 0);
@@ -350,12 +352,12 @@ fn ai_ac_002_a_count_is_written_from_the_projects_own_number_and_never_from_the_
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
     let m = attach(&env);
-    let scope = json!({ "kind": "CurrentScreenplay" });
+    let scope = json!([{ "leaf": "screenplay/scenes" }]);
 
     // The model writes the sentence; the number comes from the project, so the check holds it to it.
     m.reply("The script has 3 scenes.");
     let x = ask(&env, "How many scenes are in the script?", scope.clone());
-    assert_eq!(x["scopeLabel"], "Using: Draft 1");
+    assert_eq!(x["scopeLabel"], "Using: Screenplay (Draft 1, all scenes)");
     let r = &x["result"];
     assert_eq!(r["kind"], "Answer");
     assert_eq!(r["content"], "The script has 3 scenes.");
@@ -441,7 +443,11 @@ fn ai_ac_023_product_questions_are_grounded_in_the_product_guide() {
     // writer is given, and the model only writes the answer. A small model's markdown never reaches
     // the chat: the answer is plain sentences.
     m.reply("**The Production Source** is the screenplay draft that production planning uses.");
-    let x = ask(&env, "What is the Production Source?", whole());
+    let x = ask(
+        &env,
+        "What is the Production Source?",
+        json!([{ "leaf": "help/guide" }]),
+    );
     assert_eq!(x["result"]["kind"], "Answer");
     assert_eq!(
         x["result"]["content"],
@@ -602,7 +608,7 @@ fn ai_ac_011_permissions_are_inherited_viewers_cannot_prepare_or_apply() {
         .call_as(
             &viewer,
             "ai.ask",
-            json!({ "text": "How many scenes are in the script?", "scope": whole() }),
+            json!({ "text": "How many scenes are in the script?" }),
         )
         .unwrap();
     assert_eq!(x["result"]["content"], "The script has 3 scenes.");
@@ -610,11 +616,7 @@ fn ai_ac_011_permissions_are_inherited_viewers_cannot_prepare_or_apply() {
     // A mutation request from a Viewer is denied; no Change Set exists.
     m.call("propose_scene_card", json!({ "description": "A new card" }));
     let x = env
-        .call_as(
-            &viewer,
-            "ai.ask",
-            json!({ "text": "Create a Scene Card", "scope": whole() }),
-        )
+        .call_as(&viewer, "ai.ask", json!({ "text": "Create a Scene Card" }))
         .unwrap();
     assert_eq!(x["result"]["kind"], "Denied");
     assert_eq!(x["result"]["content"], "I can't do that.");
@@ -1018,17 +1020,8 @@ fn seed_private_notes(env: &TestEnv) -> (String, String) {
 #[test]
 fn ai_ac_013_other_users_private_notes_never_reach_the_model() {
     let env = TestEnv::with_project("Railway", "Feature Film");
-    let (_, theirs) = seed_private_notes(&env);
+    seed_private_notes(&env);
     let m = attach(&env);
-
-    // Selecting another user's note: its existence and text are not used.
-    m.reply("I could not find that in the project.");
-    let x = ask(
-        &env,
-        "Summarize this",
-        json!({ "kind": "CurrentSelection", "selection": [{ "id": theirs }] }),
-    );
-    assert_eq!(x["scopeLabel"], "Using: Selection (nothing available)");
 
     // Searching for the words of the note, or asking what its writer plans, finds nothing.
     m.reply("I could not find that in the project.");
@@ -1037,7 +1030,7 @@ fn ai_ac_013_other_users_private_notes_never_reach_the_model() {
     ask(&env, "What is the writer secretly planning?", whole());
     // The code-written fallback is just as clean.
     for _ in 0..3 {
-        m.reply("The writer kills the producer.");
+        m.reply("Silvanus kills the producer.");
     }
     let x = ask(&env, "What does SECRETPLOT say?", whole());
     assert!(
@@ -1061,12 +1054,9 @@ fn prompt_injection_in_project_text_is_data_not_instructions() {
     let sp = seed_screenplay(&env);
     let m = attach(&env);
     m.reply("Ravi waits for a late train at the railway station.");
-    let scope = json!({ "kind": "CurrentScene", "sceneId": sp.scenes[1] });
+    let scope = scene_pick(&sp.scenes[1]);
     let x = ask(&env, "Give me the gist of this scene", scope.clone());
-    assert_eq!(
-        x["scopeLabel"],
-        "Using: Scene 2: EXT. RAILWAY STATION — DAY (Draft 1)"
-    );
+    assert_eq!(x["scopeLabel"], "Using: Screenplay (Draft 1, Scene 2)");
     {
         let seen = m.seen.lock().unwrap();
         let writer = &seen[0];
@@ -1155,11 +1145,7 @@ fn ai_records_keep_references_and_audit_without_context_copies() {
     let sp = seed_screenplay(&env);
     let m = attach(&env);
     m.reply("Ravi waits at the police station.");
-    ask(
-        &env,
-        "Explain this scene",
-        json!({ "kind": "CurrentScene", "sceneId": sp.scenes[0] }),
-    );
+    ask(&env, "Explain this scene", scene_pick(&sp.scenes[0]));
     let s = env.core.project().unwrap();
     let (scope_json, processing, model, class): (String, String, String, String) = s
         .store
@@ -1203,7 +1189,7 @@ fn ai_ac_024_history_is_personal_and_survives_restart() {
     m.reply("The script has 3 scenes.");
     env.ok(
         "ai.ask",
-        json!({ "text": "And how many scenes are there in total?", "scope": whole(), "conversationId": conv }),
+        json!({ "text": "And how many scenes are there in total?", "conversationId": conv }),
     );
     assert!(m.seen_text().contains("<conversation>"));
     assert!(
@@ -1241,7 +1227,7 @@ fn a_conversation_is_saved_for_review_only_on_the_persons_call_and_only_their_ow
     m.reply("The script has 3 scenes.");
     env.ok(
         "ai.ask",
-        json!({ "text": "And how many scenes in total?", "scope": whole(), "conversationId": conv }),
+        json!({ "text": "And how many scenes in total?", "conversationId": conv }),
     );
     // A third exchange in another conversation must not travel with the first two.
     m.reply("The script has 3 scenes.");
@@ -1391,12 +1377,16 @@ fn an_answer_that_never_gets_the_language_right_is_replaced_by_a_true_sentence()
     for _ in 0..3 {
         m.reply("The project has no screenplay yet.");
     }
-    let x = ask(&env, "इस स्क्रिप्ट में कितने दृश्य हैं?", whole());
+    let x = ask(
+        &env,
+        "इस स्क्रिप्ट में कितने दृश्य हैं?",
+        json!([{ "leaf": "screenplay/scenes" }]),
+    );
     let content = x["result"]["content"].as_str().unwrap();
     assert_eq!(
         content,
         "I could not find anything that matches \u{201C}इस स्क्रिप्ट में कितने दृश्य हैं?\u{201D}. \
-         I looked in the screenplays, the Story, Production, the Schedule, the Budget, notes and files."
+         I looked in Screenplay."
     );
     assert_eq!(m.calls(), 3);
     assert_eq!(x["result"]["confidence"], "Unavailable");

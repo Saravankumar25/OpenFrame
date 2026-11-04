@@ -7,7 +7,7 @@ use parking_lot::Mutex;
 
 use super::AnswerType::*;
 use super::*;
-use crate::modules::ai::index::{Hit, How as Mention, Kind, Resolved, SceneHit};
+use crate::modules::ai::index::{Hit, How as Mention, Resolved, SceneHit};
 
 fn read_with(message: &str, previous: Option<AnswerType>, r: &Resolved) -> TurnRead {
     read(
@@ -430,53 +430,6 @@ fn the_length_class_follows_the_type_and_moves_with_the_words() {
     // The words of the classes are the ones the evaluation scores.
     assert_eq!(LengthClass::OneSentence.words(), (1, 30));
     assert_eq!(LengthClass::Paragraph.words(), (40, 200));
-}
-
-#[test]
-fn domains_come_from_topic_words_and_resolved_names() {
-    let d = |m: &str, r: &Resolved, t: AnswerType| {
-        domains::find(m, r, t)
-            .into_iter()
-            .map(Domain::code)
-            .collect::<Vec<_>>()
-    };
-    let none = Resolved::default();
-    assert_eq!(
-        d("planned and actual budget for wardrobe", &none, Compare),
-        ["breakdown", "budget"]
-    );
-    assert_eq!(
-        d("which day is the car chase shot", &none, Lookup),
-        ["schedule"]
-    );
-    assert_eq!(
-        d("how do I change the language", &none, Help),
-        ["settings", "product"]
-    );
-    assert_eq!(d("hello", &none, Chat), Vec::<&str>::new());
-    // Resolved names add domains the words do not carry.
-    let r = Resolved {
-        characters: vec![named("Anya")],
-        persons: vec![named("Ravi")],
-        days: vec![named("Day 4")],
-        others: vec![(Kind::VaultItem, named("palette"))],
-        scenes: vec![scene_hit(3)],
-        ..Resolved::default()
-    };
-    assert_eq!(
-        d("tell me about her", &r, Explain),
-        ["story", "screenplay", "people", "schedule", "visual"]
-    );
-    // A screenplay taken from the focus is not named by the message.
-    let implied = Resolved {
-        screenplays: vec![Hit {
-            id: "sp".into(),
-            name: "Low Tide Radio".into(),
-            how: Mention::Focus,
-        }],
-        ..Resolved::default()
-    };
-    assert!(d("hello", &implied, Chat).is_empty());
 }
 
 #[test]

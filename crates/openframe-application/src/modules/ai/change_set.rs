@@ -35,7 +35,7 @@ use ts_rs::TS;
 
 use super::catalog;
 use super::records::{ai_meta, set_result_status};
-use super::scope::{self, AiScopeArgs, AiScopeKind};
+use super::scope::ResolvedScope;
 use super::toolbox;
 use super::tools::ToolCtx;
 use super::types::*;
@@ -954,19 +954,7 @@ pub fn recheck(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDt
     }
     let sources = stored_sources(&row.source);
     let rebuilt: AppResult<Vec<ChangeSetDraft>> = s.store.read(|c| {
-        // Proposal builders take no scope-specific context; a neutral scope is enough.
-        let scope = scope::resolve(
-            c,
-            actor,
-            &AiScopeArgs {
-                kind: AiScopeKind::WholeProject,
-                draft_id: None,
-                scene_id: None,
-                selection: Vec::new(),
-                shooting_day_id: None,
-                call_sheet_id: None,
-            },
-        )?;
+        let scope = ResolvedScope::on_current_draft(c)?;
         let ctx = ToolCtx {
             core,
             conn: c,

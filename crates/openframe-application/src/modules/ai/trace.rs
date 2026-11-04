@@ -23,7 +23,6 @@ use crate::core::AppCore;
 pub struct TraceRow<'a> {
     pub request_id: &'a str,
     pub project_id: Option<&'a str>,
-    pub scope_kind: &'a str,
     pub model_reference: Option<&'a str>,
     pub context_tokens: Option<u32>,
     pub tools_offered: usize,
@@ -38,7 +37,7 @@ pub struct TraceRow<'a> {
     pub error_code: Option<&'a str>,
     pub proposed: bool,
     /// The path the turn took (write, navigate, change or fixed). Stored in the `lane` column, which
-    /// predates the conversational path and keeps its name because the trace table has no migration.
+    /// predates the conversational path and keeps its name.
     pub path: &'a str,
     /// The fallback the answer stage used (last_resort or abstained), empty when the model's answer
     /// was shown. Stored in the `runner_up_lane` column.
@@ -65,21 +64,20 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
     };
     let done = core.with_app_db(|c| {
         c.execute(
-            "INSERT INTO sys_ai_trace(id, request_id, project_id, created_at, scope_kind, model_reference, context_tokens,
+            "INSERT INTO sys_ai_trace(id, request_id, project_id, created_at, model_reference, context_tokens,
                                       tools_offered, tools_chosen, steps, sources, model_calls, tokens_in, tokens_out,
                                       context_fill_pct, prompt_ms, generation_ms, total_ms, passes, checks_failed,
                                       result_kind, error_code, proposed, cached_tokens, lane, runner_up_lane, cancelled,
-                                      answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote, turn_ms,
+                                      answer_type, answer_group, length_class, turn_how, turn_vote, turn_ms,
                                       dossier_facts, dossier_tokens, dossier_missing, dossier_required, dossier_ms,
                                       sections_json)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27,
-                     ?28, ?29, ?30, ?31, ?32, ?33, ?34, ?35, ?36, ?37, ?38, ?39, ?40)",
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26,
+                     ?27, ?28, ?29, ?30, ?31, ?32, ?33, ?34, ?35, ?36, ?37, ?38)",
             params![
                 new_id(),
                 r.request_id,
                 r.project_id,
                 now_ms(),
-                r.scope_kind,
                 r.model_reference,
                 r.context_tokens,
                 r.tools_offered as i64,
@@ -104,7 +102,6 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
                 r.cancelled,
                 r.turn.map_or("", |t| t.answer_type.code()),
                 r.turn.map_or("", |t| t.group.code()),
-                r.turn.map(TurnRead::domain_codes).unwrap_or_default(),
                 r.turn.map_or("", |t| t.length_class.code()),
                 r.turn.map_or("", |t| t.how.code()),
                 r.turn.map_or(0.0, |t| f64::from(t.vote)),
@@ -362,11 +359,11 @@ pub fn export_report(core: &AppCore, _actor: &Actor, a: AiReportArgs) -> AppResu
 /// The trace rows as JSON objects (numbers and ids only), oldest first; one request's when given.
 fn trace_json(c: &Connection, request_id: Option<&str>) -> AppResult<Vec<Value>> {
     let mut st = c.prepare(
-        "SELECT request_id, project_id, created_at, scope_kind, model_reference, context_tokens, tools_offered,
+        "SELECT request_id, project_id, created_at, model_reference, context_tokens, tools_offered,
                 tools_chosen, steps, sources, model_calls, tokens_in, tokens_out, cached_tokens, context_fill_pct,
                 prompt_ms, generation_ms, total_ms, passes, checks_failed, result_kind, error_code, proposed, outcome,
                 lane, runner_up_lane, cancelled,
-                answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote, turn_ms,
+                answer_type, answer_group, length_class, turn_how, turn_vote, turn_ms,
                 dossier_facts, dossier_tokens, dossier_missing, dossier_required, dossier_ms, sections_json
          FROM sys_ai_trace WHERE (?1 IS NULL OR request_id = ?1) ORDER BY created_at",
     )?;

@@ -55,7 +55,7 @@ impl Gold {
         let sink = Arc::new(RecordingSink::default());
         let mut config = AppConfig::isolated(root);
         // The gold project asks without sections and reads every area (ADR-0041).
-        config.ai_eval_any_sections = true;
+        config.ai_eval_all_sections = true;
         config.app_version = "0.1.0-gold".into();
         if let Some(b) = ai_bundle {
             config.ai_bundle_dir = Some(b);

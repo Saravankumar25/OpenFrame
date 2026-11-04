@@ -133,7 +133,7 @@ fn seeded_env() -> TestEnv {
     // No model is installed in tests: the request fails, but it carries the prompt marker.
     let _ = env.call(
         "ai.ask",
-        json!({ "text": format!("{} {}", MARKERS[7], MARKERS[3]), "scope": { "kind": "WholeProject" } }),
+        json!({ "text": format!("{} {}", MARKERS[7], MARKERS[3]) }),
     );
     write_logs(&env);
     env

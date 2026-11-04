@@ -5,7 +5,7 @@
  */
 export type AiContextSource = { 
 /**
- * Canonical entity type (table), e.g. "screenplay_scene"; "product_guide" for help.
+ * Canonical entity type (table), e.g. "screenplay_scene".
  */
 entityType: string, entityId: string, module: string, 
 /**
@@ -13,7 +13,7 @@ entityType: string, entityId: string, module: string,
  */
 nav: unknown, 
 /**
- * "scope" | "lexical" | "semantic" | "graph" | "guide"
+ * "lexical" | "semantic" | "graph"
  */
 via: string, 
 /**

@@ -8,7 +8,7 @@
 //! against the user's new data, and only then can it be applied, keeping the user's edit.
 
 use openframe_application::modules::ai::ChangeSetDraft;
-use openframe_application::modules::ai::scope::{self, AiScopeArgs, AiScopeKind};
+use openframe_application::modules::ai::scope::ResolvedScope;
 use openframe_application::modules::ai::toolbox::{self, ToolStep};
 use openframe_application::modules::ai::{change_set, queries};
 use openframe_test_support::TestEnv;
@@ -26,20 +26,7 @@ fn propose(env: &TestEnv, tool: &str, args: Value) -> ChangeSetDraft {
         .project()
         .unwrap()
         .store
-        .read(|c| {
-            scope::resolve(
-                c,
-                &actor,
-                &AiScopeArgs {
-                    kind: AiScopeKind::WholeProject,
-                    draft_id: None,
-                    scene_id: None,
-                    selection: Vec::new(),
-                    shooting_day_id: None,
-                    call_sheet_id: None,
-                },
-            )
-        })
+        .read(|c| ResolvedScope::on_current_draft(c))
         .unwrap();
     match toolbox::run_tool_unlocked(&env.core, &actor, &scope, "test request", tool, &args) {
         Ok(ToolStep::Proposal(d)) => d,

@@ -104,8 +104,8 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 f = f.require(n);
             }
         }
-        // Who plays a character is a fact of Cast & Crew: with sections picked, only that section says it.
-        let may_name_actors = ctx.picked.is_none_or(|p| p.leaf.takes(Kind::Person));
+        // Who plays a character is a fact of Cast & Crew: only that section says it.
+        let may_name_actors = ctx.picked.is_some_and(|p| p.leaf.takes(Kind::Person));
         if may_name_actors && (narrative || m.any(&["plays", "played", "actor", "actress", "cast"]))
         {
             let who: Vec<String> = ctx
@@ -195,18 +195,6 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 );
             }
         }
-    }
-
-    // ---- a name asked about that the project does not have
-    // With sections picked, the stage says so itself and names where it looked.
-    if let Some(who) = unknown_name(&ctx.message, r)
-        && named.is_empty()
-        && ctx.picked.is_none()
-    {
-        out.push(Fact::absent(
-            format!("a character called {who}"),
-            "the screenplays, the Story characters and Cast and Crew",
-        ));
     }
 
     // ---- acts and cards

@@ -262,9 +262,9 @@ fn spec_34_retrieval_budgets_on_a_feature_length_fixture() {
                     &actor,
                     &RetrieveRequest {
                         query: q.into(),
-                        scope: None,
+                        draft: None,
                         limit: 12,
-                        route: Some(route),
+                        route,
                         nav: None,
                     },
                 )

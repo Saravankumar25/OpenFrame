@@ -10,7 +10,7 @@
 //! * Build Screenplay asks for a heading or for the card to be left out, never invents one;
 //! * a batch delete restores in the original order whichever entry comes back first.
 
-use openframe_application::modules::ai::scope::{self, AiScopeArgs, AiScopeKind};
+use openframe_application::modules::ai::scope::ResolvedScope;
 use openframe_application::modules::ai::toolbox::{self, ToolStep};
 use openframe_domain::Role;
 use openframe_test_support::TestEnv;
@@ -171,20 +171,7 @@ fn ai_read(env: &TestEnv, tool: &str, args: Value) -> String {
     let s = env.core.project().unwrap();
     let scope = s
         .store
-        .read(|c| {
-            scope::resolve(
-                c,
-                &actor,
-                &AiScopeArgs {
-                    kind: AiScopeKind::WholeProject,
-                    draft_id: None,
-                    scene_id: None,
-                    selection: Vec::new(),
-                    shooting_day_id: None,
-                    call_sheet_id: None,
-                },
-            )
-        })
+        .read(|c| ResolvedScope::on_current_draft(c))
         .unwrap();
     match toolbox::run_tool_unlocked(&env.core, &actor, &scope, "test request", tool, &args) {
         Ok(ToolStep::Output(o)) => {
@@ -352,20 +339,7 @@ fn long_scene_description_is_readable_by_the_assistant_and_editable_only_by_prop
     let s = env.core.project().unwrap();
     let scope = s
         .store
-        .read(|cn| {
-            scope::resolve(
-                cn,
-                &actor,
-                &AiScopeArgs {
-                    kind: AiScopeKind::WholeProject,
-                    draft_id: None,
-                    scene_id: None,
-                    selection: Vec::new(),
-                    shooting_day_id: None,
-                    call_sheet_id: None,
-                },
-            )
-        })
+        .read(|cn| ResolvedScope::on_current_draft(cn))
         .unwrap();
     let step = toolbox::run_tool_unlocked(
         &env.core,

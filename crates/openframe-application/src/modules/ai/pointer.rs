@@ -144,6 +144,15 @@ fn words(text: &str) -> Vec<String> {
         .collect()
 }
 
+/// A statement of what a section does not hold speaks of what was asked: a word of the question is in
+/// it, the words of the fixed sentence not counted.
+pub(crate) fn gap_concerns(gap: &str, asked: &[String]) -> bool {
+    const FRAME: &[&str] = &["could", "not", "find", "looked"];
+    words(gap)
+        .iter()
+        .any(|w| asked.contains(w) && !FRAME.contains(&w.as_str()))
+}
+
 /// What the message asks about: its words without the filler, the numbers and the possessive "s".
 pub(crate) fn content_words(message: &str) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
@@ -160,8 +169,23 @@ pub(crate) fn content_words(message: &str) -> Vec<String> {
     out
 }
 
+/// The words of a question to look for in a fact: `content_words`, with "scene" kept, since a fact about
+/// scenes says so.
+pub(crate) fn asked_words(message: &str) -> Vec<String> {
+    let mut out = content_words(message);
+    if words(message).iter().any(|w| w == "scene") {
+        out.push("scene".to_string());
+    }
+    out
+}
+
+/// A word of the question is in the fact.
+pub(crate) fn speaks_of(f: &Fact, asked: &[String]) -> bool {
+    words_held(f, asked) > 0
+}
+
 /// A record of the project, not a note about what was assumed or the bare project title.
-fn real(f: &Fact) -> bool {
+pub(crate) fn real(f: &Fact) -> bool {
     !f.is_missing() && f.kind != "Assumed" && (f.kind != "Project" || f.field("logline").is_some())
 }
 
@@ -609,7 +633,7 @@ pub fn decide(input: &dossier::Input<'_>, sel: &Selection, d: &Dossier) -> Verdi
         && let Some(gap) = d
             .missing
             .iter()
-            .find(|m| words(m).iter().any(|w| asked.contains(w)) && !m.contains("your role"))
+            .find(|m| gap_concerns(m, &asked) && !m.contains("your role"))
     {
         return Verdict::NotFound(gap.clone());
     }

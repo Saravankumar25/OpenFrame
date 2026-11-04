@@ -9,10 +9,11 @@ use openframe_domain::AppResult;
 use regex::Regex;
 
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
+use crate::modules::ai::dossier::guard;
 use crate::modules::ai::dossier::words::{Msg, clip};
 use crate::modules::ai::dossier::{Fact, P_HIGH, P_MID};
-use crate::modules::ai::index::{Resolved, normalize};
-use crate::modules::ai::turn::{AnswerType, Domain, Group, TurnRead};
+use crate::modules::ai::index::{Kind, Resolved, normalize};
+use crate::modules::ai::turn::{AnswerType, Group, TurnRead, leaf_hints};
 use crate::modules::production::availability::{self as av, AvailabilityOwner};
 
 static EMAIL: LazyLock<Regex> =
@@ -45,6 +46,21 @@ const JOBS: &[&str] = &[
 pub fn asks_crew_job(m: &Msg) -> bool {
     JOBS.iter().any(|j| m.has(j)) || m.stem("crew")
 }
+
+/// Words that ask who plays a part.
+const CAST_WORDS: &[&str] = &[
+    "plays",
+    "play",
+    "played",
+    "playing",
+    "actor",
+    "actors",
+    "actress",
+    "cast",
+    "performer",
+    "portrays",
+    "who is playing",
+];
 
 /// Other names of a crew job.
 const JOB_ALIASES: &[(&str, &[&str])] = &[
@@ -135,6 +151,26 @@ fn windows(ctx: &FetchCtx<'_>, owner: AvailabilityOwner, id: &str) -> AppResult<
     })
 }
 
+/// A name with nothing else asked: no other kind of record is named, and no word of the message
+/// speaks of anything but the story, the script or the people.
+fn nothing_else_asked(message: &str, r: &Resolved) -> bool {
+    let other_record = !r.locations.is_empty()
+        || !r.days.is_empty()
+        || !r.budget_lines.is_empty()
+        || !r.files.is_empty()
+        || r.others
+            .iter()
+            .any(|(k, _)| matches!(k, Kind::VaultItem | Kind::CallSheet));
+    !other_record
+        && leaf_hints(message).iter().all(|h| {
+            h.leaves.iter().all(|l| {
+                l.starts_with("story/")
+                    || l.starts_with("screenplay/")
+                    || *l == "production/cast-crew"
+            })
+        })
+}
+
 fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fact>> {
     let m = &ctx.m;
     let t = read.answer_type;
@@ -166,36 +202,19 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         "date",
         "off",
     ]);
-    let asks_cast = m.any(&[
-        "plays",
-        "play",
-        "played",
-        "playing",
-        "actor",
-        "actors",
-        "actress",
-        "cast",
-        "performer",
-        "portrays",
-        "who is playing",
-    ]);
+    let asks_cast = m.any(CAST_WORDS);
     let asks_crew_role = asks_crew_job(m);
     // A name with nothing else asked, in words the topic list does not know: who plays it.
     let implicit_cast = t == AnswerType::Lookup
         && !r.characters.is_empty()
         && !asks_crew_role
-        && read
-            .domains
-            .iter()
-            .all(|d| matches!(d, Domain::Story | Domain::Screenplay | Domain::People));
+        && nothing_else_asked(&ctx.message, r);
     let mut out: Vec<Fact> = Vec::new();
     let cast = cast_rows(ctx)?;
     let crew = crew_rows(ctx)?;
 
     if asks_contact && !ctx.guard.contacts {
-        out.push(Fact::missing(
-            "Contact details are not shown for your role.",
-        ));
+        out.push(Fact::missing(guard::NOT_FOR_YOUR_ROLE));
     }
 
     // ---- cast
@@ -258,8 +277,6 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     if r.persons.is_empty()
         && r.characters.is_empty()
         && asks_cast
-        // A picked Cast & Crew section reads both whatever the question says.
-        && (!asks_crew_role || ctx.picked.is_some())
         && !m.any(&[
             "problem",
             "problems",
@@ -345,7 +362,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                         .prio(P_MID),
                 );
             }
-        } else if r.characters.is_empty() && !asks_cast {
+        } else if r.characters.is_empty() && !Msg::new(&ctx.message).any(CAST_WORDS) {
             let job = JOBS
                 .iter()
                 .filter(|j| m.has(j))

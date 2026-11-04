@@ -611,7 +611,7 @@ pub fn retrieve_hybrid(
     scope: &ResolvedScope,
     args: &Value,
 ) -> AppResult<Option<ToolOutput>> {
-    use super::super::retrieval::{RetrieveRequest, retrieve};
+    use super::super::retrieval::{RetrievalRoute, RetrieveRequest, retrieve};
     let q = a_str(args, "query").ok_or_else(|| queries::ambiguous("What should I look for?"))?;
     let limit = a_limit(args, 8).min(24);
     let mut packet = retrieve(
@@ -619,39 +619,33 @@ pub fn retrieve_hybrid(
         actor,
         &RetrieveRequest {
             query: q.clone(),
-            scope: Some(scope.clone()),
-            limit: if scope.sections.is_empty() {
-                limit
-            } else {
-                SEARCHED_WITHIN_PICKS
-            },
-            route: None,
+            draft: scope.draft.as_ref().map(|d| d.id.clone()),
+            limit: SEARCHED_WITHIN_PICKS,
+            route: RetrievalRoute::HybridGraph,
             nav: None,
         },
     )?;
-    // With sections picked only what they hold is told, whichever way the search found it.
-    if !scope.sections.is_empty() {
-        let keep: Vec<usize> = (0..packet.items.len())
-            .filter(|i| packet.sources.get(*i).is_some_and(|s| scope.reads(&s.nav)))
-            .take(limit)
-            .collect();
-        let pick = |n: usize| keep.contains(&n);
-        let mut n = 0;
-        packet.items.retain(|_| {
-            n += 1;
-            pick(n - 1)
-        });
-        let mut n = 0;
-        packet.sources.retain(|_| {
-            n += 1;
-            pick(n - 1)
-        });
-        let mut n = 0;
-        packet.provenance.retain(|_| {
-            n += 1;
-            pick(n - 1)
-        });
-    }
+    // Only what the picks hold is told, whichever way the search found it.
+    let keep: Vec<usize> = (0..packet.items.len())
+        .filter(|i| packet.sources.get(*i).is_some_and(|s| scope.reads(&s.nav)))
+        .take(limit)
+        .collect();
+    let pick = |n: usize| keep.contains(&n);
+    let mut n = 0;
+    packet.items.retain(|_| {
+        n += 1;
+        pick(n - 1)
+    });
+    let mut n = 0;
+    packet.sources.retain(|_| {
+        n += 1;
+        pick(n - 1)
+    });
+    let mut n = 0;
+    packet.provenance.retain(|_| {
+        n += 1;
+        pick(n - 1)
+    });
     let mut o = ToolOutput::exact(if packet.items.is_empty() {
         format!("Nothing in this project matches “{}”.", clip(&q, 80))
     } else {
@@ -671,7 +665,6 @@ pub fn retrieve_hybrid(
         o = o.detail(n.clone());
     }
     o.structured = Some(json!({
-        "route": format!("{:?}", packet.route),
         "degraded": packet.degraded,
         "indexState": format!("{:?}", packet.index_state),
     }));

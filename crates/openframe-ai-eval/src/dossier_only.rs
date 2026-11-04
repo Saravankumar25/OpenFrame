@@ -84,7 +84,6 @@ struct Row {
     id: String,
     message: String,
     answer_type: String,
-    domains: String,
     facts: usize,
     tokens: usize,
     required: usize,
@@ -152,28 +151,14 @@ pub fn run(
             let reads = read_conv_resolved(&ix, conv, &aids);
             let (resolved, read, focus) = &reads[m.turn];
             let read = &orchestrator::hinted(read.clone(), &conv.turns[m.turn]);
-            // The scene the case has selected on screen, as the app's scope would carry it.
-            let selected = case
-                .scope
-                .as_ref()
-                .filter(|s| s.get("kind").and_then(Value::as_str) == Some("scene"))
-                .and_then(|s| s.get("scene").and_then(Value::as_u64))
-                .and_then(|n| {
-                    let sp = ix.screenplays.iter().max_by_key(|s| s.scene_count)?;
-                    ix.scene(&sp.id, n as u32).map(|e| e.id.clone())
-                });
             let message = &conv.turns[m.turn];
             let selection = picks_of(core, case, &ix)?;
             // The same text search a request runs: it opens the store itself, so it goes first.
-            let retrieved = selection
-                .as_ref()
-                .map(|sel| sections::retrieve(core, &actor, sel, message));
-            let leaf_read = selection.as_ref().map(|sel| dossier::LeafRead {
-                selection: sel,
-                passages: retrieved
-                    .as_ref()
-                    .map_or(&[][..], |r| r.passages.as_slice()),
-            });
+            let retrieved = sections::retrieve(core, &actor, &selection, message);
+            let leaf_read = dossier::LeafRead {
+                selection: &selection,
+                passages: &retrieved.passages,
+            };
             let started = Instant::now();
             let (d, verdict) = session
                 .store
@@ -186,15 +171,12 @@ pub fn run(
                         message,
                         read,
                         resolved,
-                        selected_scene: selected.as_deref(),
                         focus: Some(focus),
                         previous_message: m.turn.checked_sub(1).map(|i| conv.turns[i].as_str()),
-                        sections: leaf_read.as_ref(),
+                        sections: &leaf_read,
                     };
                     let d = dossier::build(&input);
-                    let verdict = selection
-                        .as_ref()
-                        .map(|sel| pointer::decide(&input, sel, &d));
+                    let verdict = pointer::decide(&input, &selection, &d);
                     Ok((d, verdict))
                 })
                 .map_err(|e| e.message)?;
@@ -227,7 +209,6 @@ pub fn run(
                 id: m.id.clone(),
                 message: message.clone(),
                 answer_type: read.answer_type.code().to_string(),
-                domains: read.domain_codes(),
                 facts: d.facts.len(),
                 tokens: d.tokens_estimate,
                 required: d.required.len(),
@@ -239,11 +220,12 @@ pub fn run(
                 build_ms,
                 guard_notes: d.notes_on_guard,
                 text,
-                pointer: verdict.as_ref().map(|v| PointerCheck {
+                // Every section read leaves nothing to point at: only a case with picks counts.
+                pointer: case.sections.as_ref().map(|_| PointerCheck {
                     want: case.expect.pointer.clone(),
-                    got: v.pointer().map(|p| p.leaf.id.to_string()),
+                    got: verdict.pointer().map(|p| p.leaf.id.to_string()),
                 }),
-                verdict: verdict.map_or_else(String::new, |v| format!("{v:?}")),
+                verdict: format!("{verdict:?}"),
             });
         }
     }
@@ -255,7 +237,7 @@ pub fn run(
             lines,
             "{}",
             json!({ "id": r.id, "family": r.family, "message": r.message, "type": r.answer_type,
-                "domains": r.domains, "facts": r.facts, "tokens": r.tokens, "required": r.required,
+                "facts": r.facts, "tokens": r.tokens, "required": r.required,
                 "missing": r.missing, "wanted": r.wanted, "found": r.found, "misses": r.misses,
                 "abstain": r.abstain, "buildMs": r.build_ms, "guardNotes": r.guard_notes,
                 "pointerWant": r.pointer.as_ref().and_then(|p| p.want.clone()),
@@ -418,14 +400,13 @@ fn report(rows: &[Row]) -> String {
             .join(", ")
     );
 
-    t.push_str("\n## Entries not found\n\n| Id | Type | Domains | Message | Not found | Facts |\n|---|---|---|---|---|---|\n");
+    t.push_str("\n## Entries not found\n\n| Id | Type | Message | Not found | Facts |\n|---|---|---|---|---|\n");
     for r in rows.iter().filter(|r| !r.misses.is_empty()) {
         let _ = writeln!(
             t,
-            "| {} | {} | {} | {} | {} | {} |",
+            "| {} | {} | {} | {} | {} |",
             r.id,
             r.answer_type,
-            r.domains,
             r.message.replace('|', "/").replace('\n', " "),
             r.misses.join("; ").replace('|', "/"),
             r.facts

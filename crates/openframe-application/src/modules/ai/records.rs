@@ -22,7 +22,6 @@ pub struct NewRequest<'a> {
     pub id: &'a str,
     pub project_id: Option<String>,
     pub conversation_id: &'a str,
-    pub scope_kind: &'a str,
     pub scope_json: &'a Value,
     pub scope_label: &'a str,
     pub text: &'a str,
@@ -32,15 +31,14 @@ pub struct NewRequest<'a> {
 pub fn insert_request(tx: &Tx<'_>, r: &NewRequest<'_>) -> AppResult<()> {
     let now = now_ms();
     tx.conn().execute(
-        "INSERT INTO ai_request(id, user_id, project_id, session_id, scope_kind, scope_json, scope_label, request_text,
+        "INSERT INTO ai_request(id, user_id, project_id, session_id, scope_json, scope_label, request_text,
                                 external_processing_state, model_reference, status, created_at, updated_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 'Local', ?9, 'Running', ?10, ?10)",
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, 'Local', ?8, 'Running', ?9, ?9)",
         params![
             r.id,
             tx.actor().user_id,
             r.project_id,
             r.conversation_id,
-            r.scope_kind,
             r.scope_json.to_string(),
             r.scope_label,
             r.text,

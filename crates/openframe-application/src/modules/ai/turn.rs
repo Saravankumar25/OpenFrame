@@ -1,8 +1,8 @@
 //! Reading the answer type of a message (spec `ai-conversational-harness`, section 5.3, slice S4).
 //!
-//! One stage with typed input and typed output. The turn reads two separate things: the kind of
-//! answer wanted (`AnswerType`) and where the facts live (`Domain`), and from the type it takes the
-//! length class of the answer. Order of reading, cheapest first, each step only when the one before
+//! One stage with typed input and typed output. The turn reads the kind of answer wanted
+//! (`AnswerType`), and from the type it takes the length class of the answer. Where the facts live is
+//! the person's choice (ADR-0041), never read from the message. Order of reading, cheapest first, each step only when the one before
 //! it was not sure:
 //!
 //! 1. Strong rules (`rules.rs`): "how many", relation and compare words, "open scene 4", explain
@@ -22,7 +22,7 @@
 //! The stage decides nothing about the answer yet: the read is stored in the conversation focus and
 //! in the AI trace, where the evaluation measures it.
 
-mod domains;
+mod hints;
 mod model;
 mod neighbour;
 mod rules;
@@ -39,12 +39,7 @@ use serde::{Deserialize, Serialize};
 
 use super::index::Resolved;
 
-pub use domains::{Domain, LeafHint, leaf_hints};
-
-/// The domains a message touches once its names are known: what the dossier fetches from.
-pub fn domains_for(message: &str, resolved: &Resolved, answer_type: AnswerType) -> Vec<Domain> {
-    domains::find(message, resolved, answer_type)
-}
+pub use hints::{LeafHint, leaf_hints};
 pub use neighbour::{LooRead, leave_one_out};
 
 /// How long a request waits for the embedding step. The first message after the app starts embeds
@@ -114,7 +109,7 @@ impl AnswerType {
         ANSWER_TYPES.into_iter().find(|t| t.code() == s.trim())
     }
 
-    /// The coarse group: it picks the fetch plan and the length class.
+    /// The coarse group: what the turn does with the message, and which facts it wants.
     pub fn group(self) -> Group {
         match self {
             AnswerType::Lookup | AnswerType::List | AnswerType::Count | AnswerType::Compare => {
@@ -286,22 +281,10 @@ impl ReadHow {
 pub struct TurnRead {
     pub answer_type: AnswerType,
     pub group: Group,
-    pub domains: Vec<Domain>,
     pub length_class: LengthClass,
     pub how: ReadHow,
     /// Share of the nearest examples that voted for the type, 0 to 1; 0 when no vote ran.
     pub vote: f32,
-}
-
-impl TurnRead {
-    /// The domains as one trace value: `budget,schedule`.
-    pub fn domain_codes(&self) -> String {
-        self.domains
-            .iter()
-            .map(|d| d.code())
-            .collect::<Vec<_>>()
-            .join(",")
-    }
 }
 
 /// The input of the stage.
@@ -346,7 +329,6 @@ pub fn read(input: &TurnInput<'_>, aids: &Aids<'_>) -> TurnRead {
     TurnRead {
         answer_type,
         group: answer_type.group(),
-        domains: domains::find(&message, input.resolved, answer_type),
         length_class: rules::length_class(&message, answer_type),
         how,
         vote,

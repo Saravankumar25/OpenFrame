@@ -40,7 +40,8 @@ use super::orchestrator::{
     TOOL_CATALOG_CHARS, escape_untrusted, failure, from_tool_error, mark_stopped, path,
     push_unique_provenance, stopped_output,
 };
-use super::scope::{ContextItem, ResolvedScope};
+use super::retrieval::ContextItem;
+use super::scope::ResolvedScope;
 use super::toolbox::{self, ToolDef, ToolStep};
 use super::tools::{Generation, ToolOutput};
 use super::types::*;

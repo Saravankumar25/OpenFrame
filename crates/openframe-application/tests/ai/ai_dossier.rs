@@ -4,6 +4,7 @@
 
 use openframe_application::modules::ai::dossier::{self, Dossier};
 use openframe_application::modules::ai::index::{self, Focus};
+use openframe_application::modules::ai::sections::{self, SectionPick};
 use openframe_application::modules::ai::turn::{self, Aids, AnswerType, TurnInput};
 use openframe_domain::{Actor, Role};
 use openframe_test_support::TestEnv;
@@ -98,6 +99,20 @@ fn dossier_as(env: &TestEnv, actor: &Actor, message: &str) -> Dossier {
 /// The same with the answer type given: the rules alone read some wording as chat, and the app
 /// reads it with the search model. These tests are about what is fetched for a type.
 fn dossier_typed(env: &TestEnv, actor: &Actor, message: &str, t: Option<AnswerType>) -> Dossier {
+    dossier_read(env, actor, message, t, None)
+}
+
+fn dossier_in(env: &TestEnv, message: &str, leaf: &str) -> Dossier {
+    dossier_read(env, &env.actor(), message, None, Some(leaf))
+}
+
+fn dossier_read(
+    env: &TestEnv,
+    actor: &Actor,
+    message: &str,
+    t: Option<AnswerType>,
+    leaf: Option<&str>,
+) -> Dossier {
     let s = env.core.project().expect("project");
     let ix = index::project_index(&s).expect("index");
     let resolved = index::resolve(&ix, &Focus::default(), message);
@@ -115,6 +130,25 @@ fn dossier_typed(env: &TestEnv, actor: &Actor, message: &str, t: Option<AnswerTy
         read.group = t.group();
         read.length_class = t.length_class();
     }
+    // No picks: under the test switch a request reads every section, the text search included.
+    let selection = match leaf {
+        Some(id) => s.store.read(|c| {
+            sections::resolve_picks(
+                c,
+                &[SectionPick {
+                    leaf: id.to_string(),
+                    ..SectionPick::default()
+                }],
+            )
+        }),
+        None => s.store.read(sections::every_section),
+    }
+    .expect("sections");
+    let retrieved = sections::retrieve(&env.core, actor, &selection, message);
+    let leaf_read = dossier::LeafRead {
+        selection: &selection,
+        passages: &retrieved.passages,
+    };
     s.store
         .read(|c| {
             Ok(dossier::build(&dossier::Input {
@@ -125,10 +159,9 @@ fn dossier_typed(env: &TestEnv, actor: &Actor, message: &str, t: Option<AnswerTy
                 message,
                 read: &read,
                 resolved: &resolved,
-                selected_scene: None,
                 focus: None,
                 previous_message: None,
-                sections: None,
+                sections: &leaf_read,
             }))
         })
         .expect("dossier")
@@ -149,7 +182,7 @@ fn all_text(d: &Dossier) -> String {
 #[test]
 fn story_returns_the_relationship_sentence_first_with_the_word_to_state() {
     let env = project();
-    let d = dossier(&env, "how is Anna related to Ben");
+    let d = dossier_in(&env, "how is Anna related to Ben", "story/characters");
     let first = d.facts.first().map(|f| f.render()).unwrap_or_default();
     assert!(
         first.starts_with("Ben is brother of Anna."),
@@ -199,7 +232,7 @@ fn a_name_the_project_does_not_hold_is_stated_as_missing() {
     assert!(
         d.missing
             .iter()
-            .any(|m| m == "I could not find a character called Marcus. I looked in the screenplays, the Story characters and Cast and Crew."),
+            .any(|m| m == "I could not find a character called Marcus. I looked in the screenplays, the Story, Production, the Schedule, the Budget, notes and files."),
         "{:?}",
         d.missing
     );

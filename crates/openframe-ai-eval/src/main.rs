@@ -39,7 +39,10 @@ use openframe_ai_eval::{
 };
 use openframe_application::core::{AppConfig, AppCore};
 use openframe_application::events::RecordingSink;
-use openframe_application::modules::ai::{intelligence, orchestrator, retrieval, scope, toolbox};
+use openframe_application::modules::ai::scope::ResolvedScope;
+use openframe_application::modules::ai::{
+    intelligence, orchestrator, retrieval, sections, toolbox,
+};
 use openframe_application::modules::schedule;
 use openframe_domain::AppResult;
 use serde_json::{Value, json};
@@ -183,7 +186,7 @@ fn run() -> Result<(), String> {
         ai_model_source: Some(source),
         ai_deterministic: true,
         // A case without sections measures the path that reads every area (ADR-0041).
-        ai_eval_any_sections: true,
+        ai_eval_all_sections: true,
         ..AppConfig::isolated(data.path())
     };
     let core =
@@ -561,21 +564,6 @@ fn state_holds(core: &AppCore, check: &StateCheck, p: &Project) -> bool {
             .is_none_or(|l| !text.contains(&l.to_lowercase()))
 }
 
-fn scope_args(case: &Case, p: &Project) -> Value {
-    match case.scope.as_ref().and_then(|s| s["kind"].as_str()) {
-        Some("scene") => {
-            let n = case
-                .scope
-                .as_ref()
-                .and_then(|s| s["scene"].as_u64())
-                .unwrap_or(1) as usize;
-            json!({ "kind": "CurrentScene", "draftId": p.draft_id, "sceneId": p.scene_ids.get(n.saturating_sub(1)).cloned().unwrap_or_default() })
-        }
-        // There is no act scope in the panel: an act request is asked of the whole project.
-        _ => json!({ "kind": "WholeProject" }),
-    }
-}
-
 /// The sections of a case as `AskArgs.sections`: a scene ordinal and a day number become their ids.
 fn section_args(core: &AppCore, case: &Case, p: &Project) -> Result<Option<Value>, String> {
     let Some(picks) = &case.sections else {
@@ -702,9 +690,9 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
         let t = Instant::now();
         let req = retrieval::RetrieveRequest {
             query: case.request.clone(),
-            scope: None,
+            draft: None,
             limit: 10,
-            route: None,
+            route: retrieval::RetrievalRoute::HybridGraph,
             nav: None,
         };
         match retrieval::retrieve(core, &actor, &req) {
@@ -728,16 +716,31 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
         o.elapsed_ms = t.elapsed().as_millis() as u64;
         return o;
     }
-    let scope_json = scope_args(case, &p);
-    if let Ok(session) = core.project() {
-        let parsed: Result<scope::AiScopeArgs, _> = serde_json::from_value(scope_json.clone());
-        if let Ok(parsed) = parsed
-            && let Ok(resolved) = session.store.read(|c| scope::resolve(c, &actor, &parsed))
-        {
+    let section_list = match section_args(core, case, &p) {
+        Ok(list) => list,
+        Err(e) => {
+            o.setup_error = Some(e);
+            return o;
+        }
+    };
+    // The tools a request of this case is offered: the same picks, the same list.
+    if let (Ok(session), actor_picks) = (core.project(), section_list.as_ref()) {
+        let picks: Vec<sections::SectionPick> = actor_picks
+            .and_then(|v| serde_json::from_value(v.clone()).ok())
+            .unwrap_or_default();
+        let scope = session.store.read(|c| {
+            let selection = if picks.is_empty() {
+                sections::every_section(c)?
+            } else {
+                sections::resolve_picks(c, &picks)?
+            };
+            ResolvedScope::of_selection(c, &selection)
+        });
+        if let Ok(scope) = scope {
             o.offered = toolbox::tools_for_request(
                 core,
                 &actor,
-                &resolved,
+                &scope,
                 &case.request,
                 orchestrator::TOOL_CATALOG_CHARS,
             )
@@ -746,26 +749,18 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
             .collect();
         }
     }
-    let section_list = match section_args(core, case, &p) {
-        Ok(list) => list,
-        Err(e) => {
-            o.setup_error = Some(e);
-            return o;
-        }
-    };
     // Earlier requests of a conversation case go first in the same conversation; their answers
     // are ignored, they only become the history the real request is asked against.
     let conversation = (!case.before.is_empty()).then(|| format!("eval-{}", case.id));
     for earlier in &case.before {
-        let mut ask =
-            json!({ "text": earlier, "scope": scope_json, "conversationId": conversation });
+        let mut ask = json!({ "text": earlier, "conversationId": conversation });
         if let Some(list) = &section_list {
             ask["sections"] = list.clone();
         }
         let _ = op(core, "ai.ask", ask);
     }
     let t = Instant::now();
-    let mut ask = json!({ "text": case.request, "scope": scope_json });
+    let mut ask = json!({ "text": case.request });
     if let Some(id) = &conversation {
         ask["conversationId"] = json!(id);
     }

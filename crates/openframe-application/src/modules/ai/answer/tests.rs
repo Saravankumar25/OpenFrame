@@ -7,8 +7,9 @@ use std::time::Instant;
 use super::check::{self, Expect, Material, Offence, Rule};
 use super::*;
 use crate::modules::ai::memory::{ConversationMemory, MemoryEntry, RecentTurn};
+use crate::modules::ai::sections::Selection;
 use crate::modules::ai::test_script::Scripted;
-use crate::modules::ai::turn::{Domain, LengthClass, ReadHow};
+use crate::modules::ai::turn::{LengthClass, ReadHow};
 
 // ------------------------------------------------------------------ the checker
 
@@ -407,7 +408,6 @@ fn read(t: AnswerType) -> TurnRead {
     TurnRead {
         answer_type: t,
         group: t.group(),
-        domains: vec![Domain::Budget],
         length_class: t.length_class(),
         how: ReadHow::Rule,
         vote: 0.0,
@@ -451,7 +451,7 @@ impl Run {
             memory,
             index: None,
             focus: &Focus::default(),
-            sections: None,
+            sections: &Selection::every(false),
             partial: false,
             started: Instant::now(),
             stopped,
@@ -863,7 +863,7 @@ fn the_user_message_follows_the_layout_of_the_spec() {
         ),
         index: None,
         focus: &focus,
-        sections: None,
+        sections: &Selection::every(false),
         partial: false,
         started: Instant::now(),
         stopped: &|| false,

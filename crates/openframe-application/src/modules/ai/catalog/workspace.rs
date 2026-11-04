@@ -1169,15 +1169,7 @@ fn comment_target(
 
 /// A scope with no selection (current draft only), for rebuilds without context.
 pub(super) fn neutral_scope() -> super::super::scope::ResolvedScope {
-    super::super::scope::ResolvedScope {
-        kind: super::super::scope::AiScopeKind::WholeProject,
-        label: "Using: Whole Project".into(),
-        draft: None,
-        scene: None,
-        selection: Vec::new(),
-        context: Vec::new(),
-        sections: Vec::new(),
-    }
+    super::super::scope::ResolvedScope::every_section()
 }
 
 fn comment(ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {

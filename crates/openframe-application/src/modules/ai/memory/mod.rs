@@ -71,7 +71,7 @@ pub struct Input<'a> {
     pub names: Option<&'a EntityIndex>,
     /// The sections of this request (ADR-0041). Memory that belongs to a section that is not picked
     /// stays out of the turn; the focus keeps its ids, which are never text.
-    pub sections: Option<&'a Selection>,
+    pub sections: &'a Selection,
 }
 
 /// Stage "prepare" (section 5.1, steps 2 and 3). Memory that cannot be read leaves the turn without
@@ -86,7 +86,7 @@ pub fn prepare(i: &Input<'_>) -> AppResult<TurnMemory> {
         i.sections,
     )?;
     let entries = long::retrieve_where(i.conn, &i.actor.user_id, i.message, i.entity_ids, |e| {
-        i.sections.is_none_or(|sel| long::homed_in(e, sel, i.names))
+        long::homed_in(e, i.sections, i.names)
     })
     .unwrap_or_else(|e| {
         tracing::warn!(

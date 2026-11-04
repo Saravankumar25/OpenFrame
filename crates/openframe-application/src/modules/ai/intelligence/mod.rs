@@ -6,7 +6,7 @@
 //!        │                                                vectors, context graph)
 //!        └── search_fts (canonical FTS5) ─┐                        │
 //!                                         ▼                        ▼
-//!                        retriever: structured / lexical / semantic / hybrid / hybrid+graph
+//!                        retriever: lexical / semantic / hybrid / hybrid+graph
 //!                                         ▼
 //!                        assembler: canonical re-validation, privacy, budgets, provenance
 //!                                         ▼
@@ -25,7 +25,6 @@ pub mod assembler;
 pub mod documents;
 pub mod indexer;
 pub mod retriever;
-pub mod router;
 pub mod warm;
 
 /// Adapter from the `openframe-ai` embedding runtime (contract C1:

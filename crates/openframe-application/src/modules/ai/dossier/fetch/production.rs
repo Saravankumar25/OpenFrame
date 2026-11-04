@@ -6,6 +6,7 @@ use serde_json::Value;
 
 use super::{files, schedule};
 use crate::modules::ai::dossier::ctx::{FetchCtx, SceneRef, safe};
+use crate::modules::ai::dossier::guard;
 use crate::modules::ai::dossier::words::{clip, date_of};
 use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
 use crate::modules::ai::index::Resolved;
@@ -110,9 +111,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         }
     }
     if asks_contact && !ctx.guard.contacts && (!r.locations.is_empty() || m.stem("location")) {
-        out.push(Fact::missing(
-            "Contact details are not shown for your role.",
-        ));
+        out.push(Fact::missing(guard::NOT_FOR_YOUR_ROLE));
     }
 
     // ---- the locations as a whole
