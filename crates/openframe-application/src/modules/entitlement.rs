@@ -579,7 +579,9 @@ impl EntitlementService {
     /// operation that changes a project is refused, opening and exporting are not. Called with what
     /// the registry knows about the operation, because only the registry can tell.
     pub fn check_edit(&self, op: &str, changes_project: bool) -> AppResult<()> {
-        if self.channel() != Channel::MacAppStore
+        // A lock is `check_operation`'s to judge: its flush window lets the last saves through.
+        if self.locks_the_app()
+            || self.channel() != Channel::MacAppStore
             || !(changes_project || NEW_PROJECT_COMMANDS.contains(&op))
             || self.state().permits(self.channel(), Permission::Edit)
             || op.starts_with("entitlement.")

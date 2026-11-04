@@ -127,10 +127,12 @@ struct ShellLifecycleTests {
     // MARK: Delete
 
     /// The test core moves a deleted folder into a `recycle-bin` folder of a test data root (the first
-    /// root of this process), never the real Trash. Find it by the folder name.
+    /// root of this process, which any suite may have made), never the real Trash. Find it by the folder name.
     private func inTestBin(_ folderName: String) -> Bool {
-        let base = FileManager.default.temporaryDirectory.appendingPathComponent("openframe-ui-tests", isDirectory: true)
-        let roots = (try? FileManager.default.contentsOfDirectory(at: base, includingPropertiesForKeys: nil)) ?? []
+        let temp = FileManager.default.temporaryDirectory
+        let base = temp.appendingPathComponent("openframe-ui-tests", isDirectory: true)
+        let list = { (url: URL) in (try? FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)) ?? [] }
+        let roots = list(base) + list(temp)
         for root in roots {
             let bin = root.appendingPathComponent("recycle-bin", isDirectory: true)
             let names = (try? FileManager.default.contentsOfDirectory(atPath: bin.path)) ?? []

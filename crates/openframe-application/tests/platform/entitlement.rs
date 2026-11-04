@@ -669,6 +669,13 @@ fn plat_014_a_mac_refund_locks_open_edit_and_export_in_rust_and_a_purchase_unloc
             .is_ok(),
         "the flush window is open"
     );
+    // A real save too: the text the editors still hold reaches the disk (package file 02, section 6).
+    let saved = core.dispatch(
+        &core.local_actor(),
+        "story.page.save",
+        json!({ "text": "typed just before the lock", "expectedRev": 0 }),
+    );
+    assert!(saved.is_ok(), "the last save goes through: {saved:?}");
     call(&core, "entitlement.lock_ready", json!({}));
     assert_locked(&core, &path);
     // "Restore purchase" finds nothing new: still locked.
