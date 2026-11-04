@@ -104,9 +104,22 @@ pub struct ResolvedScope {
     pub scene: Option<SceneRow>,
     pub selection: Vec<String>,
     pub context: Vec<ContextItem>,
+    /// The sections the person picked (ADR-0041). The tools offered and what the general tools read
+    /// are held to them. Empty: nothing is held back, the path the older evaluation sets measure.
+    pub sections: Vec<&'static str>,
 }
 
 impl ResolvedScope {
+    /// May a tool read a document with this navigation target? Only when a picked section holds it.
+    pub fn reads(&self, nav: &Value) -> bool {
+        self.sections.is_empty()
+            || self
+                .sections
+                .iter()
+                .filter_map(|id| super::sections::leaf(id))
+                .any(|l| l.search.iter().any(|r| r.matches(nav)))
+    }
+
     /// Stored with the AI Request: references only, never content copies.
     pub fn refs_json(&self) -> Value {
         json!({
@@ -158,6 +171,7 @@ pub fn resolve(c: &Connection, actor: &Actor, args: &AiScopeArgs) -> AppResult<R
         scene: None,
         selection: Vec::new(),
         context: Vec::new(),
+        sections: Vec::new(),
     };
     match args.kind {
         AiScopeKind::CurrentScene => {

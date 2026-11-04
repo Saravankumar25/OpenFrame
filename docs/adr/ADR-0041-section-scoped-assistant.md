@@ -50,6 +50,19 @@ Taken while building slices R1 to R3:
 - The Home screen belongs to Production Overview; Activity and Recently Deleted belong to Settings, so that every screen has one leaf.
 - The trace keeps the picks in one new column, `sys_ai_trace.sections_json`: leaf ids, counts and tokens per leaf.
 
+Taken while building slices R4 to R6:
+
+- Memory goes by what its own words name: an entry naming something no picked section can answer about stays out of the prompt, a
+  preference naming nothing stays in. An earlier turn asked under other sections stays out. The focus keeps its ids and writes only
+  what the picks can answer about. The project map lists the picked sections, with no title and no scene count.
+- A topic word only points when no word points at a pick, the picks' values do not hold it, and the picks returned nothing that
+  answers. "Planned", "when" and a bare scene number were taken out of the word table.
+- A scene is opened in the Screenplay, so "Open Scene 12" with only Breakdown picked points at Screenplay > Scenes.
+- A breakdown suggestion needs Breakdown and Screenplay > Scenes. The general search tools live in every section and read only what
+  the picks hold. A story explanation told "briefly" gets the short class, as an explanation does.
+- The Story card no longer says who plays a character unless a picked section can answer about people.
+- The unsupported relationship word and unstated mood checks start off (`NARRATIVE_WORD_CHECKS`) until a run measures their false alarms.
+
 ## Measuring
 
 Measure first (ADR-0028 decision 1). The baseline and the new test set come before any runtime change and each slice is

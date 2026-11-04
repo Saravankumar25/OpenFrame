@@ -1271,6 +1271,7 @@ pub fn retrieve(core: &AppCore, actor: &Actor, selection: &Selection, query: &st
                     scene: None,
                     selection: Vec::new(),
                     context: Vec::new(),
+                    sections: Vec::new(),
                 }),
                 limit: PASSAGES_PER_LEAF,
                 route: Some(RetrievalRoute::HybridGraph),

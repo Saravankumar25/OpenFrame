@@ -1176,6 +1176,7 @@ pub(super) fn neutral_scope() -> super::super::scope::ResolvedScope {
         scene: None,
         selection: Vec::new(),
         context: Vec::new(),
+        sections: Vec::new(),
     }
 }
 

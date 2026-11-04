@@ -8,9 +8,10 @@
 
 > **SUPERSEDED in part by [ADR-0041](../adr/ADR-0041-section-scoped-assistant.md) (2026-11-03).** Domain found by topic words as the router (section 5.3, domain part), Stage B and Stage C (ADR-0037 decisions 5 and 6, and section 5.4's plan by answer type and domain) and scope kinds for questions are SUPERSEDED: the person picks up to 3 sections, an out-of-section question gets a code-built pointer, and narrative answers get new types and limits. Marked in place below; the text stays as history.
 >
-> **Section-scoped assistant (ADR-0041, 2026-11-03).** The person picks up to 3 leaves before asking. Slices R1 to R3 are built:
+> **Section-scoped assistant (ADR-0041, 2026-11-03).** The person picks up to 3 leaves before asking. Slices R1 to R6 are built:
 > the leaf registry `modules/ai/sections.rs` and its coverage tests, the `sections` field of `ai.ask`, the operation `ai.sections`,
-> the Mac picker and the dossier by leaves with search held to the picks. Sections 5.3 domain words and 5.4 plan below describe the
+> the Mac picker, the dossier by leaves with search held to the picks, memory and focus held to the picks, the pointer (`modules/ai/pointer.rs`), the
+> types describe, brief and story with their writer policy and briefing fetcher, and the agent's tool list by section (`toolbox/homes.rs`). Sections 5.3 domain words and 5.4 plan below describe the
 > wide path, which stays for `AppConfig.ai_eval_any_sections` until slice R7. The design is `OpenFrame_Release_Package/ai-reharness.md`.
 
 ## 1. What the owner asked for (2026-10-26)

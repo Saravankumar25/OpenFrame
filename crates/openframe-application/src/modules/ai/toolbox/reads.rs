@@ -520,7 +520,9 @@ pub(super) fn found(c: &ToolCtx<'_>, e: &rv::Entity, reference: &str) -> AppResu
 pub fn retrieve_lexical(ctx: &ToolCtx<'_>, args: &Value) -> AppResult<ToolOutput> {
     let q = a_str(args, "query").ok_or_else(|| queries::ambiguous("What should I look for?"))?;
     let limit = a_limit(args, 8).min(24);
-    let hits = lexical_hits(ctx.conn, ctx.actor, &q, limit)?;
+    let mut hits = lexical_hits(ctx.conn, ctx.actor, &q, SEARCHED_WITHIN_PICKS.max(limit))?;
+    hits.retain(|h| ctx.scope.reads(&h.4));
+    hits.truncate(limit);
     let mut o = ToolOutput::exact(if hits.is_empty() {
         format!("Nothing in this project matches “{}”.", clip(&q, 80))
     } else {
@@ -556,6 +558,9 @@ pub fn retrieve_lexical(ctx: &ToolCtx<'_>, args: &Value) -> AppResult<ToolOutput
     o.structured = Some(json!({"route": "Lexical", "degraded": true, "indexState": "Unavailable"}));
     Ok(o.detail("Keyword retrieval (project context is still being prepared)."))
 }
+
+/// How many hits a search looks at when only the picked sections' hits will be kept.
+const SEARCHED_WITHIN_PICKS: usize = 48;
 
 /// (entity type, title, context, body, nav, entity id) of the best keyword matches visible to `actor`.
 pub(crate) fn lexical_hits(
@@ -608,17 +613,45 @@ pub fn retrieve_hybrid(
 ) -> AppResult<Option<ToolOutput>> {
     use super::super::retrieval::{RetrieveRequest, retrieve};
     let q = a_str(args, "query").ok_or_else(|| queries::ambiguous("What should I look for?"))?;
-    let packet = retrieve(
+    let limit = a_limit(args, 8).min(24);
+    let mut packet = retrieve(
         core,
         actor,
         &RetrieveRequest {
             query: q.clone(),
             scope: Some(scope.clone()),
-            limit: a_limit(args, 8).min(24),
+            limit: if scope.sections.is_empty() {
+                limit
+            } else {
+                SEARCHED_WITHIN_PICKS
+            },
             route: None,
             nav: None,
         },
     )?;
+    // With sections picked only what they hold is told, whichever way the search found it.
+    if !scope.sections.is_empty() {
+        let keep: Vec<usize> = (0..packet.items.len())
+            .filter(|i| packet.sources.get(*i).is_some_and(|s| scope.reads(&s.nav)))
+            .take(limit)
+            .collect();
+        let pick = |n: usize| keep.contains(&n);
+        let mut n = 0;
+        packet.items.retain(|_| {
+            n += 1;
+            pick(n - 1)
+        });
+        let mut n = 0;
+        packet.sources.retain(|_| {
+            n += 1;
+            pick(n - 1)
+        });
+        let mut n = 0;
+        packet.provenance.retain(|_| {
+            n += 1;
+            pick(n - 1)
+        });
+    }
     let mut o = ToolOutput::exact(if packet.items.is_empty() {
         format!("Nothing in this project matches “{}”.", clip(&q, 80))
     } else {

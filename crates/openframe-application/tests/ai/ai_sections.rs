@@ -11,6 +11,7 @@ use openframe_application::MutationMeta;
 use openframe_application::modules::ai::dossier::{self, Dossier, LeafRead};
 use openframe_application::modules::ai::index::{self, Focus, Kind};
 use openframe_application::modules::ai::retrieval::{self, RetrievalRoute, RetrieveRequest};
+use openframe_application::modules::ai::scope::{AiScopeKind, ResolvedScope};
 use openframe_application::modules::ai::sections::{self, LEAVES, SectionPick};
 use openframe_application::modules::ai::service;
 use openframe_application::modules::ai::turn::{self, Aids, AnswerType, TurnInput};
@@ -1567,4 +1568,232 @@ fn a_long_answer_runs_through_the_writer_with_its_policy_and_its_limit() {
     );
     let prompt = prompt_of(&model, briefly);
     assert!(prompt.contains("at most 80 words"), "{prompt}");
+}
+
+// ------------------------------------------------------------------ the agent (R6)
+
+#[test]
+fn the_tools_offered_are_the_ones_homed_in_the_picks() {
+    use openframe_application::modules::ai::toolbox;
+    let f = film();
+    let s = f.env.core.project().unwrap();
+    let actor = f.env.actor();
+    let scope_of = |picks: &[&'static str]| ResolvedScope {
+        kind: AiScopeKind::WholeProject,
+        label: String::new(),
+        draft: None,
+        scene: None,
+        selection: Vec::new(),
+        context: Vec::new(),
+        sections: picks.to_vec(),
+    };
+    let _ = &s;
+    let names = |picks: &[&'static str]| -> Vec<String> {
+        toolbox::tools_for(&f.env.core, &actor, &scope_of(picks))
+            .into_iter()
+            .map(|t| t.name)
+            .collect()
+    };
+    let budget = names(&["production/budget"]);
+    assert!(
+        budget.iter().any(|n| n == "propose_budget_line"),
+        "{budget:?}"
+    );
+    assert!(budget.iter().any(|n| n == "search_project"), "{budget:?}");
+    assert!(!budget.iter().any(|n| n == "propose_task"), "{budget:?}");
+    assert!(!budget.iter().any(|n| n == "open_scene"), "{budget:?}");
+    let all = names(&[]);
+    assert!(all.len() > budget.len());
+    assert!(
+        all.iter().any(|n| n == "propose_task"),
+        "no picks: the old path"
+    );
+    // Every tool on offer in any pick maps to a section; a request's list is held the same way.
+    let tasks = toolbox::tools_for_request(
+        &f.env.core,
+        &actor,
+        &scope_of(&["notes/tasks"]),
+        "create a task and a budget line",
+        7_000,
+    );
+    assert!(tasks.iter().any(|t| t.name == "propose_task"));
+    assert!(!tasks.iter().any(|t| t.name == "propose_budget_line"));
+    // The offered list is not the boundary.
+    let e = toolbox::run_tool_unlocked(
+        &f.env.core,
+        &actor,
+        &scope_of(&["notes/tasks"]),
+        "x",
+        "budget_summary",
+        &json!({}),
+    )
+    .err()
+    .expect("refused");
+    assert_eq!(e.code_str(), "ai.unknown_tool");
+    assert!(
+        toolbox::run_tool_unlocked(
+            &f.env.core,
+            &actor,
+            &scope_of(&["production/budget"]),
+            "x",
+            "budget_summary",
+            &json!({}),
+        )
+        .is_ok()
+    );
+}
+
+#[test]
+fn the_general_search_tools_read_only_inside_the_picks() {
+    use openframe_application::modules::ai::toolbox::{self, ToolStep};
+    let f = film();
+    let actor = f.env.actor();
+    let scope_of = |picks: &[&'static str]| ResolvedScope {
+        kind: AiScopeKind::WholeProject,
+        label: String::new(),
+        draft: None,
+        scene: None,
+        selection: Vec::new(),
+        context: Vec::new(),
+        sections: picks.to_vec(),
+    };
+    let run = |tool: &str, args: Value, picks: &[&'static str]| -> String {
+        match toolbox::run_tool_unlocked(&f.env.core, &actor, &scope_of(picks), "x", tool, &args)
+            .unwrap()
+        {
+            ToolStep::Output(o) => format!("{} {:?} {:?}", o.content, o.details, o.items),
+            ToolStep::Proposal(_) => panic!("a read"),
+        }
+    };
+    for tool in ["search_project", "retrieve_context"] {
+        let key = if tool == "search_project" {
+            "text"
+        } else {
+            "query"
+        };
+        let query = json!({ key: "marigold form" });
+        assert!(
+            run(tool, query.clone(), &["notes/notes"]).contains("Permits"),
+            "{tool} finds it in its section"
+        );
+        assert!(
+            !run(tool, query, &["production/budget"]).contains("Permits"),
+            "{tool} stays out of a section not picked"
+        );
+    }
+}
+
+const POINT_AT_SCENES: &str =
+    "That is in Screenplay > Scenes. Add it to your selection and ask again.";
+
+#[test]
+fn opening_something_works_inside_the_picks_and_points_for_the_rest() {
+    let f = film();
+    let model = attach(&f.env);
+    let x = ask(
+        &f.env,
+        "Open Scene 2",
+        json!([{ "leaf": "screenplay/scenes" }]),
+    );
+    assert_eq!(x["result"]["kind"], "Navigate", "{x}");
+    let x = ask(
+        &f.env,
+        "Open Scene 2",
+        json!([{ "leaf": "breakdown/breakdown" }]),
+    );
+    assert_eq!(x["result"]["content"], POINT_AT_SCENES);
+    assert_eq!(x["result"]["pointer"]["leaf"], "screenplay/scenes");
+    let t = trace_sections(&f.env, x["requestId"].as_str().unwrap());
+    assert_eq!(t["pointer_trigger"], "open");
+    let x = ask(
+        &f.env,
+        "Go to the budget",
+        json!([{ "leaf": "production/shots" }]),
+    );
+    assert_eq!(x["result"]["pointer"]["leaf"], "production/budget");
+    let x = ask(
+        &f.env,
+        "Go to the budget",
+        json!([{ "leaf": "production/budget" }]),
+    );
+    assert_eq!(x["result"]["kind"], "Navigate", "{x}");
+    let x = ask(
+        &f.env,
+        "Open the Police Station",
+        json!([{ "leaf": "notes/tasks" }]),
+    );
+    assert_eq!(x["result"]["pointer"]["leaf"], "production/locations");
+    assert_eq!(model.calls(), 0, "opening needs no model");
+}
+
+#[test]
+fn a_change_needs_a_tool_homed_in_the_picks_and_nothing_is_applied() {
+    let f = film();
+    let model = attach(&f.env);
+    let x = ask(
+        &f.env,
+        "Create a task to scout the pier",
+        json!([{ "leaf": "production/budget" }]),
+    );
+    assert_eq!(x["result"]["pointer"]["leaf"], "notes/tasks");
+    assert_eq!(model.calls(), 0);
+    let t = trace_sections(&f.env, x["requestId"].as_str().unwrap());
+    assert_eq!(t["pointer_trigger"], "tool");
+    let x = ask(
+        &f.env,
+        "Create a task to scout the pier",
+        json!([{ "leaf": "notes/tasks" }]),
+    );
+    assert_eq!(x["result"]["kind"], "Proposal", "{x}");
+    assert_eq!(
+        x["result"]["status"], "Pending Approval",
+        "only a person applies"
+    );
+}
+
+#[test]
+fn a_breakdown_suggestion_needs_the_breakdown_and_the_scene_text() {
+    let f = film();
+    let model = attach(&f.env);
+    model.replies.lock().unwrap().push_back(
+        r#"{"items":[{"category":"Props","name":"Red Folder","evidence":"a red folder"}]}"#
+            .to_string(),
+    );
+    let text = "Suggest breakdown for scene 1";
+    let only_breakdown = ask(&f.env, text, json!([{ "leaf": "breakdown/breakdown" }]));
+    assert_eq!(
+        only_breakdown["result"]["pointer"]["leaf"],
+        "screenplay/scenes"
+    );
+    let only_scenes = ask(&f.env, text, json!([{ "leaf": "screenplay/scenes" }]));
+    assert_eq!(
+        only_scenes["result"]["pointer"]["leaf"],
+        "breakdown/breakdown"
+    );
+    assert_eq!(model.calls(), 0);
+    let both = ask(
+        &f.env,
+        text,
+        json!([{ "leaf": "breakdown/breakdown" }, { "leaf": "screenplay/scenes" }]),
+    );
+    assert!(both["result"].get("pointer").is_none(), "{both}");
+    assert!(
+        both["result"]["content"]
+            .as_str()
+            .unwrap()
+            .contains("Nothing has been added"),
+        "{both}"
+    );
+}
+
+#[test]
+fn with_the_evaluation_switch_and_no_picks_the_old_path_still_offers_every_tool() {
+    let f = film();
+    let model = attach(&f.env);
+    let x = f.env.ok(
+        "ai.ask",
+        json!({ "text": "Create a task to scout the pier", "scope": { "kind": "WholeProject" } }),
+    );
+    assert_eq!(x["result"]["kind"], "Proposal", "{x}");
+    let _ = model;
 }

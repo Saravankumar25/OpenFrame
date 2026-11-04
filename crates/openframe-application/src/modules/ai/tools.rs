@@ -1942,16 +1942,18 @@ fn category_query(text: &str) -> Option<&'static str> {
 }
 
 fn search_project(ctx: &ToolCtx<'_>, text: &str) -> AppResult<ToolOutput> {
+    let inside = |tool: &str| super::toolbox::homes::offered(tool, &ctx.scope.sections);
     let by_category = match category_query(text) {
-        Some("scenes") => count_scenes(ctx, None).ok(),
-        Some("characters") => count_characters(ctx, None).ok(),
-        Some("locations") => location_statistics(ctx, None).ok(),
+        Some("scenes") if inside("count_scenes") => count_scenes(ctx, None).ok(),
+        Some("characters") if inside("count_characters") => count_characters(ctx, None).ok(),
+        Some("locations") if inside("location_statistics") => location_statistics(ctx, None).ok(),
         _ => None,
     };
     if let Some(o) = by_category {
         return Ok(o);
     }
-    let hits = search_hits(ctx.conn, ctx.actor, text, 50)?;
+    let mut hits = search_hits(ctx.conn, ctx.actor, text, 50)?;
+    hits.retain(|h| ctx.scope.reads(&h.3));
     if hits.is_empty() {
         return Ok(ToolOutput::exact(format!(
             "Nothing in this project mentions “{}”.",
@@ -2089,7 +2091,14 @@ fn open_workspace(ws: &str, sub: Option<&str>) -> AppResult<ToolOutput> {
 }
 
 fn open_object(ctx: &ToolCtx<'_>, text: &str) -> AppResult<ToolOutput> {
-    let hits = search_hits(ctx.conn, ctx.actor, text, 5)?;
+    let mut hits = search_hits(
+        ctx.conn,
+        ctx.actor,
+        text,
+        if ctx.scope.sections.is_empty() { 5 } else { 50 },
+    )?;
+    hits.retain(|h| ctx.scope.reads(&h.3));
+    hits.truncate(5);
     let Some((etype, title, context, nav)) = hits.first() else {
         return Ok(ToolOutput::exact(format!(
             "I couldn't find anything called “{}” in this project.",

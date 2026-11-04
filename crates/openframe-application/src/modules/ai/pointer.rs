@@ -11,6 +11,9 @@
 //! 3. **A cheap existence check** over the search index, when the picks returned nothing that answers
 //!    and no word pointed anywhere.
 //!
+//! Opening something and asking for a change go the same way (ADR-0041 decision 7): what is opened must
+//! live in the picks, and a change needs a tool homed in them.
+//!
 //! The reply names a section, never content. Permission comes first, so the pointer never tells a
 //! person that something they may not read exists: contact details below their role and another
 //! person's private note give the same "I could not find X. I looked in A and B." as a thing the
@@ -24,11 +27,15 @@ use rusqlite::{Connection, params};
 use serde_json::{Value, json};
 
 use super::answer::language_of;
+use super::commands;
 use super::dossier::{self, Dossier, Fact};
 use super::index::{Hit, How, Kind};
 use super::queries;
+use super::scope::ResolvedScope;
 use super::sections::{LEAVES, Leaf, Selection, leaf};
+use super::toolbox::{self, homes};
 use super::turn::{Group, LeafHint, leaf_hints};
+use crate::core::AppCore;
 
 /// What fired the pointer, written to the trace.
 pub mod trigger {
@@ -441,9 +448,91 @@ fn point_if_allowed(
     }
 }
 
+/// The section a screen or a scene is on. Opening a workspace takes any section of its branch.
+fn screen_leaf(workspace: &str, sub: Option<&str>) -> Option<&'static Leaf> {
+    let key = match (workspace, sub) {
+        ("trash", _) => "recentlyDeleted".to_string(),
+        (w, Some(s)) => format!("{w}/{s}"),
+        (w, None) => w.to_string(),
+    };
+    LEAVES.iter().find(|l| l.screens.contains(&key.as_str()))
+}
+
+/// "Open Scene 12", "Go to the budget" and "Open the Harbour Office": what is opened must live in the
+/// picks. A scene is opened in the Screenplay, whichever section can read its number.
+fn for_open(input: &dossier::Input<'_>, sel: &Selection, d: &Dossier) -> Verdict {
+    let open_elsewhere = |l: &'static Leaf| Verdict::Point(Pointer::of(l, trigger::OPEN));
+    let screenplay = leaf("screenplay/scenes").unwrap_or(&LEAVES[0]);
+    if let Some(call) = commands::navigation_call(input.message, |_| true) {
+        if call.tool == "open_scene" {
+            return if sel.has(screenplay.id) {
+                Verdict::Write
+            } else {
+                open_elsewhere(screenplay)
+            };
+        }
+        let workspace = call.arguments["workspace"].as_str().unwrap_or_default();
+        let sub = call.arguments["sub"].as_str();
+        let Some(target) = screen_leaf(workspace, sub) else {
+            return Verdict::Write;
+        };
+        let inside = sel
+            .picks
+            .iter()
+            .any(|p| p.leaf.id == target.id || (sub.is_none() && p.leaf.branch == target.branch));
+        return if inside {
+            Verdict::Write
+        } else {
+            open_elsewhere(target)
+        };
+    }
+    if !d.resolved.scenes.is_empty() && !sel.has(screenplay.id) {
+        return open_elsewhere(screenplay);
+    }
+    let r = &d.resolved;
+    let named_inside = !r.persons.is_empty()
+        || !r.characters.is_empty()
+        || !r.locations.is_empty()
+        || !r.acts.is_empty()
+        || !r.files.is_empty()
+        || !r.days.is_empty()
+        || !r.budget_lines.is_empty()
+        || !r.others.is_empty();
+    if named_inside {
+        return Verdict::Write;
+    }
+    match d
+        .outside
+        .iter()
+        .find(|o| input.index.screenplay(&o.id).is_none())
+    {
+        Some(o) => open_elsewhere(leaf(o.home).unwrap_or(&LEAVES[0])),
+        None => Verdict::Write,
+    }
+}
+
+/// A change whose tool lives outside the picks. A plain command names its tool outright ("Create a
+/// task to scout the pier"); anything else goes by the words of the tool names. A tool may need two
+/// sections: a breakdown suggestion reads the scene's text too.
+pub fn for_change(
+    core: &AppCore,
+    actor: &Actor,
+    scope: &ResolvedScope,
+    message: &str,
+) -> Option<Pointer> {
+    let id = match commands::change_command(message, |_| true) {
+        Some(call) => homes::missing_leaf(&call.tool, &scope.sections)?,
+        None => toolbox::home_of_change(core, actor, scope, message)?,
+    };
+    Some(Pointer::of(leaf(id)?, trigger::TOOL))
+}
+
 /// Decide before the writer runs. `d` is the dossier of the picks, `input` what it was built from.
 pub fn decide(input: &dossier::Input<'_>, sel: &Selection, d: &Dossier) -> Verdict {
     let group = input.read.group;
+    if group == Group::Navigate {
+        return for_open(input, sel, d);
+    }
     if !matches!(
         group,
         Group::Facts | Group::Narrative | Group::Brainstorm | Group::Help
@@ -524,18 +613,18 @@ pub fn decide(input: &dossier::Input<'_>, sel: &Selection, d: &Dossier) -> Verdi
     {
         return Verdict::NotFound(gap.clone());
     }
-    if form_elsewhere || !names_inside {
-        if let Some(target) = topic_target(&hints, &d.facts, sel) {
-            // The word may have gone to a section that holds nothing about this. All the words of the
-            // question together know better.
-            if !answered(&dossier::probe(input, target).facts, message)
-                && let Some(better) = exists_elsewhere(input.conn, input.actor, sel, message)
-                && better.id != target.id
-            {
-                return point_if_allowed(input, sel, better, trigger::EXISTS, false);
-            }
-            return point_if_allowed(input, sel, target, trigger::TOPIC, false);
+    if (form_elsewhere || !names_inside)
+        && let Some(target) = topic_target(&hints, &d.facts, sel)
+    {
+        // The word may have gone to a section that holds nothing about this. All the words of the
+        // question together know better.
+        if !answered(&dossier::probe(input, target).facts, message)
+            && let Some(better) = exists_elsewhere(input.conn, input.actor, sel, message)
+            && better.id != target.id
+        {
+            return point_if_allowed(input, sel, better, trigger::EXISTS, false);
         }
+        return point_if_allowed(input, sel, target, trigger::TOPIC, false);
     }
     // A how-to question with the guide not picked.
     if group == Group::Help

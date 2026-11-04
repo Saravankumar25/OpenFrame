@@ -24,7 +24,7 @@ use openframe_ai_eval::turn::{from_cases, index_of, picks_of, read_conv_resolved
 use openframe_ai_eval::{Case, PointerCheck, PointerMetrics};
 use openframe_application::core::AppCore;
 use openframe_application::modules::ai::sections;
-use openframe_application::modules::ai::{dossier, intelligence, pointer, turn};
+use openframe_application::modules::ai::{dossier, intelligence, orchestrator, pointer, turn};
 use serde_json::{Value, json};
 
 /// How long one message may wait for the embedding model (the first one starts it).
@@ -151,6 +151,7 @@ pub fn run(
                 .ok_or_else(|| format!("case {} not found", m.id))?;
             let reads = read_conv_resolved(&ix, conv, &aids);
             let (resolved, read, focus) = &reads[m.turn];
+            let read = &orchestrator::hinted(read.clone(), &conv.turns[m.turn]);
             // The scene the case has selected on screen, as the app's scope would carry it.
             let selected = case
                 .scope

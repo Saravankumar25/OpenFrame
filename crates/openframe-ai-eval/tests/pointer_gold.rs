@@ -11,7 +11,7 @@ use openframe_ai_eval::{Case, PointerCheck, PointerMetrics, load_cases};
 use openframe_application::core::{AppConfig, AppCore};
 use openframe_application::events::RecordingSink;
 use openframe_application::modules::ai::turn::Aids;
-use openframe_application::modules::ai::{dossier, pointer, sections};
+use openframe_application::modules::ai::{dossier, orchestrator, pointer, sections};
 
 fn checks() -> Vec<(String, String, PointerCheck)> {
     let dir = tempfile::tempdir().unwrap();
@@ -39,6 +39,7 @@ fn checks() -> Vec<(String, String, PointerCheck)> {
         for m in &conv.measured {
             let case = cases.iter().find(|c| c.id == m.id).unwrap();
             let (resolved, read, focus) = &reads[m.turn];
+            let read = &orchestrator::hinted(read.clone(), &conv.turns[m.turn]);
             let message = &conv.turns[m.turn];
             // Episodes are refused on a feature film: a request with that pick runs nothing.
             if case

@@ -57,6 +57,17 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-11-03, Section-scoped assistant, slices R4 to R6 and the memory gap
+- **Areas and items worked:** AI assistant quality and hardening (ADR-0041).
+- **Done:** Memory, focus and the map held to the picks; the out-of-section pointer (`modules/ai/pointer.rs`) with the Mac Add button; types describe, brief and story with their writer policy and briefing fetcher; the agent's tool list by section (`toolbox/homes.rs`); the m1_04 schema test waits for the background search rebuild.
+- **Evidence:** `crates/openframe-ai-eval/tests/pointer_gold.rs` on the 395 section cases with rules alone and no model: precision 98.3, recall 96.7, false pointers 0 of 333.
+- **Features moved:** none
+- **Docs updated:** ADR-0041, `docs/engineering/ai-answer-paths.md`, `docs/specs/ai-conversational-harness.md`, `modules/ai/knowledge.md`, `crates/openframe-ai-eval/gold/README.md`
+- **Decisions made or needed:** defaults taken are listed in ADR-0041.
+- **Blocked / risks:** no real-model run of these slices; the relationship and mood checks stay off until measured; the Windows panel still has no picker.
+- **Next:** the full evaluation with the real model against the saved baseline; slice R7 (delete the wide path).
+- **Checks run:** `cargo test -p openframe-application`, `-p openframe-ai-eval -p openframe-ffi`, Swift AI filter, writing, architecture lint, migrations, web typecheck.
+
 ### 2026-10-28, MacHTML recaptured from the real app, three Mac UI fixes
 - **Areas and items worked:** Appearance and themes (Screening Room capture in Light and Dark); Beat Board and Idea Vault; Call sheets, budget, templates, samples and exports; Test infrastructure (capture driver)
 - **Done:** Three Mac fixes from owner screenshots of 2026-10-28: budget row Edit and Delete are icon buttons with tooltips and accessibility labels (`BudgetWorkspace.swift`); the Global Idea Vault sheet from Home has a Done button and closes on Escape (`IdeaVaultWorkspace.swift`, `HomeView.swift`); the Story page placeholder disappears on the first typed character (`StoryPageTextView.swift`). MacHTML rebuilt from the development build at the full visible screen (1280 x 628 points), window frontmost and active, Screening Room in Light and Dark, 760 screens (1520 pages), every page passing the pixel and text check in both modes, including the screens added on 2026-10-27. Driver fixes: pop-up menus opened and closed with AppKit menu tracking notifications; `UI.click` posts to the event queue (fixes a vault deadlock); checked `capHideSidebar` helper; `menuButton` reuses the capture helper. `MacHTML/README.md` documents the result. The last 17 skipped tour steps were fixed (Characters map found by ids, a crew call before Finalize since the core refuses a call sheet without one, Templates reached through Project Settings, and others), so every step captures. Finished plans, a session prompt and the retired five-lane AI evidence moved to `docs/history/`. The branch went into `mac/` on GitHub `main` by pull request (ADR-0034 subtree merge), with `mac/release/` now holding `OpenFrame-5.dmg`.

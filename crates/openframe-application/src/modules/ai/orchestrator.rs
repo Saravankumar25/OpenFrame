@@ -431,7 +431,7 @@ fn link_facts(c: &Connection, actor: &Actor, facts: &[Fact]) -> AppResult<Vec<Pr
 /// An exact command is a hint to the answer type read: "Leave a comment on the draft: tighten act
 /// two." and "Jump to the call sheets." name their tool outright, whatever verb they start with.
 /// Chat (anger, thanks) is never promoted.
-fn hinted(mut read: TurnRead, text: &str) -> TurnRead {
+pub fn hinted(mut read: TurnRead, text: &str) -> TurnRead {
     let to = if commands::change_command(text, |_| true).is_some() {
         AnswerType::Change
     } else if commands::navigation_call(text, |_| true).is_some() {
@@ -536,6 +536,10 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
     };
     match t.read.group {
         Group::Navigate => {
+            // What is opened must live in the picks; the pointer names where it lives instead.
+            if let Verdict::Point(p) = t.verdict {
+                return pointed(*p);
+            }
             let named = t.resolved.cloned().unwrap_or_default();
             if let Some(q) = t.question {
                 return fixed(AiResultKind::Clarify, q.text.clone());
@@ -545,6 +549,11 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
             return out;
         }
         Group::Change => {
+            if t.selection.is_some()
+                && let Some(p) = pointer::for_change(t.core, t.actor, t.scope, t.text)
+            {
+                return pointed(p);
+            }
             let mut out = action::change(&cx);
             out.path = path::CHANGE;
             return out;
@@ -687,6 +696,7 @@ fn section_scope(c: &Connection, sel: &Selection) -> AppResult<ResolvedScope> {
         scene: sel.scene().cloned(),
         selection: Vec::new(),
         context: Vec::new(),
+        sections: sel.codes(),
     })
 }
 
@@ -977,16 +987,11 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     };
     // What the message names once the dossier completed it (the scene on screen, the one screenplay
     // that has the data); the resolver's own answer when there is no dossier.
-    // Opening something stays with the agent until slice R6: it reads every name of the message.
-    let held_to_sections = selection.is_some() && turn_read.group != Group::Navigate;
-    let named = if selection.is_some() && !held_to_sections {
-        resolved_now.clone()
-    } else {
-        dossier
-            .as_ref()
-            .map(|d| d.resolved.clone())
-            .or_else(|| resolved_now.clone())
-    };
+    let held_to_sections = selection.is_some();
+    let named = dossier
+        .as_ref()
+        .map(|d| d.resolved.clone())
+        .or_else(|| resolved_now.clone());
     // The resolver asks when nothing settles which screenplay or person is meant. A scene number that
     // fits several screenplays is settled by the one with the production data (an `Assumed` fact,
     // which the answer says out loud); a question with no scene number is asked, not guessed.
