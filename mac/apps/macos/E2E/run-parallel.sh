@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Runs the end-to-end suite as N runners side by side (default 4) and joins their results.
-# Usage: apps/macos/E2E/run-parallel.sh <app> [filter]   (OPENFRAME_E2E_PARALLEL=n to change n)
+# Usage: apps/macos/E2E/run-parallel.sh <app> [filter]   (STRAFT_E2E_PARALLEL=n to change n)
 # Every scenario still runs in its own app process with its own data folder; the runners only
 # share the machine. Output: release-out/e2e/<timestamp>/ with shard-k folders, results.tsv and summary.md.
 set -uo pipefail
@@ -8,12 +8,12 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../../.." && pwd)"
 APP="${1:?usage: run-parallel.sh <app> [filter]}"
 FILTER="${2:-}"
-N="${OPENFRAME_E2E_PARALLEL:-4}"
-RUN="${OPENFRAME_E2E_RUN_DIR:-$ROOT/release-out/e2e/$(date +%Y%m%d-%H%M%S)}"
+N="${STRAFT_E2E_PARALLEL:-4}"
+RUN="${STRAFT_E2E_RUN_DIR:-$ROOT/release-out/e2e/$(date +%Y%m%d-%H%M%S)}"
 mkdir -p "$RUN"
 pids=()
 for k in $(seq 1 "$N"); do
-  OPENFRAME_E2E_SHARD="$k/$N" OPENFRAME_E2E_RUN_DIR="$RUN/shard-$k" "$HERE/run.sh" "$APP" "$FILTER" > "$RUN/shard-$k.log" 2>&1 &
+  STRAFT_E2E_SHARD="$k/$N" STRAFT_E2E_RUN_DIR="$RUN/shard-$k" "$HERE/run.sh" "$APP" "$FILTER" > "$RUN/shard-$k.log" 2>&1 &
   pids+=($!)
   sleep 3
 done

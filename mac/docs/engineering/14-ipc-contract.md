@@ -100,4 +100,4 @@ self-only.
   must never read UI-only state. The review ops `ai.change_set.accept|reject|recheck` are the reverse: they refuse any
   actor that is not `origin = Local`, so they are reachable only from the UI through `of_invoke`. The model never
   calls ops directly; it chooses tools (AI specification §7). There is no
-  network-facing caller: LAN collaboration was removed (ADR-0007), and OpenFrame opens no listener.
+  network-facing caller: LAN collaboration was removed (ADR-0007), and Straft Studio opens no listener.

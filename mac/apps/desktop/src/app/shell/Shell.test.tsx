@@ -135,9 +135,9 @@ describe("top bar (owner change list 2026-10-19)", () => {
 
   it("keeps the open page across a reload of the window", () => {
     act(() => useNav.getState().go({ workspace: "production", sub: "schedule" }));
-    expect(JSON.parse(window.sessionStorage.getItem("openframe.route") ?? "null")).toEqual({ workspace: "production", sub: "schedule" });
+    expect(JSON.parse(window.sessionStorage.getItem("straft.route") ?? "null")).toEqual({ workspace: "production", sub: "schedule" });
     act(() => useNav.getState().reset());
-    expect(JSON.parse(window.sessionStorage.getItem("openframe.route") ?? "null")).toEqual({ workspace: "home" });
+    expect(JSON.parse(window.sessionStorage.getItem("straft.route") ?? "null")).toEqual({ workspace: "home" });
   });
 
   it("focus mode hides the top bar, the navigation and the status bar", async () => {

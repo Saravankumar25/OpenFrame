@@ -1,8 +1,8 @@
 {
-  "name": "openframe-studio",
+  "name": "straft-studio",
   "private": true,
   "version": "0.1.0",
-  "description": "OpenFrame Studio: local-first desktop studio for writers, screenwriters and production teams (Tauri v2, React, Rust, SQLite).",
+  "description": "Straft Studio: local-first desktop studio for writers, screenwriters and production teams (Tauri v2, React, Rust, SQLite).",
   "license": "SEE LICENSE IN LICENSE-PENDING.md",
   "workspaces": [
     "apps/desktop",
@@ -22,7 +22,7 @@
     "test": "npm run test:rust && npm run test:web",
     "test:rust": "cargo test --workspace",
     "test:web": "npm --workspace apps/desktop run test",
-    "perf": "node scripts/with-msvc-linker.mjs cargo test --profile perf -p openframe-application --test perf -- --ignored --nocapture --test-threads=1",
+    "perf": "node scripts/with-msvc-linker.mjs cargo test --profile perf -p straft-application --test perf -- --ignored --nocapture --test-threads=1",
     "e2e:setup": "npm --workspace tests/e2e run setup",
     "test:e2e": "npm --workspace tests/e2e run test --",
     "bindings": "cargo test --workspace export_bindings --quiet",

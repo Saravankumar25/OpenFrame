@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Mac App Store build (Chapter 3): App Sandbox with the least the app needs. Not used by the
+     internal disk image. Readiness review: docs/release/mac-app-store-readiness.md. Each key, and why:
+     - app-sandbox: required for the store.
+     - files.user-selected.read-write: projects, imports and exports are files the person picks.
+     - files.bookmarks.app-scope: reopen the linked files the person picked before (Files page,
+       LinkedFileBookmarks). Library and project folders outside the container are not offered.
+     - network.client: the offline AI model download the person starts (ADR-0026) and the app's
+       calls to its own engine on 127.0.0.1.
+     - network.server: the AI engine helper listens on 127.0.0.1 only; it inherits this sandbox.
+     - device.audio-input: voice notes in the Idea Vault, only while the person records.
+     - print: Print in the export and print preview sheets (a sandboxed app cannot print without it).
+     - keychain-access-groups: the trial's clock guard record in the data protection Keychain (ADR-0040).
+       REPLACE_WITH_TEAM_ID comes from the owner's Apple Developer account, Membership. Never change
+       the group after the first release: a new group cannot read the old record.
+     - com.apple.application-identifier and com.apple.developer.team-identifier: plain codesign embeds
+       only this file, so they must match the provisioning profile (Team ID from the same page). -->
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.app-sandbox</key><true/>
+	<key>com.apple.security.files.user-selected.read-write</key><true/>
+	<key>com.apple.security.files.bookmarks.app-scope</key><true/>
+	<key>com.apple.security.network.client</key><true/>
+	<key>com.apple.security.network.server</key><true/>
+	<key>com.apple.security.device.audio-input</key><true/>
+	<key>com.apple.security.print</key><true/>
+	<key>com.apple.application-identifier</key><string>REPLACE_WITH_TEAM_ID.app.straftstudio.studio</string>
+	<key>com.apple.developer.team-identifier</key><string>REPLACE_WITH_TEAM_ID</string>
+	<key>keychain-access-groups</key>
+	<array><string>REPLACE_WITH_TEAM_ID.app.straftstudio.studio</string></array>
+</dict>
+</plist>

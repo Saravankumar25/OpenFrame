@@ -1,0 +1,1 @@
+The Windows visual baseline was removed for the product rename; recreate it on Windows on the next run with `E2E_UPDATE_BASELINE=1`, which writes to the folder set by `BASELINE_DIR` in `tests/e2e/specs/90-visual-baseline.test.mjs`.

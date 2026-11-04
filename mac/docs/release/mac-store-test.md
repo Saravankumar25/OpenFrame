@@ -1,10 +1,10 @@
 # Mac store test checklist (manual)
 
-Automated: `crates/openframe-entitlement/src/mac/tests.rs` (every rule and G1 to G4), `crates/openframe-ffi/src/store.rs`,
-`apps/macos/Tests/OpenFrameUITests/Store*.swift` and the E2E store scenario. What needs a real App Store is below. It needs
+Automated: `crates/straft-entitlement/src/mac/tests.rs` (every rule and G1 to G4), `crates/straft-ffi/src/store.rs`,
+`apps/macos/Tests/StraftUITests/Store*.swift` and the E2E store scenario. What needs a real App Store is below. It needs
 the owner's developer account and a signed sandbox build. None of these have run yet.
 
-With Xcode and `apps/macos/packaging/OpenFrameStudio.storekit` (`SKTestSession`, a time rate to run 7 days in minutes):
+With Xcode and `apps/macos/packaging/StraftStudio.storekit` (`SKTestSession`, a time rate to run 7 days in minutes):
 
 1. Start the trial, watch the chip count 7 down to 1, amber at 3, 2 and 1.
 2. Reminder on days 5, 6 and 7, once per day, on Application Home and over a project.
@@ -16,7 +16,7 @@ With a sandbox Apple Account on a signed build:
 
 6. **Rule G4, must be confirmed:** set the clock a year ahead, open the app, set it right, choose Check again. Confirm that
    `AppTransaction.refresh()` carries a fresh `signedDate` and the lock clears. If not, set
-   `G4_USES_FRESH_SIGNATURE = false` in `crates/openframe-entitlement/src/mac/adapter.rs` and record it in ADR-0040.
+   `G4_USES_FRESH_SIGNATURE = false` in `crates/straft-entitlement/src/mac/adapter.rs` and record it in ADR-0040.
 7. Confirm the zero-price item exists in App Store Connect. If no free price point exists, see ADR-0040 decision 8.
 8. Reinstall: delete the app, install again. The Keychain record keeps the trial start. The purchase and flags behave.
 9. Delete the app and its container. Same as above, and the data note shows again only for a buyer.

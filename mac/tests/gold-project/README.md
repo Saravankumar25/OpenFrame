@@ -1,6 +1,6 @@
 # Low Tide Radio: the gold reference project
 
-OpenFrame Studio's reference film project. One original feature film taken from the first idea
+Straft Studio's reference film project. One original feature film taken from the first idea
 to the shoot paperwork, built through the same core operations the app's buttons call, then
 exported in every format, imported, restored and compared. Use it to check a change against a
 real production, to test import and export, and to see every workspace full of real data.
@@ -70,8 +70,8 @@ All people, companies and contacts are invented; phone numbers and `.example` ad
 ## Rebuild it
 
 ```sh
-RUSTC_WRAPPER= cargo run -p openframe-gold-project            # about 1.5 minutes with the AI
-RUSTC_WRAPPER= cargo run -p openframe-gold-project -- --no-ai # without the Offline AI
+RUSTC_WRAPPER= cargo run -p straft-gold-project            # about 1.5 minutes with the AI
+RUSTC_WRAPPER= cargo run -p straft-gold-project -- --no-ai # without the Offline AI
 ```
 
 `RUSTC_WRAPPER=` turns off sccache on a Mac without it. The AI phase needs
@@ -90,8 +90,8 @@ the same state as a backup.
 The real-app check opens it the same way and visits all thirteen workspaces:
 
 ```sh
-cd apps/macos && swift build && swift build --product OpenFrameE2EDriver
-E2E/run.sh .build/debug/OpenFrameStudio gold/
+cd apps/macos && swift build && swift build --product StraftE2EDriver
+E2E/run.sh .build/debug/StraftStudio gold/
 ```
 
 ## Folders
@@ -114,5 +114,5 @@ E2E/run.sh .build/debug/OpenFrameStudio gold/
 | `COVERAGE.md` | Every operation, used or not and why; feature coverage; what is broken or unsupported |
 | `VERIFY.md` | The package import, backup restore, crash recovery and reopen compared with the original |
 
-The program is `crates/openframe-gold-project`. It records every call; COVERAGE.md is written from
+The program is `crates/straft-gold-project`. It records every call; COVERAGE.md is written from
 those counts, never by hand.

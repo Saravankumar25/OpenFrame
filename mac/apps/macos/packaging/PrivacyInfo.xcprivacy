@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!-- OpenFrame Studio privacy manifest. Readiness review: docs/release/mac-app-store-readiness.md.
+<!-- Straft Studio privacy manifest. Readiness review: docs/release/mac-app-store-readiness.md.
      No tracking, no tracking domains and no collected data. The app is offline: its only network
      use is the model download the person starts (ADR-0026, Hugging Face) and the App Store's own
      calls. There is no licence server, no account and no analytics (ADR-0040).
      Required-reason APIs, each checked against the code:
      - file timestamps: show and sort the person's own files (std metadata, SQLite).
      - free disk space: refuse a save, move or download that cannot fit (statvfs in
-       openframe-platform drives.rs), and show the free space in AI settings.
+       straft-platform drives.rs), and show the free space in AI settings.
      - system boot time: the core links sysinfo, which reads mach_absolute_time and the boot time
        sysctl to measure time between events inside the app; nothing leaves the Mac.
      - user defaults: the app's own settings and linked-file bookmarks. -->

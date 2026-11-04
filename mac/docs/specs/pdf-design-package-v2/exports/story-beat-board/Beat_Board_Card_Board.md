@@ -4,7 +4,7 @@
 |---|---|
 | Export family | Beat Board (UI name; the Story workspace's board export). Operation `story.export_board` |
 | Variant | Card Board layout (`layout=board`, portrait; v2, user decision) |
-| Status | **Design reference. Not integrated; not validated against OpenFrame's Rust renderer.** |
+| Status | **Design reference. Not integrated; not validated against Straft Studio's Rust renderer.** |
 | Repo commit | `2f5a045416bd2125801329533fc47f986ccc8174` (`main`, sparse checkout, read-only) |
 | Date | 2026-10-23 |
 | Deliverables | `Beat_Board_Card_Board.html` (the design), `Beat_Board_Card_Board.pdf` (rendered from it), `stress-test/Beat_Board_Card_Board_STRESS_TEST.html/.pdf` (everything on, project scope, 3 boards), `stress-test/Beat_Board_Card_Board_STRESS_TEST_B_options_off.html/.pdf` (notes, comments, Parking Lot all off) |
@@ -17,7 +17,7 @@ v1 of this document was landscape (792 x 612 pt, 4 cards per row, 7 pages). **Us
 * The Outline layout is untouched (already portrait).
 
 ## A. Purpose and users
-The card board is the **pin-up / binder copy** of the Beat Board: each sequence is a set of cards in rows and each act a section, like the on-screen board. It is printed portrait (user decision, v2) so that it prints, punches, binds and files like every other OpenFrame document, and is read at arm's length or passed round a room.
+The card board is the **pin-up / binder copy** of the Beat Board: each sequence is a set of cards in rows and each act a section, like the on-screen board. It is printed portrait (user decision, v2) so that it prints, punches, binds and files like every other Straft Studio document, and is read at arm's length or passed round a room.
 * **Writer / story editor**: sees the shape of an act at a glance, which sequence has too many or too few cards, where the beats sit.
 * **Director**: scans cards (slugline + one-line description), the act-level beats, and the notes and comments that need a decision, without reading a list.
 * **Script supervisor / producer**: card numbers (board order), which cards belong to which sequence and act, parked ideas clearly set apart; a sequence that runs over a page must still be labelled on the next page.
@@ -39,7 +39,7 @@ Must find fast: act and sequence boundaries; card N; beat vs scene card; note vs
 | Checkbox | "Include notes" (default off) | `includeNotes` (act/sequence/beat/card notes; never private notes) |
 | Checkbox | "Include comments" (default off) | `includeComments` |
 
-Other facts (`windows/crates/openframe-application/src/modules/exports/story.rs`): args struct `ExportStoryOutlineArgs`; `layout:"board"` with a non-PDF format is rejected ("The board layout is a PDF. Choose Outline for plain text or CSV."); unknown layout: "Choose Board PDF or Outline PDF."; `scope:"selected"` with no ids: validation error on `itemIds` ("Select at least one act, sequence, beat or scene card to export."). Empty result: error `nothing_to_export` ("The Beat Board is empty, so there is nothing to export yet." / "None of the selected items are on the Beat Board any more. Select items and try again."). A board with no acts, no Unassigned items and no (included) parking items is dropped, so an empty episode prints nothing. Only active beats are exported (`state = 'active'`). Scene Card numbers are **board order** (acts, then Unassigned; the Parking Lot is never numbered) and are computed before scope filtering, so a "selected" export keeps the original numbers; every board (film, each episode) numbers from 1.
+Other facts (`windows/crates/straft-application/src/modules/exports/story.rs`): args struct `ExportStoryOutlineArgs`; `layout:"board"` with a non-PDF format is rejected ("The board layout is a PDF. Choose Outline for plain text or CSV."); unknown layout: "Choose Board PDF or Outline PDF."; `scope:"selected"` with no ids: validation error on `itemIds` ("Select at least one act, sequence, beat or scene card to export."). Empty result: error `nothing_to_export` ("The Beat Board is empty, so there is nothing to export yet." / "None of the selected items are on the Beat Board any more. Select items and try again."). A board with no acts, no Unassigned items and no (included) parking items is dropped, so an empty episode prints nothing. Only active beats are exported (`state = 'active'`). Scene Card numbers are **board order** (acts, then Unassigned; the Parking Lot is never numbered) and are computed before scope filtering, so a "selected" export keeps the original numbers; every board (film, each episode) numbers from 1.
 
 **Data dependencies.** Tables read: `story_act` (title, note, position), `story_sequence` (act_id, title, note, position), `story_beat` (text, note, position), `story_scene_card` (scene_heading, short_description, notes, position; parent_type act / sequence / unassigned / parking), `comment` (status, author_name, body, parent_id; targets story_act / story_sequence / story_beat / story_scene_card), project title, episode title. A sequence whose act no longer exists is exported under "Unassigned". Comment statuses (`comments/mod.rs`): "Open", "In Discussion", "Resolved".
 
@@ -78,7 +78,7 @@ Other facts (`windows/crates/openframe-application/src/modules/exports/story.rs`
 * Structs: `ExportStoryOutlineArgs`, `Node { kind: Act|Sequence|Beat|Card, title, text, note, comments, children, number }`, `Board { episode, acts, unassigned, parking }`.
 * Document: `Document::new(document).footer(footer(&project, document)).landscape(board_layout)`; masthead `Masthead::new(document).eyebrow(..., pal::ORANGE)` with `subtitle` = project, `lines` = source label, `side = Side::Panel { lines: [(scope_label, true), ("Exported <date>", false)] }`, `rule = true`.
 * Blocks used today by this variant: `Masthead`, `Block::SectionBar`, `Block::Note`, `Block::Heading`, `Block::Grid` (`GridCell`), `Block::PageBreak`. **The redesign cannot be built from these**; it needs new blocks (section F, "Renderer requirements").
-* Renderer: `windows/crates/openframe-import-export/src/report.rs` (`Block`, `Grid`/`GridCell`, `render_grid`, the `Heading`/`Indented`/`SectionBar` arms) and `report/design.rs`.
+* Renderer: `windows/crates/straft-import-export/src/report.rs` (`Block`, `Grid`/`GridCell`, `render_grid`, the `Heading`/`Indented`/`SectionBar` arms) and `report/design.rs`.
 * Not verified: the `mac/` tree (not inspected).
 
 ### D. Field inventory

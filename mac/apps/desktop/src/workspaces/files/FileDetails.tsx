@@ -130,7 +130,7 @@ export function FileDetails({ file, folders, onClose, renameSignal }: { file: Pr
           </Banner>
         </div>
       )}
-      <Field label="Name" htmlFor="fd-name" hint="The name shown in OpenFrame. The file itself is not renamed.">
+      <Field label="Name" htmlFor="fd-name" hint="The name shown in Straft Studio. The file itself is not renamed.">
         <TextInput
           id="fd-name"
           ref={nameRef}

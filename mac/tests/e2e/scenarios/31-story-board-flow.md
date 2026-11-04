@@ -81,7 +81,7 @@ The cards used below:
 ## Build Screenplay leaves out a card without a heading and never invents one
 
 1. Click Build Screenplay.
-2. Check: the screen shows "Build Screenplay from Beat Board", "no valid scene heading" and "OpenFrame never makes up a heading."
+2. Check: the screen shows "Build Screenplay from Beat Board", "no valid scene heading" and "Straft Studio never makes up a heading."
 3. Type 'EXT. POST OFFICE - NIGHT' in Heading for scene 1.
 4. Type 'EXT. FLOODED STREET - NIGHT' in Heading for scene 2.
 5. Type 'INT. MEERA'S ROOM - NIGHT' in Heading for scene 3.

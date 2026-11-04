@@ -1,7 +1,7 @@
 // The local model host of the test suite (ADR-0032 decision 4): serves the pinned model files at
 // their Hugging Face paths (<org>/<repo>/resolve/<commit>/<file>, from testHost()) on
 // 127.0.0.1:MODEL_HOST_PORT, the address every test build is compiled with
-// (OPENFRAME_TEST_MODEL_SOURCE). It honours `Range: bytes=N-` like a real host. Specs steer it through a small
+// (STRAFT_TEST_MODEL_SOURCE). It honours `Range: bytes=N-` like a real host. Specs steer it through a small
 // control file (E2E_MODEL_HOST_CTL) and read what was asked for in its log (E2E_MODEL_HOST_LOG):
 //
 //   { "cut": { "path": "<rel>", "after": <bytes> } }   the next answer for that file stops early (once)
@@ -21,7 +21,7 @@ export const TEST_HOST_DIR = join(ROOT, ".build-cache", "e2e-model-host");
 
 /**
  * The set the app pins, computed from the lock the way the app does
- * (crates/openframe-ai/src/download.rs pins): the version "m-" and the first 12 hex digits of the
+ * (crates/straft-ai/src/download.rs pins): the version "m-" and the first 12 hex digits of the
  * SHA-256 over the model hashes, and each file's name in app data, host path, size, hash and role.
  */
 export function pins() {

@@ -1,7 +1,7 @@
 # Clean-machine proof (level 4)
 
 This proves the Windows installer on a computer that has never seen the project. It runs in the
-VirtualBox guest `OpenFrame-W9-Clean`, restored from its `clean` snapshot (Windows 11, no developer
+VirtualBox guest `Straft-W9-Clean`, restored from its `clean` snapshot (Windows 11, no developer
 tools, no Visual C++ runtime installed for the whole machine). The host drives the installed app
 through WebDriver, so nothing for testing is installed in the guest except two small driver programs.
 
@@ -14,7 +14,7 @@ Microsoft Defender. Then the steps run in this order:
 1. `install-previous`: silent install of the earlier internal build (d271894), with no admin rights.
 2. `journey`: a project, some typing, close, relaunch, check the text is there.
 3. `upgrade`: install the final build (995bfac) over it; the project must survive.
-4. `ai-download`: download OpenFrame AI, then cut the network and ask a question.
+4. `ai-download`: download Straft AI, then cut the network and ask a question.
 5. `offline-export-backup`: with no network, export a PDF, make a backup, restore it as a copy.
 6. `power-loss`: type a line, pull the virtual power cord, start again, check the line.
 7. `uninstall-keeps-projects`: run the real uninstaller; projects must stay.

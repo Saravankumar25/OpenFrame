@@ -1,4 +1,4 @@
-# OpenFrame Studio documentation map
+# Straft Studio documentation map
 
 > Rewritten 2026-10-15 around the three chapters and the owner's 25 decisions. Start here. It says where every document
 > lives, which one wins when two disagree, what is current and what is history, and what must be updated when the code
@@ -8,7 +8,7 @@
 
 | If you want to know | Read |
 |---|---|
-| What OpenFrame is, who it is for, the chapters | [product/vision-and-scope.md](product/vision-and-scope.md) |
+| What Straft Studio is, who it is for, the chapters | [product/vision-and-scope.md](product/vision-and-scope.md) |
 | What to do next | [implementation/handoff.md](implementation/handoff.md), then [roadmap/README.md](roadmap/README.md) |
 | The Windows plan, ten phases | [roadmap/chapter-1a-windows-phases.md](roadmap/chapter-1a-windows-phases.md) |
 | The Mac plan, ten phases | [roadmap/chapter-1b-mac-phases.md](roadmap/chapter-1b-mac-phases.md); the port of the 2026-10-24 upgrade and of the conversational AI finished on 2026-10-27 (its port list and orders are in [history/](history/README.md)) |
@@ -119,16 +119,16 @@ Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answer
 
 | Question | Document |
 |---|---|
-| What are we building and why | [PRD](specs/OpenFrame_Studio_Mega_PRD_Aligned_Updated.md) |
-| How each feature behaves | [Functional Specification](specs/OpenFrame_Studio_Functional_Specification_Document_Aligned_Updated.md) |
-| How each screen behaves | [UX/UI Specification](specs/OpenFrame_Studio_UX_UI_Specification_Updated.md) |
-| What objects exist | [Domain and Data Specification](specs/OpenFrame_Studio_Domain_Data_Specification_Updated.md) |
-| Screenplay depth, production depth, themes (newest) | [Revision 1](specs/OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md) |
-| Offline and packages (LAN removed) | [Offline and Collaboration](specs/OpenFrame_Studio_Offline_Collaboration_Specification.md) |
-| Formats | [Import and Export](specs/OpenFrame_Studio_Import_Export_Specification.md) |
-| What AI may do | [Conversational assistant](specs/ai-conversational-harness.md) (newest, with [ADR-0037](adr/ADR-0037-conversational-assistant-focus-and-dossiers.md)), [AI spec](specs/OpenFrame_Studio_AI_Specification_Updated.md), [agent behaviour](specs/openframe_ai_agentic_rag_spec_prompt.md), [runtime](specs/OpenFrame_Local_AI_Runtime_Model_Management_Specification.md) |
-| What leaves the computer | [Security, Privacy, Data Ownership](specs/OpenFrame_Studio_Security_Privacy_Data_Ownership_Specification.md) |
-| How engineering builds it | [ESD](specs/OpenFrame_ESD_Technical_Architecture.md), [Engineering Package Index](specs/OpenFrame_Studio_Engineering_Package_Index.md), [engineering/](engineering) |
+| What are we building and why | [PRD](specs/Straft_Studio_Mega_PRD_Aligned_Updated.md) |
+| How each feature behaves | [Functional Specification](specs/Straft_Studio_Functional_Specification_Document_Aligned_Updated.md) |
+| How each screen behaves | [UX/UI Specification](specs/Straft_Studio_UX_UI_Specification_Updated.md) |
+| What objects exist | [Domain and Data Specification](specs/Straft_Studio_Domain_Data_Specification_Updated.md) |
+| Screenplay depth, production depth, themes (newest) | [Revision 1](specs/Straft_Studio_Screenplay_and_Production_Depth_Specification.md) |
+| Offline and packages (LAN removed) | [Offline and Collaboration](specs/Straft_Studio_Offline_Collaboration_Specification.md) |
+| Formats | [Import and Export](specs/Straft_Studio_Import_Export_Specification.md) |
+| What AI may do | [Conversational assistant](specs/ai-conversational-harness.md) (newest, with [ADR-0037](adr/ADR-0037-conversational-assistant-focus-and-dossiers.md)), [AI spec](specs/Straft_Studio_AI_Specification_Updated.md), [agent behaviour](specs/straft_ai_agentic_rag_spec_prompt.md), [runtime](specs/Straft_Local_AI_Runtime_Model_Management_Specification.md) |
+| What leaves the computer | [Security, Privacy, Data Ownership](specs/Straft_Studio_Security_Privacy_Data_Ownership_Specification.md) |
+| How engineering builds it | [ESD](specs/Straft_ESD_Technical_Architecture.md), [Engineering Package Index](specs/Straft_Studio_Engineering_Package_Index.md), [engineering/](engineering) |
 
 ## 7. Engineering documents
 

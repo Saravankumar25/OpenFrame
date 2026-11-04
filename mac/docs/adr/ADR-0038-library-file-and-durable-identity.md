@@ -12,7 +12,7 @@
 The local user id lived only in `app.sqlite` under the app data folder. The uninstall box "delete app data" and any
 troubleshooting reset removed it, the next start made a new id, and private notes in projects (owned by the old id)
 vanished from view although the projects were intact. The projects folder and the vault folder were fixed at
-`Documents\OpenFrame\...`; nothing could move them, and nothing remembered a different place.
+`Documents\Straft Studio\...`; nothing could move them, and nothing remembered a different place.
 
 ## Decision
 
@@ -28,12 +28,12 @@ vanished from view although the projects were intact. The projects folder and th
 5. Private notes of a former owner are re-owned only by an explicit Owner action, one owner at a time, recorded in the
    activity log. Nothing reassigns notes silently.
 6. Amended 2026-10-27 (owner decision: "This is suggested default only, it should not automatically store
-   directly"). The library folder is chosen by the person on the first start; `C:\Users\<name>\OpenFrame` (outside
+   directly"). The library folder is chosen by the person on the first start; `C:\Users\<name>\Straft Studio` (outside
    OneDrive) is only the suggestion. Nothing is created and no profile is saved before they confirm Use the default
-   location, Choose a new location or Locate existing OpenFrame data. Before that a new person's id lives in memory
+   location, Choose a new location or Locate existing Straft Studio data. Before that a new person's id lives in memory
    only, so connecting an existing library takes over that library's identity. The choice is remembered in
-   `app.sqlite` and in `%APPDATA%\OpenFrame\library-pointer.json`, outside the disposable app data; a remembered
-   library that is missing is asked for again, never recreated. Earlier installs with `Documents\OpenFrame` are asked
+   `app.sqlite` and in `%APPDATA%\Straft\library-pointer.json`, outside the disposable app data; a remembered
+   library that is missing is asked for again, never recreated. Earlier installs with `Documents\Straft Studio` are asked
    once, with that library offered first. The whole library can be moved and another library connected from Settings.
 
 ## Consequences

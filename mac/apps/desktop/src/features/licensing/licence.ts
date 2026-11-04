@@ -15,7 +15,7 @@ export const NOTICE_OP = "entitlement.notice";
 /** The licence state and the due screen. Asked at launch, when the window comes back to the front
  * and every 5 minutes while the window is in front. Each ask only reads the state the core already
  * holds: the core works it out at startup, on Restore purchase and, on the Mac, at each online
- * check. On Windows a trial that ends while OpenFrame stays open therefore shows at the next
+ * check. On Windows a trial that ends while Straft Studio stays open therefore shows at the next
  * launch. */
 export function useLicenceNotice() {
   const today = localDay();

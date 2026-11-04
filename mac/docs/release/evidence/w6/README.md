@@ -12,7 +12,7 @@ Proof level 2 (development computer, ADR-0030). Same laptop, gold sets and relea
    location. They run through the same toolbox, schema check, permissions and Proposed Changes card. Unit tests include
    near misses that must still reach the model.
 2. **Verifier** (`orchestrator.rs` `verify_language`): an answer not in the request's language gets at most two rewrites
-   within 60 seconds; deterministic code (`openframe-ai-checks`) accepts a rewrite only in the right language and with every
+   within 60 seconds; deterministic code (`straft-ai-checks`) accepts a rewrite only in the right language and with every
    number kept, otherwise the first answer stays. Passes and failed checks are written to the AI trace.
 3. **Tool picker** (`toolbox.rs` `semantic_bonus`): tools closest in meaning to the request in the multilingual search
    space get a rank bonus on top of the English word score; the picker waits at most 1.5 seconds for it.

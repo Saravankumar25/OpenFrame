@@ -1,4 +1,4 @@
-// "Set up your OpenFrame library": the first start of a new computer, or a library that went
+// "Set up your Straft Studio library": the first start of a new computer, or a library that went
 // missing (docs/engineering/40-storage-locations-and-recovery.md section 1). Shown after the team
 // password and before Home whenever library.status is not ready. It cannot be dismissed: closing
 // the window closes the app. The Rust core refuses everything else until a choice succeeds, so
@@ -15,7 +15,7 @@ import type { LibraryStatus } from "../../ipc/generated/LibraryStatus";
 import { BrandLogo } from "../../theme/BrandLogo";
 import { joinPath } from "../packages/api";
 
-const LOAD_FAILED = "OpenFrame could not check where your work is kept. Close OpenFrame and open it again.";
+const LOAD_FAILED = "Straft Studio could not check where your work is kept. Close Straft Studio and open it again.";
 
 type Choice = "default" | "new" | "locate";
 
@@ -45,7 +45,7 @@ export function LibrarySetupGate({ children }: { children: ReactNode }) {
             <Button onClick={load}>Try again</Button>
           </div>
         ) : (
-          <div className="splash-sub">Starting OpenFrame Studio…</div>
+          <div className="splash-sub">Starting Straft Studio…</div>
         )}
       </div>
     );
@@ -83,7 +83,7 @@ export function LibrarySetupScreen({ status, onReady }: { status: LibraryStatus;
   };
 
   const pickParent = async () => {
-    const dir = await openDialog({ directory: true, title: "Choose the folder that will hold your OpenFrame library" });
+    const dir = await openDialog({ directory: true, title: "Choose the folder that will hold your Straft Studio library" });
     if (typeof dir !== "string") return;
     setError(null);
     setParent(dir);
@@ -95,7 +95,7 @@ export function LibrarySetupScreen({ status, onReady }: { status: LibraryStatus;
   };
 
   const pickExisting = async () => {
-    const dir = await openDialog({ directory: true, title: "Choose the folder of your OpenFrame library" });
+    const dir = await openDialog({ directory: true, title: "Choose the folder of your Straft Studio library" });
     if (typeof dir !== "string") return;
     setError(null);
     setFound(null);
@@ -117,9 +117,9 @@ export function LibrarySetupScreen({ status, onReady }: { status: LibraryStatus;
     <div className="app-root" style={{ overflow: "auto", display: "flex", justifyContent: "center", padding: "40px 16px" }}>
       <main className="col" style={{ maxWidth: 680, width: "100%", gap: 16, margin: "0 auto" }} aria-labelledby="library-setup-title">
         <BrandLogo size="lg" />
-        <h1 id="library-setup-title" className="h2" style={{ margin: 0 }}>Set up your OpenFrame library</h1>
+        <h1 id="library-setup-title" className="h2" style={{ margin: 0 }}>Set up your Straft Studio library</h1>
         <p style={{ margin: 0 }}>
-          OpenFrame keeps your projects and your Global Idea Vault in one folder, your OpenFrame library. Choose where it should be. You can move
+          Straft Studio keeps your projects and your Global Idea Vault in one folder, your Straft Studio library. Choose where it should be. You can move
           it later in Settings &gt; Storage.
         </p>
 
@@ -134,8 +134,8 @@ export function LibrarySetupScreen({ status, onReady }: { status: LibraryStatus;
         )}
 
         {status.found.length > 0 && (
-          <section className="card pad col" style={{ gap: 10 }} aria-label="OpenFrame data found on this computer">
-            <div className="h4" style={{ margin: 0 }}>OpenFrame data found on this computer</div>
+          <section className="card pad col" style={{ gap: 10 }} aria-label="Straft Studio data found on this computer">
+            <div className="h4" style={{ margin: 0 }}>Straft Studio data found on this computer</div>
             {status.found.map((f) => (
               <div key={f.path} className="row" style={{ gap: 12, alignItems: "center", justifyContent: "space-between" }}>
                 <div className="col" style={{ gap: 2, minWidth: 0 }}>
@@ -161,7 +161,7 @@ export function LibrarySetupScreen({ status, onReady }: { status: LibraryStatus;
           options={[
             { value: "default", label: "Use the default location" },
             { value: "new", label: "Choose a new location" },
-            { value: "locate", label: "Locate existing OpenFrame data" },
+            { value: "locate", label: "Locate existing Straft Studio data" },
           ]}
         />
 
@@ -181,18 +181,18 @@ export function LibrarySetupScreen({ status, onReady }: { status: LibraryStatus;
 
           {choice === "new" && (
             <>
-              <div className="xs muted">Choose a folder. OpenFrame makes a folder named OpenFrame inside it for your library.</div>
+              <div className="xs muted">Choose a folder. Straft Studio makes a folder named Straft Studio inside it for your library.</div>
               <div>
                 <Button icon={<FolderOpen size={14} />} disabled={busy} onClick={() => void pickParent()}>Choose Folder…</Button>
               </div>
               {parent && (
                 <>
                   <div className="sm">
-                    Your library will be <span className="selectable-text" style={{ wordBreak: "break-all" }}>{joinPath(parent, "OpenFrame")}</span>
+                    Your library will be <span className="selectable-text" style={{ wordBreak: "break-all" }}>{joinPath(parent, "Straft Studio")}</span>
                   </div>
                   {found?.cloudService && (
                     <Banner tone="warn">
-                      That folder is synced by {found.cloudService}. Syncing can lock or replace files while OpenFrame writes to them. A folder
+                      That folder is synced by {found.cloudService}. Syncing can lock or replace files while Straft Studio writes to them. A folder
                       that is not synced is safer.
                     </Banner>
                   )}
@@ -207,7 +207,7 @@ export function LibrarySetupScreen({ status, onReady }: { status: LibraryStatus;
           {choice === "locate" && (
             <>
               <div className="xs muted">
-                After a reinstall, or when you moved your library or brought it from another drive, choose its folder. OpenFrame shows what it
+                After a reinstall, or when you moved your library or brought it from another drive, choose its folder. Straft Studio shows what it
                 found before connecting anything, and never makes an empty library in its place.
               </div>
               <div>

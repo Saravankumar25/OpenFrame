@@ -1,5 +1,5 @@
-// OpenFrame design system: thin, accessible React components over the UX mock
-// CSS vocabulary (openframe.css). Radix provides focus management for
+// Straft Studio design system: thin, accessible React components over the UX mock
+// CSS vocabulary (straft.css). Radix provides focus management for
 // dialogs/menus; visuals come from the tokens.
 
 import * as RDialog from "@radix-ui/react-dialog";

@@ -15,23 +15,23 @@ const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
 const identity = JSON.parse(read("apps/macos/packaging/store-identity.json"));
 
 test("the bundle id, product ids and Keychain names match what the first release recorded", () => {
-  assert.equal(identity.bundleId, "app.openframestudio.studio");
-  assert.equal(identity.trialProductId, "app.openframestudio.studio.trial7");
-  assert.equal(identity.lifetimeProductId, "app.openframestudio.studio.lifetime");
+  assert.equal(identity.bundleId, "app.straftstudio.studio");
+  assert.equal(identity.trialProductId, "app.straftstudio.studio.trial7");
+  assert.equal(identity.lifetimeProductId, "app.straftstudio.studio.lifetime");
   const plist = read("apps/macos/packaging/Info-store.plist");
   assert.match(plist, new RegExp(`<key>CFBundleIdentifier</key><string>${identity.bundleId}</string>`));
-  const bridge = read("crates/openframe-entitlement/src/mac/bridge.rs");
+  const bridge = read("crates/straft-entitlement/src/mac/bridge.rs");
   assert.ok(bridge.includes(`TRIAL_PRODUCT_ID: &str = "${identity.trialProductId}"`));
   assert.ok(bridge.includes(`LIFETIME_PRODUCT_ID: &str = "${identity.lifetimeProductId}"`));
-  const source = read("apps/macos/Sources/OpenFrameUI/Store/StoreKitSource.swift");
+  const source = read("apps/macos/Sources/StraftUI/Store/StoreKitSource.swift");
   assert.ok(source.includes(`trialProductID = "${identity.trialProductId}"`));
   assert.ok(source.includes(`lifetimeProductID = "${identity.lifetimeProductId}"`));
-  const keychain = read("apps/macos/Sources/OpenFrameUI/Store/GuardKeychain.swift");
+  const keychain = read("apps/macos/Sources/StraftUI/Store/GuardKeychain.swift");
   assert.ok(keychain.includes(`.${identity.keychainGroupSuffix}"`));
   assert.ok(keychain.includes(`service = "${identity.keychainService}"`));
-  const ent = read("apps/macos/packaging/OpenFrameStudio-store.entitlements");
+  const ent = read("apps/macos/packaging/StraftStudio-store.entitlements");
   assert.ok(ent.includes(`.${identity.keychainGroupSuffix}</string>`));
-  const storekit = JSON.parse(read("apps/macos/packaging/OpenFrameStudio.storekit"));
+  const storekit = JSON.parse(read("apps/macos/packaging/StraftStudio.storekit"));
   const byId = Object.fromEntries(storekit.products.map((p) => [p.productID, p]));
   assert.equal(byId[identity.trialProductId].localizations[0].displayName, "7-day Trial");
   assert.equal(byId[identity.trialProductId].displayPrice, "0.00");
@@ -43,7 +43,7 @@ test("the bundle id, product ids and Keychain names match what the first release
 });
 
 test("the store build's sandbox keeps its small list of rights", () => {
-  const ent = read("apps/macos/packaging/OpenFrameStudio-store.entitlements").replace(/<!--[\s\S]*?-->/g, "");
+  const ent = read("apps/macos/packaging/StraftStudio-store.entitlements").replace(/<!--[\s\S]*?-->/g, "");
   const keys = [...ent.matchAll(/<key>([^<]+)<\/key>/g)].map((m) => m[1]).sort();
   assert.deepEqual(keys, [
     "com.apple.application-identifier",
@@ -98,7 +98,7 @@ test("the build number must rise above the last upload", () => {
 
 test("no licence server is left in the shipped addresses or the workflows", () => {
   const addresses = read("scripts/app-addresses.json");
-  assert.ok(!/licence\.openframe|licence-sandbox/.test(addresses));
+  assert.ok(!/licence\.straft|licence-sandbox/.test(addresses));
   assert.ok(addresses.includes("https://openframestudio.app/contact/"));
   for (const wf of ["release.yml", "mac-core.yml", "ci.yml"]) {
     assert.ok(!/LICENCE_SIGNING|licence-server/.test(read(`.github/workflows/${wf}`)), wf);

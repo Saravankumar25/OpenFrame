@@ -2,10 +2,10 @@
 
 # AI harness rebuild
 
-A plan to make the OpenFrame assistant answer like a strong conversational AI and work like a careful agent, with the same local Gemma 3 1B model.
+A plan to make the Straft Studio assistant answer like a strong conversational AI and work like a careful agent, with the same local Gemma 3 1B model.
 
 - **Status:** proposal from a brainstorm session on 2026-10-24, since built in part. The decisions it led to are [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md); how a request runs now is [ai-answer-paths.md](../engineering/ai-answer-paths.md). Sections 2 and 11 describe the state before the work and are kept as the baseline. Not built: the reranker, AI digest lines, the digest store, token streaming and the engine benchmarks (ADR-0035, "Not adopted"). The owner kept this file in `docs/specs/` (decision 10 of section 15).
-- **Scope:** the Windows harness first (`windows/crates/openframe-application/src/modules/ai/` and `windows/crates/openframe-ai/`), then the Mac copy (`mac/...`).
+- **Scope:** the Windows harness first (`windows/crates/straft-application/src/modules/ai/` and `windows/crates/straft-ai/`), then the Mac copy (`mac/...`).
 - **Model rule for this plan:** the chat model stays Gemma 3 1B Q8_0 (8,192-token window). The embedding model stays Multilingual E5 small. Everything runs offline.
 - **Safety rule for this plan:** the assistant can only propose project changes. A person applies them. This does not change.
 
@@ -567,7 +567,7 @@ No canonical (`project.sqlite`) migration is needed for the first stages. Conver
 
 ## 8. Mac parity
 
-Facts: the Mac app has its own copy of the AI crates. Its UI is SwiftUI (`apps/macos/Sources/OpenFrameUI/AI/`) over the same Rust through `openframe-ffi`. Drift today: `commands.rs` 442 changed lines, `orchestrator.rs` 114, `toolbox.rs` 87, `indexer.rs` 41, `knowledge.rs` 28, `tools.rs` 22.
+Facts: the Mac app has its own copy of the AI crates. Its UI is SwiftUI (`apps/macos/Sources/StraftUI/AI/`) over the same Rust through `straft-ffi`. Drift today: `commands.rs` 442 changed lines, `orchestrator.rs` 114, `toolbox.rs` 87, `indexer.rs` 41, `knowledge.rs` 28, `tools.rs` 22.
 
 Plan:
 
@@ -664,7 +664,7 @@ STAGE is an open full-screenplay benchmark (scene summarisation, question answer
 Each item is one slice with its own verification. Do them one at a time and update the handoff after each.
 
 1. **Baseline the model path and conversation quality.**
-   - Touches: `openframe-ai-eval`, gold folder.
+   - Touches: `straft-ai-eval`, gold folder.
    - Work: route-off switch, held-out paraphrase set, conversation bench v0 (60 prompts), run on the current build.
    - Verify: report with numbers. No product change.
    - Exit: owner reads the report and approves bars.

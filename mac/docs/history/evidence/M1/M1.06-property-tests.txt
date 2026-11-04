@@ -1,9 +1,9 @@
 M1.06 property tests: evidence (2026-10-05, Windows 11, debug test profile)
 Deterministic seeded xorshift64* generator, no new dependencies. Seeds per run: board order 8 x 30 moves,
 undo/redo 12, delete/restore 12, Fountain/FDX library 300, app import/export/import 10.
-OPENFRAME_PROPERTY_CASES=<n> multiplies the seed count for a soak.
+STRAFT_PROPERTY_CASES=<n> multiplies the seed count for a soak.
 Command (run 3 times, all passed):
-  cargo test --locked --no-fail-fast -p openframe-application --test property_invariants
+  cargo test --locked --no-fail-fast -p straft-application --test property_invariants
 
 === application run 1
      Running tests\property_invariants.rs (target\debug\deps\property_invariants-e957cccc829956b4.exe)

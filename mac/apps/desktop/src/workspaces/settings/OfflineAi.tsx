@@ -1,6 +1,6 @@
 // Settings → Offline AI (agentic AI spec §1, §36, §37; ADR-0026). The engine ships inside the app;
 // the models are a one-time download the person starts here (or in the AI panel). This page shows
-// the status, the download while OpenFrame AI is not installed, a way to free memory, Remove, and
+// the status, the download while Straft AI is not installed, a way to free memory, Remove, and
 // the technical details ordinary UI never shows (component names, versions, licences, sizes and
 // SHA-256 hashes, where the engine is installed, this computer).
 
@@ -20,7 +20,7 @@ import { AssistantMemoryCard } from "./AssistantMemory";
 
 /** The privacy promise shown wherever Offline AI is described (spec §1). */
 export const OFFLINE_AI_PROMISE =
-  "OpenFrame AI runs on this computer after a one-time download. Your project data is not sent to OpenFrame or to an AI cloud service.";
+  "Straft AI runs on this computer after a one-time download. Your project data is not sent to Straft Studio or to an AI cloud service.";
 
 /** Plain-language status line for the settings card. */
 export function offlineAiStateText(s: AiStatusDto): string {
@@ -57,7 +57,7 @@ export default function OfflineAiSettings() {
     if (removeBusy) return;
     setRemoveBusy(true);
     void call("ai.download.remove")
-      .then(() => toast.info("OpenFrame AI was removed. You can download it again here."))
+      .then(() => toast.info("Straft AI was removed. You can download it again here."))
       .catch(reportError)
       .finally(() => {
         // Also after a partial failure: the screens show what is really on the disk now.
@@ -97,16 +97,16 @@ export default function OfflineAiSettings() {
                     Stop Offline AI (free memory)
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setRemoving(true)}>
-                    Remove OpenFrame AI…
+                    Remove Straft AI…
                   </Button>
                 </div>
               )}
               {s.available && <GraphicsChoice />}
-              <p className="hint">OpenFrame works normally without OpenFrame AI.</p>
+              <p className="hint">Straft Studio works normally without Straft AI.</p>
               <ConfirmDialog
                 open={removing}
                 onOpenChange={setRemoving}
-                title="Remove OpenFrame AI?"
+                title="Remove Straft AI?"
                 confirmLabel="Remove"
                 danger
                 busy={removeBusy}
@@ -142,7 +142,7 @@ export function GraphicsChoice() {
       .then(() => {
         void qc.invalidateQueries({ queryKey: ["ai.diagnostics"] });
         void qc.invalidateQueries({ queryKey: ["ai.health"] });
-        toast.info(v === "off" ? "OpenFrame AI will run on the processor." : "OpenFrame AI will use a checked graphics card when there is one.");
+        toast.info(v === "off" ? "Straft AI will run on the processor." : "Straft AI will use a checked graphics card when there is one.");
       })
       .catch(reportError);
   return (
@@ -261,7 +261,7 @@ function fileCheckText(state: string): string {
     case "NotInstalled":
       return "models not downloaded";
     case "Missing":
-      return "engine missing, reinstall OpenFrame Studio";
+      return "engine missing, reinstall Straft Studio";
     case "Damaged":
       return "changed or damaged";
     default:

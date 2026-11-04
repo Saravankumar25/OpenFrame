@@ -52,6 +52,6 @@ deliver three separate files: a Microsoft Store package, a Windows installer and
 
 ## Implementation notes
 
-- The platform boundary is the crate `crates/openframe-platform` (Windows adapter and macOS adapter, selected at compile time). Module list, adapter state and open work: [37-platform-boundary.md](../engineering/37-platform-boundary.md).
+- The platform boundary is the crate `crates/straft-platform` (Windows adapter and macOS adapter, selected at compile time). Module list, adapter state and open work: [37-platform-boundary.md](../engineering/37-platform-boundary.md).
 - Lint rule R6 in `scripts/architecture-lint.mjs` forbids operating-system code outside that crate and the reviewed `OS_ALLOW` files.
 - The macOS adapter compiles but is unverified until an Apple silicon CI runner exists. CI runs on Windows only today.

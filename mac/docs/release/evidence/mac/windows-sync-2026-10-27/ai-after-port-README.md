@@ -1,7 +1,7 @@
 # Mac AI after the Windows sync: measured runs (2026-10-27)
 
 Code: branch `mac/windows-sync` at `c54ecedd` (the Windows conversational assistant of ADR-0037 in the Mac core). Binary:
-`cargo build --release -p openframe-ai-eval --bin ai-eval`. Machine: Apple M1, 16 GB, macOS 26.5; llama.cpp b11259 with
+`cargo build --release -p straft-ai-eval --bin ai-eval`. Machine: Apple M1, 16 GB, macOS 26.5; llama.cpp b11259 with
 Metal; Gemma 3 1B q8_0; deterministic sampling. Each run once. Swift builds and E2E runs shared the machine during the
 runs, so times are upper bounds, not quiet-machine times; the accuracy measures are deterministic.
 

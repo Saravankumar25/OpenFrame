@@ -8,7 +8,7 @@ Windows 11 Home. Branch `windows/w8-download`. Engines: llama.cpp b11259, proces
 
 | What | Where | Result |
 |---|---|---|
-| Decision table, 34 imagined computers | `crates/openframe-ai/src/gpu.rs` | pass |
+| Decision table, 34 imagined computers | `crates/straft-ai/src/gpu.rs` | pass |
 | Device match by name, probe pass rule, probe record per adapter, driver and engine (bounded) | `gpu.rs`, `placement.rs` | pass |
 | Card launch arguments (`-ngl 999 --device VulkanN`; processor `-ngl 0`, no device) | `tests/supervisor.rs` | pass |
 | A card that passes is used and remembered; no second probe next session | `tests/bundled.rs` | pass |
@@ -20,7 +20,7 @@ Windows 11 Home. Branch `windows/w8-download`. Engines: llama.cpp b11259, proces
 
 ## The whole path on this laptop's integrated graphics
 
-`OPENFRAME_AI_BUNDLE_DIR=.build-cache/ai-bundle cargo test -p openframe-ai --features test-support --test real_runtime
+`STRAFT_AI_BUNDLE_DIR=.build-cache/ai-bundle cargo test -p straft-ai --features test-support --test real_runtime
 -- --ignored real_graphics_card_probe_and_benchmark` (raw figures in
 [intel-arc-integrated-2026-10-16.json](intel-arc-integrated-2026-10-16.json)).
 
@@ -33,11 +33,11 @@ Windows 11 Home. Branch `windows/w8-download`. Engines: llama.cpp b11259, proces
 - Answers (114 words, a warm engine): 3.9 s in Automatic (processor after the probe), 4.1 s with the setting Off. The
   first answer in Automatic took 25.7 s once, because it ran the probe (two model loads); the next sessions skip it.
 
-**Conclusion.** On this laptop the integrated graphics are checked and not faster; OpenFrame AI runs on the processor.
+**Conclusion.** On this laptop the integrated graphics are checked and not faster; Straft AI runs on the processor.
 No speed-up is claimed for any card (ADR-0029 decision 8).
 
 ## Not measured here
 
 Benchmarks on borrowed laptops with other cards (NVIDIA, AMD, a dedicated Intel card) need the owner and those
 computers. Until then every other card counts as "designed and unit tested". The command above writes the same evidence
-on any computer; set `OPENFRAME_EVIDENCE_OUT` to a new file in this folder.
+on any computer; set `STRAFT_EVIDENCE_OUT` to a new file in this folder.

@@ -1,13 +1,13 @@
 # 18 — Retrieval & Local Intelligence Index
 
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned.
-> Spec: `openframe_ai_agentic_rag_spec_prompt.md` §8–§22, §31–§34, §42.
-> Source: `crates/openframe-search/` (derived index library),
-> `crates/openframe-application/src/modules/ai/intelligence/` (documents, graph builders, indexer, retriever,
-> assembler), `crates/openframe-application/src/modules/ai/retrieval.rs` (contract C2 + ops),
+> Spec: `straft_ai_agentic_rag_spec_prompt.md` §8–§22, §31–§34, §42.
+> Source: `crates/straft-search/` (derived index library),
+> `crates/straft-application/src/modules/ai/intelligence/` (documents, graph builders, indexer, retriever,
+> assembler), `crates/straft-application/src/modules/ai/retrieval.rs` (contract C2 + ops),
 > post-commit hook `Store::set_commit_observer` (`store.rs`) and `AppCore::set_project` (`core.rs`).
-> Tests: `crates/openframe-search/src/**` (unit), `crates/openframe-application/tests/ai_retrieval.rs`,
-> `crates/openframe-application/tests/ai_retrieval_perf.rs` (§34 measurements).
+> Tests: `crates/straft-search/src/**` (unit), `crates/straft-application/tests/ai_retrieval.rs`,
+> `crates/straft-application/tests/ai_retrieval_perf.rs` (§34 measurements).
 
 ## 1. What it is ✅
 
@@ -15,7 +15,7 @@ A **derived, rebuildable** retrieval layer for the local AI agent. `project.sqli
 nothing here is canonical, part of undo/activity, or needed to open a project.
 
 ```text
-<Project>.openframe/
+<Project>.straft/
 ├─ project.sqlite            canonical (search_doc/search_fts FTS5 stays here, doc 16)
 └─ cache/intelligence.sqlite DERIVED — delete any time; rebuilt from project.sqlite
      ├─ index_meta           schema/builder/canonical-schema versions, project id, embedding model id + dim
@@ -38,14 +38,14 @@ SQLite as `rusqlite` 0.37. Verified on Windows MSVC (build + KNN smoke test) bef
   of `sqlite3_vec_init`). There is no `sqlite3_auto_extension` and no runtime extension loading: project databases
   never gain the module (unit test `module_is_not_global`).
 - The rest of the application only sees the `SemanticIndex` trait (`upsert/delete/search/rebuild/get`); swapping the
-  implementation (e.g. for an embedded Rust index) touches `openframe-search/src/vector.rs` only.
+  implementation (e.g. for an embedded Rust index) touches `straft-search/src/vector.rs` only.
 - Exact brute-force KNN over L2-normalised vectors; similarity = 1 − d²/2 (cosine).
 
 ## 3. Opening, versioning and trust ✅
 
 `IntelligenceDb::open` treats the file as **untrusted** (project folders come from anywhere): `PRAGMA quick_check`,
 an exact allow-list of schema objects (no triggers/views; vec0 shadow tables only), `trusted_schema=OFF`, then the
-identity in `index_meta`: `schema_version` (`openframe_search::SCHEMA_VERSION` = 1), `project_id`,
+identity in `index_meta`: `schema_version` (`straft_search::SCHEMA_VERSION` = 1), `project_id`,
 `canonical_schema_version` (project migration count) and `builder_version`
 (`documents::BUILDER_VERSION` = 1). Any mismatch or damage → the file is deleted and recreated, then rebuilt in the
 background. A different embedding model id or dimension drops only the vectors (`ensure_embedding_model`) and
@@ -161,7 +161,7 @@ Pipeline:
    stop-words removed; Global Search keeps its AND query), owner-filtered, BM25 (title 4×).
 4. **Semantic**: query embedding (LRU cache of 64) → vec0 KNN k=48 → chunks → documents; owner and draft filters.
 5. **Graph** (HybridGraph): expand from the top 5 fused entities (§5 limits).
-6. **Rank** (`openframe_search::rank`): RRF (k=60) over lexical + vector ranks, + exact-name 0.016,
+6. **Rank** (`straft_search::rank`): RRF (k=60) over lexical + vector ranks, + exact-name 0.016,
    graph ≤ 0.012 × score, current draft 0.004. No LLM reranker.
 7. **Assemble** (`assembler.rs`): each candidate is **rebuilt from canonical rows**
    (drops deleted, non-current-draft, other users' private and out-of-section items), the semantic chunk or the chunk
@@ -180,13 +180,13 @@ untrusted-data boundary.
 
 ## 8. Embeddings (contract C1) ✅
 
-`openframe_search::Embedder` (`model_id` incl. version + hash prefix, `dim`, `embed`). The production adapter
-`AiManagerEmbedder` (`intelligence/mod.rs`) wraps `openframe_ai::AiManager::{embedding_info, embed}`: the installed
+`straft_search::Embedder` (`model_id` incl. version + hash prefix, `dim`, `embed`). The production adapter
+`AiManagerEmbedder` (`intelligence/mod.rs`) wraps `straft_ai::AiManager::{embedding_info, embed}`: the installed
 Offline AI embedding model (BGE small English v1.5, 384 dimensions, served by the embedding sidecar) with model id
 `<model id>@<version>#<first 12 hex of SHA-256>`. `IntelligenceService::embedder` uses an explicitly attached embedder
 first (`set_embedder`, tests), else this adapter; when Offline AI is not installed there is none, documents and graph
 are still built and retrieval runs FTS + graph + SQL. A different embedding model (for example after an Offline AI
-update) has a different model id, so the stored vectors are dropped and re-embedded (§3). Tests use `openframe_test_support::embedder::ConceptEmbedder`
+update) has a different model id, so the stored vectors are dropped and re-embedded (§3). Tests use `straft_test_support::embedder::ConceptEmbedder`
 (deterministic feature hashing + small synonym groups) — never shipped.
 
 ## 9. Measurements (§34)
@@ -194,7 +194,7 @@ update) has a different model id, so the stored vectors are dropped and re-embed
 Generated fixture: 240 scenes × 12 elements, 40 characters, 60 locations, 300 catalog items, 720 breakdown elements,
 30 shooting days, 240 cards, 150 notes/tasks/ideas (`tests/ai_retrieval_perf.rs`, test embedder dim 384).
 
-Measured 2026-09-30 on the development machine (Windows 11, debug test profile: OpenFrame crates at opt-level 0,
+Measured 2026-09-30 on the development machine (Windows 11, debug test profile: Straft Studio crates at opt-level 0,
 dependencies at opt-level 2 — release builds are faster). Index: 1,302 documents, 1,302 chunks, 1,063 graph nodes,
 2,839 edges.
 

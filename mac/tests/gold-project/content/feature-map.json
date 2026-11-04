@@ -995,7 +995,7 @@
     },
     {
       "key": "TEMP-003",
-      "name": "Sample scripts (OpenFrame-authored) used as fixtures",
+      "name": "Sample scripts (Straft Studio-authored) used as fixtures",
       "ops": [
         "screenplay.samples",
         "screenplay.import_preview",
@@ -1032,7 +1032,7 @@
     },
     {
       "key": "THEME-002",
-      "name": "OpenFrame Default equals today's UI; visual baseline captured first",
+      "name": "Straft Default equals today's UI; visual baseline captured first",
       "ops": [],
       "note": "Theme rendering and visual baseline in the shell; no core operation"
     },

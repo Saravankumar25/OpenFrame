@@ -1,19 +1,19 @@
 # 13: Rust Domain & Command Architecture
 
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned.
-> Source: `crates/openframe-domain`, `crates/openframe-application/src/{core,registry,store,util,events}.rs`,
+> Source: `crates/straft-domain`, `crates/straft-application/src/{core,registry,store,util,events}.rs`,
 > `modules/*`. Module conventions for implementers: `docs/history/2026-09-30-agent-brief.md`.
 
 ## 1. Layers ✅
 
 | Crate | Responsibility | May depend on |
 |---|---|---|
-| `openframe-domain` | Ids (UUIDv7), `now_ms`, `AppError` taxonomy, `Role`/`Capability`/`Actor`, canonical enums, format version constants. **No I/O.** | serde, uuid, time, ts-rs (rusqlite only for the `From` impl behind the `sqlite` feature) |
-| `openframe-persistence` | Connection policy, migrations, undo capture, row helpers, backup/checkpoint/integrity | domain, rusqlite |
-| `openframe-project-format` | Folder layout, manifest, lock, crash marker, atomic writes, default dirs | domain, security |
-| `openframe-security` | Path confinement, safe ZIP, hashing, Ed25519, redaction | domain |
-| `openframe-application` | `AppCore`, `Registry`, `Store` pipeline, modules | all of the above |
-| `openframe-desktop` (`src-tauri`) | Adapter: `of_invoke`, asset scope, events, logging | application, domain, security |
+| `straft-domain` | Ids (UUIDv7), `now_ms`, `AppError` taxonomy, `Role`/`Capability`/`Actor`, canonical enums, format version constants. **No I/O.** | serde, uuid, time, ts-rs (rusqlite only for the `From` impl behind the `sqlite` feature) |
+| `straft-persistence` | Connection policy, migrations, undo capture, row helpers, backup/checkpoint/integrity | domain, rusqlite |
+| `straft-project-format` | Folder layout, manifest, lock, crash marker, atomic writes, default dirs | domain, security |
+| `straft-security` | Path confinement, safe ZIP, hashing, Ed25519, redaction | domain |
+| `straft-application` | `AppCore`, `Registry`, `Store` pipeline, modules | all of the above |
+| `straft-desktop` (`src-tauri`) | Adapter: `of_invoke`, asset scope, events, logging | application, domain, security |
 
 ## 2. AppCore ✅
 
@@ -113,7 +113,7 @@ return the item to its prior parent and position, or to "unassigned" with a mess
 `internal.unexpected`. All running tasks are cancelled on shutdown. Long tasks must not hold the writer lock across
 slow I/O. They do the slow work first, then apply the result in one short `mutate`.
 
-## 7. Errors ✅ (`openframe_domain::error`)
+## 7. Errors ✅ (`straft_domain::error`)
 
 `AppError { code, message, detail?, retryable }` serializes to the UI. Code families (ESD §12):
 `validation.*`, `permission.*`, `not_found.*`, `conflict.*` (`stale`, `undo`, `state`), `storage.*`

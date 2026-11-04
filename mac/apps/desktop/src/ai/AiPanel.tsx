@@ -2,9 +2,9 @@
 //
 // - The panel docks beside the page (owner decision 2026-10-08): the Shell places it after the
 //   page in the layout row, so opening it narrows the page and never covers a control.
-// - OpenFrame AI is a one-time download after install, started by the person: until it is
+// - Straft AI is a one-time download after install, started by the person: until it is
 //   downloaded (or when a downloaded file is damaged) the panel offers the download; when the
-//   engine in the app is missing or damaged it says to reinstall. Nothing else in OpenFrame
+//   engine in the app is missing or damaged it says to reinstall. Nothing else in Straft Studio
 //   depends on it.
 // - Everything runs on this computer; the UI never shows model files, formats or ports.
 // - The conversation, sources and "Proposed Changes" review live in ./Conversation
@@ -28,7 +28,7 @@ import "./ai.css";
 
 /** The docked panel's width: dragged or set with the arrow keys, remembered per person, and always
  * bounded so a stored width never squeezes the page on a smaller window (UX brief, section 4.2). */
-const WIDTH_KEY = "openframe.ai.width";
+const WIDTH_KEY = "straft.ai.width";
 const MIN_WIDTH = 300;
 export function clampAiWidth(w: number, windowWidth: number): number {
   const max = Math.max(MIN_WIDTH, Math.min(640, Math.round(windowWidth * 0.45)));
@@ -196,7 +196,7 @@ function Unavailable({ text }: { text: string }) {
         </div>
         <h2 style={{ fontSize: 15 }}>AI is not available right now</h2>
         <p className="sm">{text}</p>
-        <p className="xs muted">Everything else in OpenFrame works normally.</p>
+        <p className="xs muted">Everything else in Straft Studio works normally.</p>
       </div>
     </div>
   );

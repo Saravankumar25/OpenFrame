@@ -13,7 +13,7 @@
 > the Mac picker, the dossier by leaves with search held to the picks, memory and focus held to the picks, the pointer (`modules/ai/pointer.rs`), the
 > types describe, brief and story with their writer policy and briefing fetcher, and the agent's tool list by section (`toolbox/homes.rs`). Slice R7 deleted what they replaced: the scope, the domain table, the fetcher
 > table and its plan, the wide passages round and the retrieval router. Sections 5.3 domain words and 5.4 plan below are history. A
-> request with no picks under `AppConfig.ai_eval_all_sections` reads every section through the same path. The design is `OpenFrame_Release_Package/ai-reharness.md`.
+> request with no picks under `AppConfig.ai_eval_all_sections` reads every section through the same path. The design is `Straft_Release_Package/ai-reharness.md`.
 
 ## 1. What the owner asked for (2026-10-26)
 
@@ -120,7 +120,7 @@ Adding a new deterministic answer needs an entry in section 4.1 with its reason.
 Every row of 4.2 and 4.3 is done. One conversational path runs for every message (code reads and fetches, the model
 writes, code checks); the old question paths are gone, with their tests and strings:
 
-- **Deleted modules** (all in `crates/openframe-application/src/modules/ai/`): `lanes.rs` (the lane router and the five
+- **Deleted modules** (all in `crates/straft-application/src/modules/ai/`): `lanes.rs` (the lane router and the five
   lanes as the answer path), `chat.rs` and `recipe.rs` (the Chat and Recipe lanes), `briefing.rs` and `understand.rs`
   (the evidence they built), `intent.rs` with `intents.json` (the intent prototypes that fed the router), `verify.rs`
   (the old rewrite loop and the language-only verifier of the Agent lane), and each one's `tests.rs`.
@@ -263,7 +263,7 @@ stays brief. The names and word ranges are the ones of `LENGTH_CLASSES` in the e
 fixture), real multilingual E5 embeddings and the 1B model of the bundle, on CPU. Labelled messages: the 251 Low Tide
 conversation cases, 20 Low Tide tool cases (type implied by the expected tool: a proposal tool is `change`, `open_*` is
 `navigate`, `count_*` is `count`), the 40 export messages read in order as one conversation, and the 30 held-out messages
-of the spike (`crates/openframe-ai-eval/turn-sets/`, copied from the spike with its labels).
+of the spike (`crates/straft-ai-eval/turn-sets/`, copied from the spike with its labels).
 
 | Set (messages) | Rules only | Plus embeddings | Plus model for weak votes |
 |---|---|---|---|
@@ -286,7 +286,7 @@ copied from them or from a gold set, and a test checks that). The first-run numb
 85% group on hard conversation wording, about 95% on the spike's own messages.
 
 **Fresh 40 (written after the S4 tuning, release build, 2026-10-26).** 40 new messages in
-`crates/openframe-ai-eval/turn-sets/fresh-40.jsonl` (all eleven types, Low Tide names, corrections with a previous
+`crates/straft-ai-eval/turn-sets/fresh-40.jsonl` (all eleven types, Low Tide names, corrections with a previous
 message), labelled without reading the rules; one message that equalled an example was reworded and the run repeated with
 the same result: rules only 70.0% exact and 72.5% group; plus embeddings 75.0% and 85.0%; plus the model for weak votes
 **87.5% exact and 92.5% group**. Misses: "why does Jose cut the net" read as brainstorm, "whats between jose and varghese"
@@ -705,7 +705,7 @@ wording: full sentences, fragments, typos, no punctuation, anger, mixed Hindi or
 The 40 exchanges of the 2026-10-25 export are converted to cases with behaviour expectations that hold on any
 two-screenplay fixture (section 7.4), because their data answers depend on the owner's private project.
 
-### 7.4 New expectation flags (added to `Expect` in `openframe-ai-eval`)
+### 7.4 New expectation flags (added to `Expect` in `straft-ai-eval`)
 
 | Flag | Meaning |
 |---|---|
@@ -757,7 +757,7 @@ Each slice ends with the eval run and a saved result. A slice does not start bef
 
 | Slice | Content | Files and areas (expected) | Exit |
 |---|---|---|---|
-| S0 | Fixture `low-tide-two-screenplays` and the other fixtures; new `Expect` flags; the 200 conversations; baseline run of the current build | `crates/openframe-ai-eval` (`gold/`, `lib.rs`, `main.rs`), `templates/samples/` | Baseline saved with numbers |
+| S0 | Fixture `low-tide-two-screenplays` and the other fixtures; new `Expect` flags; the 200 conversations; baseline run of the current build | `crates/straft-ai-eval` (`gold/`, `lib.rs`, `main.rs`), `templates/samples/` | Baseline saved with numbers |
 | S1b | Second spike on the revised design: facts-first dossiers, required facts, answer type plus domain, the chat and brainstorm policies; at least 60 cases, 3 runs each | evidence folder | Go decision against the section 7.5 bars |
 | S2 | Coverage inventory closed; read tools added for themes, app settings, budget lines, product help corpus; hidden queries reviewed | `modules/ai/catalog/*`, toolbox | Every row of section 6 has a tool |
 | S3 | Index: entities, aliases, relations; incremental update on write; focus resolver | new `modules/ai/index/` and `focus.rs`; `search_doc` indexers | Resolver tests; fixture mentions resolve |
@@ -765,12 +765,12 @@ Each slice ends with the eval run and a saved result. A slice does not start bef
 | S5 | Dossier builders per answer type and domain, with required facts | new `modules/ai/dossier/` | Fetch plans return the expected records on the fixture |
 | S6 | Memory: rolling summary, long-term table, Settings screen | migration, `records.rs`, `apps/desktop/src/ai/` | Memory tests; user can list and delete entries |
 | S7 | Writer and checker on every answer; last-resort sentence; sources; remove retired paths (section 4.3) | `orchestrator.rs`, `verify.rs`, `lanes.rs` | Full bench at the bars |
-| S8 | Speed: stable prompt prefix, token caps, index warm-up; decide on token streaming | `crates/openframe-ai` (engine settings, prompt reuse, early start), `intelligence/warm.rs`, `turn/warm.rs`, the latency section of `ai-eval` | Latency bars (section 7.5) measured on the reference machine; result at the end of section 5 |
+| S8 | Speed: stable prompt prefix, token caps, index warm-up; decide on token streaming | `crates/straft-ai` (engine settings, prompt reuse, early start), `intelligence/warm.rs`, `turn/warm.rs`, the latency section of `ai-eval` | Latency bars (section 7.5) measured on the reference machine; result at the end of section 5 |
 | S9 | Documents: rewrite `ai-answer-paths.md`, move the five-lane page and the rebuild plan to `docs/history/`, manual, feature status; `graphify update .` | `docs/` | Docs match code |
 
-S3 status (2026-10-26): built and tested. The resolver follows section 5.2 and settles the screenplay by title or alias, the conversation focus, the scene number, or the only current draft; the one change in behaviour is that `ai.ask` fills a missing draft from it instead of letting each tool ask "which screenplay". Unit tests in `index/tests.rs`; the fixture tests in `crates/openframe-ai-eval/tests/ai_index.rs`; the wiring in `tests/ai/ai_focus.rs`. Not yet done: unknown-name reporting ("not in the project") and use of the resolved entities by the dossier builders (S5).
+S3 status (2026-10-26): built and tested. The resolver follows section 5.2 and settles the screenplay by title or alias, the conversation focus, the scene number, or the only current draft; the one change in behaviour is that `ai.ask` fills a missing draft from it instead of letting each tool ask "which screenplay". Unit tests in `index/tests.rs`; the fixture tests in `crates/straft-ai-eval/tests/ai_index.rs`; the wiring in `tests/ai/ai_focus.rs`. Not yet done: unknown-name reporting ("not in the project") and use of the resolved entities by the dossier builders (S5).
 
-S4 status (2026-10-26): built and measured, **exit not met on the exact label** (85.9% over all, 82.1% on the Low Tide conversations against 90%), met on the coarse group (92.4% and 90.4%) and on anger (0 misreads as change, count or a fetch). The numbers and the failure patterns are in section 5.3. The stage runs on every request and is recorded (focus and AI trace) but decides nothing yet; S5 uses the group. Unit tests in `turn/tests.rs`; the wiring in `tests/ai/ai_focus.rs`; the rules-only gates in `crates/openframe-ai-eval/tests/turn_gold.rs`; the measured run is `ai-eval --turn-only`. The `answer_type` flag of the gold cases is now scored.
+S4 status (2026-10-26): built and measured, **exit not met on the exact label** (85.9% over all, 82.1% on the Low Tide conversations against 90%), met on the coarse group (92.4% and 90.4%) and on anger (0 misreads as change, count or a fetch). The numbers and the failure patterns are in section 5.3. The stage runs on every request and is recorded (focus and AI trace) but decides nothing yet; S5 uses the group. Unit tests in `turn/tests.rs`; the wiring in `tests/ai/ai_focus.rs`; the rules-only gates in `crates/straft-ai-eval/tests/turn_gold.rs`; the measured run is `ai-eval --turn-only`. The `answer_type` flag of the gold cases is now scored.
 
 S8 status (2026-10-26): built and measured. The latency bars are met on the 30-case Low Tide scene subset, with the limits listed in the "S8 result" paragraph at the end of section 5. Streaming stays off (owner decision 2026-10-24, restated in ADR-0037 open question 5). The engine now stores prompt work in a 512 MiB store instead of the engine default of 8 GiB; the warm-up builds the index and the example vectors when a project opens; **starting the chat engine early was built and measured to make the first question slower, so it is off**. Unit tests: `client.rs`, `tests/supervisor.rs`, `tests/bundled.rs` (early start), `turn/tests.rs` (warm-up prompt and example vectors), `intelligence/warm.rs`, `latency.rs`. The measured run is `ai-eval` with its latency section (`--warmup on|off`, `--latency-from <run folder>`).
 
@@ -1056,7 +1056,7 @@ DeepSeek Harness (`github.com/deepseek-ai/deepseek-harness`, MIT, read on 2026-1
 TypeScript, a local web UI, an agent that edits files and runs commands, built for large hosted models. It is not installed
 or shipped (owner decision). Four of its design ideas fit the turn of section 5 and go into the slices:
 
-| Idea in DeepSeek Harness | What OpenFrame does with it | Slice |
+| Idea in DeepSeek Harness | What Straft Studio does with it | Slice |
 |---|---|---|
 | A tool call passes fixed stages (`pre-execute` policy and permission, guards, `execute` with timeout and metrics, `post-execute` that may block, replace or add context, a frozen result) | The turn of section 5 is a fixed list of stages (prepare, resolve, read answer type, fetch, write, check, store), each a function with typed input and output, so a stage can be tested and replaced alone and the eval can report which stage failed | S4 to S7 |
 | Monotonic guards: a deny cannot be undone by a later stage | Role and privacy guards (private notes of others, contact data for roles that may not see it, planted instructions) run before fetch and again on the facts; no later stage, model pass or rewrite can add a fact a guard removed | S5, S7 |

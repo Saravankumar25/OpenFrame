@@ -13,8 +13,8 @@
 ADR-0027 left one question open for the Mac: run the `llama.cpp` engine as a separate helper program, as Windows does, or
 link it into the app as a library. The App Sandbox, which the store build needs in Chapter 3, allows a helper executable
 that is embedded in the app bundle and signed with the `com.apple.security.inherit` entitlement; it then runs in the same
-sandbox as the app. The shared core already starts, watches, restarts and stops the engine (`crates/openframe-ai`,
-`crates/openframe-platform/src/process.rs`, which has macOS code), and the Windows evidence for that code (supervisor
+sandbox as the app. The shared core already starts, watches, restarts and stops the engine (`crates/straft-ai`,
+`crates/straft-platform/src/process.rs`, which has macOS code), and the Windows evidence for that code (supervisor
 tests, soak, crash and restart, scrubbed environment, per-launch hash check) was gathered with a helper process.
 
 ## Decision

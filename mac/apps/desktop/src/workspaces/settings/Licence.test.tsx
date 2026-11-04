@@ -21,7 +21,7 @@ const trial = {
 const purchased = {
   channel: "microsoftStore",
   state: { state: "purchased" },
-  summary: "OpenFrame Studio is unlocked. Thank you.",
+  summary: "Straft Studio is unlocked. Thank you.",
   limitation: null,
   trialDays: 7,
   canEdit: true,
@@ -87,7 +87,7 @@ describe("Settings > Licence", () => {
     const button = screen.getByRole("button", { name: "Restore purchase" });
     expect(button).toHaveFocus();
     await user.keyboard("{Enter}");
-    expect(await screen.findByText("OpenFrame Studio is unlocked. Thank you.")).toBeInTheDocument();
+    expect(await screen.findByText("Straft Studio is unlocked. Thank you.")).toBeInTheDocument();
     expect(calls).toEqual(["entitlement.status", "entitlement.restore_purchase"]);
     expect(within(section()).getByText("Installed from: Microsoft Store")).toBeInTheDocument();
     expect(within(section()).queryByText(/not available in this build/)).toBeNull();
@@ -115,9 +115,9 @@ describe("Settings > Licence", () => {
   });
 
   it("explains when the status cannot be loaded", async () => {
-    statusFail = { code: "internal.unexpected", message: "Something went wrong inside OpenFrame. Your project was not changed." };
+    statusFail = { code: "internal.unexpected", message: "Something went wrong inside Straft Studio. Your project was not changed." };
     renderWithClient(<LicenceSection />);
-    expect(await within(section()).findByRole("alert")).toHaveTextContent("Something went wrong inside OpenFrame");
+    expect(await within(section()).findByRole("alert")).toHaveTextContent("Something went wrong inside Straft Studio");
     expect(screen.getByRole("button", { name: "Restore purchase" })).toBeEnabled();
   });
 

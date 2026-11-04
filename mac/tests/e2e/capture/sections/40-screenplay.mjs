@@ -87,7 +87,7 @@ export default async function (t) {
     });
     await b().execute(() => {
       try {
-        localStorage.setItem("openframe.screenplay.zoom", "1");
+        localStorage.setItem("straft.screenplay.zoom", "1");
       } catch {
         // View preference only.
       }

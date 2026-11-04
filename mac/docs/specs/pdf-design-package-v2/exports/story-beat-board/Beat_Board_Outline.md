@@ -4,7 +4,7 @@
 |---|---|
 | Export family | Beat Board (UI name; the Story workspace's board export). Operation `story.export_board` |
 | Variant | Outline layout (`layout=outline`, portrait) |
-| Status | **Design reference. Not integrated; not validated against OpenFrame's Rust renderer.** |
+| Status | **Design reference. Not integrated; not validated against Straft Studio's Rust renderer.** |
 | Repo commit | `2f5a045416bd2125801329533fc47f986ccc8174` (`main`, sparse checkout, read-only) |
 | Date | 2026-10-23 |
 | Deliverables | `Beat_Board_Outline.html` (the design), `Beat_Board_Outline.pdf` (rendered from it), `stress-test/Beat_Board_Outline_STRESS_TEST.html/.pdf` (everything on, project scope, 3 boards), `stress-test/Beat_Board_Outline_STRESS_TEST_B_options_off.html/.pdf` (notes, comments, Parking Lot all off) |
@@ -33,7 +33,7 @@ Must find fast: which act/sequence am I in; which card is number N; which items 
 | Checkbox | "Include notes" (default off) | `includeNotes` (act/sequence/beat/card notes; never private notes) |
 | Checkbox | "Include comments" (default off) | `includeComments` |
 
-Other facts (`windows/crates/openframe-application/src/modules/exports/story.rs`): args struct `ExportStoryOutlineArgs`; `layout:"board"` with a non-PDF format is rejected ("The board layout is a PDF. Choose Outline for plain text or CSV."); unknown layout: "Choose Board PDF or Outline PDF."; `scope:"selected"` with no ids: validation error on `itemIds` ("Select at least one act, sequence, beat or scene card to export."). Empty result: error `nothing_to_export` ("The Beat Board is empty, so there is nothing to export yet." / "None of the selected items are on the Beat Board any more. Select items and try again."). A board with no acts, no Unassigned items and no (included) parking items is dropped, so an empty episode prints nothing. Only active beats are exported (`state = 'active'`). Scene Card numbers are **board order** (acts, then Unassigned; the Parking Lot is never numbered) and are computed before scope filtering, so a "selected" export keeps the original numbers; every board (film, each episode) numbers from 1.
+Other facts (`windows/crates/straft-application/src/modules/exports/story.rs`): args struct `ExportStoryOutlineArgs`; `layout:"board"` with a non-PDF format is rejected ("The board layout is a PDF. Choose Outline for plain text or CSV."); unknown layout: "Choose Board PDF or Outline PDF."; `scope:"selected"` with no ids: validation error on `itemIds` ("Select at least one act, sequence, beat or scene card to export."). Empty result: error `nothing_to_export` ("The Beat Board is empty, so there is nothing to export yet." / "None of the selected items are on the Beat Board any more. Select items and try again."). A board with no acts, no Unassigned items and no (included) parking items is dropped, so an empty episode prints nothing. Only active beats are exported (`state = 'active'`). Scene Card numbers are **board order** (acts, then Unassigned; the Parking Lot is never numbered) and are computed before scope filtering, so a "selected" export keeps the original numbers; every board (film, each episode) numbers from 1.
 
 **Data dependencies.** Tables read: `story_act` (title, note, position), `story_sequence` (act_id, title, note, position), `story_beat` (text, note, position), `story_scene_card` (scene_heading, short_description, notes, position; parent_type act / sequence / unassigned / parking), `comment` (status, author_name, body, parent_id; targets story_act / story_sequence / story_beat / story_scene_card), project title, episode title. A sequence whose act no longer exists is exported under "Unassigned". Comment statuses (`comments/mod.rs`): "Open", "In Discussion", "Resolved".
 
@@ -75,7 +75,7 @@ Other facts (`windows/crates/openframe-application/src/modules/exports/story.rs`
 * Structs: `ExportStoryOutlineArgs`, `Node { kind: Act|Sequence|Beat|Card, title, text, note, comments, children, number }`, `Board { episode, acts, unassigned, parking }`.
 * Document: `Document::new(document).footer(footer(&project, document)).landscape(board_layout)`; masthead `Masthead::new(document).eyebrow(..., pal::ORANGE)` with `subtitle` = project, `lines` = source label, `side = Side::Panel { lines: [(scope_label, true), ("Exported <date>", false)] }`, `rule = true`.
 * Blocks used today by this variant: `Masthead`, `Block::Heading`, `Block::Indented`. **The redesign cannot be built from these**; it needs new blocks (section F, "Renderer requirements").
-* Renderer: `windows/crates/openframe-import-export/src/report.rs` (`Block`, `Grid`/`GridCell`, `render_grid`, the `Heading`/`Indented`/`SectionBar` arms) and `report/design.rs`.
+* Renderer: `windows/crates/straft-import-export/src/report.rs` (`Block`, `Grid`/`GridCell`, `render_grid`, the `Heading`/`Indented`/`SectionBar` arms) and `report/design.rs`.
 * Not verified: the `mac/` tree (not inspected).
 
 ### D. Field inventory
@@ -137,7 +137,7 @@ Changes versus the current output, and why: tiles, bands and indentation (the hi
 * **Comment**: white fill, 0.5 pt `--of-line-strong` border + 2.5 pt `--of-teal` left rule, radius 3, padding 3.6/6/4.2; author 7.8 pt bold navy; body 8 pt ink; reply indent 7 pt with a 0.5 pt rule. Status chip: Open = `chip warn`, In Discussion = `chip info`, Resolved = `chip ok`.
 * **Parking Lot bar**: `--of-orange-soft` fill, 1 pt `--of-orange-line` border, 5 pt `--of-orange` left stripe, `--of-orange-deep` 10.5 pt bold caps text, 22 pt above. **Unassigned bar**: white, 1.2 pt navy border, navy text.
 * **Grayscale redundancy**: Beat vs Card is carried by the tile text ("Beat" / "Card" / number) and the filled row, not by colour; comment status by the chip text; the Parking Lot by its label and bar. Checked in grayscale (section I).
-* **Footer**: shared system, unchanged (logo lockup 17 pt high bottom-left with "Created using OpenFrame" below, "Page X of Y" bottom-right). **Implementation requirement**: the production renderer must embed the footer logo PNG; today's renderer redraws a vector mark with different text ("LOW TIDE RADIO · STORY BOARD OUTLINE · Page 1 / 5").
+* **Footer**: shared system, unchanged (logo lockup 17 pt high bottom-left with "Created using Straft Studio" below, "Page X of Y" bottom-right). **Implementation requirement**: the production renderer must embed the footer logo PNG; today's renderer redraws a vector mark with different text ("LOW TIDE RADIO · STORY BOARD OUTLINE · Page 1 / 5").
 * **Running header: yes.** `LOW TIDE RADIO · BEAT BOARD OUTLINE` (project in caps · document name), top-right, 6.8 pt slate, no rule, no logo. Reason: a multi-page outline is often split on a desk and the masthead (page 1 only) is the only other place that names the project. Omit the project part when the project title is blank.
 * **Renderer requirements (new)**: the current `Block` set (Heading, Indented, Note, SectionBar, Grid) cannot express an act bar with a hint, a sequence band, tile + text item rows, the note rule, the comment box with a chip, area bars, the continued strip or keep-together leads. They need new blocks or new `design.rs` blocks (composition of the existing `Section` / `Cards` blocks was not evaluated). Comments must be passed as structured data (status, author, body, replies) instead of the pre-formatted strings from `load_comments` (TXT/CSV can keep using the strings).
 
@@ -171,7 +171,7 @@ Changes versus the current output, and why: tiles, bands and indentation (the hi
 * QA performed: `tools/verify_pdf.py` on all four PDFs (letter portrait, header text checked), every page of the primary PDF and the stress PDFs viewed at 90-100 dpi, grayscale thumbnails viewed, both scope variants printed and viewed, the preview script's variant switching tested in headless Chrome.
 
 ### J. Acceptance criteria
-1. PDF is US Letter portrait; metadata title "Beat Board Outline"; footer on every page with the logo image (aspect 699:163, 17 pt high), "Created using OpenFrame" and "Page X of Y" with the real total (`tools/verify_pdf.py` passes).
+1. PDF is US Letter portrait; metadata title "Beat Board Outline"; footer on every page with the logo image (aspect 735:163, 17 pt high), "Created using Straft Studio" and "Page X of Y" with the real total (`tools/verify_pdf.py` passes).
 2. Running header "<PROJECT> · BEAT BOARD OUTLINE" on every page and nothing else in the top margin; a blank project omits the project part.
 3. No text, shape or image enters the footer band or the 46 pt side margins.
 4. Order of acts, sequences, beats and cards equals board order (`position`); card numbers equal `Node.number`; Parking Lot items have no number; numbers are unchanged under scope "selected".

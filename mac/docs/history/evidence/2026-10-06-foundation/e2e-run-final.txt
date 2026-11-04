@@ -1,23 +1,23 @@
 
-> openframe-studio@0.1.0 test:e2e
+> straft-studio@0.1.0 test:e2e
 > npm --workspace tests/e2e run test
 
 
-> @openframe/e2e@0.1.0 test
+> @straft/e2e@0.1.0 test
 > node run.mjs
 
 WebView2 Runtime 154.0.4258.53
 msedgedriver 154.0.4258.53 already installed.
 tauri-driver already installed.
-Building OpenFrame Studio (debug, embedded UI)…
+Building Straft Studio (debug, embedded UI)…
 
-> @openframe/desktop@0.1.0 tauri
+> @straft/desktop@0.1.0 tauri
 > tauri build --debug --no-bundle
 
         Info Looking up installed tauri packages to check mismatched versions...
      Running beforeBuildCommand `npm run build:web`
 
-> @openframe/desktop@0.1.0 build:web
+> @straft/desktop@0.1.0 build:web
 > tsc --noEmit -p . && vite build
 
 vite v7.3.6 building client environment for production...
@@ -70,12 +70,12 @@ dist/assets/index-SVf4vHY_.js                187.85 kB │ gzip:  52.33 kB
 dist/assets/index-DZ1BXu75.js                320.16 kB │ gzip:  96.47 kB
 dist/assets/index-DpOlf3XY.js                519.83 kB │ gzip: 159.55 kB
 ✓ built in 10.15s
-   Compiling openframe-application v0.1.0 (C:\OpenFrame\crates\openframe-application)
-   Compiling openframe-desktop v0.1.0 (C:\OpenFrame\apps\desktop\src-tauri)
+   Compiling straft-application v0.1.0 (C:\Straft\crates\straft-application)
+   Compiling straft-desktop v0.1.0 (C:\Straft\apps\desktop\src-tauri)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 48.10s
-       Built application at: C:\OpenFrame\target\debug\openframe-desktop.exe
+       Built application at: C:\Straft\target\debug\straft-desktop.exe
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\shared
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-57-38-799Z\shared
   specs: 01-journey.test.mjs, 02-restart.test.mjs
 ▶ desktop journey
   ✔ first launch → name → create project → Project Home (953.9ms)
@@ -106,7 +106,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\shared
 ℹ todo 0
 ℹ duration_ms 68742.8519
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\10-home
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-57-38-799Z\10-home
   specs: 10-home.test.mjs
 ▶ home
   ✔ first launch creates a project that opens on an empty Project Home (1424.6746ms)
@@ -124,7 +124,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\10-home
 ℹ todo 0
 ℹ duration_ms 13104.632
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\20-idea-vault
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-57-38-799Z\20-idea-vault
   specs: 20-idea-vault.test.mjs
 ▶ idea vault
   ✔ Quick Capture adds an idea to the project's Vault (1946.769ms)
@@ -141,7 +141,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\20-idea-vaul
 ℹ todo 0
 ℹ duration_ms 9922.0093
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\30-story
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-57-38-799Z\30-story
   specs: 30-story.test.mjs
 ▶ story
   ✔ act, sequence and two Scene Cards (3054.2989ms)
@@ -161,7 +161,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\30-story
 ℹ todo 0
 ℹ duration_ms 19402.1966
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\40-screenplay
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-57-38-799Z\40-screenplay
   specs: 40-screenplay.test.mjs
 ▶ screenplay
   ✔ new screenplay: write a scene with the Enter flow (autosaved) (2782.508ms)
@@ -178,7 +178,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\40-screenpla
 ℹ todo 0
 ℹ duration_ms 20290.8725
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\50-breakdown
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-57-38-799Z\50-breakdown
   specs: 50-breakdown.test.mjs
 ▶ breakdown
   ✔ import a screenplay and choose it as the Production Source (4042.4522ms)
@@ -197,7 +197,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\50-breakdown
 ℹ todo 0
 ℹ duration_ms 14193.7825
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\80-notes-tasks
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-57-38-799Z\80-notes-tasks
   specs: 80-notes-tasks.test.mjs
 ▶ notes and tasks
   ✔ a new note autosaves its title and text; undo and redo the edit (2080.6973ms)
@@ -214,7 +214,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\80-notes-tas
 ℹ todo 0
 ℹ duration_ms 10676.7175
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\85-project-pages
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-57-38-799Z\85-project-pages
   specs: 85-project-pages.test.mjs
 ▶ project pages
   ✔ Project settings: change title and logline, save, undo, redo (1919.9664ms)
@@ -231,7 +231,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\85-project-p
 ℹ todo 0
 ℹ duration_ms 12337.9262
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\shared
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-57-38-799Z\shared
   specs: 90-visual-baseline.test.mjs, 95-reachability.test.mjs
 2026-10-06T17:00:37.000Z WARN webdriver: Request encountered a stale element - terminating request
 2026-10-06T17:00:37.009Z WARN webdriver: Request encountered a stale element - terminating request

@@ -57,7 +57,7 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("built-in themes come from one list", () => {
-  it("has OpenFrame Default first and the fifteen themes from the reference mocks", () => {
+  it("has Straft Default first and the fifteen themes from the reference mocks", () => {
     expect(BUILT_IN_THEMES[0].id).toBe(DEFAULT_THEME_ID);
     // Black and White (UX brief 2026-10-20) sits right after the default so it is easy to find.
     expect(BUILT_IN_THEMES[1].id).toBe("black-and-white");
@@ -77,8 +77,8 @@ describe("built-in themes come from one list", () => {
   });
 });
 
-describe("OpenFrame Default stays today's look", () => {
-  // The palette openframe.css held before the theme system (git: apps/desktop/src/styles/openframe.css at session-2),
+describe("Straft Default stays today's look", () => {
+  // The palette straft.css held before the theme system (git: apps/desktop/src/styles/straft.css at session-2),
   // with the three colours raised to 4.5 to 1 by the owner decision of 2026-10-07 (ADR-0014 amendment):
   // muted #7a8291 to #666e7c, accent-d #b96a1a to #a15c17, button text on the accent #ffffff to #1e2330.
   const TODAY: Record<string, string> = {
@@ -116,7 +116,7 @@ describe("OpenFrame Default stays today's look", () => {
     }
     const missing = [...used].filter(([t]) => !defined.has(t)).map(([t, f]) => `--${t} (${f})`);
     expect(missing).toEqual([]);
-    // Every role has an exact OpenFrame Default value.
+    // Every role has an exact Straft Default value.
     for (const role of Object.keys(ENGINE.roles)) expect(BUILT_IN_THEMES[0].light[role], role).toBeTruthy();
   });
 });
@@ -168,7 +168,7 @@ describe("the style layer only ever contains checked values", () => {
 });
 
 describe("Light, Dark and System", () => {
-  it("applies mode and theme as two attributes; an unknown theme shows OpenFrame Default", () => {
+  it("applies mode and theme as two attributes; an unknown theme shows Straft Default", () => {
     fakeSystem(false);
     applyAppearance("dark", "midnight-reel");
     const root = document.documentElement;
@@ -203,18 +203,18 @@ describe("Light, Dark and System", () => {
     applyStartupHint();
     expect(document.documentElement.dataset.theme).toBe("cutting-room");
     expect(document.documentElement.dataset.mode).toBe("dark");
-    localStorage.setItem("openframe.appearance.hint", '{"pref":"sepia","themeId":"x\\"]{"}');
+    localStorage.setItem("straft.appearance.hint", '{"pref":"sepia","themeId":"x\\"]{"}');
     applyStartupHint();
     expect(document.documentElement.dataset.theme).toBe(DEFAULT_THEME_ID);
     expect(document.documentElement.dataset.pref).toBe("system");
-    localStorage.setItem("openframe.appearance.hint", "not json");
+    localStorage.setItem("straft.appearance.hint", "not json");
     expect(() => applyStartupHint()).not.toThrow();
   });
 });
 
 describe("paper never follows the theme", () => {
   it("keeps the screenplay page and call-sheet paper on fixed document colours", () => {
-    const css = readFileSync(join(SRC, "styles", "openframe.css"), "utf8");
+    const css = readFileSync(join(SRC, "styles", "straft.css"), "utf8");
     expect(css).toMatch(/--paper:#ffffff; --paper-ink:#111111;/);
     // The theme layer never sets the paper tokens, in any theme or mode.
     const layer = buildStyleLayer(BUILT_IN_THEMES);

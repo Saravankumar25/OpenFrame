@@ -15,18 +15,18 @@
 
 ## Product name
 
-OpenFrame Studio
+Straft Studio
 
 (Must match the name reserved in Partner Center and the manifest `DisplayName`, which comes from
 `packaging/msix/store.config.json` → `displayName`.)
 
 ## Description (required, up to 10,000 characters)
 
-OpenFrame Studio is a filmmaking studio for Windows that keeps your whole project in one place,
+Straft Studio is a filmmaking studio for Windows that keeps your whole project in one place,
 from the first idea to the call sheet. It is local-first: no account, no subscription to a cloud
 service, and your projects stay on your computer.
 
-**[AI]** OpenFrame includes an optional AI writing and planning assistant that uses generative AI.
+**[AI]** Straft Studio includes an optional AI writing and planning assistant that uses generative AI.
 The assistant runs entirely on your PC and is included with the app (nothing to download), and your
 project content is never sent to a cloud AI service. AI suggestions are only suggestions. Nothing
 changes in your project until you review and apply it. To report inappropriate AI output, use
@@ -51,7 +51,7 @@ send back their notes and changes, and you decide what to accept.
 Recently Deleted for everything you remove. Projects are ordinary folders in your Documents, so you
 can back them up any way you like, and uninstalling the app never deletes them.
 
-Requirements: Windows 11 on a 64-bit (x64) PC. OpenFrame uses
+Requirements: Windows 11 on a 64-bit (x64) PC. Straft Studio uses
 the Microsoft Edge WebView2 Runtime, which is included with Windows 11. **[AI]** The included AI assistant adds about 1.1 GB to the installed app and works best with [N] GB of RAM or more.
 
 ## What's new in this version

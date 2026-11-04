@@ -9,7 +9,7 @@
 - **Status:** Accepted 2026-10-07 (owner answers in chat the same day).
 - **Amended 2026-10-08 (owner, in chat):** the internal `.exe` and `.dmg` stay unsigned for now; Developer ID signing
   and notarization of the `.dmg` and code signing of the `.exe` move to the store and public step. The team password
-  gate stays on. The owner sets `OPENFRAME_TEAM_PASSWORD` on the build PC; nobody else sees or stores it.
+  gate stays on. The owner sets `STRAFT_TEAM_PASSWORD` on the build PC; nobody else sees or stores it.
 - **Date:** 2026-10-07
 - **Related:** [ADR-0017](ADR-0017-cross-platform-windows-and-macos.md) (decision 1, release files);
   [ADR-0023](ADR-0023-store-trial-and-internal-installer.md) (internal Windows installer, no price in the app);

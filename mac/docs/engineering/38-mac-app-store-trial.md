@@ -14,15 +14,15 @@ starts and the App Store's own calls. The Windows channel is unchanged (ADR-0023
 
 | Item | Value |
 |---|---|
-| Bundle id | `app.openframestudio.studio` |
-| Trial product (zero-price non-consumable "7-day Trial") | `app.openframestudio.studio.trial7` |
-| Paid product (non-consumable "Lifetime Access") | `app.openframestudio.studio.lifetime` |
+| Bundle id | `app.straftstudio.studio` |
+| Trial product (zero-price non-consumable "7-day Trial") | `app.straftstudio.studio.trial7` |
+| Paid product (non-consumable "Lifetime Access") | `app.straftstudio.studio.lifetime` |
 
 No subscription. Family Sharing is off.
 
 ## 3. The rules
 
-The rules are a pure function in `crates/openframe-entitlement/src/mac/policy.rs`, rules 1 to 9. That file is the source of
+The rules are a pure function in `crates/straft-entitlement/src/mac/policy.rs`, rules 1 to 9. That file is the source of
 truth; this page only summarises it.
 
 1. Transactions from another environment than the build's (sandbox in production, for example) are ignored and counted as an
@@ -52,10 +52,10 @@ tolerated and corruption reads as empty.
 
 | Part | Where |
 |---|---|
-| Policy, pure functions | `crates/openframe-entitlement/src/mac/policy.rs` |
-| Adapter and guard | `crates/openframe-entitlement/src/mac/adapter.rs`, `mac/clock_guard.rs` |
-| Bridge types | `crates/openframe-entitlement/src/mac/bridge.rs` |
-| StoreKit and Keychain in Swift | `apps/macos/Sources/OpenFrameUI/Store/` |
+| Policy, pure functions | `crates/straft-entitlement/src/mac/policy.rs` |
+| Adapter and guard | `crates/straft-entitlement/src/mac/adapter.rs`, `mac/clock_guard.rs` |
+| Bridge types | `crates/straft-entitlement/src/mac/bridge.rs` |
+| StoreKit and Keychain in Swift | `apps/macos/Sources/StraftUI/Store/` |
 | Trial start source (Plan B: first download date) | `TrialStartSource`, one file |
 
 ## 6. Accepted limits

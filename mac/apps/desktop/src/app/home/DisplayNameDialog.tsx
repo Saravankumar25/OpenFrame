@@ -32,7 +32,7 @@ export function DisplayNameDialog({ firstRun, current, onClose }: { firstRun: bo
       open
       dismissible={!firstRun}
       onOpenChange={(v) => !v && onClose()}
-      title={firstRun ? "Welcome to OpenFrame Studio" : "Your name"}
+      title={firstRun ? "Welcome to Straft Studio" : "Your name"}
       sub={firstRun ? "What should we call you?" : undefined}
       size="sm"
       footer={

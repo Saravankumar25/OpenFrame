@@ -1,5 +1,5 @@
 // Memory soak for release gate P1: `node tests/e2e/soak/memory-soak.mjs --app=<exe> --minutes=120 [--dry-run] [--bounded] [--window=<minutes>]`.
-// Drives an installed (internal) openframe-desktop.exe through tauri-driver: writes in the screenplay, switches
+// Drives an installed (internal) straft-desktop.exe through tauri-driver: writes in the screenplay, switches
 // workspaces every 10 loops, closes and reopens the project every 50 loops, and samples the working set and
 // private bytes of the app and of its msedgewebview2.exe descendants every 60 s. Output goes to
 // tests/e2e/artifacts/soak-<stamp>.csv and soak-<stamp>.json. PASS: over the last 90 minutes (the whole run if
@@ -81,7 +81,7 @@ function listening(port) {
 function plan() {
   return [
     `app: ${APP || "(missing --app)"}  minutes: ${MINUTES}  sample every ${SAMPLE_MS / 1000} s`,
-    "start tauri-driver + msedgedriver (WebView2 version check as run.mjs), fresh data root tests/e2e/.run/soak-<stamp> (OPENFRAME_DATA_ROOT)",
+    "start tauri-driver + msedgedriver (WebView2 version check as run.mjs), fresh data root tests/e2e/.run/soak-<stamp> (STRAFT_DATA_ROOT)",
     "create project, open Screenplay, New Screenplay",
     "loop: scene heading, action, character, dialogue; every 10 loops Story, Idea Vault, Breakdown, Screenplay; every 50 loops close and reopen the project",
     "sample app + msedgewebview2.exe descendants (working set, private bytes) -> artifacts/soak-<stamp>.csv, summary -> soak-<stamp>.json",
@@ -91,7 +91,7 @@ function plan() {
 }
 
 async function main() {
-  if (!APP) throw new Error("Usage: node tests/e2e/soak/memory-soak.mjs --app=<openframe-desktop.exe> --minutes=120 [--dry-run]");
+  if (!APP) throw new Error("Usage: node tests/e2e/soak/memory-soak.mjs --app=<straft-desktop.exe> --minutes=120 [--dry-run]");
   if (DRY) {
     console.log(plan().join("\n"));
     return;
@@ -106,7 +106,7 @@ async function main() {
   const csv = join(art, `soak-${stamp}.csv`);
   writeFileSync(csv, "minute,loops,appN,appWsMB,appPrivateMB,webN,webWsMB,webPrivateMB\n");
 
-  Object.assign(process.env, { OPENFRAME_DATA_ROOT: root, E2E_APP: APP, E2E_DATA_ROOT: root, E2E_PORT: String(PORT), E2E_RELEASE: "internal" });
+  Object.assign(process.env, { STRAFT_DATA_ROOT: root, E2E_APP: APP, E2E_DATA_ROOT: root, E2E_PORT: String(PORT), E2E_RELEASE: "internal" });
   if ((await listening(PORT)) || (await listening(NATIVE_PORT))) throw new Error(`Ports ${PORT}/${NATIVE_PORT} are in use.`);
   const driver = spawn(TAURI_DRIVER, ["--port", String(PORT), "--native-port", String(NATIVE_PORT), "--native-driver", EDGE_DRIVER], {
     env: process.env,

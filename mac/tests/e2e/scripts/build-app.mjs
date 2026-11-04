@@ -6,7 +6,7 @@
 //     `tauri build --no-bundle`, the hardened executable that goes into the installer, built through
 //     scripts/with-msvc-linker.mjs. Never an installer or bundle. "internal" is the internal team
 //     build; "store" is the same executable built as the store channel. Both honour
-//     OPENFRAME_DATA_ROOT for file locations only (ADR-0031).
+//     STRAFT_DATA_ROOT for file locations only (ADR-0031).
 //
 // Every build goes through the machine-wide build queue (scripts/cargo-queued.cmd as Tauri's cargo
 // runner). The build carries the Offline AI engine exactly like the package does:
@@ -14,7 +14,7 @@
 // packaging/ai/ai-assets.lock.json and stages them, and the Tauri overlay config copies them to
 // `ai/` next to the executable. A missing or altered file stops the build (fail closed). The models
 // are not in the build (ADR-0026): every test build is compiled with the local test host
-// (lib/model-host.mjs, OPENFRAME_TEST_MODEL_SOURCE) in place of Hugging Face (ADR-0032).
+// (lib/model-host.mjs, STRAFT_TEST_MODEL_SOURCE) in place of Hugging Face (ADR-0032).
 
 import { spawnSync } from "node:child_process";
 import { existsSync, rmSync } from "node:fs";
@@ -31,7 +31,7 @@ const QUEUE_RUNNER = join(REPO_ROOT, "scripts", "cargo-queued.cmd");
 
 /** The executable a build of this kind produces. */
 export function appBinary(release = false) {
-  return join(TARGET_DIR, release ? "release" : "debug", "openframe-desktop.exe");
+  return join(TARGET_DIR, release ? "release" : "debug", "straft-desktop.exe");
 }
 /** The Offline AI engine next to the test build (the app's resource folder). */
 export function appAiDir(release = false) {
@@ -43,11 +43,11 @@ export const APP_AI_DIR = appAiDir(false);
 /** Build the app. `release` is false (debug), "internal" or "store". */
 export function buildApp({ release = false } = {}) {
   prepare();
-  console.log(`Building OpenFrame Studio (${release ? `release, ${release}` : "debug"}, embedded UI, Offline AI engine, test model host)…`);
-  // OPENFRAME_TEST_BUILD lets the release profile accept the loopback test host (build.rs).
-  const env = { ...process.env, OPENFRAME_TEST_MODEL_SOURCE: MODEL_HOST_URL, OPENFRAME_TEST_BUILD: "1" };
-  delete env.OPENFRAME_DISTRIBUTION;
-  if (release === "store") env.OPENFRAME_DISTRIBUTION = "store";
+  console.log(`Building Straft Studio (${release ? `release, ${release}` : "debug"}, embedded UI, Offline AI engine, test model host)…`);
+  // STRAFT_TEST_BUILD lets the release profile accept the loopback test host (build.rs).
+  const env = { ...process.env, STRAFT_TEST_MODEL_SOURCE: MODEL_HOST_URL, STRAFT_TEST_BUILD: "1" };
+  delete env.STRAFT_DISTRIBUTION;
+  if (release === "store") env.STRAFT_DISTRIBUTION = "store";
   // Models from builds before ADR-0026 would linger next to the executable; the package has none.
   rmSync(join(appAiDir(Boolean(release)), "models"), { recursive: true, force: true });
   const tauri = `npm --workspace apps/desktop run tauri -- build ${release ? "" : "--debug "}--no-bundle --runner "${QUEUE_RUNNER}" --config src-tauri/tauri.bundled-ai.conf.json`;

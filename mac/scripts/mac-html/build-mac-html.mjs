@@ -3,7 +3,7 @@
 //
 // Usage: node scripts/mac-html/build-mac-html.mjs --both <light run dir> <dark run dir> <MacHTML dir> [commit]
 //
-// The capture tour (apps/macos/Sources/OpenFrameE2EDriver/Scenarios/CaptureTour*.swift) writes, for every screen,
+// The capture tour (apps/macos/Sources/StraftE2EDriver/Scenarios/CaptureTour*.swift) writes, for every screen,
 // capture/<name>.png (the window at 2x, sheets and menus drawn in) and capture/<name>.json (the accessibility tree
 // read at the same moment, frames in points from the window's top left). Capture folders are found at any depth, so a
 // run made by run-parallel.sh (shard-k folders) works the same as one made by run.sh.
@@ -559,7 +559,7 @@ for (const mode of ['light', 'dark']) {
     const winbg = /^#[0-9a-f]{3,8}$/i.test(p.bg || '') ? p.bg : dk ? '#1e1e1e' : '#f5f5f5';
     const html = `<!doctype html>
 <html lang="en"${mode === 'dark' ? ' class="dark"' : ''}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(m.title)} (${mode}) - OpenFrame Studio for Mac</title><style>${CSS}</style></head>
+<title>${esc(m.title)} (${mode}) - Straft Studio for Mac</title><style>${CSS}</style></head>
 <body>
 <input type="checkbox" id="htmlonly" class="toggle">
 <div class="band">
@@ -575,7 +575,7 @@ ${from ? `<a href="${esc(from.file)}">Back to ${esc(from.title)}</a>` : ''}
 </header>
 ${kidsHere.length ? `<div class="leads">Leads to: ${kidsHere.map((k) => `<a href="${esc(k.file)}">${esc(k.title)}</a>`).join(' ')}</div>` : ''}
 </div>
-<div class="wrap"><div class="win" role="application" aria-label="${esc(p.windowTitle || 'OpenFrame Studio')} window" style="width:${W}px;height:${H}px;--winbg:${esc(winbg)};--winfg:${dk ? '#f2f2f4' : '#1d1d1f'}">
+<div class="wrap"><div class="win" role="application" aria-label="${esc(p.windowTitle || 'Straft Studio')} window" style="width:${W}px;height:${H}px;--winbg:${esc(winbg)};--winfg:${dk ? '#f2f2f4' : '#1d1d1f'}">
 ${looseHtml}
 ${regionHtml}
 </div></div>
@@ -603,11 +603,11 @@ for (const m of meta) { let g = groups.find((x) => x.area === m.area); if (!g) g
 const slug = (s) => s.replace(/\W+/g, '-');
 const index = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OpenFrame Studio for Mac, every screen</title><style>${CSS}${INDEX_CSS}</style></head>
+<title>Straft Studio for Mac, every screen</title><style>${CSS}${INDEX_CSS}</style></head>
 <body>
 <input type="radio" name="mode" id="m-light" class="toggle" checked>
 <input type="radio" name="mode" id="m-dark" class="toggle">
-<header class="top"><h1>OpenFrame Studio for Mac: every screen</h1>
+<header class="top"><h1>Straft Studio for Mac: every screen</h1>
 <span class="meta">${meta.length} screens in ${groups.length} areas, each in Light and in Dark${commit ? ' &middot; commit ' + esc(commit) : ''}</span>
 <nav><span class="sw" role="group" aria-label="Appearance"><label for="m-light">Light</label><label for="m-dark">Dark</label></span></nav></header>
 <main>
@@ -629,7 +629,7 @@ const skipped = [...new Set([...light.skipped, ...dark.skipped])]
 const captured = new Date().toISOString().slice(0, 10);
 const sizeList = [...sizes.entries()].sort((a, b) => b[1] - a[1]);
 const [mainSize] = sizeList[0];
-const readme = `# MacHTML: every screen of OpenFrame Studio for the Mac
+const readme = `# MacHTML: every screen of Straft Studio for the Mac
 
 ${meta.length} screens in ${groups.length} areas, each captured from the real app in Light mode (\`light/\`) and in Dark mode
 (\`dark/\`). Open \`index.html\`. Page \`NNN-name.html\` is the same screen in both folders.
@@ -646,7 +646,7 @@ is no DOM to save. MacHTML is built from two things captured at the same moment 
 
 ## How the pages are made
 
-- The capture tour (\`apps/macos/Sources/OpenFrameE2EDriver/Scenarios/CaptureTour*.swift\`, scenarios \`zz-capture/*\`) drives
+- The capture tour (\`apps/macos/Sources/StraftE2EDriver/Scenarios/CaptureTour*.swift\`, scenarios \`zz-capture/*\`) drives
   the real app, seeds a project and visits every screen it can reach, once with Settings, Appearance, Mode set to Light and
   once with Dark. Only screens present in both runs become pages. A screen that looks the same as an earlier one is dropped.
 - \`scripts/mac-html/build-mac-html.mjs\` writes one page per screen. The window picture is the background, cut into the
@@ -673,13 +673,13 @@ The window is ${mainSize} points (shown at one CSS pixel per point; the pictures
 
 ## Regenerate
 
-    apps/macos/E2E/capture.sh "apps/macos/build/OpenFrame Studio.app"
+    apps/macos/E2E/capture.sh "apps/macos/build/Straft Studio.app"
 
-That runs the tour in Light and in Dark (with \`OPENFRAME_E2E_PARALLEL=n\` it runs n runners side by side), builds this
+That runs the tour in Light and in Dark (with \`STRAFT_E2E_PARALLEL=n\` it runs n runners side by side), builds this
 folder and checks every page (\`scripts/mac-html/check-pages.swift\`). To rebuild the pages from an earlier capture
 without running the app:
 
-    OPENFRAME_CAPTURE_SKIP_RUN=1 OPENFRAME_CAPTURE_DIR=<capture folder with light/ and dark/> apps/macos/E2E/capture.sh "apps/macos/build/OpenFrame Studio.app"
+    STRAFT_CAPTURE_SKIP_RUN=1 STRAFT_CAPTURE_DIR=<capture folder with light/ and dark/> apps/macos/E2E/capture.sh "apps/macos/build/Straft Studio.app"
 
 ## Not captured
 

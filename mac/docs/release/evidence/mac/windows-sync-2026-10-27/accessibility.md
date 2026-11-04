@@ -1,6 +1,6 @@
 # Mac accessibility pass (phase M9), 2026-10-27
 
-Scenarios: `apps/macos/Sources/OpenFrameE2EDriver/Scenarios/AccessibilityScenarios.swift`
+Scenarios: `apps/macos/Sources/StraftE2EDriver/Scenarios/AccessibilityScenarios.swift`
 (`96-keyboard-and-screen-reader/a11y-pass-names-light-and-dark` and `.../a11y-pass-keyboard-reach`).
 Last run: `release-out/e2e/20261027-184401/`, both pass. Each run writes `accessibility-names.txt`,
 `accessibility-names.json` and `accessibility-keyboard.txt` to its scenario folder.

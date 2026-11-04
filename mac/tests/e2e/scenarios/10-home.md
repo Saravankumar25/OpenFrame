@@ -13,7 +13,7 @@ Project cards on Application Home are named "Open <title>, <type>, <status>", fo
 ## First launch creates a project that opens on an empty Project Home
 
 1. Do the first launch: type 'E2E Tester' as the name, click Continue, click Create Project, type 'Harbour Lights' as the title, click Create.
-2. Check: the window title is "Harbour Lights - OpenFrame Studio".
+2. Check: the window title is "Harbour Lights - Straft Studio".
 3. Check: the screen shows "Harbour Lights".
 4. Check: the list "Ways to begin" shows.
 5. Check: the screen is quiet.
@@ -72,7 +72,7 @@ Project cards on Application Home are named "Open <title>, <type>, <status>", fo
 2. Check: Application Home shows two cards, one of them "Open Harbour Lights Redux, Feature Film, Writing".
 3. Click the card "Open Harbour Lights Redux".
 4. Check: no recovery question shows.
-5. Check: the window title is "Harbour Lights Redux - OpenFrame Studio".
+5. Check: the window title is "Harbour Lights Redux - Straft Studio".
 6. Check: the status button reads "Status: Writing. Change status".
 7. Check: the screen is quiet.
 8. Open the project menu and choose Close project.

@@ -9,18 +9,18 @@
 
 ## How to read this list
 
-- **The Mac tree has its own copy of every crate.** `OpenFrameMac/crates/` holds `openframe-application`,
-  `openframe-import-export`, `openframe-ai`, `openframe-ffi` and the rest, as separate files. The Windows changes do not
+- **The Mac tree has its own copy of every crate.** `StraftMac/crates/` holds `straft-application`,
+  `straft-import-export`, `straft-ai`, `straft-ffi` and the rest, as separate files. The Windows changes do not
   reach the Mac by themselves. Each Rust item below is a copy of the Windows file (or a merge when the Mac copy has its own
   edits, such as the Metal engine placement of ADR-0033), then the Mac tests.
 - **State of the Mac copy on 2026-10-24** (listed, not changed): `migrations/app` stops at `0003_ai_trace.sql`;
-  `crates/openframe-application/src/modules/ai/` has none of the files added below; `crates/openframe-import-export/src/`
+  `crates/straft-application/src/modules/ai/` has none of the files added below; `crates/straft-import-export/src/`
   has `report.rs` but no `report/` folder (the Windows tree has `report/design.rs`), so its production PDF renderer is
   older than the Windows one even before this upgrade.
 - **Windows range:** commits after `17114505` (merge of WindowsHTML) on `upgrade/harness-exports-screenplay`. Work still
   landing on that branch (the production PDF renderer, section 6) is added here when it lands.
 - **Order:** section 1 first (the other sections need its migrations and operations), then the sections in any order.
-- The generated Swift types in `OpenFrameCore/Generated` are regenerated from the Rust DTOs after section 1, not edited.
+- The generated Swift types in `StraftCore/Generated` are regenerated from the Rust DTOs after section 1, not edited.
 
 ## 1. The Rust core (copy, then test on the Mac)
 
@@ -30,31 +30,31 @@
 
 | Item | Windows files | Mac action |
 |---|---|---|
-| AI lanes and routing | `crates/openframe-application/src/modules/ai/lanes.rs`, `typo.rs`, `intent.rs`, `intents.json`, `understand.rs` | Add the files; wire in `mod.rs` and `orchestrator.rs` as on Windows |
+| AI lanes and routing | `crates/straft-application/src/modules/ai/lanes.rs`, `typo.rs`, `intent.rs`, `intents.json`, `understand.rs` | Add the files; wire in `mod.rs` and `orchestrator.rs` as on Windows |
 | Chat lane, briefings, recipe | `ai/chat.rs`, `briefing.rs`, `recipe.rs`, `test_script.rs` | Add the files |
-| Code verifiers | `ai/verify.rs`; shared checks in `crates/openframe-ai-checks/src/lib.rs` and its `Cargo.toml` | Add; keep one set of checks for the app and the eval harness |
+| Code verifiers | `ai/verify.rs`; shared checks in `crates/straft-ai-checks/src/lib.rs` and its `Cargo.toml` | Add; keep one set of checks for the app and the eval harness |
 | Orchestrator, tools, toolbox, commands, records, types, knowledge | `ai/orchestrator.rs`, `tools.rs`, `toolbox.rs`, `commands.rs`, `records.rs`, `types.rs`, `knowledge.md` | Merge. Keep the Mac Metal engine placement (ADR-0033). The Windows default of 4 agent steps and the compact tool signatures come with `orchestrator.rs` |
 | Progress and Cancel | `ai/cancel.rs` (`ai.cancel`), the `progress` module event in `orchestrator.rs` | Add the operation; the event reaches Swift through the FFI event channel (section 2) |
 | Save conversation for review | `ai/conversation_export.rs` (`ai.export_conversation`) | Add the operation; the Save panel is Swift (section 2) |
 | Trace columns | `ai/trace.rs`; migrations `migrations/app/0004_ai_trace_cache.sql`, `0005_ai_trace_lane.sql`, `0006_ai_trace_intent.sql`; entries in `migrations/frozen.json` | Copy the three migrations unchanged and record them (`node scripts/check-migrations.mjs --record`); never edit a frozen file |
-| Engine client sampling and cached tokens | `crates/openframe-ai/src/client.rs` | Merge (top_p, top_k, `cached_tokens`) |
-| Schema and core wiring | `crates/openframe-application/src/schema.rs`, `core.rs`, `modules/mod.rs`, `Cargo.toml` | Merge |
+| Engine client sampling and cached tokens | `crates/straft-ai/src/client.rs` | Merge (top_p, top_k, `cached_tokens`) |
+| Schema and core wiring | `crates/straft-application/src/schema.rs`, `core.rs`, `modules/mod.rs`, `Cargo.toml` | Merge |
 | Project cover photo | `modules/project_cover.rs`, `modules/project.rs`, migration `migrations/app/0007_project_cover.sql` | Copy; the covers folder is `<app data>/covers/assets` |
-| Screenplay layout, standard v5 | `crates/openframe-import-export/src/layout.rs`, `rules.rs` (36 pt before scene headings, transition and shot keep-with-next, `(MORE)` and `CUE (CONT'D)` at every split of one speech, title page block gutter and a second title page for a surplus) | Copy both files; layout tests and goldens change by the new gaps only |
+| Screenplay layout, standard v5 | `crates/straft-import-export/src/layout.rs`, `rules.rs` (36 pt before scene headings, transition and shot keep-with-next, `(MORE)` and `CUE (CONT'D)` at every split of one speech, title page block gutter and a second title page for a surplus) | Copy both files; layout tests and goldens change by the new gaps only |
 | `number_first_page` page setting | `modules/screenplay/setup.rs` (default on) | Copy; saved scripts print as before |
 | Sides: selected cast | `modules/exports/sides.rs`, `modules/schedule/docs.rs`, `schedule/source.rs` (cover wraps and continues, dual dialogue kept, only the scenes that remain) | Copy |
-| AI evaluation | `crates/openframe-ai-eval/` (`src/lib.rs`, `src/main.rs`, `gold/conversation.en.jsonl`, `gold/paraphrase.jsonl`, `gold/README.md`), `crates/openframe-test-support/src/embedder.rs` | Copy; run the Mac baseline before any AI change (ADR-0028) |
+| AI evaluation | `crates/straft-ai-eval/` (`src/lib.rs`, `src/main.rs`, `gold/conversation.en.jsonl`, `gold/paraphrase.jsonl`, `gold/README.md`), `crates/straft-test-support/src/embedder.rs` | Copy; run the Mac baseline before any AI change (ADR-0028) |
 
-## 2. The FFI and the Swift core (`OpenFrameMac/apps/macos`, `crates/openframe-ffi`)
+## 2. The FFI and the Swift core (`StraftMac/apps/macos`, `crates/straft-ffi`)
 
 | Item | Windows reference | Mac action |
 |---|---|---|
-| Module events to Swift | Windows sends `ai.progress` as a module event (`apps/desktop/src-tauri/src/lib.rs` carries the Tauri side) | Forward the same event through `crates/openframe-ffi/src/shell.rs` to `OpenFrameCore/Core.swift`; no new callback type if the existing event stream can carry it |
-| Regenerated types | `apps/desktop/src/ipc/generated/` (cover, page setup, Sides, story page DTOs and others) | Regenerate the Swift types in `OpenFrameCore/Generated` |
+| Module events to Swift | Windows sends `ai.progress` as a module event (`apps/desktop/src-tauri/src/lib.rs` carries the Tauri side) | Forward the same event through `crates/straft-ffi/src/shell.rs` to `StraftCore/Core.swift`; no new callback type if the existing event stream can carry it |
+| Regenerated types | `apps/desktop/src/ipc/generated/` (cover, page setup, Sides, story page DTOs and others) | Regenerate the Swift types in `StraftCore/Generated` |
 | Picture access for covers | Tauri asset scope allows `<app data>/covers/assets` | On the Mac the app reads its own container; copy the chosen file in (App Sandbox build: a user-selected read grant, then copy) |
-| Packaged rules file | `apps/desktop/src/workspaces/screenplay/editor/elementRules.json` (generated) | Replace `elementRules.json` in the `OpenFrameUI` resources; `SharedScreenplayRules.swift` reads it |
+| Packaged rules file | `apps/desktop/src/workspaces/screenplay/editor/elementRules.json` (generated) | Replace `elementRules.json` in the `StraftUI` resources; `SharedScreenplayRules.swift` reads it |
 
-## 3. SwiftUI screens (`OpenFrameMac/apps/macos/Sources/OpenFrameUI`)
+## 3. SwiftUI screens (`StraftMac/apps/macos/Sources/StraftUI`)
 
 | Item | Windows reference | Mac file to change |
 |---|---|---|
@@ -70,8 +70,8 @@
 
 ## 4. Tests to carry over
 
-- The Rust tests that sit next to each new module (`ai/*/tests.rs`, `tests/screenplay_v5.rs` in `openframe-import-export`,
-  the Sides and page setup tests in `openframe-application`) move with the files.
+- The Rust tests that sit next to each new module (`ai/*/tests.rs`, `tests/screenplay_v5.rs` in `straft-import-export`,
+  the Sides and page setup tests in `straft-application`) move with the files.
 - Web tests have a Swift counterpart to write: the answer text parser, the relationship layout, the Sides scene rule and the
   dark page contrast pairs.
 - end-to-end: the Mac scripts under `apps/macos/E2E` for the AI panel (progress, Cancel, Save), page setup and Home cover.
@@ -89,7 +89,7 @@ and the feature status rows of the Mac track. A feature row moves only with Mac 
 
 The design is [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md) and
 [pdf-design-package-v2](../specs/pdf-design-package-v2/README.md). On Windows the renderer slice
-(`crates/openframe-import-export/src/report.rs`, `report/design.rs`, `exports/*` builders, the footer logo asset, the
+(`crates/straft-import-export/src/report.rs`, `report/design.rs`, `exports/*` builders, the footer logo asset, the
 golden PDFs) had not landed when this list was written. The Mac tree has `report.rs` only, with no `report/` folder, so the
 port is the whole Windows renderer, not a patch. Port it after the Windows slice passes its golden files, and add the
 exact files here at that time. The package notes that the `mac/` renderer files were not compared when the package was

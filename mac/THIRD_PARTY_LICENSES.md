@@ -1,10 +1,10 @@
-# Third-Party Licenses: OpenFrame Studio
+# Third-Party Licenses: Straft Studio
 
 <!-- GENERATED FILE. Do not edit by hand. Regenerate with `npm run licenses` (scripts/license-inventory.mjs). -->
 
-This is an inventory of the third-party packages that are compiled into, or shipped with, the OpenFrame Studio desktop application (Rust target `x86_64-pc-windows-msvc`, normal dependencies only; npm production dependencies only). Build tools, test tooling and dev-only packages are excluded. This inventory is not a substitute for the full license texts, which the release pipeline must bundle with the installer.
+This is an inventory of the third-party packages that are compiled into, or shipped with, the Straft Studio desktop application (Rust target `x86_64-pc-windows-msvc`, normal dependencies only; npm production dependencies only). Build tools, test tooling and dev-only packages are excluded. This inventory is not a substitute for the full license texts, which the release pipeline must bundle with the installer.
 
-OpenFrame Studio's own license has **not been selected yet**. See `LICENSE-PENDING.md`.
+Straft Studio's own license has **not been selected yet**. See `LICENSE-PENDING.md`.
 
 ## Summary
 
@@ -29,14 +29,14 @@ Screenplay and document PDFs embed subsets of these fonts (ADR-0016) so text in 
 
 | Font file | Family and style | Version | License | Source | SHA-256 |
 |---|---|---|---|---|---|
-| CourierPrime-Bold.ttf | Courier Prime Bold | Version 3.018 | OFL-1.1 (text: `crates/openframe-import-export/fonts/OFL-CourierPrime.txt`) | https://github.com/quoteunquoteapps/CourierPrime | `ff1f38786c849d1c41fa8e447960abdb2bd75fdfb0cfcdeb524fad65a5af3638` |
-| CourierPrime-Italic.ttf | Courier Prime Italic | Version 3.018 | OFL-1.1 (text: `crates/openframe-import-export/fonts/OFL-CourierPrime.txt`) | https://github.com/quoteunquoteapps/CourierPrime | `f1b9a5829789f7e56432a9f3bc7665ef4531dbba1c112639e48bef39621a006b` |
-| CourierPrime-Regular.ttf | Courier Prime Regular | Version 3.018 | OFL-1.1 (text: `crates/openframe-import-export/fonts/OFL-CourierPrime.txt`) | https://github.com/quoteunquoteapps/CourierPrime | `72f793376f8e2841656bf21d77a5de010f2929bd6956a22ee848ad0c7eb978af` |
-| NotoSansDevanagari-Regular.ttf | Noto Sans Devanagari Regular | Version 2.007 | OFL-1.1 (text: `crates/openframe-import-export/fonts/OFL-NotoSans-devanagari.txt`) | https://github.com/notofonts | `9c7d935139ea6a1e6ad9dbac4f6d27ece1e04bca8123c8888d00a0f9df4724cd` |
-| NotoSansKannada-Regular.ttf | Noto Sans Kannada Regular | Version 2.006 | OFL-1.1 (text: `crates/openframe-import-export/fonts/OFL-NotoSans-kannada.txt`) | https://github.com/notofonts | `2870274619c2a4abe5d6b11fcb7c4a372eba765b6b7881d459b0eb0a609a68eb` |
-| NotoSansMalayalam-Regular.ttf | Noto Sans Malayalam Regular | Version 2.104 | OFL-1.1 (text: `crates/openframe-import-export/fonts/OFL-NotoSans-malayalam.txt`) | https://github.com/notofonts | `cc39bb1f7d63b582a2aec1abf2469a43b805a3523a27e0a0eee8cd32702541d5` |
-| NotoSansTamil-Regular.ttf | Noto Sans Tamil Regular | Version 2.004 | OFL-1.1 (text: `crates/openframe-import-export/fonts/OFL-NotoSans-tamil.txt`) | https://github.com/notofonts | `6634d9cc97a726e670df41281dd32b167a6b9b71f2036e19671ff08fdde0c292` |
-| NotoSansTelugu-Regular.ttf | Noto Sans Telugu Regular | Version 2.005 | OFL-1.1 (text: `crates/openframe-import-export/fonts/OFL-NotoSans-telugu.txt`) | https://github.com/notofonts | `dcb86a5da09365a2d73d725e429403dca988e6d50c1b1d564579a25dbc18bd29` |
+| CourierPrime-Bold.ttf | Courier Prime Bold | Version 3.018 | OFL-1.1 (text: `crates/straft-import-export/fonts/OFL-CourierPrime.txt`) | https://github.com/quoteunquoteapps/CourierPrime | `ff1f38786c849d1c41fa8e447960abdb2bd75fdfb0cfcdeb524fad65a5af3638` |
+| CourierPrime-Italic.ttf | Courier Prime Italic | Version 3.018 | OFL-1.1 (text: `crates/straft-import-export/fonts/OFL-CourierPrime.txt`) | https://github.com/quoteunquoteapps/CourierPrime | `f1b9a5829789f7e56432a9f3bc7665ef4531dbba1c112639e48bef39621a006b` |
+| CourierPrime-Regular.ttf | Courier Prime Regular | Version 3.018 | OFL-1.1 (text: `crates/straft-import-export/fonts/OFL-CourierPrime.txt`) | https://github.com/quoteunquoteapps/CourierPrime | `72f793376f8e2841656bf21d77a5de010f2929bd6956a22ee848ad0c7eb978af` |
+| NotoSansDevanagari-Regular.ttf | Noto Sans Devanagari Regular | Version 2.007 | OFL-1.1 (text: `crates/straft-import-export/fonts/OFL-NotoSans-devanagari.txt`) | https://github.com/notofonts | `9c7d935139ea6a1e6ad9dbac4f6d27ece1e04bca8123c8888d00a0f9df4724cd` |
+| NotoSansKannada-Regular.ttf | Noto Sans Kannada Regular | Version 2.006 | OFL-1.1 (text: `crates/straft-import-export/fonts/OFL-NotoSans-kannada.txt`) | https://github.com/notofonts | `2870274619c2a4abe5d6b11fcb7c4a372eba765b6b7881d459b0eb0a609a68eb` |
+| NotoSansMalayalam-Regular.ttf | Noto Sans Malayalam Regular | Version 2.104 | OFL-1.1 (text: `crates/straft-import-export/fonts/OFL-NotoSans-malayalam.txt`) | https://github.com/notofonts | `cc39bb1f7d63b582a2aec1abf2469a43b805a3523a27e0a0eee8cd32702541d5` |
+| NotoSansTamil-Regular.ttf | Noto Sans Tamil Regular | Version 2.004 | OFL-1.1 (text: `crates/straft-import-export/fonts/OFL-NotoSans-tamil.txt`) | https://github.com/notofonts | `6634d9cc97a726e670df41281dd32b167a6b9b71f2036e19671ff08fdde0c292` |
+| NotoSansTelugu-Regular.ttf | Noto Sans Telugu Regular | Version 2.005 | OFL-1.1 (text: `crates/straft-import-export/fonts/OFL-NotoSans-telugu.txt`) | https://github.com/notofonts | `dcb86a5da09365a2d73d725e429403dca988e6d50c1b1d564579a25dbc18bd29` |
 
 ## Flagged: copyleft or unknown license
 

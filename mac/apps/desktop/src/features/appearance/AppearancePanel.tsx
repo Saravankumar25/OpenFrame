@@ -1,5 +1,5 @@
 // Settings > Appearance (ADR-0014; Screenplay and Production Depth Specification 47A.9 to 47A.16):
-// Mode (Light, Dark, System), Theme (OpenFrame Default and the fifteen built-in themes), Import
+// Mode (Light, Dark, System), Theme (Straft Default and the fifteen built-in themes), Import
 // theme (file or pasted text, checked and previewed before anything is saved) and My Themes
 // (apply, rename, export, delete). Appearance is a personal preference kept in the app database;
 // it never touches a project.
@@ -60,14 +60,14 @@ export function AppearancePanel() {
   if (state.isError || !data) {
     return (
       <Banner tone="err" actions={<Button size="sm" onClick={() => void state.refetch()}>Try Again</Button>}>
-        The appearance settings could not be loaded. OpenFrame Default is shown. {state.error?.message}
+        The appearance settings could not be loaded. Straft Default is shown. {state.error?.message}
       </Banner>
     );
   }
 
   const pickFile = async () => {
     try {
-      const picked = await openDialog({ multiple: false, directory: false, filters: [{ name: "OpenFrame theme", extensions: ["json"] }] });
+      const picked = await openDialog({ multiple: false, directory: false, filters: [{ name: "Straft Studio theme", extensions: ["json"] }] });
       if (typeof picked === "string") setImporting({ kind: "file", path: picked });
     } catch (e) {
       reportError(e);
@@ -183,7 +183,7 @@ function MyThemes({ state, mode, onApplied }: { state: AppearanceState; mode: Re
     onSuccess: (r, a) => {
       store(r);
       setDeleting(null);
-      toast.success(a.id === state.themeId ? "Theme deleted. OpenFrame Default is applied." : "Theme deleted.");
+      toast.success(a.id === state.themeId ? "Theme deleted. Straft Default is applied." : "Theme deleted.");
       // The row and its button are gone: put focus on the section heading, not on the page body.
       window.setTimeout(() => document.getElementById("ap-mine")?.focus(), 0);
     },
@@ -193,7 +193,7 @@ function MyThemes({ state, mode, onApplied }: { state: AppearanceState; mode: Re
     try {
       // A name is text, not a path: no folder separators or reserved characters in the suggestion.
       const fileName = `${t.name.replace(/[\\/:*?"<>|]+/g, " ").trim() || t.id}.json`;
-      const path = await saveDialog({ defaultPath: fileName, filters: [{ name: "OpenFrame theme", extensions: ["json"] }] });
+      const path = await saveDialog({ defaultPath: fileName, filters: [{ name: "Straft Studio theme", extensions: ["json"] }] });
       if (!path) return;
       const r = await call<ExportThemeResult>("appearance.export_theme", { id: t.id, path });
       toast.success(`Saved ${r.fileName}.`);
@@ -205,7 +205,7 @@ function MyThemes({ state, mode, onApplied }: { state: AppearanceState; mode: Re
   return (
     <>
       {state.myThemes.length === 0 ? (
-        <p className="ap-note" style={{ marginTop: 0 }}>No imported themes yet. Theme files are small .json files, for example from the OpenFrame website.</p>
+        <p className="ap-note" style={{ marginTop: 0 }}>No imported themes yet. Theme files are small .json files, for example from the Straft Studio website.</p>
       ) : (
     <div className="ap-mine" role="list" aria-label="My Themes">
       {state.myThemes.map((t) => {
@@ -242,7 +242,7 @@ function MyThemes({ state, mode, onApplied }: { state: AppearanceState; mode: Re
       >
         <p style={{ marginTop: 0 }}>
           The theme is removed from My Themes. This cannot be undone; export it first if you may want it again.
-          {deleting?.id === state.themeId && " It is in use, so OpenFrame Default is applied."} Your projects are not affected.
+          {deleting?.id === state.themeId && " It is in use, so Straft Default is applied."} Your projects are not affected.
         </p>
       </ConfirmDialog>
     </>

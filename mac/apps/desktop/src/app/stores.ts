@@ -39,7 +39,7 @@ interface NavState {
 
 /** The open page survives a reload of the window (owner change list item 1). Session only: a new
  * start of the app opens on Project Home. Opening another project calls reset(), which clears it. */
-const ROUTE_KEY = "openframe.route";
+const ROUTE_KEY = "straft.route";
 const WORKSPACE_IDS: WorkspaceId[] = ["home", "vault", "story", "screenplay", "breakdown", "production", "callsheets", "files", "trash", "activity", "notes", "settings"];
 
 function readRoute(): Route {
@@ -108,7 +108,7 @@ export const useOpenDraft = create<OpenDraftState>((set) => ({
 
 /** Where the AI Assistant panel remembers whether it is open (a per-user layout preference, like
  * the Beat Board zoom; never project data). */
-export const AI_PANEL_KEY = "openframe.ai.panelOpen";
+export const AI_PANEL_KEY = "straft.ai.panelOpen";
 
 /** The saved AI panel state. Empty, unreadable or unexpected storage means closed. */
 export function readAiPanelOpen(): boolean {
@@ -127,7 +127,7 @@ function writeAiPanelOpen(open: boolean) {
   }
 }
 
-const NAV_KEY = "openframe.nav.collapsed";
+const NAV_KEY = "straft.nav.collapsed";
 function readNavCollapsed(): boolean {
   try {
     return window.localStorage.getItem(NAV_KEY) === "true";

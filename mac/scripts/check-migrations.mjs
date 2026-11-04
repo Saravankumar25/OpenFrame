@@ -8,7 +8,7 @@
 // Rules:
 //   1. Linear: each of migrations/{project,global,app} holds NNNN_<name>.sql numbered 1..N with no gap
 //      and no duplicate number (two branches that both add 0011 fail here).
-//   2. Embedded: crates/openframe-application/src/schema.rs lists exactly those files, in order, with
+//   2. Embedded: crates/straft-application/src/schema.rs lists exactly those files, in order, with
 //      the matching version numbers. A file on disk that the app does not run is an error.
 //   3. Frozen: every file recorded in migrations/frozen.json must keep its SHA-256 (line endings
 //      normalised to LF). While `"frozen": false` (before the first external build) a changed hash is a
@@ -21,12 +21,12 @@ import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
 
-const ROOT = process.env.OPENFRAME_CHECK_ROOT
-  ? path.resolve(process.env.OPENFRAME_CHECK_ROOT)
+const ROOT = process.env.STRAFT_CHECK_ROOT
+  ? path.resolve(process.env.STRAFT_CHECK_ROOT)
   : path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
 const RECORD = process.argv.includes("--record");
 const SETS = ["project", "global", "app"];
-const SCHEMA = "crates/openframe-application/src/schema.rs";
+const SCHEMA = "crates/straft-application/src/schema.rs";
 const FROZEN = "migrations/frozen.json";
 
 const errors = [];

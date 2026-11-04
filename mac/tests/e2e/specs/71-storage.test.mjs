@@ -1,7 +1,7 @@
 // @e2e-data-root: own
 //
 // Storage (docs/engineering/40-storage-locations-and-recovery.md, ADR-0038): Settings > Storage
-// names every place OpenFrame keeps data and offers the Global Idea Vault actions. An idea is added
+// names every place Straft Studio keeps data and offers the Global Idea Vault actions. An idea is added
 // to the Global Idea Vault, the vault is backed up and the backup is inspected, then the open
 // project is moved to another folder while the app runs, and still opens with its content.
 // The long operations are called the way the screen calls them (a task that reports through app
@@ -86,7 +86,7 @@ describe("storage", () => {
       await firstLaunchProject(browser, TITLE);
       await projectMenu(browser, "Project settings");
       await settingsTab("Storage");
-      for (const name of ["Your OpenFrame library", "Folder for new projects", "Global Idea Vault", "This project", "App data"]) {
+      for (const name of ["Your Straft Studio library", "Folder for new projects", "Global Idea Vault", "This project", "App data"]) {
         await (await browser.$(section(name))).waitForDisplayed({ timeout: 15_000, timeoutMsg: `no "${name}" section in Settings > Storage` });
       }
       const vault = await buttonsIn("Global Idea Vault");

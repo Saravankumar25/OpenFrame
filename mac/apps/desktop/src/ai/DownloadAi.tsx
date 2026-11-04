@@ -1,10 +1,10 @@
-// Download OpenFrame AI (ADR-0026 decisions 3, 5 and 7; ADR-0032). The models are not in the
+// Download Straft AI (ADR-0026 decisions 3, 5 and 7; ADR-0032). The models are not in the
 // package: the person downloads them once, here, by clicking, from Hugging Face at the revisions
 // the app pins. A person who already has the files imports them instead (copied, used only when
 // they match the pins). Before the click the screen shows the size, the
 // free space needed and that the download uses the internet; nothing touches the network until the
 // click. Then: progress with Pause, Resume where it stopped, a plain reason and Try again when it
-// fails. Shown in Settings > Offline AI and in the AI panel while OpenFrame AI is not installed.
+// fails. Shown in Settings > Offline AI and in the AI panel while Straft AI is not installed.
 
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -28,7 +28,7 @@ export function downloadLine(d: AiDownloadDto): string {
     case "Downloading":
       return `Downloading: ${progress}`;
     case "Installing":
-      return "Checking the files and getting OpenFrame AI ready…";
+      return "Checking the files and getting Straft AI ready…";
     case "Paused":
       return `Paused at ${progress}. It continues from there.`;
     default:
@@ -51,7 +51,7 @@ export function phaseAnnouncement(phase: string): string {
     case "Checking":
       return "Getting ready to download.";
     case "Downloading":
-      return "Downloading OpenFrame AI.";
+      return "Downloading Straft AI.";
     case "Installing":
       return "Checking the files.";
     case "Paused":
@@ -59,7 +59,7 @@ export function phaseAnnouncement(phase: string): string {
     case "Failed":
       return "The download stopped.";
     case "Done":
-      return "OpenFrame AI is ready.";
+      return "Straft AI is ready.";
     default:
       return "";
   }
@@ -85,9 +85,9 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
 
   if (!d)
     return q.isError ? (
-      <section className="card pad" aria-label="Download OpenFrame AI">
+      <section className="card pad" aria-label="Download Straft AI">
         <Banner tone="err" actions={<Button size="sm" onClick={() => void q.refetch()}>Try again</Button>}>
-          OpenFrame could not show the download right now.
+          Straft Studio could not show the download right now.
         </Banner>
       </section>
     ) : null;
@@ -118,13 +118,13 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
     setBusy(true);
     try {
       const path = await openDialog({
-        title: "Import an OpenFrame AI model file",
+        title: "Import a Straft AI model file",
         multiple: false,
         filters: [{ name: "Model file", extensions: ["gguf"] }],
       });
       if (typeof path !== "string") return;
       const r = await call<AiImportResult>("ai.download.import", { path });
-      toast.success(r.complete ? "OpenFrame AI is ready." : "The file was added. Import the other model file to finish.");
+      toast.success(r.complete ? "Straft AI is ready." : "The file was added. Import the other model file to finish.");
       void qc.invalidateQueries({ queryKey: ["ai.status"] });
       void qc.invalidateQueries({ queryKey: ["ai.diagnostics"] });
       await qc.invalidateQueries({ queryKey: ["ai.download.status"] });
@@ -144,15 +144,15 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
   const pct = d.totalBytes ? Math.round((d.doneBytes / d.totalBytes) * 100) : 0;
 
   return (
-    <section className="card pad" aria-label="Download OpenFrame AI">
+    <section className="card pad" aria-label="Download Straft AI">
       <div className="h4" style={{ marginTop: 0 }}>
-        {damaged ? "Download OpenFrame AI again" : "Download OpenFrame AI"}
+        {damaged ? "Download Straft AI again" : "Download Straft AI"}
       </div>
       {damaged && <Banner tone="err">{damaged}</Banner>}
       {!d.canDownload ? (
         <>
           <p className="sm">
-            This copy of OpenFrame Studio cannot download OpenFrame AI. You can import model files you already have. Everything else works normally.
+            This copy of Straft Studio cannot download Straft AI. You can import model files you already have. Everything else works normally.
           </p>
           <div className="row">{importButton}</div>
         </>
@@ -166,7 +166,7 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
             <div
               className="bar"
               role="progressbar"
-              aria-label="OpenFrame AI download"
+              aria-label="Straft AI download"
               aria-valuemin={0}
               aria-valuemax={100}
               // Unknown size (getting the list, checking the files): no value, so it reads as busy.
@@ -183,7 +183,7 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
           )}
           {!running && (
             <p className="xs muted">
-              The download uses the internet once. After it, OpenFrame AI works on this computer without the internet, and your projects are never sent
+              The download uses the internet once. After it, Straft AI works on this computer without the internet, and your projects are never sent
               anywhere.
             </p>
           )}
@@ -194,7 +194,7 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
               </Button>
             ) : running ? null : (
               <Button size="sm" variant="primary" disabled={busy || tooLittleSpace(d, !!damaged)} onClick={start}>
-                {d.phase === "Paused" ? "Resume download" : d.phase === "Failed" ? "Try again" : damaged ? "Download again" : "Download OpenFrame AI"}
+                {d.phase === "Paused" ? "Resume download" : d.phase === "Failed" ? "Try again" : damaged ? "Download again" : "Download Straft AI"}
               </Button>
             )}
             {!running && importButton}

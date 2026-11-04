@@ -10,12 +10,12 @@
 // strict pattern before it is written, so nothing but numbers, ids and `#hex` / `oklch()` colours
 // can reach the style layer.
 
-import themesFile from "../../../../crates/openframe-application/src/modules/appearance/themes.json";
+import themesFile from "../../../../crates/straft-application/src/modules/appearance/themes.json";
 import type { ThemeDto } from "../ipc/generated/ThemeDto";
 import type { AppearanceMode } from "../ipc/generated/AppearanceMode";
 
 export type ResolvedMode = "light" | "dark";
-export const DEFAULT_THEME_ID = "openframe-default";
+export const DEFAULT_THEME_ID = "straft-default";
 const LAYER_ID = "of-theme-layer";
 
 interface Engine {
@@ -63,7 +63,7 @@ interface FileTheme {
 const file = themesFile as unknown as { engine: Engine; themes: FileTheme[] };
 export const ENGINE: Engine = file.engine;
 
-/** OpenFrame Default first, then the fifteen built-in themes, in picker order. */
+/** Straft Default first, then the fifteen built-in themes, in picker order. */
 export const BUILT_IN_THEMES: ThemeData[] = file.themes.map((t) => ({
   id: t.id,
   name: t.name,
@@ -265,7 +265,7 @@ export function followSystem(): () => void {
 // The app database is the source of truth. A copy of the last built-in choice is kept in
 // localStorage only so the first frame already has the right look before Rust answers; it is
 // re-checked like any other input and replaced as soon as the real preference arrives.
-const HINT_KEY = "openframe.appearance.hint";
+const HINT_KEY = "straft.appearance.hint";
 
 function rememberHint(pref: AppearanceMode, themeId: string): void {
   try {

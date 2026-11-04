@@ -24,7 +24,7 @@
 //                                                      instead of failing; a wrong file still fails
 //   Options: --target <os-arch> (windows-x86_64, macos-aarch64)  --source <dir>  --out <dir>
 //
-// Where the build inputs are looked up: --source, then OPENFRAME_AI_ASSETS_DIR, then `.ai-assets`
+// Where the build inputs are looked up: --source, then STRAFT_AI_ASSETS_DIR, then `.ai-assets`
 // in this checkout, then `.ai-assets` in the main checkout when this is a git worktree.
 //
 // Changing a pinned file: put the new file in `.ai-assets`, update its entry in the lock (path,
@@ -41,7 +41,7 @@ export const ROOT = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)
 export const LOCK_PATH = path.join(ROOT, "packaging", "ai", "ai-assets.lock.json");
 export const NOTICES_DIR = path.join(ROOT, "packaging", "ai", "notices");
 export const DEFAULT_OUT = path.join(ROOT, ".build-cache", "ai-bundle");
-/** Folder name inside the app resources; must match `RESOURCE_FOLDER` in crates/openframe-ai/src/bundle.rs. */
+/** Folder name inside the app resources; must match `RESOURCE_FOLDER` in crates/straft-ai/src/bundle.rs. */
 export const RESOURCE_FOLDER = "ai";
 
 const SAFE_ID = /^[a-z0-9][a-z0-9.-]{0,78}[a-z0-9]$/;
@@ -81,7 +81,7 @@ export function readLock(lockPath = LOCK_PATH) {
     fail(`The Offline AI lock file ${path.relative(ROOT, lockPath)} cannot be read: ${e.message}`);
   }
   if (lock.lockVersion !== 1) fail("The Offline AI lock file has an unsupported lockVersion (expected 1).");
-  if (lock.bundleId !== "openframe-local-ai-v1" || !SAFE_ID.test(lock.bundleVersion ?? "")) fail("The Offline AI lock file names an unknown bundle.");
+  if (lock.bundleId !== "straft-local-ai-v1" || !SAFE_ID.test(lock.bundleVersion ?? "")) fail("The Offline AI lock file names an unknown bundle.");
   if (!Array.isArray(lock.runtimes) || !Array.isArray(lock.models)) fail("The Offline AI lock file lists no runtimes or models.");
   const ids = new Set();
   for (const r of lock.runtimes) {
@@ -181,11 +181,11 @@ function mainCheckoutAssets() {
 
 /** The folder holding the build inputs, or null when none exists. */
 export function findSource(explicit) {
-  const candidates = [explicit, process.env.OPENFRAME_AI_ASSETS_DIR, path.join(ROOT, ".ai-assets"), mainCheckoutAssets()].filter(Boolean);
+  const candidates = [explicit, process.env.STRAFT_AI_ASSETS_DIR, path.join(ROOT, ".ai-assets"), mainCheckoutAssets()].filter(Boolean);
   for (const c of candidates) {
     const abs = path.resolve(c);
     if (fs.existsSync(abs) && fs.statSync(abs).isDirectory()) return abs;
-    if (c === explicit || c === process.env.OPENFRAME_AI_ASSETS_DIR) fail(`The Offline AI build inputs folder ${abs} does not exist.`);
+    if (c === explicit || c === process.env.STRAFT_AI_ASSETS_DIR) fail(`The Offline AI build inputs folder ${abs} does not exist.`);
   }
   return null;
 }
@@ -223,7 +223,7 @@ export function prepare({ target = currentTarget(), source, out = DEFAULT_OUT, c
   if (!src) {
     const msg =
       "The Offline AI build inputs are missing. Every package contains the Offline AI engine (ADR-0026 decision 1), so the build stops. " +
-      "Put the pinned files in .ai-assets (see packaging/ai/ai-assets.lock.json) or set OPENFRAME_AI_ASSETS_DIR.";
+      "Put the pinned files in .ai-assets (see packaging/ai/ai-assets.lock.json) or set STRAFT_AI_ASSETS_DIR.";
     if (!optional) fail(msg);
     log(`Offline AI: build inputs not found; staging an empty folder for this development run (${path.relative(ROOT, out)}).`);
     if (!check) resetOut(out, null);

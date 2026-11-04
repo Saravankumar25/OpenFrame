@@ -1,8 +1,8 @@
 # Build products of apps/macos/scripts/build-core.sh and SwiftPM.
 /Frameworks/
-/Sources/OpenFrameCore/Generated/openframe_ffi.swift
+/Sources/StraftCore/Generated/straft_ffi.swift
 /.build/
 /.swiftpm/
 /build/
-/Sources/OpenFrameUI/Resources/themes.json
-/Sources/OpenFrameUI/Resources/elementRules.json
+/Sources/StraftUI/Resources/themes.json
+/Sources/StraftUI/Resources/elementRules.json

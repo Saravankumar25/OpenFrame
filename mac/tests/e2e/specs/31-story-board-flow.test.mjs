@@ -179,7 +179,7 @@ describe("story board flow", () => {
       await click(browser, "Build Screenplay");
       await waitForText(browser, "Build Screenplay from Beat Board");
       await waitForText(browser, "no valid scene heading");
-      await waitForText(browser, "OpenFrame never makes up a heading.");
+      await waitForText(browser, "Straft Studio never makes up a heading.");
       // Rows are in board order: C, A, B, BEAT (the beat was added after B and converted in place).
       await (await browser.$('//input[@aria-label="Heading for scene 1"]')).setValue("EXT. POST OFFICE - NIGHT");
       await (await browser.$('//input[@aria-label="Heading for scene 2"]')).setValue("EXT. FLOODED STREET - NIGHT");

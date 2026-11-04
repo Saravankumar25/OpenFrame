@@ -1,7 +1,7 @@
 # AI evaluation report
 
 - Cases: 60
-- Gold folder: crates/openframe-ai-eval/gold
+- Gold folder: crates/straft-ai-eval/gold
 - Model files: the pinned Offline AI of packaging/ai/ai-assets.lock.json
 - Build: release
 - Search model: Automatic

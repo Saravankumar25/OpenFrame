@@ -112,7 +112,7 @@ export function Shell() {
 
   // Window title mirrors the open project (UX §2.1).
   useEffect(() => {
-    const title = project.data ? `${project.data.title} - OpenFrame Studio` : "OpenFrame Studio";
+    const title = project.data ? `${project.data.title} - Straft Studio` : "Straft Studio";
     // The document title too: assistive technology announces it.
     document.title = title;
     if (!inTauri()) return;

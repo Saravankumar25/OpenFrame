@@ -64,7 +64,7 @@ the AI harness is already finished and measured on Windows.
 
 ## 4. Phase M2: the Rust core as a Swift library
 
-- A new crate `openframe-ffi` exposes: start and stop the application core, send an operation name with JSON arguments and
+- A new crate `straft-ffi` exposes: start and stop the application core, send an operation name with JSON arguments and
   receive a JSON result or a coded error, subscribe to the event stream, and platform callbacks (file dialogs, reveal, power
   state). Nothing else.
 - Generate Swift types from the operation registry metadata, the same source that generates the TypeScript bindings, so the

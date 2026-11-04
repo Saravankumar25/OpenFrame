@@ -43,8 +43,8 @@ import {
   statusLevel,
 } from "./lib/feature-status.mjs";
 
-const ROOT = process.env.OPENFRAME_CHECK_ROOT
-  ? path.resolve(process.env.OPENFRAME_CHECK_ROOT)
+const ROOT = process.env.STRAFT_CHECK_ROOT
+  ? path.resolve(process.env.STRAFT_CHECK_ROOT)
   : path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 

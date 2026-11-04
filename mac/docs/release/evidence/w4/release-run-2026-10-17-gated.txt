@@ -1,9 +1,9 @@
 > npm --workspace tests/e2e run test -- --release=gated
 > node run.mjs --release=gated
-Building OpenFrame Studio (release, gated, embedded UI, Offline AI engine, test model host)…
+Building Straft Studio (release, gated, embedded UI, Offline AI engine, test model host)…
     Finished `release` profile [optimized] target(s) in 6m 33s
-       Built application at: C:\OpenFrame\.build-cache\target\release\openframe-desktop.exe
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T01-10-55-951Z\00-release-smoke
+       Built application at: C:\Straft\.build-cache\target\release\straft-desktop.exe
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-17T01-10-55-951Z\00-release-smoke
   specs: 00-release-smoke.test.mjs
 ▶ release smoke
   ✔ start, create a project, type in the screenplay until it says Saved, close the project (4401.4629ms)
@@ -49,7 +49,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T01-10-55-951Z\00-release-s
   ✔ relaunch: both projects, the new title and the status persist (3471.1916ms)
   ✔ Delete Project: the typed name confirms, the folder leaves, Home forgets it after a relaunch (2852.0213ms)
 ✔ home (11632.4251ms)
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T01-10-55-951Z\17-internal-build-release
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-17T01-10-55-951Z\17-internal-build-release
   specs: 17-internal-build-release.test.mjs
 ▶ the internal build as it ships
   ✔ no trial chip, no Buy and no popup, and About says internal build, not for sale (2777.7441ms)
@@ -242,19 +242,19 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T01-10-55-951Z\17-internal-
 ✔ AI work survives a crash (22791.9067ms)
   specs: 76-ai-files-integrity.test.mjs
 ▶ Offline AI files: missing, damaged, whole again
-  ✔ a missing model file turns AI off and offers the download again; the rest of OpenFrame works (4409.9691ms)
+  ✔ a missing model file turns AI off and offers the download again; the rest of Straft Studio works (4409.9691ms)
   ✔ Download again restores the files from the host and AI answers with the real model (84427.6274ms)
   ✔ an altered model of the right size is caught before any engine starts (5640.0597ms)
   ✔ an altered engine library is caught before launch and asks for a reinstall (5534.2733ms)
 ✔ Offline AI files: missing, damaged, whole again (101394.7877ms)
   specs: 78-ai-download.test.mjs
-▶ download OpenFrame AI after install
+▶ download Straft AI after install
   ✔ before the click: the not-installed state with the size, and no request to the host (1249.3058ms)
   ✔ an interrupted download resumes where it stopped and AI becomes ready (4215.4831ms)
   ✔ with the host down, AI answers on this computer (41285.5719ms)
-  ✔ a restart with the host down finds OpenFrame AI and asks the host nothing (4300.2032ms)
+  ✔ a restart with the host down finds Straft AI and asks the host nothing (4300.2032ms)
   ✔ Remove takes the AI away; a damaged file is set aside; Pause and Resume continue the download (7886.2175ms)
-✔ download OpenFrame AI after install (60583.9028ms)
+✔ download Straft AI after install (60583.9028ms)
   specs: 80-notes-tasks.test.mjs
 ▶ notes and tasks
   ✔ a new note autosaves its title and text; undo and redo the edit (1692.1623ms)

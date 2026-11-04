@@ -4,7 +4,7 @@
 |---|---|
 | Export | Budget summary — op `budget.export_summary` (PDF · XLSX · CSV; this spec covers the PDF) |
 | Variant | Portrait. One trio: `Budget_Summary.html/.pdf/.md` + `stress-test/Budget_Summary_STRESS_TEST.html/.pdf`. **Current budget** and **saved snapshot** identities are `data-toggle` variants in the same HTML (mutually exclusive toggles "Current budget identity" / "Saved snapshot identity"; "Line notes" toggles the notes under line items) |
-| Status | Design reference — not integrated; not validated against OpenFrame's Rust renderer |
+| Status | Design reference — not integrated; not validated against Straft Studio's Rust renderer |
 | Repo commit | `2f5a045416bd2125801329533fc47f986ccc8174` (`main`, Windows tree) |
 | Date | 2026-10-23 |
 | Generator | `tools/build/matrix-finance/build_budget.py` + `budget_lib.py` (ports `amount_text`/`money`/`group`, `sum`, contingency and category roll-up from the Rust source; asserts the Rust unit-test values and checks the sample's totals against the supplied PDF) |
@@ -46,7 +46,7 @@ Dialog title "Export Budget"; sub "A simple budget summary: planned total, conti
 
 ### B.1 Current-output assessment (supplied `Budget — Summary.pdf`, 4 pages)
 
-**Retain**: eyebrow "Production · Budget"; title; project line; the disclaimer "A simple estimate for planning. Formal accounting is outside OpenFrame."; right-hand identity panel (Currency, Current budget / Saved snapshot, Saved/Exported date); the four metrics and their labels; the reconciliation sentences; By category (dot, count, share bar, Planned/Actual/Difference, navy "Total in lines"); Line items grouped by category with the note under the description; Notes callout; right-aligned numerals; `-1,40,000` style negatives.
+**Retain**: eyebrow "Production · Budget"; title; project line; the disclaimer "A simple estimate for planning. Formal accounting is outside Straft Studio."; right-hand identity panel (Currency, Current budget / Saved snapshot, Saved/Exported date); the four metrics and their labels; the reconciliation sentences; By category (dot, count, share bar, Planned/Actual/Difference, navy "Total in lines"); Line items grouped by category with the note under the description; Notes callout; right-aligned numerals; `-1,40,000` style negatives.
 
 **Improve visually**: numeral alignment across both tables (same three numeric column widths), clearer category/line/total hierarchy, variance treatment that works in grayscale, decimal alignment, category band that repeats on continuation pages, restrained colour (one tinted cell + text for "over").
 
@@ -124,7 +124,7 @@ Table columns (portrait content width 520 pt):
 
 ## F. Visual specification
 
-- **Page**: US Letter portrait 612×792, margins 46/46/46/66 pt. Footer from the shared system (logo PNG, "Created using OpenFrame", "Page X of Y").
+- **Page**: US Letter portrait 612×792, margins 46/46/46/66 pt. Footer from the shared system (logo PNG, "Created using Straft Studio", "Page X of Y").
 - **Running header**: yes, `@top-right "LOW TIDE RADIO · BUDGET · INR"` (project · "BUDGET" · currency). Reason: financial pages travel loose and must identify project/currency on every page. The text is deliberately identical for current and snapshot (CSS `@page` cannot switch by state); snapshot identity is in the masthead, and the renderer could append the snapshot label.
 - **Type**: title 26 pt bold navy; project 11 pt slate; disclaimer 8.4 pt; metric value 14 pt bold (currency prefix 7.8 pt bold), label 6.8 pt tracked caps; table body 8.4 pt, line description 8.8 pt bold navy, note 7.8 pt slate; category band name 10 pt bold, count 7.4 pt; column labels 6.9 pt tracked caps; subtotal label 7.4 pt tracked caps / numbers 8.4 pt bold; section headings = shared `.sec` (10 pt tracked caps, navy rule).
 - **Numerals**: Helvetica has no tabular figures flag in the renderer, but digits are equal-width in Helvetica/Arial; right-aligned, no wrap.

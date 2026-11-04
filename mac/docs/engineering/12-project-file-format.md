@@ -1,14 +1,14 @@
 # 12. Local Project File Format
 
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned.
-> Source: `crates/openframe-project-format/src/lib.rs`, `crates/openframe-application/src/modules/project.rs`.
+> Source: `crates/straft-project-format/src/lib.rs`, `crates/straft-application/src/modules/project.rs`.
 > Decision: ADR-0003.
 
 ## 1. Project folder ✅
 
 ```text
-<Title>.openframe/                 folder name = sanitized title; "<Title> (2).openframe" when taken
-├─ openframe.json                  manifest (human-inspectable)
+<Title>.straft/                 folder name = sanitized title; "<Title> (2).straft" when taken
+├─ straft.json                  manifest (human-inspectable)
 ├─ project.sqlite                  canonical structured data (see 11-physical-database.md)
 ├─ project.sqlite-wal / -shm       present only while open
 ├─ assets/<aa>/<assetId>[.<ext>]   managed media; <aa> = last two hex chars of the id (reversed)
@@ -21,16 +21,16 @@
 └─ .lock                           exclusive OS lock held while open
 ```
 
-- **Title sanitizing** (`openframe_security::sanitize_file_name`): replaces `<>:"/\|?*` and control characters, trims
+- **Title sanitizing** (`straft_security::sanitize_file_name`): replaces `<>:"/\|?*` and control characters, trims
   trailing dots and spaces and leading dots, caps the name at 120 characters, prefixes Windows reserved names
   (`CON`, `NUL`, `COM1`…) with `_`, and never returns an empty name (`Untitled`).
-- **Default parent:** `Documents\OpenFrame\Projects` (the user may choose another local folder in New Project).
+- **Default parent:** `Documents\Straft Studio\Projects` (the user may choose another local folder in New Project).
 
-## 2. Manifest `openframe.json` ✅
+## 2. Manifest `straft.json` ✅
 
 ```json
 {
-  "format": "openframe-project",
+  "format": "straft-project",
   "formatVersion": 1,
   "projectId": "0192f0c1-…",          // UUIDv7, must equal project.id in project.sqlite
   "title": "Railway",
@@ -41,7 +41,7 @@
 }
 ```
 
-Validation on open (`read_manifest`): the manifest must exist and parse, `format` must equal `openframe-project`,
+Validation on open (`read_manifest`): the manifest must exist and parse, `format` must equal `straft-project`,
 `formatVersion` must be ≤ supported (otherwise `project_format.too_new`, nothing touched), and `projectId` must be a
 valid id. After the database opens, its `project.id` must equal `projectId` (otherwise refused). `schemaVersion` and
 `appVersion` are rewritten atomically after a successful open or migration. The manifest is written with
@@ -54,7 +54,7 @@ valid id. After the database opens, its `project.id` must equal `projectId` (oth
 | `managed` | `asset.rel_path` = `assets/<aa>/<id>.<ext>` | Copied into the project (`ingest_file` → `*.importing` → fsync → rename; SHA-256 recorded; image dimensions read). Limit 8 GiB per file. Removed on transaction rollback. |
 | `external` | `asset.external_path` (absolute, `\\?\` stripped) | Referenced, not copied (FSD §40.4). Availability is re-checked on use. A missing file gives `not_found.file` with a relink path (`files.relink`). |
 
-- Relative paths are always resolved through `openframe_security::confine(root, rel)`. It rejects `..`, absolute
+- Relative paths are always resolved through `straft_security::confine(root, rel)`. It rejects `..`, absolute
   paths, drive letters, UNC, alternate data streams (`:`), reserved names and symlink escapes.
 - The extension is kept only if it is 1–10 ASCII alphanumerics. Otherwise the file has no extension.
 - An asset's bytes are deleted only when its purge runs **after commit** and no other row references it
@@ -85,7 +85,7 @@ valid id. After the database opens, its `project.id` must equal `projectId` (oth
 
 Exchange, Review and Response packages (the **only** collaboration mechanism; LAN was removed, ADR-0007), full
 project packages and backup packages are ZIP containers produced and read by
-`crates/openframe-application/src/modules/packages/`. Safe archive handling lives in `openframe_security::archive`:
+`crates/straft-application/src/modules/packages/`. Safe archive handling lives in `straft_security::archive`:
 
 - `inspect` pre-flights every entry against limits before extracting anything: entry count, total size, per-entry
   size, compression ratio > 200 for entries > 1 MiB, unsafe names (via `validate_relative`) and symlink entries.
@@ -102,7 +102,7 @@ The reader is bounded: entry count, entry size, total size and compression ratio
 manifest and checksum list, a 64 MB limit on `content.json`, and refusal of unsafe names (parent folders, absolute
 and drive paths, alternate data streams, reserved Windows names, 8.3 short names, case collisions, duplicates) and
 symbolic links. Damaged entry data is reported as a damaged package. The hostile input tests are in
-`packages/format.rs` (module `hostile`) and `openframe-security/src/archive.rs`.
+`packages/format.rs` (module `hostile`) and `straft-security/src/archive.rs`.
 Writing goes to a unique staging file next to the destination and is moved into place only when complete; a
 cancelled or failed write, or a read-only destination, leaves no file and keeps an existing one.
 
@@ -113,7 +113,7 @@ the writer carried). Format 2 exchange content also carries the stored productio
 (`productionNumber`, ADR-0015) and, in review and response packages, the custom element types the sent scenes use
 (`customElements`, with `customElementId` on each element) so the reviewer sees "12A" and the element laid out as
 its author defined it. A format 1 package has none of these fields and reads as before. Committed fixtures of every
-format live in `crates/openframe-application/tests/fixtures/packages/format-N/` and
+format live in `crates/straft-application/tests/fixtures/packages/format-N/` and
 `older_package_formats_still_open` opens them. The format 1 fixtures are current packages rewritten without the
 format 2 fields, so they prove the reader, not the old writer; the old database schemas are proven by the migration
 fixtures.

@@ -10,7 +10,7 @@ import Assistant from "./Conversation";
 // Test fixtures only: the IPC boundary and the system Save dialog are replaced.
 const calls: { op: string; args: Record<string, unknown> }[] = [];
 let exchanges: AiExchange[] = [];
-const saveMock = vi.fn(async (_o: unknown) => "C:\\Reviews\\openframe-ai-conversation.json" as string | null);
+const saveMock = vi.fn(async (_o: unknown) => "C:\\Reviews\\straft-ai-conversation.json" as string | null);
 
 vi.mock("@tauri-apps/plugin-dialog", () => ({ open: vi.fn(async () => null), save: (o: unknown) => saveMock(o) }));
 
@@ -25,7 +25,7 @@ vi.mock("../ipc/client", async () => {
     call: vi.fn(async (op: string, args: Record<string, unknown> = {}) => {
       calls.push({ op, args });
       if (op === "ai.history") return { conversationId: exchanges.length ? "conv1" : null, exchanges };
-      if (op === "ai.export_conversation") return { fileName: "openframe-ai-conversation.json", rows: exchanges.length };
+      if (op === "ai.export_conversation") return { fileName: "straft-ai-conversation.json", rows: exchanges.length };
       return null;
     }),
   };
@@ -69,9 +69,9 @@ describe("Save conversation for review", () => {
     await waitFor(() => expect(calls.some((c) => c.op === "ai.export_conversation")).toBe(true));
     expect(calls.find((c) => c.op === "ai.export_conversation")?.args).toEqual({
       conversationId: "conv1",
-      path: "C:\\Reviews\\openframe-ai-conversation.json",
+      path: "C:\\Reviews\\straft-ai-conversation.json",
     });
-    await waitFor(() => expect(useToasts.getState().items.map((t) => t.text)).toContain("Saved openframe-ai-conversation.json (2 questions)."));
+    await waitFor(() => expect(useToasts.getState().items.map((t) => t.text)).toContain("Saved straft-ai-conversation.json (2 questions)."));
 
     // Cancelling the Save dialog writes nothing.
     calls.length = 0;

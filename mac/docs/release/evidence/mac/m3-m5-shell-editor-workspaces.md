@@ -20,7 +20,7 @@ see the script's note). Main suites:
 
 | Suite | Tests | Covers |
 |---|---|---|
-| Core journey (OpenFrameCoreTests) | 5 | M2 interface from Swift |
+| Core journey (StraftCoreTests) | 5 | M2 interface from Swift |
 | Shell scenarios | 5 | Home to an empty project and back, bad folder, empty title, team password gate (wrong then right), screens in light and dark |
 | Settings | 5 | 16 themes persist, mode, display name, diagnostics, rendering |
 | Theme engine | 11 | Every theme and mode resolves, matches an independent reference, AAA contrast for High Contrast |
@@ -33,7 +33,7 @@ see the script's note). Main suites:
 | Breakdown | 23 | Scenarios 50, 51; tagging from a selection, suggestions, catalog, locations, cast and crew |
 
 The development app bundle (`apps/macos/scripts/bundle-dev-app.sh`) was started on a test folder
-(`OPENFRAME_DATA_ROOT`): the core started (`"OpenFrame Studio starting"`, shell `swiftui`), created the app
+(`STRAFT_DATA_ROOT`): the core started (`"Straft Studio starting"`, shell `swiftui`), created the app
 database and the Global Idea Vault, and the app ended cleanly.
 
 ## Found and fixed

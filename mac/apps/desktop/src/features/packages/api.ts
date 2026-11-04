@@ -47,10 +47,10 @@ export function packageFilter(types: PackageType[], name: string): { name: strin
 
 export const EXCHANGE_OPEN_FILTER = packageFilter(
   ["scriptReview", "story", "response"],
-  "OpenFrame exchange or review package",
+  "Straft Studio exchange or review package",
 );
-export const PROJECT_OPEN_FILTER = packageFilter(["project", "backup"], "OpenFrame project or backup package");
-export const REVIEW_OPEN_FILTER = packageFilter(["scriptReview", "response"], "OpenFrame review package");
+export const PROJECT_OPEN_FILTER = packageFilter(["project", "backup"], "Straft Studio project or backup package");
+export const REVIEW_OPEN_FILTER = packageFilter(["scriptReview", "response"], "Straft Studio review package");
 
 /** Join a folder and a file name for the save dialog's default path (Windows or POSIX). */
 export function joinPath(dir: string, name: string): string {

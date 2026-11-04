@@ -1,35 +1,35 @@
 //! Build script for the Tauri adapter.
 //!
-//! `OPENFRAME_DISTRIBUTION` selects the distribution channel at build time
+//! `STRAFT_DISTRIBUTION` selects the distribution channel at build time
 //! (docs/engineering/27-microsoft-store.md §5):
 //!
 //! * unset / `direct`: the internal team builds (Windows installer, Mac disk image; ADR-0023,
 //!   ADR-0024), and every development build;
-//! * `store`: the Microsoft Store and Mac App Store packages. Sets `cfg(openframe_store)` so code
+//! * `store`: the Microsoft Store and Mac App Store packages. Sets `cfg(straft_store)` so code
 //!   that must never ship in store builds (the in-app updater) can be compiled out entirely.
 //!
-//! The value is re-exported to the crate as `env!("OPENFRAME_DISTRIBUTION")`.
+//! The value is re-exported to the crate as `env!("STRAFT_DISTRIBUTION")`.
 //!
 //! **Model source (ADR-0032).** Every build downloads the models from Hugging Face at the
 //! revisions pinned in `packaging/ai/ai-assets.lock.json`; nothing needs setting. Only the test
-//! suite sets `OPENFRAME_TEST_MODEL_SOURCE` to its loopback host (`http://127.0.0.1:<port>/`),
+//! suite sets `STRAFT_TEST_MODEL_SOURCE` to its loopback host (`http://127.0.0.1:<port>/`),
 //! read by the crate with `option_env!`. A build of any profile accepts it only with
-//! `OPENFRAME_TEST_BUILD=1`, which only the test scripts set, so a team or store build can never
+//! `STRAFT_TEST_BUILD=1`, which only the test scripts set, so a team or store build can never
 //! carry it by accident.
 
 fn main() {
-    println!("cargo:rerun-if-env-changed=OPENFRAME_DISTRIBUTION");
-    println!("cargo::rustc-check-cfg=cfg(openframe_store)");
-    let raw = std::env::var("OPENFRAME_DISTRIBUTION").unwrap_or_default();
+    println!("cargo:rerun-if-env-changed=STRAFT_DISTRIBUTION");
+    println!("cargo::rustc-check-cfg=cfg(straft_store)");
+    let raw = std::env::var("STRAFT_DISTRIBUTION").unwrap_or_default();
     let channel = match raw.trim().to_ascii_lowercase().as_str() {
         "" | "direct" => "direct",
         "store" => "store",
-        other => panic!("OPENFRAME_DISTRIBUTION must be `direct` or `store`, got `{other}`"),
+        other => panic!("STRAFT_DISTRIBUTION must be `direct` or `store`, got `{other}`"),
     };
     if channel == "store" {
-        println!("cargo:rustc-cfg=openframe_store");
+        println!("cargo:rustc-cfg=straft_store");
     }
-    println!("cargo:rustc-env=OPENFRAME_DISTRIBUTION={channel}");
+    println!("cargo:rustc-env=STRAFT_DISTRIBUTION={channel}");
     check_model_source();
     // Only these commands may be invoked by the webview, each named in the capability file.
     tauri_build::try_build(
@@ -49,11 +49,11 @@ const APP_COMMANDS: &[&str] = &[
 ];
 
 /// Panics, which fails the build, when the test model source is not a loopback http address, or
-/// a build names it without `OPENFRAME_TEST_BUILD=1` (module notes).
+/// a build names it without `STRAFT_TEST_BUILD=1` (module notes).
 fn check_model_source() {
-    const SRC: &str = "OPENFRAME_TEST_MODEL_SOURCE";
+    const SRC: &str = "STRAFT_TEST_MODEL_SOURCE";
     println!("cargo:rerun-if-env-changed={SRC}");
-    println!("cargo:rerun-if-env-changed=OPENFRAME_TEST_BUILD");
+    println!("cargo:rerun-if-env-changed=STRAFT_TEST_BUILD");
     let Ok(url) = std::env::var(SRC) else {
         return; // every build for people: Hugging Face
     };
@@ -70,12 +70,12 @@ fn check_model_source() {
         panic!("{SRC} must be the local test host, http://127.0.0.1:<port>/.");
     }
     // Every profile: a debug build handed to someone must not carry the test host either.
-    if std::env::var("OPENFRAME_TEST_BUILD").as_deref() != Ok("1") {
+    if std::env::var("STRAFT_TEST_BUILD").as_deref() != Ok("1") {
         panic!(
-            "{SRC} names the local test host; only a test build (OPENFRAME_TEST_BUILD=1) may use it."
+            "{SRC} names the local test host; only a test build (STRAFT_TEST_BUILD=1) may use it."
         );
     }
     println!(
-        "cargo:warning=This build downloads OpenFrame AI from the local test host {url}: a test build, never for the team."
+        "cargo:warning=This build downloads Straft AI from the local test host {url}: a test build, never for the team."
     );
 }
