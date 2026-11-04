@@ -37,14 +37,14 @@ export default function (ctx) {
     const name = win ? 'Windows' : 'Mac';
     return page({
       path: win ? '/windows/' : '/mac/', os, alternates: { win: '/windows/', mac: '/mac/' }, nav: 'download',
-      title: `OpenFrame Studio for ${name}`,
+      title: `Straft Studio for ${name}`,
       description: win
-        ? 'OpenFrame Studio for Windows 11: what it needs, how it installs from the Microsoft Store, the keyboard shortcuts and the step-by-step Windows tutorials.'
-        : 'OpenFrame Studio for Mac on Apple silicon: what it needs, the Mac App Store, Mac keyboard shortcuts, how it differs, and the step-by-step Mac tutorials.',
+        ? 'Straft Studio for Windows 11: what it needs, how it installs from the Microsoft Store, the keyboard shortcuts and the step-by-step Windows tutorials.'
+        : 'Straft Studio for Mac on Apple silicon: what it needs, the Mac App Store, Mac keyboard shortcuts, how it differs, and the step-by-step Mac tutorials.',
       breadcrumbs: [[name, win ? '/windows/' : '/mac/']],
       jsonld: [APP(ctx, win ? 'Windows 11' : 'macOS 14 or later (Apple silicon)', win ? '/windows/' : '/mac/')],
       body: html`
-${phero(win ? 'Windows 11' : 'macOS on Apple silicon', `OpenFrame Studio for ${name}.`, win
+${phero(win ? 'Windows 11' : 'macOS on Apple silicon', `Straft Studio for ${name}.`, win
         ? 'Write, plan and schedule a film in one project on your own computer, in an app made for Windows 11.'
         : 'The same project and the same engine, in a native Mac app with the Mac menu bar, sheets and Command shortcuts.',
       html`<div class="hero-cta">${storeBtn(os, 'btn-lg')}<a class="btn btn-ghost btn-lg" href="${win ? '/windows/tutorials/' : '/mac/tutorials/'}">${name} tutorials</a></div>
@@ -53,13 +53,13 @@ ${phero(win ? 'Windows 11' : 'macOS on Apple silicon', `OpenFrame Studio for ${n
 <div class="tbl-wrap fit"><table class="tbl"><tbody>
 <tr><td><b>System</b></td><td>${win ? 'Windows 11 on a 64-bit computer. Windows 10 is not supported.' : 'A Mac with Apple silicon, running macOS 14 or later. Intel Macs are not supported.'}</td></tr>
 ${win ? html`<tr><td><b>Window size</b></td><td>At least 1200 by 720 pixels.</td></tr>` : ''}
-<tr><td><b>Account and internet</b></td><td>No OpenFrame account. The app works offline. The internet is used for the store and for OpenFrame AI download that you start.</td></tr>
-<tr><td><b>OpenFrame AI</b></td><td>A one-time download of about 1.2 GB. Its chat model needs at least 4 GB of memory, 8 GB recommended.</td></tr>
+<tr><td><b>Account and internet</b></td><td>No Straft account. The app works offline. The internet is used for the store and for Straft AI download that you start.</td></tr>
+<tr><td><b>Straft AI</b></td><td>A one-time download of about 1.2 GB. Its chat model needs at least 4 GB of memory, 8 GB recommended.</td></tr>
 <tr><td><b>Price</b></td><td>7-day free trial, then one payment of ${price()}.</td></tr>
 </tbody></table></div></div></section>
 <section class="sec-s" id="install"><div class="wrap"><div class="sec-head"><h2>Get started in four steps</h2></div>
 <div class="steps3 four">
-<div class="step"><div class="n">1</div><h3>Install</h3><p>${win ? 'Get OpenFrame Studio from the Microsoft Store. The Store installs and updates it.' : 'Get OpenFrame Studio from the Mac App Store. The App Store installs and updates it.'}</p></div>
+<div class="step"><div class="n">1</div><h3>Install</h3><p>${win ? 'Get Straft Studio from the Microsoft Store. The Store installs and updates it.' : 'Get Straft Studio from the Mac App Store. The App Store installs and updates it.'}</p></div>
 <div class="step"><div class="n">2</div><h3>Choose where projects live</h3><p>The first start asks where to keep your projects. The suggested place is fine for most people.</p></div>
 <div class="step"><div class="n">3</div><h3>Say what to call you</h3><p>Your name appears on notes, tasks and activity. It stays on this computer. There is no account.</p></div>
 <div class="step"><div class="n">4</div><h3>Create a project</h3><p>Create Project asks for a title. Everything else is optional and can be changed later.</p></div>
@@ -68,7 +68,7 @@ ${win ? html`<tr><td><b>Window size</b></td><td>At least 1200 by 720 pixels.</td
 <section class="tint sec-s"><div class="wrap narrow"><div class="sec-head"><h2>Keyboard shortcuts on ${name}</h2><p class="lead">The defaults. You can change any of them in Settings.</p></div>
 ${shortcutTable(win ? 1 : 2)}</div></section>
 <section class="sec-s"><div class="wrap narrow"><div class="facts"><h3>Good to know on ${name}</h3><ul class="ticks">
-${win ? html`<li><span>Your project is a folder named <b>Title.openframe</b>, by default under Documents, in OpenFrame. Network folders are refused, and a folder inside a cloud-sync service gets a warning.</span></li>
+${win ? html`<li><span>Your project is a folder named <b>Title.straft</b>, by default under Documents, in Straft. Network folders are refused, and a folder inside a cloud-sync service gets a warning.</span></li>
 <li><span>The left rail holds Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets and Files. The project menu holds sharing, backups and project tools.</span></li>
 <li><span>Spell check uses the dictionaries installed in Windows, with a main and a second language.</span></li>`
         : html`<li><span>It uses the Mac menu bar: File, Edit, View, Go, Window and Help. Import, export, print and Close Project live in the File menu.</span></li>
@@ -84,17 +84,17 @@ ${cta()}`,
   // ---------- Download ----------
   const download = page({
     path: '/download/', nav: 'download',
-    title: 'Download OpenFrame Studio for Windows and Mac',
-    description: 'Get OpenFrame Studio from the Microsoft Store for Windows 11 or the Mac App Store for Apple silicon Macs. 7-day free trial, then one payment.',
+    title: 'Download Straft Studio for Windows and Mac',
+    description: 'Get Straft Studio from the Microsoft Store for Windows 11 or the Mac App Store for Apple silicon Macs. 7-day free trial, then one payment.',
     breadcrumbs: [['Download', '/download/']],
     body: html`
-${phero('Download', 'Get OpenFrame Studio.', 'From the Microsoft Store on Windows and the Mac App Store on the Mac. Try it free for 7 days.')}
+${phero('Download', 'Get Straft Studio.', 'From the Microsoft Store on Windows and the Mac App Store on the Mac. Try it free for 7 days.')}
 <section class="sec-s pt30"><div class="wrap"><div class="price-grid">
-<div class="pcard win rv"><span class="badge">Windows 11</span><h2>OpenFrame Studio for Windows</h2><p class="price-sub mt10">Installed and updated by the Microsoft Store.</p>
-<ul class="ticks"><li><span>Windows 11, 64-bit</span></li><li><span>7-day free trial, then one payment</span></li><li><span>Works offline, no OpenFrame account</span></li></ul>${storeBtn('win', 'btn-lg')}
+<div class="pcard win rv"><span class="badge">Windows 11</span><h2>Straft Studio for Windows</h2><p class="price-sub mt10">Installed and updated by the Microsoft Store.</p>
+<ul class="ticks"><li><span>Windows 11, 64-bit</span></li><li><span>7-day free trial, then one payment</span></li><li><span>Works offline, no Straft account</span></li></ul>${storeBtn('win', 'btn-lg')}
 <p class="small-print"><a href="/windows/">More about Windows</a></p></div>
-<div class="pcard mac rv d1"><span class="badge">Mac</span><h2>OpenFrame Studio for Mac</h2><p class="price-sub mt10">Installed and updated by the Mac App Store.</p>
-<ul class="ticks"><li><span>macOS 14 or later on Apple silicon</span></li><li><span>7-day free trial, then one payment</span></li><li><span>Works offline, no OpenFrame account</span></li></ul>${storeBtn('mac', 'btn-lg')}
+<div class="pcard mac rv d1"><span class="badge">Mac</span><h2>Straft Studio for Mac</h2><p class="price-sub mt10">Installed and updated by the Mac App Store.</p>
+<ul class="ticks"><li><span>macOS 14 or later on Apple silicon</span></li><li><span>7-day free trial, then one payment</span></li><li><span>Works offline, no Straft account</span></li></ul>${storeBtn('mac', 'btn-lg')}
 <p class="small-print"><a href="/mac/">More about the Mac</a></p></div>
 </div></div></section>
 <section class="tint sec-s" id="trial"><div class="wrap"><div class="sec-head"><span class="eyebrow">Have trust issues? Good.</span><h2>Your 7-day free trial, step by step.</h2></div>
@@ -108,15 +108,15 @@ ${phero('Download', 'Get OpenFrame Studio.', 'From the Microsoft Store on Window
   // ---------- Pricing ----------
   const pricing = page({
     path: '/pricing/', nav: 'pricing',
-    title: 'Pricing: pay once, own forever | OpenFrame Studio',
-    description: 'OpenFrame Studio is a one-time lifetime purchase: ₹2,999 in India, €89 in Europe and US$89 elsewhere, after a 7-day free trial. No subscription and no renewal.',
+    title: 'Pricing: pay once, own forever | Straft Studio',
+    description: 'Straft Studio is a one-time lifetime purchase: ₹2,999 in India, €89 in Europe and US$89 elsewhere, after a 7-day free trial. No subscription and no renewal.',
     breadcrumbs: [['Pricing', '/pricing/']],
     body: html`
 ${phero('Pricing', 'Pay once. Own forever.', 'No subscription, no renewal, no rented software. One payment for the whole app, after a 7-day free trial.')}
 <section class="sec-s pt30"><div class="wrap"><div class="price-one">
 <div class="pcard win rv"><span class="badge">Lifetime purchase</span>
 <div class="region-tg" role="group" aria-label="Price region"><button type="button" data-region-set="in" aria-pressed="false">India</button><button type="button" data-region-set="eu" aria-pressed="false">Europe</button><button type="button" data-region-set="world" aria-pressed="false">Other countries</button></div>
-<h2>OpenFrame Studio</h2>
+<h2>Straft Studio</h2>
 <div class="price"><b>${price()}</b></div>
 <p class="price-sub">One payment for <span data-region-name>your region</span>. Bought separately for Windows and for Mac, each in its own store. 7-day free trial first.</p>
 <ul class="ticks">
@@ -127,7 +127,7 @@ ${phero('Pricing', 'Pay once. Own forever.', 'No subscription, no renewal, no re
 <li><span>Shot lists, storyboards and the shooting schedule</span></li>
 <li><span>Call sheets, sides, Daily View, reports and a light budget</span></li>
 <li><span>Backups and project packages</span></li>
-<li><span>OpenFrame AI, with no running cost</span></li>
+<li><span>Straft AI, with no running cost</span></li>
 </ul>
 <div class="store-col">${storeBtn('win')}${storeBtn('mac')}</div>
 <p class="price-note">The Microsoft Store and the Mac App Store set the final checkout amount under their own rules, which can include taxes where you live. The website does not convert currencies.</p></div>
@@ -141,7 +141,7 @@ ${phero('Pricing', 'Pay once. Own forever.', 'No subscription, no renewal, no re
 <path d="M46 250 L110 250 L110 228 L190 228 L190 190 L270 190 L270 150 L350 150 L350 108 L430 108 L430 66 L492 66" stroke="#ff7a52" stroke-width="4" fill="none"/>
 <path d="M46 250 L56 250 L56 214 L492 214" stroke="#fff" stroke-width="4" fill="none"/><circle cx="56" cy="214" r="6" fill="#fff"/>
 <text x="496" y="52" text-anchor="end" fill="#ffab8e" font-weight="700" font-size="15">Rented tools: the bill never stops</text>
-<text x="496" y="240" text-anchor="end" fill="#fff" font-weight="700" font-size="15">OpenFrame: you paid once</text>
+<text x="496" y="240" text-anchor="end" fill="#fff" font-weight="700" font-size="15">Straft: you paid once</text>
 <g text-anchor="middle"><text x="110" y="292">Year 1</text><text x="190" y="292">Year 2</text><text x="270" y="292">Year 3</text><text x="350" y="292">Year 4</text><text x="430" y="292">Year 5</text></g></svg>
 <p class="cap">Illustration of the idea, not real prices.</p></div></div></div></section>
 <section class="sec-s"><div class="wrap narrow"><div class="sec-head"><span class="eyebrow">Have trust issues? Good.</span><h2>Questions about the trial</h2></div>
@@ -152,12 +152,12 @@ ${cta()}`,
   // ---------- FAQ ----------
   const faq = page({
     path: '/faq/', nav: 'faq',
-    title: 'Questions and answers | OpenFrame Studio',
-    description: 'Answers about OpenFrame Studio: platforms, privacy and data, OpenFrame AI, files and formats, the price and the 7-day free trial.',
+    title: 'Questions and answers | Straft Studio',
+    description: 'Answers about Straft Studio: platforms, privacy and data, Straft AI, files and formats, the price and the 7-day free trial.',
     breadcrumbs: [['Questions', '/faq/']],
     jsonld: [{ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ.flatMap(([, items]) => items.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') } }))) }],
     body: html`
-${phero('FAQ', 'Questions and answers.', 'Short, plain answers about the app, your data, OpenFrame AI, files, the price and the trial.', html`<div class="fchips">${FAQ.map(([g]) => html`<a class="fchip" href="#g-${slug(g)}">${g}</a>`)}</div>`)}
+${phero('FAQ', 'Questions and answers.', 'Short, plain answers about the app, your data, Straft AI, files, the price and the trial.', html`<div class="fchips">${FAQ.map(([g]) => html`<a class="fchip" href="#g-${slug(g)}">${g}</a>`)}</div>`)}
 <section class="sec-s pt30"><div class="wrap narrow">
 ${FAQ.map(([g, items]) => html`<div class="faq-group" id="g-${slug(g)}"><h2>${g}</h2>${items.map(faqItem)}</div>`)}
 <p class="small-print">Not answered here? See <a href="/contact/">Contact</a> or the <a href="/tutorials/">tutorials</a>.</p>
@@ -168,8 +168,8 @@ ${cta()}`,
   // ---------- Switch ----------
   const migrate = page({
     path: '/switch/',
-    title: 'Switch to OpenFrame Studio | Import and export',
-    description: 'Bring a screenplay into OpenFrame Studio from Final Draft, Fountain, Word, PDF or text, see a preview first, and export it back out any time.',
+    title: 'Switch to Straft Studio | Import and export',
+    description: 'Bring a screenplay into Straft Studio from Final Draft, Fountain, Word, PDF or text, see a preview first, and export it back out any time.',
     breadcrumbs: [['Switch', '/switch/']],
     body: html`
 ${phero('Easy migration', 'Coming from other software? Bring your scripts.', 'See exactly what will be imported, and every warning, before anything is applied. Nothing is silently flattened or lost.')}
@@ -185,7 +185,7 @@ ${phero('Easy migration', 'Coming from other software? Bring your scripts.', 'Se
 <p class="mt26 muted">If your script is in one of these, save or export it as Final Draft, Fountain, Word or plain text from the program that made it, then import that file.</p>
 <h2 class="mt84">What you can export</h2>
 <div class="tbl-wrap fit mt18"><table class="tbl"><tbody>${EXPORTS.map(([d, f]) => html`<tr><td><b>${d}</b></td><td>${f}</td></tr>`)}</tbody></table></div>
-<p class="mt26 muted">Screenplay files carry no OpenFrame branding. Production PDFs carry a small "Created using OpenFrame" line. CSV files stay clean.</p>
+<p class="mt26 muted">Screenplay files carry no Straft branding. Production PDFs carry a small "Created using Straft" line. CSV files stay clean.</p>
 </div></section>
 <section class="sec-s"><div class="wrap narrow"><div class="facts"><h3>Writing in your own language</h3><ul class="ticks">
 <li><span>Type, save, search and export Hindi, Telugu, Tamil, Kannada and Malayalam text. The screenplay PDF embeds fonts for them.</span></li>
@@ -206,23 +206,23 @@ ${cta()}`,
   ];
   const compare = page({
     path: '/compare/',
-    title: 'One app or five tools | OpenFrame Studio',
-    description: 'An honest look at using OpenFrame Studio as one app for ideas, script and production planning versus several separate tools, with its limits stated.',
+    title: 'One app or five tools | Straft Studio',
+    description: 'An honest look at using Straft Studio as one app for ideas, script and production planning versus several separate tools, with its limits stated.',
     breadcrumbs: [['Compare', '/compare/']],
     body: html`
 ${phero('One app vs five', 'What you stop paying for.', 'Many productions run on a notes app, a screenwriting program, spreadsheets and documents. Here is the same job done both ways, and where one app is the wrong choice.')}
-<section class="sec-s pt30"><div class="wrap"><div class="tbl-wrap" tabindex="0" role="region" aria-label="Separate tools compared with OpenFrame Studio"><table class="tbl">
-<thead><tr><th scope="col">Job</th><th scope="col">With separate tools</th><th scope="col" class="us">In OpenFrame Studio</th></tr></thead>
+<section class="sec-s pt30"><div class="wrap"><div class="tbl-wrap" tabindex="0" role="region" aria-label="Separate tools compared with Straft Studio"><table class="tbl">
+<thead><tr><th scope="col">Job</th><th scope="col">With separate tools</th><th scope="col" class="us">In Straft Studio</th></tr></thead>
 <tbody>${rows.map(([j, a, b]) => html`<tr><td><b>${j}</b></td><td class="no">${a}</td><td class="us">${b}</td></tr>`)}</tbody></table></div></div></section>
 <section class="tint sec-s"><div class="wrap"><div class="grid2">
 <div class="card"><h2 class="t3">What one app gives you</h2><ul class="ticks">
 <li><span>Change a scene once and the breakdown, the schedule and the call sheet know about it.</span></li>
 <li><span>No copying between files, and no version of the truth hiding in an old spreadsheet.</span></li>
 <li><span>One place to back up and one project to send.</span></li>
-<li><span>Everything stays on your computer, with no OpenFrame account.</span></li></ul></div>
+<li><span>Everything stays on your computer, with no Straft account.</span></li></ul></div>
 <div class="card"><h2 class="t3">Where separate tools may suit you better</h2><ul class="ticks">
-<li><span>You need several people editing the same document at the same moment. OpenFrame has no live collaboration; people pass files instead.</span></li>
-<li><span>You want your work on a phone or in a browser. OpenFrame is a desktop app for Windows 11 and Apple silicon Macs.</span></li>
+<li><span>You need several people editing the same document at the same moment. Straft has no live collaboration; people pass files instead.</span></li>
+<li><span>You want your work on a phone or in a browser. Straft is a desktop app for Windows 11 and Apple silicon Macs.</span></li>
 <li><span>You need accounting or payroll. The budget is a light planning sheet.</span></li></ul></div>
 </div></div></section>
 ${cta()}`,
@@ -231,17 +231,17 @@ ${cta()}`,
   // ---------- Local and private ----------
   const local = page({
     path: '/local-and-private/',
-    title: 'Local and private | OpenFrame Studio',
-    description: 'OpenFrame Studio keeps your work on your computer: no OpenFrame account, no telemetry, no cloud service. The few network uses are listed here.',
+    title: 'Local and private | Straft Studio',
+    description: 'Straft Studio keeps your work on your computer: no Straft account, no telemetry, no cloud service. The few network uses are listed here.',
     breadcrumbs: [['Local and private', '/local-and-private/']],
     body: html`
 ${phero('Completely local', 'Your privacy stays on your computer.', 'Your scripts and plans stay on your computer. This page says exactly what the app does, and does not do, with your data and your network.')}
 <section class="sec-s pt30"><div class="wrap split">
-<div><h2>Where your work lives</h2><p class="lead mt18">Each project is one folder named <b>Title.openframe</b>, by default in Documents, in OpenFrame. You can copy, move or back up that folder like any other.</p>
-<ul class="ticks"><li><span><b>No OpenFrame account</b> and no sign-in.</span></li><li><span><b>No telemetry</b>, no analytics and no crash upload.</span></li><li><span><b>No network service</b> that other computers can reach.</span></li><li><span><b>Not encrypted by the app.</b> Use your operating system's disk encryption if you need that protection.</span></li></ul></div>
+<div><h2>Where your work lives</h2><p class="lead mt18">Each project is one folder named <b>Title.straft</b>, by default in Documents, in Straft. You can copy, move or back up that folder like any other.</p>
+<ul class="ticks"><li><span><b>No Straft account</b> and no sign-in.</span></li><li><span><b>No telemetry</b>, no analytics and no crash upload.</span></li><li><span><b>No network service</b> that other computers can reach.</span></li><li><span><b>Not encrypted by the app.</b> Use your operating system's disk encryption if you need that protection.</span></li></ul></div>
 <div class="facts"><h3>The only times the app uses the network</h3><ul class="ticks">
 <li><span><b>The store</b> installs and updates the app and handles the trial and the purchase.</span></li>
-<li><span><b>OpenFrame AI download you start.</b> About 1.2 GB, checked before use. You can also import the files by hand.</span></li>
+<li><span><b>Straft AI download you start.</b> About 1.2 GB, checked before use. You can also import the files by hand.</span></li>
 <li><span><b>A saved link in the Idea Vault.</b> When you click it, it opens in your normal browser.</span></li></ul></div>
 </div></section>
 <section class="tint sec-s"><div class="wrap narrow"><h2>Backups, packages and diagnostics</h2><ul class="ticks">
@@ -256,8 +256,8 @@ ${cta()}`,
   // ---------- Themes ----------
   const themes = page({
     path: '/themes/',
-    title: 'Themes | OpenFrame Studio',
-    description: 'Make your own OpenFrame Studio theme as a small .json file, import it on Windows or the Mac, see the check, and share it. Starter themes to download.',
+    title: 'Themes | Straft Studio',
+    description: 'Make your own Straft Studio theme as a small .json file, import it on Windows or the Mac, see the check, and share it. Starter themes to download.',
     breadcrumbs: [['Themes', '/themes/']],
     body: themesBody({ ...ctx, THEMES }),
   });
@@ -265,14 +265,14 @@ ${cta()}`,
   // ---------- About ----------
   const about = page({
     path: '/about/', nav: 'about',
-    title: 'About OpenFrame Studio and its founders',
-    description: 'Why OpenFrame Studio exists, who it is for, the promises it keeps about your work, and the two founding engineers who build it.',
+    title: 'About Straft Studio and its founders',
+    description: 'Why Straft Studio exists, who it is for, the promises it keeps about your work, and the two founding engineers who build it.',
     breadcrumbs: [['About', '/about/']],
     jsonld: [ORG(ctx)],
     body: html`
-${phero('About OpenFrame', 'From film lovers, to film lovers across the world.', 'OpenFrame Studio is one app for the whole film, made for people who make films with limited resources.')}
+${phero('About Straft', 'From film lovers, to film lovers across the world.', 'Straft Studio is one app for the whole film, made for people who make films with limited resources.')}
 <section class="tint sec-s"><div class="wrap"><div class="two">
-<div class="rv"><h2>What it is for</h2><p class="lead mt18">A film often starts as scattered notes and ends as a pile of separate files. OpenFrame Studio keeps the whole path in one project: first idea, story, screenplay, breakdown, schedule, call sheets and a light budget.</p></div>
+<div class="rv"><h2>What it is for</h2><p class="lead mt18">A film often starts as scattered notes and ends as a pile of separate files. Straft Studio keeps the whole path in one project: first idea, story, screenplay, breakdown, schedule, call sheets and a light budget.</p></div>
 <div class="rv d1"><h2>Who it is for</h2><p class="lead mt18">Writers, screenwriters and production teams, especially people who make films with limited resources. There is one app for everyone and no separate editions.</p></div>
 </div></div></section>
 <section class="sec-s"><div class="wrap"><div class="sec-head"><span class="eyebrow">The founders</span><h2>Two founding engineers.</h2>
@@ -280,8 +280,8 @@ ${phero('About OpenFrame', 'From film lovers, to film lovers across the world.',
 <div class="founders">${FOUNDERS.map((f, i) => html`<article class="founder rv${i ? ' d1' : ''}"><span class="role">${f.role}</span><h3>${f.link ? html`<a class="name-link" href="${f.link}" target="_blank" rel="noopener noreferrer">${f.name}</a>` : f.name}</h3>${f.text.map((p) => html`<p>${p}</p>`)}</article>`)}
 </div></div></section>
 <section class="tint sec-s"><div class="wrap"><div class="sec-head"><h2>Your idea. Your film. Our promise.</h2></div><div class="grid3">
-<div class="card rv"><h3>Your work is yours</h3><p>It lives on your computer. No OpenFrame account, no cloud service, no telemetry.</p></div>
-<div class="card rv d1"><h3>You stay in charge</h3><p>OpenFrame AI only suggests. Nothing changes until you choose Apply.</p></div>
+<div class="card rv"><h3>Your work is yours</h3><p>It lives on your computer. No Straft account, no cloud service, no telemetry.</p></div>
+<div class="card rv d1"><h3>You stay in charge</h3><p>Straft AI only suggests. Nothing changes until you choose Apply.</p></div>
 <div class="card rv d2"><h3>No lock-in</h3><p>Standard formats in, standard formats out. Back up and move your whole project any time.</p></div>
 </div></div></section>
 ${cta()}`,

@@ -1,4 +1,4 @@
-/* OpenFrame website behaviour: the three independent controls (platform, website theme, app screen theme), app screen
+/* Straft website behaviour: the three independent controls (platform, website theme, app screen theme), app screen
    pictures, menus, home screen switcher, regional price. No dependencies, no tracking, nothing sent anywhere. */
 (function () {
   var doc = document.documentElement;
@@ -180,7 +180,7 @@
     upd();
   }
 
-  /* ---------- loading: the page splash (the OpenFrame icon) lifts once the page has loaded; first visit of a session ---------- */
+  /* ---------- loading: the page splash (the Straft icon) lifts once the page has loaded; first visit of a session ---------- */
   function splash() {
     var done = false;
     function lift() { if (done) return; done = true; doc.classList.add('ready'); try { sessionStorage.setItem('of_seen', '1'); } catch (e) {} }
@@ -203,7 +203,7 @@
   function shotViews() {
     var ro = 'ResizeObserver' in window ? new ResizeObserver(function (es) { es.forEach(function (en) { fitView(en.target); }); }) : null;
     document.querySelectorAll('.shot-view').forEach(function (v) { fitView(v); if (ro) ro.observe(v); });
-    // a card waits behind the OpenFrame icon (or its soft box) until its page has loaded
+    // a card waits behind the Straft icon (or its soft box) until its page has loaded
     function done(f) { var b = f.closest('.shot-open,.thumb'); if (b) b.classList.add('loaded'); }
     ['load', 'error'].forEach(function (t) {
       document.addEventListener(t, function (e) { if (e.target && e.target.tagName === 'IFRAME' && e.target.closest('.shot-view')) done(e.target); }, true);

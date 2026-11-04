@@ -141,7 +141,7 @@ export default {
         {
           screen: `prod-moodboard`,
           do: `Look for the new link card, and double-click it to open the page.`,
-          explain: `In the picture, the card Monsoon palette reads link and example.com under its title. Double-clicking a link card opens its address outside OpenFrame. OpenFrame itself never loads the page, it only keeps the address and title. You can also copy a web address and paste it onto the canvas with Ctrl+V, which adds a link card, and pasted plain text becomes a note.`,
+          explain: `In the picture, the card Monsoon palette reads link and example.com under its title. Double-clicking a link card opens its address outside Straft. Straft itself never loads the page, it only keeps the address and title. You can also copy a web address and paste it onto the canvas with Ctrl+V, which adds a link card, and pasted plain text becomes a note.`,
         },
       ],
       result: `A link card is on the board.`,
@@ -215,7 +215,7 @@ export default {
         {
           screen: `prod-moodboard-link-drawer`,
           do: `Open a link card with Edit item. The drawer is headed Link.`,
-          explain: `It has Web address *, Title and Caption, and an Open link button that opens the page outside OpenFrame. Edit a box and click out of it to save.`,
+          explain: `It has Web address *, Title and Caption, and an Open link button that opens the page outside Straft. Edit a box and click out of it to save.`,
         },
         {
           screen: `prod-moodboard-image-drawer`,
@@ -337,7 +337,7 @@ export default {
         {
           screen: `prod-moodboard-export-dialog`,
           do: `Click Export… and choose where to save the file in the Windows window that opens.`,
-          explain: `Cancel closes the dialog with no file made. The PDF carries a small Created using OpenFrame line.`,
+          explain: `Cancel closes the dialog with no file made. The PDF carries a small Created using Straft line.`,
         },
       ],
       result: `A PDF of the board is saved where you chose.`,
@@ -380,7 +380,7 @@ export default {
   limits: [
     `A board holds images, notes and links. There is no video or audio on a moodboard.`,
     `Export makes a PDF of one board at a time. There is no other format.`,
-    `A link card keeps the web address and title. OpenFrame does not show a preview of the page.`,
+    `A link card keeps the web address and title. Straft does not show a preview of the page.`,
     `Moodboards are not tied to scenes unless you pick a scene when you create the board.`,
   ],
   troubleshooting: [
@@ -398,7 +398,7 @@ export default {
     },
     {
       problem: `I dropped files onto the board and only some appeared.`,
-      fix: `Only picture files can be dropped. OpenFrame says Only images can be dropped on a moodboard. Other files were skipped.`,
+      fix: `Only picture files can be dropped. Straft says Only images can be dropped on a moodboard. Other files were skipped.`,
     },
     {
       problem: `My internal note is missing from the PDF.`,

@@ -550,7 +550,7 @@ export default {
         {
           screen: `schedule-suggest-grouping`,
           do: `Move the scenes yourself on the Board if you agree, or click Dismiss.`,
-          explain: `The panel says: Suggestions are advice. OpenFrame never rearranges your schedule silently. Close closes the panel.`,
+          explain: `The panel says: Suggestions are advice. Straft never rearranges your schedule silently. Close closes the panel.`,
         },
       ],
       result: `You know which scenes could be shot together and have decided whether to regroup them.`,
@@ -619,7 +619,7 @@ export default {
           explain: `Cancel closes the sheet without a file.`,
         },
       ],
-      result: `You have a file of the schedule, or the days you chose, outside OpenFrame.`,
+      result: `You have a file of the schedule, or the days you chose, outside Straft.`,
       cautions: [
         `The file is a snapshot. If you change the schedule later, export again.`,
       ],

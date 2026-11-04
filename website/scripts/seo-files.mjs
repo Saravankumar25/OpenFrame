@@ -44,13 +44,13 @@ export function writeLlms(DIST, { paths, manual, FEATURE_GROUPS, CATALOG, OS }) 
 Facts:
 - Platforms: Windows 11 (64-bit) and macOS 14 or later on Apple silicon Macs. Sold through the Microsoft Store and the Mac App Store.
 - Price: one-time lifetime purchase, ₹2,999 in India, €89 in Europe and US$89 in other countries, after a 7-day free trial. The store sets the final checkout amount.
-- Privacy: no OpenFrame account, no telemetry, no cloud service. Works offline. Projects are not encrypted by the app.
-- OpenFrame AI: optional. One-time download of about 1.2 GB that the person starts; runs on the computer; suggests changes that apply only when the person clicks Apply.
+- Privacy: no Straft account, no telemetry, no cloud service. Works offline. Projects are not encrypted by the app.
+- Straft AI: optional. One-time download of about 1.2 GB that the person starts; runs on the computer; suggests changes that apply only when the person clicks Apply.
 - Import: Final Draft (.fdx), Fountain, Word (.docx), PDF (best effort), plain text. Screenplay export: PDF, FDX, Fountain, DOCX, TXT.
 - Collaboration: no live co-editing and no cloud sharing. Teams pass project files and review packages between computers.
 
 ## Pages
-${link('/features/', 'Features', 'every capability, marked for Windows and Mac.')}${link('/pricing/', 'Pricing', 'the one-time price and the 7-day trial.')}${link('/download/', 'Download')}${link('/faq/', 'FAQ', 'platforms, privacy, files, OpenFrame AI and the price.')}${link('/local-and-private/', 'Local and private', 'where files live and what the app never sends.')}${link('/switch/', 'Switch to OpenFrame Studio', 'which script formats come in and go out.')}${link('/compare/', 'Compare')}${link('/themes/', 'Themes')}${link('/about/', 'About')}${link('/windows/tutorials/', 'Windows tutorials', 'step-by-step tutorials on the real Windows screens.')}${link('/mac/tutorials/', 'Mac tutorials', 'step-by-step tutorials on the real Mac screens.')}
+${link('/features/', 'Features', 'every capability, marked for Windows and Mac.')}${link('/pricing/', 'Pricing', 'the one-time price and the 7-day trial.')}${link('/download/', 'Download')}${link('/faq/', 'FAQ', 'platforms, privacy, files, Straft AI and the price.')}${link('/local-and-private/', 'Local and private', 'where files live and what the app never sends.')}${link('/switch/', 'Switch to Straft Studio', 'which script formats come in and go out.')}${link('/compare/', 'Compare')}${link('/themes/', 'Themes')}${link('/about/', 'About')}${link('/windows/tutorials/', 'Windows tutorials', 'step-by-step tutorials on the real Windows screens.')}${link('/mac/tutorials/', 'Mac tutorials', 'step-by-step tutorials on the real Mac screens.')}
 ## Optional
 - [Complete feature catalog and tutorial list](${SITE_URL}/llms-full.txt)
 `);

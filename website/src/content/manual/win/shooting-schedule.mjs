@@ -196,7 +196,7 @@ export default {
       ],
       result: `Scenes sit on the days you chose, in the order you chose.`,
       cautions: [
-        `Nothing moves unless you move it. OpenFrame never places scenes for you.`,
+        `Nothing moves unless you move it. Straft never places scenes for you.`,
         `Every move can be undone with the Undo button in the message at the bottom.`,
         `With strict validation on, a move that would create a warning asks you first. See Turn on strict validation and use Keep Anyway.`,
       ],
@@ -509,7 +509,7 @@ export default {
         {
           screen: `prod-schedule-warnings-drawer`,
           do: `Click Open affected item on a card.`,
-          explain: `It opens the day page for that warning. Move scene (you decide) does the same, so you can change the scenes yourself. OpenFrame never moves a scene to fix a warning. The warning cards also appear as yellow bars at the top of the day page.`,
+          explain: `It opens the day page for that warning. Move scene (you decide) does the same, so you can change the scenes yourself. Straft never moves a scene to fix a warning. The warning cards also appear as yellow bars at the top of the day page.`,
         },
         {
           screen: `prod-schedule-warning-open-day`,
@@ -564,7 +564,7 @@ export default {
       ],
       result: `The scenes are on one day, if you chose to move them. The message reads Grouped scenes on Shoot Day N with Undo.`,
       cautions: [
-        `Suggestions are advice only. The panel says: OpenFrame never rearranges your schedule silently.`,
+        `Suggestions are advice only. The panel says: Straft never rearranges your schedule silently.`,
         `Apply manually is greyed out until at least one shooting day exists. Scenes already on the day you pick are left where they are.`,
       ],
       related: [`shooting-schedule-move-scenes`, `shooting-schedule-warnings`],
@@ -822,7 +822,7 @@ export default {
     [`Ctrl+K`, `Search this project, from the box at the top of the window`],
   ],
   limits: [
-    `There is no automatic scheduler. OpenFrame never places or moves scenes. Warnings and grouping suggestions are advice only.`,
+    `There is no automatic scheduler. Straft never places or moves scenes. Warnings and grouping suggestions are advice only.`,
     `A schedule is built from one screenplay draft, the Production Source. Scheduling never changes the screenplay, and scene headings and numbers are edited in the screenplay.`,
     `Estimates, start times and page overrides are entered by you. Missing values show as Missing and are never guessed.`,
     `Duplicate day copies breaks and notes only, not scenes.`,

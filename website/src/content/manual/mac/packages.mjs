@@ -370,8 +370,8 @@ export default {
         },
         {
           screen: `package-restore-damaged`,
-          do: `If the file is damaged or is not an OpenFrame package, read the message.`,
-          explain: `It says: This file isn't a valid OpenFrame package or document, so nothing was imported. Choose Package… again and pick another copy.`,
+          do: `If the file is damaged or is not a Straft package, read the message.`,
+          explain: `It says: This file isn't a valid Straft package or document, so nothing was imported. Choose Package… again and pick another copy.`,
         },
         {
           screen: `package-restore-collision`,
@@ -429,7 +429,7 @@ export default {
     'package-history-my-reviews': `Import & Export History on My reviews, listing a review package with an Open button. Used in packages-history.`,
     'package-history-package-log': `Import & Export History on Package log, listing an import, a review package export, a project package export and a backup. Used in packages-history.`,
     'package-restore': `The Open Project Package window before a file is chosen. It accepts .ofproject and .ofbackup files and offers Choose Package… and Cancel. Used in packages-restore.`,
-    'package-restore-damaged': `The Open Project Package window after a damaged file was chosen. It says the file isn't a valid OpenFrame package or document and nothing was imported. Used in packages-restore.`,
+    'package-restore-damaged': `The Open Project Package window after a damaged file was chosen. It says the file isn't a valid Straft package or document and nothing was imported. Used in packages-restore.`,
     'package-restore-collision': `The window This project already exists on this computer, with Open as Copy (default) and Replace Existing After Backup (high impact), an import report and the buttons Cancel and Open as Copy. Used in packages-restore.`,
     'package-restore-opened-copy': `The restored project opened as Night Bus (copy), with a message and the Restore Backup window saying it opened as a copy and the original was not replaced. Used in packages-restore.`,
   },
@@ -455,7 +455,7 @@ export default {
       fix: `Specific scenes only is chosen but no scene is ticked. The window says Choose at least one scene. Tick one or more scenes.`,
     },
     {
-      problem: `The file is refused as not a valid OpenFrame package.`,
+      problem: `The file is refused as not a valid Straft package.`,
       fix: `The file is damaged or is another kind of file. Nothing was imported or changed. Choose another copy.`,
     },
     {

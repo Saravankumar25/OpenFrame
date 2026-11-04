@@ -11,7 +11,7 @@ Where the code is: `src/lib/seo.mjs` (head tags, Open Graph and X cards, JSON-LD
 
 | Item | How | State |
 |---|---|---|
-| Title | At most 60 characters, unique. Brand `| OpenFrame Studio` is added automatically when the title has none and still fits. Cut at a word, never with a dash or dots. Duplicate tutorial titles get their area added ("Delete a saved snapshot (Budget) on Windows"). | Tested |
+| Title | At most 60 characters, unique. Brand `| Straft Studio` is added automatically when the title has none and still fits. Cut at a word, never with a dash or dots. Duplicate tutorial titles get their area added ("Delete a saved snapshot (Budget) on Windows"). | Tested |
 | Description | 70 to 165 characters, unique. Tutorial descriptions are the purpose line plus the area and platform, cut at a word. | Tested |
 | Canonical | `SITE_URL + path` on every page, always with the trailing slash that Cloudflare Pages serves. | Tested |
 | Robots | Indexable: `index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1`. Error pages (`noindex` flag): `noindex`, and they are not in the sitemap. `/search/` must be `noindex` (a results shell with no content of its own; the test enforces it once the page exists). | Tested |
@@ -19,7 +19,7 @@ Where the code is: `src/lib/seo.mjs` (head tags, Open Graph and X cards, JSON-LD
 | X (Twitter) | `summary_large_image` with title, description, image and image alt. No `twitter:site`: there is no account to name. | Tested |
 | Per-page picture | A page can set `ogImage`, `ogWidth`, `ogHeight`, `ogAlt`, `ogType`. Today every page uses `/og.png`. A picture per section (features, tutorials by area) would make shared links more specific; not done. | Optional |
 
-Home title is now "OpenFrame Studio: film production software" (it was 88 characters and would have been cut in results).
+Home title is now "Straft Studio: film production software" (it was 88 characters and would have been cut in results).
 
 ## 2. Structured data (JSON-LD)
 
@@ -27,7 +27,7 @@ Each page declares what it needs; `jsonLd()` in `src/lib/seo.mjs` then removes a
 
 | Type | Where | Notes |
 |---|---|---|
-| Organization | Home, About | Brand name `OpenFrame Studio`, logo (512 px icon), slogan from the About page. Founders (Saravan Kumar M K, Badrinath Reddy A) only where they are named on the page, so on About only. |
+| Organization | Home, About | Brand name `Straft Studio`, logo (512 px icon), slogan from the About page. Founders (Saravan Kumar M K, Badrinath Reddy A) only where they are named on the page, so on About only. |
 | WebSite | Home | With `SearchAction` to `/search/?q={search_term_string}`. Google stopped showing the sitelinks search box in 2024, so this is kept for other consumers and costs one object. Test: the target page exists. |
 | SoftwareApplication | Home, Features, Windows, Mac, Pricing | `operatingSystem`, `applicationCategory` (MultimediaApplication), image. `offers` only on pages that show the price (Home, Pricing, the platform pages): INR 2999 with `eligibleRegion` IN, USD 89 with `ineligibleRegion` IN, in stock. No `priceValidUntil`: the price has no end date, and an invented one would expire. No ratings or reviews: none exist and none are invented, so Google will not show a software rich result. The markup still gives search and answer engines the facts. |
 | BreadcrumbList | Every indexable page except Home | Home, then the page's trail, last item is the page itself. Tested: each item resolves. |

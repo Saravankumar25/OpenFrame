@@ -1,5 +1,5 @@
 // Page shell in the approved website design: control strip (platform, website theme, screen theme), header with the
-// Features and Why OpenFrame menus, footer with the company, and the shared ctx helpers (app screens, store buttons).
+// Features and Why Straft menus, footer with the company, and the shared ctx helpers (app screens, store buttons).
 import { html, raw, esc } from './html.mjs';
 import { ICON, MARK, GRADIENT_DEFS } from './icons.mjs';
 import { FEATURE_GROUPS, WHY, OS, COMPANY, COMPANY_ADDRESS, SUPPORT_EMAIL } from '../content/nav.mjs';
@@ -103,18 +103,18 @@ function header(page, switchHref) {
 <a class="brand draw" href="/" >${MARK}${WORDMARK}<span class="sr"> Studio, home</span></a>
 <ul class="menu" id="menu">
 <li class="has-mega"><button type="button" aria-expanded="false"${page.nav === 'features' ? raw(' class="is-current"') : ''}>Features${ICON.chev}</button><div class="mega"><div class="mega-in">${feat}
-<div class="mega-foot"><span>One film, moving forward, from first idea to final call sheet.</span><a href="/features/">See everything OpenFrame does &rarr;</a></div></div></div></li>
-<li class="has-mega"><button type="button" aria-expanded="false">Why OpenFrame${ICON.chev}</button><div class="mega small"><div class="mega-in">${why}</div></div></li>
+<div class="mega-foot"><span>One film, moving forward, from first idea to final call sheet.</span><a href="/features/">See everything Straft does &rarr;</a></div></div></div></li>
+<li class="has-mega"><button type="button" aria-expanded="false">Why Straft${ICON.chev}</button><div class="mega small"><div class="mega-in">${why}</div></div></li>
 <li><a href="/pricing/"${cur('pricing')}>Pricing</a></li>
 <li><a href="/tutorials/" data-os-href-win="/windows/tutorials/" data-os-href-mac="/mac/tutorials/"${cur('tutorials')}>Tutorials</a></li>
 <li><a href="/faq/"${cur('faq')}>FAQ</a></li>
 <li><a href="/about/"${cur('about')}>About Us</a></li>
-<li class="menu-get"><a class="btn btn-primary" href="/download/">Get OpenFrame</a></li>
+<li class="menu-get"><a class="btn btn-primary" href="/download/">Get Straft</a></li>
 <li class="menu-ctls">${ctls}</li>
 </ul>
 <div class="ctls nav-ctls">${ctls}</div>
 <a class="srch-btn" href="/search/" data-search-open aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K /"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span class="sr">Search</span><kbd class="srch-k" aria-hidden="true"><span data-os-show="win">Ctrl K</span><span data-os-show="mac">Cmd K</span></kbd></a>
-<a class="btn btn-primary btn-sm nav-get" href="/download/"${cur('download')}>Get OpenFrame</a>
+<a class="btn btn-primary btn-sm nav-get" href="/download/"${cur('download')}>Get Straft</a>
 <button type="button" class="menu-tg" id="menutg" aria-label="Menu" aria-controls="menu" aria-expanded="false"><span class="tg-open">${ICON.menu}</span><span class="tg-close">${ICON.cross}</span></button>
 </div></header>
 <script type="application/json" id="os-switch">${raw(JSON.stringify(switchHref))}</script>`;
@@ -124,23 +124,23 @@ const LEGAL_LINKS = [['Privacy', '/legal/privacy/'], ['Terms', '/legal/terms/'],
 function footer() {
   const col = (t, items) => html`<div><p class="f-h">${t}</p><ul>${items.map(([a, h]) => html`<li><a href="${h}">${a}</a></li>`)}</ul></div>`;
   const all = FEATURE_GROUPS.flatMap(([, items]) => items);
-  // The Get OpenFrame dialog and pill (src/assets/js/getapp.js clones this). Same store buttons and price as everywhere else.
+  // The Get Straft dialog and pill (src/assets/js/getapp.js clones this). Same store buttons and price as everywhere else.
   const { storeBtn, price } = makeHelpers();
   const getapp = html`<template id="getapp-tpl"><dialog class="gp-dlg" aria-labelledby="gp-title"><div class="gp-box">
 <button type="button" class="gp-x" data-gp-close aria-label="Close">${ICON.cross}</button>
-<div class="gp-top"><h2 id="gp-title">Try OpenFrame Studio free for 7 days</h2><p class="gp-lead">Pay once. Own forever. No subscription.</p><p class="gp-price">Keep it for ${price()}, paid once.</p></div>
+<div class="gp-top"><h2 id="gp-title">Try Straft Studio free for 7 days</h2><p class="gp-lead">Pay once. Own forever. No subscription.</p><p class="gp-price">Keep it for ${price()}, paid once.</p></div>
 <div class="gp-body">
 <section class="gp-sec" data-gp-os="win" aria-labelledby="gp-win"><h3 id="gp-win">Windows</h3><p>Get it from the Microsoft Store.</p>${storeBtn('win', 'btn-lg')}</section>
 <section class="gp-sec" data-gp-os="mac" aria-labelledby="gp-mac"><h3 id="gp-mac">Mac</h3><p>Get it from the Mac App Store.</p>${storeBtn('mac', 'btn-lg')}</section>
 <p class="gp-links"><a href="/pricing/">See pricing</a><a href="/tutorials/" data-os-href-win="/windows/tutorials/" data-os-href-mac="/mac/tutorials/">Explore the tutorials</a></p>
-</div></div></dialog><button type="button" class="gp-pill" hidden>Get OpenFrame</button></template>`;
+</div></div></dialog><button type="button" class="gp-pill" hidden>Get Straft</button></template>`;
   return html`<footer class="site-f"><div class="wrap"><div class="f-grid">
 <div><a class="brand" href="/" >${MARK}${WORDMARK}<span class="sr"> Studio, home</span></a>
 <p class="about">A film production software for all your needs. From film lovers, to film lovers across the world.</p>
 <div class="f-company"><img src="/company/vighnajith-advisories-logo-192.webp" srcset="/company/vighnajith-advisories-logo-96.webp 96w, /company/vighnajith-advisories-logo-192.webp 192w, /company/vighnajith-advisories-logo-288.webp 288w" sizes="96px" width="96" height="48" alt="${COMPANY} logo" loading="lazy"><span>${SITE_NAME} is a product of ${COMPANY}.</span></div></div>
 ${col('Ideate & Write', all.slice(0, 7).map(([s, t]) => [t, `/features/${s}/`]))}
 ${col('Plan & Shoot', all.slice(7).map(([s, t]) => [t, `/features/${s}/`]).concat([['All features', '/features/']]))}
-${col('Why OpenFrame', WHY.map(([h, t]) => [t, h]).concat([['Windows', '/windows/'], ['Mac', '/mac/']]))}
+${col('Why Straft', WHY.map(([h, t]) => [t, h]).concat([['Windows', '/windows/'], ['Mac', '/mac/']]))}
 ${col('Support', [['Windows tutorials', '/windows/tutorials/'], ['Mac tutorials', '/mac/tutorials/'], ['FAQ', '/faq/'], ['Contact us', '/contact/'], ['Download', '/download/'], ['About us', '/about/']])}
 </div><nav class="f-legal" aria-label="Legal">${LEGAL_LINKS.map(([a, h]) => html`<a href="${h}">${a}</a>`)}</nav><div class="f-bot"><span>&copy; ${new Date().getFullYear()} ${COMPANY}. <b>Your privacy stays on your computer.</b></span>
 <span>Microsoft and Microsoft Store are trademarks of the Microsoft group of companies. Apple, Mac, macOS and Mac App Store are trademarks of Apple Inc.</span></div>
@@ -158,8 +158,8 @@ export function renderPage(page, { css, js, switchHref }) {
 ${headMeta(page)}
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0e0d15" media="(prefers-color-scheme: dark)">
-<meta name="application-name" content="OpenFrame Studio">
-<meta name="apple-mobile-web-app-title" content="OpenFrame">
+<meta name="application-name" content="Straft Studio">
+<meta name="apple-mobile-web-app-title" content="Straft">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">

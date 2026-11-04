@@ -8,7 +8,7 @@ Names of secrets appear here. Values never do, and they must never be pasted int
 
 ## 1. Build, test, deploy
 
-Run these from `C:\OpenFrameWebsite`.
+Run these from `C:\StraftWebsite`.
 
 | Step | Command | What it does |
 |---|---|---|
@@ -334,7 +334,7 @@ What `ensure` keeps in place for `openframestudio.app`:
 | SSL/TLS | mode Full (strict), Always Use HTTPS on, minimum TLS 1.2, TLS 1.3 on; DNSSEC on |
 | Old address | account Bulk Redirect list `pages_dev_to_domain`: `openframe-studio.pages.dev` to the apex, 301, path and query kept (official method, Pages docs "Disable access to `*.pages.dev` subdomain"). Preview addresses (`*.openframe-studio.pages.dev`) are not touched |
 
-Token permissions (token `openframe-website`, kept in the user variables `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`,
+Token permissions (token `straft-website`, kept in the user variables `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`,
 never in the repository):
 
 | Scope | Permission | Used for |
@@ -407,7 +407,7 @@ canonical host, with no `pages.dev` address in it.
    search side.
 8. Google Business Profile. Google's rule: a profile is for a business with a physical location customers can visit,
    or one that travels to customers in a service area. Virtual offices, mailbox addresses and P.O. boxes do not
-   qualify. OpenFrame Studio is sold online through two app stores, so unless the company has a staffed public-facing
+   qualify. Straft Studio is sold online through two app stores, so unless the company has a staffed public-facing
    office, it probably does not qualify. This is the owner's decision; do not create a profile with an address that
    is not a real, staffed location. Source: https://support.google.com/business/answer/3038177.
 9. Review and directory sites: G2, Capterra, Product Hunt, AlternativeTo, SaaSHub. Create a listing on each only when
@@ -435,5 +435,5 @@ https://www.indexnow.org/documentation (IndexNow).
 
 - Microsoft Store and Mac App Store listing links.
 - Custom domain and company email; a public contact address.
-- Mac screens of OpenFrame AI at work (the Mac capture had no engine installed).
+- Mac screens of Straft AI at work (the Mac capture had no engine installed).
 - Owner direction on the hero animation and on real photography (see `docs/ROADMAP.md`).

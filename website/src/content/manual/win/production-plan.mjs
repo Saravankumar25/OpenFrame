@@ -5,7 +5,7 @@ export default {
   part: `Plan`,
   intro: [
     `Production is the planning workspace of a project. It turns your screenplay into a shoot you can prepare: what the script needs, which places and people you have, and what is still open. It has thirteen tabs along the top: Overview, Catalog, Locations, Cast & Crew, Moodboards, Storyboards, Shot Lists, Schedule, Day Out of Days, Daily View, Sides, Reports and Budget. This chapter covers the first two, Overview and Catalog. Locations and Cast & Crew have their own chapters.`,
-    `Production always starts from one named screenplay draft, called the Production Source. You choose it once on the Overview tab. Your screenplay is never changed by this step, and you never recreate a scene by hand: OpenFrame makes a breakdown scene for every scene in the draft. If the script changes later, you choose to update the Production Source and review the changes before anything happens.`,
+    `Production always starts from one named screenplay draft, called the Production Source. You choose it once on the Overview tab. Your screenplay is never changed by this step, and you never recreate a scene by hand: Straft makes a breakdown scene for every scene in the draft. If the script changes later, you choose to update the Production Source and review the changes before anything happens.`,
     `Overview answers one question: what do I need to do next to prepare the shoot? It shows five tiles (script status, breakdown progress, unresolved locations, unresolved cast and the catalog) and a Needs attention list. Every tile and every item opens the place where you fix it. Nothing on the page is a step you must finish first.`,
     `Catalog answers a different question: what things does this film need? It is one list of reusable production items, such as props, wardrobe, vehicles and sound, instead of one huge spreadsheet. An item is created once and then linked to every scene that needs it from the Breakdown. The catalog has no money or purchasing fields. It is a directory of what the film needs, not a budget.`,
   ],
@@ -86,7 +86,7 @@ export default {
         {
           screen: `prod-overview-source-dialog`,
           do: `Read the lines under the list, then click Set as Production Source.`,
-          explain: `For a first setup the dialog lists what OpenFrame will create or initialise: breakdown scenes, one per screenplay scene and numbered automatically; the production catalog; and the scene list used by shot lists, storyboards and the schedule. A box, Why this draft? (optional), takes a short reason such as Locked shooting draft. The dialog repeats that you will not recreate any scene by hand and your screenplay is not changed.`,
+          explain: `For a first setup the dialog lists what Straft will create or initialise: breakdown scenes, one per screenplay scene and numbered automatically; the production catalog; and the scene list used by shot lists, storyboards and the schedule. A box, Why this draft? (optional), takes a short reason such as Locked shooting draft. The dialog repeats that you will not recreate any scene by hand and your screenplay is not changed.`,
         },
         {
           screen: `prod-overview`,
@@ -266,7 +266,7 @@ export default {
         {
           screen: `prod-catalog-drawer`,
           do: `Type a reference in Contact / reference, and click Add Image to pick a picture.`,
-          explain: `Contact / reference is private: only Owners and Editors see it, and it is never shared with OpenFrame AI or put in exports. Add Image opens the Windows file window. Once there is a picture, it shows in the drawer with a small x to remove it.`,
+          explain: `Contact / reference is private: only Owners and Editors see it, and it is never shared with Straft AI or put in exports. Add Image opens the Windows file window. Once there is a picture, it shows in the drawer with a small x to remove it.`,
         },
         {
           screen: `prod-catalog-drawer`,
@@ -441,7 +441,7 @@ export default {
     `The Catalog has no cost, supplier or purchasing fields. Money is handled in Budget.`,
     `The category of an existing catalog item cannot be changed. Add a new item in the right category instead.`,
     `Exports are snapshots. They do not update when the Catalog changes, and private notes are left out.`,
-    `Contact / reference on a catalog item is private to Owners and Editors and is never shared with OpenFrame AI or put in exports.`,
+    `Contact / reference on a catalog item is private to Owners and Editors and is never shared with Straft AI or put in exports.`,
   ],
   troubleshooting: [
     {

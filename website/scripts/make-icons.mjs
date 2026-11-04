@@ -1,4 +1,4 @@
-// Draws the site icon set into src/static from the OpenFrame frame mark: favicon.ico (16, 32, 48), PNG favicons,
+// Draws the site icon set into src/static from the Straft frame mark: favicon.ico (16, 32, 48), PNG favicons,
 // the Apple touch icon, the web app icons (192, 512) and a maskable icon. Re-run when the mark changes.
 // Run: node scripts/make-icons.mjs
 import fs from 'node:fs';

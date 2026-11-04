@@ -4,18 +4,18 @@ export default {
   order: 31,
   part: `Project and data`,
   intro: [
-    `OpenFrame Studio starts with a 7-day free trial. The Microsoft Store runs the trial and takes the purchase, so you pay and manage it the way you do for any other Microsoft Store app. This chapter shows what you see in OpenFrame at each stage: the trial counter, the reminder, the purchase, the file safety steps and the screens that appear if the purchase cannot be checked.`,
+    `Straft Studio starts with a 7-day free trial. The Microsoft Store runs the trial and takes the purchase, so you pay and manage it the way you do for any other Microsoft Store app. This chapter shows what you see in Straft at each stage: the trial counter, the reminder, the purchase, the file safety steps and the screens that appear if the purchase cannot be checked.`,
     `While the trial runs, a small chip in the top bar counts the days left, and a Buy full version button sits beside it. A few days before the trial ends, a reminder opens. You can keep working on the trial or buy the full version.`,
-    `Your work is never held back by any of this. Your projects stay on your computer either way, and nothing is deleted when the trial ends. If the trial ends or a purchase stops being active, OpenFrame shows a screen with Buy full version and Restore purchase. Buying or restoring opens your projects again exactly as you left them.`,
-    `Straight after you buy, OpenFrame shows a note about your data, a short four-step File safety tutorial and a welcome. They are there because your projects live only on your computer and nobody else holds a copy.`,
+    `Your work is never held back by any of this. Your projects stay on your computer either way, and nothing is deleted when the trial ends. If the trial ends or a purchase stops being active, Straft shows a screen with Buy full version and Restore purchase. Buying or restoring opens your projects again exactly as you left them.`,
+    `Straight after you buy, Straft shows a note about your data, a short four-step File safety tutorial and a welcome. They are there because your projects live only on your computer and nobody else holds a copy.`,
   ],
   layout: [
     { name: `Trial chip`, text: `In the top bar, beside the search box. It reads Trial: 7 days left and counts down, for example Trial: 3 days left. Its tooltip reads Free trial, 7 days left.` },
-    { name: `Buy full version`, text: `An orange button next to the trial chip. Click it to start the purchase in the Microsoft Store. If OpenFrame is waiting to check a purchase, the button reads Check purchase instead.` },
+    { name: `Buy full version`, text: `An orange button next to the trial chip. Click it to start the purchase in the Microsoft Store. If Straft is waiting to check a purchase, the button reads Check purchase instead.` },
     { name: `Trial reminder`, text: `A dialog titled Trial reminder with the line Your free trial ends in 3 days, a note that nothing is deleted, and the buttons Continue trial and Buy full version.` },
     { name: `Your data, your responsibility`, text: `A dialog shown once, right after you buy. Six numbered points, your root folder with a Show in File Explorer button, a tick box and OK, I understand.` },
     { name: `File safety tutorial`, text: `Four steps: Where it lives, Back up, New laptop and Check. Each step has Back and Next, and the last has Finish.` },
-    { name: `Welcome to the OpenFrame Studio family`, text: `A thank you with OpenFrame's community links and an OK button.` },
+    { name: `Welcome to the Straft Studio family`, text: `A thank you with Straft's community links and an OK button.` },
     { name: `Check needed and locked screens`, text: `Checking your purchase, Your free trial has ended and Your purchase is no longer active. Each says your projects are safe and offers the way forward.` },
   ],
   workflows: [
@@ -39,7 +39,7 @@ export default {
         {
           screen: `licence-trial-reminder`,
           do: `When the reminder opens, read it, then click Continue trial or Buy full version.`,
-          explain: `It says Your free trial ends in 3 days and Buy the full version to keep using OpenFrame Studio. A note adds: Your projects stay on your computer either way. Nothing is deleted when the trial ends. Continue trial closes the reminder and you carry on. Close, the x, does the same.`,
+          explain: `It says Your free trial ends in 3 days and Buy the full version to keep using Straft Studio. A note adds: Your projects stay on your computer either way. Nothing is deleted when the trial ends. Continue trial closes the reminder and you carry on. Close, the x, does the same.`,
         },
       ],
       result: `You know how many days are left and what happens when the trial ends.`,
@@ -51,7 +51,7 @@ export default {
     {
       id: `buy-full-version`,
       title: `Buy the full version`,
-      purpose: `Start the purchase from OpenFrame and complete it in the Microsoft Store.`,
+      purpose: `Start the purchase from Straft and complete it in the Microsoft Store.`,
       level: `Beginner`,
       prerequisites: [`You are connected to the internet.`],
       steps: [
@@ -67,11 +67,11 @@ export default {
         },
         {
           screen: `licence-data-note`,
-          do: `After you have bought the full version, OpenFrame shows Your data, your responsibility. Go on to the next workflow.`,
+          do: `After you have bought the full version, Straft shows Your data, your responsibility. Go on to the next workflow.`,
           explain: `It is shown once, right after the purchase.`,
         },
       ],
-      result: `The purchase is complete, and OpenFrame shows the data note.`,
+      result: `The purchase is complete, and Straft shows the data note.`,
       cautions: [
         `If the Microsoft Store cannot be reached, Buy full version does nothing but show the message. Check your internet connection and try again.`,
       ],
@@ -87,7 +87,7 @@ export default {
         {
           screen: `licence-data-note`,
           do: `Read the dialog Your data, your responsibility. Scroll through the six numbered points.`,
-          explain: `It says: Shown once, right after you buy the full version. A yellow notice says Important. Please read before you continue. The points are: 1 Your projects live only on this computer, and OpenFrame has no cloud, so your work cannot be recovered if the computer is lost, stolen, damaged or reset. 2 Back up the whole root folder to Google Drive or another cloud drive and, if you can, an external disk. 3 Moving to a new laptop is your job too: copy the same root folder to the new computer, install OpenFrame, then use Open Project. 4 Keep at least two copies, one on this computer and one somewhere else. 5 Never delete or rename the root folder by hand. Use OpenFrame to rename, archive or delete projects. 6 Backups inside OpenFrame are separate copies. Create Backup saves a copy, but keep it off this computer.`,
+          explain: `It says: Shown once, right after you buy the full version. A yellow notice says Important. Please read before you continue. The points are: 1 Your projects live only on this computer, and Straft has no cloud, so your work cannot be recovered if the computer is lost, stolen, damaged or reset. 2 Back up the whole root folder to Google Drive or another cloud drive and, if you can, an external disk. 3 Moving to a new laptop is your job too: copy the same root folder to the new computer, install Straft, then use Open Project. 4 Keep at least two copies, one on this computer and one somewhere else. 5 Never delete or rename the root folder by hand. Use Straft to rename, archive or delete projects. 6 Backups inside Straft are separate copies. Create Backup saves a copy, but keep it off this computer.`,
         },
         {
           screen: `licence-data-note`,
@@ -105,9 +105,9 @@ export default {
           explain: `OK, I understand turns on only after the box is ticked.`,
         },
       ],
-      result: `You have confirmed the data note and OpenFrame moves on to the File safety tutorial.`,
+      result: `You have confirmed the data note and Straft moves on to the File safety tutorial.`,
       cautions: [
-        `OpenFrame keeps no copy of your work. Back up your root folder and keep a second copy somewhere else.`,
+        `Straft keeps no copy of your work. Back up your root folder and keep a second copy somewhere else.`,
       ],
       related: [`file-safety-tutorial`],
     },
@@ -126,12 +126,12 @@ export default {
         {
           screen: `licence-tutorial-step-2`,
           do: `Read step 2, Back up the root folder to Google Drive, and click Next.`,
-          explain: `Install Google Drive for desktop, or your preferred cloud or external disk tool. Choose the root folder as a folder to sync, or copy it into your Drive folder. Check in the Drive website that your projects appear. Repeat after every working session, or turn on automatic sync. A note says: Close OpenFrame (or Create Backup) before copying so files are complete. An external drive works as well as Google Drive. Back returns to step 1.`,
+          explain: `Install Google Drive for desktop, or your preferred cloud or external disk tool. Choose the root folder as a folder to sync, or copy it into your Drive folder. Check in the Drive website that your projects appear. Repeat after every working session, or turn on automatic sync. A note says: Close Straft (or Create Backup) before copying so files are complete. An external drive works as well as Google Drive. Back returns to step 1.`,
         },
         {
           screen: `licence-tutorial-step-3`,
           do: `Read step 3, Moving to a new laptop, and click Next.`,
-          explain: `Copy the whole root folder to a USB disk or Google Drive. Install OpenFrame Studio on the new laptop from the Microsoft Store, signed in with the same Microsoft account. Copy the folder to the new laptop. In OpenFrame, choose Open Project and pick the project inside the folder. A note adds that linked external files, for example a reference photo on another drive, must be copied too, and that OpenFrame lists missing ones after opening.`,
+          explain: `Copy the whole root folder to a USB disk or Google Drive. Install Straft Studio on the new laptop from the Microsoft Store, signed in with the same Microsoft account. Copy the folder to the new laptop. In Straft, choose Open Project and pick the project inside the folder. A note adds that linked external files, for example a reference photo on another drive, must be copied too, and that Straft lists missing ones after opening.`,
         },
         {
           screen: `licence-tutorial-step-4`,
@@ -146,7 +146,7 @@ export default {
         {
           screen: `licence-welcome-family`,
           do: `Read the welcome, then click OK.`,
-          explain: `The title is Welcome to the OpenFrame Studio family. It says: Thank you for backing independent filmmaking. Be a part of our community. It lists Instagram, YouTube, X, Facebook, LinkedIn, Reddit, Discord and Threads, all as @openframestudio. OK, or the x, closes it.`,
+          explain: `The title is Welcome to the Straft Studio family. It says: Thank you for backing independent filmmaking. Be a part of our community. It lists Instagram, YouTube, X, Facebook, LinkedIn, Reddit, Discord and Threads, all as @straftstudio. OK, or the x, closes it.`,
         },
       ],
       result: `You have finished the tutorial and you are back in your project, with the full version.`,
@@ -158,10 +158,10 @@ export default {
     },
     {
       id: `check-your-purchase`,
-      title: `Check your purchase when OpenFrame cannot reach the Microsoft Store`,
-      purpose: `Run the purchase check again when OpenFrame could not confirm your purchase.`,
+      title: `Check your purchase when Straft cannot reach the Microsoft Store`,
+      purpose: `Run the purchase check again when Straft could not confirm your purchase.`,
       level: `Intermediate`,
-      prerequisites: [`You have bought the full version, or you are not sure whether OpenFrame knows about your purchase.`],
+      prerequisites: [`You have bought the full version, or you are not sure whether Straft knows about your purchase.`],
       steps: [
         {
           screen: `licence-check-needed`,
@@ -174,7 +174,7 @@ export default {
           explain: `Click Check purchase to run the check again whenever you are online.`,
         },
       ],
-      result: `Once OpenFrame reaches the Microsoft Store, your purchase is confirmed and restored.`,
+      result: `Once Straft reaches the Microsoft Store, your purchase is confirmed and restored.`,
       cautions: [
         `Do not buy again if you have already bought. Connect to the internet and click Try again. Your purchase is restored as soon as the check succeeds.`,
       ],
@@ -220,11 +220,11 @@ export default {
     'licence-data-note-read': `The data note scrolled to the end. The tick box is available but not ticked, and OK, I understand is still greyed out. Used in read-data-note.`,
     'licence-data-note-confirmed': `The data note with the tick box ticked, so OK, I understand is ready. Used in read-data-note.`,
     'licence-tutorial-step-1': `File safety tutorial, step 1 of 4, Where your data lives. Shows the root folder, Show in File Explorer and what is inside it. Next is the only way on. Used in file-safety-tutorial.`,
-    'licence-tutorial-step-2': `File safety tutorial, step 2 of 4, Back up the root folder to Google Drive, with the four actions and a note about closing OpenFrame or using Create Backup first. Back and Next. Used in file-safety-tutorial.`,
+    'licence-tutorial-step-2': `File safety tutorial, step 2 of 4, Back up the root folder to Google Drive, with the four actions and a note about closing Straft or using Create Backup first. Back and Next. Used in file-safety-tutorial.`,
     'licence-tutorial-step-3': `File safety tutorial, step 3 of 4, Moving to a new laptop, with the four actions and a note about linked external files. Back and Next. Used in file-safety-tutorial.`,
     'licence-tutorial-step-4': `File safety tutorial, step 4 of 4, Final check, with three unticked statements. Finish is greyed out. Used in file-safety-tutorial.`,
     'licence-tutorial-step-4-ticked': `The Final check with all three statements ticked, so Finish is ready. Used in file-safety-tutorial.`,
-    'licence-welcome-family': `The Welcome to the OpenFrame Studio family dialog, with a thank you and OpenFrame's community links. Close and OK. Used in file-safety-tutorial.`,
+    'licence-welcome-family': `The Welcome to the Straft Studio family dialog, with a thank you and Straft's community links. Close and OK. Used in file-safety-tutorial.`,
     'licence-check-needed': `The Checking your purchase dialog. It says the Microsoft Store could not be reached and offers Not now, Buy full version and Try again. Used in check-your-purchase.`,
     'licence-check-purchase-button': `The top bar with a Check purchase button in place of Buy full version. Used in check-your-purchase.`,
     'licence-locked-trial-ended-microsoft-store': `The Your free trial has ended screen, with Buy full version and Restore purchase. It says your projects are safe and nothing is deleted. Used in trial-ended-locked.`,
@@ -235,7 +235,7 @@ export default {
   limits: [
     `The Microsoft Store runs the 7-day trial and takes the purchase.`,
     `The data note and the File safety tutorial are shown once after a purchase. The four tutorial steps are required.`,
-    `OpenFrame keeps no cloud copy of your projects. Backing them up is your job.`,
+    `Straft keeps no cloud copy of your projects. Backing them up is your job.`,
   ],
   troubleshooting: [
     {
@@ -243,7 +243,7 @@ export default {
       fix: `The purchase did not start. Click Dismiss and try again later. Your projects are unchanged.`,
     },
     {
-      problem: `OpenFrame says it could not reach the Microsoft Store, but I already bought.`,
+      problem: `Straft says it could not reach the Microsoft Store, but I already bought.`,
       fix: `Connect to the internet and click Try again, or click Check purchase in the top bar. Your purchase is restored as soon as the check succeeds. Your projects stay open meanwhile.`,
     },
     {

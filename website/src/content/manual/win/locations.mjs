@@ -5,7 +5,7 @@ export default {
   part: `Plan`,
   intro: [
     `Locations is your scouting notebook. It answers one question: which places can we use? Each place you are considering for the film is a card with a status, a count of the scenes that use it, photos, an address, safety details, dates when it is free and practical notes such as parking, noise and power.`,
-    `Every location has one of four statuses: Idea, Shortlisted, Confirmed or Rejected. The status is for planning. Changing it never alters the screenplay. When you reject a place that scenes still use, OpenFrame offers to move those scenes to a practical replacement, again without editing the script.`,
+    `Every location has one of four statuses: Idea, Shortlisted, Confirmed or Rejected. The status is for planning. Changing it never alters the screenplay. When you reject a place that scenes still use, Straft offers to move those scenes to a practical replacement, again without editing the script.`,
     `Locations is the second Production tab after Catalog. It is on the Production page, in the tab strip under the project bar. Only a name is required to add a location, so you can start with a one-word idea and fill in details as you scout.`,
     `Everything you enter is stored in the project on this computer. Photos are stored in the project and work offline. Dates are advisory: the schedule warns about them and never moves a scene by itself.`,
   ],
@@ -120,7 +120,7 @@ export default {
         {
           screen: `prod-location-drawer`,
           do: `Edit Name *, Address / area and Contact.`,
-          explain: `Fields save when you click out of them or press Enter. Press Esc in a one-line field to put back what was there. Name cannot be left empty: the old name comes back. Contact has a note: Private: visible to Owners and Editors only. Never shared with OpenFrame AI or put in exports.`,
+          explain: `Fields save when you click out of them or press Enter. Press Esc in a one-line field to put back what was there. Name cannot be left empty: the old name comes back. Contact has a note: Private: visible to Owners and Editors only. Never shared with Straft AI or put in exports.`,
         },
         {
           screen: `prod-location-drawer-hospital`,
@@ -323,7 +323,7 @@ export default {
     `A location has four statuses only: Idea, Shortlisted, Confirmed and Rejected. They are for planning and never change the screenplay.`,
     `Adding or confirming a location does not link it to a scene. Scenes are linked from the Breakdown.`,
     `Availability dates are advisory. The schedule warns about them and never moves a scene.`,
-    `Contact and Emergency contact are private to Owners and Editors and are never shared with OpenFrame AI or put in exports.`,
+    `Contact and Emergency contact are private to Owners and Editors and are never shared with Straft AI or put in exports.`,
     `Replacing a rejected location changes production links only. The screenplay text keeps the old place name.`,
     `There is no map. A location holds an address as text and your own photos.`,
   ],

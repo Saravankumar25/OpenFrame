@@ -6,7 +6,7 @@ export default {
   intro: [
     `Story is where you shape the film before and while you write it. It has five tabs: Story, Board, Outline, Characters and Timeline. Story opens on the Story tab, a plain page for writing your idea freely. The Board and Outline tabs are two views of the same Beat Board, where you arrange acts, sequences, beats and scene cards until the story works.`,
     `On the Beat Board an act is a part of the film. A sequence groups scene cards inside an act. A beat is a small story event written as one line. A scene card is a short reminder of what happens in one scene, and it can carry a scene heading. The Parking Lot holds cards and beats you are not using yet. Beat Board cards have no scene numbers. Scene numbers come from the screenplay.`,
-    `When your cards are ready, Build Screenplay turns them into screenplay scenes after you preview the order. Nothing is created until you confirm, and OpenFrame never makes up a scene heading. Apply Board Order to Screenplay does the reverse: it changes the scene order of an existing screenplay to match the board.`,
+    `When your cards are ready, Build Screenplay turns them into screenplay scenes after you preview the order. Nothing is created until you confirm, and Straft never makes up a scene heading. Apply Board Order to Screenplay does the reverse: it changes the scene order of an existing screenplay to match the board.`,
     `Characters is a light directory: names, roles, relationships and the list of screenplay scenes each character speaks in. Timeline lists the scenes of your screenplay so you can give them a story day when time continuity matters. Both are optional.`,
   ],
   layout: [
@@ -95,7 +95,7 @@ export default {
       result: `Your story text is written, formatted and saved.`,
       cautions: [
         `The Story page is separate from the Beat Board and the screenplay. Text you write here does not change them.`,
-        `OpenFrame AI cannot read or change the Story page.`,
+        `Straft AI cannot read or change the Story page.`,
       ],
       related: [`story-export-page`],
     },
@@ -276,7 +276,7 @@ export default {
         {
           screen: `story-board-horizontal`,
           do: `Click Horizontal in the toolbar.`,
-          explain: `Acts now stack as rows. The act menu then says Move Up and Move Down instead of Move Left and Move Right. Vertical puts them back as columns. OpenFrame remembers the layout.`,
+          explain: `Acts now stack as rows. The act menu then says Move Up and Move Down instead of Move Left and Move Right. Vertical puts them back as columns. Straft remembers the layout.`,
         },
         {
           screen: `story-board-zoom-50`,
@@ -467,7 +467,7 @@ export default {
         {
           screen: `story-build-dialog-missing-heading`,
           do: `If a card has no heading, type one in its Heading box or click Leave out.`,
-          explain: `A warning says 1 card has no valid scene heading. Add a heading (for example INT. POLICE STATION - NIGHT) or leave the card out. OpenFrame never makes up a heading. The row shows Heading needed. The footer says how many need a heading, and Build Screenplay stays unavailable until none do.`,
+          explain: `A warning says 1 card has no valid scene heading. Add a heading (for example INT. POLICE STATION - NIGHT) or leave the card out. Straft never makes up a heading. The row shows Heading needed. The footer says how many need a heading, and Build Screenplay stays unavailable until none do.`,
         },
         {
           screen: `story-build-dialog`,
@@ -874,7 +874,7 @@ export default {
     [`Ctrl+wheel`, `Zoom the Story page`],
   ],
   limits: [
-    `The Story page is separate from the Beat Board and the screenplay. OpenFrame AI cannot read or change it.`,
+    `The Story page is separate from the Beat Board and the screenplay. Straft AI cannot read or change it.`,
     `The Beat Board has no scene numbers. Scene numbers come from the screenplay.`,
     `Build Screenplay never overwrites a screenplay and never makes up a scene heading.`,
     `Apply Board Order to Screenplay does not reorder production planning, and cannot change a draft locked as the shooting draft.`,

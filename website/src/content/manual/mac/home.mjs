@@ -9,7 +9,7 @@ export default {
     `Everything is stored on this Mac. A line near the bottom says Your work is stored on this Mac and offers Show in Finder, and the bar at the very bottom reads No project open on the left and Offline · Your projects stay on this computer on the right.`,
   ],
   layout: [
-    { name: `Top bar`, text: `The OpenFrame logo on the left. On the right: Global Idea Vault, Settings and your name, which is the name you gave on the Welcome sheet.` },
+    { name: `Top bar`, text: `The Straft logo on the left. On the right: Global Idea Vault, Settings and your name, which is the name you gave on the Welcome sheet.` },
     { name: `Empty Home`, text: `Shown before you have any project. The message Create your first project. with Create Project, Open Existing Project and Restore Backup or Package….` },
     { name: `Your projects`, text: `The heading and the line Pick up where you left off, or start something new. At the right: a Search box, Open Project, Restore Backup or Package… and New Project.` },
     { name: `Project cards`, text: `One card per project, with a coloured cover, the title, the type (for example Feature Film), the status (for example Idea) and Last modified. The Actions button on the card opens the card menu. A pinned project sits under the PINNED heading, above RECENT PROJECTS.` },
@@ -21,13 +21,13 @@ export default {
     {
       id: `home-enter-your-name`,
       title: `Enter your name on the Welcome sheet`,
-      purpose: `Tell OpenFrame what to call you, and reach Application Home.`,
+      purpose: `Tell Straft what to call you, and reach Application Home.`,
       level: `Beginner`,
-      prerequisites: [`OpenFrame Studio is open for the first time, after the library step.`],
+      prerequisites: [`Straft Studio is open for the first time, after the library step.`],
       steps: [
         {
           screen: `home-welcome`,
-          do: `Read the Welcome to OpenFrame Studio sheet. It asks: What should we call you? Click the Your name (required) box.`,
+          do: `Read the Welcome to Straft Studio sheet. It asks: What should we call you? Click the Your name (required) box.`,
           explain: `The line Enter your name. shows under the box while it is empty. Continue does nothing until you type a name.`,
         },
         {
@@ -188,7 +188,7 @@ export default {
         {
           screen: `home-card-menu`,
           do: `Choose Show in Finder to see the project in a Finder window.`,
-          explain: `Use this when you want to copy the project to a drive. Rename, archive and delete from OpenFrame, not in Finder, so the project list stays correct.`,
+          explain: `Use this when you want to copy the project to a drive. Rename, archive and delete from Straft, not in Finder, so the project list stays correct.`,
         },
         {
           screen: `home-card-menu`,
@@ -244,7 +244,7 @@ export default {
       ],
       result: `The project card shows its new title.`,
       cautions: [
-        `Renaming changes only the name OpenFrame shows. The project folder and its contents stay where they are.`,
+        `Renaming changes only the name Straft shows. The project folder and its contents stay where they are.`,
         `A project must keep a title. If you empty the box, the sheet shows A title is required.`,
       ],
       related: [`home-card-menu-actions`],
@@ -339,7 +339,7 @@ export default {
         {
           screen: `home-delete-sheet`,
           do: `Read the sheet Delete “Night Bus”?`,
-          explain: `It says this is the most destructive action in OpenFrame and that the whole project will be removed from this Mac. The project folder (ideas, story, screenplay, production plans and stored files) is moved to the Trash. Files linked from other folders are not touched. Delete Project stays off until you type the name. Archive Instead keeps everything and only hides the project from your recent list.`,
+          explain: `It says this is the most destructive action in Straft and that the whole project will be removed from this Mac. The project folder (ideas, story, screenplay, production plans and stored files) is moved to the Trash. Files linked from other folders are not touched. Delete Project stays off until you type the name. Archive Instead keeps everything and only hides the project from your recent list.`,
         },
         {
           screen: `home-delete-typed`,
@@ -349,7 +349,7 @@ export default {
       ],
       result: `The project is removed from your list and its folder is in the Trash.`,
       cautions: [
-        `This is the most destructive action in OpenFrame. If you are not sure, click Archive Instead.`,
+        `This is the most destructive action in Straft. If you are not sure, click Archive Instead.`,
         `The folder goes to the Trash, where macOS keeps it until you empty the Trash.`,
       ],
       related: [`home-archive-project`],
@@ -407,7 +407,7 @@ export default {
     },
   ],
   screens: {
-    'home-welcome': `The Welcome to OpenFrame Studio sheet asking What should we call you? The Your name (required) box is empty and Enter your name. shows under it. Continue is at the bottom. Used in home-enter-your-name.`,
+    'home-welcome': `The Welcome to Straft Studio sheet asking What should we call you? The Your name (required) box is empty and Enter your name. shows under it. Continue is at the bottom. Used in home-enter-your-name.`,
     'home-welcome-filled': `The Welcome sheet with a name typed. A note says the name appears on notes, tasks and project activity, that there is no account and that it stays on this computer. Used in home-enter-your-name.`,
     'home-empty': `Application Home before any project exists. It says Create your first project. and offers Create Project, Open Existing Project and Restore Backup or Package…. Global Idea Vault, Settings and your name are at the top right. Used in home-enter-your-name, home-create-first-project and home-open-or-restore.`,
     'new-project-sheet': `The New Project sheet as it opens: Title empty with the hint Untitled film, Type set to Feature Film, Genre and Written by marked Optional, a Location with Choose…, and Cancel and Create (greyed out). Used in home-create-first-project.`,
@@ -419,7 +419,7 @@ export default {
     'home-card-menu': `The same card menu, shown as a variant. Used in home-card-menu-actions and home-change-cover-photo.`,
     'home-cover-photo': `Application Home after a cover photo is chosen. A message at the bottom reads Cover photo changed with a Dismiss button. Used in home-change-cover-photo.`,
     'home-rename-sheet': `The Rename Project sheet with the current title in its box. A note says renaming changes the name shown everywhere and that the folder stays where it is. Cancel and Rename are at the bottom. Used in home-rename-project.`,
-    'home-delete-sheet': `The Delete “Night Bus”? sheet. It warns that this is the most destructive action in OpenFrame, says the project folder is moved to the Trash and asks you to type the project name. Cancel, Archive Instead and Delete Project are offered, and Delete Project is off. Used in home-delete-project.`,
+    'home-delete-sheet': `The Delete “Night Bus”? sheet. It warns that this is the most destructive action in Straft, says the project folder is moved to the Trash and asks you to type the project name. Cancel, Archive Instead and Delete Project are offered, and Delete Project is off. Used in home-delete-project.`,
     'home-delete-typed': `The same sheet with the name typed, so Delete Project is ready. Used in home-delete-project.`,
     'home-two-projects': `Application Home with two project cards, Empty Short and Night Bus, each with its type, status and Last modified. Used in home-create-another-project.`,
     'home-search-results': `Application Home with night typed in the Search box. A SEARCH RESULTS list shows only Night Bus. The box has a Close button. Used in home-search-projects.`,

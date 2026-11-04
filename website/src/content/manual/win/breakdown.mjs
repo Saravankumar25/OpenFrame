@@ -7,7 +7,7 @@ export default {
     `Breakdown answers one question for every scene of your screenplay: what does this scene need to shoot? You read the scene, then list its cast, extras, locations, props, wardrobe, vehicles, hair and makeup, special effects, VFX, sound and animals. Those lists are the start of production planning. They feed the Production catalog and, from there, the shot lists, storyboards and schedule.`,
     `Breakdown works from one named screenplay draft, called the Production Source. You choose it once, and you can switch to a newer draft later after a review. Breakdown never edits your screenplay. The script you read on this page is read-only, and tagging words in it only marks them for this scene.`,
     `The page has three parts side by side: the list of scenes on the left, the script of the scene you picked in the middle, and that scene's breakdown on the right. A blue bar across the top names the Production Source and holds Change source, Export, and the buttons that hide the scene list and the breakdown panel.`,
-    `OpenFrame can suggest elements it finds in a scene's text. A suggestion is not production data. It sits in the panel with yellow stripes until you accept it, edit it or reject it. Every category has a fixed name, a colour and an icon, so you never have to rely on colour alone.`,
+    `Straft can suggest elements it finds in a scene's text. A suggestion is not production data. It sits in the panel with yellow stripes until you accept it, edit it or reject it. Every category has a fixed name, a colour and an icon, so you never have to rely on colour alone.`,
   ],
   layout: [
     { name: `Production Source bar`, text: `Across the top of the page. It reads Production Source, the draft name, the screenplay title in quotation marks, the draft status (Draft or Locked), the number of scenes and, once a scene is open, Scene 5 of 36. On the right are Change source, Export, Hide scenes (or Show scenes) and Hide panel (or Show panel).` },
@@ -15,7 +15,7 @@ export default {
     { name: `Scene filter bar`, text: `A blue bar, shown only when you came here from the Catalog or from an element menu. It reads Showing the scenes that use an item and the item's category, with a Show all scenes button.` },
     { name: `Scene list`, text: `On the left. A heading Scenes with a count, a Filter button, and a line such as 1 of 36 complete. Each row shows the scene number, the heading, small category marks for the categories already broken down, and status chips: a green tick for Complete, an amber N suggested, a yellow Needs review and a red Needs breakdown. A scene that the screenplay marks as omitted starts with OMITTED.` },
     { name: `Scene list footer`, text: `Appears at the bottom of the list only when it is needed. Needs Review (N) opens the list of scenes whose script changed. Removed scenes (N) opens the breakdown kept for scenes that are no longer in the Production Source.` },
-    { name: `Script pane`, text: `In the middle. The scene as a script page, with the scene number at both sides of the heading. Tagged words are underlined in their category colour. Suggested words have a dashed yellow underline. Hold Ctrl and turn the mouse wheel to zoom the page, from 60 percent to 200 percent. OpenFrame remembers the zoom.` },
+    { name: `Script pane`, text: `In the middle. The scene as a script page, with the scene number at both sides of the heading. Tagged words are underlined in their category colour. Suggested words have a dashed yellow underline. Hold Ctrl and turn the mouse wheel to zoom the page, from 60 percent to 200 percent. Straft remembers the zoom.` },
     { name: `Scene breakdown panel header`, text: `On the right. The title Scene 5 breakdown, the Mark Complete button (it reads Complete once the scene is done), and chips for INT or EXT, the time of day and the set name.` },
     { name: `Suggested elements banner`, text: `A yellow banner in the panel reading Suggested elements and a number, with a Review… button that opens every suggestion for the scene in one dialog.` },
     { name: `Category groups`, text: `One block for each category that has content in the scene, with a small arrow to fold it, the category mark and the number of confirmed elements. Confirmed elements show their name, any note, a catalog status chip such as Required, and a ... menu. Suggestions sit in the same block with a Suggested chip, the matched text and the buttons Accept, Edit and Reject.` },
@@ -44,7 +44,7 @@ export default {
         {
           screen: `bd-main`,
           do: `When the project has drafts, click the draft you want in the dialog, then click Set as Production Source.`,
-          explain: `Each draft is a card with its name, either Not locked or locked with a date, and the number of scenes. A Locked label marks a locked draft, and a tick marks your choice. Below the cards the dialog lists what OpenFrame will create: the breakdown scenes (one per screenplay scene, numbered automatically), the production catalog and the scene list used by shot lists, storyboards and the schedule. An optional box, Why this draft? (optional), keeps a short reason. This dialog state is not pictured here. After you confirm, a message says Production Source set to the draft name and that your screenplay is not changed, with an Undo link. The picture shows the finished page: the source bar names the draft, the scene list fills the left side and the first scene is open.`,
+          explain: `Each draft is a card with its name, either Not locked or locked with a date, and the number of scenes. A Locked label marks a locked draft, and a tick marks your choice. Below the cards the dialog lists what Straft will create: the breakdown scenes (one per screenplay scene, numbered automatically), the production catalog and the scene list used by shot lists, storyboards and the schedule. An optional box, Why this draft? (optional), keeps a short reason. This dialog state is not pictured here. After you confirm, a message says Production Source set to the draft name and that your screenplay is not changed, with an Undo link. The picture shows the finished page: the source bar names the draft, the scene list fills the left side and the first scene is open.`,
         },
       ],
       result: `The Production Source bar names your draft and every scene of it is listed on the left, ready to break down.`,
@@ -153,7 +153,7 @@ export default {
       ],
       result: `The list shows only the scenes that match, and you can return to all scenes at any time.`,
       cautions: [
-        `OpenFrame remembers your last filter on this computer. If Breakdown opens with fewer scenes than you expect, look at the Filter button.`,
+        `Straft remembers your last filter on this computer. If Breakdown opens with fewer scenes than you expect, look at the Filter button.`,
       ],
       related: [`breakdown-read-the-page`, `breakdown-added-scenes`],
     },
@@ -172,7 +172,7 @@ export default {
         {
           screen: `bd-panel-hidden`,
           do: `Click Hide panel to close the breakdown panel instead.`,
-          explain: `The script page widens and its lines wrap less. The button reads Show panel. OpenFrame remembers a hidden panel the next time you open Breakdown. The scene list comes back each time you open the page.`,
+          explain: `The script page widens and its lines wrap less. The button reads Show panel. Straft remembers a hidden panel the next time you open Breakdown. The scene list comes back each time you open the page.`,
         },
         {
           screen: `bd-both-hidden`,
@@ -189,14 +189,14 @@ export default {
     {
       id: `breakdown-suggest-elements`,
       title: `Ask for suggestions and accept or reject them`,
-      purpose: `Let OpenFrame propose elements from a scene's text, then confirm the ones you want.`,
+      purpose: `Let Straft propose elements from a scene's text, then confirm the ones you want.`,
       level: `Beginner`,
       prerequisites: [`A scene is open.`],
       steps: [
         {
           screen: `bd-scene-nothing-yet`,
           do: `Open a scene that has nothing broken down, then click Suggest Elements.`,
-          explain: `A scene with no elements says: Nothing broken down yet. Select words in the script to tag them, add an element, or ask for suggestions. While OpenFrame works, the button reads Suggesting…. A message then tells you how many suggestions to review and that nothing is added to production until you accept. If nothing is new, it says No new suggestions. Review the pending ones. or No likely elements found. You can still tag text or add elements manually.`,
+          explain: `A scene with no elements says: Nothing broken down yet. Select words in the script to tag them, add an element, or ask for suggestions. While Straft works, the button reads Suggesting…. A message then tells you how many suggestions to review and that nothing is added to production until you accept. If nothing is new, it says No new suggestions. Review the pending ones. or No likely elements found. You can still tag text or add elements manually.`,
         },
         {
           screen: `bd-scene-suggestions`,
@@ -276,7 +276,7 @@ export default {
         {
           screen: `bd-edit-suggestion-dialog`,
           do: `Change the Category * or Name * if you need to, then click Accept or Use Existing.`,
-          explain: `When you change the name or category, OpenFrame looks for matching catalog items again. The same dialog opens when you click Accept on a suggestion that has similar items.`,
+          explain: `When you change the name or category, Straft looks for matching catalog items again. The same dialog opens when you click Accept on a suggestion that has similar items.`,
         },
       ],
       result: `The element is confirmed in the scene with the category, name and catalog item you chose.`,
@@ -310,7 +310,7 @@ export default {
         {
           screen: `bd-add-element-existing-match`,
           do: `If the name matches a catalog item, keep Use existing selected.`,
-          explain: `Type or edit the name and OpenFrame lists matching items. In the picture the name Soldering iron finds Use existing: Soldering iron, marked Prop, Required and used in scene 1, with a Same item chip. It is selected for you. Create new item stays under it if you really want a second item.`,
+          explain: `Type or edit the name and Straft lists matching items. In the picture the name Soldering iron finds Use existing: Soldering iron, marked Prop, Required and used in scene 1, with a Same item chip. It is selected for you. Create new item stays under it if you really want a second item.`,
         },
         {
           screen: `bd-element-tagged`,
@@ -355,7 +355,7 @@ export default {
       ],
       result: `The element is part of the scene's breakdown and the catalog.`,
       cautions: [
-        `Show in script has nothing to show for an element added this way. OpenFrame says the element was added without tagging script text.`,
+        `Show in script has nothing to show for an element added this way. Straft says the element was added without tagging script text.`,
       ],
       related: [`breakdown-tag-script-words`, `breakdown-reuse-catalog-item`],
     },
@@ -466,7 +466,7 @@ export default {
       ],
       result: `The scene is counted as complete, and you can filter by it.`,
       cautions: [
-        `Marking complete is your decision. OpenFrame does not check that every element is confirmed.`,
+        `Marking complete is your decision. Straft does not check that every element is confirmed.`,
       ],
       related: [`breakdown-filter-scenes`],
     },
@@ -500,7 +500,7 @@ export default {
         {
           screen: `bd-export-dialog`,
           do: `Click Export…, then choose where to save the file in the Windows window that opens.`,
-          explain: `Cancel closes the dialog without exporting. The PDF carries a small Created using OpenFrame line. The CSV file does not.`,
+          explain: `Cancel closes the dialog without exporting. The PDF carries a small Created using Straft line. The CSV file does not.`,
         },
       ],
       result: `You have a breakdown file saved where you chose.`,
@@ -656,7 +656,7 @@ export default {
     },
     {
       problem: `The scene list is shorter than the screenplay.`,
-      fix: `A filter is on. Click Filter, then choose All scenes and Any category. OpenFrame remembers your last filter.`,
+      fix: `A filter is on. Click Filter, then choose All scenes and Any category. Straft remembers your last filter.`,
     },
     {
       problem: `Nothing happens when I select words in the script.`,

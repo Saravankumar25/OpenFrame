@@ -9,7 +9,7 @@ export const FEATURE_GROUPS = [
     ['screenplay', 'Screenplay Editor', 'Proper formatting that just happens.'],
     ['drafts-revisions', 'Drafts and Revisions', 'Compare drafts. Lock the shooting script.'],
     ['import-export', 'Import and Export', 'Final Draft, Fountain, PDF, DOCX and text.'],
-    ['openframe-ai', 'OpenFrame AI', 'Answers and prepares. You decide.'],
+    ['straft-ai', 'Straft AI', 'Answers and prepares. You decide.'],
   ]],
   ['Plan', [
     ['breakdown', 'Script Breakdown', 'Tag every prop, cast member and location.'],
@@ -26,7 +26,7 @@ export const FEATURE_GROUPS = [
 ];
 export const FEATURES = FEATURE_GROUPS.flatMap(([group, items]) => items.map(([slug, title, blurb]) => ({ slug, title, blurb, group })));
 
-// "Why OpenFrame" menu: [href, title, blurb].
+// "Why Straft" menu: [href, title, blurb].
 export const WHY = [
   ['/local-and-private/', 'Local and private', 'Your project never has to leave your computer.'],
   ['/pricing/', 'Pay once, own forever', 'No subscription. No rental.'],
@@ -42,7 +42,7 @@ export const PARTS = [
   ['Write', 'Writing', 'The screenplay editor, drafts, review and import.'],
   ['Plan', 'Production planning', 'Breakdown, catalog, people, places, shots and the schedule.'],
   ['Shoot', 'Shooting days', 'Call sheets, sides, Daily View, reports and the budget.'],
-  ['Assistant', 'OpenFrame AI', 'Set up OpenFrame AI and use it safely.'],
+  ['Assistant', 'Straft AI', 'Set up Straft AI and use it safely.'],
   ['Project and data', 'Projects and data', 'Files, notes, backups, packages, templates and settings.'],
 ];
 

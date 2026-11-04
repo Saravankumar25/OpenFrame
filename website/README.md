@@ -1,6 +1,6 @@
-# OpenFrame Studio website
+# Straft Studio website
 
-The public website for OpenFrame Studio. The company (Vighnajith Advisories Private Limited) appears in the footer only. It follows the approved
+The public website for Straft Studio. The company (Vighnajith Advisories Private Limited) appears in the footer only. It follows the approved
 design package (`research/package-src`, the Website Share Package) and shows the real app screens: every Windows and
 Mac screen is embedded as its captured HTML page, in light or dark. Static HTML, CSS and JavaScript, generated at build
 time and hosted on Cloudflare Pages.

@@ -256,7 +256,7 @@ export default {
         {
           screen: `pages-settings-offline-ai`,
           do: `Click Offline AI.`,
-          explain: `The state of the offline AI, AI health and Assistant memory. Here Assistant memory shows what OpenFrame AI remembers in this project. At the bottom, Technical details can be opened for more.`,
+          explain: `The state of the offline AI, AI health and Assistant memory. Here Assistant memory shows what Straft AI remembers in this project. At the bottom, Technical details can be opened for more.`,
         },
       ],
       result: `You changed or checked an app setting without leaving the project.`,
@@ -292,7 +292,7 @@ export default {
         {
           screen: `project-settings-storage`,
           do: `Click Storage.`,
-          explain: `Cards for Your OpenFrame library, Folder for new projects, Global Idea Vault and This project, each with its own buttons. The Settings chapter teaches each of them: see See where your library and projects are kept, Look after the Global Idea Vault and Move a project to another folder.`,
+          explain: `Cards for Your Straft library, Folder for new projects, Global Idea Vault and This project, each with its own buttons. The Settings chapter teaches each of them: see See where your library and projects are kept, Look after the Global Idea Vault and Move a project to another folder.`,
         },
       ],
       result: `You know where to find the storage controls.`,

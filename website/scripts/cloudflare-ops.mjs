@@ -88,7 +88,7 @@ async function ensure() {
 
 // Public checks. A fresh deploy or rule can take a minute to show, so each check retries.
 async function verify() {
-  const get = async (url, opt = {}) => { try { return await fetch(url, { redirect: 'manual', headers: { 'user-agent': 'openframe-verify' }, ...opt }); } catch (e) { return { status: 0, error: e.cause?.code || e.message, headers: new Headers(), text: async () => '' }; } };
+  const get = async (url, opt = {}) => { try { return await fetch(url, { redirect: 'manual', headers: { 'user-agent': 'straft-verify' }, ...opt }); } catch (e) { return { status: 0, error: e.cause?.code || e.message, headers: new Headers(), text: async () => '' }; } };
   const retry = async (label, fn) => { let last = ''; for (let i = 0; i < 6; i++) { last = await fn(); if (!last) return ok(label); await new Promise((r) => setTimeout(r, 10000)); } bad(`${label}: ${last}`); };
   console.log('Live checks');
   const home = `https://${APEX}/`;

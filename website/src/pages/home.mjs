@@ -36,12 +36,12 @@ export default function home(ctx) {
 <h1>A film production software for all your needs.</h1>
 <p class="caption">From film lovers, to film lovers across the world.</p>
 <div class="hero-cta">${storeRow()}</div>
-<ul class="micro"><li>7-day free trial</li><li>No OpenFrame account</li><li>Works offline</li></ul>
+<ul class="micro"><li>7-day free trial</li><li>No Straft account</li><li>Works offline</li></ul>
 </div>
 <div class="tour tour-real" data-stages>
 <ul class="stages" role="tablist" aria-label="From idea to shoot">${STAGES.map(([n], i) => html`<li role="presentation"><button type="button" role="tab" id="stage-tab-${i}" aria-controls="stage-${i}" aria-selected="${String(i === 0)}" tabindex="${i ? -1 : 0}"><b>${n}</b></button></li>`)}</ul>
 ${STAGES.map(stage)}
-<p class="tour-note">Real screens from OpenFrame Studio. Use the controls at the top of the page to switch between Windows and Mac, and between light and dark app screens.</p>
+<p class="tour-note">Real screens from Straft Studio. Use the controls at the top of the page to switch between Windows and Mac, and between light and dark app screens.</p>
 </div></section>
 
 <div class="trust"><div class="wrap"><ul>
@@ -54,7 +54,7 @@ ${STAGES.map(stage)}
 
 <section class="tint"><div class="wrap">
 <div class="sec-head rv"><span class="eyebrow">All your needs in a single place</span>
-<h2>All your needs in a single place: OpenFrame.</h2>
+<h2>All your needs in a single place: Straft.</h2>
 <p class="lead">Why use five different apps when you can do all of them in one, at the cost of one?</p></div>
 <div class="merge static">
 <div class="apps" aria-label="Five separate kinds of app">
@@ -72,17 +72,17 @@ ${[['bulb', 'Notes and idea app'], ['board', 'Story outlining tool'], ['page', '
 <section class="dark"><div class="wrap manifesto">
 <div class="rv"><span class="eyebrow">The way it should have been</span>
 <h2>Let’s break the chain of corporate rentals.</h2>
-<p class="lead mt18">You’ve been renting the tools to tell your own story, every month, for as long as you make films. OpenFrame is software you simply own.</p>
-<ul class="nos"><li>${svg('x')}No mandatory cloud.</li><li>${svg('x')}No OpenFrame account.</li><li>${svg('x')}No monthly subscription.</li></ul>
+<p class="lead mt18">You’ve been renting the tools to tell your own story, every month, for as long as you make films. Straft is software you simply own.</p>
+<ul class="nos"><li>${svg('x')}No mandatory cloud.</li><li>${svg('x')}No Straft account.</li><li>${svg('x')}No monthly subscription.</li></ul>
 <p class="big-line">Pay once. <span>Own forever.</span></p></div>
 <div class="rv d2"><div class="chart">
-<svg viewBox="0 0 520 320" role="img" aria-label="Illustration: the cost of rented tools keeps climbing every year, while OpenFrame is one payment.">
+<svg viewBox="0 0 520 320" role="img" aria-label="Illustration: the cost of rented tools keeps climbing every year, while Straft is one payment.">
 <g stroke="#ffffff1f"><line x1="46" y1="270" x2="500" y2="270"/><line x1="46" y1="200" x2="500" y2="200" stroke-dasharray="3 6"/><line x1="46" y1="130" x2="500" y2="130" stroke-dasharray="3 6"/><line x1="46" y1="60" x2="500" y2="60" stroke-dasharray="3 6"/></g>
 <path d="M46 250 L110 250 L110 228 L190 228 L190 190 L270 190 L270 150 L350 150 L350 108 L430 108 L430 66 L492 66" stroke="#ff7a52" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M46 250 L56 250 L56 214 L492 214" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
 <circle cx="56" cy="214" r="6" fill="#fff"/>
 <text x="496" y="52" text-anchor="end" fill="#ffab8e" font-weight="700" font-size="15">Rented tools: the bill never stops</text>
-<text x="496" y="240" text-anchor="end" fill="#fff" font-weight="700" font-size="15">OpenFrame: you paid once</text>
+<text x="496" y="240" text-anchor="end" fill="#fff" font-weight="700" font-size="15">Straft: you paid once</text>
 <g text-anchor="middle"><text x="110" y="292">Year 1</text><text x="190" y="292">Year 2</text><text x="270" y="292">Year 3</text><text x="350" y="292">Year 4</text><text x="430" y="292">Year 5</text></g>
 <text x="8" y="32" font-size="13">Total you’ve paid</text></svg>
 <p class="cap">Illustration of the idea, not real prices.</p></div></div>
@@ -91,7 +91,7 @@ ${[['bulb', 'Notes and idea app'], ['board', 'Story outlining tool'], ['page', '
 <section><div class="wrap split">
 <div class="rv"><span class="eyebrow">Completely local</span>
 <h2>Your privacy stays on your computer.</h2>
-<p class="lead mt18">Your story is the most private thing you’ll ever write. OpenFrame keeps it where it belongs, with you.</p>
+<p class="lead mt18">Your story is the most private thing you’ll ever write. Straft keeps it where it belongs, with you.</p>
 <ul class="ticks">
 <li><span><b>Your project is a folder on your computer</b>, or on an external drive you choose.</span></li>
 <li><span><b>Works fully offline.</b> No sign-in and no internet needed to write, plan or export.</span></li>
@@ -115,7 +115,7 @@ ${[['bulb', 'Notes and idea app'], ['board', 'Story outlining tool'], ['page', '
 </div></section>
 
 <section class="tint"><div class="wrap">
-<div class="sec-head rv"><span class="eyebrow">What makes OpenFrame different</span>
+<div class="sec-head rv"><span class="eyebrow">What makes Straft different</span>
 <h2>Built different, on purpose.</h2>
 <p class="lead">Six things you won’t find together in any other film production software.</p></div>
 <div class="grid3">
@@ -134,10 +134,10 @@ ${[['bulb', 'Notes and idea app'], ['board', 'Story outlining tool'], ['page', '
 <div class="grid2">
 <article class="card big rv">
 <div data-os-show="win">${mock('win', 'ai-proposed-changes', { link: false })}</div><div data-os-show="mac">${mock('mac', 'ai-panel-screenplay', { link: false })}</div>
-<span class="eyebrow">OpenFrame AI</span>
-<h3>OpenFrame AI that helps. You stay in charge.</h3>
-<p>Ask in plain language and get answers from your own project, with the sources shown. It changes nothing until you press Apply. It runs on your computer after a one-time download that you start, and if you do not want it, leave it off. OpenFrame works completely without it.</p>
-<a class="more" href="/features/openframe-ai/">Meet OpenFrame AI &rarr;</a></article>
+<span class="eyebrow">Straft AI</span>
+<h3>Straft AI that helps. You stay in charge.</h3>
+<p>Ask in plain language and get answers from your own project, with the sources shown. It changes nothing until you press Apply. It runs on your computer after a one-time download that you start, and if you do not want it, leave it off. Straft works completely without it.</p>
+<a class="more" href="/features/straft-ai/">Meet Straft AI &rarr;</a></article>
 <article class="card big rv d2">
 <div data-os-show="win">${mock('win', 'settings-appearance', { link: false })}</div><div data-os-show="mac">${mock('mac', 'settings-appearance', { link: false })}</div>
 <span class="eyebrow">Themes</span>
@@ -149,11 +149,11 @@ ${[['bulb', 'Notes and idea app'], ['board', 'Story outlining tool'], ['page', '
 <section><div class="wrap center">
 <span class="eyebrow rv">Why we built it</span>
 <p class="quote rv">From <b>film lovers</b>, to <b>film lovers</b> across the world.</p>
-<p class="lead rv lead-mid">OpenFrame is made for people who make films with limited resources: writer-directors, student filmmakers, short-film makers and regional-language filmmakers.</p>
+<p class="lead rv lead-mid">Straft is made for people who make films with limited resources: writer-directors, student filmmakers, short-film makers and regional-language filmmakers.</p>
 <div class="langs rv" aria-label="Scripts you can write and export in"><span>English</span><span lang="te">తెలుగు</span><span lang="hi">हिन्दी</span><span lang="ta">தமிழ்</span><span lang="ml">മലയാളം</span><span lang="kn">ಕನ್ನಡ</span></div>
 <h2 class="rv mt84">Your idea. Your film. <span class="ac">Our promise.</span></h2>
 <div class="promise-row">
-<div class="card rv"><div class="n">01</div><h3>We never silently change your work</h3><p>OpenFrame suggests. You decide. Nothing rewrites your story, script or schedule on its own.</p></div>
+<div class="card rv"><div class="n">01</div><h3>We never silently change your work</h3><p>Straft suggests. You decide. Nothing rewrites your story, script or schedule on its own.</p></div>
 <div class="card rv d1"><div class="n">02</div><h3>Nothing is lost by accident</h3><p>Deleted items wait in Recently Deleted. Undo is offered after changes. Your work saves as you go.</p></div>
 <div class="card rv d2"><div class="n">03</div><h3>Leave any time, taking everything</h3><p>Every document exports. Your project is yours to back up, move and keep.</p></div>
 </div></div></section>
@@ -178,7 +178,7 @@ ${[['bulb', 'Notes and idea app'], ['board', 'Story outlining tool'], ['page', '
 <p class="small-print center">The store sets the final checkout amount, including any taxes that apply where you live.</p>
 </div></section>`;
   return [{
-    path: '/', nav: 'home', title: 'OpenFrame Studio: film production software',
+    path: '/', nav: 'home', title: 'Straft Studio: film production software',
     description: 'One app for screenwriters and film teams: Idea Vault, Beat Board, screenplay editor, breakdown, schedule and call sheets. 7-day free trial, then pay once.',
     body,
     jsonld: [APP(ctx, 'Windows 11, macOS 14 or later'), ORG(ctx), WEBSITE(ctx)],

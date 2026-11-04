@@ -12,7 +12,7 @@ export default {
     { name: `Step chips`, text: `1 Select source, 2 Preview interpretation and 3 Import. The current step is dark.` },
     { name: `Choose a file`, text: `A dashed box on the left. It lists the accepted types: PDF, Final Draft (.fdx), Fountain, TXT and DOCX, and has a Browse… button.` },
     { name: `...OR PASTE SCREENPLAY TEXT`, text: `A large box on the right where you can paste a script. It shows a short example of how a screenplay looks.` },
-    { name: `OR OPEN A SAMPLE SCRIPT`, text: `Four buttons for fictional scripts written and owned by OpenFrame, for learning the app: Example Feature, Example Short, Example Scene and FDX Interchange Test.` },
+    { name: `OR OPEN A SAMPLE SCRIPT`, text: `Four buttons for fictional scripts written and owned by Straft, for learning the app: Example Feature, Example Short, Example Scene and FDX Interchange Test.` },
     { name: `Preview`, text: `The preview shows the source file and format, the number of Scenes, Characters and Pages, small chips such as High confidence and the title found, a notice about warnings, and a table of the scene headings it detected.` },
     { name: `Import options`, text: `IMPORT AS with New Screenplay, a Draft name box, and a tick box called Keep the original file in Project Files. Back, Cancel and Import are at the bottom.` },
   ],
@@ -40,7 +40,7 @@ export default {
         {
           screen: `sp-import-source`,
           do: `The Import Screenplay dialog opens on step 1, Select source. Click Browse… in the Choose a file box and pick your script in the Windows window that opens.`,
-          explain: `The dialog asks: What existing script do you want to bring into OpenFrame? The note at the bottom says: Importing never replaces your current screenplay. If one exists, the script arrives as a new screenplay or a new draft. Cancel closes the dialog and changes nothing. Preview is the next step.`,
+          explain: `The dialog asks: What existing script do you want to bring into Straft? The note at the bottom says: Importing never replaces your current screenplay. If one exists, the script arrives as a new screenplay or a new draft. Cancel closes the dialog and changes nothing. Preview is the next step.`,
         },
         {
           screen: `sp-import-preview`,
@@ -50,12 +50,12 @@ export default {
         {
           screen: `sp-import-preview`,
           do: `If a blue notice says there are warnings, click Show warnings to read them.`,
-          explain: `The notice says, for example: 2 warnings. The screenplay structure was recognised. Some details were adjusted on the way in. Warnings are things OpenFrame changed to fit, not failures. Read them so you know what to check later.`,
+          explain: `The notice says, for example: 2 warnings. The screenplay structure was recognised. Some details were adjusted on the way in. Warnings are things Straft changed to fit, not failures. Read them so you know what to check later.`,
         },
         {
           screen: `sp-import-preview`,
           do: `Next to IMPORT AS the choice is New Screenplay. Type a name in Draft name, or leave it empty. Leave Keep the original file in Project Files ticked if you want the source kept.`,
-          explain: `The grey text in Draft name shows the name OpenFrame will use, for example Example-Feature (imported). Under the box it says: Leave empty to name it after the file. Keeping the original puts a copy of the file in your project's files. Back returns to step 1.`,
+          explain: `The grey text in Draft name shows the name Straft will use, for example Example-Feature (imported). Under the box it says: Leave empty to name it after the file. Keeping the original puts a copy of the file in your project's files. Back returns to step 1.`,
         },
         {
           screen: `sp-import-preview`,
@@ -71,7 +71,7 @@ export default {
       result: `Your script is in the project as a new screenplay, and nothing else in the project was touched.`,
       cautions: [
         `Importing never replaces an existing screenplay. It adds a new one or a new draft, so nothing you wrote is lost.`,
-        `Read the warnings before you import. OpenFrame adjusts some details to fit and tells you which.`,
+        `Read the warnings before you import. Straft adjusts some details to fit and tells you which.`,
         `PDF files are read as well as possible. Check the preview of a PDF closely, because layout from a PDF can be misread.`,
       ],
       related: [`import-sample-script`, `import-pasted-text`],
@@ -79,14 +79,14 @@ export default {
     {
       id: `import-sample-script`,
       title: `Try the import with a sample script`,
-      purpose: `Practise the import with a fictional script that comes with OpenFrame, without needing a file of your own.`,
+      purpose: `Practise the import with a fictional script that comes with Straft, without needing a file of your own.`,
       level: `Beginner`,
       prerequisites: [`A project is open and the Import Screenplay dialog is open on step 1.`],
       steps: [
         {
           screen: `sp-import-source`,
           do: `Under OR OPEN A SAMPLE SCRIPT, look at the four buttons.`,
-          explain: `The line above them says: Fictional scripts written and owned by OpenFrame, for learning the app. The buttons are Example Feature, Example Short, Example Scene and FDX Interchange Test.`,
+          explain: `The line above them says: Fictional scripts written and owned by Straft, for learning the app. The buttons are Example Feature, Example Short, Example Scene and FDX Interchange Test.`,
         },
         {
           screen: `sp-import-sample-chosen`,
@@ -113,7 +113,7 @@ export default {
     {
       id: `import-pasted-text`,
       title: `Import a script by pasting its text`,
-      purpose: `Paste a screenplay from another program and import it, and know what to do when OpenFrame cannot read it.`,
+      purpose: `Paste a screenplay from another program and import it, and know what to do when Straft cannot read it.`,
       level: `Beginner`,
       prerequisites: [`A project is open and the Import Screenplay dialog is open on step 1.`],
       steps: [
@@ -129,7 +129,7 @@ export default {
         },
         {
           screen: `sp-import-failed`,
-          do: `If OpenFrame cannot read the text as a screenplay, it shows Import failed. Your current project was not changed. Click Paste Text Instead to try again, or Close.`,
+          do: `If Straft cannot read the text as a screenplay, it shows Import failed. Your current project was not changed. Click Paste Text Instead to try again, or Close.`,
           explain: `The panel shows the Source (Pasted text), the Stage (Interpreting the screenplay), the Problem (The pasted text could not be interpreted as a screenplay) and Your project (Unchanged). It adds: You can paste the screenplay text instead, or choose another file.`,
         },
       ],
@@ -151,7 +151,7 @@ export default {
   shortcuts: [],
   limits: [
     `The dialog accepts PDF, Final Draft (.fdx), Fountain, TXT and DOCX files, and pasted text.`,
-    `Older or other formats are not accepted. These include .doc, .rtf, .celtx, .wps, .pages, .odt, .sexp, .fadein and .highland. OpenFrame tells you so instead of guessing. Save the script as Fountain, Final Draft, DOCX or plain text from the program that made it, then import that.`,
+    `Older or other formats are not accepted. These include .doc, .rtf, .celtx, .wps, .pages, .odt, .sexp, .fadein and .highland. Straft tells you so instead of guessing. Save the script as Fountain, Final Draft, DOCX or plain text from the program that made it, then import that.`,
     `PDF import is best effort. Layout in a PDF can be misread, so check the preview carefully.`,
     `Import never replaces an existing screenplay.`,
   ],
@@ -162,7 +162,7 @@ export default {
     },
     {
       problem: `The preview shows warnings.`,
-      fix: `Click Show warnings. They list details OpenFrame adjusted to fit. The import still works, and Review Warnings on the final screen lets you go through them again.`,
+      fix: `Click Show warnings. They list details Straft adjusted to fit. The import still works, and Review Warnings on the final screen lets you go through them again.`,
     },
     {
       problem: `I want to keep the original file.`,

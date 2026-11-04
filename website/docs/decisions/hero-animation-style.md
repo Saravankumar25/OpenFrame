@@ -4,7 +4,7 @@ Status: proposed, waiting for the owner. Date: 2026-10-31. Decision only. Nothin
 
 ## What the hero needs
 
-OpenFrame Studio is a calm, premium tool for writers and film teams. The hero is the first screen of the home page. Its
+Straft Studio is a calm, premium tool for writers and film teams. The hero is the first screen of the home page. Its
 job is to set a mood and then get out of the way of the product pictures, which are the real proof.
 
 Hard requirements, so any style that fails one is out whatever it scores elsewhere:

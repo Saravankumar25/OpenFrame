@@ -274,14 +274,14 @@ export default {
       ],
       result: `The file is in the folder you chose. Its folder name shows under its name when you look at All files.`,
       cautions: [
-        `Moving a file only changes where OpenFrame lists it. A linked file is not moved on disk.`,
+        `Moving a file only changes where Straft lists it. A linked file is not moved on disk.`,
       ],
       related: [`files-use-folders`, `files-rename-delete-folder`],
     },
     {
       id: `files-details-notes-rename`,
       title: `Add a note to a file and rename how it is shown`,
-      purpose: `Say why a file matters, and give it a clearer name inside OpenFrame.`,
+      purpose: `Say why a file matters, and give it a clearer name inside Straft.`,
       level: `Beginner`,
       prerequisites: [`At least one file is in the project.`],
       steps: [
@@ -298,7 +298,7 @@ export default {
         {
           screen: `files-details-renamed`,
           do: `Edit the Name box, for example add v2 at the end, and click away.`,
-          explain: `Under the box: The name shown in OpenFrame. The file itself is not renamed. A message says Renamed file to followed by the new name, with Undo. The row shows the new name and the details keep Original file name. You can also press F2 on a selected row to edit the name.`,
+          explain: `Under the box: The name shown in Straft. The file itself is not renamed. A message says Renamed file to followed by the new name, with Undo. The row shows the new name and the details keep Original file name. You can also press F2 on a selected row to edit the name.`,
         },
         {
           screen: `files-details-drawer`,
@@ -308,14 +308,14 @@ export default {
       ],
       result: `The file shows your name and note. The file on disk is unchanged.`,
       cautions: [
-        `The Name box changes only the name OpenFrame shows. It does not rename the file in File Explorer or in a project package.`,
+        `The Name box changes only the name Straft shows. It does not rename the file in File Explorer or in a project package.`,
       ],
       related: [`files-open-export-reveal`, `files-delete-file`],
     },
     {
       id: `files-open-export-reveal`,
       title: `Open a file, show it in File Explorer or save a copy`,
-      purpose: `Use a file outside OpenFrame, or hand a copy to someone.`,
+      purpose: `Use a file outside Straft, or hand a copy to someone.`,
       level: `Beginner`,
       prerequisites: [`A file in the project that is Stored in project or Linked (external).`],
       steps: [
@@ -327,7 +327,7 @@ export default {
         {
           screen: `files-details-drawer`,
           do: `Click Reveal in File Manager in the details drawer.`,
-          explain: `Windows File Explorer opens with the file selected. A copy in the project sits inside the project folder. Do not rename or delete it there. Use OpenFrame for that.`,
+          explain: `Windows File Explorer opens with the file selected. A copy in the project sits inside the project folder. Do not rename or delete it there. Use Straft for that.`,
         },
         {
           screen: `files-details-drawer`,
@@ -463,7 +463,7 @@ export default {
     `Dropping files from File Explorer always copies them into the project. Use Add File and Link to file… to link.`,
     `A linked file stays where it is and does not travel with the project. Only files stored in the project do.`,
     `Search on this page looks at the folder that is selected, in file names, original names, notes and type.`,
-    `Rename changes the name shown in OpenFrame only. It does not rename the file on disk.`,
+    `Rename changes the name shown in Straft only. It does not rename the file on disk.`,
     `Deleted files and folders stay in Recently Deleted for 30 days.`,
   ],
   troubleshooting: [
@@ -485,7 +485,7 @@ export default {
     },
     {
       problem: `I renamed a file but File Explorer still shows the old name.`,
-      fix: `That is expected. The Name box changes only the name OpenFrame shows. The original file name is shown at the bottom of the details drawer.`,
+      fix: `That is expected. The Name box changes only the name Straft shows. The original file name is shown at the bottom of the details drawer.`,
     },
     {
       problem: `The row menu and Open button are missing in Grid view.`,

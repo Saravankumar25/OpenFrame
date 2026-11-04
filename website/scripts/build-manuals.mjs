@@ -1,5 +1,5 @@
 // The two user manuals as PDF, generated from src/content/manual/<win|mac>/*.mjs and the real screens:
-//   manuals/openframe-studio-windows-user-manual.pdf, manuals/openframe-studio-macos-user-manual.pdf, manuals/manuals.json
+//   manuals/straft-studio-windows-user-manual.pdf, manuals/straft-studio-macos-user-manual.pdf, manuals/manuals.json
 // Pictures: Windows from .cache/win-full (scripts/render-screens.mjs), Mac from the MacHTML window pictures.
 // A figure is the whole window, or, when only part of the window changed since the previous figure of the same
 // workflow (a dialog, a menu), that part at full resolution. The manuals are internal reference for writing the
@@ -22,8 +22,8 @@ const LIMIT = 25 * 1024 * 1024;
 const only = process.argv[2];
 const EDITION = 'Edition of 31 October 2026';
 const META = {
-  win: { name: 'Windows', title: 'OpenFrame Studio: Windows User Manual', file: 'openframe-studio-windows-user-manual.pdf', sys: 'Windows 11 (64-bit)', col: 1 },
-  mac: { name: 'Mac', title: 'OpenFrame Studio: macOS User Manual', file: 'openframe-studio-macos-user-manual.pdf', sys: 'macOS 14 or later on Apple silicon', col: 2 },
+  win: { name: 'Windows', title: 'Straft Studio: Windows User Manual', file: 'straft-studio-windows-user-manual.pdf', sys: 'Windows 11 (64-bit)', col: 1 },
+  mac: { name: 'Mac', title: 'Straft Studio: macOS User Manual', file: 'straft-studio-macos-user-manual.pdf', sys: 'macOS 14 or later on Apple silicon', col: 2 },
 };
 
 const { errors } = await checkContent(only ? [only] : ['win', 'mac']);
@@ -204,22 +204,22 @@ async function build(plat, browser) {
   for (const [part] of PARTS) for (const a of areas.filter((x) => x.part === part)) { n++; chapters.push({ a, n, part, html: await chapterHtml(plat, a, n, cat, figs) }); }
   const head = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>${esc(M.title)}</title><style>${CSS}</style></head><body>`;
   const cover = `<section class="cover"><div><div class="brand"><i>Open</i><b>Frame</b></div><div class="studio">STUDIO</div>
-<h1>${plat === 'mac' ? 'macOS' : 'Windows'} User Manual</h1><p class="sub">Every workspace, screen, control and workflow of OpenFrame Studio for ${esc(M.name)}, explained step by step.</p>
+<h1>${plat === 'mac' ? 'macOS' : 'Windows'} User Manual</h1><p class="sub">Every workspace, screen, control and workflow of Straft Studio for ${esc(M.name)}, explained step by step.</p>
 <p class="sub">${esc(M.sys)} · ${EDITION}</p></div>
-<div class="co"><img src="${logo}" alt="${esc(COMPANY)} logo"><p>OpenFrame Studio is a product of ${esc(COMPANY)}.<br>© 2026 ${esc(COMPANY)}.</p></div></section>`;
+<div class="co"><img src="${logo}" alt="${esc(COMPANY)} logo"><p>Straft Studio is a product of ${esc(COMPANY)}.<br>© 2026 ${esc(COMPANY)}.</p></div></section>`;
   const keys = SHORTCUTS.filter((r) => r[M.col]);
   const front = `<section class="front"><h1>About this manual</h1>
-<p>This manual explains how to use OpenFrame Studio for ${esc(M.name)}. It follows the app from the first start to backups and settings. Each chapter covers one area of the app: what it is for, how its screen is laid out, every task you can do there as numbered steps, and then every screen and state of the area with the text and controls it shows.</p>
+<p>This manual explains how to use Straft Studio for ${esc(M.name)}. It follows the app from the first start to backups and settings. Each chapter covers one area of the app: what it is for, how its screen is laid out, every task you can do there as numbered steps, and then every screen and state of the area with the text and controls it shows.</p>
 <p>The pictures are real screens of the ${esc(M.name)} app, shown in the Light appearance of the default theme. The example project in the pictures is called Night Bus; your own projects look the same with your own content. Where only part of the window changes from one step to the next, the figure shows that part.</p>
 <p>Names of buttons, menus and fields are written exactly as the app shows them. ${plat === 'win' ? 'Keys are written as they appear on a Windows keyboard, for example Ctrl+K.' : 'Keys are written as Mac shortcuts, for example Cmd+K for Command and K (shown in menus as ⌘K). Opt is the Option key.'}</p>
-<h2>What you need</h2><p>${esc(M.sys)}. No OpenFrame account and no internet connection are needed to work. A 7-day free trial starts with the app; after the trial, buy OpenFrame Studio in the ${plat === 'win' ? 'Microsoft Store' : 'Mac App Store'} to keep using its full functionality.</p>
+<h2>What you need</h2><p>${esc(M.sys)}. No Straft account and no internet connection are needed to work. A 7-day free trial starts with the app; after the trial, buy Straft Studio in the ${plat === 'win' ? 'Microsoft Store' : 'Mac App Store'} to keep using its full functionality.</p>
 <h2>Contents</h2><div class="toc"><ol>${PARTS.map(([part, t]) => {
     const cs = chapters.filter((c) => c.part === part);
     if (!cs.length) return '';
     return `<li class="part">${esc(t)}</li>${cs.map((c) => `<li><a class="ch" href="#ch-${c.a.slug}"><span>${c.n}. ${esc(c.a.area)}</span><span>{{p:${c.a.slug}}}</span></a><div class="wfs">${c.a.workflows.map((w, i) => `${c.n}.${i + 1} ${esc(w.title)}`).join(' · ')}</div></li>`).join('')}`;
   }).join('')}
 <li class="part">Appendices</li><li><a class="ch" href="#app-keys"><span>A. Keyboard shortcuts</span><span>{{p:app-keys}}</span></a></li><li><a class="ch" href="#app-index"><span>B. Index of screens</span><span>{{p:app-index}}</span></a></li></ol></div></section>`;
-  const keysHtml = `<section class="chapter" id="app-keys"><p class="kicker">Appendix A</p><h1>Keyboard shortcuts</h1><p>The default shortcuts of OpenFrame Studio for ${esc(M.name)}. You can change them in Settings, Keyboard Shortcuts; the app warns you about conflicts.</p>
+  const keysHtml = `<section class="chapter" id="app-keys"><p class="kicker">Appendix A</p><h1>Keyboard shortcuts</h1><p>The default shortcuts of Straft Studio for ${esc(M.name)}. You can change them in Settings, Keyboard Shortcuts; the app warns you about conflicts.</p>
 <table><tr><th>Action</th><th>Shortcut</th></tr>${keys.map((r) => `<tr><td>${esc(r[0])}</td><td class="k">${esc(r[M.col])}</td></tr>`).join('')}</table>
 ${chapters.filter((c) => c.a.shortcuts?.length).map((c) => `<h3>${esc(c.a.area)}</h3><table>${c.a.shortcuts.map(([k, d]) => `<tr><td>${md(d)}</td><td class="k">${esc(k)}</td></tr>`).join('')}</table>`).join('')}</section>`;
   const indexHtml = `<section class="chapter" id="app-index"><p class="kicker">Appendix B</p><h1>Index of screens</h1><p>All ${cat.length} screens and states of the ${esc(M.name)} app covered by this manual, by chapter.</p><div class="index">

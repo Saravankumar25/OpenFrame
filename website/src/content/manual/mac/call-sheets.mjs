@@ -4,7 +4,7 @@ export default {
   order: 15,
   part: `Shoot`,
   intro: [
-    `A call sheet tells cast and crew where to be and when on one shooting day. In OpenFrame you create one from a shooting day in your schedule. The title, date, day number, scenes, cast and locations are filled in for you. You add the things only you know: call times, weather, contacts and notes.`,
+    `A call sheet tells cast and crew where to be and when on one shooting day. In Straft you create one from a shooting day in your schedule. The title, date, day number, scenes, cast and locations are filled in for you. You add the things only you know: call times, weather, contacts and notes.`,
     `Call Sheets is its own item in the sidebar, between Production and Files. The page is called Call Sheets and asks: Which shooting day document do I need? It lists one row per call sheet, with its shoot day, date, status and revision. Open a row to edit the sheet, or use Export on the row to make a PDF.`,
     `A call sheet has a status. Draft means you are still working on it. Final means you froze it as the version you are sending. A final sheet never changes by itself: if the schedule changes later, you start a new revision and the final version stays as it was. Needs refresh marks a sheet that no longer matches the schedule.`,
     `Anything nobody has entered reads Needs input, and the side panel counts these values for you. Editing a call sheet never changes your screenplay, breakdown or schedule. The sheet only reads from them.`,

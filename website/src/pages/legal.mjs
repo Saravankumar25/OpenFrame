@@ -44,46 +44,46 @@ ${inner}</div></section>`;
   // ---------- Hub
   const CARDS = [
     ['/legal/privacy/', 'Privacy', 'What this website and the app do with your data, and your rights.'],
-    ['/legal/terms/', 'Terms', 'The licence to use OpenFrame Studio and the rules for using it and this site.'],
+    ['/legal/terms/', 'Terms', 'The licence to use Straft Studio and the rules for using it and this site.'],
     ['/legal/refunds/', 'Refunds', 'The 7-day free trial, and how to ask the store for a refund.'],
     ['/legal/cookies/', 'Cookies and browser storage', 'Every item this site keeps in your browser, and why.'],
     ['/legal/notices/', 'Notices', 'Licences for the fonts on this site, and where the app’s own notices are.'],
   ];
   const hub = page({
     path: '/legal/',
-    title: 'Legal | OpenFrame Studio',
-    description: 'Privacy, terms, refunds, cookies and browser storage, and notices for OpenFrame Studio and this website, in plain language.',
+    title: 'Legal | Straft Studio',
+    description: 'Privacy, terms, refunds, cookies and browser storage, and notices for Straft Studio and this website, in plain language.',
     breadcrumbs: [['Legal', '/legal/']],
-    body: html`${phero('Legal', 'Plain-language legal pages.', 'OpenFrame Studio keeps your work on your computer and is sold only through the Microsoft Store and the Mac App Store. These pages say what that means for your data and your rights.')}
+    body: html`${phero('Legal', 'Plain-language legal pages.', 'Straft Studio keeps your work on your computer and is sold only through the Microsoft Store and the Mac App Store. These pages say what that means for your data and your rights.')}
 <section class="sec-s pt30"><div class="wrap"><p class="upd legal-upd">Last updated ${UPDATED}</p><h2 class="sr">The legal pages</h2><div class="grid2">
 ${CARDS.map(([h, t, b]) => html`<a class="card linkcard" href="${h}"><h3>${t}</h3><p>${b}</p></a>`)}
-</div><p class="small-print">${COMPANY} publishes OpenFrame Studio and this website. Questions? See <a href="/contact/">Contact</a>.</p></div></section>`,
+</div><p class="small-print">${COMPANY} publishes Straft Studio and this website. Questions? See <a href="/contact/">Contact</a>.</p></div></section>`,
   });
 
   // ---------- Privacy
   const privacy = page({
     path: '/legal/privacy/',
-    title: 'Privacy | OpenFrame Studio',
-    description: 'How OpenFrame Studio and its website treat your data: your work stays on your computer, the site sets no tracking cookies, and your rights under Indian law.',
+    title: 'Privacy | Straft Studio',
+    description: 'How Straft Studio and its website treat your data: your work stays on your computer, the site sets no tracking cookies, and your rights under Indian law.',
     breadcrumbs: crumb('Privacy', '/legal/privacy/'),
     body: doc('Privacy', 'Privacy.', 'Your work stays on your computer. This page covers the app, the website, and the few times either one uses the internet.', html`
 <h2>Who is responsible</h2>
-<p>${COMPANY} (“we”) publishes OpenFrame Studio and runs this website. Under India’s Digital Personal Data Protection Act, 2023, we are the data fiduciary for the personal data described on this page, which other laws call the data controller. We are a company registered in India.</p>
+<p>${COMPANY} (“we”) publishes Straft Studio and runs this website. Under India’s Digital Personal Data Protection Act, 2023, we are the data fiduciary for the personal data described on this page, which other laws call the data controller. We are a company registered in India.</p>
 <p>Address: ${COMPANY_ADDRESS}. Contact: ${mail()}.</p>
 
 <h2>The app</h2>
 <ul>
 <li><b>Your projects stay on your computer.</b> Scripts, notes, images and everything else you add are stored in files on your device. The app does not upload them.</li>
-<li><b>No OpenFrame account.</b> There is nothing to sign up for, so we hold no profile of you.</li>
+<li><b>No Straft account.</b> There is nothing to sign up for, so we hold no profile of you.</li>
 <li><b>No telemetry, analytics or crash upload.</b> The app sends nothing about how you use it. If something goes wrong, you can create a diagnostics file yourself, read it, and decide whether to send it to anyone.</li>
-<li><b>OpenFrame AI runs on your computer.</b> What you type, and the project text it reads, are not sent to us or to any online AI service.</li>
+<li><b>Straft AI runs on your computer.</b> What you type, and the project text it reads, are not sent to us or to any online AI service.</li>
 </ul>
 
 <h2>When the app uses the internet</h2>
 <ul>
 <li><b>The store.</b> The Microsoft Store or the Mac App Store installs and updates the app and handles the free trial, the payment and any refund. The store receives your purchase details under its own privacy terms. We do not receive your card or payment details.</li>
-<li><b>OpenFrame AI download, only when you start it.</b> The AI model files are not part of the installer. When you choose to download them, the app fetches them once from the public download service of the model publisher. That service sees the request and your IP address, as any website would. It receives no project content and no account. You can also import the files by hand, with no download.</li>
-<li><b>Mac free trial check.</b> On the Mac, while the free trial runs, the app confirms the trial. It sends Apple’s signed purchase records for the trial (product, transaction identifiers and dates) and a one-time random number to a licence check service run for OpenFrame. It sends nothing from your projects, and no name or email address.${ph('licence-log-retention', 'How long the licence check service keeps its technical logs, to be confirmed by the owner')}</li>
+<li><b>Straft AI download, only when you start it.</b> The AI model files are not part of the installer. When you choose to download them, the app fetches them once from the public download service of the model publisher. That service sees the request and your IP address, as any website would. It receives no project content and no account. You can also import the files by hand, with no download.</li>
+<li><b>Mac free trial check.</b> On the Mac, while the free trial runs, the app confirms the trial. It sends Apple’s signed purchase records for the trial (product, transaction identifiers and dates) and a one-time random number to a licence check service run for Straft. It sends nothing from your projects, and no name or email address.${ph('licence-log-retention', 'How long the licence check service keeps its technical logs, to be confirmed by the owner')}</li>
 <li><b>Links you open.</b> A web link saved in your Idea Vault opens in your normal browser, under that site’s own policy.</li>
 </ul>
 <p>Windows and macOS themselves may send diagnostic data to Microsoft or Apple, depending on your system settings. We do not receive it and the app cannot switch it off. See the ${ext(LINKS.msPrivacy, 'Microsoft privacy statement')} and the ${ext(LINKS.applePrivacy, 'Apple privacy policy')}.</p>
@@ -109,7 +109,7 @@ ${CARDS.map(([h, t, b]) => html`<a class="card linkcard" href="${h}"><h3>${t}</h
 <p>To use a right or raise a concern, ${reach()}. ${ph('grievance-officer', 'Name and designation of the grievance officer, to be confirmed')}${ph('grievance-days', 'Reply time in days, to be confirmed by counsel')}If your concern is not resolved, you may be able to complain to the Data Protection Board of India.</p>
 
 <h2>Children</h2>
-<p>OpenFrame Studio and this website are made for adults who write and produce films. We do not knowingly collect personal data from anyone under 18, we do not track or profile anyone, and we show no advertising. Store accounts for younger people are managed by the store and the family.</p>
+<p>Straft Studio and this website are made for adults who write and produce films. We do not knowingly collect personal data from anyone under 18, we do not track or profile anyone, and we show no advertising. Store accounts for younger people are managed by the store and the family.</p>
 
 <h2>Changes</h2>
 <p>If the app or the site starts handling data in a new way, we will update this page and its date before that change goes live. The date at the top shows when it last changed.</p>`),
@@ -118,17 +118,17 @@ ${CARDS.map(([h, t, b]) => html`<a class="card linkcard" href="${h}"><h3>${t}</h
   // ---------- Terms
   const terms = page({
     path: '/legal/terms/',
-    title: 'Terms | OpenFrame Studio',
-    description: 'The licence to use OpenFrame Studio, the rules for using it and this website, how your work and AI suggestions are treated, and which store terms apply.',
+    title: 'Terms | Straft Studio',
+    description: 'The licence to use Straft Studio, the rules for using it and this website, how your work and AI suggestions are treated, and which store terms apply.',
     breadcrumbs: crumb('Terms', '/legal/terms/'),
     body: doc('Terms', 'Terms.', 'The short version: you buy a licence once, your work is yours, and the store you bought from sets the payment terms.', html`
 <h2>Who we are</h2>
-<p>OpenFrame Studio is published by ${COMPANY}. “You” means the person who installs or uses the app or visits this website.</p>
+<p>Straft Studio is published by ${COMPANY}. “You” means the person who installs or uses the app or visits this website.</p>
 <p>Address: ${COMPANY_ADDRESS}. Contact: ${mail()}.</p>
 
 <h2>The licence</h2>
 <ul>
-<li>One purchase gives you a personal, non-exclusive licence to use OpenFrame Studio on the platform you bought it for, Windows or Mac. Buying for the other platform is a separate purchase.</li>
+<li>One purchase gives you a personal, non-exclusive licence to use Straft Studio on the platform you bought it for, Windows or Mac. Buying for the other platform is a separate purchase.</li>
 <li>The licence covers your own use, for personal or professional work, on the computers your store account allows.${ph('device-limit', 'How many computers one purchase covers, to be confirmed against the store rules')}</li>
 <li>One purchase gives you the full app on that platform, with no subscription.${ph('lifetime-meaning', 'What “lifetime” covers: this version, future updates, future major versions. Counsel and owner to confirm')}</li>
 <li>We keep all rights in the app that this licence does not give you.</li>
@@ -138,7 +138,7 @@ ${CARDS.map(([h, t, b]) => html`<a class="card linkcard" href="${h}"><h3>${t}</h
 <p>Every new install starts a 7-day free trial with the whole app. After the trial, buy the app in the store to keep using it. Your project folders stay on your computer either way, and nothing is deleted. See ${md('[Refunds](/legal/refunds/)')}.</p>
 
 <h2>Your work belongs to you</h2>
-<p>You own everything you write, import or create in OpenFrame Studio. We do not claim any right in it, and we cannot see it, because it stays on your computer. You are responsible for keeping backups. The app does not encrypt your projects; use your system’s disk encryption if you need that.</p>
+<p>You own everything you write, import or create in Straft Studio. We do not claim any right in it, and we cannot see it, because it stays on your computer. You are responsible for keeping backups. The app does not encrypt your projects; use your system’s disk encryption if you need that.</p>
 
 <h2>Acceptable use</h2>
 <p>You agree not to:</p>
@@ -149,18 +149,18 @@ ${CARDS.map(([h, t, b]) => html`<a class="card linkcard" href="${h}"><h3>${t}</h
 <li>use the app to break the law or someone else’s rights, for example by using it to produce or hold content you have no right to.</li>
 </ul>
 
-<h2>OpenFrame AI</h2>
+<h2>Straft AI</h2>
 <ul>
-<li>OpenFrame AI runs on your computer and only suggests. Nothing in your project changes until you choose to apply it.</li>
+<li>Straft AI runs on your computer and only suggests. Nothing in your project changes until you choose to apply it.</li>
 <li>Its answers can be wrong, incomplete or similar to existing material. Check them before you rely on them or publish them. You are responsible for what you keep and use.</li>
-<li>The model files that OpenFrame AI uses are made by third parties and come with their own terms of use. By downloading and using them, you agree to those terms. They are shown in the app, in Settings and in its notices.${ph('ai-model-terms', 'Exact wording and link for the model publisher’s use terms, to be supplied by the owner')}</li>
+<li>The model files that Straft AI uses are made by third parties and come with their own terms of use. By downloading and using them, you agree to those terms. They are shown in the app, in Settings and in its notices.${ph('ai-model-terms', 'Exact wording and link for the model publisher’s use terms, to be supplied by the owner')}</li>
 </ul>
 
 <h2>The stores</h2>
-<p>OpenFrame Studio is sold only through the Microsoft Store and the Mac App Store. The store takes the payment, shows the final price and taxes, and handles receipts and refunds. The store’s own terms apply to your purchase. For the Mac, Apple’s ${ext(LINKS.appleEula, 'Standard Licensed Application End User License Agreement')} applies, together with this page. If this page and a store’s terms disagree about your purchase, the store’s terms win. Prices on this site are ₹2,999 in India and US$89 elsewhere; the store shows the final amount.</p>
+<p>Straft Studio is sold only through the Microsoft Store and the Mac App Store. The store takes the payment, shows the final price and taxes, and handles receipts and refunds. The store’s own terms apply to your purchase. For the Mac, Apple’s ${ext(LINKS.appleEula, 'Standard Licensed Application End User License Agreement')} applies, together with this page. If this page and a store’s terms disagree about your purchase, the store’s terms win. Prices on this site are ₹2,999 in India and US$89 elsewhere; the store shows the final amount.</p>
 
 <h2>This website</h2>
-<p>You may read this site and link to it. We describe the app as accurately as we can, but the app changes over time, so screens and features can differ from what you see here. The site is provided as it is, without a promise that it is complete or always available. Please do not copy its text or screens and present them as your own, or use the OpenFrame Studio name in a way that suggests we endorse you. Other product names belong to their owners. Microsoft and Microsoft Store are trademarks of the Microsoft group of companies. Apple, Mac, macOS and Mac App Store are trademarks of Apple Inc.</p>
+<p>You may read this site and link to it. We describe the app as accurately as we can, but the app changes over time, so screens and features can differ from what you see here. The site is provided as it is, without a promise that it is complete or always available. Please do not copy its text or screens and present them as your own, or use the Straft Studio name in a way that suggests we endorse you. Other product names belong to their owners. Microsoft and Microsoft Store are trademarks of the Microsoft group of companies. Apple, Mac, macOS and Mac App Store are trademarks of Apple Inc.</p>
 
 ${ph('discontinuation', 'What happens if the product is withdrawn, counsel to word')}${ph('liability', 'Disclaimer of warranties and limit of liability, to be drafted by counsel, respecting consumer law')}${ph('governing-law', 'Governing law and courts, to be drafted by counsel')}
 
@@ -171,8 +171,8 @@ ${ph('discontinuation', 'What happens if the product is withdrawn, counsel to wo
   // ---------- Refunds
   const refunds = page({
     path: '/legal/refunds/',
-    title: 'Refunds | OpenFrame Studio',
-    description: 'OpenFrame Studio starts with a 7-day free trial. Refunds are handled only by the Microsoft Store or the Mac App Store, and this page links to both.',
+    title: 'Refunds | Straft Studio',
+    description: 'Straft Studio starts with a 7-day free trial. Refunds are handled only by the Microsoft Store or the Mac App Store, and this page links to both.',
     breadcrumbs: crumb('Refunds', '/legal/refunds/'),
     body: doc('Refunds', 'Refunds.', 'Try the whole app for 7 days before you pay. If you do buy and need a refund, you ask the store.', html`
 <h2>Try first</h2>
@@ -200,12 +200,12 @@ ${ph('discontinuation', 'What happens if the product is withdrawn, counsel to wo
     ['of_mock', 'localStorage', 'Light or dark for the app screens shown on the site.', 'Until you clear it'],
     ['of_region', 'localStorage', 'India, Europe or other countries, so the price shows in the right currency.', 'Until you clear it'],
     ['of_recent_search', 'localStorage', 'Your last searches on this site, to show them again.', 'Until you clear it'],
-    ['of_getapp_seen', 'sessionStorage', 'That the Get OpenFrame window has already opened by itself in this tab, so it does not open again.', 'Until you close the tab'],
+    ['of_getapp_seen', 'sessionStorage', 'That the Get Straft window has already opened by itself in this tab, so it does not open again.', 'Until you close the tab'],
     ['of_seen', 'sessionStorage', 'That the opening animation has already played in this tab.', 'Until you close the tab'],
   ];
   const cookies = page({
     path: '/legal/cookies/',
-    title: 'Cookies and browser storage | OpenFrame Studio',
+    title: 'Cookies and browser storage | Straft Studio',
     description: 'This website sets no tracking cookies. It keeps six small items in your own browser to remember your choices, and none of them is sent to anyone.',
     breadcrumbs: crumb('Cookies and browser storage', '/legal/cookies/'),
     body: doc('Cookies and browser storage', 'Cookies and browser storage.', 'No tracking cookies. A few remembered choices that stay in your browser.', html`
@@ -233,8 +233,8 @@ ${ph('discontinuation', 'What happens if the product is withdrawn, counsel to wo
   const licence = (f) => fs.readFileSync(path.join(FONTS, f), 'utf8').trim();
   const notices = page({
     path: '/legal/notices/',
-    title: 'Notices | OpenFrame Studio',
-    description: 'Licences for the three fonts this website uses, published in full, and where to find the notices for the OpenFrame Studio app itself.',
+    title: 'Notices | Straft Studio',
+    description: 'Licences for the three fonts this website uses, published in full, and where to find the notices for the Straft Studio app itself.',
     breadcrumbs: crumb('Notices', '/legal/notices/'),
     body: doc('Notices', 'Notices.', 'The licences for the work of others that this website uses.', html`
 <h2>Website fonts</h2>
@@ -243,14 +243,14 @@ ${ph('discontinuation', 'What happens if the product is withdrawn, counsel to wo
 ${FONT_LIST.map(([n, f]) => html`<details class="lic"><summary>${n}: SIL Open Font License 1.1</summary><pre class="lic-text">${licence(f)}</pre></details>`)}
 
 <h2>The app</h2>
-<p>The notices for the software and the AI model files inside OpenFrame Studio are in the app itself, in Settings, so they always match the version you have installed.</p>`),
+<p>The notices for the software and the AI model files inside Straft Studio are in the app itself, in Settings, so they always match the version you have installed.</p>`),
   });
 
   // ---------- Contact
   const contact = page({
     path: '/contact/',
-    title: 'Contact | OpenFrame Studio',
-    description: 'How to reach the team behind OpenFrame Studio, and where to find answers first: the step-by-step tutorials, the features and the FAQ.',
+    title: 'Contact | Straft Studio',
+    description: 'How to reach the team behind Straft Studio, and where to find answers first: the step-by-step tutorials, the features and the FAQ.',
     breadcrumbs: [['Contact', '/contact/']],
     body: html`
 ${phero('Contact us', 'Questions? Start here.', 'Most answers are already in the tutorials and the questions and answers.')}

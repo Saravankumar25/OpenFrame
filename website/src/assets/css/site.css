@@ -1,4 +1,4 @@
-/* OpenFrame Studio website styles, ported from the approved website design package (Website_Share_Package).
+/* Straft Studio website styles, ported from the approved website design package (Website_Share_Package).
    Colours are tokens so the site has a Light theme (white) and a Dark theme (black); see theme.css. */
 :root{
   --surface:#fff; --cream2:#fcfaf6; --frame:#efe9de; --header-bg:rgba(255,255,255,.92); --solid:#1d1a2e; --on-solid:#fff; --solid-h:#000; --accent-ink:#d2441c;

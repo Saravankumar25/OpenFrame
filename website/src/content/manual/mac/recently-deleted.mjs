@@ -122,7 +122,7 @@ export default {
         {
           screen: `pages-deleted-items`,
           do: `Click Delete Permanently on the item's row.`,
-          explain: `Nothing is removed yet. OpenFrame asks a second time.`,
+          explain: `Nothing is removed yet. Straft asks a second time.`,
         },
         {
           screen: `pages-deleted-purge-confirm`,

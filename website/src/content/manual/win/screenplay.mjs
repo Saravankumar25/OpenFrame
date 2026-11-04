@@ -4,7 +4,7 @@ export default {
   order: 8,
   part: `Write`,
   intro: [
-    `The Screenplay page is where you write, format, review and send out your script. You type in a page that looks like a real screenplay, with a scene list beside it. Each line has an element type (Scene Heading, Action, Character, Parenthetical, Dialogue, Transition, Shot or a note), and OpenFrame moves to the usual next element when you press Enter.`,
+    `The Screenplay page is where you write, format, review and send out your script. You type in a page that looks like a real screenplay, with a scene list beside it. Each line has an element type (Scene Heading, Action, Character, Parenthetical, Dialogue, Transition, Shot or a note), and Straft moves to the usual next element when you press Enter.`,
     `A project can hold several screenplays, for example a short version and a full version. Each screenplay has its own drafts, its own page setup and its own title page. Drafts are named versions of the script. You can compare two drafts, lock one as the Shooting Draft, and then write further changes as coloured revisions so the locked pages never change by accident.`,
     `Everything you type is saved on this computer as you type. The toolbar shows Saved and the number of pages. Comments, scene notes and private notes sit in panels on the right. Export, Print Preview, Page setup and Title page decide what the finished pages look like. Pages on screen, in Print Preview and in the PDF use the same page setup.`,
     `This chapter follows the order you usually work in: open the page, write, search and check, set up the pages, review with comments and notes, keep drafts, lock and revise, then export. To bring in an existing script, see the Import a screenplay chapter. To turn Beat Board cards into scenes, see the Story chapter.`,
@@ -207,7 +207,7 @@ export default {
     {
       id: `screenplay-scene-menu`,
       title: `Use the scene menu and the Scene Hub`,
-      purpose: `Send a scene to other parts of OpenFrame, copy or export it, and see everything linked to it.`,
+      purpose: `Send a scene to other parts of Straft, copy or export it, and see everything linked to it.`,
       level: `Intermediate`,
       prerequisites: [`A screenplay with scenes is open.`],
       steps: [
@@ -768,7 +768,7 @@ export default {
         {
           screen: `sp-panel-characters-match-menu`,
           do: `Click Correct match for the name you want to fix.`,
-          explain: `The menu lists your story characters, for example LAKSHMI, VENKAT RAO, FAROOQ and PADMA, and Not a character. Choose a character to link the name, or Not a character to tell OpenFrame the name is not a character. After a manual match the menu also offers Reset match.`,
+          explain: `The menu lists your story characters, for example LAKSHMI, VENKAT RAO, FAROOQ and PADMA, and Not a character. Choose a character to link the name, or Not a character to tell Straft the name is not a character. After a manual match the menu also offers Reset match.`,
         },
       ],
       result: `Names in the script are matched to the right story characters.`,
@@ -814,7 +814,7 @@ export default {
         {
           screen: `sp-focus-mode`,
           do: `Write on the page. Click Exit Focus, or press Esc, to leave.`,
-          explain: `The toolbar, scene list, panels and the whole OpenFrame frame are hidden. A small box at the top right shows the draft name, Exit Focus and the save state.`,
+          explain: `The toolbar, scene list, panels and the whole Straft frame are hidden. A small box at the top right shows the draft name, Exit Focus and the save state.`,
         },
       ],
       result: `You wrote with no distractions and are back in Standard Mode.`,
@@ -1186,7 +1186,7 @@ export default {
       ],
       result: `The file is saved where you chose and the project is unchanged.`,
       cautions: [
-        `Screenplay files carry no OpenFrame branding.`,
+        `Screenplay files carry no Straft branding.`,
         `Text in some scripts, for example Chinese, Japanese, Korean or Arabic, cannot be put into a PDF. The export says so instead of printing empty boxes.`,
       ],
       related: [`screenplay-export-scenes`, `screenplay-print-preview`, `screenplay-export-revision`],

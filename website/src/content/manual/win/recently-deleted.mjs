@@ -4,7 +4,7 @@ export default {
   order: 27,
   part: `Project and data`,
   intro: [
-    `Recently Deleted is where deleted things wait before they are gone for good. When you delete a file, a folder, a note, a task, an idea or a template that lives in the project, OpenFrame does not destroy it. It moves it here for 30 days. The page says: Deleted items stay here for 30 days, then they are removed for good. Restore them before then, or delete them sooner.`,
+    `Recently Deleted is where deleted things wait before they are gone for good. When you delete a file, a folder, a note, a task, an idea or a template that lives in the project, Straft does not destroy it. It moves it here for 30 days. The page says: Deleted items stay here for 30 days, then they are removed for good. Restore them before then, or delete them sooner.`,
     `For each item the page shows what it is, when and by whom it was deleted, how many days are left and where it was. You can restore an item to its place, or delete it permanently after a second confirmation.`,
     `A switch at the top right chooses what you look at. This project lists what was deleted from the open project. Global Idea Vault lists what was deleted from your vault of ideas outside any project.`,
     `Open the page from the project menu (click the project name at the top and choose Recently Deleted) or from QUICK ACCESS on Project Home. The Global Idea Vault also has its own Recently Deleted button.`,

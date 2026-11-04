@@ -144,7 +144,7 @@ export default {
         {
           screen: `prod-shots-grid`,
           do: `Click Grid at the top right of the list.`,
-          explain: `Each shot becomes a card. It shows Scene and its number, the shot number such as Shot 1A, a picture, a line of details such as Wide · Static, the description and the characters. The picture is the shot's reference picture, or else the first picture of its storyboard panels. A card with neither says No reference image. OpenFrame remembers your choice of List or Grid on this computer.`,
+          explain: `Each shot becomes a card. It shows Scene and its number, the shot number such as Shot 1A, a picture, a line of details such as Wide · Static, the description and the characters. The picture is the shot's reference picture, or else the first picture of its storyboard panels. A card with neither says No reference image. Straft remembers your choice of List or Grid on this computer.`,
         },
         {
           screen: `prod-shots-all-scenes`,
@@ -287,7 +287,7 @@ export default {
         {
           screen: `prod-shots-export-dialog`,
           do: `Click Export… and choose where to save the file in the Windows window that opens.`,
-          explain: `Cancel closes the dialog with no file made. The PDF carries a small Created using OpenFrame line. CSV files stay clean without it.`,
+          explain: `Cancel closes the dialog with no file made. The PDF carries a small Created using Straft line. CSV files stay clean without it.`,
         },
       ],
       result: `A file with your shots is saved where you chose.`,

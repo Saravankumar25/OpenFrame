@@ -57,7 +57,7 @@ function inPage(o) {
   const scrub = (t) => t
     .replace(/[A-Za-z]:\\(?:[^\\\r\n"<>]+\\)*?zz-capture\\home\\/gi, 'C:\\Users\\Maya\\')
     .replace(/[A-Za-z]:\\Users\\[^\\\r\n"<>]+/gi, 'C:\\Users\\Maya')
-    .replace(/\/(?:var|private)\/folders\/[^\s"<>]*/g, '/Users/maya/OpenFrame')
+    .replace(/\/(?:var|private)\/folders\/[^\s"<>]*/g, '/Users/maya/Straft')
     .replace(/\/Users\/(?!maya\b)[^\/\s"<>]+/g, '/Users/maya')
     .replace(/Saravan Kumar/g, 'Maya Iyer').replace(/Saravan/g, 'Maya');
   const baseStyle = document.querySelector('head style')?.textContent || '';

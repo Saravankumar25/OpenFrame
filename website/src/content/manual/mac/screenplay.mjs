@@ -4,7 +4,7 @@ export default {
   order: 8,
   part: `Write`,
   intro: [
-    `Screenplay is where you write the script. The page shows real screenplay layout: scene headings in bold capitals, action across the page, character names and dialogue indented, scene numbers in both margins. You pick the kind of line, called an element, and OpenFrame handles the spacing. A scene list sits beside the page so you can see every scene and its number at a glance.`,
+    `Screenplay is where you write the script. The page shows real screenplay layout: scene headings in bold capitals, action across the page, character names and dialogue indented, scene numbers in both margins. You pick the kind of line, called an element, and Straft handles the spacing. A scene list sits beside the page so you can see every scene and its number at a glance.`,
     `A project can hold several screenplays, for example a short version and a long version. Each screenplay has its own drafts, its own locked Shooting Draft, its own scene numbers and its own page setup. Inside one screenplay you keep drafts: a draft is a saved version of the script that you can open, compare, rename, copy or delete. When shooting is near, you lock a draft as the Shooting Draft and make every later change in a coloured revision.`,
     `Around the page you have a find bar, find and replace, comments that stay beside the script, private notes that only you can read, a Scene Hub that shows what exists around each scene, a page view and print preview, title page and page setup, custom paragraph kinds, and import and export in five formats. Everything is saved as you type, and the sidebar foot shows Saved.`,
     `This chapter follows the Screenplay page in the order you meet it: the layout, writing, finding and replacing, screenplays, the Scene Hub and notes, comments, drafts, compare, locking and revisions, page and title page, custom elements, and finally import, export and print.`,
@@ -1035,12 +1035,12 @@ export default {
         {
           screen: `screenplay-tools-import-screenplay`,
           do: `Choose Screenplay Tools, then Import and Export, then Import Screenplay…. The File menu has the same command, Command-Shift-I.`,
-          explain: `The sheet asks: What existing script do you want to bring into OpenFrame? Three steps are shown: 1 Select source, 2 Preview interpretation, 3 Import. Under Screenplay file, click Browse… and pick a PDF, Final Draft (.fdx), Fountain, TXT or DOCX file. Or paste the text into Screenplay text, or open a sample script: Example Feature, Example Short, Example Scene or FDX Interchange Test.`,
+          explain: `The sheet asks: What existing script do you want to bring into Straft? Three steps are shown: 1 Select source, 2 Preview interpretation, 3 Import. Under Screenplay file, click Browse… and pick a PDF, Final Draft (.fdx), Fountain, TXT or DOCX file. Or paste the text into Screenplay text, or open a sample script: Example Feature, Example Short, Example Scene or FDX Interchange Test.`,
         },
         {
           screen: `screenplay-tools-import-screenplay`,
           do: `Click Preview.`,
-          explain: `The sheet shows how OpenFrame read the script before anything changes. Cancel closes the sheet. A note says: Importing never replaces your current screenplay. If one exists, the script arrives as a new screenplay or a new draft.`,
+          explain: `The sheet shows how Straft read the script before anything changes. Cancel closes the sheet. A note says: Importing never replaces your current screenplay. If one exists, the script arrives as a new screenplay or a new draft.`,
         },
         {
           screen: `screenplay-editor-typing`,

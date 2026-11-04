@@ -3,7 +3,7 @@
   "id": "ember-dusk",
   "name": "Ember Dusk",
   "description": "Warm dusk neutrals with a glowing ember accent.",
-  "author": "OpenFrame Studio",
+  "author": "Straft Studio",
   "seeds": {
     "neutralHue": 30,
     "neutralTint": 0.03,

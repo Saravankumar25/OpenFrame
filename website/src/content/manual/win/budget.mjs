@@ -4,15 +4,15 @@ export default {
   order: 22,
   part: `Shoot`,
   intro: [
-    `The Budget tab is a light planning budget: what did we plan to spend, and what have we spent? You list rough costs as lines, each with a Planned amount and, once the money is spent, an Actual amount. OpenFrame adds them up by category and shows the difference between plan and actual.`,
-    `A banner at the top says it plainly: Use a simple estimate for planning. Formal accounting is outside OpenFrame. The budget is for you and your team to keep a sense of cost. It is not an accounting, payroll or invoicing tool. It is also optional. You can ignore it entirely.`,
+    `The Budget tab is a light planning budget: what did we plan to spend, and what have we spent? You list rough costs as lines, each with a Planned amount and, once the money is spent, an Actual amount. Straft adds them up by category and shows the difference between plan and actual.`,
+    `A banner at the top says it plainly: Use a simple estimate for planning. Formal accounting is outside Straft. The budget is for you and your team to keep a sense of cost. It is not an accounting, payroll or invoicing tool. It is also optional. You can ignore it entirely.`,
     `Budget values never change by themselves. If the script or the schedule changes, you review and update the lines yourself. Three tiles at the top summarise the budget: Planned, Actual and Difference.`,
     `You can save a snapshot, a frozen copy of the budget with a name you choose, such as Pre-production estimate, and look at it later. You can also export the budget as a PDF, CSV or Excel file.`,
   ],
   layout: [
     { name: `Heading`, text: `Budget, with the line What did we plan to spend, and what have we spent?.` },
     { name: `Export, Save snapshot and Add Line`, text: `At the top right, once a budget exists. Export saves a document, Save snapshot freezes a named copy, and Add Line (the orange button) adds a cost line.` },
-    { name: `Banner`, text: `A blue bar: Use a simple estimate for planning. Formal accounting is outside OpenFrame.` },
+    { name: `Banner`, text: `A blue bar: Use a simple estimate for planning. Formal accounting is outside Straft.` },
     { name: `PLANNED tile`, text: `The total of all Planned amounts, a line showing your overall plan and contingency, and Edit plan. With no overall plan it says Sum of the Planned amounts. The contingency shows as a percentage and an amount, for example 0% contingency ₹0.` },
     { name: `ACTUAL tile`, text: `The total of the Actual amounts you have entered, or None yet, and a count such as 2 of 6 lines have an Actual amount.` },
     { name: `DIFFERENCE tile`, text: `Planned minus Actual over the lines that have an Actual amount, written in words such as ₹23,000 under plan or ₹7,000 over plan, or Not spent yet.` },
@@ -46,7 +46,7 @@ export default {
       ],
       result: `The project has a budget, ready for lines.`,
       cautions: [
-        `The budget is optional. If you never click Start budget, nothing else in OpenFrame is affected.`,
+        `The budget is optional. If you never click Start budget, nothing else in Straft is affected.`,
       ],
       related: [`budget-add-line`, `budget-edit-plan`],
     },

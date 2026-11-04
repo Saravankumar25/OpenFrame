@@ -1,3010 +1,3010 @@
 {
  "/features/": {
-  "h": "7d71a3ce3a6b",
-  "d": "2026-11-01"
+  "h": "7a3af4b33cb1",
+  "d": "2026-11-04"
  },
  "/features/idea-vault/": {
-  "h": "d37c382fbc1a",
-  "d": "2026-11-01"
+  "h": "33dc79a6de4f",
+  "d": "2026-11-04"
  },
  "/features/story-board/": {
-  "h": "5b5f11d65024",
-  "d": "2026-11-01"
+  "h": "c5cf8c0ae764",
+  "d": "2026-11-04"
  },
  "/features/moodboards/": {
-  "h": "13334f2fec02",
-  "d": "2026-11-01"
+  "h": "6ef06ca3cad1",
+  "d": "2026-11-04"
  },
  "/features/screenplay/": {
-  "h": "f1bbfc78863b",
-  "d": "2026-11-01"
+  "h": "07413dfb6a3e",
+  "d": "2026-11-04"
  },
  "/features/drafts-revisions/": {
-  "h": "b1340afbaac9",
-  "d": "2026-11-01"
+  "h": "feb74611612a",
+  "d": "2026-11-04"
  },
  "/features/import-export/": {
-  "h": "0a67f84f94db",
-  "d": "2026-11-01"
+  "h": "5f08efd645fa",
+  "d": "2026-11-04"
  },
- "/features/openframe-ai/": {
-  "h": "9f9528d34d2e",
-  "d": "2026-11-01"
+ "/features/straft-ai/": {
+  "h": "171ebf49e132",
+  "d": "2026-11-04"
  },
  "/features/breakdown/": {
-  "h": "66582fd4db80",
-  "d": "2026-11-01"
+  "h": "2fd9607c8f6e",
+  "d": "2026-11-04"
  },
  "/features/cast-crew-locations/": {
-  "h": "e35586cbb4ec",
-  "d": "2026-11-01"
+  "h": "998c13d9c169",
+  "d": "2026-11-04"
  },
  "/features/shot-lists-storyboards/": {
-  "h": "0a864266aaa9",
-  "d": "2026-11-01"
+  "h": "fd597230dc37",
+  "d": "2026-11-04"
  },
  "/features/scheduling/": {
-  "h": "8229f711a61e",
-  "d": "2026-11-01"
+  "h": "5a2b1deae5c5",
+  "d": "2026-11-04"
  },
  "/features/call-sheets/": {
-  "h": "6c484d08562c",
-  "d": "2026-11-01"
+  "h": "29ef31ab8a3b",
+  "d": "2026-11-04"
  },
  "/features/sides-daily-view/": {
-  "h": "247ba9652fb7",
-  "d": "2026-11-01"
+  "h": "12b57fcec49c",
+  "d": "2026-11-04"
  },
  "/features/reports-budget/": {
-  "h": "1929a34b0610",
-  "d": "2026-11-01"
+  "h": "eca661449696",
+  "d": "2026-11-04"
  },
  "/features/backups-recovery/": {
-  "h": "776261df40fc",
-  "d": "2026-11-01"
+  "h": "0d957b676660",
+  "d": "2026-11-04"
  },
  "/": {
-  "h": "f596ced8049b",
-  "d": "2026-10-31"
+  "h": "3e51dd6a5592",
+  "d": "2026-11-04"
  },
  "/windows/": {
-  "h": "16b083230e51",
-  "d": "2026-10-31"
+  "h": "dedd033cb617",
+  "d": "2026-11-04"
  },
  "/mac/": {
-  "h": "831ac8270b0c",
-  "d": "2026-10-31"
+  "h": "ffc1f2db42ad",
+  "d": "2026-11-04"
  },
  "/download/": {
-  "h": "255bc25a7dee",
-  "d": "2026-10-31"
+  "h": "0d338c0f728d",
+  "d": "2026-11-04"
  },
  "/pricing/": {
-  "h": "36a98a7da99f",
-  "d": "2026-10-31"
+  "h": "20e813194be6",
+  "d": "2026-11-04"
  },
  "/faq/": {
-  "h": "8793f5f84a29",
-  "d": "2026-10-31"
+  "h": "9de9b80e0afa",
+  "d": "2026-11-04"
  },
  "/switch/": {
-  "h": "d73bef146fa6",
-  "d": "2026-10-31"
+  "h": "c2ba0140a4f7",
+  "d": "2026-11-04"
  },
  "/compare/": {
-  "h": "559cd5f7cf47",
-  "d": "2026-10-31"
+  "h": "df89f157f5cf",
+  "d": "2026-11-04"
  },
  "/local-and-private/": {
-  "h": "d691f0d589a1",
-  "d": "2026-10-31"
+  "h": "94b83ddd927a",
+  "d": "2026-11-04"
  },
  "/themes/": {
-  "h": "53c3758fed72",
-  "d": "2026-10-31"
+  "h": "67ef3f44f70d",
+  "d": "2026-11-04"
  },
  "/about/": {
-  "h": "abcc060d6390",
-  "d": "2026-10-31"
+  "h": "84cae3132761",
+  "d": "2026-11-04"
  },
  "/legal/": {
-  "h": "7091f5cc35fc",
-  "d": "2026-10-31"
+  "h": "0c83766efc06",
+  "d": "2026-11-04"
  },
  "/legal/privacy/": {
-  "h": "e042dd395b78",
-  "d": "2026-10-31"
+  "h": "3baa2c0a9b17",
+  "d": "2026-11-04"
  },
  "/legal/terms/": {
-  "h": "f26f6c5d3f71",
-  "d": "2026-10-31"
+  "h": "bb5a9408ea62",
+  "d": "2026-11-04"
  },
  "/legal/refunds/": {
-  "h": "ce6549e87603",
-  "d": "2026-10-31"
+  "h": "569c5a0ac8b1",
+  "d": "2026-11-04"
  },
  "/legal/cookies/": {
-  "h": "3922e81d3c0f",
-  "d": "2026-10-31"
+  "h": "99ac491c552a",
+  "d": "2026-11-04"
  },
  "/legal/notices/": {
-  "h": "96a10aa04026",
-  "d": "2026-10-31"
+  "h": "97755857d4f7",
+  "d": "2026-11-04"
  },
  "/contact/": {
-  "h": "a8362344e20e",
-  "d": "2026-10-31"
+  "h": "3564611b13b5",
+  "d": "2026-11-04"
  },
  "/tutorials/": {
-  "h": "9d956c626745",
-  "d": "2026-10-31"
+  "h": "84692cc2ced3",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/": {
-  "h": "1c69322e2a17",
-  "d": "2026-10-31"
+  "h": "dfa06305a248",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/create-library-default/": {
-  "h": "bafeccb5b820",
-  "d": "2026-10-31"
+  "h": "4533d06934a5",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/create-library-new-location/": {
-  "h": "e2ce681843d5",
-  "d": "2026-10-31"
+  "h": "6694c9dcacfa",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/reconnect-existing-library/": {
-  "h": "8018a058b80d",
-  "d": "2026-10-31"
+  "h": "aa46f754e423",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/enter-your-name/": {
-  "h": "d627f1afa61d",
-  "d": "2026-10-31"
+  "h": "98a0ebe1b984",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/create-first-project/": {
-  "h": "32587c0c1612",
-  "d": "2026-10-31"
+  "h": "497c34ed06b7",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/create-another-project/": {
-  "h": "1912baa34cab",
-  "d": "2026-10-31"
+  "h": "50495a14272f",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/open-or-restore-project/": {
-  "h": "39383239a5b4",
-  "d": "2026-10-31"
+  "h": "c78b7f041daa",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/search-projects/": {
-  "h": "0432b20128a8",
-  "d": "2026-10-31"
+  "h": "e6d51d84b4db",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/rename-project/": {
-  "h": "172d7f62c157",
-  "d": "2026-10-31"
+  "h": "23e9ab0ebfd8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/use-card-menu/": {
-  "h": "4f3858b6093c",
-  "d": "2026-10-31"
+  "h": "cbb64e964ce1",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/pin-project/": {
-  "h": "9e454d7caaa2",
-  "d": "2026-10-31"
+  "h": "c149265b4ee6",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/archive-project/": {
-  "h": "0cdd50d830f6",
-  "d": "2026-10-31"
+  "h": "2b079abedb46",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/restore-archived-project/": {
-  "h": "e342ee3c7781",
-  "d": "2026-10-31"
+  "h": "81a5889ff946",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/delete-project/": {
-  "h": "46063e60df8d",
-  "d": "2026-10-31"
+  "h": "f0d34b1ba4c3",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/change-your-name/": {
-  "h": "e29cd5051649",
-  "d": "2026-10-31"
+  "h": "0d3c1e48a98b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/use-global-idea-vault/": {
-  "h": "b9b112a747b0",
-  "d": "2026-10-31"
+  "h": "d8bb7c8a6c41",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/change-appearance/": {
-  "h": "7523cebb8ff3",
-  "d": "2026-10-31"
+  "h": "698d1fe7f472",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/customize-shortcuts/": {
-  "h": "8d7da8af320f",
-  "d": "2026-10-31"
+  "h": "2ed4e8f0b90c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/check-storage/": {
-  "h": "1e7c64df53ad",
-  "d": "2026-10-31"
+  "h": "32131df41556",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/about-and-diagnostics/": {
-  "h": "f1029ef38942",
-  "d": "2026-10-31"
+  "h": "e7ea7a147426",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/edit-project-details/": {
-  "h": "6f9f9249ffc0",
-  "d": "2026-10-31"
+  "h": "85465923bf8a",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/import-screenplay-file/": {
-  "h": "d8cf1a0ac138",
-  "d": "2026-10-31"
+  "h": "59f96e441c59",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/import-sample-script/": {
-  "h": "b465f614c19f",
-  "d": "2026-10-31"
+  "h": "b7dc465eab12",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/import-pasted-text/": {
-  "h": "d291e2975800",
-  "d": "2026-10-31"
+  "h": "cf365262994c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/tour-project-home/": {
-  "h": "dfac9f1ad9ea",
-  "d": "2026-10-31"
+  "h": "858da30afa63",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/start-an-empty-project/": {
-  "h": "cfe8b192f9d7",
-  "d": "2026-10-31"
+  "h": "1025e344ade8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/collapse-navigation/": {
-  "h": "4fa8d8353df6",
-  "d": "2026-10-31"
+  "h": "31f29c38ef43",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/use-create-menu/": {
-  "h": "4d82dc2f26ff",
-  "d": "2026-10-31"
+  "h": "9a100dada611",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/search-project/": {
-  "h": "e7dddc856283",
-  "d": "2026-10-31"
+  "h": "10f92f081116",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/go-back-and-forward/": {
-  "h": "d642d8a78496",
-  "d": "2026-10-31"
+  "h": "08970617bb19",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/use-project-menu/": {
-  "h": "043a2367c8b8",
-  "d": "2026-10-31"
+  "h": "7b261165f4fd",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/change-project-status/": {
-  "h": "e010e78b062a",
-  "d": "2026-10-31"
+  "h": "9acba3938250",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/undo-and-redo/": {
-  "h": "665988355f09",
-  "d": "2026-10-31"
+  "h": "ecb053fe1e45",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/archive-from-project/": {
-  "h": "13a9cfd9f2e8",
-  "d": "2026-10-31"
+  "h": "9048ecaae62d",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/check-save-status/": {
-  "h": "12f3480f7a5e",
-  "d": "2026-10-31"
+  "h": "c3a5a636ad2d",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/edit-project-settings/": {
-  "h": "481c366fc7ac",
-  "d": "2026-10-31"
+  "h": "8e3d3d6f26e2",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/change-your-name-in-project/": {
-  "h": "969bf93b6e85",
-  "d": "2026-10-31"
+  "h": "76522eecb4b8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-tour/": {
-  "h": "6c70b09996ee",
-  "d": "2026-10-31"
+  "h": "a9f35a356027",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-quick-capture/": {
-  "h": "843a7ac2ddc0",
-  "d": "2026-10-31"
+  "h": "00ed454db889",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-add-note-or-quote/": {
-  "h": "d0c7229de77b",
-  "d": "2026-10-31"
+  "h": "e55761964495",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-add-link/": {
-  "h": "93a4cf5580ad",
-  "d": "2026-10-31"
+  "h": "e131af245500",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-add-files/": {
-  "h": "e644a0480516",
-  "d": "2026-10-31"
+  "h": "d29273330d31",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-fix-unavailable-file/": {
-  "h": "1412062f8074",
-  "d": "2026-10-31"
+  "h": "2c4c2121b5c3",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-record-voice-note/": {
-  "h": "6433cd630310",
-  "d": "2026-10-31"
+  "h": "335d612f71f4",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-draw-sketch/": {
-  "h": "20ebf56492b7",
-  "d": "2026-10-31"
+  "h": "3e2fd757c3ea",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-edit-item/": {
-  "h": "905edd94677f",
-  "d": "2026-10-31"
+  "h": "748643b827fc",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-pin-items/": {
-  "h": "03cea1332cea",
-  "d": "2026-10-31"
+  "h": "3ce00cd5e3d9",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-switch-views/": {
-  "h": "7b7eaa9ea705",
-  "d": "2026-10-31"
+  "h": "360023e17427",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-use-side-panel/": {
-  "h": "7740b71208a5",
-  "d": "2026-10-31"
+  "h": "41bf38bf3019",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-search/": {
-  "h": "d1d047972a11",
-  "d": "2026-10-31"
+  "h": "e68bff90edf7",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-organise/": {
-  "h": "3b24d061cba3",
-  "d": "2026-10-31"
+  "h": "9ad2d94015fd",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-rename-delete-groups/": {
-  "h": "55673137e89f",
-  "d": "2026-10-31"
+  "h": "30690c582026",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-select-several/": {
-  "h": "965f8a302325",
-  "d": "2026-10-31"
+  "h": "c96c175299d3",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-copy-between-vaults/": {
-  "h": "ba9903649bb1",
-  "d": "2026-10-31"
+  "h": "0e16fcab0dff",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-send-to-beat-board/": {
-  "h": "c0df1549bf0d",
-  "d": "2026-10-31"
+  "h": "93e1b4a69378",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/vault-undo-and-restore/": {
-  "h": "2cfe48e02a92",
-  "d": "2026-10-31"
+  "h": "314953838c76",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-tour/": {
-  "h": "a80f64d848e0",
-  "d": "2026-10-31"
+  "h": "27fc5d39dabe",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-write-page/": {
-  "h": "219b13158ef8",
-  "d": "2026-10-31"
+  "h": "12d489d5c638",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-export-page/": {
-  "h": "1d2db492aeff",
-  "d": "2026-10-31"
+  "h": "d4a82961633c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-start-board/": {
-  "h": "4af7f83a048d",
-  "d": "2026-10-31"
+  "h": "a8a32a5e2920",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-add-items/": {
-  "h": "89eda0065ba1",
-  "d": "2026-10-31"
+  "h": "b55c364d969f",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-edit-cards/": {
-  "h": "e76d6609686c",
-  "d": "2026-10-31"
+  "h": "e5ab0f60370e",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-arrange-board/": {
-  "h": "1e2e71076c09",
-  "d": "2026-10-31"
+  "h": "1121fdcc26b8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-park-items/": {
-  "h": "2d48a5a8721b",
-  "d": "2026-10-31"
+  "h": "9c17620c5510",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-select-several/": {
-  "h": "ee7057301410",
-  "d": "2026-10-31"
+  "h": "c8a08323b23b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-card-display/": {
-  "h": "e8b59d577637",
-  "d": "2026-10-31"
+  "h": "f242b16eb675",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-delete-items/": {
-  "h": "7a2d4218eba2",
-  "d": "2026-10-31"
+  "h": "263c2e131245",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-build-screenplay/": {
-  "h": "a23fd67e3279",
-  "d": "2026-10-31"
+  "h": "e529aef9c60d",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-apply-order/": {
-  "h": "8297b1625143",
-  "d": "2026-10-31"
+  "h": "36155709b554",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-export-board/": {
-  "h": "6a1b116928b1",
-  "d": "2026-10-31"
+  "h": "c479666c76dc",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-use-outline/": {
-  "h": "1fb1794cb8f6",
-  "d": "2026-10-31"
+  "h": "a237f6e76864",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-add-character/": {
-  "h": "bd2460d2c3a5",
-  "d": "2026-10-31"
+  "h": "292d7b1beb1b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-character-relationships/": {
-  "h": "cb66c2ddcffe",
-  "d": "2026-10-31"
+  "h": "4b823a2d95e6",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-archive-character/": {
-  "h": "b8f60883ffd8",
-  "d": "2026-10-31"
+  "h": "c6ab0ffa42f9",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/story-timeline-days/": {
-  "h": "6d695c40b02c",
-  "d": "2026-10-31"
+  "h": "36ef0cd3e328",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-start-first/": {
-  "h": "e52ebdc0018a",
-  "d": "2026-10-31"
+  "h": "cdb1bd64e0ba",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-tour-editor/": {
-  "h": "32a1606ddd38",
-  "d": "2026-10-31"
+  "h": "5501807d02fa",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-write-elements/": {
-  "h": "aa84ebc839de",
-  "d": "2026-10-31"
+  "h": "acb4119da722",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-character-suggestions/": {
-  "h": "45288cf67b6e",
-  "d": "2026-10-31"
+  "h": "f736bc3aa9af",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-use-scene-list/": {
-  "h": "b075ac157db6",
-  "d": "2026-10-31"
+  "h": "195c1f7876e8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-scene-columns/": {
-  "h": "b3373bc31037",
-  "d": "2026-10-31"
+  "h": "76f8282a14bb",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-scene-menu/": {
-  "h": "f095162d2c10",
-  "d": "2026-10-31"
+  "h": "4169867e6d7e",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-scene-number/": {
-  "h": "a504aacc2ef2",
-  "d": "2026-10-31"
+  "h": "cbd41ccc78dd",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-move-scene/": {
-  "h": "ddc144bb8d66",
-  "d": "2026-10-31"
+  "h": "5c724d6b0623",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-zoom-page/": {
-  "h": "c12b284c1eb6",
-  "d": "2026-10-31"
+  "h": "f5773a5168db",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-find-text/": {
-  "h": "77deb5f30c94",
-  "d": "2026-10-31"
+  "h": "1ba7794d6163",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-replace-text/": {
-  "h": "d8ca9f533f15",
-  "d": "2026-10-31"
+  "h": "d2ea77abe4cb",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-spell-check/": {
-  "h": "e2267305bbd2",
-  "d": "2026-10-31"
+  "h": "878fd93eeada",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-custom-elements/": {
-  "h": "74cf4374a07e",
-  "d": "2026-10-31"
+  "h": "4b75a5d83e81",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-view-menu/": {
-  "h": "e3c9b58a5c8f",
-  "d": "2026-10-31"
+  "h": "29b8c62f0612",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-dark-page/": {
-  "h": "f5acf958fca3",
-  "d": "2026-10-31"
+  "h": "4576b9b42094",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-title-page/": {
-  "h": "f3ac9a048ccc",
-  "d": "2026-10-31"
+  "h": "f7dcc27828bb",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-page-setup/": {
-  "h": "d80ccd83c7a1",
-  "d": "2026-10-31"
+  "h": "c2daf16984ac",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-page-view/": {
-  "h": "2f16acb59161",
-  "d": "2026-10-31"
+  "h": "97445b311c73",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-comment-on-text/": {
-  "h": "07e52e57aa87",
-  "d": "2026-10-31"
+  "h": "7fbe5eb46510",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-comments-panel/": {
-  "h": "fb25deb45825",
-  "d": "2026-10-31"
+  "h": "9b06e1234f11",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-scene-notes/": {
-  "h": "78fb87814810",
-  "d": "2026-10-31"
+  "h": "a245111bc214",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-writing-room/": {
-  "h": "3849cd51e350",
-  "d": "2026-10-31"
+  "h": "e8d97efd36c3",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-characters-panel/": {
-  "h": "4786e8191b68",
-  "d": "2026-10-31"
+  "h": "8abddec611a4",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-draft-information/": {
-  "h": "d174495086db",
-  "d": "2026-10-31"
+  "h": "86ee96e8f5a6",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-focus-mode/": {
-  "h": "c2a7f2583762",
-  "d": "2026-10-31"
+  "h": "b27d9e782819",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-manage-screenplays/": {
-  "h": "8f4f36ea9756",
-  "d": "2026-10-31"
+  "h": "bf74cfaec86d",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-switch-draft/": {
-  "h": "6a5cb3bebf5e",
-  "d": "2026-10-31"
+  "h": "727a95c197df",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-manage-drafts/": {
-  "h": "9b18a1526525",
-  "d": "2026-10-31"
+  "h": "2e451bc8a279",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-new-draft/": {
-  "h": "2dd207eeb017",
-  "d": "2026-10-31"
+  "h": "6afc7c767fa5",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-restore-history/": {
-  "h": "27846bc73a1b",
-  "d": "2026-10-31"
+  "h": "fea51037ff41",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-compare-drafts/": {
-  "h": "c48e727e3ce4",
-  "d": "2026-10-31"
+  "h": "a49d20964125",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-lock-draft/": {
-  "h": "d693dfbc2b03",
-  "d": "2026-10-31"
+  "h": "944da29d5e37",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-edit-locked/": {
-  "h": "9cfc99bb57f1",
-  "d": "2026-10-31"
+  "h": "8105f8500b23",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-review-revision/": {
-  "h": "fe6367df3b76",
-  "d": "2026-10-31"
+  "h": "1bd0f98f7457",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-export-script/": {
-  "h": "654794d39e86",
-  "d": "2026-10-31"
+  "h": "4096b6c0132c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-export-scenes/": {
-  "h": "e1c20b70bf89",
-  "d": "2026-10-31"
+  "h": "c2eceaeae027",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-export-revision/": {
-  "h": "ebcb62e82885",
-  "d": "2026-10-31"
+  "h": "dfe94b3aca11",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/screenplay-print-preview/": {
-  "h": "e4d71a8860e5",
-  "d": "2026-10-31"
+  "h": "dc9391169422",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-choose-source/": {
-  "h": "830b6d005a27",
-  "d": "2026-10-31"
+  "h": "dc7d0bebb64e",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-read-the-page/": {
-  "h": "79167fee306a",
-  "d": "2026-10-31"
+  "h": "6bafdd90ad3c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-change-source/": {
-  "h": "03886dc50d02",
-  "d": "2026-10-31"
+  "h": "aa93bff59f37",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-filter-scenes/": {
-  "h": "ba23119bf11c",
-  "d": "2026-10-31"
+  "h": "1f6c3dca54f7",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-focus-on-script/": {
-  "h": "a2c3bbd4bf76",
-  "d": "2026-10-31"
+  "h": "18084a9d9967",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-suggest-elements/": {
-  "h": "81d8d6bf6816",
-  "d": "2026-10-31"
+  "h": "6f64a71e6caf",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-review-suggestions/": {
-  "h": "ef3341928b98",
-  "d": "2026-10-31"
+  "h": "3cf051cdaa01",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-edit-suggestion/": {
-  "h": "5a71825227fd",
-  "d": "2026-10-31"
+  "h": "8fdea09ad82f",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-tag-script-words/": {
-  "h": "73edf79c8d85",
-  "d": "2026-10-31"
+  "h": "ee7eedf90717",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-add-element/": {
-  "h": "b7a0ce5b778f",
-  "d": "2026-10-31"
+  "h": "d796aef4a8d2",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-reuse-catalog-item/": {
-  "h": "d80771348332",
-  "d": "2026-10-31"
+  "h": "166ad08d72c9",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-manage-element/": {
-  "h": "22cb908a873c",
-  "d": "2026-10-31"
+  "h": "4b2df9889130",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-scenes-using-item/": {
-  "h": "9f4418c2abaf",
-  "d": "2026-10-31"
+  "h": "67cc42c36e58",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-mark-complete/": {
-  "h": "89c9fa715365",
-  "d": "2026-10-31"
+  "h": "0110376b8e3b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-export/": {
-  "h": "ab94b729a48f",
-  "d": "2026-10-31"
+  "h": "574427273f62",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-review-script-changes/": {
-  "h": "67fcc1315de9",
-  "d": "2026-10-31"
+  "h": "9f77eddd34c1",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-added-scenes/": {
-  "h": "46bb593d7fd0",
-  "d": "2026-10-31"
+  "h": "2ad86cf8e4fa",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/breakdown-removed-scenes/": {
-  "h": "105856816204",
-  "d": "2026-10-31"
+  "h": "5cf0601fd60e",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/production-plan-read-overview/": {
-  "h": "ab5f799ad9ce",
-  "d": "2026-10-31"
+  "h": "46c9feebea1e",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/production-plan-start-setup/": {
-  "h": "bf7ae95d8479",
-  "d": "2026-10-31"
+  "h": "810265c410d1",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/production-plan-change-source/": {
-  "h": "6865657060c6",
-  "d": "2026-10-31"
+  "h": "af7664dbe56b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/production-plan-open-catalog/": {
-  "h": "b9a9feb87d3d",
-  "d": "2026-10-31"
+  "h": "1d2d41907dc4",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/production-plan-filter-catalog/": {
-  "h": "78250a8b7dd3",
-  "d": "2026-10-31"
+  "h": "0e5f29fcfdbc",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/production-plan-add-catalog-item/": {
-  "h": "914e24adbec1",
-  "d": "2026-10-31"
+  "h": "12fc4149780a",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/production-plan-edit-catalog-item/": {
-  "h": "b0e9b33831d4",
-  "d": "2026-10-31"
+  "h": "d84a8468d913",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/production-plan-replace-catalog-item/": {
-  "h": "c287ddfb3617",
-  "d": "2026-10-31"
+  "h": "294b7324f542",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/production-plan-archive-catalog-item/": {
-  "h": "9cb6b6c2442b",
-  "d": "2026-10-31"
+  "h": "1229f611dc27",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/production-plan-delete-catalog-item/": {
-  "h": "502510fc1747",
-  "d": "2026-10-31"
+  "h": "8ba9c405ea41",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/production-plan-export-catalog/": {
-  "h": "2897a93cbac4",
-  "d": "2026-10-31"
+  "h": "af1e47900f06",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/locations-add/": {
-  "h": "955e20d983d5",
-  "d": "2026-10-31"
+  "h": "1bf1003591fb",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/locations-find/": {
-  "h": "c1270d70efda",
-  "d": "2026-10-31"
+  "h": "5b40de16e573",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/locations-set-status/": {
-  "h": "9437b61ec71f",
-  "d": "2026-10-31"
+  "h": "5c4250b83617",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/locations-fill-details/": {
-  "h": "2e69cc58ddfd",
-  "d": "2026-10-31"
+  "h": "4f30a719f8b8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/locations-photos/": {
-  "h": "e6dc8b5646ee",
-  "d": "2026-10-31"
+  "h": "6cc33f0ce37f",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/locations-availability/": {
-  "h": "ffe6d9c854e1",
-  "d": "2026-10-31"
+  "h": "830888798898",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/locations-replace-rejected/": {
-  "h": "ddbe1cd84bdc",
-  "d": "2026-10-31"
+  "h": "b125e99ba640",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/locations-see-scenes/": {
-  "h": "e9ec0a0874af",
-  "d": "2026-10-31"
+  "h": "2ecd4627bfa4",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/locations-archive/": {
-  "h": "f0a0425a8acf",
-  "d": "2026-10-31"
+  "h": "d5539d9fd103",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/locations-delete/": {
-  "h": "e588fe4a0e80",
-  "d": "2026-10-31"
+  "h": "5f80615e3a81",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/cast-and-crew-read-cast/": {
-  "h": "c5c0b1124128",
-  "d": "2026-10-31"
+  "h": "ab2faa98ac6b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/cast-and-crew-assign-actor/": {
-  "h": "0288e4892174",
-  "d": "2026-10-31"
+  "h": "9cd2123b5fee",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/cast-and-crew-add-alternate/": {
-  "h": "d152d2b00bc9",
-  "d": "2026-10-31"
+  "h": "45dd88549ee3",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/cast-and-crew-new-character/": {
-  "h": "02d922dff695",
-  "d": "2026-10-31"
+  "h": "a7de48262bd7",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/cast-and-crew-change-character/": {
-  "h": "2ce91cae7e7e",
-  "d": "2026-10-31"
+  "h": "ad51accca2a8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/cast-and-crew-edit-cast-member/": {
-  "h": "606dd27c93e4",
-  "d": "2026-10-31"
+  "h": "1f0591ca79bd",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/cast-and-crew-add-crew/": {
-  "h": "c801e6075084",
-  "d": "2026-10-31"
+  "h": "7e80b7efefc1",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/cast-and-crew-edit-crew-member/": {
-  "h": "124945c1dd6b",
-  "d": "2026-10-31"
+  "h": "eddd138a6d50",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/cast-and-crew-availability/": {
-  "h": "1ee191f46893",
-  "d": "2026-10-31"
+  "h": "e28d2cac4a76",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/cast-and-crew-search/": {
-  "h": "8a4398ef8da6",
-  "d": "2026-10-31"
+  "h": "4fe37924edb5",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/cast-and-crew-remove-person/": {
-  "h": "4b4d4852fbfc",
-  "d": "2026-10-31"
+  "h": "86d028bdbb47",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/moodboards-create-board/": {
-  "h": "4c25e9566052",
-  "d": "2026-10-31"
+  "h": "c1b5a04e0340",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/moodboards-add-image/": {
-  "h": "2b89a826d490",
-  "d": "2026-10-31"
+  "h": "c6c20791ffb0",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/moodboards-add-note/": {
-  "h": "5ee32b0083dc",
-  "d": "2026-10-31"
+  "h": "60c939e50030",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/moodboards-add-link/": {
-  "h": "a810b193181b",
-  "d": "2026-10-31"
+  "h": "bebd888617a2",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/moodboards-arrange-items/": {
-  "h": "025734e610ab",
-  "d": "2026-10-31"
+  "h": "eac3d8921a38",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/moodboards-edit-item/": {
-  "h": "db4ebd25a9f5",
-  "d": "2026-10-31"
+  "h": "e447bca6247b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/moodboards-rename-board/": {
-  "h": "fb87bb78314a",
-  "d": "2026-10-31"
+  "h": "8e0e853b860a",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/moodboards-board-notes/": {
-  "h": "acc2f500a976",
-  "d": "2026-10-31"
+  "h": "9066fdd4c925",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/moodboards-reorder-boards/": {
-  "h": "a6b791b80612",
-  "d": "2026-10-31"
+  "h": "cd9bcadb10e8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/moodboards-delete-board/": {
-  "h": "64093aab1839",
-  "d": "2026-10-31"
+  "h": "d1e4be6e69cb",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/moodboards-export/": {
-  "h": "ba38b47ca8b2",
-  "d": "2026-10-31"
+  "h": "1668e3c448bc",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/storyboards-create-first/": {
-  "h": "2ec65458bb65",
-  "d": "2026-10-31"
+  "h": "26ab2b78c053",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/storyboards-choose-scene/": {
-  "h": "33e311be9662",
-  "d": "2026-10-31"
+  "h": "2daf331e5ee0",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/storyboards-new-for-scene/": {
-  "h": "281fd9c1e0ea",
-  "d": "2026-10-31"
+  "h": "31430c5ea7f6",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/storyboards-add-panel/": {
-  "h": "6ca7f5794f53",
-  "d": "2026-10-31"
+  "h": "ffcda86de505",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/storyboards-sketch-panel/": {
-  "h": "2a096cc1f1f2",
-  "d": "2026-10-31"
+  "h": "86f25819ccf7",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/storyboards-edit-panel/": {
-  "h": "240ddd3c42b8",
-  "d": "2026-10-31"
+  "h": "e4e1b6b356fe",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/storyboards-reorder-panels/": {
-  "h": "dca1667aec76",
-  "d": "2026-10-31"
+  "h": "f284d7a03e1c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/storyboards-move-panel/": {
-  "h": "5a35f6bca82c",
-  "d": "2026-10-31"
+  "h": "1ad9df473426",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/storyboards-link-shot/": {
-  "h": "f5957261ffba",
-  "d": "2026-10-31"
+  "h": "2d822bb3038a",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/storyboards-rename/": {
-  "h": "2b6cfc4dc774",
-  "d": "2026-10-31"
+  "h": "04cf57f7f459",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/storyboards-link-scene/": {
-  "h": "6e634744e4d1",
-  "d": "2026-10-31"
+  "h": "6163f1c6177e",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/storyboards-delete/": {
-  "h": "c419b2e3bd2b",
-  "d": "2026-10-31"
+  "h": "c28ebc37c085",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/storyboards-export/": {
-  "h": "125db436a993",
-  "d": "2026-10-31"
+  "h": "a2e21cad1778",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shot-lists-start-from-script/": {
-  "h": "40d7f714587a",
-  "d": "2026-10-31"
+  "h": "c84e67e1a63e",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shot-lists-add-shot/": {
-  "h": "6534c82422e4",
-  "d": "2026-10-31"
+  "h": "b95c6ec363d5",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shot-lists-edit-shot/": {
-  "h": "2a93f156d985",
-  "d": "2026-10-31"
+  "h": "0ccc5c1d577b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shot-lists-reference-image/": {
-  "h": "da075bb256d5",
-  "d": "2026-10-31"
+  "h": "2272d58615d7",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shot-lists-switch-view/": {
-  "h": "9df15c1badd4",
-  "d": "2026-10-31"
+  "h": "155a4727a89f",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shot-lists-reorder-delete/": {
-  "h": "b2e71f161d8a",
-  "d": "2026-10-31"
+  "h": "6f36c333b73f",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shot-lists-shot-menu/": {
-  "h": "573df9a03af1",
-  "d": "2026-10-31"
+  "h": "93e6f77e6569",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shot-lists-storyboard-link/": {
-  "h": "ae7594de0a6c",
-  "d": "2026-10-31"
+  "h": "bb9ea1da49f2",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shot-lists-copy-planning/": {
-  "h": "f6474ec1b669",
-  "d": "2026-10-31"
+  "h": "c4d76f21851f",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shot-lists-export/": {
-  "h": "1b2e6ea14ec4",
-  "d": "2026-10-31"
+  "h": "8f9a2ce91d1f",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shot-lists-scene-changed/": {
-  "h": "d356fde68795",
-  "d": "2026-10-31"
+  "h": "d7af98c404e6",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-start/": {
-  "h": "f66c4746b96f",
-  "d": "2026-10-31"
+  "h": "dfb10072d4e1",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-views/": {
-  "h": "769fda5345cc",
-  "d": "2026-10-31"
+  "h": "f1eb931d44c7",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-create-day/": {
-  "h": "d2dbe3ac7b72",
-  "d": "2026-10-31"
+  "h": "582d9d3c2b9a",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-add-off-day/": {
-  "h": "3f2fb7d67dac",
-  "d": "2026-10-31"
+  "h": "ae3e5bb21b18",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-move-scenes/": {
-  "h": "09a13fc31c23",
-  "d": "2026-10-31"
+  "h": "acd0449779b5",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-strip-details/": {
-  "h": "6589135dc8b1",
-  "d": "2026-10-31"
+  "h": "35e0555bfd9d",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-filter/": {
-  "h": "d1f73c20450f",
-  "d": "2026-10-31"
+  "h": "97b95eab0813",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-day-actions/": {
-  "h": "a90b8dedbdaa",
-  "d": "2026-10-31"
+  "h": "3f428c7c09e2",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-edit-date/": {
-  "h": "e769939593d2",
-  "d": "2026-10-31"
+  "h": "f1189475bb38",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-breaks/": {
-  "h": "7f8fcea8f281",
-  "d": "2026-10-31"
+  "h": "4544c62ab7a2",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-day-page/": {
-  "h": "631b5661df6c",
-  "d": "2026-10-31"
+  "h": "9463a10d2c38",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-day-times/": {
-  "h": "b3a11cd9f65d",
-  "d": "2026-10-31"
+  "h": "30404f48739f",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-warnings/": {
-  "h": "4682eced1d82",
-  "d": "2026-10-31"
+  "h": "8b0ebfd29243",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-suggest/": {
-  "h": "6440ca4c7a16",
-  "d": "2026-10-31"
+  "h": "4393931d4d4c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-settings/": {
-  "h": "e95b15148b16",
-  "d": "2026-10-31"
+  "h": "27995cfdd883",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-finalize/": {
-  "h": "750da0938788",
-  "d": "2026-10-31"
+  "h": "99f5402c23a5",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-strict/": {
-  "h": "9a92afae257a",
-  "d": "2026-10-31"
+  "h": "5b47d477831a",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-script-changes/": {
-  "h": "d5525c7651f1",
-  "d": "2026-10-31"
+  "h": "2876a7575eac",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-call-sheet-link/": {
-  "h": "311a746ccaba",
-  "d": "2026-10-31"
+  "h": "cdd560c6570c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/shooting-schedule-export/": {
-  "h": "5d20eb296697",
-  "d": "2026-10-31"
+  "h": "0a965732df11",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/day-out-of-days-read/": {
-  "h": "3a852c7eb277",
-  "d": "2026-10-31"
+  "h": "299f935f0437",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/day-out-of-days-filter/": {
-  "h": "4a3fb80869bd",
-  "d": "2026-10-31"
+  "h": "0bfe78fe933f",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/day-out-of-days-code-style/": {
-  "h": "f267ea00c38b",
-  "d": "2026-10-31"
+  "h": "b5bd434d9c12",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/day-out-of-days-correct/": {
-  "h": "7aa059de68eb",
-  "d": "2026-10-31"
+  "h": "eb7675935be1",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/day-out-of-days-note/": {
-  "h": "ae7b4d56796f",
-  "d": "2026-10-31"
+  "h": "2a6491771f3d",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/day-out-of-days-clear/": {
-  "h": "e6f84c5e869e",
-  "d": "2026-10-31"
+  "h": "3761b87fa5d2",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/day-out-of-days-export/": {
-  "h": "ab38884a8e11",
-  "d": "2026-10-31"
+  "h": "2e824c4fd501",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/day-out-of-days-empty/": {
-  "h": "e411a44a645a",
-  "d": "2026-10-31"
+  "h": "45c97c42d6d2",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/daily-view-read-day/": {
-  "h": "2505e32fd094",
-  "d": "2026-10-31"
+  "h": "4898f6aa9685",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/daily-view-switch-day/": {
-  "h": "e32ad49ed752",
-  "d": "2026-10-31"
+  "h": "c518cb9c4c80",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/daily-view-check-warnings/": {
-  "h": "3342e4360b04",
-  "d": "2026-10-31"
+  "h": "205e633c739a",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/daily-view-call-sheet/": {
-  "h": "c80a8d66d78c",
-  "d": "2026-10-31"
+  "h": "eab9594d651c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/daily-view-jump-to-source/": {
-  "h": "e3a60de667be",
-  "d": "2026-10-31"
+  "h": "9b940900ce15",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/daily-view-off-day/": {
-  "h": "9610781d5816",
-  "d": "2026-10-31"
+  "h": "14954367af91",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/daily-view-export/": {
-  "h": "03bbafcd51b9",
-  "d": "2026-10-31"
+  "h": "f3f293835eea",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/daily-view-no-schedule/": {
-  "h": "f8308c351d96",
-  "d": "2026-10-31"
+  "h": "9fd80dcfabe1",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/sides-preview-day/": {
-  "h": "07bbe626d224",
-  "d": "2026-10-31"
+  "h": "7d9bf99deaa3",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/sides-choose-scenes/": {
-  "h": "69a7a199e416",
-  "d": "2026-10-31"
+  "h": "39e000699cf6",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/sides-selected-cast/": {
-  "h": "3f2025305472",
-  "d": "2026-10-31"
+  "h": "1b1bbcad4567",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/sides-cover-page/": {
-  "h": "4f010c78220c",
-  "d": "2026-10-31"
+  "h": "7139a9048302",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/sides-save/": {
-  "h": "a061f5c82b77",
-  "d": "2026-10-31"
+  "h": "f00fcf29ceaa",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/sides-open-saved/": {
-  "h": "334306af27fa",
-  "d": "2026-10-31"
+  "h": "a953e335306d",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/sides-delete-saved/": {
-  "h": "4345e3acde76",
-  "d": "2026-10-31"
+  "h": "864c15dda9c2",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/sides-export-pdf/": {
-  "h": "19a3147f7fba",
-  "d": "2026-10-31"
+  "h": "0674617aacec",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/sides-no-schedule/": {
-  "h": "59dae3d77ae7",
-  "d": "2026-10-31"
+  "h": "6bb96b0a0d96",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-create/": {
-  "h": "e5982f36fa98",
-  "d": "2026-10-31"
+  "h": "d12bb985bdcd",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-create-blocked/": {
-  "h": "c1bcda45c009",
-  "d": "2026-10-31"
+  "h": "ba6609f95e4b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-find-and-filter/": {
-  "h": "ef68e3d1af3f",
-  "d": "2026-10-31"
+  "h": "2be7ce49a65c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-tour-editor/": {
-  "h": "6ee620294cee",
-  "d": "2026-10-31"
+  "h": "619c049f9cb2",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-set-times-and-production/": {
-  "h": "0a40cbb839d7",
-  "d": "2026-10-31"
+  "h": "425e948c7384",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-fill-locations/": {
-  "h": "6bc77353c5ad",
-  "d": "2026-10-31"
+  "h": "89d5989c73e1",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-scenes-and-cast/": {
-  "h": "1c5bb704fef9",
-  "d": "2026-10-31"
+  "h": "b416daa6810a",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-practical-information/": {
-  "h": "1705b957e3a6",
-  "d": "2026-10-31"
+  "h": "677f939edde1",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-add-section/": {
-  "h": "b249bfbf9a80",
-  "d": "2026-10-31"
+  "h": "68a976b3b098",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-add-people-sections/": {
-  "h": "c3f72fea81b2",
-  "d": "2026-10-31"
+  "h": "b266aeab90c9",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-add-logistics-sections/": {
-  "h": "023c6f999b25",
-  "d": "2026-10-31"
+  "h": "4ec5be0bd1b4",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-attach-files-and-images/": {
-  "h": "56bb8f7d8e85",
-  "d": "2026-10-31"
+  "h": "482ff15ac7ca",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-add-custom-field/": {
-  "h": "43c627bc84a5",
-  "d": "2026-10-31"
+  "h": "8a3059a0e2b5",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-remove-section/": {
-  "h": "dde682e82e05",
-  "d": "2026-10-31"
+  "h": "1a99f2383be9",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-finalize/": {
-  "h": "b54474455e23",
-  "d": "2026-10-31"
+  "h": "ec350427c29e",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-finalize-missing-crew-call/": {
-  "h": "2b828af23b2a",
-  "d": "2026-10-31"
+  "h": "591af7793286",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-needs-refresh/": {
-  "h": "1d3933145524",
-  "d": "2026-10-31"
+  "h": "8c2de19fa8e8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-finalize-stale/": {
-  "h": "dc612c3eaf76",
-  "d": "2026-10-31"
+  "h": "079ef18f6dbf",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-new-revision/": {
-  "h": "04cd0c3ee2cd",
-  "d": "2026-10-31"
+  "h": "f65e56fd65eb",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-export-pdf/": {
-  "h": "63683c9718cc",
-  "d": "2026-10-31"
+  "h": "1cf739f24ad8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-row-menu/": {
-  "h": "266c477ce52a",
-  "d": "2026-10-31"
+  "h": "8e1758915e1c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-delete/": {
-  "h": "8c3f476a06a8",
-  "d": "2026-10-31"
+  "h": "b9c8bd850aea",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/call-sheets-day-deleted/": {
-  "h": "d83a2bf7f238",
-  "d": "2026-10-31"
+  "h": "f2e32a6f2473",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/reports-scene-report/": {
-  "h": "012498ec44b5",
-  "d": "2026-10-31"
+  "h": "f1c76e7fd032",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/reports-location-report/": {
-  "h": "feb9661daa4e",
-  "d": "2026-10-31"
+  "h": "cfa73f49f788",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/reports-cast-scene-report/": {
-  "h": "bcc62e2198b0",
-  "d": "2026-10-31"
+  "h": "4bd7cf0f94c3",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/reports-prop-report/": {
-  "h": "67affebe5c54",
-  "d": "2026-10-31"
+  "h": "d35d88d1189c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/reports-schedule-report/": {
-  "h": "8d303f798c0c",
-  "d": "2026-10-31"
+  "h": "48b7a37baaac",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/reports-completeness-report/": {
-  "h": "35fd582fe7d5",
-  "d": "2026-10-31"
+  "h": "d108e573205c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/reports-filter/": {
-  "h": "a8ef813b4f16",
-  "d": "2026-10-31"
+  "h": "31f39e896a5f",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/reports-save-snapshot/": {
-  "h": "d261f6ab029b",
-  "d": "2026-10-31"
+  "h": "31da9cd86095",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/reports-open-snapshot/": {
-  "h": "2a64e8eceb88",
-  "d": "2026-10-31"
+  "h": "16adb0aeca94",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/reports-delete-snapshot/": {
-  "h": "2b121517a864",
-  "d": "2026-10-31"
+  "h": "4ecc5f972bbc",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/reports-export/": {
-  "h": "0d396a2c369c",
-  "d": "2026-10-31"
+  "h": "320643dc12d6",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/reports-no-source/": {
-  "h": "85c6a1c1407a",
-  "d": "2026-10-31"
+  "h": "1c0a68819be8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/budget-start/": {
-  "h": "93a4b4506a75",
-  "d": "2026-10-31"
+  "h": "941f00362343",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/budget-read/": {
-  "h": "fded91e647bf",
-  "d": "2026-10-31"
+  "h": "012aa6b1de0d",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/budget-add-line/": {
-  "h": "291ed7853b01",
-  "d": "2026-10-31"
+  "h": "cf3e0c266e10",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/budget-edit-line/": {
-  "h": "ca9bc1943b1f",
-  "d": "2026-10-31"
+  "h": "b8bc3d892e21",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/budget-delete-line/": {
-  "h": "84284e3c7407",
-  "d": "2026-10-31"
+  "h": "f0b98b737356",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/budget-edit-plan/": {
-  "h": "f64ea8536655",
-  "d": "2026-10-31"
+  "h": "8fc07ac0109c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/budget-save-snapshot/": {
-  "h": "1104a4860b4c",
-  "d": "2026-10-31"
+  "h": "01ff1bd384f7",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/budget-view-snapshot/": {
-  "h": "5dd910a0b116",
-  "d": "2026-10-31"
+  "h": "f672519b4f77",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/budget-delete-snapshot/": {
-  "h": "6aa075ecaf60",
-  "d": "2026-10-31"
+  "h": "5b8e963a3aaf",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/budget-export/": {
-  "h": "124fb59f5d04",
-  "d": "2026-10-31"
+  "h": "7d8001e420b5",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-open-panel/": {
-  "h": "a10f83aadda0",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-open-panel/": {
+  "h": "e67412aac97f",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-ask-question/": {
-  "h": "b23c952f2b20",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-ask-question/": {
+  "h": "3619af18e35d",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-check-sources/": {
-  "h": "d1c508d0e2a4",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-check-sources/": {
+  "h": "4aa00a09579c",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-choose-scope/": {
-  "h": "02e330b12094",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-choose-scope/": {
+  "h": "65488b8a9e68",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-open-pages/": {
-  "h": "c60b530c6f9d",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-open-pages/": {
+  "h": "c3e46b89bf78",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-ask-for-a-change/": {
-  "h": "696968ca9308",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-ask-for-a-change/": {
+  "h": "9dd21c9f01a3",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-apply-and-undo/": {
-  "h": "65a652dc668d",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-apply-and-undo/": {
+  "h": "3bfdc735198c",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-review-deletion/": {
-  "h": "14b044a6a899",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-review-deletion/": {
+  "h": "07b82514b44f",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-stop-request/": {
-  "h": "e1b7c865eabb",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-stop-request/": {
+  "h": "a734ce004838",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-save-conversation/": {
-  "h": "f8ce5978a605",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-save-conversation/": {
+  "h": "6895ffb324c9",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-panel-menu/": {
-  "h": "1a33cb71318b",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-panel-menu/": {
+  "h": "878d7ac85cd8",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-offline-settings-page/": {
-  "h": "e1bb4e87136c",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-offline-settings-page/": {
+  "h": "8cf5c02ec2b4",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-graphics-card/": {
-  "h": "59265bdbfb68",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-graphics-card/": {
+  "h": "488335437ffc",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-ai-health-report/": {
-  "h": "aaef648ccebd",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-ai-health-report/": {
+  "h": "83afece61ce4",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-memory/": {
-  "h": "3ec9a55ebe6e",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-memory/": {
+  "h": "c69414d8a630",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-stop-or-remove/": {
-  "h": "d143dce65f3b",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-stop-or-remove/": {
+  "h": "dc8da0f6d913",
+  "d": "2026-11-04"
  },
- "/windows/tutorials/openframe-ai-download-models/": {
-  "h": "8a844f88885b",
-  "d": "2026-10-31"
+ "/windows/tutorials/straft-ai-download-models/": {
+  "h": "f3f87e2af0dc",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-start-empty/": {
-  "h": "ed1b7323312b",
-  "d": "2026-10-31"
+  "h": "bad083794fae",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-add-copy/": {
-  "h": "d88ecb4e7065",
-  "d": "2026-10-31"
+  "h": "f4fc1e189632",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-link-external/": {
-  "h": "cf47f7b1b5cb",
-  "d": "2026-10-31"
+  "h": "69b711e2d9c7",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-drag-in/": {
-  "h": "832db7e2fd78",
-  "d": "2026-10-31"
+  "h": "f11078ad81e6",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-switch-view-and-search/": {
-  "h": "1ec94bbfb29a",
-  "d": "2026-10-31"
+  "h": "44764c9ad8b0",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-create-folder/": {
-  "h": "827f4a3e17ef",
-  "d": "2026-10-31"
+  "h": "28b80c556451",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-use-folders/": {
-  "h": "bf9515fb3e27",
-  "d": "2026-10-31"
+  "h": "428053688f4b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-rename-delete-folder/": {
-  "h": "dc2ddce6c2f2",
-  "d": "2026-10-31"
+  "h": "e322682a5e2b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-move-file/": {
-  "h": "cbd4f76a293d",
-  "d": "2026-10-31"
+  "h": "03ebad8d05e9",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-details-notes-rename/": {
-  "h": "1a635c7a734a",
-  "d": "2026-10-31"
+  "h": "0b19f186b613",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-open-export-reveal/": {
-  "h": "f96f76b1b01c",
-  "d": "2026-10-31"
+  "h": "a404d609f301",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-relink/": {
-  "h": "09797c727621",
-  "d": "2026-10-31"
+  "h": "ebbd5ba9d473",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-delete-file/": {
-  "h": "c858820bc5ac",
-  "d": "2026-10-31"
+  "h": "6733b6f0255b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/files-restore-deleted/": {
-  "h": "fd97396a561a",
-  "d": "2026-10-31"
+  "h": "c338ace16dc8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/notes-and-tasks-open-page/": {
-  "h": "5928ff080d13",
-  "d": "2026-10-31"
+  "h": "3e56adde60c1",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/notes-and-tasks-write-note/": {
-  "h": "ff7755785032",
-  "d": "2026-10-31"
+  "h": "0a9bacad79f2",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/notes-and-tasks-find-note/": {
-  "h": "e117fc1dfd17",
-  "d": "2026-10-31"
+  "h": "89bc8f7f3fab",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/notes-and-tasks-pin-note/": {
-  "h": "6144f7cccee7",
-  "d": "2026-10-31"
+  "h": "4b9ac3b0c013",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/notes-and-tasks-delete-note/": {
-  "h": "5b5404b5de51",
-  "d": "2026-10-31"
+  "h": "18984d589edf",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/notes-and-tasks-add-task/": {
-  "h": "ee96fd582581",
-  "d": "2026-10-31"
+  "h": "b8b6f81ecdbe",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/notes-and-tasks-link-task/": {
-  "h": "dd0046eb590a",
-  "d": "2026-10-31"
+  "h": "b32d780c164a",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/notes-and-tasks-edit-task/": {
-  "h": "b6a45f5eba6b",
-  "d": "2026-10-31"
+  "h": "b982a4e1194b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/notes-and-tasks-complete-task/": {
-  "h": "1f7ac94178ec",
-  "d": "2026-10-31"
+  "h": "450ca4d81f78",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/notes-and-tasks-filter-tasks/": {
-  "h": "b40b3f709167",
-  "d": "2026-10-31"
+  "h": "6ee0156734ff",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/notes-and-tasks-delete-task/": {
-  "h": "becfe625e228",
-  "d": "2026-10-31"
+  "h": "8f9697b375ad",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/activity-read-history/": {
-  "h": "9d6f35bd79d2",
-  "d": "2026-10-31"
+  "h": "4ee06b12bf79",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/activity-filter/": {
-  "h": "5cd6c78914c5",
-  "d": "2026-10-31"
+  "h": "478824cd536b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/activity-open-item/": {
-  "h": "b321110b3058",
-  "d": "2026-10-31"
+  "h": "7ddbec9e6196",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/activity-older/": {
-  "h": "a5ea466bcd12",
-  "d": "2026-10-31"
+  "h": "ec2361639665",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/recently-deleted-open/": {
-  "h": "4a9727dc958d",
-  "d": "2026-10-31"
+  "h": "4b6ce5ace82a",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/recently-deleted-undo-first/": {
-  "h": "445b5e252279",
-  "d": "2026-10-31"
+  "h": "f2539ba2384a",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/recently-deleted-restore/": {
-  "h": "635ba4fe9053",
-  "d": "2026-10-31"
+  "h": "b4b72fe1491d",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/recently-deleted-search/": {
-  "h": "f884475a7381",
-  "d": "2026-10-31"
+  "h": "f0984d31ce4a",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/recently-deleted-delete-permanently/": {
-  "h": "bf8b7bfdabc1",
-  "d": "2026-10-31"
+  "h": "cba8f8d69b12",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/recently-deleted-global-vault/": {
-  "h": "a3e3bcc6832c",
-  "d": "2026-10-31"
+  "h": "46403132c9a9",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/templates-open-and-browse/": {
-  "h": "a19379c4fa05",
-  "d": "2026-10-31"
+  "h": "567e26a10858",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/templates-preview/": {
-  "h": "8c31698999f0",
-  "d": "2026-10-31"
+  "h": "d2183e6f9209",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/templates-use-in-project/": {
-  "h": "ec42e82bbe91",
-  "d": "2026-10-31"
+  "h": "52b88e2a19d5",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/templates-start-document/": {
-  "h": "5bdda4e85b45",
-  "d": "2026-10-31"
+  "h": "26a4a3f42215",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/templates-create/": {
-  "h": "93566556f3fd",
-  "d": "2026-10-31"
+  "h": "c3c4f82b688e",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/templates-edit/": {
-  "h": "42341bc85ceb",
-  "d": "2026-10-31"
+  "h": "308030b9d6ad",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/templates-keep-for-every-project/": {
-  "h": "a61d072a8070",
-  "d": "2026-10-31"
+  "h": "5a81a7e23e4f",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/templates-delete/": {
-  "h": "e1b1f2fedc1f",
-  "d": "2026-10-31"
+  "h": "b3d829ab15ee",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/backups-and-packages-find-commands/": {
-  "h": "1bd9a7477122",
-  "d": "2026-10-31"
+  "h": "bf1783ae7645",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/backups-and-packages-create-backup/": {
-  "h": "c1c4d2d9722e",
-  "d": "2026-10-31"
+  "h": "b06b36f94509",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/backups-and-packages-export-full-project/": {
-  "h": "c7197eba838d",
-  "d": "2026-10-31"
+  "h": "cc9d4d22bec3",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/backups-and-packages-open-project-package/": {
-  "h": "5e6feddb5898",
-  "d": "2026-10-31"
+  "h": "8d42ad5f1ae6",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/backups-and-packages-move-to-another-pc/": {
-  "h": "9543963ff6a7",
-  "d": "2026-10-31"
+  "h": "aea01db377f6",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/backups-and-packages-export-script-review/": {
-  "h": "65c93b384526",
-  "d": "2026-10-31"
+  "h": "3e1ec28709ba",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/backups-and-packages-export-script-scenes/": {
-  "h": "5fd6e26ac12c",
-  "d": "2026-10-31"
+  "h": "26f86804e126",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/backups-and-packages-export-beat-board/": {
-  "h": "85435eacf6fd",
-  "d": "2026-10-31"
+  "h": "0f9a2306376b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/backups-and-packages-open-review-package/": {
-  "h": "9a42ec57e838",
-  "d": "2026-10-31"
+  "h": "7792fe1f7f25",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/backups-and-packages-import-response/": {
-  "h": "b038f965473f",
-  "d": "2026-10-31"
+  "h": "d019ed17433b",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/backups-and-packages-import-exchange/": {
-  "h": "e92eaf2cbcf2",
-  "d": "2026-10-31"
+  "h": "4aca7457ae50",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/backups-and-packages-review-queue/": {
-  "h": "6eecbef895b1",
-  "d": "2026-10-31"
+  "h": "425e8a67a606",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/backups-and-packages-history/": {
-  "h": "4f30275a4d60",
-  "d": "2026-10-31"
+  "h": "9299b41ca620",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-open-and-tour/": {
-  "h": "dd766280c05f",
-  "d": "2026-10-31"
+  "h": "ec5970867286",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-edit-project-details/": {
-  "h": "1078182f224c",
-  "d": "2026-10-31"
+  "h": "33eefc095226",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-project-info-version/": {
-  "h": "241a80aab10e",
-  "d": "2026-10-31"
+  "h": "0d72c7f03c8d",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-export-diagnostics/": {
-  "h": "093f46c9c588",
-  "d": "2026-10-31"
+  "h": "0df003173111",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-storage-and-move/": {
-  "h": "82d5f1ac143d",
-  "d": "2026-10-31"
+  "h": "9c8f9fc1f7c8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-spell-check/": {
-  "h": "fdf758d7bb90",
-  "d": "2026-10-31"
+  "h": "4d31b52930fe",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-dictionary-add/": {
-  "h": "ed2edcf7e874",
-  "d": "2026-10-31"
+  "h": "7a462ed7f653",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-dictionary-manage/": {
-  "h": "f81122c48b56",
-  "d": "2026-10-31"
+  "h": "ba4022b5980c",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-find-shortcut/": {
-  "h": "b9051ccf51a4",
-  "d": "2026-10-31"
+  "h": "041aa07dfbbb",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-add-shortcut/": {
-  "h": "2eba896f3ce8",
-  "d": "2026-10-31"
+  "h": "af9658f816b7",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-shortcut-conflicts/": {
-  "h": "0d1d56aaf323",
-  "d": "2026-10-31"
+  "h": "4f2130b8a92e",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-restore-shortcuts/": {
-  "h": "6df3736b0b05",
-  "d": "2026-10-31"
+  "h": "dd92010aedb2",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-offline-ai-status/": {
-  "h": "89df10c2ebdd",
-  "d": "2026-10-31"
+  "h": "2e12ec718894",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-offline-ai-stop-graphics/": {
-  "h": "15c6d4e7064a",
-  "d": "2026-10-31"
+  "h": "febe547e3dbe",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-offline-ai-remove/": {
-  "h": "cc7c240f3642",
-  "d": "2026-10-31"
+  "h": "a70ab030f1c3",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-offline-ai-health/": {
-  "h": "df0e15866e16",
-  "d": "2026-10-31"
+  "h": "40f22ee99929",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-assistant-memory/": {
-  "h": "7dfdd7e120a7",
-  "d": "2026-10-31"
+  "h": "60fb4af4c868",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-category-look/": {
-  "h": "e4e74cdddc0f",
-  "d": "2026-10-31"
+  "h": "ece8c3e9f4f6",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-choose-mode-theme/": {
-  "h": "00f51bd0d634",
-  "d": "2026-10-31"
+  "h": "5ae75a6b82fb",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-import-theme-paste/": {
-  "h": "73f1fecca181",
-  "d": "2026-10-31"
+  "h": "4f93c7dc99d8",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-import-theme-file/": {
-  "h": "d2a9774c1672",
-  "d": "2026-10-31"
+  "h": "3a5179fe4331",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/settings-my-themes/": {
-  "h": "d7dd3af2b034",
-  "d": "2026-10-31"
+  "h": "368fb3be7496",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/read-trial-status/": {
-  "h": "07241d6d3f4d",
-  "d": "2026-10-31"
+  "h": "f2aaa67abeb0",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/buy-full-version/": {
-  "h": "766d0c29c891",
-  "d": "2026-10-31"
+  "h": "076abed4aff9",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/read-data-note/": {
-  "h": "339b75ddcd52",
-  "d": "2026-10-31"
+  "h": "26c5b0e8c517",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/file-safety-tutorial/": {
-  "h": "d0b0623e2b7e",
-  "d": "2026-10-31"
+  "h": "f78df3194f4e",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/check-your-purchase/": {
-  "h": "b225242531d7",
-  "d": "2026-10-31"
+  "h": "201f9d3e9ee9",
+  "d": "2026-11-04"
  },
  "/windows/tutorials/trial-ended-locked/": {
-  "h": "91548dcaa41b",
-  "d": "2026-10-31"
+  "h": "a019f2566af9",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/": {
-  "h": "159d4111c5b9",
-  "d": "2026-11-01"
+  "h": "999d80db71ed",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/library-setup-default/": {
-  "h": "e84ce44b20dc",
-  "d": "2026-10-31"
+  "h": "e73b0b783548",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/library-setup-new-location/": {
-  "h": "5c590364ee58",
-  "d": "2026-10-31"
+  "h": "8832ff13c654",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/library-setup-locate/": {
-  "h": "f2d92a50d2f0",
-  "d": "2026-10-31"
+  "h": "5506211079f7",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-enter-your-name/": {
-  "h": "d3e92d288151",
-  "d": "2026-10-31"
+  "h": "c0b37bdfd0fe",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-create-first-project/": {
-  "h": "6424d582b105",
-  "d": "2026-10-31"
+  "h": "d4fed1c7b095",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-create-another-project/": {
-  "h": "b6efea8ec278",
-  "d": "2026-10-31"
+  "h": "6f9f2f29d38c",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-open-or-restore/": {
-  "h": "22f2dd5e06d7",
-  "d": "2026-10-31"
+  "h": "bd21535cea24",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-search-projects/": {
-  "h": "0dbdc0cd2f4a",
-  "d": "2026-10-31"
+  "h": "29ed867afc53",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-card-menu-actions/": {
-  "h": "638e027cf136",
-  "d": "2026-10-31"
+  "h": "08d8f0166e7e",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-change-cover-photo/": {
-  "h": "d70eb2a1bbe2",
-  "d": "2026-10-31"
+  "h": "3a25d5d74418",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-rename-project/": {
-  "h": "d9b732b0a1a3",
-  "d": "2026-10-31"
+  "h": "c6e42297330d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-pin-project/": {
-  "h": "b641c64ea647",
-  "d": "2026-10-31"
+  "h": "b47e1d0d6f13",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-archive-project/": {
-  "h": "2c3ac539e6c9",
-  "d": "2026-10-31"
+  "h": "2ade34b2733f",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-restore-archived/": {
-  "h": "7246cc350bba",
-  "d": "2026-10-31"
+  "h": "0b4b01121228",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-delete-project/": {
-  "h": "9a3dece7dead",
-  "d": "2026-10-31"
+  "h": "46b700774922",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-found-on-this-mac/": {
-  "h": "c51029a533ca",
-  "d": "2026-10-31"
+  "h": "9cf1572b02fd",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/home-global-idea-vault/": {
-  "h": "e93156011563",
-  "d": "2026-10-31"
+  "h": "03d6d45ab0a2",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/menus-app-menu/": {
-  "h": "285d296b3081",
-  "d": "2026-10-31"
+  "h": "77d2d6033266",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/menus-file-menu/": {
-  "h": "e6148ebf2be9",
-  "d": "2026-10-31"
+  "h": "c87e572aed8a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/menus-edit-menu/": {
-  "h": "019b97e7728b",
-  "d": "2026-10-31"
+  "h": "d237b2854fe9",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/menus-view-menu/": {
-  "h": "9da1d284898f",
-  "d": "2026-10-31"
+  "h": "db31998c9d52",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/menus-go-menu/": {
-  "h": "a0760470c076",
-  "d": "2026-10-31"
+  "h": "ee7910009288",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/menus-window-menu/": {
-  "h": "0fc0471f25bd",
-  "d": "2026-10-31"
+  "h": "a9110776de48",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/menus-help-menu/": {
-  "h": "bc44710e4887",
-  "d": "2026-10-31"
+  "h": "2e5491cfc46d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/search-open-and-run-commands/": {
-  "h": "bb6c53428bb4",
-  "d": "2026-10-31"
+  "h": "cf431caf6860",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/search-find-in-project/": {
-  "h": "1a9b2ec30ec2",
-  "d": "2026-10-31"
+  "h": "e52ff25cdf60",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/search-nothing-found/": {
-  "h": "15d3f766e875",
-  "d": "2026-10-31"
+  "h": "808feb3b5363",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-home-tour/": {
-  "h": "9181603f651d",
-  "d": "2026-10-31"
+  "h": "c6adabebd6df",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-home-set-status/": {
-  "h": "b6f1cfd00f03",
-  "d": "2026-10-31"
+  "h": "4a6024ee6885",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-home-create-from-new/": {
-  "h": "7866ee1a846b",
-  "d": "2026-10-31"
+  "h": "7e879f971eab",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-home-project-menu/": {
-  "h": "374198e1e621",
-  "d": "2026-10-31"
+  "h": "602e796808b3",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-home-rename/": {
-  "h": "950a55c54697",
-  "d": "2026-10-31"
+  "h": "12ecb078f9c2",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-home-back-forward/": {
-  "h": "702d241d3ae9",
-  "d": "2026-10-31"
+  "h": "ac3e2fe3d574",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-home-hide-sidebar/": {
-  "h": "1d6b216cb81b",
-  "d": "2026-10-31"
+  "h": "b8b03a2f7995",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-home-undo-after-import/": {
-  "h": "63d31e343824",
-  "d": "2026-11-01"
+  "h": "33b3a4fee990",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-home-trial-reminder/": {
-  "h": "7d2f7ec419e7",
-  "d": "2026-11-01"
+  "h": "0474ee36d4ab",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-tour/": {
-  "h": "d5cc4c63c53b",
-  "d": "2026-11-01"
+  "h": "636831d969aa",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-quick-capture/": {
-  "h": "864b4c4bc439",
-  "d": "2026-10-31"
+  "h": "25bd67645171",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-add-note/": {
-  "h": "48efc39be8f8",
-  "d": "2026-10-31"
+  "h": "c9760ce5ddb1",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-add-link/": {
-  "h": "e46097e9da68",
-  "d": "2026-10-31"
+  "h": "044a50178581",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-add-quote/": {
-  "h": "07363a4eeb3f",
-  "d": "2026-10-31"
+  "h": "0756465381ba",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-add-files/": {
-  "h": "1c7eb5857424",
-  "d": "2026-10-31"
+  "h": "dea7a5c34781",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-record-voice-note/": {
-  "h": "c3e2dc996fe8",
-  "d": "2026-10-31"
+  "h": "2753743f7619",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-switch-views/": {
-  "h": "f754a160fea1",
-  "d": "2026-10-31"
+  "h": "bb4c07a449d4",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-pin-items/": {
-  "h": "a8e29950b038",
-  "d": "2026-10-31"
+  "h": "de66ec4aeeff",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-sidebar-lists/": {
-  "h": "d5e6b2231fb2",
-  "d": "2026-10-31"
+  "h": "3d1a0e0f157d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-research-flag/": {
-  "h": "a4c2d4f580e4",
-  "d": "2026-10-31"
+  "h": "1d3f0f51c043",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-tags/": {
-  "h": "eefd6026b2c5",
-  "d": "2026-10-31"
+  "h": "0e1c12feb159",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-selection-bar/": {
-  "h": "54760de6a1b1",
-  "d": "2026-10-31"
+  "h": "64175dbe218c",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-folders/": {
-  "h": "6f54408a2f34",
-  "d": "2026-10-31"
+  "h": "f57e3973ad57",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-manage-folders/": {
-  "h": "0ac8316f2a13",
-  "d": "2026-10-31"
+  "h": "1a9d3b70d5ad",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-collections/": {
-  "h": "3a2b608d51f4",
-  "d": "2026-10-31"
+  "h": "0517fd9ea9e6",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-search/": {
-  "h": "96970622ceb5",
-  "d": "2026-10-31"
+  "h": "d7d7ec69f7ca",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-send-to-beat-board/": {
-  "h": "57ec62970765",
-  "d": "2026-10-31"
+  "h": "b2ae2038bfa4",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-delete-restore/": {
-  "h": "800327a5657f",
-  "d": "2026-10-31"
+  "h": "8b16a9d556f1",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-global/": {
-  "h": "f787c9f984ff",
-  "d": "2026-10-31"
+  "h": "f4174dfb20e5",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-copy-to-global/": {
-  "h": "5108a7a500d1",
-  "d": "2026-11-01"
+  "h": "3d45fc0e0b1d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-sketch/": {
-  "h": "5dfbe8db3604",
-  "d": "2026-11-01"
+  "h": "59a8eb75d6ab",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/idea-vault-file-moved/": {
-  "h": "97c94e9c8661",
-  "d": "2026-11-01"
+  "h": "28cc531b2573",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-write-page/": {
-  "h": "52f69bef49b5",
-  "d": "2026-11-01"
+  "h": "0c254c631373",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-format-page/": {
-  "h": "4779429a67c9",
-  "d": "2026-10-31"
+  "h": "1bbd8e65dada",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-export-page/": {
-  "h": "60a552596fc1",
-  "d": "2026-10-31"
+  "h": "7bd0ee7f5e2a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-open-beat-board/": {
-  "h": "462f5352b159",
-  "d": "2026-10-31"
+  "h": "66f47694ae8f",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-build-first-act/": {
-  "h": "a94babdc9cc6",
-  "d": "2026-10-31"
+  "h": "63a9918ba6d7",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-add-beat/": {
-  "h": "b80964ecefd0",
-  "d": "2026-10-31"
+  "h": "e8b475c0f2a5",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-read-board/": {
-  "h": "2f137c6a3128",
-  "d": "2026-10-31"
+  "h": "81dbf99f69f3",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-edit-scene-card/": {
-  "h": "36f83eb63b52",
-  "d": "2026-10-31"
+  "h": "a8d92c0cc467",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-edit-beat/": {
-  "h": "3351766fc62b",
-  "d": "2026-10-31"
+  "h": "c435221b13f7",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-convert-beat/": {
-  "h": "0e22e5562d2a",
-  "d": "2026-10-31"
+  "h": "68d845621605",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-edit-sequence/": {
-  "h": "d2ab482e466d",
-  "d": "2026-10-31"
+  "h": "32b978192617",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-act-options/": {
-  "h": "adbf129ffdfa",
-  "d": "2026-10-31"
+  "h": "83331806bc30",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-move-cards/": {
-  "h": "b51bd8822183",
-  "d": "2026-10-31"
+  "h": "99760d76e7af",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-park-cards/": {
-  "h": "69552c6ac4ba",
-  "d": "2026-10-31"
+  "h": "f92adfefc7b8",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-delete-items/": {
-  "h": "2537334ba370",
-  "d": "2026-10-31"
+  "h": "dde83435fa0d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-collapse-and-layout/": {
-  "h": "7dded8c3426b",
-  "d": "2026-10-31"
+  "h": "fa2ed45396c2",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-filter-board/": {
-  "h": "74f48d0e1f18",
-  "d": "2026-10-31"
+  "h": "45c43c917f08",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-card-display/": {
-  "h": "4fc7b180ee5e",
-  "d": "2026-10-31"
+  "h": "7c16b9933678",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-build-screenplay/": {
-  "h": "b971a21c5dcd",
-  "d": "2026-10-31"
+  "h": "7250a1c6533c",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-apply-board-order/": {
-  "h": "cd9694520e61",
-  "d": "2026-10-31"
+  "h": "80c87f037b94",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-outline-use/": {
-  "h": "deb906a66226",
-  "d": "2026-10-31"
+  "h": "e80c169e5e80",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-add-character/": {
-  "h": "b875e2c2f178",
-  "d": "2026-10-31"
+  "h": "6036a95d286b",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-read-character/": {
-  "h": "defa40912693",
-  "d": "2026-10-31"
+  "h": "c073c67815f4",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-edit-character/": {
-  "h": "73c7f53c9131",
-  "d": "2026-10-31"
+  "h": "b858810c27bc",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-add-relationship/": {
-  "h": "448cd295d897",
-  "d": "2026-10-31"
+  "h": "4ffe3b5f8cc8",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-relationship-map/": {
-  "h": "f0145139cc58",
-  "d": "2026-10-31"
+  "h": "095f503cbfb1",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-link-scene-card/": {
-  "h": "86c6e23b5bb2",
-  "d": "2026-10-31"
+  "h": "5b135932520e",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/story-timeline-days/": {
-  "h": "5902429989cf",
-  "d": "2026-10-31"
+  "h": "affa3418426d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-tour/": {
-  "h": "5fffadc52422",
-  "d": "2026-10-31"
+  "h": "f6a7e80a4d89",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-write-first-scene/": {
-  "h": "973db255a513",
-  "d": "2026-10-31"
+  "h": "7ae358275212",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-element-types/": {
-  "h": "b451d1c40b71",
-  "d": "2026-10-31"
+  "h": "b5d11f93a05b",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-hide-scene-list/": {
-  "h": "dca0720145f9",
-  "d": "2026-10-31"
+  "h": "9cdb5b75ae43",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-scene-list-columns/": {
-  "h": "40e5d6826b55",
-  "d": "2026-10-31"
+  "h": "99d087d44894",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-edit-menu/": {
-  "h": "efc0bd6923b1",
-  "d": "2026-10-31"
+  "h": "4b6fb7ea7224",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-zoom/": {
-  "h": "6f75b9b9cc6e",
-  "d": "2026-10-31"
+  "h": "4d6c015f380b",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-layout-modes/": {
-  "h": "ca2748a968a9",
-  "d": "2026-10-31"
+  "h": "bc4e5f34018a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-find/": {
-  "h": "2d7c0a8e379d",
-  "d": "2026-10-31"
+  "h": "3c7e22b3a6cb",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-replace/": {
-  "h": "cbecec6d2600",
-  "d": "2026-10-31"
+  "h": "67296c6c7526",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-create-screenplay/": {
-  "h": "e7a98fa05afd",
-  "d": "2026-10-31"
+  "h": "ada51ab3ea64",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-rename-delete-screenplay/": {
-  "h": "cb9bb10caf61",
-  "d": "2026-10-31"
+  "h": "39c8830ea221",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-scene-hub/": {
-  "h": "4cd83babf8e6",
-  "d": "2026-10-31"
+  "h": "153e9e2e15eb",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-private-notes/": {
-  "h": "2866e138b1bd",
-  "d": "2026-10-31"
+  "h": "3d655f7bb73f",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-comment-on-text/": {
-  "h": "020b63436d28",
-  "d": "2026-10-31"
+  "h": "6929e60ccc2b",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-comment-reply/": {
-  "h": "9a4abb6efc02",
-  "d": "2026-10-31"
+  "h": "c7d0c3a5a7bf",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-comment-scene-and-draft/": {
-  "h": "a8c2e24326d7",
-  "d": "2026-10-31"
+  "h": "edca7aaa0d9e",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-comment-resolve/": {
-  "h": "d102d00e0147",
-  "d": "2026-10-31"
+  "h": "35f5371b071c",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-draft-info/": {
-  "h": "53e2ebb70a81",
-  "d": "2026-10-31"
+  "h": "3f248aa77c84",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-new-draft/": {
-  "h": "970eb0b2d471",
-  "d": "2026-10-31"
+  "h": "497ac5e53d73",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-draft-menu-first/": {
-  "h": "2642ab73cb88",
-  "d": "2026-10-31"
+  "h": "379cc235d224",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-manage-drafts/": {
-  "h": "2f6c4211b437",
-  "d": "2026-10-31"
+  "h": "612dbb880884",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-restore-history/": {
-  "h": "9fb37ec6102d",
-  "d": "2026-10-31"
+  "h": "1cb931d1f31e",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-compare-drafts/": {
-  "h": "b243d78c86b1",
-  "d": "2026-10-31"
+  "h": "ae3d552f46b6",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-lock-shooting-draft/": {
-  "h": "9086bd8e981b",
-  "d": "2026-10-31"
+  "h": "52a5bcfeaf4d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-revisions/": {
-  "h": "11114761069f",
-  "d": "2026-10-31"
+  "h": "0a0fbf2b1dfe",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-revision-marks/": {
-  "h": "404cccfc1678",
-  "d": "2026-10-31"
+  "h": "45fa6ee4c74f",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-page-setup/": {
-  "h": "e91c27e81f2c",
-  "d": "2026-10-31"
+  "h": "ce50989f3f52",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-title-page/": {
-  "h": "4fb47a3652b9",
-  "d": "2026-10-31"
+  "h": "670ba999b39b",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-custom-elements/": {
-  "h": "c2c326134857",
-  "d": "2026-10-31"
+  "h": "d5087a1c0809",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-page-view/": {
-  "h": "3e4e0d6bd74b",
-  "d": "2026-10-31"
+  "h": "80ad1e889361",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-import/": {
-  "h": "f8638162924a",
-  "d": "2026-10-31"
+  "h": "bd1388ca5b4a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-export/": {
-  "h": "b5f47a5e30e0",
-  "d": "2026-10-31"
+  "h": "351447f89cc3",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-print-preview/": {
-  "h": "9767c73d12c4",
-  "d": "2026-11-01"
+  "h": "dabbbc1dcb44",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-scene-number/": {
-  "h": "90cb6ec9c47f",
-  "d": "2026-11-01"
+  "h": "b5514682b73e",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/screenplay-import-failed/": {
-  "h": "004badc31f50",
-  "d": "2026-11-01"
+  "h": "b9b860e7c1b1",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-choose-source/": {
-  "h": "4370ff936662",
-  "d": "2026-11-01"
+  "h": "80df1d61b48a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-empty-project/": {
-  "h": "e92c62796b65",
-  "d": "2026-10-31"
+  "h": "d5ebb9880ddf",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-tour/": {
-  "h": "4cc822de8043",
-  "d": "2026-10-31"
+  "h": "9972cde9c246",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-filter-scenes/": {
-  "h": "ca964c62faa3",
-  "d": "2026-10-31"
+  "h": "9d7588555c75",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-tag-words/": {
-  "h": "2446916e7ac1",
-  "d": "2026-10-31"
+  "h": "22eb16350ebd",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-suggest-elements/": {
-  "h": "d88e2a8c02c6",
-  "d": "2026-10-31"
+  "h": "1adbf6da438d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-review-suggestions/": {
-  "h": "ddc64c581e6e",
-  "d": "2026-10-31"
+  "h": "1ff963e8c2c4",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-add-element/": {
-  "h": "c36fc9fb61d7",
-  "d": "2026-10-31"
+  "h": "4cb0963f3f84",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-reuse-items/": {
-  "h": "52939715af88",
-  "d": "2026-10-31"
+  "h": "5454b99b4420",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-element-actions/": {
-  "h": "6f9b9f3bbb3e",
-  "d": "2026-10-31"
+  "h": "50ad3f50b53f",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-element-notes/": {
-  "h": "60dd3d55c0b5",
-  "d": "2026-10-31"
+  "h": "e4436a347f2c",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-remove-element/": {
-  "h": "c1c06b1b1008",
-  "d": "2026-10-31"
+  "h": "95d9dc548a6a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-scenes-using-item/": {
-  "h": "7756d61e4f56",
-  "d": "2026-10-31"
+  "h": "1f544f8f04e1",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-complete-scene/": {
-  "h": "70c85006555f",
-  "d": "2026-10-31"
+  "h": "1b3f594baeca",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-change-source/": {
-  "h": "cec744e1e49a",
-  "d": "2026-10-31"
+  "h": "7f8d6a0cb8f9",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-export/": {
-  "h": "b88ab43e7687",
-  "d": "2026-11-01"
+  "h": "b2cd3ae0d637",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-needs-review/": {
-  "h": "d955772e9282",
-  "d": "2026-11-01"
+  "h": "03599b6bf2a5",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-removed-scenes/": {
-  "h": "5bb250a266df",
-  "d": "2026-11-01"
+  "h": "cf14da59beea",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/breakdown-export-catalog/": {
-  "h": "6e4881e868cf",
-  "d": "2026-11-01"
+  "h": "457bf467b2cd",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-open-production/": {
-  "h": "f07e324be7f9",
-  "d": "2026-11-01"
+  "h": "8d66d8354cc6",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-read-overview/": {
-  "h": "c44d8116b944",
-  "d": "2026-10-31"
+  "h": "aae5ea65b39b",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-browse-catalog/": {
-  "h": "052a4e082b6f",
-  "d": "2026-10-31"
+  "h": "af491e89786d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-add-catalog-item/": {
-  "h": "ae1beb2daaed",
-  "d": "2026-10-31"
+  "h": "a7f8be7bea95",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-edit-catalog-item/": {
-  "h": "0f4851844172",
-  "d": "2026-10-31"
+  "h": "42af4c0fe8c1",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-archive-catalog-item/": {
-  "h": "2a482173eb19",
-  "d": "2026-10-31"
+  "h": "630f997bfbf1",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-delete-catalog-item/": {
-  "h": "853d7abc098b",
-  "d": "2026-10-31"
+  "h": "a84f4c55efab",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-add-location/": {
-  "h": "bdc62ccb3ece",
-  "d": "2026-10-31"
+  "h": "ed8891a8ae13",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-location-status/": {
-  "h": "446bd77c9db6",
-  "d": "2026-10-31"
+  "h": "201bf8b475c4",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-location-scouting-notes/": {
-  "h": "1cd520395e3f",
-  "d": "2026-10-31"
+  "h": "7892debfcd5a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-location-card-menu/": {
-  "h": "386fb837a8d7",
-  "d": "2026-10-31"
+  "h": "cd3c19853041",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-assign-actor/": {
-  "h": "279676e249b9",
-  "d": "2026-10-31"
+  "h": "ea3756c89489",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-add-person-new-character/": {
-  "h": "d0b72007e4f1",
-  "d": "2026-10-31"
+  "h": "657d4e72b4f7",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-edit-cast-member/": {
-  "h": "50fe974c7309",
-  "d": "2026-10-31"
+  "h": "ba07eba694a6",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-add-crew/": {
-  "h": "afeba556b8ec",
-  "d": "2026-10-31"
+  "h": "43e863e095f3",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-remove-crew/": {
-  "h": "c3158d0d3af6",
-  "d": "2026-10-31"
+  "h": "47acabbe8aa3",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-create-moodboard/": {
-  "h": "d05414349ba6",
-  "d": "2026-10-31"
+  "h": "19a1509d4a59",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-moodboard-add-image/": {
-  "h": "df273aff7a55",
-  "d": "2026-10-31"
+  "h": "8a16a01c1b91",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-moodboard-add-note-link/": {
-  "h": "93e02d41dfb6",
-  "d": "2026-10-31"
+  "h": "2ce6c180de39",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-moodboard-arrange/": {
-  "h": "46b9cd3967a0",
-  "d": "2026-10-31"
+  "h": "a93354268835",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-moodboard-manage-boards/": {
-  "h": "37f1f1777acf",
-  "d": "2026-10-31"
+  "h": "8d5dbe50e834",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-moodboard-export/": {
-  "h": "ad4f3d445b22",
-  "d": "2026-10-31"
+  "h": "31a08135c8ce",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-new-storyboard/": {
-  "h": "f62ebc31d19f",
-  "d": "2026-10-31"
+  "h": "bfa44558e9a7",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-add-storyboard-panels/": {
-  "h": "726d78859ecb",
-  "d": "2026-10-31"
+  "h": "40af976863b5",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-edit-storyboard-panel/": {
-  "h": "99e5a447d353",
-  "d": "2026-10-31"
+  "h": "3dc7e6df9149",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-storyboard-link-shot/": {
-  "h": "429591253d85",
-  "d": "2026-10-31"
+  "h": "a89b6c2167bd",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-manage-storyboard/": {
-  "h": "d060a28e0381",
-  "d": "2026-10-31"
+  "h": "96218579f894",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-export-storyboard/": {
-  "h": "56bdebcce7cd",
-  "d": "2026-10-31"
+  "h": "3e824146312b",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-add-shots/": {
-  "h": "cb8872e330be",
-  "d": "2026-10-31"
+  "h": "6910df0a97c7",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-shots-grid/": {
-  "h": "f7dcdd080725",
-  "d": "2026-10-31"
+  "h": "5a52fc794e61",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-shot-details/": {
-  "h": "8ac1e69163c6",
-  "d": "2026-10-31"
+  "h": "43ba4d641c58",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-move-and-copy-shots/": {
-  "h": "c5b987a0f9bc",
-  "d": "2026-10-31"
+  "h": "8d36b66bb552",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-attach-storyboard-panel/": {
-  "h": "bae0f94a912d",
-  "d": "2026-10-31"
+  "h": "e65f0d8034eb",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/production-plan-export-shot-list/": {
-  "h": "5e2dbc7d1369",
-  "d": "2026-10-31"
+  "h": "fa754724a262",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-create/": {
-  "h": "fb63fac5f8b4",
-  "d": "2026-10-31"
+  "h": "c54233287a57",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-add-day/": {
-  "h": "764c7ac621a5",
-  "d": "2026-10-31"
+  "h": "2f2322177d11",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-add-off-day/": {
-  "h": "9689d7e7a7a1",
-  "d": "2026-10-31"
+  "h": "4ee3afd7b9bd",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-place-scenes/": {
-  "h": "abae7e063cbc",
-  "d": "2026-10-31"
+  "h": "b08af4732c46",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-scene-details/": {
-  "h": "dce99b0a4f5d",
-  "d": "2026-10-31"
+  "h": "42183488666d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-day-menu/": {
-  "h": "ff58db73b052",
-  "d": "2026-10-31"
+  "h": "d236f948b79a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-board-breaks/": {
-  "h": "47f695d1d87f",
-  "d": "2026-10-31"
+  "h": "691699bc660d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-filter/": {
-  "h": "7acc95aac37a",
-  "d": "2026-10-31"
+  "h": "c4082c84dd04",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-day-detail/": {
-  "h": "c090c820a431",
-  "d": "2026-10-31"
+  "h": "11aad3a7363c",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-day-times/": {
-  "h": "11708cdb2be7",
-  "d": "2026-10-31"
+  "h": "4e0a8e8e822a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-day-breaks/": {
-  "h": "cd7912fbdb48",
-  "d": "2026-10-31"
+  "h": "46afb8cd7e8c",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-edit-day-date/": {
-  "h": "4b18da309c4c",
-  "d": "2026-10-31"
+  "h": "430af9024ea0",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-empty-day/": {
-  "h": "4d82603ff485",
-  "d": "2026-10-31"
+  "h": "eb2e846eb976",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-list/": {
-  "h": "6ada0caaeda8",
-  "d": "2026-10-31"
+  "h": "01837e865949",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-calendar/": {
-  "h": "853cdb17811d",
-  "d": "2026-10-31"
+  "h": "03d05bef5078",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-warnings/": {
-  "h": "bbadb1f0bd14",
-  "d": "2026-10-31"
+  "h": "d6b5dd54cef3",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-suggest-grouping/": {
-  "h": "218b07113b3a",
-  "d": "2026-10-31"
+  "h": "20f04b6b63ca",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-settings/": {
-  "h": "43a57e218c39",
-  "d": "2026-10-31"
+  "h": "221ee438e563",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/schedule-export/": {
-  "h": "6e21f5a41f17",
-  "d": "2026-10-31"
+  "h": "5a5206d327a7",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/day-out-of-days-open/": {
-  "h": "b8fcb02e8f2e",
-  "d": "2026-10-31"
+  "h": "057a3686e976",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/day-out-of-days-read/": {
-  "h": "2899068807e6",
-  "d": "2026-10-31"
+  "h": "f02125bd3165",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/day-out-of-days-filter/": {
-  "h": "10ed93b159f7",
-  "d": "2026-10-31"
+  "h": "1b90f5571f76",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/day-out-of-days-code-style/": {
-  "h": "6fc0ec4742d3",
-  "d": "2026-10-31"
+  "h": "55c8d2db421f",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/day-out-of-days-export/": {
-  "h": "33d7c01dc57a",
-  "d": "2026-10-31"
+  "h": "80d1cf89c0ee",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/daily-view-open/": {
-  "h": "469602d5801a",
-  "d": "2026-10-31"
+  "h": "0f1b1e085089",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/daily-view-read/": {
-  "h": "7084499298fb",
-  "d": "2026-10-31"
+  "h": "818adcfa013f",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/daily-view-switch-day/": {
-  "h": "e9082976665b",
-  "d": "2026-10-31"
+  "h": "8f9dfc742cb6",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/daily-view-create-call-sheet/": {
-  "h": "345c6f6d4683",
-  "d": "2026-10-31"
+  "h": "e0b17dea67d6",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/daily-view-export/": {
-  "h": "fbec0c179952",
-  "d": "2026-10-31"
+  "h": "865dc935d647",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/sides-open/": {
-  "h": "2fdab6aab28a",
-  "d": "2026-10-31"
+  "h": "688a6a1f902b",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/sides-choose-day/": {
-  "h": "fb37c148e071",
-  "d": "2026-10-31"
+  "h": "b91542d97ae3",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/sides-choose-scenes/": {
-  "h": "756cdc91e68d",
-  "d": "2026-10-31"
+  "h": "76da29ebbb56",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/sides-cover-page/": {
-  "h": "4296d3bef979",
-  "d": "2026-10-31"
+  "h": "746ecbf44443",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/sides-save/": {
-  "h": "b5d330815fd7",
-  "d": "2026-10-31"
+  "h": "d50738e7d0e2",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/sides-open-saved/": {
-  "h": "368962e349f8",
-  "d": "2026-10-31"
+  "h": "304c8675d666",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/sides-export/": {
-  "h": "8894e80536d9",
-  "d": "2026-10-31"
+  "h": "96bbb90ebadd",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-create/": {
-  "h": "8062b6866907",
-  "d": "2026-10-31"
+  "h": "2910680fbf81",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-fill-in/": {
-  "h": "b9d657585ad1",
-  "d": "2026-10-31"
+  "h": "3bcddf4b427e",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-add-sections/": {
-  "h": "e8df495f10bf",
-  "d": "2026-10-31"
+  "h": "d13239041a08",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-add-rows/": {
-  "h": "ed2cb8a6f804",
-  "d": "2026-10-31"
+  "h": "06cf597889bf",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-create-another/": {
-  "h": "c1080371722c",
-  "d": "2026-10-31"
+  "h": "dfe2335540fb",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-find/": {
-  "h": "0b2cae132828",
-  "d": "2026-10-31"
+  "h": "a149ba860dad",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-row-menu/": {
-  "h": "26e1fde03841",
-  "d": "2026-10-31"
+  "h": "cc6c30759c1a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-refresh/": {
-  "h": "a51df1540744",
-  "d": "2026-10-31"
+  "h": "4717ed98875e",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-finalize/": {
-  "h": "f091f5f0e5e0",
-  "d": "2026-10-31"
+  "h": "761caac4d477",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-new-revision/": {
-  "h": "dee0cb724979",
-  "d": "2026-10-31"
+  "h": "318966cc613f",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-export-pdf/": {
-  "h": "34d54900ad66",
-  "d": "2026-10-31"
+  "h": "407b422a9909",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-delete/": {
-  "h": "73216cfb9f15",
-  "d": "2026-11-01"
+  "h": "3b74d9f205f5",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-schedule-changed/": {
-  "h": "bc6b6e67d53f",
-  "d": "2026-11-01"
+  "h": "65f860b5a8f8",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/call-sheets-day-deleted/": {
-  "h": "4d893af51907",
-  "d": "2026-11-01"
+  "h": "8d73aba400cb",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/reports-open-and-switch/": {
-  "h": "3bbe222b84bd",
-  "d": "2026-11-01"
+  "h": "62100c91067e",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/reports-filter-rows/": {
-  "h": "b74899c71c6a",
-  "d": "2026-10-31"
+  "h": "1632b7e85174",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/reports-save-snapshot/": {
-  "h": "a76732ce63bb",
-  "d": "2026-10-31"
+  "h": "65e3d77fabef",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/reports-manage-snapshots/": {
-  "h": "33b97da35cde",
-  "d": "2026-10-31"
+  "h": "797f964fc2c4",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/reports-export/": {
-  "h": "ee964956cb08",
-  "d": "2026-10-31"
+  "h": "0b58c31de1d6",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/budget-start/": {
-  "h": "f49f42d202c4",
-  "d": "2026-10-31"
+  "h": "e5c34ca15180",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/budget-add-first-line/": {
-  "h": "53decfc0a174",
-  "d": "2026-10-31"
+  "h": "c9486fa9d214",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/budget-add-more-lines/": {
-  "h": "e9c37d5dc04a",
-  "d": "2026-10-31"
+  "h": "d2dcd3015787",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/budget-read-totals/": {
-  "h": "0871c9399711",
-  "d": "2026-10-31"
+  "h": "095a3287f11c",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/budget-edit-line/": {
-  "h": "c17cabfb9435",
-  "d": "2026-10-31"
+  "h": "5b52d87699e5",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/budget-edit-plan/": {
-  "h": "323f6c2c9703",
-  "d": "2026-10-31"
+  "h": "186dae1946f2",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/budget-snapshots/": {
-  "h": "c530db523ef4",
-  "d": "2026-10-31"
+  "h": "37fb96822e71",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/budget-export/": {
-  "h": "7fcf69979af1",
-  "d": "2026-10-31"
+  "h": "b87c7c3400bc",
+  "d": "2026-11-04"
  },
- "/mac/tutorials/openframe-ai-open-close/": {
-  "h": "7f9c17dada19",
-  "d": "2026-10-31"
+ "/mac/tutorials/straft-ai-open-close/": {
+  "h": "df1fefad96fc",
+  "d": "2026-11-04"
  },
- "/mac/tutorials/openframe-ai-read-unavailable/": {
-  "h": "c9e020910b5d",
-  "d": "2026-10-31"
+ "/mac/tutorials/straft-ai-read-unavailable/": {
+  "h": "73396b4bc50c",
+  "d": "2026-11-04"
  },
- "/mac/tutorials/openframe-ai-offline-settings/": {
-  "h": "dc2e63af2014",
-  "d": "2026-10-31"
+ "/mac/tutorials/straft-ai-offline-settings/": {
+  "h": "1658f21777a6",
+  "d": "2026-11-04"
  },
- "/mac/tutorials/openframe-ai-ai-health/": {
-  "h": "bdcac78d5336",
-  "d": "2026-10-31"
+ "/mac/tutorials/straft-ai-ai-health/": {
+  "h": "43898ebbcc23",
+  "d": "2026-11-04"
  },
- "/mac/tutorials/openframe-ai-memory/": {
-  "h": "f8e32837ab6f",
-  "d": "2026-10-31"
+ "/mac/tutorials/straft-ai-memory/": {
+  "h": "4dd12e6de822",
+  "d": "2026-11-04"
  },
- "/mac/tutorials/openframe-ai-beside-workspaces/": {
-  "h": "72d69f5a7552",
-  "d": "2026-10-31"
+ "/mac/tutorials/straft-ai-beside-workspaces/": {
+  "h": "a8e899da2826",
+  "d": "2026-11-04"
  },
- "/mac/tutorials/openframe-ai-small-window/": {
-  "h": "3bdde20337c5",
-  "d": "2026-10-31"
+ "/mac/tutorials/straft-ai-small-window/": {
+  "h": "e64241cfb57c",
+  "d": "2026-11-04"
  },
- "/mac/tutorials/openframe-ai-find-via-search/": {
-  "h": "e926be32ad39",
-  "d": "2026-11-01"
+ "/mac/tutorials/straft-ai-find-via-search/": {
+  "h": "347fc43b5955",
+  "d": "2026-11-04"
  },
- "/mac/tutorials/openframe-ai-ask/": {
-  "h": "849ce3230167",
-  "d": "2026-11-01"
+ "/mac/tutorials/straft-ai-ask/": {
+  "h": "16ed0d5cd09a",
+  "d": "2026-11-04"
  },
- "/mac/tutorials/openframe-ai-scope/": {
-  "h": "25e533b40269",
-  "d": "2026-11-01"
+ "/mac/tutorials/straft-ai-scope/": {
+  "h": "4a1752025927",
+  "d": "2026-11-04"
  },
- "/mac/tutorials/openframe-ai-proposals/": {
-  "h": "0e0d4fcf4f03",
-  "d": "2026-11-01"
+ "/mac/tutorials/straft-ai-proposals/": {
+  "h": "f1ccf540ea37",
+  "d": "2026-11-04"
  },
- "/mac/tutorials/openframe-ai-offline-details/": {
-  "h": "82a50dc9c2ec",
-  "d": "2026-11-01"
+ "/mac/tutorials/straft-ai-offline-details/": {
+  "h": "0cdfd7151018",
+  "d": "2026-11-04"
  },
- "/mac/tutorials/openframe-ai-ready-beside-workspaces/": {
-  "h": "6dc7bc7ece57",
-  "d": "2026-11-01"
+ "/mac/tutorials/straft-ai-ready-beside-workspaces/": {
+  "h": "1fc42f7cacfa",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/files-start/": {
-  "h": "13ffd105e506",
-  "d": "2026-11-01"
+  "h": "3c44a3f0f697",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/files-add-copy/": {
-  "h": "fda1b028ddcf",
-  "d": "2026-10-31"
+  "h": "441f6ece407b",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/files-add-link/": {
-  "h": "1f8f4df9b352",
-  "d": "2026-10-31"
+  "h": "d42d1ca2c4c8",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/files-list-grid/": {
-  "h": "44574d86da7d",
-  "d": "2026-10-31"
+  "h": "3f71451dd849",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/files-open-details/": {
-  "h": "3c2fc210c193",
-  "d": "2026-10-31"
+  "h": "562dcea12747",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/files-rename-note/": {
-  "h": "fdafe7fbded7",
-  "d": "2026-10-31"
+  "h": "9e16b163240d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/files-folders-create/": {
-  "h": "b71f1ae195a5",
-  "d": "2026-10-31"
+  "h": "24393f81886a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/files-move/": {
-  "h": "f898f49dce4c",
-  "d": "2026-10-31"
+  "h": "42e4431d1376",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/files-folders-manage/": {
-  "h": "6484f8f03680",
-  "d": "2026-10-31"
+  "h": "d32c84500228",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/files-search/": {
-  "h": "d5879efad8d1",
-  "d": "2026-10-31"
+  "h": "d68bb791ffce",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/files-relink/": {
-  "h": "6934a1c49ee8",
-  "d": "2026-10-31"
+  "h": "dd4d2328abd6",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/files-export-copy/": {
-  "h": "7df10f4bf402",
-  "d": "2026-10-31"
+  "h": "8fba2b2c1b0e",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/files-delete-restore/": {
-  "h": "c5e35c3336be",
-  "d": "2026-10-31"
+  "h": "704ab8ddd009",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/notes-and-tasks-start/": {
-  "h": "6a31c6e8de67",
-  "d": "2026-10-31"
+  "h": "0e2f1ddeed0d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/notes-and-tasks-new-note/": {
-  "h": "5304839a3f10",
-  "d": "2026-10-31"
+  "h": "44e3d8c0f89c",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/notes-and-tasks-pin-note/": {
-  "h": "275487ad0e5c",
-  "d": "2026-10-31"
+  "h": "06f93bf5a926",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/notes-and-tasks-open-edit-note/": {
-  "h": "4f8fc31238fb",
-  "d": "2026-10-31"
+  "h": "f4bc29bc811c",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/notes-and-tasks-search-notes/": {
-  "h": "54058a01ae0b",
-  "d": "2026-10-31"
+  "h": "05aae6a9632c",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/notes-and-tasks-new-task/": {
-  "h": "770a0c89c20b",
-  "d": "2026-10-31"
+  "h": "a81f75d4ecd4",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/notes-and-tasks-complete-task/": {
-  "h": "05b57bc3ea0a",
-  "d": "2026-10-31"
+  "h": "3eee3192c69c",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/notes-and-tasks-filter-tasks/": {
-  "h": "75473867c508",
-  "d": "2026-10-31"
+  "h": "0bc82421ad81",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/notes-and-tasks-edit-task/": {
-  "h": "083b8f9ea494",
-  "d": "2026-10-31"
+  "h": "3a3c002dc6ad",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/notes-and-tasks-delete-restore/": {
-  "h": "e4c730ad5df7",
-  "d": "2026-10-31"
+  "h": "8696a5ad3e85",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/activity-read/": {
-  "h": "71390aee29b9",
-  "d": "2026-10-31"
+  "h": "40ac57dc5d15",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/activity-filter/": {
-  "h": "2fd06b0ad3cf",
-  "d": "2026-10-31"
+  "h": "1152e65a0b2f",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/activity-undo/": {
-  "h": "a1da7b31650c",
-  "d": "2026-10-31"
+  "h": "a3e34a33daf4",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/recently-deleted-open/": {
-  "h": "775052fe8629",
-  "d": "2026-10-31"
+  "h": "746e03052988",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/recently-deleted-read-list/": {
-  "h": "0f101b7c5dca",
-  "d": "2026-10-31"
+  "h": "718c7de1936a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/recently-deleted-search/": {
-  "h": "f2c67e5ecb0d",
-  "d": "2026-10-31"
+  "h": "2512df3ece35",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/recently-deleted-restore/": {
-  "h": "f718027433c0",
-  "d": "2026-10-31"
+  "h": "246474bdf8ff",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/recently-deleted-purge/": {
-  "h": "68c27c964d58",
-  "d": "2026-10-31"
+  "h": "c3620e6b7758",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-settings-open/": {
-  "h": "803b3d0a2dde",
-  "d": "2026-10-31"
+  "h": "77164839ee43",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-settings-edit-details/": {
-  "h": "d395fc540d80",
-  "d": "2026-10-31"
+  "h": "627bcdda8fcb",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-settings-title-required/": {
-  "h": "bf77e33925c8",
-  "d": "2026-10-31"
+  "h": "5e68cad785f5",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-settings-location/": {
-  "h": "67b5361de606",
-  "d": "2026-10-31"
+  "h": "3030270a5de7",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-settings-spelling/": {
-  "h": "9dfc82a547ca",
-  "d": "2026-10-31"
+  "h": "41421f86e834",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-settings-dictionary/": {
-  "h": "104265f44371",
-  "d": "2026-10-31"
+  "h": "e850fd93fb47",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-settings-categories/": {
-  "h": "06d716e0bcde",
-  "d": "2026-10-31"
+  "h": "8768a71a7905",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-settings-appearance/": {
-  "h": "f355b6c1d258",
-  "d": "2026-10-31"
+  "h": "cc7a1a92206e",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-settings-app-settings/": {
-  "h": "ced72fbd3081",
-  "d": "2026-10-31"
+  "h": "58e94d43e991",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/project-settings-storage/": {
-  "h": "84c38e459d16",
-  "d": "2026-10-31"
+  "h": "b71cd9024f05",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/templates-open/": {
-  "h": "51f466b374f4",
-  "d": "2026-10-31"
+  "h": "cc6298e09360",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/templates-preview/": {
-  "h": "6ebf133496b1",
-  "d": "2026-10-31"
+  "h": "a2ab69df11e2",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/templates-use/": {
-  "h": "b1ed60faaf15",
-  "d": "2026-10-31"
+  "h": "eb0d2c39235a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/templates-copy-to-mine/": {
-  "h": "21119646bf91",
-  "d": "2026-10-31"
+  "h": "89c606f74ad4",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/templates-create/": {
-  "h": "655b7ea55313",
-  "d": "2026-10-31"
+  "h": "46364ba6563c",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/templates-edit/": {
-  "h": "773bdb6814ee",
-  "d": "2026-10-31"
+  "h": "9fffd6772bf7",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/templates-delete/": {
-  "h": "cc5bb2e59ecd",
-  "d": "2026-10-31"
+  "h": "0f584e14afa4",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/packages-back-up/": {
-  "h": "5b44e6c07e6f",
-  "d": "2026-10-31"
+  "h": "6a6771885aa2",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/packages-export-full-project/": {
-  "h": "47e203aa6777",
-  "d": "2026-10-31"
+  "h": "c3280783f0d0",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/packages-share-script/": {
-  "h": "b7800b7cc0ab",
-  "d": "2026-10-31"
+  "h": "33116b087b2a",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/packages-share-beat-board/": {
-  "h": "a74a778ff390",
-  "d": "2026-10-31"
+  "h": "9462f16999c0",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/packages-review-package/": {
-  "h": "2b547a6299c7",
-  "d": "2026-10-31"
+  "h": "453958c6138f",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/packages-import-response/": {
-  "h": "e65831df9375",
-  "d": "2026-10-31"
+  "h": "80c578072ca8",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/packages-review-queue/": {
-  "h": "cfb625daacaf",
-  "d": "2026-10-31"
+  "h": "d6e3a954b925",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/packages-history/": {
-  "h": "06234beba160",
-  "d": "2026-10-31"
+  "h": "aa4665a2a2e6",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/packages-restore/": {
-  "h": "2e91e48581da",
-  "d": "2026-10-31"
+  "h": "added18a12d3",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/recovery-after-unexpected-close/": {
-  "h": "c50564ca977b",
-  "d": "2026-10-31"
+  "h": "12bedd8db6f5",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/recovery-project-unavailable/": {
-  "h": "c363f2074c20",
-  "d": "2026-10-31"
+  "h": "6b21ce902e52",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-open/": {
-  "h": "87411b32f5a3",
-  "d": "2026-10-31"
+  "h": "424bfbd18b41",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-change-name/": {
-  "h": "68b7ae1e1f5a",
-  "d": "2026-10-31"
+  "h": "ba0605c0e0f8",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-version/": {
-  "h": "455916b221f7",
-  "d": "2026-10-31"
+  "h": "8b8f3a9f9783",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-choose-theme/": {
-  "h": "774be99b39aa",
-  "d": "2026-10-31"
+  "h": "4b9a9961a12d",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-import-theme/": {
-  "h": "86e893776e8d",
-  "d": "2026-10-31"
+  "h": "375e2d905ce7",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-export-theme/": {
-  "h": "47194e6fc881",
-  "d": "2026-10-31"
+  "h": "7000c72c8745",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-shortcuts-find/": {
-  "h": "9f7390e0c4d6",
-  "d": "2026-10-31"
+  "h": "7eeef70a1c5f",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-shortcuts-change/": {
-  "h": "a0df15aa02fa",
-  "d": "2026-10-31"
+  "h": "f9284b36f2b7",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-shortcuts-restore/": {
-  "h": "0f17dcdead51",
-  "d": "2026-10-31"
+  "h": "f0d3236157cd",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-storage-library/": {
-  "h": "f817ba16a726",
-  "d": "2026-10-31"
+  "h": "4e691725ac73",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-storage-vault/": {
-  "h": "44f2c900bb7e",
-  "d": "2026-10-31"
+  "h": "0a53d8496ccc",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-move-project/": {
-  "h": "8a8dbd4406a2",
-  "d": "2026-10-31"
+  "h": "e6273ddaeebc",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-offline-ai/": {
-  "h": "739bfab3d63e",
-  "d": "2026-10-31"
+  "h": "6651afa7b694",
+  "d": "2026-11-04"
  },
  "/mac/tutorials/settings-diagnostics-bundle/": {
-  "h": "9edbae33f3a6",
-  "d": "2026-10-31"
+  "h": "273d12aac0ae",
+  "d": "2026-11-04"
  }
 }
