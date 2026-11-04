@@ -2962,254 +2962,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
 
 [[package]]
-name = "straft-ai"
-version = "0.1.0"
-dependencies = [
- "hex",
- "straft-ai",
- "straft-domain",
- "straft-platform",
- "straft-security",
- "parking_lot",
- "rand 0.8.8",
- "reqwest 0.12.28",
- "serde",
- "serde_json",
- "sha2 0.10.9",
- "sysinfo",
- "tempfile",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "straft-ai-checks"
-version = "0.1.0"
-dependencies = [
- "regex",
- "serde_json",
-]
-
-[[package]]
-name = "straft-ai-eval"
-version = "0.1.0"
-dependencies = [
- "straft-ai",
- "straft-ai-checks",
- "straft-application",
- "straft-domain",
- "rusqlite",
- "serde",
- "serde_json",
- "sysinfo",
- "tempfile",
-]
-
-[[package]]
-name = "straft-application"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "image",
- "lopdf",
- "straft-ai",
- "straft-ai-checks",
- "straft-domain",
- "straft-entitlement",
- "straft-import-export",
- "straft-persistence",
- "straft-platform",
- "straft-project-format",
- "straft-search",
- "straft-security",
- "straft-test-support",
- "parking_lot",
- "regex",
- "rusqlite",
- "serde",
- "serde_json",
- "similar",
- "sysinfo",
- "tempfile",
- "time",
- "tracing",
- "trash",
- "ts-rs",
- "unicode-segmentation",
- "uuid",
- "zip",
-]
-
-[[package]]
-name = "straft-desktop"
-version = "0.1.0"
-dependencies = [
- "argon2",
- "ed25519-dalek",
- "getrandom 0.3.4",
- "hex",
- "straft-application",
- "straft-domain",
- "straft-entitlement",
- "straft-platform",
- "straft-security",
- "parking_lot",
- "rand 0.8.8",
- "reqwest 0.12.28",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-single-instance",
- "tempfile",
- "tracing",
- "tracing-appender",
- "tracing-subscriber",
-]
-
-[[package]]
-name = "straft-domain"
-version = "0.1.0"
-dependencies = [
- "rusqlite",
- "serde",
- "serde_json",
- "thiserror 2.0.21",
- "time",
- "ts-rs",
- "uuid",
-]
-
-[[package]]
-name = "straft-entitlement"
-version = "0.1.0"
-dependencies = [
- "argon2",
- "base64 0.22.1",
- "ed25519-dalek",
- "hex",
- "straft-platform",
- "parking_lot",
- "rand 0.8.8",
- "serde",
- "serde_json",
- "sha2 0.10.9",
- "tempfile",
- "tracing",
- "ts-rs",
-]
-
-[[package]]
-name = "straft-import-export"
-version = "0.1.0"
-dependencies = [
- "csv",
- "flate2",
- "image",
- "lopdf",
- "straft-domain",
- "straft-platform",
- "straft-security",
- "pdf-writer",
- "quick-xml",
- "regex",
- "rust_xlsxwriter",
- "rustybuzz",
- "serde",
- "serde_json",
- "subsetter",
- "tempfile",
- "unicode-segmentation",
- "windows 0.61.3",
- "zip",
-]
-
-[[package]]
-name = "straft-persistence"
-version = "0.1.0"
-dependencies = [
- "hex",
- "straft-domain",
- "straft-platform",
- "rusqlite",
- "serde",
- "serde_json",
- "sha2 0.10.9",
- "tempfile",
- "tracing",
-]
-
-[[package]]
-name = "straft-platform"
-version = "0.1.0"
-dependencies = [
- "directories",
- "libc",
- "rand 0.8.8",
- "tempfile",
- "tracing",
- "windows 0.61.3",
-]
-
-[[package]]
-name = "straft-project-format"
-version = "0.1.0"
-dependencies = [
- "fs4",
- "straft-domain",
- "straft-platform",
- "straft-security",
- "serde",
- "serde_json",
- "tempfile",
- "tracing",
- "ts-rs",
-]
-
-[[package]]
-name = "straft-search"
-version = "0.1.0"
-dependencies = [
- "hex",
- "rusqlite",
- "serde",
- "serde_json",
- "sha2 0.10.9",
- "sqlite-vec",
- "tempfile",
- "thiserror 2.0.21",
- "tracing",
-]
-
-[[package]]
-name = "straft-security"
-version = "0.1.0"
-dependencies = [
- "hex",
- "straft-domain",
- "straft-platform",
- "regex",
- "serde",
- "serde_json",
- "sha2 0.10.9",
- "tempfile",
- "zip",
-]
-
-[[package]]
-name = "straft-test-support"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "straft-application",
- "straft-domain",
- "straft-search",
- "serde_json",
- "tempfile",
-]
-
-[[package]]
 name = "option-ext"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4487,6 +4239,254 @@ name = "stable_deref_trait"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
+
+[[package]]
+name = "straft-ai"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "parking_lot",
+ "rand 0.8.8",
+ "reqwest 0.12.28",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "straft-ai",
+ "straft-domain",
+ "straft-platform",
+ "straft-security",
+ "sysinfo",
+ "tempfile",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "straft-ai-checks"
+version = "0.1.0"
+dependencies = [
+ "regex",
+ "serde_json",
+]
+
+[[package]]
+name = "straft-ai-eval"
+version = "0.1.0"
+dependencies = [
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "straft-ai",
+ "straft-ai-checks",
+ "straft-application",
+ "straft-domain",
+ "sysinfo",
+ "tempfile",
+]
+
+[[package]]
+name = "straft-application"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "image",
+ "lopdf",
+ "parking_lot",
+ "regex",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "similar",
+ "straft-ai",
+ "straft-ai-checks",
+ "straft-domain",
+ "straft-entitlement",
+ "straft-import-export",
+ "straft-persistence",
+ "straft-platform",
+ "straft-project-format",
+ "straft-search",
+ "straft-security",
+ "straft-test-support",
+ "sysinfo",
+ "tempfile",
+ "time",
+ "tracing",
+ "trash",
+ "ts-rs",
+ "unicode-segmentation",
+ "uuid",
+ "zip",
+]
+
+[[package]]
+name = "straft-desktop"
+version = "0.1.0"
+dependencies = [
+ "argon2",
+ "ed25519-dalek",
+ "getrandom 0.3.4",
+ "hex",
+ "parking_lot",
+ "rand 0.8.8",
+ "reqwest 0.12.28",
+ "serde",
+ "serde_json",
+ "straft-application",
+ "straft-domain",
+ "straft-entitlement",
+ "straft-platform",
+ "straft-security",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-single-instance",
+ "tempfile",
+ "tracing",
+ "tracing-appender",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "straft-domain"
+version = "0.1.0"
+dependencies = [
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.21",
+ "time",
+ "ts-rs",
+ "uuid",
+]
+
+[[package]]
+name = "straft-entitlement"
+version = "0.1.0"
+dependencies = [
+ "argon2",
+ "base64 0.22.1",
+ "ed25519-dalek",
+ "hex",
+ "parking_lot",
+ "rand 0.8.8",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "straft-platform",
+ "tempfile",
+ "tracing",
+ "ts-rs",
+]
+
+[[package]]
+name = "straft-import-export"
+version = "0.1.0"
+dependencies = [
+ "csv",
+ "flate2",
+ "image",
+ "lopdf",
+ "pdf-writer",
+ "quick-xml",
+ "regex",
+ "rust_xlsxwriter",
+ "rustybuzz",
+ "serde",
+ "serde_json",
+ "straft-domain",
+ "straft-platform",
+ "straft-security",
+ "subsetter",
+ "tempfile",
+ "unicode-segmentation",
+ "windows 0.61.3",
+ "zip",
+]
+
+[[package]]
+name = "straft-persistence"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "straft-domain",
+ "straft-platform",
+ "tempfile",
+ "tracing",
+]
+
+[[package]]
+name = "straft-platform"
+version = "0.1.0"
+dependencies = [
+ "directories",
+ "libc",
+ "rand 0.8.8",
+ "tempfile",
+ "tracing",
+ "windows 0.61.3",
+]
+
+[[package]]
+name = "straft-project-format"
+version = "0.1.0"
+dependencies = [
+ "fs4",
+ "serde",
+ "serde_json",
+ "straft-domain",
+ "straft-platform",
+ "straft-security",
+ "tempfile",
+ "tracing",
+ "ts-rs",
+]
+
+[[package]]
+name = "straft-search"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "sqlite-vec",
+ "tempfile",
+ "thiserror 2.0.21",
+ "tracing",
+]
+
+[[package]]
+name = "straft-security"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "regex",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "straft-domain",
+ "straft-platform",
+ "tempfile",
+ "zip",
+]
+
+[[package]]
+name = "straft-test-support"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "serde_json",
+ "straft-application",
+ "straft-domain",
+ "straft-search",
+ "tempfile",
+]
 
 [[package]]
 name = "string_cache"
