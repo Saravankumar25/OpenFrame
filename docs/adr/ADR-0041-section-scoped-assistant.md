@@ -62,6 +62,23 @@ Taken while building slices R4 to R6:
   the picks hold. A story explanation told "briefly" gets the short class, as an explanation does.
 - The Story card no longer says who plays a character unless a picked section can answer about people.
 - The unsupported relationship word and unstated mood checks start off (`NARRATIVE_WORD_CHECKS`) until a run measures their false alarms.
+- A thing code knows is missing gets the fixed sentence with no model: the facts of the picks hold nothing that answers, and a statement from a fetcher speaks of what was asked. In another language the writer still says it, in the person's words.
+- The Overview fetcher reads the shoot, call sheet, crew, shot and currency numbers, because that screen shows them and the test set asks them.
+- Three turn-set labels moved to the new types (a description, a brief and a story explanation are no longer `explain`), so the read of the older sets is scored against what the new rules mean to do.
+
+Taken while building slice R7 and the security review after it:
+
+- Deleted: the scope kinds and `AskArgs.scope`, the character budget of the context, the domain table, the fetcher table and its automatic domains, the wide passages round, the retrieval router, and the project map with its titles. Migrations drop `ai_request.scope_kind` (project 0020) and `sys_ai_trace.scope_kind` and `turn_domains` (app 0011).
+- Kept: `ResolvedScope` with its label, draft, scene and sections, built from the picks, because the tools and proposal builders default to them. `RetrievalRoute` with four kinds, because the tests and the performance bench measure each path alone; the assistant always asks for the widest. `Msg::with_topic`, because a picked section reads its area whatever the question says.
+- The topic words are a hint. The pointer uses them to name a section. Two checks inside a picked section also use them: a bare name with nothing else asked reads who plays it, and a money question does not lean on "that". They choose nothing to read.
+- The evaluation switch is `ai_eval_all_sections`: a request with no picks reads every section of the project through the same path, over the cap of 3. A person's picks stay capped. It stays false in the FFI.
+- With several picks, only what the question asked for is demanded of the answer: a value stays required when the words the person typed open the fact, not the section's topic, and the fact speaks of a word of the question. One pick keeps every required value.
+- What one pick does not hold is said only when the question is about it or no other pick holds anything. What a role may not see is always said.
+- With several screenplays and none chosen, a section that can choose (Scenes, only under the evaluation switch) asks which one; a section that cannot reads the one with the production data.
+- An answer's "scene N" must be given as a scene by the facts, the request or the conversation (rule `scene_ref`).
+- A day the person picked replaces any day in the message, and an off day reads only its own call sheets. A superseded call sheet cannot be picked.
+- Search tools hide contact details typed into notes from a role that may not see them. An existence pointer no longer asks for the contact role: contact fields are not in the index and a contact question is held back first.
+- The reply, the text search and the closing of a failed request use the project the question was asked in, even if the person closed it or opened another meanwhile.
 
 ## Measuring
 

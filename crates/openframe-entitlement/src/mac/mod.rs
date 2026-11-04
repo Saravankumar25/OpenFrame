@@ -37,7 +37,7 @@ pub use bridge::{
 };
 pub use clock_guard::{GuardRecord, ParsedGuard};
 pub use policy::{
-    Anomalies, Derived, EntitlementsView, MacState, MacTrialPolicy, OnlineCheckReason,
-    TrialInputs, TrialItemPurchaseDate, TrialStartSource,
+    Anomalies, Derived, EntitlementsView, MacState, MacTrialPolicy, OnlineCheckReason, TrialInputs,
+    TrialItemPurchaseDate, TrialStartSource,
 };
 pub use unavailable::UnavailableBridge;

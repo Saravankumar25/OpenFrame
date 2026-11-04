@@ -174,7 +174,7 @@ fn whole_scope(env: &TestEnv, _actor: &Actor) -> ResolvedScope {
         .project()
         .unwrap()
         .store
-        .read(|c| ResolvedScope::on_current_draft(c))
+        .read(ResolvedScope::on_current_draft)
         .unwrap()
 }
 

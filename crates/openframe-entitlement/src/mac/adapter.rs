@@ -42,8 +42,7 @@ pub const G4_USES_FRESH_SIGNATURE: bool = true;
 const GUARD_SAVE_EVERY_MS: i64 = 5 * 60 * 1000;
 
 /// Plain words for a purchase that waits for approval (Ask to Buy, or a payment step).
-pub const PURCHASE_PENDING: &str =
-    "This purchase is waiting for approval. OpenFrame Studio updates by itself once it is approved.";
+pub const PURCHASE_PENDING: &str = "This purchase is waiting for approval. OpenFrame Studio updates by itself once it is approved.";
 
 /// A monotonic clock: time since an arbitrary origin that never follows the wall clock.
 pub trait MonotonicClock: Send + Sync {
@@ -374,7 +373,7 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
                     tracing::warn!("the trial guard record could not be read; it starts empty");
                 }
                 let merged = merge(&session.record, &parsed.record);
-                session.saved = stored.is_some().then(|| parsed.record);
+                session.saved = stored.is_some().then_some(parsed.record);
                 session.record = merged;
                 session.record_loaded = true;
             }
@@ -429,9 +428,10 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
             return;
         }
         let wall = self.wall.now_ms();
-        let read_now = session.entitlements.as_deref().map_or(0, |txs| {
-            lock(&self.policy).relevant(txs).latest_signed_ms
-        });
+        let read_now = session
+            .entitlements
+            .as_deref()
+            .map_or(0, |txs| lock(&self.policy).relevant(txs).latest_signed_ms);
         let freshest = fresh_signed_ms.unwrap_or(0).max(read_now);
         let changed = if G4_USES_FRESH_SIGNATURE {
             recover_from_future_clock(
@@ -469,7 +469,8 @@ impl<B: StoreKitBridge> MacAppStoreAdapter<B> {
                     high_water_ms: saved.high_water_ms,
                     ..session.record.clone()
                 } == *saved;
-                !only_the_clock || session.record.high_water_ms - saved.high_water_ms >= GUARD_SAVE_EVERY_MS
+                !only_the_clock
+                    || session.record.high_water_ms - saved.high_water_ms >= GUARD_SAVE_EVERY_MS
             }
             Some(saved) => *saved != session.record,
             None => true,
@@ -572,7 +573,9 @@ fn merge(session: &GuardRecord, stored: &GuardRecord) -> GuardRecord {
         },
         lifetime_seen: session.lifetime_seen || stored.lifetime_seen,
         high_water_ms: session.high_water_ms.max(stored.high_water_ms),
-        last_apple_signed_ms: session.last_apple_signed_ms.max(stored.last_apple_signed_ms),
+        last_apple_signed_ms: session
+            .last_apple_signed_ms
+            .max(stored.last_apple_signed_ms),
     }
 }
 
@@ -592,7 +595,8 @@ impl<B: StoreKitBridge> ChannelAdapter for MacAppStoreAdapter<B> {
     }
 
     fn limitation(&self) -> Option<&'static str> {
-        (!self.store_connected).then_some("The App Store connection is not available in this build.")
+        (!self.store_connected)
+            .then_some("The App Store connection is not available in this build.")
     }
 
     /// The whole state.
@@ -628,7 +632,9 @@ impl<B: StoreKitBridge> ChannelAdapter for MacAppStoreAdapter<B> {
         match self.mac_state() {
             MacState::TrialActive {
                 remaining_seconds, ..
-            } => u64::try_from(remaining_seconds).ok().map(Duration::from_secs),
+            } => u64::try_from(remaining_seconds)
+                .ok()
+                .map(Duration::from_secs),
             _ => None,
         }
     }

@@ -57,6 +57,17 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-11-03, Section-scoped assistant, slice R7 and the security review
+- **Areas and items worked:** AI assistant quality and hardening (ADR-0041, slice R7 of the release package); security review fixes.
+- **Done:** One road for a question. Deleted `AskArgs.scope`, the scope kinds, the context budget, the domain table, the fetcher table with its automatic domains, the wide passages round, the retrieval router, the project map and the scope boost in search. Migrations: project 0020, app 0011. A request with no picks under `ai_eval_all_sections` reads every section through the same path. Gold cases name sections. Swift and the web shell stop sending a scope. Review fixes: spelling note escaped, gaps of empty sections, scene reference rule, contact details in tool results, superseded call sheets, picked and off days, existence pointer for viewers, session held through a request (also in the change path), tidy Using line, search results name the picks, scenes of a chosen screenplay stay. Also: a message that says something of its own no longer confirms the last answer for memory.
+- **Evidence:** `cargo test -p openframe-application` (1234 lib, 209 ai, 186 platform, 251 production, 240 writing, 5 perf, 5 forced kill), `-p openframe-ai-eval -p openframe-ffi -p openframe-search -p openframe-entitlement` (180), Swift AI filter 92, web AI tests 60. Pointer bench with rules alone: precision 98.3 (59/60), recall 98.3 (59/60), false pointers 0 of 333.
+- **Features moved:** none
+- **Docs updated:** ADR-0041, `docs/engineering/ai-answer-paths.md`, `docs/engineering/18-retrieval-intelligence-index.md`, `docs/specs/ai-conversational-harness.md`, the AI specification, `docs/release/windows-port-2026-11-03.md`, `gold/README.md`, manual test case TC-8.174-05, reconciliation log, handoff.
+- **Decisions made or needed:** defaults taken are listed in ADR-0041. A second run of the required-value rule is in the same section.
+- **Blocked / risks:** no real-model run of R7: the older gold sets now read every section, so their numbers will move. `sec-neg-021` still points at the Screenplay, which does hold "a tall steel mast"; a rule for it would fit one case. The Windows panel has no picker.
+- **Next:** the full evaluation with the real model; the Windows picker.
+- **Checks run:** the tests above, clippy with warnings as errors, writing, architecture lint, migrations, links, web typecheck, E2E driver compiles, graphify. Not run: E2E, a real model, `security-guidance` on the new code.
+
 ### 2026-11-03, Section-scoped assistant, slices R4 to R6 and the memory gap
 - **Areas and items worked:** AI assistant quality and hardening (ADR-0041).
 - **Done:** Memory, focus and the map held to the picks; the out-of-section pointer (`modules/ai/pointer.rs`) with the Mac Add button; types describe, brief and story with their writer policy and briefing fetcher; the agent's tool list by section (`toolbox/homes.rs`); the m1_04 schema test waits for the background search rebuild.

@@ -387,12 +387,7 @@ mod tests {
     #[test]
     fn microsoft_store_reads_the_store_licence_and_buys_through_the_store_dialog() {
         let store = std::sync::Arc::new(FakeStore::new(Ok(lic(true, true, 3 * DAY_SECONDS))));
-        let a = for_channel(
-            Channel::MicrosoftStore,
-            None,
-            Some(Box::new(store.clone())),
-        )
-        .unwrap();
+        let a = for_channel(Channel::MicrosoftStore, None, Some(Box::new(store.clone()))).unwrap();
         assert_eq!(a.channel(), Channel::MicrosoftStore);
         assert_eq!(a.limitation(), None);
         assert_eq!(

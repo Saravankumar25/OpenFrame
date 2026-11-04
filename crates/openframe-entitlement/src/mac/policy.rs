@@ -312,24 +312,22 @@ impl MacTrialPolicy {
             advance(input, record);
             return MacState::Revoked;
         }
-        if r.trials.is_empty() {
-            if record.trial_start_ms.is_none() {
-                if input.store_reachable && answered {
-                    // Rule 4.
-                    advance(input, record);
-                    return MacState::TrialNotStarted {
-                        purchase_pending: input.purchase_pending,
-                    };
-                }
-                // Rule 6.
-                return MacState::NeedsOnlineCheck {
-                    reason: if answered {
-                        OnlineCheckReason::NoConnection
-                    } else {
-                        OnlineCheckReason::AppStoreUnavailable
-                    },
+        if r.trials.is_empty() && record.trial_start_ms.is_none() {
+            if input.store_reachable && answered {
+                // Rule 4.
+                advance(input, record);
+                return MacState::TrialNotStarted {
+                    purchase_pending: input.purchase_pending,
                 };
             }
+            // Rule 6.
+            return MacState::NeedsOnlineCheck {
+                reason: if answered {
+                    OnlineCheckReason::NoConnection
+                } else {
+                    OnlineCheckReason::AppStoreUnavailable
+                },
+            };
         }
         // Rule 7.
         self.remember_trial(r, record);

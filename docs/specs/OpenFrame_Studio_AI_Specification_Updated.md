@@ -117,9 +117,10 @@ openframe-application  modules/ai
   toolbox.rs        universal toolbox (contract C3): read tools + proposal tools, strict schemas
   catalog.rs        proposal builders → ChangeSetDraft
   change_set.rs     compose / insert / accept / reject / recheck (human-only)
-  retrieval.rs      contract C2: route_for · retrieve · index_status · ai.index_rebuild
-  intelligence/     documents, graph builders, indexer worker, retriever, assembler, router
-  scope.rs          explicit UI scope → ResolvedScope (+ "Using:" label)
+  retrieval.rs      contract C2: retrieve · index_status · ai.index_rebuild
+  intelligence/     documents, graph builders, indexer worker, retriever, assembler
+  sections.rs       the sections a person picks (ADR-0041) → Selection (+ "Using:" label)
+  scope.rs          what a request's tools default to, built from the picks
   records.rs        ai_request / ai_result / ai_tool_invocation persistence
   knowledge.rs      product guide (knowledge.md) keyword section retrieval
       │                                     │
@@ -244,7 +245,9 @@ edges per node, relation priorities from the question; the permission check runs
 
 ## 6.4 Router and ranking
 
-`intelligence/router.rs` (deterministic; the model does not choose the route):
+> **Superseded (ADR-0041, 2026-11-03).** The router below is deleted. The person picks the sections and every search is hybrid plus graph, held to the picks. The table is history.
+
+The router (deterministic; the model did not choose the route):
 
 | Question | Route | Retrieval |
 |---|---|---|
@@ -254,7 +257,7 @@ edges per node, relation priorities from the question; the permission check runs
 | Meaning/theme questions, change requests | `Hybrid` | FTS5 + vectors |
 | Two or more product areas, relationship wording | `HybridGraph` | FTS5 + vectors + graph expansion |
 
-Ranking (`openframe_search::rank`): Reciprocal Rank Fusion (k = 60) over lexical and vector ranks, plus scope,
+Ranking (`openframe_search::rank`): Reciprocal Rank Fusion (k = 60) over lexical and vector ranks, plus
 exact-name, graph and current-draft boosts. There is no LLM reranker.
 
 ## 6.5 Canonical re-validation, privacy and budgets

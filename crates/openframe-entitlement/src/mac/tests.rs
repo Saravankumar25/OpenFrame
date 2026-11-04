@@ -118,10 +118,18 @@ fn rule_1_other_environments_and_malformed_transactions_are_ignored_and_counted(
 
 #[test]
 fn rule_2_a_lifetime_transaction_wins_and_is_remembered() {
-    let d = online(&[trial(T0), lifetime(T0 + 1)], T0 + 30 * DAY_MS, &GuardRecord::default());
+    let d = online(
+        &[trial(T0), lifetime(T0 + 1)],
+        T0 + 30 * DAY_MS,
+        &GuardRecord::default(),
+    );
     assert_eq!(d.state, MacState::Lifetime);
     assert!(d.clock_guard.lifetime_seen);
-    assert_eq!(d.clock_guard.trial_start_ms, Some(T0), "the start is kept too");
+    assert_eq!(
+        d.clock_guard.trial_start_ms,
+        Some(T0),
+        "the start is kept too"
+    );
 }
 
 #[test]
@@ -132,7 +140,10 @@ fn rule_3_a_refunded_lifetime_gives_revoked_and_forgets_the_purchase() {
     };
     let d = online(&[revoked(lifetime(T0))], T0 + DAY_MS, &g);
     assert_eq!(d.state, MacState::Revoked);
-    assert!(!d.clock_guard.lifetime_seen, "an offline relaunch must not read as bought");
+    assert!(
+        !d.clock_guard.lifetime_seen,
+        "an offline relaunch must not read as bought"
+    );
     // A valid lifetime wins over a revoked one.
     let again = tx(LIFETIME_PRODUCT_ID, "2000000009", T0 + DAY_MS);
     let d = online(&[revoked(lifetime(T0)), again], T0 + DAY_MS, &g);
@@ -229,8 +240,14 @@ fn a_buyer_offline_is_never_locked_by_what_the_cached_list_holds() {
         ..GuardRecord::default()
     };
     // A trial is listed and the lifetime record is missing, the clock is even behind.
-    assert_eq!(offline(&[trial(T0)], T0 + 30 * DAY_MS, &g).state, MacState::Lifetime);
-    assert_eq!(offline(&[revoked(trial(T0))], T0 + 30 * DAY_MS, &g).state, MacState::Lifetime);
+    assert_eq!(
+        offline(&[trial(T0)], T0 + 30 * DAY_MS, &g).state,
+        MacState::Lifetime
+    );
+    assert_eq!(
+        offline(&[revoked(trial(T0))], T0 + 30 * DAY_MS, &g).state,
+        MacState::Lifetime
+    );
 }
 
 #[test]
@@ -255,7 +272,11 @@ fn rule_7_the_start_is_the_earlier_apple_date_and_never_moves_later() {
 
     // A second trial transaction, listed earlier or later, uses the earliest.
     let later = tx(TRIAL_PRODUCT_ID, "2000000003", T0 + 2 * DAY_MS);
-    let d = online(&[later.clone(), trial(T0)], T0 + 2 * DAY_MS, &GuardRecord::default());
+    let d = online(
+        &[later.clone(), trial(T0)],
+        T0 + 2 * DAY_MS,
+        &GuardRecord::default(),
+    );
     assert_eq!(d.clock_guard.trial_start_ms, Some(T0));
     assert_eq!(d.anomalies.extra_trial_purchases, 1);
 
@@ -271,7 +292,10 @@ fn rule_7_the_start_is_the_earlier_apple_date_and_never_moves_later() {
     // Restore on a new Mac: the guard is empty and the verified transaction gives the start.
     let d = online(&[trial(T0)], T0 + 5 * DAY_MS, &GuardRecord::default());
     assert_eq!(d.clock_guard.trial_start_ms, Some(T0));
-    assert_eq!(d.clock_guard.trial_original_tx.as_deref(), Some("2000000001"));
+    assert_eq!(
+        d.clock_guard.trial_original_tx.as_deref(),
+        Some("2000000001")
+    );
     assert_eq!(days_left(d.state), 2);
 }
 
@@ -293,8 +317,14 @@ fn rule_9_days_left_count_down_from_seven_to_one_and_then_the_trial_ends() {
         assert_eq!(days_left(state), expected, "{elapsed}");
         assert_eq!(state.trial_ends_at_ms(), Some(T0 + TRIAL_MS));
     }
-    assert_eq!(online(&[trial(T0)], T0 + TRIAL_MS, &g).state, MacState::TrialEnded);
-    assert_eq!(online(&[trial(T0)], T0 + 30 * DAY_MS, &g).state, MacState::TrialEnded);
+    assert_eq!(
+        online(&[trial(T0)], T0 + TRIAL_MS, &g).state,
+        MacState::TrialEnded
+    );
+    assert_eq!(
+        online(&[trial(T0)], T0 + 30 * DAY_MS, &g).state,
+        MacState::TrialEnded
+    );
 }
 
 // ------------------------------------------------------------------ clock guard G1 to G4
@@ -388,11 +418,19 @@ fn g4_a_fresh_apple_date_near_the_clock_clears_a_wrong_future_high_water_mark() 
     };
     assert_eq!(online(&[trial(T0)], now, &g).state, MacState::ClockChanged);
     // A date too far from the clock proves nothing.
-    assert!(!recover_from_future_clock(&mut g, Some(now - 11 * MINUTE_MS), now));
+    assert!(!recover_from_future_clock(
+        &mut g,
+        Some(now - 11 * MINUTE_MS),
+        now
+    ));
     assert!(!recover_from_future_clock(&mut g, None, now));
     assert_eq!(g.high_water_ms, T0 + 365 * DAY_MS);
     // Within 10 minutes it does.
-    assert!(recover_from_future_clock(&mut g, Some(now - 9 * MINUTE_MS), now));
+    assert!(recover_from_future_clock(
+        &mut g,
+        Some(now - 9 * MINUTE_MS),
+        now
+    ));
     assert_eq!(g.high_water_ms, now);
     assert_eq!(days_left(online(&[trial(T0)], now, &g).state), 6);
     // It cannot give days back: the start did not move.
@@ -413,7 +451,10 @@ fn g4_fallback_caps_the_high_water_mark_at_the_last_apple_date_plus_two_days() {
         high_water_ms: T0,
         ..GuardRecord::default()
     };
-    assert!(!cap_high_water_at_apple_date(&mut none), "no Apple date known");
+    assert!(
+        !cap_high_water_at_apple_date(&mut none),
+        "no Apple date known"
+    );
 }
 
 // ------------------------------------------------------------------ states
@@ -582,7 +623,11 @@ struct Rig {
     adapter: MacAppStoreAdapter<FakeBridge>,
 }
 
-fn adapter_over(apple: &Arc<Mutex<Apple>>, clocks: &Clocks, env: StoreEnvironment) -> MacAppStoreAdapter<FakeBridge> {
+fn adapter_over(
+    apple: &Arc<Mutex<Apple>>,
+    clocks: &Clocks,
+    env: StoreEnvironment,
+) -> MacAppStoreAdapter<FakeBridge> {
     MacAppStoreAdapter::new(
         FakeBridge {
             apple: apple.clone(),
@@ -631,7 +676,10 @@ fn first_launch_online_offers_the_trial_and_starting_it_counts_seven_days() {
     assert_eq!(r.adapter.lifetime_price().as_deref(), Some("{test price}"));
     r.start_trial(T0);
     assert_eq!(days_left(r.adapter.mac_state()), 7);
-    assert_eq!(ChannelAdapter::trial_ends_at_ms(&r.adapter), Some(T0 + TRIAL_MS));
+    assert_eq!(
+        ChannelAdapter::trial_ends_at_ms(&r.adapter),
+        Some(T0 + TRIAL_MS)
+    );
     // The guard record was saved with the start.
     let stored = r.apple.lock().unwrap().keychain.clone().unwrap();
     let parsed = GuardRecord::parse(Some(&stored));
@@ -654,7 +702,10 @@ fn the_trial_works_with_the_network_cable_pulled_after_the_first_online_start() 
     let next = r.relaunch();
     assert_eq!(days_left(next.refresh()), 4);
     r.clocks.sleep(5 * DAY_MS);
-    assert_eq!(next.revalidate(RevalidateReason::Timer), MacState::TrialEnded);
+    assert_eq!(
+        next.revalidate(RevalidateReason::Timer),
+        MacState::TrialEnded
+    );
 }
 
 #[test]
@@ -709,7 +760,10 @@ fn a_buyer_relaunching_offline_stays_unlocked_and_a_refund_is_noticed_online() {
         a.products_fail = false;
         a.entitlements = vec![revoked(lifetime(T0))];
     }
-    assert_eq!(next.revalidate(RevalidateReason::StoreKitChanged), MacState::Revoked);
+    assert_eq!(
+        next.revalidate(RevalidateReason::StoreKitChanged),
+        MacState::Revoked
+    );
     // A later offline launch does not read as bought.
     {
         let mut a = r.apple.lock().unwrap();
@@ -735,7 +789,10 @@ fn a_clock_turned_back_after_a_relaunch_locks_and_clears_as_soon_as_it_is_fixed(
     assert_eq!(next.channel_state(), Some(EntitlementState::ClockChanged));
     // Nothing raised the floor while the clock was wrong, and the 5 second check asks nothing.
     let writes = r.apple.lock().unwrap().keychain_writes;
-    assert_eq!(next.revalidate(RevalidateReason::ClockTick), MacState::ClockChanged);
+    assert_eq!(
+        next.revalidate(RevalidateReason::ClockTick),
+        MacState::ClockChanged
+    );
     assert_eq!(r.apple.lock().unwrap().keychain_writes, writes);
 
     // Clock fixed: the next tick clears it with no click.
@@ -917,11 +974,20 @@ fn an_environment_that_could_not_be_read_is_asked_again_and_wipes_nothing() {
     );
     adapter.refresh();
     assert!(
-        apple.lock().unwrap().keychain.as_deref().unwrap().contains("lifetime_seen\":true"),
+        apple
+            .lock()
+            .unwrap()
+            .keychain
+            .as_deref()
+            .unwrap()
+            .contains("lifetime_seen\":true"),
         "the record survives while the environment is only a guess"
     );
     *known.lock().unwrap() = Some(SANDBOX);
-    assert_eq!(adapter.revalidate(RevalidateReason::Resume), MacState::Lifetime);
+    assert_eq!(
+        adapter.revalidate(RevalidateReason::Resume),
+        MacState::Lifetime
+    );
 }
 
 #[test]
@@ -963,10 +1029,18 @@ fn a_second_trial_purchase_is_never_attempted_and_never_restarts_the_trial() {
         .lock()
         .unwrap()
         .purchases
-        .push(Ok(PurchaseOutcome::Success(tx(TRIAL_PRODUCT_ID, "2000000003", T0 + 2 * DAY_MS))));
+        .push(Ok(PurchaseOutcome::Success(tx(
+            TRIAL_PRODUCT_ID,
+            "2000000003",
+            T0 + 2 * DAY_MS,
+        ))));
     let end = r.adapter.purchase_trial().unwrap();
     assert_eq!(days_left(end.state()), 5);
-    assert_eq!(r.apple.lock().unwrap().purchase_calls.len(), 1, "no second sheet");
+    assert_eq!(
+        r.apple.lock().unwrap().purchase_calls.len(),
+        1,
+        "no second sheet"
+    );
 }
 
 #[test]
@@ -977,8 +1051,12 @@ fn a_second_apple_account_on_the_same_mac_keeps_the_start_on_this_mac() {
     r.adapter.refresh();
     r.start_trial(T0);
     r.clocks.sleep(8 * DAY_MS);
-    r.apple.lock().unwrap().entitlements = vec![tx(TRIAL_PRODUCT_ID, "3000000001", T0 + 8 * DAY_MS)];
-    assert_eq!(r.adapter.revalidate(RevalidateReason::StoreKitChanged), MacState::TrialEnded);
+    r.apple.lock().unwrap().entitlements =
+        vec![tx(TRIAL_PRODUCT_ID, "3000000001", T0 + 8 * DAY_MS)];
+    assert_eq!(
+        r.adapter.revalidate(RevalidateReason::StoreKitChanged),
+        MacState::TrialEnded
+    );
 }
 
 #[test]
@@ -993,16 +1071,27 @@ fn a_deleted_keychain_item_with_a_new_account_gets_more_time_which_is_accepted()
 fn a_purchase_that_waits_grants_nothing_and_says_so_and_a_cancel_changes_nothing() {
     let r = rig(T0);
     r.adapter.refresh();
-    r.apple.lock().unwrap().purchases.push(Ok(PurchaseOutcome::Pending));
+    r.apple
+        .lock()
+        .unwrap()
+        .purchases
+        .push(Ok(PurchaseOutcome::Pending));
     let answer = ChannelAdapter::start_trial(&r.adapter).unwrap();
-    assert_eq!(answer.unwrap_err().message, super::adapter::PURCHASE_PENDING);
+    assert_eq!(
+        answer.unwrap_err().message,
+        super::adapter::PURCHASE_PENDING
+    );
     assert_eq!(
         r.adapter.mac_state(),
         MacState::TrialNotStarted {
             purchase_pending: true
         }
     );
-    r.apple.lock().unwrap().purchases.push(Ok(PurchaseOutcome::Cancelled));
+    r.apple
+        .lock()
+        .unwrap()
+        .purchases
+        .push(Ok(PurchaseOutcome::Cancelled));
     let answer = ChannelAdapter::buy_full_version(&r.adapter).unwrap();
     assert_eq!(answer, Ok(EntitlementState::TrialNotStarted));
 }
@@ -1025,7 +1114,11 @@ fn a_purchase_for_another_product_environment_or_shape_is_refused() {
         .purchases
         .push(Ok(PurchaseOutcome::Success(sandbox)));
     assert_eq!(r.adapter.purchase_lifetime(), Err(BridgeError::Unverified));
-    r.apple.lock().unwrap().purchases.push(Err(BridgeError::PurchasesNotAllowed));
+    r.apple
+        .lock()
+        .unwrap()
+        .purchases
+        .push(Err(BridgeError::PurchasesNotAllowed));
     let answer = ChannelAdapter::buy_full_version(&r.adapter).unwrap();
     assert!(answer.unwrap_err().message.contains("Screen Time"));
 }
@@ -1039,7 +1132,10 @@ fn a_sandbox_build_accepts_sandbox_purchases_and_a_production_build_ignores_them
         ..Apple::default()
     }));
     let clocks = Clocks::new(T0);
-    assert_eq!(adapter_over(&apple, &clocks, SANDBOX).refresh(), MacState::Lifetime);
+    assert_eq!(
+        adapter_over(&apple, &clocks, SANDBOX).refresh(),
+        MacState::Lifetime
+    );
     // Same Keychain: what the sandbox build remembered does not count in the production build.
     assert!(apple.lock().unwrap().keychain.is_some());
     let prod = adapter_over(&apple, &clocks, PROD);
@@ -1069,9 +1165,9 @@ fn a_corrupted_guard_record_is_counted_and_never_grants_or_crashes() {
 #[test]
 fn a_future_version_of_the_guard_record_is_read_and_keeps_its_version() {
     let r = rig(T0 + DAY_MS);
-    r.apple.lock().unwrap().keychain = Some(
-        format!(r#"{{"v": 9, "trial_start_ms": {T0}, "high_water_ms": {T0}, "newer": [1]}}"#),
-    );
+    r.apple.lock().unwrap().keychain = Some(format!(
+        r#"{{"v": 9, "trial_start_ms": {T0}, "high_water_ms": {T0}, "newer": [1]}}"#
+    ));
     assert_eq!(days_left(r.adapter.refresh()), 6);
     let stored = r.apple.lock().unwrap().keychain.clone().unwrap();
     assert_eq!(GuardRecord::parse(Some(&stored)).record.v, 9);
@@ -1100,7 +1196,10 @@ fn a_keychain_that_does_not_answer_keeps_working_in_memory_and_saves_nothing_ove
     }
     assert_eq!(days_left(r.adapter.revalidate(RevalidateReason::Resume)), 6);
     let stored = r.apple.lock().unwrap().keychain.clone().unwrap();
-    assert_eq!(GuardRecord::parse(Some(&stored)).record.trial_start_ms, Some(T0 - DAY_MS));
+    assert_eq!(
+        GuardRecord::parse(Some(&stored)).record.trial_start_ms,
+        Some(T0 - DAY_MS)
+    );
 }
 
 #[test]
@@ -1109,7 +1208,11 @@ fn an_unchanged_guard_record_is_not_written_again() {
     r.adapter.refresh();
     let writes = r.apple.lock().unwrap().keychain_writes;
     r.adapter.revalidate(RevalidateReason::Timer);
-    assert_eq!(r.apple.lock().unwrap().keychain_writes, writes, "the clock did not move");
+    assert_eq!(
+        r.apple.lock().unwrap().keychain_writes,
+        writes,
+        "the clock did not move"
+    );
     r.clocks.pass(MINUTE_MS);
     r.adapter.revalidate(RevalidateReason::Timer);
     assert_eq!(r.apple.lock().unwrap().keychain_writes, writes + 1);

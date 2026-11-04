@@ -26,7 +26,7 @@ fn propose(env: &TestEnv, tool: &str, args: Value) -> ChangeSetDraft {
         .project()
         .unwrap()
         .store
-        .read(|c| ResolvedScope::on_current_draft(c))
+        .read(ResolvedScope::on_current_draft)
         .unwrap();
     match toolbox::run_tool_unlocked(&env.core, &actor, &scope, "test request", tool, &args) {
         Ok(ToolStep::Proposal(d)) => d,

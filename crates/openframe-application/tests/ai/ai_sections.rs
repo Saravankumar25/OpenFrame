@@ -2044,6 +2044,7 @@ fn search_results_say_the_picks_not_the_whole_project() {
 struct HeldModel {
     entered: std::sync::atomic::AtomicBool,
     release: std::sync::atomic::AtomicBool,
+    reply: Mutex<Option<String>>,
 }
 
 impl InferenceProvider for HeldModel {
@@ -2053,7 +2054,12 @@ impl InferenceProvider for HeldModel {
         while !self.release.load(SeqCst) {
             std::thread::sleep(std::time::Duration::from_millis(5));
         }
-        Ok("The project holds that.".to_string())
+        Ok(self
+            .reply
+            .lock()
+            .unwrap()
+            .clone()
+            .unwrap_or_else(|| "The project holds that.".to_string()))
     }
     fn model_reference(&self) -> String {
         "test-local-profile".into()
@@ -2065,6 +2071,46 @@ impl InferenceProvider for HeldModel {
             grammar: true,
         }
     }
+}
+
+#[test]
+fn a_change_running_when_another_project_opens_proposes_nothing_from_that_one() {
+    use std::sync::atomic::Ordering::SeqCst;
+    let f = film();
+    let model = Arc::new(HeldModel::default());
+    *model.reply.lock().unwrap() = Some(
+        json!({ "action": "search_project", "arguments": { "text": "marigold" }, "done": false })
+            .to_string(),
+    );
+    service::service(&f.env.core).attach_model(Some(model.clone() as Arc<dyn InferenceProvider>));
+    let reply = std::thread::scope(|scope| {
+        let asking = scope.spawn(|| {
+            f.env.call(
+                "ai.ask",
+                json!({ "text": "Update the task about the permit after a search", "sections": [{ "leaf": "notes/tasks" }, { "leaf": "notes/notes" }] }),
+            )
+        });
+        while !model.entered.load(SeqCst) {
+            std::thread::sleep(std::time::Duration::from_millis(5));
+        }
+        f.env.ok("project.close", json!({}));
+        f.env.ok(
+            "project.create",
+            json!({ "title": "Another Film", "projectType": "Feature Film" }),
+        );
+        model.release.store(true, SeqCst);
+        asking.join().unwrap()
+    });
+    let x = reply.expect("the reply is not lost");
+    let content = x["result"]["content"].as_str().unwrap();
+    assert!(content.contains("closed"), "{x}");
+    assert!(x["result"]["changeSet"].is_null(), "{x}");
+    let s = f.env.core.project().unwrap();
+    let other: i64 = s
+        .store
+        .read(|c| Ok(c.query_row("SELECT count(*) FROM ai_request", [], |r| r.get(0))?))
+        .unwrap();
+    assert_eq!(other, 0);
 }
 
 #[test]

@@ -563,7 +563,7 @@ fn m1_03_forced_kill_during_migration_leaves_a_consistent_database() {
                 "the migration worker completed no cycle before the kill"
             );
         }
-        // Before the app touches it: a complete schema 10 to 19 (each migration commits whole).
+        // Before the app touches it: a complete schema 10 to 20 (each migration commits whole).
         let raw = rusqlite::Connection::open(Path::new(&h.project).join("project.sqlite")).unwrap();
         let version: i64 = raw
             .query_row("PRAGMA user_version", [], |r| r.get(0))
@@ -576,7 +576,7 @@ fn m1_03_forced_kill_during_migration_leaves_a_consistent_database() {
             )
             .unwrap();
         assert!(
-            matches!((version, journal), (10, false) | (11..=19, true)),
+            matches!((version, journal), (10, false) | (11..=20, true)),
             "half-migrated: v{version}, journal {journal}"
         );
         drop(raw);
@@ -588,7 +588,7 @@ fn m1_03_forced_kill_during_migration_leaves_a_consistent_database() {
             .store
             .read(|c| Ok(c.query_row("PRAGMA user_version", [], |r| r.get(0))?))
             .unwrap();
-        assert_eq!(schema, 19, "{opened}");
+        assert_eq!(schema, 20, "{opened}");
         let cards = card_texts(&core);
         assert!(
             cards.contains(&"Baseline one".to_string())

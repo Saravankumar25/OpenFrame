@@ -23,6 +23,8 @@
 //! user's own words are an instruction. Mutations are proposals the user must explicitly apply from
 //! the review card (acceptance is not a tool and is refused for anything but a local user action).
 
+use std::sync::Arc;
+
 use openframe_ai::InferenceProvider;
 use openframe_domain::auth::ActorOrigin;
 use openframe_domain::{Actor, AppError, AppResult, Capability, new_id};
@@ -456,6 +458,7 @@ pub fn hinted(mut read: TurnRead, text: &str) -> TurnRead {
 /// What a turn knows when it starts running.
 struct Turn<'a> {
     core: &'a AppCore,
+    session: &'a Arc<ProjectSession>,
     actor: &'a Actor,
     scope: &'a ResolvedScope,
     model: &'a dyn InferenceProvider,
@@ -528,6 +531,7 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
     }
     let cx = action::Cx {
         core: t.core,
+        session: t.session,
         actor: t.actor,
         scope: t.scope,
         model: t.model,
@@ -966,6 +970,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     let question = dossier.as_ref().and_then(|d| d.resolved.ambiguous.as_ref());
     let mut outcome = run_turn(&Turn {
         core,
+        session: &s,
         actor,
         scope: &scope,
         model: &*model,

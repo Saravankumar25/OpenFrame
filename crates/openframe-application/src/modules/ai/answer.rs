@@ -81,7 +81,7 @@ pub(super) struct Input<'a> {
     pub dossier: Option<&'a Dossier>,
     pub resolved: Option<&'a Resolved>,
     pub memory: &'a TurnMemory,
-    /// The index, for the focus line and the project map.
+    /// The index, for the focus line.
     pub index: Option<&'a EntityIndex>,
     pub focus: &'a Focus,
     /// The sections of this request: the map and the focus hold nothing from outside them.

@@ -328,7 +328,8 @@ mod tests {
         let parsed: VerifiedTransaction = serde_json::from_value(json).unwrap();
         assert_eq!(parsed.app_transaction_id, None);
         assert!(parsed.is_well_formed());
-        let app: AppTransactionInfo = serde_json::from_str(r#"{"environment":"production"}"#).unwrap();
+        let app: AppTransactionInfo =
+            serde_json::from_str(r#"{"environment":"production"}"#).unwrap();
         assert_eq!(app.app_transaction_id, None);
     }
 

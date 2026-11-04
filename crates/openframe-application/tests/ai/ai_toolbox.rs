@@ -16,9 +16,7 @@ use serde_json::{Value, json};
 
 fn whole(env: &TestEnv, _actor: &Actor) -> ResolvedScope {
     let s = env.core.project().unwrap();
-    s.store
-        .read(|c| ResolvedScope::on_current_draft(c))
-        .unwrap()
+    s.store.read(ResolvedScope::on_current_draft).unwrap()
 }
 
 fn run_as(env: &TestEnv, actor: &Actor, tool: &str, args: Value) -> Result<ToolStep, AppError> {

@@ -921,7 +921,7 @@ fn contact_data_is_hidden_by_role_from_the_assistant_and_from_exports() {
             .project()
             .unwrap()
             .store
-            .read(|c| ResolvedScope::on_current_draft(c))
+            .read(ResolvedScope::on_current_draft)
             .unwrap();
         let step = toolbox::run_tool_unlocked(&env.core, actor, &scope, "who to call", tool, args)
             .unwrap();

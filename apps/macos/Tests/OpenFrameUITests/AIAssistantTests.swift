@@ -226,7 +226,7 @@ struct AIAssistantTests {
         for a in asks {
             let sections = try #require(a["sections"] as? [[String: Any]])
             #expect(sections.map { $0["leaf"] as? String } == ["production/budget"])
-            #expect((a["scope"] as? [String: Any])?["kind"] as? String == "WholeProject")
+            #expect(a["scope"] == nil, "the picks are all the core is sent")
         }
         #expect(r.model.picks.map(\.leaf) == ["production/budget"], "kept for the follow-up")
         r.model.newConversation()

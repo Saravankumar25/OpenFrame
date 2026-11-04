@@ -11,8 +11,9 @@
 > **Section-scoped assistant (ADR-0041, 2026-11-03).** The person picks up to 3 leaves before asking. Slices R1 to R6 are built:
 > the leaf registry `modules/ai/sections.rs` and its coverage tests, the `sections` field of `ai.ask`, the operation `ai.sections`,
 > the Mac picker, the dossier by leaves with search held to the picks, memory and focus held to the picks, the pointer (`modules/ai/pointer.rs`), the
-> types describe, brief and story with their writer policy and briefing fetcher, and the agent's tool list by section (`toolbox/homes.rs`). Sections 5.3 domain words and 5.4 plan below describe the
-> wide path, which stays for `AppConfig.ai_eval_any_sections` until slice R7. The design is `OpenFrame_Release_Package/ai-reharness.md`.
+> types describe, brief and story with their writer policy and briefing fetcher, and the agent's tool list by section (`toolbox/homes.rs`). Slice R7 deleted what they replaced: the scope, the domain table, the fetcher
+> table and its plan, the wide passages round and the retrieval router. Sections 5.3 domain words and 5.4 plan below are history. A
+> request with no picks under `AppConfig.ai_eval_all_sections` reads every section through the same path. The design is `OpenFrame_Release_Package/ai-reharness.md`.
 
 ## 1. What the owner asked for (2026-10-26)
 
@@ -239,7 +240,7 @@ Rules that guard the read:
 
 **What is stored.** The answer type goes into the conversation focus (`focus.answerType` in `ai_request.scope_json`),
 so the next message can be a correction of it. The whole read goes into the AI trace (`sys_ai_trace`, app migration 0008:
-`answer_type`, `answer_group`, `turn_domains`, `length_class`, `turn_how`, `turn_vote`, `turn_ms`; codes and numbers only,
+`answer_type`, `answer_group`, `length_class`, `turn_how`, `turn_vote`, `turn_ms`; codes and numbers only,
 never the message). S4 changes no lane, prompt, writing or check: what the assistant answers is as before. The model call
 of step 6 runs before the request and is not counted in the request's engine numbers.
 
@@ -341,7 +342,7 @@ plays", the number for a count, planned and actual and difference for a budget l
 them), the relationship word for two named characters, the name of every person who speaks in a fetched scene, the phone
 and email of a contact question. `Dossier::required` is their union. The checker of section 5.6 requires them.
 
-**The registry.** One table, `FETCHERS` in `dossier/registry.rs`, with one entry per domain: the answer groups it serves,
+**The registry.** SUPERSEDED by the leaf registry (`sections.rs`, ADR-0041); the table below is history. One table with one entry per domain: the answer groups it serves,
 its token cap, what it reads, and the function `fn(&FetchCtx, &TurnRead, &Resolved) -> Vec<Fact>`. Adding an area is one
 entry and its test. The fetchers do not call the read tools of `toolbox/reads*.rs`, because those return text for the
 model; they use the same lower layers (`queries::scenes`, `character_cues`, `scene_text`, `schedule::board`,

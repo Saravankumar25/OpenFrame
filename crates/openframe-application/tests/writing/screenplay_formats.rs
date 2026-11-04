@@ -91,7 +91,7 @@ fn retrieve(env: &TestEnv, query: &str) -> String {
         .project()
         .unwrap()
         .store
-        .read(|c| ResolvedScope::on_current_draft(c))
+        .read(ResolvedScope::on_current_draft)
         .unwrap();
     match toolbox::run_tool_unlocked(
         &env.core,

@@ -338,7 +338,11 @@ mod tests {
             EntitlementState::Revoked.summary(mac),
             "This purchase was refunded or revoked. Buy OpenFrame Studio or restore your purchase to open your projects again. Nothing is deleted."
         );
-        assert!(EntitlementState::ClockChanged.summary(mac).contains("clock looks wrong"));
+        assert!(
+            EntitlementState::ClockChanged
+                .summary(mac)
+                .contains("clock looks wrong")
+        );
         assert_eq!(
             EntitlementState::NeedsOnlineCheck.summary(mac),
             "OpenFrame needs to check your licence with the App Store. Connect to the internet and open OpenFrame again. Your projects stay open and can be exported."
