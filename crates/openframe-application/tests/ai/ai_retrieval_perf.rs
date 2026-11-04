@@ -259,6 +259,7 @@ fn spec_34_retrieval_budgets_on_a_feature_length_fixture() {
                 let t = Instant::now();
                 let p = retrieval::retrieve(
                     &env.core,
+                    &env.core.project().unwrap(),
                     &actor,
                     &RetrieveRequest {
                         query: q.into(),

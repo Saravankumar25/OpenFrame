@@ -2,8 +2,6 @@
 //! application, retrieved deterministically, never taken from model memory alone.
 
 pub const GUIDE: &str = include_str!("knowledge.md");
-pub const GUIDE_LABEL: &str = "OpenFrame product guide v1";
-
 pub fn sections() -> Vec<(&'static str, &'static str)> {
     GUIDE
         .split("\n## ")

@@ -45,39 +45,6 @@ enum AIText {
     static let noEpisodes = "This project has no episodes."
 }
 
-/// Where the person is, for the questions to start with (Windows: the route). It never chooses what
-/// the assistant reads: the person picks sections (ADR-0041).
-struct AIScopeContext: Equatable {
-    var workspace: Workspace = .home
-    var draftId: String?
-    var sceneId: String?
-    var selectionIds: [String] = []
-    var shootingDayId: String?
-    var callSheetId: String?
-}
-
-/// Shared place for workspaces to say what is open. The assistant reads it when it is asked.
-@MainActor
-@Observable
-final class AIScopeHints {
-    static let shared = AIScopeHints()
-    var draftId: String?
-    var sceneId: String?
-    var selectionIds: [String] = []
-    var shootingDayId: String?
-    var callSheetId: String?
-
-    func context(for workspace: Workspace) -> AIScopeContext {
-        AIScopeContext(
-            workspace: workspace,
-            draftId: workspace == .screenplay ? draftId : nil,
-            sceneId: workspace == .screenplay ? sceneId : nil,
-            selectionIds: selectionIds,
-            shootingDayId: workspace == .production || workspace == .callSheets ? shootingDayId : nil,
-            callSheetId: workspace == .callSheets ? callSheetId : nil)
-    }
-}
-
 /// One section the person picked, with the instance they chose under it. The core checks all of it.
 struct AISectionChoice: Equatable, Identifiable {
     var leaf: String

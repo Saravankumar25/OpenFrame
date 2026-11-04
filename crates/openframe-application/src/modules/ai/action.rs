@@ -543,10 +543,7 @@ impl Run {
     }
 
     fn scope_provenance(scope: &ResolvedScope) -> Provenance {
-        Provenance::new(
-            "Scope",
-            scope.label.trim_start_matches("Using: ").to_string(),
-        )
+        Provenance::new("Scope", scope.basis().to_string())
     }
 
     /// The proposals of this request as ONE composite Change Set.

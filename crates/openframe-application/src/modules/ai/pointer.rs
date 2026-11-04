@@ -433,12 +433,9 @@ fn exists_elsewhere(
         else {
             continue;
         };
-        if sel.has(l.id) {
-            return None;
-        }
-        if l.min_role.allows_contacts(actor) {
-            return Some(l);
-        }
+        // Contact fields are not in the index, and a question about contact details is held back
+        // before any pointer, so a section's minimum role has no part here.
+        return (!sel.has(l.id)).then_some(l);
     }
     None
 }

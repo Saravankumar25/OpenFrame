@@ -9,6 +9,7 @@ use openframe_domain::{Actor, AppError, AppResult};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
 
+use super::super::dossier::guard;
 use super::super::queries::{self, join_and};
 use super::super::scope::ResolvedScope;
 use super::super::tools::{ToolCtx, ToolOutput, like_pattern, nav_from_json, plural, scene_nav};
@@ -537,9 +538,12 @@ pub fn retrieve_lexical(ctx: &ToolCtx<'_>, args: &Value) -> AppResult<ToolOutput
             if title.is_empty() {
                 etype.clone()
             } else {
-                title.clone()
+                guard::tool_text(ctx.actor, title)
             },
-            Some(format!("{context}: {}", clip(body, 240))),
+            Some(guard::tool_text(
+                ctx.actor,
+                &format!("{context}: {}", clip(body, 240)),
+            )),
             nav_from_json(nav),
         ));
         o.provenance.push(Provenance::new(
@@ -551,7 +555,7 @@ pub fn retrieve_lexical(ctx: &ToolCtx<'_>, args: &Value) -> AppResult<ToolOutput
             if title.is_empty() {
                 etype.clone()
             } else {
-                clip(title, 80)
+                guard::tool_text(ctx.actor, &clip(title, 80))
             },
         ));
     }
@@ -614,8 +618,10 @@ pub fn retrieve_hybrid(
     use super::super::retrieval::{RetrievalRoute, RetrieveRequest, retrieve};
     let q = a_str(args, "query").ok_or_else(|| queries::ambiguous("What should I look for?"))?;
     let limit = a_limit(args, 8).min(24);
+    let session = core.project()?;
     let mut packet = retrieve(
         core,
+        &session,
         actor,
         &RetrieveRequest {
             query: q.clone(),
@@ -657,10 +663,16 @@ pub fn retrieve_hybrid(
     });
     for (i, it) in packet.items.iter().enumerate() {
         let nav = packet.sources.get(i).and_then(|s| nav_from_json(&s.nav));
-        o.items
-            .push(item(it.source.clone(), Some(clip(&it.text, 240)), nav));
+        o.items.push(item(
+            guard::tool_text(actor, &it.source),
+            Some(guard::tool_text(actor, &clip(&it.text, 240))),
+            nav,
+        ));
     }
     o.provenance = packet.provenance.clone();
+    for p in &mut o.provenance {
+        p.label = guard::tool_text(actor, &p.label);
+    }
     if let Some(n) = &packet.notice {
         o = o.detail(n.clone());
     }

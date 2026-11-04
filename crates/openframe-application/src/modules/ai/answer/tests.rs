@@ -670,7 +670,7 @@ fn chat_that_invents_project_data_is_rewritten() {
         .ask("you are the worst", AnswerType::Chat, &lead_cast())
         .unwrap();
     assert_eq!(r.model.calls(), 2);
-    assert_eq!(a.failed_rules(), vec!["numbers"]);
+    assert_eq!(a.failed_rules(), vec!["numbers", "scene_ref"]);
 }
 
 #[test]
@@ -1085,4 +1085,28 @@ fn the_relationship_and_mood_checks_work_and_start_off() {
             .iter()
             .all(|o| !matches!(o.rule, Rule::Relationship | Rule::Mood))
     );
+}
+
+#[test]
+fn a_scene_number_the_facts_do_not_give_as_a_scene_fails_the_answer() {
+    let facts = "Scene | scene: 3 | heading: INT. RADIO HUT\nStory day | scenes: 1, 2 and 5\nBudget | props: 7\n";
+    let stray =
+        |answer: &str| check::stray_scene_numbers(answer, &[facts, "who is in scene 8?", ""]);
+    assert!(stray("In Scene 3 Anjali waits.").is_empty());
+    assert!(stray("Scenes 1, 2 and 5 are on the first day.").is_empty());
+    assert!(
+        stray("Scene 8 has nobody in it.").is_empty(),
+        "the question named it"
+    );
+    assert!(
+        stray("The script has 12 scenes.").is_empty(),
+        "a count is not a reference"
+    );
+    assert_eq!(
+        stray("Scene 7 needs the props."),
+        ["7"],
+        "a number held for something else"
+    );
+    assert_eq!(stray("Scenes 3 and 9 are at the hut."), ["9"]);
+    assert_eq!(stray("In scene 03 and scene 14."), ["14"]);
 }

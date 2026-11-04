@@ -700,7 +700,7 @@ fn project_overview(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
             plural(locs as usize, "Location record", "Location records")
         ))
         .detail(format!("Open tasks: {open_tasks}."))
-        .prov("Scope", "Whole Project");
+        .prov("Scope", ctx.scope.basis());
     Ok(o)
 }
 
@@ -1959,7 +1959,7 @@ fn search_project(ctx: &ToolCtx<'_>, text: &str) -> AppResult<ToolOutput> {
             "Nothing in this project mentions “{}”.",
             text.trim()
         ))
-        .prov("Scope", "Whole Project"));
+        .prov("Scope", ctx.scope.basis()));
     }
     let mut groups: BTreeMap<String, usize> = BTreeMap::new();
     for (_, _, context, _) in &hits {
@@ -2026,7 +2026,7 @@ fn search_project(ctx: &ToolCtx<'_>, text: &str) -> AppResult<ToolOutput> {
         })
         .collect();
     o.nav = Some(NavTarget::to("home").with("search", text.trim()));
-    Ok(o.prov("Scope", "Whole Project")
+    Ok(o.prov("Scope", ctx.scope.basis())
         .prov("Basis", "project search index"))
 }
 

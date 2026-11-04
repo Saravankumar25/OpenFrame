@@ -21,7 +21,9 @@ final class AIAssistantModel {
     var statusFailed = false
     var index: AiIndexStatus?
     var exchanges: [AiExchange] = []
-    var context = AIScopeContext()
+    /// Where the person is, for the questions to start with. It never chooses what the assistant reads:
+    /// the person picks sections (ADR-0041).
+    var workspace: Workspace = .home
     /// The tree of sections and what their pickers list, from `ai.sections`.
     var sections: AiSections?
     /// The scenes of the draft chosen under the Scenes section, when it is not the current draft.
@@ -102,13 +104,6 @@ final class AIAssistantModel {
 
     var indexNotice: (preparing: String, degraded: String)? { AILogic.indexNotice(index) }
 
-    // MARK: Where the person is
-
-    /// The workspace changed (or the hints did). Only the questions to start with follow it.
-    func setContext(_ new: AIScopeContext) {
-        context = new
-    }
-
     // MARK: Sections
 
     /// Read the tree. When it cannot be read the picker stays empty and Send stays off.
@@ -123,7 +118,7 @@ final class AIAssistantModel {
 
     func toggleSection(_ leaf: String) {
         picks = AILogic.togglingSection(picks, leaf: leaf)
-        if !picks.contains(where: { $0.draftId != nil }) { draftScenes = nil }
+        dropDraftScenesIfUnused()
     }
 
     /// The Add button of a reply that names another section. It never takes a section away, and at
@@ -135,7 +130,13 @@ final class AIAssistantModel {
 
     func removeSection(_ leaf: String) {
         picks.removeAll { $0.leaf == leaf }
-        if !picks.contains(where: { $0.draftId != nil }) { draftScenes = nil }
+        dropDraftScenesIfUnused()
+    }
+
+    /// The scene list of a chosen draft or screenplay goes when no pick has either. A screenplay's list is
+    /// loaded with no draft id, and the current draft's scenes would be refused as another screenplay's.
+    private func dropDraftScenesIfUnused() {
+        if !picks.contains(where: { $0.draftId != nil || $0.screenplayId != nil }) { draftScenes = nil }
     }
 
     private func update(_ leaf: String, _ change: (inout AISectionChoice) -> Void) {
@@ -273,12 +274,9 @@ final class AIAssistantModel {
             return
         }
         let chosen = picks.map(\.pick)
-        // The core reads the picks; this scope is the field it still requires until the agent moves
-        // to sections too (ADR-0041, slice R6).
-        let scope = AiScopeArgs(kind: .wholeProject, selection: [])
         do {
             let exchange = try await core.aiAsk(
-                AiAskArgs(text: question, scope: scope, conversationId: conversationId, sections: chosen))
+                AiAskArgs(text: question, conversationId: conversationId, sections: chosen))
             conversation = .some(exchange.conversationId)
             askedPicks = chosen
             await loadHistory()

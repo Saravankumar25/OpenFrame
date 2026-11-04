@@ -26,7 +26,7 @@ struct AIPanelView: View {
         .accessibilityLabel("AI Assistant")
         .accessibilityIdentifier("ai-panel")
         .onAppear { makeModels() }
-        .onChange(of: AIScopeHints.shared.context(for: workspace)) { _, new in model?.setContext(new) }
+        .onChange(of: workspace) { _, new in model?.workspace = new }
         .task(id: app.isRunning) { await poll() }
     }
 
@@ -37,7 +37,7 @@ struct AIPanelView: View {
             d.pickFile = { AIFilePicker.chooseModelFile() }
             download = d
         }
-        model?.setContext(AIScopeHints.shared.context(for: workspace))
+        model?.workspace = workspace
     }
 
     /// Reads the engine state while the panel is open; faster while a download runs.

@@ -22,7 +22,7 @@ use super::dossier::{Fact, FetchFn, P_LOW};
 use super::index::Kind;
 use super::queries::{self, DraftRef, SceneRow};
 use super::retrieval::{self, RetrievalRoute, RetrieveRequest};
-use crate::core::AppCore;
+use crate::core::{AppCore, ProjectSession};
 use crate::modules::production::privacy::may_see_contacts;
 use crate::modules::schedule::board;
 
@@ -30,6 +30,8 @@ use crate::modules::schedule::board;
 pub const MAX_PICKS: usize = 3;
 /// How many text passages one leaf may add; the budget cuts them first.
 const PASSAGES_PER_LEAF: usize = 4;
+/// The most characters of a draft or call sheet name in the "Using:" line.
+const MAX_LABEL_NAME: usize = 60;
 /// Longest text of one passage.
 const PASSAGE_CHARS: usize = 900;
 /// The fixed reply to a request with no section. No model runs.
@@ -1187,7 +1189,8 @@ fn resolve_pick(c: &Connection, l: &'static Leaf, p: &SectionPick) -> AppResult<
         Some(id) => {
             let row: Option<(String, String)> = c
                 .query_row(
-                    "SELECT id, title FROM call_sheet WHERE id = ?1 AND deleted_at IS NULL",
+                    "SELECT id, title FROM call_sheet
+                     WHERE id = ?1 AND deleted_at IS NULL AND superseded_by IS NULL",
                     [id],
                     |r| Ok((r.get(0)?, r.get(1)?)),
                 )
@@ -1231,6 +1234,12 @@ fn resolve_day(c: &Connection, id: &str) -> AppResult<PickedDay> {
     }
 }
 
+/// A name the person typed, inside the "Using:" line: on one line and short.
+fn in_label(name: &str) -> String {
+    let one_line = name.split_whitespace().collect::<Vec<_>>().join(" ");
+    queries::truncate_chars(&one_line, MAX_LABEL_NAME)
+}
+
 /// "Screenplay (Draft 2, all scenes)", "Breakdown (Scene 4)", "Schedule (Day 3)", "Budget".
 fn pick_label(
     l: &Leaf,
@@ -1245,12 +1254,12 @@ fn pick_label(
             None => "all scenes".to_string(),
         };
         return match draft {
-            Some(d) => format!("{} ({}, {which})", l.title, d.label()),
+            Some(d) => format!("{} ({}, {which})", l.title, in_label(&d.label())),
             None => format!("{} ({which})", l.title),
         };
     }
     if let Some(s) = sheet {
-        return format!("{} ({})", l.title, queries::truncate_chars(&s.title, 60));
+        return format!("{} ({})", l.title, in_label(&s.title));
     }
     if let Some(d) = day {
         return match d.number {
@@ -1290,7 +1299,13 @@ impl Retrieved {
 /// rule. Without vectors the same call is full text inside the leaf, and `degraded` says so. A leaf
 /// narrowed to one instance reads that instance through its fetchers instead: search would bring
 /// back its neighbours.
-pub fn retrieve(core: &AppCore, actor: &Actor, selection: &Selection, query: &str) -> Retrieved {
+pub fn retrieve(
+    core: &AppCore,
+    session: &ProjectSession,
+    actor: &Actor,
+    selection: &Selection,
+    query: &str,
+) -> Retrieved {
     let mut out = Retrieved::default();
     for p in &selection.picks {
         let mut facts = Vec::new();
@@ -1303,7 +1318,7 @@ pub fn retrieve(core: &AppCore, actor: &Actor, selection: &Selection, query: &st
                 route: RetrievalRoute::HybridGraph,
                 nav: Some(p.leaf.search),
             };
-            match retrieval::retrieve(core, actor, &req) {
+            match retrieval::retrieve(core, session, actor, &req) {
                 Ok(packet) => {
                     out.degraded |= packet.degraded;
                     for (i, item) in packet.items.iter().enumerate() {
@@ -1488,7 +1503,7 @@ pub fn sections_op(core: &AppCore, actor: &Actor, args: SectionsArgs) -> AppResu
         };
         let mut st = c.prepare(
             "SELECT id, title FROM call_sheet WHERE deleted_at IS NULL AND superseded_by IS NULL
-             ORDER BY created_at, revision LIMIT 200",
+             ORDER BY created_at, revision LIMIT 100",
         )?;
         let call_sheets = st
             .query_map(params![], |r| {

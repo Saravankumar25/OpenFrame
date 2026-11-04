@@ -185,8 +185,8 @@ fn worker() {
     }
 }
 
-/// Turn a schema-19 project database back into a genuine schema-10 one (0019 only adds
-/// `story_page.format`; 0018 only adds `ai_memory`; 0017 only adds the `story_page` table; 0016 only adds
+/// Turn a schema-20 project database back into a genuine schema-10 one (0020 only drops
+/// `ai_request.scope_kind`; 0019 only adds `story_page.format`; 0018 only adds `ai_memory`; 0017 only adds the `story_page` table; 0016 only adds
 /// `budget_line.actual` and maps call sheet status words, which the older schema also allows; 0015 only adds the
 /// schedule day times, strip start, Day Out of Days code style and corrections table; 0014 only adds the
 /// breakdown category styles, availability windows and three location and crew columns; 0011 only adds the
@@ -199,6 +199,17 @@ fn downgrade_to_v10(project: &str) {
     let mut v: i64 = c
         .query_row("PRAGMA user_version", [], |r| r.get(0))
         .unwrap();
+    if v == 20 {
+        let tx = c.transaction().unwrap();
+        tx.execute_batch(
+            "ALTER TABLE ai_request ADD COLUMN scope_kind TEXT NOT NULL DEFAULT 'WholeProject';
+             DELETE FROM _schema_migrations WHERE version = 20;
+             PRAGMA user_version = 19;",
+        )
+        .unwrap();
+        tx.commit().unwrap();
+        v = 19;
+    }
     if v == 19 {
         let tx = c.transaction().unwrap();
         tx.execute_batch(

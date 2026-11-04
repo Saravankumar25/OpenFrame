@@ -46,6 +46,11 @@ impl ResolvedScope {
         }
     }
 
+    /// What the request read, for the sources of an answer: "Budget + Cast & Crew".
+    pub fn basis(&self) -> &str {
+        self.label.trim_start_matches("Using: ")
+    }
+
     /// Every section, on the current draft: a stored proposal checked again, whichever sections it was
     /// made under.
     pub fn on_current_draft(c: &Connection) -> AppResult<Self> {

@@ -349,6 +349,7 @@ fn ask(env: &TestEnv, actor: &Actor, q: &str, route: Option<RetrievalRoute>) -> 
     let route = route.unwrap_or(RetrievalRoute::HybridGraph);
     retrieval::retrieve(
         &env.core,
+        &env.core.project().unwrap(),
         actor,
         &RetrieveRequest {
             query: q.into(),
@@ -1006,6 +1007,7 @@ fn spec_20_a_picked_draft_keeps_other_drafts_out() {
     let actor = env.actor();
     let p = retrieval::retrieve(
         &env.core,
+        &env.core.project().unwrap(),
         &actor,
         &RetrieveRequest {
             query: "railway station night".into(),
@@ -1031,6 +1033,7 @@ fn retrieval_inherits_permissions_and_bounds_its_input() {
     let export_only = env.actor_with_role(Role::ExportOnly);
     let err = retrieval::retrieve(
         &env.core,
+        &env.core.project().unwrap(),
         &export_only,
         &RetrieveRequest {
             query: "railway".into(),
@@ -1048,6 +1051,7 @@ fn retrieval_inherits_permissions_and_bounds_its_input() {
     let long = "x".repeat(retrieval::MAX_QUERY_CHARS + 1);
     let err = retrieval::retrieve(
         &env.core,
+        &env.core.project().unwrap(),
         &env.actor(),
         &RetrieveRequest {
             query: long,
@@ -1061,6 +1065,7 @@ fn retrieval_inherits_permissions_and_bounds_its_input() {
     assert!(err.is("validation"));
     let p = retrieval::retrieve(
         &env.core,
+        &env.core.project().unwrap(),
         &env.actor(),
         &RetrieveRequest {
             query: "station night ravi anjali mustang".into(),

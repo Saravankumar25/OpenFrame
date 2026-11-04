@@ -52,7 +52,7 @@ fn checks() -> Vec<(String, String, PointerCheck)> {
                 continue;
             }
             let sel = picks_of(&core, case, &ix).unwrap();
-            let retrieved = sections::retrieve(&core, &actor, &sel, message);
+            let retrieved = sections::retrieve(&core, &session, &actor, &sel, message);
             let leaf_read = dossier::LeafRead {
                 selection: &sel,
                 passages: &retrieved.passages,

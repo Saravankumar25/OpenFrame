@@ -193,7 +193,7 @@ struct AIAssistantTests {
         defer { r.close() }
         r.model.picks = []
         for ws in [Workspace.home, .story, .screenplay, .production, .callSheets] {
-            r.model.setContext(AIScopeContext(workspace: ws, sceneId: "s1"))
+            r.model.workspace = ws
             #expect(r.model.picks.isEmpty, "\(ws)")
         }
     }
@@ -280,6 +280,26 @@ struct AIAssistantTests {
         #expect(r.model.draftScenes == nil, "the chosen draft's scenes go with its section")
     }
 
+    @Test func theScenesOfAChosenScreenplayStayWhenAnotherSectionChanges() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        let drafts = [AiSectionDraft(id: "d2", screenplayId: "sp2", screenplayTitle: "Second", name: "Draft 1", isCurrent: true)]
+        r.model.sections = AiSections(
+            branches: [], drafts: drafts, scenes: [AiSectionInstance(id: "current", label: "Scene 1")], days: [], callSheets: [], maxPicks: 3)
+        stub.reply("ai.sections", AiSections(
+            branches: [], drafts: drafts, scenes: [AiSectionInstance(id: "second", label: "Scene 1")], days: [], callSheets: [], maxPicks: 3))
+        r.model.picks = [AISectionChoice(leaf: "screenplay/scenes")]
+        await r.model.chooseScreenplay("sp2", for: "screenplay/scenes")
+        #expect(r.model.picks[0].draftId == nil, "a chosen screenplay has no draft id")
+        #expect(r.model.draftScenes?.map(\.id) == ["second"])
+        r.model.toggleSection("files/files")
+        r.model.removeSection("files/files")
+        #expect(r.model.draftScenes?.map(\.id) == ["second"], "the list of the chosen screenplay stays")
+        r.model.removeSection("screenplay/scenes")
+        #expect(r.model.draftScenes == nil)
+    }
+
     @Test func theLineShowsTheStoredLabelUntilThePicksChange() async throws {
         let stub = AIStubCore()
         let r = try Rig.stubbed(stub)
@@ -291,18 +311,6 @@ struct AIAssistantTests {
         #expect(r.model.usingLabel == "Using: Budget (from the core)")
         r.model.toggleSection("files/files")
         #expect(r.model.usingLabel.hasPrefix("Using: production/budget"), "the picks changed: \(r.model.usingLabel)")
-    }
-
-    @Test func workspacesHandTheirOpenSceneToTheAssistant() async throws {
-        let hints = AIScopeHints.shared
-        hints.sceneId = "scene-9"
-        hints.draftId = "draft-2"
-        defer { hints.sceneId = nil; hints.draftId = nil }
-        let screenplay = hints.context(for: .screenplay)
-        #expect(screenplay.sceneId == "scene-9" && screenplay.draftId == "draft-2")
-        // Another workspace does not inherit the screenplay's scene.
-        let story = hints.context(for: .story)
-        #expect(story.sceneId == nil && story.draftId == nil)
     }
 
     // MARK: Scenario 74: reviewing a change set

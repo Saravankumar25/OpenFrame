@@ -76,12 +76,17 @@ static HINTS: LazyLock<Vec<(Regex, &'static [&'static str])>> = LazyLock::new(||
         t(r"fees?", &["production/budget", "production/locations"]),
         t(r"locations?|address(?:es)?", &["production/locations"]),
         t(
-            r"phone|e-?mail|mobile|whatsapp|contact|available|unavailable|availability",
+            r"phone|e-?mail|mobile|whatsapp|contact",
             &[
                 "production/cast-crew",
                 "production/locations",
                 "callsheets/callsheets",
             ],
+        ),
+        // A call sheet lists who is called, not when anyone is free.
+        t(
+            r"available|unavailable|availability",
+            &["production/cast-crew", "production/locations"],
         ),
         t(
             r"who plays|plays|played by|playing|actors?|actress|cast|crew|director|producer|gaffer|cinematographer",

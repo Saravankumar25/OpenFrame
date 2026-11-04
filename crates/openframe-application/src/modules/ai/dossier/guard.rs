@@ -18,6 +18,16 @@ use regex::Regex;
 use super::Fact;
 use crate::modules::production::privacy::may_see_contacts;
 
+/// Text a tool hands back, for a person who may or may not see contact data: a phone number or an email
+/// typed into a note is hidden the way it is on the question path.
+pub fn tool_text(actor: &Actor, text: &str) -> String {
+    if may_see_contacts(actor) {
+        text.to_string()
+    } else {
+        hide_contacts(text).0
+    }
+}
+
 /// What the person is told when contact data was left out.
 pub const NOT_FOR_YOUR_ROLE: &str = "Contact details are not shown for your role.";
 

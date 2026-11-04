@@ -270,7 +270,7 @@ describe("AI Assistant panel", () => {
     await waitFor(() => expect(calls.some((c) => c.op === "ai.change_set.recheck")).toBe(true));
   });
 
-  it("sends the request with the chosen scope and runs navigation directly", async () => {
+  it("sends the request with the section picks and runs navigation directly", async () => {
     status = { ...status, mode: "Local model", runtimeState: "Ready" };
     askReply = exchange("3", "Open scene 2", { kind: "Navigate", content: "Opening Scene 2 in the Screenplay.", nav: { workspace: "screenplay", params: { sceneId: "s2" } } });
     renderPanel();
@@ -280,6 +280,7 @@ describe("AI Assistant panel", () => {
     await waitFor(() => expect(useNav.getState().route).toEqual({ workspace: "screenplay", params: { sceneId: "s2" } }));
     const ask = calls.find((c) => c.op === "ai.ask")!;
     expect(ask.args.text).toBe("Open scene 2");
-    expect((ask.args.scope as { kind: string }).kind).toBe("WholeProject");
+    expect(ask.args.sections).toEqual([]);
+    expect(ask.args).not.toHaveProperty("scope");
   });
 });

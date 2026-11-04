@@ -8,15 +8,12 @@ import {
   changeSetActions,
   changeSetStateText,
   confidenceLabel,
-  defaultScope,
   formatBytes,
   indexNotice,
   indexStateOf,
   offReason,
   damagedModels,
   panelMode,
-  scopeArgs,
-  scopeOptions,
   sourceChips,
   stepsSummary,
   toRoute,
@@ -34,32 +31,6 @@ function cs(state: string, extra: Partial<AiChangeSetDto> = {}): AiChangeSetDto 
 function status(p: Partial<AiStatusDto>): AiStatusDto {
   return { available: false, mode: "Off", bundleState: "Missing", problem: null, runtimeState: "Unavailable", runtimeMessage: null, localOnly: true, ...p };
 }
-
-describe("scope resolution", () => {
-  it("inherits the current scene in the Screenplay", () => {
-    const route = { workspace: "screenplay" as const, params: { sceneId: "s1", draftId: "d1" } };
-    expect(defaultScope(route)).toBe("CurrentScene");
-    expect(scopeArgs("CurrentScene", route)).toEqual({ kind: "CurrentScene", draftId: null, sceneId: "s1", selection: [], shootingDayId: null, callSheetId: null });
-    expect(scopeArgs("SpecificDraft", route).draftId).toBe("d1");
-  });
-
-  it("offers only scopes that have a target", () => {
-    const opts = scopeOptions({ workspace: "home" });
-    expect(opts).not.toContain("CurrentScene");
-    expect(opts).not.toContain("CurrentSelection");
-    expect(opts[opts.length - 1]).toBe("WholeProject");
-    expect(defaultScope({ workspace: "home" })).toBe("WholeProject");
-    expect(defaultScope({ workspace: "story" })).toBe("StoryBoard");
-  });
-
-  it("uses the Idea Vault selection in the Idea Vault", () => {
-    const route = { workspace: "vault" as const, params: { itemId: "v1" } };
-    expect(defaultScope(route)).toBe("IdeaVaultSelection");
-    expect(scopeArgs("IdeaVaultSelection", route).selection).toEqual([{ id: "v1" }]);
-    // Selection ids are never sent for unrelated scopes (minimal context).
-    expect(scopeArgs("WholeProject", route).selection).toEqual([]);
-  });
-});
 
 describe("navigation targets", () => {
   it("maps known workspaces and ignores unknown ones", () => {

@@ -40,18 +40,39 @@ pub fn call_sheets_section(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) ->
             .picked
             .and_then(|p| p.call_sheet.as_ref())
             .map(|s| s.id.as_str());
+        let day = ctx.picked.and_then(|p| p.day.as_ref());
         let want = named_days(ctx, r);
-        let narrowed = sheet.is_some() || !want.is_empty();
+        let narrowed = sheet.is_some() || day.is_some() || !want.is_empty();
         let mut facts = call_sheets(ctx, read, &want, narrowed)?;
         if let Some(id) = sheet {
             facts.retain(|f| f.record_id == id);
+        }
+        if let Some(day) = day.filter(|d| d.number.is_none()) {
+            let on_that_day = sheets_of_day(ctx, &day.id)?;
+            facts.retain(|f| on_that_day.contains(&f.record_id));
         }
         Ok(facts)
     })
 }
 
-/// The shooting days a message names: the resolved ones and "day 4".
+/// The current call sheets of one day.
+fn sheets_of_day(ctx: &FetchCtx<'_>, day_id: &str) -> AppResult<Vec<String>> {
+    let mut st = ctx.conn.prepare(
+        "SELECT id FROM call_sheet
+         WHERE shoot_day_id = ?1 AND deleted_at IS NULL AND superseded_by IS NULL",
+    )?;
+    Ok(st
+        .query_map([day_id], |r| r.get(0))?
+        .collect::<Result<_, _>>()?)
+}
+
+/// The shooting days a message names: the resolved ones and "day 4". A day the person picked replaces
+/// them: "Day 4" in the message does not widen a pick of Day 3. An off day has no number, so a pick of
+/// one names no day here and [`call_sheets_section`] holds it by its id.
 pub fn named_days(ctx: &FetchCtx<'_>, r: &Resolved) -> Vec<u32> {
+    if let Some(day) = ctx.picked.and_then(|p| p.day.as_ref()) {
+        return day.number.into_iter().collect();
+    }
     let mut out: Vec<u32> = r
         .days
         .iter()

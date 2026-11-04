@@ -695,7 +695,10 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
             route: retrieval::RetrievalRoute::HybridGraph,
             nav: None,
         };
-        match retrieval::retrieve(core, &actor, &req) {
+        match core
+            .project()
+            .and_then(|session| retrieval::retrieve(core, &session, &actor, &req))
+        {
             Ok(packet) => {
                 for src in &packet.sources {
                     let n = match src.entity_type.as_str() {

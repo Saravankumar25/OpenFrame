@@ -47,7 +47,7 @@ use super::tools::ToolOutput;
 use super::turn::{self, AnswerType, Group, TurnRead};
 use super::types::*;
 use super::{cancel, change_set, commands, trace};
-use crate::core::AppCore;
+use crate::core::{AppCore, ProjectSession};
 use crate::events::AppEvent;
 
 #[derive(Debug, Deserialize, TS)]
@@ -278,7 +278,7 @@ fn is_stopped(o: &ToolOutput) -> bool {
 /// A request row that was opened and not closed. If the request ends by any road but `persist`
 /// (an error, a panic), the row is closed as Failed so none stays Running.
 struct Unfinished<'a> {
-    core: &'a AppCore,
+    session: &'a ProjectSession,
     actor: &'a Actor,
     id: &'a str,
     open: bool,
@@ -295,8 +295,10 @@ impl Drop for Unfinished<'_> {
         if !self.open {
             return;
         }
-        if let Ok(s) = self.core.project() {
-            let _ = s.store.mutate(self.actor, ai_meta("ai.ask"), |tx| {
+        let _ = self
+            .session
+            .store
+            .mutate(self.actor, ai_meta("ai.ask"), |tx| {
                 records::finish_request(
                     tx,
                     self.id,
@@ -310,7 +312,6 @@ impl Drop for Unfinished<'_> {
                     },
                 )
             });
-        }
     }
 }
 
@@ -715,7 +716,7 @@ fn ask_without_section(
     };
     let outcome = fixed(AiResultKind::Answer, sections::PICK_A_SECTION);
     let stages = json!({ "path": path::FIXED, "sections": sections::stage_json(&trace_row) });
-    persist(core, actor, &request_id, outcome, &stages)?;
+    persist(&s, actor, &request_id, outcome, &stages)?;
     trace::record(
         core,
         &trace::TraceRow {
@@ -849,7 +850,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         turn_read.group,
         Group::Facts | Group::Narrative | Group::Brainstorm
     )
-    .then(|| sections::retrieve(core, actor, &selection, &text));
+    .then(|| sections::retrieve(core, &s, actor, &selection, &text));
     let leaf_read = dossier::LeafRead {
         selection: &selection,
         passages: retrieved
@@ -938,7 +939,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         )
     })?;
     let mut unfinished = Unfinished {
-        core,
+        session: &s,
         actor,
         id: &request_id,
         open: true,
@@ -1060,7 +1061,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             .as_ref()
             .map_or("", |w| w.answered.shown.fallback_code()),
     );
-    persist(core, actor, &request_id, outcome, &stages)?;
+    persist(&s, actor, &request_id, outcome, &stages)?;
     unfinished.close();
     // What the person stated outright or confirmed is remembered (spec 5.7).
     memory::remember(&s, actor, &request_id, &text, &turn_memory, &memory_ids);
@@ -1117,13 +1118,12 @@ fn put_pointer(out: &mut ToolOutput, p: &Pointer) {
 }
 
 fn persist(
-    core: &AppCore,
+    s: &ProjectSession,
     actor: &Actor,
     request_id: &str,
     o: Outcome,
     stages: &Value,
 ) -> AppResult<()> {
-    let s = core.project()?;
     let result_id = new_id();
     let request_status = if o.status == AiResultStatus::Failed {
         "Failed"

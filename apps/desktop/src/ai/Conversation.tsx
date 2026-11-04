@@ -10,13 +10,13 @@
 // - While the project context is rebuilt, a short notice explains that answers
 //   may use fewer sources. No model names or technical details appear here.
 
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import { Download } from "lucide-react";
 import { OpError, call, onAppEvent } from "../ipc/client";
 import { reportError, useOp } from "../ipc/query";
-import { Banner, Button, Chip, IconButton, Select, TextArea } from "../design-system";
+import { Banner, Button, Chip, IconButton, TextArea } from "../design-system";
 import { useNav } from "../app/stores";
 import { toast } from "../app/toast";
 import type { AiCancelDto } from "../ipc/generated/AiCancelDto";
@@ -25,17 +25,12 @@ import type { AiStatusDto } from "../ipc/generated/AiStatusDto";
 import type { AiHistoryDto } from "../ipc/generated/AiHistoryDto";
 import type { AiExchange } from "../ipc/generated/AiExchange";
 import type { AiResultDto } from "../ipc/generated/AiResultDto";
-import type { AiScopeKind } from "../ipc/generated/AiScopeKind";
 import {
-  SCOPE_LABELS,
   UNAVAILABLE_TEXT,
   confidenceLabel,
-  defaultScope,
   indexNotice,
   indexStateOf,
   runtimeLabel,
-  scopeArgs,
-  scopeOptions,
   sourceChips,
   stepsSummary,
   toRoute,
@@ -100,10 +95,7 @@ function useIndexNotice() {
 
 export default function Assistant({ status, hasProject }: { status: AiStatusDto; hasProject: boolean }) {
   const qc = useQueryClient();
-  const route = useNav((s) => s.route);
   const go = useNav((s) => s.go);
-  const options = useMemo(() => scopeOptions(route), [route]);
-  const [scope, setScope] = useState<AiScopeKind>(() => defaultScope(route));
   const [conversation, setConversation] = useState<string | null | undefined>(undefined);
   const [text, setText] = useState("");
   const [pending, setPending] = useState<string | null>(null);
@@ -112,7 +104,6 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
   const [stopping, setStopping] = useState(false);
   const progress = useProgress(running);
   const endRef = useRef<HTMLDivElement>(null);
-  const effectiveScope = options.includes(scope) ? scope : defaultScope(route);
   const notice = useIndexNotice();
 
   const history = useOp<AiHistoryDto>("ai.history", { conversationId: conversation ?? null, limit: 50 }, HISTORY_TABLES, {
@@ -179,7 +170,6 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
     setText("");
     call<AiExchange>("ai.ask", {
       text: q,
-      scope: scopeArgs(effectiveScope, route),
       conversationId: conversationForAsk,
       // The section picker is not built in this shell yet (ADR-0041, Windows session): with no
       // section the core answers with a fixed sentence and runs no model.
@@ -213,7 +203,6 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
   };
 
   const rl = runtimeLabel(status.runtimeState);
-  const usingLabel = last && last.scopeLabel && scopeOfLast(last) === effectiveScope ? last.scopeLabel : `Using: ${SCOPE_LABELS[effectiveScope]}`;
 
   if (!hasProject) {
     return (
@@ -230,17 +219,7 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
     <>
       <div className="body" style={{ paddingBottom: 0 }}>
         <div className="row">
-          <label className="xs muted" htmlFor="ai-scope">
-            Scope
-          </label>
-          <div style={{ flex: 1 }}>
-            <Select<AiScopeKind>
-              id="ai-scope"
-              value={effectiveScope}
-              onChange={setScope}
-              options={options.map((k) => ({ value: k, label: SCOPE_LABELS[k] }))}
-            />
-          </div>
+          <div style={{ flex: 1 }} />
           <IconButton label="Save conversation for review" disabled={!conversationId} onClick={() => void saveForReview()}>
             <Download size={14} />
           </IconButton>
@@ -248,7 +227,7 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
             New
           </Button>
         </div>
-        <div className="xs muted">{usingLabel}</div>
+        {last?.scopeLabel && <div className="xs muted">{last.scopeLabel}</div>}
         {status.runtimeState === "Failed" && (
           <Banner tone="warn">{status.runtimeMessage ?? UNAVAILABLE_TEXT} Ask again to restart it.</Banner>
         )}
@@ -302,13 +281,6 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
       </div>
     </>
   );
-}
-
-function scopeOfLast(x: AiExchange): AiScopeKind | null {
-  for (const [k, label] of Object.entries(SCOPE_LABELS) as [AiScopeKind, string][]) {
-    if (x.scopeLabel === `Using: ${label}`) return k;
-  }
-  return null;
 }
 
 function ExchangeView({ x, onChanged }: { x: AiExchange; onChanged: () => void }) {

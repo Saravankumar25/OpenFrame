@@ -86,7 +86,7 @@ struct AIConversationView: View {
                         // Questions to start with, for this page: one click asks them.
                         Text("Try asking").font(.caption.weight(.semibold)).foregroundStyle(theme["ink2"])
                         VStack(alignment: .leading, spacing: 6) {
-                            ForEach(AIText.starterQuestions(for: model.context.workspace), id: \.self) { q in
+                            ForEach(AIText.starterQuestions(for: model.workspace), id: \.self) { q in
                                 Button {
                                     model.text = q
                                     model.send()

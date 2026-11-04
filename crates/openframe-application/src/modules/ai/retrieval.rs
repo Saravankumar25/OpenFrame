@@ -25,7 +25,7 @@ use ts_rs::TS;
 use super::intelligence::{self, assembler, retriever};
 use super::sections::NavRule;
 use super::types::{NavTarget, Provenance};
-use crate::core::AppCore;
+use crate::core::{AppCore, ProjectSession};
 use crate::registry::Registry;
 
 /// Upper bound on returned items (contract: `limit ≤ 24`).
@@ -115,17 +115,13 @@ pub enum IndexState {
 }
 
 /// Where one context item came from (index-aligned with `items`/`provenance`).
-#[derive(Debug, Clone, PartialEq, Serialize, TS)]
-#[ts(export)]
-#[ts(rename = "AiContextSource")]
-#[serde(rename_all = "camelCase")]
+#[derive(Debug, Clone, PartialEq)]
 pub struct ContextSource {
     /// Canonical entity type (table), e.g. "screenplay_scene".
     pub entity_type: String,
     pub entity_id: String,
     pub module: String,
     /// Navigation target (same shape as Global Search results).
-    #[ts(type = "unknown")]
     pub nav: Value,
     /// "lexical" | "semantic" | "graph"
     pub via: String,
@@ -176,10 +172,17 @@ pub fn index_status(core: &AppCore) -> IndexState {
     }
 }
 
-pub fn retrieve(core: &AppCore, actor: &Actor, req: &RetrieveRequest) -> AppResult<ContextPacket> {
+/// Search `session`, the project the question was asked in. If the person closed it or opened another
+/// meanwhile the search still reads this one: the index of the project open now is left out, and the
+/// answer says the context is still being prepared.
+pub fn retrieve(
+    core: &AppCore,
+    session: &ProjectSession,
+    actor: &Actor,
+    req: &RetrieveRequest,
+) -> AppResult<ContextPacket> {
     actor.require(Capability::UseAi, "use the assistant")?;
     actor.require(Capability::View, "view this project")?;
-    let session = core.project()?;
     if req.query.chars().count() > MAX_QUERY_CHARS {
         return Err(AppError::invalid_input("That question is too long."));
     }
@@ -187,7 +190,7 @@ pub fn retrieve(core: &AppCore, actor: &Actor, req: &RetrieveRequest) -> AppResu
         0 => DEFAULT_ITEMS,
         n => n.min(MAX_ITEMS),
     };
-    let ix = intelligence::activate(core);
+    let ix = intelligence::activate(core).filter(|ix| ix.project_id == session.project_id());
     let snapshot = ix.as_ref().map(|i| i.snapshot());
     let index_state = snapshot
         .as_ref()
@@ -195,14 +198,14 @@ pub fn retrieve(core: &AppCore, actor: &Actor, req: &RetrieveRequest) -> AppResu
         .unwrap_or(IndexState::Unavailable);
     let gathered = retriever::gather(
         core,
-        &session,
+        session,
         actor,
         ix.as_deref(),
         snapshot.as_ref(),
         req,
         limit,
     )?;
-    let assembled = assembler::assemble(core, &session, actor, req, &gathered, limit)?;
+    let assembled = assembler::assemble(core, session, actor, req, &gathered, limit)?;
     let degraded = gathered.degraded || assembled.degraded;
     Ok(ContextPacket {
         items: assembled.items,

@@ -9,6 +9,8 @@
 //! - **numbers**: a digit number exists in the facts or the request. Both sides are written the same
 //!   way first: Indian and western grouping, ordinals, month names. A number *word* in the answer
 //!   ("one option", "two") is never checked: only a digit is a claim about the project.
+//! - **scene references**: every "scene N" of the answer is given as a scene by the facts, the request
+//!   or the conversation. A number the facts hold for something else does not make it true.
 //! - **required**: every value the dossier says a correct answer must state is there, normalised the
 //!   same way, so "three" meets 3 and "November 5th" meets "Nov 5".
 //! - **length**: inside the word range of the length class. Too short is soft (see `Rule::soft`).
@@ -61,6 +63,7 @@ pub(crate) enum Rule {
     ChangeClaim,
     Relationship,
     Mood,
+    SceneRef,
 }
 
 impl Rule {
@@ -82,6 +85,7 @@ impl Rule {
             Rule::ChangeClaim => "change_claim",
             Rule::Relationship => "relationship",
             Rule::Mood => "mood",
+            Rule::SceneRef => "scene_ref",
         }
     }
 
@@ -242,6 +246,37 @@ pub(crate) fn stray_numbers(answer: &str, pool: &[&str]) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
     for m in DIGITS.find_iter(&normal(answer, false)) {
         let n = trim(m.as_str());
+        if !known.contains(&n) && !out.contains(&n) {
+            out.push(n);
+        }
+    }
+    out
+}
+
+/// "scene 4", "scenes 3, 4 and 5", "scene: 4", "scenes 2 to 6".
+static SCENE_NUMBERS: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bscenes?\b[\s:#.]*(\d+(?:\s*(?:,|and|&|to|-|\u{2013})\s*\d+)*)")
+        .expect("valid pattern")
+});
+
+fn scene_numbers(text: &str) -> Vec<String> {
+    SCENE_NUMBERS
+        .captures_iter(text)
+        .flat_map(|c| {
+            DIGITS
+                .find_iter(&c[1])
+                .map(|m| m.as_str().trim_start_matches('0').to_string())
+                .collect::<Vec<_>>()
+        })
+        .collect()
+}
+
+/// Scene numbers of the answer that no text gives as a scene. A number the facts hold for something
+/// else ("7 props") does not make "scene 7" true.
+pub(crate) fn stray_scene_numbers(answer: &str, pool: &[&str]) -> Vec<String> {
+    let known: HashSet<String> = pool.iter().flat_map(|p| scene_numbers(p)).collect();
+    let mut out: Vec<String> = Vec::new();
+    for n in scene_numbers(answer) {
         if !known.contains(&n) && !out.contains(&n) {
             out.push(n);
         }
@@ -445,6 +480,10 @@ pub(crate) fn check(answer: &str, m: &Material<'_>, e: &Expect<'_>) -> Vec<Offen
     if let Some(run) = repeated_run(answer) {
         add(Rule::Repetition, vec![run]);
     }
+    let scenes = stray_scene_numbers(answer, &evidence);
+    if !scenes.is_empty() {
+        add(Rule::SceneRef, scenes);
+    }
     let refs = stray_references(answer, &evidence);
     if !refs.is_empty() {
         add(Rule::Ids, refs);
@@ -486,6 +525,7 @@ pub(crate) fn feedback(offences: &[Offence], say: &str) -> String {
         lines.push(match o.rule {
             Rule::Empty => "the answer was empty; answer the request".to_string(),
             Rule::Names => format!("names not in the project: {list}; remove them"),
+            Rule::SceneRef => format!("scenes not in the project: {list}; remove them"),
             Rule::Numbers => format!("numbers not in the project: {list}; remove them"),
             Rule::Required => format!("missing: {list}; state each of them"),
             Rule::Length => format!("length {list}; make it shorter"),

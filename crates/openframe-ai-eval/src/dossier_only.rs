@@ -154,7 +154,7 @@ pub fn run(
             let message = &conv.turns[m.turn];
             let selection = picks_of(core, case, &ix)?;
             // The same text search a request runs: it opens the store itself, so it goes first.
-            let retrieved = sections::retrieve(core, &actor, &selection, message);
+            let retrieved = sections::retrieve(core, &session, &actor, &selection, message);
             let leaf_read = dossier::LeafRead {
                 selection: &selection,
                 passages: &retrieved.passages,

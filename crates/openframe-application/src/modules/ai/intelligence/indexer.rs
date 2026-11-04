@@ -255,11 +255,6 @@ impl ProjectIndex {
         self.paused.load(Ordering::SeqCst)
     }
 
-    /// The worker is inside an embedding runtime call now.
-    pub fn is_embedding(&self) -> bool {
-        self.in_embed.load(Ordering::SeqCst)
-    }
-
     /// Stop the worker and wait (bounded) until it released every file handle.
     ///
     /// A worker blocked in the embedding runtime is detached after [`EMBED_GRACE`]

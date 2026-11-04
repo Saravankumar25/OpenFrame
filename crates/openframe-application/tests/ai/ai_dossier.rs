@@ -144,7 +144,7 @@ fn dossier_read(
         None => s.store.read(sections::every_section),
     }
     .expect("sections");
-    let retrieved = sections::retrieve(&env.core, actor, &selection, message);
+    let retrieved = sections::retrieve(&env.core, &s, actor, &selection, message);
     let leaf_read = dossier::LeafRead {
         selection: &selection,
         passages: &retrieved.passages,
