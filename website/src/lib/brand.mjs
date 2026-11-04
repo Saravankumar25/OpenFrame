@@ -60,4 +60,4 @@ export function rebrandDom(o) {
 }
 
 // True when text still holds the old name outside the kept domains (for checks).
-export const hasOldName = (t) => new RegExp(`${NAME}${KEEP}`).test(t);
+export const hasOldName = (t) => new RegExp(`(?<!@)${NAME}${KEEP}`).test(t); // the same forms the name rule renames
