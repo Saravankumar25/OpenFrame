@@ -21,6 +21,7 @@ import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
 import { BRAND_RULES, makeRebrand, rebrand, hasOldName } from '../src/lib/brand.mjs';
+import { collectNameText, makeRenderer, repaintPicture, donorFinder, nameRx } from './mac-repaint.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const RES = path.join(ROOT, 'research');
@@ -48,7 +49,8 @@ const saveManifest = () => { // merge into whatever is on disk, so two runs (mac
 };
 const mtime = (f) => { try { return fs.statSync(f).mtimeMs; } catch { return 0; } };
 const BRAND_JS = path.join(ROOT, 'src', 'lib', 'brand.mjs');
-const stamp = Math.max(mtime(OVR), mtime(import.meta.filename), mtime(BRAND_JS));
+const REPAINT_JS = path.join(ROOT, 'scripts', 'mac-repaint.mjs');
+const stamp = Math.max(mtime(OVR), mtime(import.meta.filename), mtime(BRAND_JS), mtime(REPAINT_JS));
 const pagePath = (plat, theme, file) => path.join(PAGES, plat, theme, file);
 const isFresh = (plat, rec, srcTime) => !FORCE && !!manifest[plat][rec.name]?.page && THEMES.every((t) => mtime(pagePath(plat, t, rec.file)) >= Math.max(srcTime, stamp));
 const round = (r) => r.map((v) => Math.round(v));
@@ -57,7 +59,22 @@ const writeFile = (f, text) => { // every text written into the pages gets the p
   text = rebrand(text); if (hasOldName(text)) { leftovers++; console.error('OLD NAME LEFT', path.relative(ROOT, f)); }
   fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, text);
 };
-const BRAND = { brand: BRAND_RULES, brandFn: makeRebrand.toString() }; // the rename rules, rebuilt inside the page
+// Paths and account names from the capture machines, as [regex source, flags, replacement], in order. The capture's temporary
+// folder becomes Maya's home folder; its capture data folder her Straft library, its package and source folders her Documents.
+const SCRUB = [
+  ['[A-Za-z]:\\\\(?:[^\\\\\\r\\n"<>]+\\\\)*?zz-capture\\\\home\\\\', 'gi', 'C:\\Users\\Maya\\'],
+  ['[A-Za-z]:\\\\Users\\\\[^\\\\\\r\\n"<>]+', 'gi', 'C:\\Users\\Maya'],
+  ['(?:/private)?/var/folders/[^\\s/"<>]+/[^\\s/"<>]+/T/+[^\\s/"<>]*e2e\\.[A-Za-z0-9]+', 'g', '/Users/maya'],
+  ['/Users/maya/data-zz-capture__[^/\\s"<>]+/home(?=/)', 'g', '/Users/maya'],
+  ['/Users/maya/data-zz-capture__[^/\\s"<>]+', 'g', '/Users/maya/Straft'],
+  ['/Users/maya/(?:capture-packages|pages-sources|new-library-[0-9A-Fa-f]+)(?=/)', 'g', '/Users/maya/Documents'],
+  ['/(?:var|private)/folders/[^\\s"<>]*', 'g', '/Users/maya/Straft'],
+  ['/Users/(?!maya\\b)[^/\\s"<>]+', 'g', '/Users/maya'],
+  ['Saravan Kumar', 'g', 'Maya Iyer'],
+  ['Saravan', 'g', 'Maya'],
+];
+const scrub = (t) => SCRUB.reduce((v, [src, f, r]) => v.replace(new RegExp(src, f), r), t);
+const BRAND = { brand: BRAND_RULES, brandFn: makeRebrand.toString(), scrub: SCRUB }; // the rename and scrub rules, rebuilt inside the page
 
 // ---------- the page cleaner, run inside the browser (self-contained: Playwright ships its source) ----------
 // Strips comments, capture links, paths and account names; renames the product (o.brand, o.brandFn: src/lib/brand.mjs) in text,
@@ -65,12 +82,7 @@ const BRAND = { brand: BRAND_RULES, brandFn: makeRebrand.toString() }; // the re
 // (so the page needs no inline styles); optionally re-roots the Mac window to the clean rectangle.
 function inPage(o) {
   const rb = new Function('return ' + o.brandFn)()(o.brand);
-  const scrub = (t) => rb(t
-    .replace(/[A-Za-z]:\\(?:[^\\\r\n"<>]+\\)*?zz-capture\\home\\/gi, 'C:\\Users\\Maya\\')
-    .replace(/[A-Za-z]:\\Users\\[^\\\r\n"<>]+/gi, 'C:\\Users\\Maya')
-    .replace(/\/(?:var|private)\/folders\/[^\s"<>]*/g, '/Users/maya/Straft')
-    .replace(/\/Users\/(?!maya\b)[^\/\s"<>]+/g, '/Users/maya')
-    .replace(/Saravan Kumar/g, 'Maya Iyer').replace(/Saravan/g, 'Maya'));
+  const scrub = (t) => rb(o.scrub.reduce((v, [src, f, r]) => v.replace(new RegExp(src, f), r), t));
   const baseStyle = document.querySelector('head style')?.textContent || '';
   const cls = document.documentElement.className;
   // comments and capture links
