@@ -74,16 +74,16 @@
 {"t":"count","l":"ja","m":"撮影日は全部で何日ありますか"}
 {"t":"count","l":"ko","m":"전체 장면이 몇 개인가요"}
 {"t":"explain","l":"en","m":"explain scene 14"}
-{"t":"explain","l":"en","m":"walk me through the second act"}
-{"t":"explain","l":"en","m":"summarise what happens in the opening scene"}
-{"t":"explain","l":"en","m":"describe the character of the grandmother"}
+{"t":"brief","l":"en","m":"walk me through the second act"}
+{"t":"brief","l":"en","m":"summarise what happens in the opening scene"}
+{"t":"describe","l":"en","m":"describe the character of the grandmother"}
 {"t":"explain","l":"en","m":"tell me about the ending"}
 {"t":"explain","l":"en","m":"what is the story of this film about"}
 {"t":"explain","l":"en","m":"what is going on in scene 22"}
-{"t":"explain","l":"en","m":"give me the gist of the first act"}
+{"t":"brief","l":"en","m":"give me the gist of the first act"}
 {"t":"explain","l":"en","m":"explain why the lead leaves the village"}
 {"t":"explain","l":"en","m":"what does the rooftop scene show"}
-{"t":"explain","l":"en","m":"describe the mood of the night market sequence"}
+{"t":"describe","l":"en","m":"describe the mood of the night market sequence"}
 {"t":"explain","l":"en","m":"help me understand the final scene"}
 {"t":"explain","l":"en","m":"summarize the screenplay in a few lines"}
 {"t":"explain","l":"en","m":"what is Rohan like"}
@@ -273,3 +273,66 @@
 {"t":"chat","l":"zh","m":"谢谢你"}
 {"t":"chat","l":"ja","m":"ありがとうございます"}
 {"t":"chat","l":"ko","m":"고마워요"}
+{"t":"describe","l":"en","m":"describe the character Mariamma"}
+{"t":"describe","l":"en","m":"tell me about the harbour clerk"}
+{"t":"describe","l":"en","m":"describe the harbour office location"}
+{"t":"describe","l":"en","m":"describe scene 12"}
+{"t":"describe","l":"en","m":"tell me about the character Beena"}
+{"t":"describe","l":"en","m":"describe the look of the film"}
+{"t":"describe","l":"en","m":"what is the lighthouse set like"}
+{"t":"describe","l":"en","m":"describe the fish landing centre"}
+{"t":"describe","l":"en","m":"tell me more about Salim"}
+{"t":"describe","l":"en","m":"who is Babu, describe him"}
+{"t":"describe","l":"hi","m":"मरियम्मा के बारे में बताओ"}
+{"t":"describe","l":"te","m":"మరియమ్మ గురించి వివరించండి"}
+{"t":"describe","l":"ta","m":"மரியம்மாவைப் பற்றி விவரிக்கவும்"}
+{"t":"describe","l":"kn","m":"ಮರಿಯಮ್ಮನ ಬಗ್ಗೆ ವಿವರಿಸಿ"}
+{"t":"describe","l":"ml","m":"മറിയമ്മയെ കുറിച്ച് വിവരിക്കൂ"}
+{"t":"describe","l":"es","m":"describe a Mariamma"}
+{"t":"describe","l":"fr","m":"décris Mariamma"}
+{"t":"describe","l":"de","m":"beschreibe Mariamma"}
+{"t":"describe","l":"zh","m":"描述一下玛丽亚玛这个角色"}
+{"t":"describe","l":"ja","m":"マリアンマについて説明して"}
+{"t":"describe","l":"ko","m":"마리암마에 대해 설명해 줘"}
+{"t":"brief","l":"en","m":"brief me on scene 9"}
+{"t":"brief","l":"en","m":"brief me on the third act"}
+{"t":"brief","l":"en","m":"brief me on Day 9"}
+{"t":"brief","l":"en","m":"walk me through scene 33"}
+{"t":"brief","l":"en","m":"give me a briefing on scene 41"}
+{"t":"brief","l":"en","m":"what is scene 45 about"}
+{"t":"brief","l":"en","m":"brief me on the Day 5 call sheet"}
+{"t":"brief","l":"en","m":"walk me through the storyboard for scene 3"}
+{"t":"brief","l":"en","m":"summarise scene 24"}
+{"t":"brief","l":"en","m":"recap the first sequence"}
+{"t":"brief","l":"hi","m":"मुझे दृश्य 8 का संक्षिप्त ब्यौरा दो"}
+{"t":"brief","l":"te","m":"సీన్ 8 గురించి నాకు క్లుప్తంగా చెప్పండి"}
+{"t":"brief","l":"ta","m":"காட்சி 8 பற்றி சுருக்கமாக விளக்கவும்"}
+{"t":"brief","l":"kn","m":"ದೃಶ್ಯ 8 ಬಗ್ಗೆ ನನಗೆ ಸಂಕ್ಷಿಪ್ತವಾಗಿ ತಿಳಿಸಿ"}
+{"t":"brief","l":"ml","m":"രംഗം 8 നെക്കുറിച്ച് ചുരുക്കി പറയൂ"}
+{"t":"brief","l":"es","m":"ponme al día de la escena 8"}
+{"t":"brief","l":"fr","m":"fais-moi un point sur la scène 8"}
+{"t":"brief","l":"de","m":"gib mir einen Überblick über Szene 8"}
+{"t":"brief","l":"zh","m":"给我简要介绍第8场戏"}
+{"t":"brief","l":"ja","m":"シーン8の概要を教えて"}
+{"t":"brief","l":"ko","m":"장면 8에 대해 간단히 브리핑해 줘"}
+{"t":"story_explanation","l":"en","m":"explain the first act"}
+{"t":"story_explanation","l":"en","m":"explain the third act using the scenes"}
+{"t":"story_explanation","l":"en","m":"explain the entire story act by act"}
+{"t":"story_explanation","l":"en","m":"explain the story from beginning to end"}
+{"t":"story_explanation","l":"en","m":"explain what happens in the third act"}
+{"t":"story_explanation","l":"en","m":"walk me through the beat board as a story"}
+{"t":"story_explanation","l":"en","m":"why does Mariamma keep the secret, explain"}
+{"t":"story_explanation","l":"en","m":"explain the ending"}
+{"t":"story_explanation","l":"en","m":"explain the plot"}
+{"t":"story_explanation","l":"en","m":"explain the story of the film"}
+{"t":"story_explanation","l":"hi","m":"पूरी कहानी को समझाओ"}
+{"t":"story_explanation","l":"te","m":"మొత్తం కథను వివరించండి"}
+{"t":"story_explanation","l":"ta","m":"முழு கதையையும் விளக்கவும்"}
+{"t":"story_explanation","l":"kn","m":"ಇಡೀ ಕಥೆಯನ್ನು ವಿವರಿಸಿ"}
+{"t":"story_explanation","l":"ml","m":"മുഴുവൻ കഥയും വിശദീകരിക്കൂ"}
+{"t":"story_explanation","l":"es","m":"explica la historia completa acto por acto"}
+{"t":"story_explanation","l":"fr","m":"explique toute l'histoire acte par acte"}
+{"t":"story_explanation","l":"de","m":"erkläre die ganze Geschichte Akt für Akt"}
+{"t":"story_explanation","l":"zh","m":"按幕解释整个故事"}
+{"t":"story_explanation","l":"ja","m":"物語全体を幕ごとに説明して"}
+{"t":"story_explanation","l":"ko","m":"이야기 전체를 막별로 설명해 줘"}

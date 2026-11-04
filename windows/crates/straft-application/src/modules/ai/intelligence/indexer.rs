@@ -22,14 +22,14 @@ use std::sync::{Arc, Weak};
 use std::thread::JoinHandle;
 use std::time::{Duration, Instant};
 
+use parking_lot::{Condvar, Mutex};
+use rusqlite::Connection;
 use straft_domain::{AppError, AppResult, now_ms};
 use straft_persistence::undo::RowChange;
 use straft_search::graph::{self, node_id};
 use straft_search::{
     Embedder, IndexCounts, IndexIdentity, IntelligenceDb, SearchError, SqliteVecIndex, docs, embed,
 };
-use parking_lot::{Condvar, Mutex};
-use rusqlite::Connection;
 
 use super::documents::{self, DocKey, Invalidation};
 use crate::core::AppCore;

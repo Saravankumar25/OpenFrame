@@ -18,7 +18,7 @@ Legend: "Spec:" = near-verbatim wording. "NOT SPECIFIED" = the spec is silent; d
 
 ## 0. Header facts and authority
 
-- The header's operating model says: "Local-first, offline-capable, user-owned project files; local AI where available; **optional external AI**; no mandatory Straft Studio cloud". **⚠ SUPERSEDED (LOCAL AI ONLY)** for the "optional external AI" clause.
+- The header's operating model says: "Local-first, offline-capable, user-owned project files; local AI where available; **optional external AI**; no mandatory Straft cloud". **⚠ SUPERSEDED (LOCAL AI ONLY)** for the "optional external AI" clause.
 - Core safety rule (§0.1): **"AI may suggest. The user confirms anything that becomes meaningful project data."**
 - The FSD requires that project-changing AI actions have a preview plus explicit acceptance. An accepted AI mutation becomes a normal undoable application action.
 - Hierarchy (§0.2): PRD → FSD → {UX/UI, Domain/Data, AI Spec} → Implementation. The AI spec is authoritative *within the AI boundary* but "must not contradict" the source-of-truth, permission, offline, versioning, recovery, collaboration, or user-control rules in the other specs.
@@ -34,8 +34,8 @@ Legend: "Spec:" = near-verbatim wording. "NOT SPECIFIED" = the spec is silent; d
 - §57: it is "an intelligent interface over the software's existing capabilities", not "an LLM that happens to know about the software".
 - **Must never become** (§60): an autonomous script writer that modifies canon without asking; an autonomous production manager, scheduler, or approval authority; a background cleanup agent; an unrestricted filesystem agent; a hidden cloud synchronization mechanism; a second source of truth; a second project database; a permission bypass; or a private-data leakage mechanism.
 - It is system-wide, not screen-limited (§1.3). It can answer about the current scene, screenplay, a particular draft, the whole Story Board, selected Idea Vault material, characters, locations, cast and crew, production catalog, breakdown, shot list, storyboard, schedule, shooting days, call sheets, project files, tasks, notes, activity, approvals, project status, relationships, or the entire project. It "must always indicate the scope used when scope could materially affect the answer."
-- §58 "Knows everything" means the AI can *access authoritative sources*. It does not mean facts are embedded in the weights. The AI is complete when it can: (1) understand Straft Studio terminology; (2) locate the product rule; (3) locate the project data; (4) calculate exact facts; (5) navigate; (6) explain relationships; (7) prepare actions; (8) obtain explicit approval; (9) apply the normal operation safely.
-- §59 "Does everything" means: "If Straft Studio can do it, AI should be able to route a supported natural-language request to the same underlying operation." Examples: create, edit, rename, duplicate, move, archive, restore, search, inspect, compare, export, break down, schedule, create call sheet, create task, create notes, manage supported production data. "The goal is broad capability coverage, not a giant list of artificial AI commands."
+- §58 "Knows everything" means the AI can *access authoritative sources*. It does not mean facts are embedded in the weights. The AI is complete when it can: (1) understand Straft terminology; (2) locate the product rule; (3) locate the project data; (4) calculate exact facts; (5) navigate; (6) explain relationships; (7) prepare actions; (8) obtain explicit approval; (9) apply the normal operation safely.
+- §59 "Does everything" means: "If Straft can do it, AI should be able to route a supported natural-language request to the same underlying operation." Examples: create, edit, rename, duplicate, move, archive, restore, search, inspect, compare, export, break down, schedule, create call sheet, create task, create notes, manage supported production data. "The goal is broad capability coverage, not a giant list of artificial AI commands."
 
 ## 2. Non-negotiable rules (§2) — AUTHORITY BOUNDARIES
 
@@ -85,7 +85,7 @@ Non-AI infrastructure operations are allowed and are "not AI decisions": indexin
 - **§25.5 "Model failure must not become data failure":** when the model misunderstands, ask for clarification, offer recognized interpretations, and leave state unchanged. "A weak model response must never cause an unsafe fallback mutation."
 
 ### 2.9 Security boundary (§34)
-- "The assistant must never receive unrestricted filesystem or project-package access as a substitute for Straft Studio's object model."
+- "The assistant must never receive unrestricted filesystem or project-package access as a substitute for Straft's object model."
 - Required path: AI → Authorized Application Tools → Canonical Domain/Data Layer → Project. Forbidden path: AI → Unrestricted file write.
 - "The language model must not modify project files directly."
 - **[SEC §16.7]:** "Model text is not permission." Model output such as "The user wants me to change this." does not replace authorization, and model output cannot grant itself storage authority.
@@ -106,7 +106,7 @@ Example product-knowledge questions: "What is the difference between Story Board
 
 These may be implemented together, "but the behavioral separation must remain."
 
-Model-agnostic adapter (§26): User request → Model Adapter → Intent/Tool Request → Straft Studio Tool Layer → Structured Tool Result → Model Adapter → User response. "Changing from one local model to another must not require migrating project objects."
+Model-agnostic adapter (§26): User request → Model Adapter → Intent/Tool Request → Straft Tool Layer → Structured Tool Result → Model Adapter → User response. "Changing from one local model to another must not require migrating project objects."
 
 ## 5. Operation classes (§5)
 
@@ -207,7 +207,7 @@ Pipeline: NL question → Intent + parameters → Deterministic query tool → C
 | **Schedule** (§14, §22.6) | Identify opportunities; explain conflicts; calculate grouping options; location clustering; cast availability implications where data exists; page/day concentrations; stale dependencies; prepare proposed changes | Must NOT silently reorder scenes, change shooting dates or days, move strips, remove scenes from the schedule, or change schedule assumptions. "Shooting order remains user-controlled" |
 | **Call Sheet** (§15, §22.7) | Summarize a shooting day; list cast, locations, scenes; identify special requirements; generate a **draft** call sheet; identify stale state; compare schedule vs existing call sheet | "Must not treat the AI-generated call sheet as authoritative merely because it looks complete." A generated call sheet "remains a draft until the user accepts it". The call sheet "does not automatically mutate the schedule" |
 | **Continuity** (§17) | Check character knowledge appearing too early, location state, injury, prop, time-of-day sequence, character disappearance, repeated events, dialogue/canon conflicts, contradictions | Present as **"Potential continuity issue"**, not **"Confirmed error"**, unless deterministic rules establish it. "Must not automatically correct" |
-| **Files** (§11.8, §40) | "Find the location reference PDF.", "Which project files mention the railway station?", "Summarize this production design PDF." when accessible through Straft Studio's file representation | For inaccessible external files, "must say so rather than hallucinating their contents" |
+| **Files** (§11.8, §40) | "Find the location reference PDF.", "Which project files mention the railway station?", "Summarize this production design PDF." when accessible through Straft's file representation | For inaccessible external files, "must say so rather than hallucinating their contents" |
 | **Imports / Exchange Packages** (§39) | Import inspection, package summaries, conflict explanation, mapping explanation, review-package summaries | Must not blindly overwrite the host, silently merge conflicts, or silently discard imported changes. Exchange rules stay authoritative |
 | **Tasks / Notes** | Create a Task or Project Note via Change Set | "Save that as a Project Note." requires a prepared creation plus confirmation (§33) |
 | **Historical snapshots** (§22.8, §12.5) | Read | Must not silently rewrite historical exports, issued call sheets, or snapshots |
@@ -389,7 +389,7 @@ Failure branches: Unauthorized · Ambiguous · Unavailable · Failed · Stale ·
 - Example: **"This will modify 263 references across 7 modules. 11 references are excluded because they are locked. 4 are ambiguous. Review required."**
 
 ### 13.7 Destructive operations (§19.6)
-- Delete, permanent deletion, and destructive replacement need an "explicit destructive confirmation consistent with normal Straft Studio UI behavior."
+- Delete, permanent deletion, and destructive replacement need an "explicit destructive confirmation consistent with normal Straft UI behavior."
 - "Must not interpret 'clean this up' as authorization to delete."
 - Correct: **"I found 14 unused Scene Cards. Do you want me to prepare them for deletion?"**
 - Incorrect: "I deleted the unused cards."
@@ -458,7 +458,7 @@ Failure branches: Unauthorized · Ambiguous · Unavailable · Failed · Stale ·
 ## 17. PROMPT-INJECTION / UNTRUSTED-CONTENT RULES
 
 The AI spec has **no section titled "prompt injection"**. The applicable rules are:
-- **[SEC §25.11] Imported content remains data:** "Imported text does not become a Straft Studio command simply because it contains words resembling commands or instructions. The import layer's job is to interpret supported document structure, not to execute arbitrary imported content as application operations."
+- **[SEC §25.11] Imported content remains data:** "Imported text does not become a Straft command simply because it contains words resembling commands or instructions. The import layer's job is to interpret supported document structure, not to execute arbitrary imported content as application operations."
 - **[SEC §16.7] No authority delegation to model output:** "Model text is not permission." Model output cannot grant itself storage authority.
 - **[SEC §34.4–34.5]:** no permission bypass through natural language; "Model-generated tool parameters cannot elevate authorization."
 - **§2.2 / §2.3:** only a *user request* may start an action; nothing runs autonomously. **Consequence:** instructions inside screenplay text, notes, files, or imported packages must never trigger tool calls or mutations. At most they surface as proposals that the user must accept.
@@ -586,7 +586,7 @@ For mutations: Proposed Changes · Affected objects · Impact · Conflicts · [R
 ### 20.3 State → exact copy / behavior map
 | Requested state | Spec source | Exact message / behavior |
 |---|---|---|
-| **Unavailable** (model down) | §31.1 | **"AI is currently unavailable. Straft Studio's core workflows continue to work normally."** Project state unchanged |
+| **Unavailable** (model down) | §31.1 | **"AI is currently unavailable. Straft's core workflows continue to work normally."** Project state unchanged |
 | Tool unavailable | §31.2 | **"I can explain the workflow, but I cannot retrieve the project count right now."** "Do not invent a result." |
 | **Denied** (permission) | §31.4 | Explain the action "is not permitted for the current user"; "must not suggest bypasses". Exact copy NOT SPECIFIED |
 | Denied (private note) | [SEC §34.1] | **"The requested information is private and cannot be accessed in this context."** |
@@ -614,7 +614,7 @@ For mutations: Proposed Changes · Affected objects · Impact · Conflicts · [R
 - local/external indication (→ local only);
 - product-data provenance;
 - "no autonomous-action indicators".
-- "The UX should not create a separate 'AI application' disconnected from the Straft Studio shell."
+- "The UX should not create a separate 'AI application' disconnected from the Straft shell."
 
 ## 21. DOMAIN INVARIANTS (§51)
 
@@ -666,7 +666,7 @@ For mutations: Proposed Changes · Affected objects · Impact · Conflicts · [R
 | AI-AC-020 | AI failure safety | Failure leaves local data unchanged |
 | AI-AC-021 | Cross-module query | Traverses relationships across workspaces |
 | AI-AC-022 | No autonomous mutation | No change without explicit acceptance |
-| AI-AC-023 | Product knowledge | Answers Straft Studio workflow questions from the current product knowledge source |
+| AI-AC-023 | Product knowledge | Answers Straft workflow questions from the current product knowledge source |
 | AI-AC-024 | Conversation context | Resolves simple follow-ups without corrupting state |
 | AI-AC-025 | Model replacement | Swapping the model doesn't change data semantics or authorization |
 

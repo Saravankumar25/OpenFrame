@@ -5,9 +5,9 @@
 //! screenplay, the people) and what kind of answer it was, so a long conversation keeps its thread
 //! without a second model call.
 
-use straft_domain::{Actor, AppResult};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::Value;
+use straft_domain::{Actor, AppResult};
 
 use super::approx_tokens;
 use super::rules;
@@ -35,6 +35,9 @@ pub struct RecentTurn {
     /// The answer was a plain, short answer the person may confirm with "yes, that's right"
     /// (never a proposal, a refusal, an error, a private note or a doubtful reply).
     pub confirmable: bool,
+    /// The sections the turn was asked under (leaf ids). The writer keeps this answer only while every
+    /// one of them is still picked: an answer from an unpicked section must not carry its facts on.
+    pub leaves: Vec<String>,
 }
 
 /// Everything the assistant knows about this conversation before it answers.
@@ -63,7 +66,9 @@ fn answer_phrase(code: &str) -> &'static str {
         "lookup" => "looked something up",
         "list" => "asked for a list",
         "count" => "asked for a count",
-        "explain" => "asked for an explanation",
+        "explain" | "story_explanation" => "asked for an explanation",
+        "describe" => "asked for a description",
+        "brief" => "asked for a briefing",
         "relation" => "asked how things relate",
         "compare" => "compared things",
         "brainstorm" => "brainstormed",
@@ -127,20 +132,24 @@ struct Shown {
 }
 
 fn shown(c: &Connection, request_id: &str) -> AppResult<Option<Shown>> {
-    let row: Option<(String, String, String, String)> = c
+    let row: Option<(String, String, String, String, Option<String>)> = c
         .query_row(
-            "SELECT result_kind, content, status, provenance_json FROM ai_result
+            "SELECT result_kind, content, status, provenance_json, structured_json FROM ai_result
              WHERE request_id = ?1 AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1",
             [request_id],
-            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?)),
         )
         .optional()?;
-    Ok(row.map(|(kind, content, status, provenance)| Shown {
-        plain: AiResultKind::parse(&kind) == AiResultKind::Answer
-            && AiResultStatus::parse(&status) == AiResultStatus::Informational
-            && !provenance.to_lowercase().contains("private"),
-        content,
-    }))
+    Ok(
+        row.map(|(kind, content, status, provenance, structured)| Shown {
+            // An answer that points to another section (spec 3.6) is no answer to confirm.
+            plain: AiResultKind::parse(&kind) == AiResultKind::Answer
+                && AiResultStatus::parse(&status) == AiResultStatus::Informational
+                && !provenance.to_lowercase().contains("private")
+                && !structured.is_some_and(|s| s.contains("\"pointer\"")),
+            content,
+        }),
+    )
 }
 
 /// Load the conversation memory of `conversation` for the actor, before the new request is stored.
@@ -178,7 +187,7 @@ pub fn load(
     let mut recent: Vec<RecentTurn> = Vec::new();
     let mut used = 0;
     let mut older_from = rows.len();
-    for (i, (id, asked, _)) in rows.iter().enumerate() {
+    for (i, (id, asked, scope_json)) in rows.iter().enumerate() {
         if recent.len() >= RECENT_TURNS {
             older_from = i;
             break;
@@ -199,6 +208,7 @@ pub fn load(
             confirmable: answer.plain && rules::usable_answer(&answer.content).is_some(),
             asked: asked_cut,
             answered: answered_cut,
+            leaves: leaves_of(scope_json),
         });
     }
     recent.reverse();
@@ -218,4 +228,18 @@ pub fn load(
         summary_lines: lines.split_off(skip),
         focus: focus.clone(),
     })
+}
+
+/// The leaf ids of the sections a request was asked under, from the scope stored with it.
+fn leaves_of(scope_json: &str) -> Vec<String> {
+    serde_json::from_str::<Value>(scope_json)
+        .ok()
+        .and_then(|v| {
+            v.get("sections")?.as_array().map(|a| {
+                a.iter()
+                    .filter_map(|p| p.get("leaf")?.as_str().map(str::to_string))
+                    .collect()
+            })
+        })
+        .unwrap_or_default()
 }

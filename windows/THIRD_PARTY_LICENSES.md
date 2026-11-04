@@ -13,7 +13,7 @@ Straft Studio's own license has **not been selected yet**. See `LICENSE-PENDING.
 - Copyleft or unknown (blocking until resolved): **0**
 - Weak copyleft / needs review: **5**
 
-## Offline AI components (bundled in every package)
+## Straft AI components (bundled in every package)
 
 Part of every package (ADR-0025). The build checks each file against the SHA-256 hashes pinned in `packaging/ai/ai-assets.lock.json`, and the app checks them again before it first starts the engine. They run only on the user's computer and never use the network. Their notices ship in the app's `ai/notices` folder and must also be shown in the product's About / third-party notices.
 

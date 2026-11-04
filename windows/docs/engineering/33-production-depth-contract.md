@@ -180,7 +180,7 @@ lines that have an Actual) are derived at read time (`modules/schedule/budget.rs
 
 Has: template engine with scopes and 7 built-ins. Add per the owner decision "Template list": three screenplay templates, indie call sheet, simple
 Beat Board, shot list, moodboard, lightweight budget. Use creates an independent copy. Samples: four
-Straft Studio-authored scripts used as onboarding assets and fixtures; no third-party text.
+Straft-authored scripts used as onboarding assets and fixtures; no third-party text.
 
 **Built (area 15, 2026-10-08).** The eight built-ins live in `modules/notes/templates.rs` (Feature Film Screenplay,
 Short Film Screenplay, Episodic / Series, Simple Beat Board, Indie Call Sheet, Shot List, Moodboard, Lightweight
@@ -191,12 +191,12 @@ the regular import preview (`screenplay.import_preview` with `sample`); `tests/s
 
 ## 8. Branding (Call sheets, budget, templates, samples and exports area)
 
-Screenplay outputs clean. Production outputs carry a small logo and "Created using Straft Studio"; spreadsheets
+Screenplay outputs clean. Production outputs carry a small logo and "Created using Straft"; spreadsheets
 use workbook metadata or first-sheet footer. User-owned source files are never modified for branding. Packages
 and backups carry a branded manifest or README, not edited user files.
 
 **Built (area 15, 2026-10-08).** `modules/exports/mod.rs::deliver` brands every production export in one place: PDFs
-print the Straft Studio mark and the brand line at the bottom of each page, workbooks name Straft Studio in their document properties and the first sheet's footer, plain text ends
+print the Straft mark and the brand line at the bottom of each page, workbooks name Straft Studio in their document properties and the first sheet's footer, plain text ends
 with the line. CSV stays pure data (no added row) so it imports cleanly elsewhere. Screenplay exports
 (`screenplay.export`) never pass through `deliver` and stay unbranded. Sides are pages of the script and carry no
 mark and no line either (owner, 2026-10-27). Package and backup manifests belong to the

@@ -10,11 +10,11 @@
 use std::collections::{BTreeMap, HashSet};
 use std::time::Instant;
 
+use rusqlite::{Connection, OptionalExtension, params};
 use straft_domain::{Actor, AppResult};
 use straft_search::graph::{self, TraversalLimits};
 use straft_search::rank::{self, Candidate, RankWeights};
 use straft_search::{SemanticIndex, SqliteVecIndex, docs};
-use rusqlite::{Connection, OptionalExtension, params};
 
 use super::documents::DocKey;
 use super::indexer::{IndexSnapshot, ProjectIndex};
@@ -143,15 +143,30 @@ fn scope_keys(c: &Connection, actor: &Actor, req: &RetrieveRequest) -> AppResult
     Ok(out)
 }
 
-fn lexical(c: &Connection, actor: &Actor, terms: &[String]) -> AppResult<Vec<(DocKey, String)>> {
+fn lexical(
+    c: &Connection,
+    actor: &Actor,
+    terms: &[String],
+    types: Option<&[&str]>,
+) -> AppResult<Vec<(DocKey, String)>> {
     let Some(q) = fts_or_query(terms) else {
         return Ok(Vec::new());
     };
-    let mut stmt = c.prepare_cached(
+    // The types come from the leaf table (constants), never from the question.
+    let only = types.map_or(String::new(), |t| {
+        format!(
+            "AND d.entity_type IN ({})",
+            t.iter()
+                .map(|x| format!("'{x}'"))
+                .collect::<Vec<_>>()
+                .join(", ")
+        )
+    });
+    let mut stmt = c.prepare_cached(&format!(
         "SELECT d.source_table, d.entity_id, d.title FROM search_fts JOIN search_doc d ON d.rowid = search_fts.rowid
-         WHERE search_fts MATCH ?1 AND (d.owner_user_id IS NULL OR d.owner_user_id = ?2)
-         ORDER BY bm25(search_fts, 4.0, 1.0) LIMIT ?3",
-    )?;
+         WHERE search_fts MATCH ?1 AND (d.owner_user_id IS NULL OR d.owner_user_id = ?2) {only}
+         ORDER BY bm25(search_fts, 4.0, 1.0) LIMIT ?3"
+    ))?;
     let rows = stmt
         .query_map(params![q, actor.user_id, LEXICAL_K as i64 * 2], |r| {
             Ok((
@@ -264,7 +279,7 @@ pub fn gather(
     // 1. Lexical (FTS5/BM25), canonical; available whenever the project is open.
     if route.wants_lexical() {
         let t = Instant::now();
-        match session.store.read(|c| lexical(c, actor, &terms)) {
+        match session.store.read(|c| lexical(c, actor, &terms, None)) {
             Ok(hits) => {
                 for (rank, (k, title)) in hits.into_iter().enumerate() {
                     let e = ev.entry(k).or_default();
@@ -492,4 +507,167 @@ mod tests {
         assert!(cross_module("props for the railway scene"));
         assert!(!cross_module("ravi"));
     }
+}
+
+// ------------------------------------------------------------------ leaf-scoped retrieval (R3)
+
+/// One passage found inside the picked leaves.
+#[derive(Debug, Clone)]
+pub struct LeafHit {
+    pub key: DocKey,
+    pub title: String,
+    pub score: f32,
+    /// The chunk that matched by meaning, with its context header (ADR-0037 decision 7), when one did.
+    pub chunk: Option<String>,
+}
+
+/// What [`gather_in`] found, and how.
+#[derive(Debug, Clone, Default)]
+pub struct LeafHits {
+    pub hits: Vec<LeafHit>,
+    /// Meaning search ran (hybrid: words, meaning and graph). False when only words were searched.
+    pub hybrid: bool,
+    /// The project index was not ready (or failed), so only words were searched.
+    pub degraded: bool,
+}
+
+/// Hybrid retrieval restricted to the search entity types of the picked leaves (spec 3.5, 12.1).
+/// The caller is already inside a read of the project, so this takes that connection instead of
+/// opening a second read: the reader lock is not re-entrant. The owner privacy filter is applied to
+/// the words search, the meaning search and the graph, as in [`gather`].
+#[allow(clippy::too_many_arguments)]
+pub fn gather_in(
+    c: &Connection,
+    core: &AppCore,
+    actor: &Actor,
+    ix: Option<&ProjectIndex>,
+    snapshot: Option<&IndexSnapshot>,
+    query: &str,
+    types: &[&str],
+    limit: usize,
+) -> LeafHits {
+    let mut out = LeafHits::default();
+    if types.is_empty() || limit == 0 {
+        return out;
+    }
+    let terms = query_terms(query);
+    let query_norm = norm(query);
+    let mut ev: BTreeMap<DocKey, Evidence> = BTreeMap::new();
+    let mut chunks: BTreeMap<DocKey, String> = BTreeMap::new();
+
+    match lexical(c, actor, &terms, Some(types)) {
+        Ok(hits) => {
+            for (rank, (k, title)) in hits.into_iter().enumerate() {
+                let e = ev.entry(k).or_default();
+                e.lexical_rank.get_or_insert(rank);
+                if e.title.is_empty() {
+                    e.title = title;
+                }
+            }
+        }
+        Err(e) => {
+            tracing::warn!(code = e.code_str(), "leaf retrieval by words failed");
+            out.degraded = true;
+        }
+    }
+
+    // Meaning search, when the index and the embedding model are ready.
+    let svc = super::service(core);
+    let usable = snapshot.is_some_and(|s| s.embedder_present && s.counts.embedded > 0);
+    let embedder = if usable { svc.embedder(core) } else { None };
+    let mut vectors_ok = false;
+    if let (Some(ix), Some(e)) = (ix, embedder)
+        && !query.trim().is_empty()
+        && let Ok(qv) = svc.query_cache().get_or_embed(e.as_ref(), query)
+    {
+        let found = ix.with_reader(|r| {
+            let hits = SqliteVecIndex.search(r, &qv, VECTOR_K)?;
+            docs::chunks_by_vec_rowids(r, &hits.iter().map(|h| h.vec_rowid).collect::<Vec<_>>())
+        });
+        match found {
+            Ok(rows) => {
+                vectors_ok = true;
+                let mut rank = 0usize;
+                for (chunk, doc) in rows {
+                    if doc
+                        .owner_user_id
+                        .as_deref()
+                        .is_some_and(|o| o != actor.user_id)
+                    {
+                        continue;
+                    }
+                    let Some(key) = DocKey::parse(&doc.doc_id) else {
+                        continue;
+                    };
+                    if !types.contains(&key.kind)
+                        || ev.get(&key).is_some_and(|e| e.vector_rank.is_some())
+                    {
+                        continue;
+                    }
+                    let e = ev.entry(key.clone()).or_default();
+                    e.vector_rank = Some(rank);
+                    e.chunk = Some(chunk.ordinal);
+                    if e.title.is_empty() {
+                        e.title = doc.title.clone();
+                    }
+                    chunks.insert(key, chunk.text.clone());
+                    rank += 1;
+                }
+            }
+            Err(err) => tracing::warn!(error = %err, "leaf retrieval by meaning failed"),
+        }
+    }
+    out.hybrid = vectors_ok;
+    out.degraded |= !vectors_ok;
+
+    // Graph expansion from the best few, kept inside the picked types and the owner filter.
+    if vectors_ok && let Some(ix) = ix {
+        let prelim = rank_all(ev.clone(), &query_norm, None, GRAPH_SEEDS);
+        let seeds: Vec<String> = prelim
+            .iter()
+            .map(|h| graph::node_id(h.key.kind, &h.key.id))
+            .collect();
+        if !seeds.is_empty() {
+            let limits = TraversalLimits {
+                max_hops: 1,
+                max_nodes: 16,
+                max_edges_per_node: 12,
+                relation_weights: relation_weights(query),
+                default_weight: 0.4,
+                include_inferred: false,
+            };
+            let user = actor.user_id.clone();
+            let allow =
+                move |n: &graph::NodeRecord| n.owner_user_id.as_deref().is_none_or(|o| o == user);
+            if let Ok(hits) = ix.with_reader(|r| graph::expand(r, &seeds, &limits, &allow)) {
+                for h in hits {
+                    let Some(key) = DocKey::parse(&h.node.node_id) else {
+                        continue;
+                    };
+                    if !types.contains(&key.kind) {
+                        continue;
+                    }
+                    let e = ev.entry(key).or_default();
+                    if h.score > e.graph_score {
+                        e.graph_score = h.score;
+                        e.graph_relation = Some(h.relation.clone());
+                    }
+                    if e.title.is_empty() {
+                        e.title = h.node.label.clone();
+                    }
+                }
+            }
+        }
+    }
+
+    out.hits = rank_all(ev, &query_norm, None, limit)
+        .into_iter()
+        .map(|h| LeafHit {
+            title: h.evidence.title.clone(),
+            score: h.score,
+            chunk: chunks.get(&h.key).cloned(),
+            key: h.key,
+        })
+        .collect();
+    out
 }

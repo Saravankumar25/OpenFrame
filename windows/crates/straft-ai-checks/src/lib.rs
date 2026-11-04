@@ -227,6 +227,8 @@ const NOT_NAMES: &[&str] = &[
     "continuous",
     "straft",
     "studio",
+    // LEGACY: Open Frame name kept for migration
+    "openframe",
     "inferred",
     "exact",
 ];
@@ -345,6 +347,8 @@ const ALLOWED: &[&str] = &[
     "acts",
     "straft",
     "studio",
+    // LEGACY: Open Frame name kept for migration
+    "openframe",
     "vo",
     "os",
     "cont'd",
@@ -1127,6 +1131,14 @@ mod tests {
         );
         assert_eq!(grounding("Priya built it in 2001.", source), (0, 2));
         assert_eq!(grounding("the end", source), (0, 0));
+    }
+
+    #[test]
+    fn the_product_name_and_its_old_name_are_never_story_names() {
+        assert!(candidate_names("Straft keeps your scenes.").is_empty());
+        // LEGACY: Open Frame name kept for migration
+        assert!(candidate_names("OpenFrame keeps your scenes.").is_empty());
+        assert_eq!(grounding("Straft and OpenFrame hold 1989.", "1989"), (1, 1));
     }
 
     #[test]

@@ -12,8 +12,8 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use straft_domain::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
+use straft_domain::{AppError, AppResult};
 
 #[derive(Debug, Clone)]
 pub struct AiPaths {
@@ -47,7 +47,7 @@ impl AiPaths {
     pub fn graphics(&self) -> PathBuf {
         self.root.join("ai").join("graphics.json")
     }
-    /// Engines launched by Straft Studio and not yet stopped (`engines::EngineRegistry`).
+    /// Engines launched by Straft and not yet stopped (`engines::EngineRegistry`).
     pub fn engine_registry(&self) -> PathBuf {
         self.root.join("engines.json")
     }
@@ -64,11 +64,23 @@ pub fn write_json_atomic<T: Serialize>(path: &Path, value: &T) -> AppResult<()> 
     Ok(())
 }
 
-/// Read a small JSON record (bounded: records over 1 MB are ignored).
+/// Read a small JSON record (bounded: records over 1 MB are ignored). A record that is there but
+/// cannot be read is kept as `<name>.bad` and reads as missing, so the caller starts from defaults.
 pub fn read_json<T: for<'de> Deserialize<'de>>(path: &Path) -> Option<T> {
     if fs::metadata(path).ok()?.len() > 1 << 20 {
         return None;
     }
     let bytes = fs::read(path).ok()?;
-    serde_json::from_slice(&bytes).ok()
+    match serde_json::from_slice(&bytes) {
+        Ok(v) => Some(v),
+        Err(_) => {
+            // The next save replaces the file; keep what was there beside it.
+            let mut bad = path.as_os_str().to_owned();
+            bad.push(".bad");
+            if fs::write(&bad, &bytes).is_err() {
+                tracing::warn!("an unreadable AI record could not be kept as .bad");
+            }
+            None
+        }
+    }
 }

@@ -19,12 +19,12 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use serde_json::{Value, json};
 use straft_application::events::{AppEvent, RecordingSink};
 use straft_application::schema::{GLOBAL_MIGRATIONS, PROJECT_MIGRATIONS};
 use straft_application::{AppConfig, AppCore};
 use straft_persistence::migrate::{self, Migration};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 fn id(v: &Value) -> String {
     v["id"]
@@ -1020,4 +1020,124 @@ fn v15_to_v16_keeps_amounts_as_planned_and_maps_call_sheet_status_words() {
     assert_eq!(got["status"], "Final");
     assert_eq!(got["editable"], false);
     core.dispatch(&actor, "project.close", json!({})).unwrap();
+}
+
+/// Update safety (package file 05, item U5). The copy taken before an upgrade must survive an
+/// uninstall: on Windows the package's private data folder goes with the app, while projects and
+/// the Global Idea Vault stay in Documents. A project's copy sits in the project folder, the
+/// vault's in the vault folder, and nothing named `pre-migration` is written into app data. The
+/// app database takes no copy: it holds settings and the recent list only, and a damaged one is
+/// kept as `app.sqlite.bad` (`config_files.rs`).
+#[test]
+fn safety_copies_sit_beside_the_data_and_never_in_app_data() {
+    let env = TestEnv::with_project("Night Bus", "Feature Film");
+    seed(&env);
+    env.ok(
+        "vault.create",
+        json!({ "store": "global", "itemType": "note", "body": "Lighthouse keeper idea" }),
+    );
+    let project = env.project_path();
+    let root = Path::new(&project).to_path_buf();
+    env.ok("project.close", json!({}));
+    let vault_dir = env.dir.path().join("global-vault");
+    let TestEnv { dir, core, .. } = env;
+    core.shutdown();
+    drop(core);
+    let (db, vault_db) = (root.join("project.sqlite"), vault_dir.join("vault.sqlite"));
+    remove_wal(&db);
+    remove_wal(&vault_db);
+    let older = dir.path().join("older.sqlite");
+    build_at_version(
+        &db,
+        &older,
+        PROJECT_MIGRATIONS,
+        PROJECT_MIGRATIONS.len() - 1,
+    );
+    fs::copy(&older, &db).unwrap();
+    set_manifest_version(&root, PROJECT_MIGRATIONS.len() - 1);
+    build_at_version(
+        &vault_db,
+        &older,
+        GLOBAL_MIGRATIONS,
+        GLOBAL_MIGRATIONS.len() - 1,
+    );
+    fs::copy(&older, &vault_db).unwrap();
+    remove_wal(&db);
+    remove_wal(&vault_db);
+
+    let core = AppCore::new(
+        AppConfig::isolated(dir.path()),
+        Arc::new(RecordingSink::default()),
+    )
+    .unwrap();
+    let actor = core.local_actor();
+    let opened = core
+        .dispatch(&actor, "project.open", json!({ "path": project }))
+        .unwrap();
+    assert_eq!(opened["migratedFrom"], json!(PROJECT_MIGRATIONS.len() - 1));
+    core.dispatch(&actor, "vault.list", json!({ "store": "global" }))
+        .unwrap();
+    core.dispatch(&actor, "project.close", json!({})).unwrap();
+    core.shutdown();
+
+    let copies = |dir: &Path| -> usize {
+        fs::read_dir(dir)
+            .map(|d| {
+                d.flatten()
+                    .filter(|e| {
+                        e.file_name()
+                            .to_string_lossy()
+                            .starts_with("pre-migration-")
+                    })
+                    .count()
+            })
+            .unwrap_or(0)
+    };
+    assert_eq!(
+        copies(&root.join("backups")),
+        1,
+        "inside the project folder"
+    );
+    assert_eq!(
+        copies(&vault_dir.join("backups")),
+        1,
+        "inside the vault folder"
+    );
+    fn walk(dir: &Path, found: &mut Vec<String>) {
+        for e in fs::read_dir(dir).into_iter().flatten().flatten() {
+            let name = e.file_name().to_string_lossy().into_owned();
+            if name.starts_with("pre-migration-") {
+                found.push(name);
+            }
+            if e.file_type().unwrap().is_dir() {
+                walk(&e.path(), found);
+            }
+        }
+    }
+    let mut in_app_data = Vec::new();
+    walk(&dir.path().join("appdata"), &mut in_app_data);
+    assert!(in_app_data.is_empty(), "found in app data: {in_app_data:?}");
+}
+
+#[test]
+fn a_theme_saved_by_the_earlier_release_shows_straft_default_without_a_notice() {
+    let dir = tempfile::tempdir().unwrap();
+    let core = AppCore::new(
+        AppConfig::isolated(dir.path()),
+        Arc::new(RecordingSink::default()),
+    )
+    .unwrap();
+    core.with_app_db(|c| {
+        Ok(c.execute(
+            "INSERT INTO sys_appearance_pref(key, value, updated_at) VALUES ('theme', ?1, 1)",
+            // LEGACY: Open Frame name kept for migration
+            ["openframe-default"],
+        )?)
+    })
+    .unwrap();
+    let look = core
+        .dispatch(&core.local_actor(), "appearance.get", json!({}))
+        .unwrap();
+    assert_eq!(look["themeId"], "straft-default", "{look}");
+    assert!(look["fallbackNotice"].is_null(), "{look}");
 }

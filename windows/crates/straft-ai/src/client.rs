@@ -6,9 +6,9 @@
 
 use std::time::Duration;
 
-use straft_domain::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_domain::{AppError, AppResult};
 
 /// Where the running sidecar listens (loopback only) and its per-launch key.
 #[derive(Clone)]
@@ -156,7 +156,7 @@ pub fn strip_reasoning(content: &str) -> String {
 pub fn unavailable(detail: impl Into<String>) -> AppError {
     AppError::ai(
         "unavailable",
-        "AI is currently unavailable. Straft Studio's core workflows continue to work normally.",
+        "AI is currently unavailable. Straft's core workflows continue to work normally.",
     )
     .with_detail(detail)
     .retryable()
@@ -227,7 +227,7 @@ pub async fn chat(
         .await
         .map_err(|e| {
             if e.is_timeout() {
-                AppError::ai("timeout", "Offline AI took too long to answer. Nothing was changed. Try a shorter or more specific request.")
+                AppError::ai("timeout", "Straft AI took too long to answer. Nothing was changed. Try a shorter or more specific request.")
                     .retryable()
             } else {
                 unavailable(e.to_string())
@@ -346,15 +346,18 @@ pub async fn embed(
 pub fn embedding_rejected(detail: impl Into<String>) -> AppError {
     AppError::ai(
         "embedding_rejected",
-        "Offline AI couldn't process some project text for search. Search still works.",
+        "Straft AI couldn't process some project text for search. Search still works.",
     )
     .with_detail(detail)
 }
 
 pub fn malformed(detail: impl Into<String>) -> AppError {
-    AppError::ai("malformed", "Offline AI returned an answer Straft Studio couldn't use. Nothing was changed. Please try again.")
-        .with_detail(detail)
-        .retryable()
+    AppError::ai(
+        "malformed",
+        "Straft AI returned an answer Straft couldn't use. Nothing was changed. Please try again.",
+    )
+    .with_detail(detail)
+    .retryable()
 }
 
 #[cfg(test)]

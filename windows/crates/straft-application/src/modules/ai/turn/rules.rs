@@ -17,6 +17,13 @@ macro_rules! pre {
     };
 }
 
+/// The same filler at the start of any sentence ("Who is Anjali? Describe her.").
+macro_rules! sent {
+    () => {
+        r"(?:^|[.?!;]\s*)(?:\W*(?:please|pls|can you|could you|would you|kindly|ok|okay|bro|hey|hi|so|now|then|and|just|go ahead and)\b\W*)*"
+    };
+}
+
 macro_rules! re {
     ($p:expr) => {{
         static R: LazyLock<Regex> = LazyLock::new(|| Regex::new($p).expect("valid pattern"));
@@ -198,6 +205,12 @@ pub(super) fn decide(text: &str, resolved: &Resolved, previous: Option<AnswerTyp
     if repair {
         return previous.map_or(Verdict::Open { angry: angry(&m) }, Verdict::Inherit);
     }
+    // "and Nandan?", "what about her brother": a short follow-up asks the last question again.
+    if let Some(p) = previous
+        && followup(&m)
+    {
+        return Verdict::Inherit(p);
+    }
     // A bare title or scene that answers the last question ("LOW TIDE RADIO", "the feature").
     if men.any()
         && words(&m) <= 8
@@ -216,6 +229,22 @@ fn wanted_tail(m: &str) -> Option<&str> {
         .find(m)
         .or_else(|| re!(r"\b(?:but|instead|rather)\b").find_iter(m).last())
         .map(|f| &m[f.end()..])
+}
+
+/// A short message that opens with "and", "also", "what about" or "how about".
+fn followup(m: &str) -> bool {
+    words(m) <= 6 && re!(r"^\W*(?:and|also|what about|how about)\b").is_match(m)
+}
+
+/// A question that opens with a question word. It asks to be answered, so the neighbours may not
+/// read it as chat or as a change ("who is varkey", "at what wind speed do we call off the sea day").
+pub(super) fn wh_question(text: &str) -> bool {
+    let m = text.to_lowercase().replace('’', "'");
+    re!(concat!(
+        pre!(),
+        r"(?:(?:at|on|by|in|for|before|after) )?(?:what|whats|what's|who|whos|who's|which|when|where)\b"
+    ))
+    .is_match(&m)
 }
 
 fn social(m: &str) -> bool {
@@ -241,12 +270,33 @@ fn request(m: &str) -> bool {
 /// The strong rules, in order. `m` is cleaned text.
 pub(super) fn strong(m: &str, men: Mentions) -> Option<AnswerType> {
     use AnswerType::*;
+    // The narrative types (spec 3.7, round R5). A story explanation is read before a relation: the
+    // person asked to have the story explained, and the people in it are part of that.
+    if !re!(r"\bhow to\b").is_match(m)
+        && re!(
+        r"\bexplain\w*\b[^.?!]*\b(?:acts?|story|plot|ending|theme|outline|why)\b|\b(?:acts?|story|plot|outline)\b[^.?!]*\bexplain\w*\b|\bexplain\w*\b[^.?!]*\bwhat the scenes show\b|\bwalk me through the outline\b|\bas a story\b|\bwhy (?:does|did|is|was|do|are|were)\b[^.?!]*\?\s*explain\b"
+    )
+    .is_match(m)
+    {
+        return Some(StoryExplanation);
+    }
     let counting = re!(r"\bhow many\b(?: times)?")
         .find_iter(m)
         .any(|f| !f.as_str().ends_with("times"));
+    // Counting beside a request to describe is a description that includes the count. The verb
+    // must open a sentence or a clause: "how many characters does scene 3 describe" counts.
+    if counting
+        && re!(concat!(
+            r"(?:^|[,;.?!]\s*|\band\s+)(?:\W*(?:please|pls|can you|could you|then|also)\b\W*)*",
+            r"(?:describe|tell me (?:more )?about)\b"
+        ))
+        .is_match(m)
+    {
+        return Some(Describe);
+    }
     if !counting
         && re!(
-            r"\b(?:relationships?|related|relation|relations|bonds?|connected|connection|connections|rivalry|rivals|get along|know each other|ties|linked|friends or enemies)\b"
+            r"\b(?:relationships?|related|relation|relations|bonds?|connected|connection|connections|rivalry|rivals|get along|know each other|ties|linked|friends or enemies|link between)\b"
         )
         .is_match(m)
         && !re!(r"\binternet\b").is_match(m)
@@ -317,15 +367,27 @@ pub(super) fn strong(m: &str, men: Mentions) -> Option<AnswerType> {
         return Some(Help);
     }
     if re!(concat!(
-        pre!(),
-        r"(?:describe|summari[sz]e|recap|break down|tell me (?:about|more about)|talk me through|walk me through)\b"
+        sent!(),
+        r"(?:summari[sz]\w*|recap|break down|describe the plan for)\b"
     ))
     .is_match(m)
         || re!(
-            r"\bexplain\w*\b|\bexplanation\b|\bgist of\b|\bsummary of\b|\boverview of\b|\bwhat happens\b|\bwhat(?:'s| is) (?:going on|happening)\b|\bwhat(?:'s| is| are) (?:the )?[\w' ]{1,30} like\b|\b(?:in brief|briefly)\b[^.?!]*\b(?:story|acts?|plot)\b"
-        )
-        .is_match(m)
+        r"\bbrief me\b|\bwalk me through\b|\bwhat is scene \d+ about\b|\bwhat(?:'s| is) happening in\b|\bwhat happens\b|\bgist of\b|\bsummary of\b|\boverview of\b|\bwhat(?:'s| is) going on\b|\b(?:in brief|briefly)\b[^.?!]*\b(?:story|acts?|plot)\b"
+    )
+    .is_match(m)
     {
+        return Some(Brief);
+    }
+    if re!(concat!(
+        sent!(),
+        r"(?:describe|tell me (?:more )?about|talk me through)\b"
+    ))
+    .is_match(m)
+        || re!(r"\bwhat(?:'s| is| are) (?:the )?[\w' ]{1,30} like\b").is_match(m)
+    {
+        return Some(Describe);
+    }
+    if re!(r"\bexplain\w*\b|\bexplanation\b").is_match(m) {
         return Some(Explain);
     }
     if re!(r"\b(?:what|who)(?:'s| is) (?:in|on)\b|\bwho are (?:the|all|those|these|they)\b|\bwhat (?:are|were) (?:all )?the \w{3,}s\b").is_match(m)
@@ -359,6 +421,10 @@ pub(super) fn strong(m: &str, men: Mentions) -> Option<AnswerType> {
     .is_match(m)
     {
         return Some(Lookup);
+    }
+    // After the lookups: "when is the briefing" asks for a time, not for a brief.
+    if re!(r"\bbriefing\b|\bthe plan for\b").is_match(m) {
+        return Some(Brief);
     }
     if re!(concat!(pre!(), r"(?:list|enumerate)\b")).is_match(m)
         || re!(
@@ -401,8 +467,10 @@ pub(super) fn default_type(text: &str) -> AnswerType {
 pub(super) fn length_class(text: &str, t: AnswerType) -> LengthClass {
     let base = t.length_class();
     let m = text.to_lowercase();
-    if re!(r"\b(?:one line|one-line|one liner|one-liner|one sentence|one-sentence|in a sentence|in a line|one word|just the number|tl;?dr)\b")
-        .is_match(&m)
+    // "One line per scene" asks for a list, which the list class already allows.
+    if !scene_by_scene(text)
+        && re!(r"\b(?:one line|one-line|one liner|one-liner|one sentence|one-sentence|in a sentence|in a line|one word|just the number|tl;?dr)\b")
+            .is_match(&m)
     {
         return if t == AnswerType::Chat {
             base
@@ -413,14 +481,33 @@ pub(super) fn length_class(text: &str, t: AnswerType) -> LengthClass {
     let shorten = re!(
         r"\b(?:briefly|in brief|brief|short answer|keep it short|shortly|quickly|quick answer|in a few words|concise|concisely|in short)\b"
     )
-    .is_match(&m);
+    .is_match(&m.replace("brief me", "").replace("briefing", ""));
     let lengthen = re!(
         r"\b(?:in detail|detailed|in depth|in-depth|at length|long paragraph|long answer|long explanation|elaborate|thorough|thoroughly|step by step|full explanation|complete explanation)\b"
     )
     .is_match(&m);
+    // The long classes belong to the narrative types: "in detail" lifts a describe, a brief or a
+    // relationship answer from 250 to 350 words, and never lifts a paragraph (explain, brainstorm,
+    // help) into them.
+    let longer = base.longer();
+    let longer = if longer.is_long() && base != LengthClass::Long250 && base != LengthClass::Long350
+    {
+        base
+    } else {
+        longer
+    };
     match (shorten, lengthen) {
         (true, false) => base.shorter(),
-        (false, true) => base.longer(),
+        (false, true) => longer,
         _ => base,
     }
+}
+
+/// A briefing that goes over several scenes (an act, a day, a sequence, a range): the one narrative
+/// answer that may be a list, one line to a scene (spec 3.7).
+pub(super) fn scene_by_scene(text: &str) -> bool {
+    re!(
+        r"(?i)\bscene[- ]by[- ]scene\b|\b(?:each|every|all the) scenes?\b|\bact (?:one|two|three|four|five|\d+)\b|\b(?:first|second|third|fourth|last|final) act\b|\bday \d+\b|\bshoot(?:ing)? day\b|\bsequence\b|\bscenes? \d+\s*(?:to|through|and|-)\s*\d+\b|\bcall sheet\b|\bstoryboard\b|\bper scene\b"
+    )
+    .is_match(text)
 }

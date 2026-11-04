@@ -242,7 +242,7 @@ E2E data root: C:\Straft\tests\e2e\.run\2026-10-17T01-10-55-951Z\17-internal-bui
 ✔ AI work survives a crash (22791.9067ms)
   specs: 76-ai-files-integrity.test.mjs
 ▶ Offline AI files: missing, damaged, whole again
-  ✔ a missing model file turns AI off and offers the download again; the rest of Straft Studio works (4409.9691ms)
+  ✔ a missing model file turns AI off and offers the download again; the rest of Straft works (4409.9691ms)
   ✔ Download again restores the files from the host and AI answers with the real model (84427.6274ms)
   ✔ an altered model of the right size is caught before any engine starts (5640.0597ms)
   ✔ an altered engine library is caught before launch and asks for a reinstall (5534.2733ms)

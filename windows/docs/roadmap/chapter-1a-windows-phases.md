@@ -45,7 +45,8 @@ only the existing AI code. W7 and W8 may run side by side after W6.
   already compiles `reqwest` for macOS only (`[target.'cfg(target_os = "macos")'.dependencies]` in
   `apps/desktop/src-tauri/Cargo.toml`, used by `platform/mac_inputs.rs`). Windows builds keep it only through
   `straft-ai`, which needs it. The Mac-only code and its dependency go with the Tauri Mac shell in phase M1
-  ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). No W1 code change.
+  ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). No W1 code change. Done 2026-11-03
+  (ADR-0039): `platform/mac_inputs.rs` and the macOS dependency block are removed.
 - **History that needs code changes.** Move `docs/spec-digest/`, `docs/engineering/AGENT_BRIEF.md`,
   `SECURITY_REVIEW_2026-09-30.md` and the plan documents 28, 29 and 31 into the archive; update the exempt list in
   `scripts/check-writing-standard.mjs`, the comments in the two Rust test files, `DEVELOPMENT.md` and the ADR citations in

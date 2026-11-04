@@ -8,11 +8,11 @@
 //! * restoring (a draft or an automatic history point) creates a NEW draft;
 //! * a Locked draft never changes; "Start Revision" creates a Revision draft.
 
+use rusqlite::{Connection, OptionalExtension, params};
+use serde::{Deserialize, Serialize};
 use straft_domain::enums::{DraftStatus, ElementType, ProjectType};
 use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use straft_persistence::rows::{opt_int, opt_text, text, update_fields};
-use rusqlite::{Connection, OptionalExtension, params};
-use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use super::edit::{validate_element, validate_heading};

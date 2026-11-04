@@ -6,11 +6,11 @@
 
 use std::sync::Arc;
 
+use serde_json::{Value, json};
 use straft_ai::{ChatRequest, InferenceProvider};
 use straft_application::modules::ai;
 use straft_domain::AppResult;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const SHORT: &[u8] = include_bytes!("../../../../templates/samples/Example-Short.fountain");
 
@@ -51,7 +51,7 @@ fn say(env: &TestEnv, text: &str, conversation: &str) -> Value {
     let asked = env.core.dispatch(
         &env.core.local_actor(),
         "ai.ask",
-        json!({ "text": text, "scope": { "kind": "WholeProject" }, "conversationId": conversation }),
+        json!({ "text": text, "sections": [{ "leaf": "screenplay/scenes" }], "conversationId": conversation }),
     );
     asked.unwrap_or_else(|_| json!({}))
 }

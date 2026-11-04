@@ -59,16 +59,16 @@ export async function seed(t, { dataRoot }) {
   const b = t.browser;
 
   // First start: the library setup screen when the run sets STRAFT_LIBRARY_SETUP=1 (parallel.mjs does).
-  const SETUP = "Set up your Straft Studio library";
+  const SETUP = "Set up your Straft library";
   await b
-    .waitUntil(async () => /Set up your Straft Studio library|Welcome to Straft Studio/.test(await t.text("body")), { timeout: 30_000 })
+    .waitUntil(async () => /Set up your Straft library|Welcome to Straft Studio/.test(await t.text("body")), { timeout: 30_000 })
     .catch(async () => {
       throw new Error(`neither the library setup screen nor the welcome dialog showed; the window shows: ${(await t.text("body")).slice(0, 300)}`);
     });
   if ((await t.text("body")).includes(SETUP)) {
     await t.state("app-library-setup-default");
     await t.state("app-library-setup-new-location", () => t.press("Choose a new location"));
-    await t.state("app-library-setup-locate", () => t.press("Locate existing Straft Studio data"));
+    await t.state("app-library-setup-locate", () => t.press("Locate existing Straft data"));
     await t.press("Use the default location");
     await t.press("Create Library Here");
     await t.waitText(SETUP, { timeout: 30_000, present: false });

@@ -2,9 +2,9 @@
 //! SCRIPT-017, SCRIPT-018, SCRIPT-019, SCRIPT-020), through the public operation registry: the
 //! same path as the UI.
 
+use serde_json::{Value, json};
 use straft_domain::{Role, new_id};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 struct Sp {
     env: TestEnv,

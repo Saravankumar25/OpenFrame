@@ -4,8 +4,8 @@
 
 use std::collections::BTreeMap;
 
-use straft_domain::AppResult;
 use rusqlite::OptionalExtension;
+use straft_domain::AppResult;
 
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
 use crate::modules::ai::dossier::words::{Msg, clip};
@@ -67,8 +67,18 @@ pub fn categories_in(m: &Msg) -> Vec<&'static str> {
         .collect()
 }
 
-pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
-    safe("breakdown", || fetch(ctx, read, r))
+/// Breakdown: what a scene needs, or, with no scene named, how many elements each category holds.
+pub fn breakdown_leaf(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    safe("breakdown", || {
+        let mut out = fetch(ctx, read, r)?;
+        if out.is_empty() && ctx.focus_scenes(r).is_empty() {
+            let all: Vec<&str> = CATEGORIES.iter().map(|(c, _)| *c).collect();
+            out = project_counts(ctx, AnswerType::Lookup, &all)?;
+            // A category the project holds none of is not worth a line when nothing asked for it.
+            out.retain(|f| !f.is_missing());
+        }
+        Ok(out)
+    })
 }
 
 fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fact>> {
@@ -125,7 +135,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                     out.push(f);
                 }
             }
-            if rows.is_empty() && t != AnswerType::Explain {
+            if rows.is_empty() && !t.narrates() {
                 out.push(Fact::absent(
                     format!("any breakdown elements for scene {}", s.number),
                     "the Breakdown",
@@ -156,6 +166,64 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         }
     }
     Ok(out)
+}
+
+/// The scenes of the Production Source that have, and that lack, elements of a category: "which
+/// scenes have a VFX element", "which scenes have no wardrobe". The numbers are the scene numbers.
+fn scenes_with(ctx: &FetchCtx<'_>, cat: &str, source: Option<&str>) -> AppResult<Vec<Fact>> {
+    let mut st = ctx.conn.prepare(
+        "SELECT DISTINCT scene_id FROM breakdown_element
+         WHERE category = ?1 AND deleted_at IS NULL AND archived = 0 AND confirmation_state <> 'Rejected'
+           AND (?2 IS NULL OR source_id = ?2)",
+    )?;
+    let with: Vec<String> = st
+        .query_map(rusqlite::params![cat, source], |r| r.get(0))?
+        .collect::<Result<_, _>>()?;
+    let numbers = ctx.scene_numbers(&with);
+    let mut have: Vec<u32> = with
+        .iter()
+        .filter_map(|id| numbers.get(id).map(|n| n.0))
+        .collect();
+    have.sort_unstable();
+    have.dedup();
+    let draft =
+        crate::modules::ai::queries::production_source_draft(ctx.conn)?.and_then(|(_, d)| {
+            crate::modules::ai::queries::draft_by_id(ctx.conn, &d)
+                .ok()
+                .flatten()
+        });
+    let all: Vec<u32> = match draft {
+        Some(d) => crate::modules::ai::queries::scenes(ctx.conn, &d.id)?
+            .into_iter()
+            .filter(|s| !s.omitted)
+            .map(|s| s.number as u32)
+            .collect(),
+        None => Vec::new(),
+    };
+    let without: Vec<u32> = all.iter().copied().filter(|n| !have.contains(n)).collect();
+    let asks_without = ctx
+        .m
+        .any(&["no", "without", "lack", "lacks", "missing", "none"]);
+    let mut f = Fact::new("Breakdown", "")
+        .f("category", cat)
+        .f(
+            "scenes with it",
+            crate::modules::ai::dossier::words::numbers(have.iter().copied()),
+        )
+        .prio(P_HIGH);
+    if !without.is_empty() {
+        f = f.f(
+            "scenes without it",
+            crate::modules::ai::dossier::words::numbers(without.iter().copied()),
+        );
+    }
+    let asked = if asks_without { &without } else { &have };
+    if asked.len() <= 16 {
+        for n in asked {
+            f = f.require(n.to_string());
+        }
+    }
+    Ok(vec![f])
 }
 
 /// "How many wardrobe elements are there": the elements of the active Production Source.
@@ -196,6 +264,7 @@ fn project_counts(ctx: &FetchCtx<'_>, t: AnswerType, asked: &[&str]) -> AppResul
             f = f.require(elements.to_string());
         }
         out.push(f);
+        out.extend(scenes_with(ctx, cat, source.as_deref())?);
     }
     Ok(out)
 }

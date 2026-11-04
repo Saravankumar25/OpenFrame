@@ -12,7 +12,7 @@
 **Prepared:** 2026-10-03
 **Repository baseline:** `Saravankumar25/StraftStudio` → `main` → `d30b5889ab5edf9f69d60f8e6d600cb11d4921a0`
 **Primary requirements:** supplied `Straft_Manual_vs_GitHub_Audit(1).md` + supplied `Straft_New_Spec_Revised.md`
-**Goal:** turn the current Straft Studio codebase into a coherent, production-ready, end-to-end desktop filmmaking application without destabilising the durable core, while integrating the revised screenplay/indie-production requirements and the new appearance/theme system, and making the local AI understand and operate the expanded product safely.
+**Goal:** turn the current Straft codebase into a coherent, production-ready, end-to-end desktop filmmaking application without destabilising the durable core, while integrating the revised screenplay/indie-production requirements and the new appearance/theme system, and making the local AI understand and operate the expanded product safely.
 
 ---
 
@@ -51,7 +51,7 @@ Use this instead:
 
 ```text
                          ┌───────────────────────────────┐
-                         │ Durable Straft Studio foundation  │
+                         │ Durable Straft foundation  │
                          │ Registry / Store / IPC / DB   │
                          │ Undo / Recovery / Security    │
                          └──────────────┬────────────────┘
@@ -1496,8 +1496,8 @@ Support:
 There is a critical product boundary:
 
 ```text
-Straft Studio may suggest.
-Straft Studio must not silently replan production.
+Straft may suggest.
+Straft must not silently replan production.
 ```
 
 An optimizer can be considered in a later product cycle only if separately approved.
@@ -1892,7 +1892,7 @@ Test:
 
 Create only:
 
-- Straft Studio-authored
+- Straft-authored
 - public-domain
 - explicitly licensed
 
@@ -2065,14 +2065,14 @@ Apply the revised output rule exactly:
 
 ## Screenplay outputs: clean
 
-No Straft Studio branding on:
+No Straft branding on:
 
 - screenplay PDF
 - FDX
 - Fountain
 - screenplay DOCX
 
-## Production outputs: subtle Straft Studio branding
+## Production outputs: subtle Straft branding
 
 Apply to:
 
@@ -2124,7 +2124,7 @@ Must not change:
 
 ## 25.2 Default compatibility rule
 
-The current Straft Studio appearance remains:
+The current Straft appearance remains:
 
 ```text
 Theme = Straft Default
@@ -2375,7 +2375,7 @@ Do not build one dark-mode mechanism and later replace it with a separate theme 
 
 The safest interpretation of “train the AI model on the new features” is **not** “immediately fine-tune the Gemma weights.”
 
-Straft Studio’s current AI design is an application-control system:
+Straft’s current AI design is an application-control system:
 
 ```text
 local model
@@ -2393,7 +2393,7 @@ Change Sets
 human approval
 ```
 
-For an application like Straft Studio, exact feature control is usually achieved more reliably by teaching the model **what tools exist, what they return, what they may mutate, and what product concepts mean**, rather than immediately changing model weights.
+For an application like Straft, exact feature control is usually achieved more reliably by teaching the model **what tools exist, what they return, what they may mutate, and what product concepts mean**, rather than immediately changing model weights.
 
 Fine-tuning should be a measured later decision, not the default implementation mechanism.
 
@@ -2404,7 +2404,7 @@ Current architecture includes:
 - one production profile
 - Gemma 3 1B Instruct
 - BGE small English embeddings
-- Straft Studio-managed llama.cpp
+- Straft-managed llama.cpp
 - hybrid retrieval
 - sqlite-vec
 - FTS5
@@ -2580,7 +2580,7 @@ The index may be:
 - stale temporarily
 - unavailable
 
-and Straft Studio must still remain usable.
+and Straft must still remain usable.
 
 ## 30.2 Add new document projections per feature
 
@@ -2742,7 +2742,7 @@ If later fine-tuning is approved:
 - create a new model/profile version
 - update AI compatibility version where schema changes require it
 - keep old model available for rollback
-- benchmark against the exact Straft Studio workload
+- benchmark against the exact Straft workload
 - rerun all security and no-write tests
 - rerun retrieval and tool-routing evals
 - rerun Windows runtime performance tests
@@ -4209,7 +4209,7 @@ This is the single most important release journey.
 ```text
 NEW USER
    ↓
-Open Straft Studio
+Open Straft
    ↓
 Create project
    ↓
@@ -4542,7 +4542,7 @@ Do this before the last feature freeze, not after it.
 
 # 63. The final release gate
 
-Straft Studio should not be called “complete” until all of the following are true:
+Straft should not be called “complete” until all of the following are true:
 
 ```text
 [ ] 176 in-scope manual rows have a terminal status
@@ -4640,7 +4640,7 @@ and maximizes the chance of arriving at one coherent product rather than a colle
 
 # 65. Final product philosophy
 
-Straft Studio should not become a copy of Final Draft, Word, a studio ERP, or a multi-agent AI platform.
+Straft should not become a copy of Final Draft, Word, a studio ERP, or a multi-agent AI platform.
 
 The revised product target is:
 
@@ -4663,7 +4663,7 @@ Every release path is tested.
 Every previously working area is protected by regression evidence.
 ```
 
-That is the path from the current Straft Studio repository to a complete software product without unnecessarily disturbing the ecosystem that is already working.
+That is the path from the current Straft repository to a complete software product without unnecessarily disturbing the ecosystem that is already working.
 
 ---
 
@@ -4877,7 +4877,7 @@ Tests: stale schedule + permissions + time validation + apply/reject
 
 Every implementation decision should answer one question:
 
-> **Does this make Straft Studio more complete without making its architecture harder to reason about?**
+> **Does this make Straft more complete without making its architecture harder to reason about?**
 
 The safest answer will usually be:
 
@@ -4901,4 +4901,4 @@ create a second undo mechanism
 create a special export path
 ```
 
-That discipline is what allows the remaining manual scope and the revised 2026-10-02 specification to become one coherent Straft Studio rather than a collection of incompatible generations of the product.
+That discipline is what allows the remaining manual scope and the revised 2026-10-02 specification to become one coherent Straft rather than a collection of incompatible generations of the product.

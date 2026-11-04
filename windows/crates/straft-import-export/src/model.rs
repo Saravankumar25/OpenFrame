@@ -1,6 +1,6 @@
 //! Format-neutral screenplay document model shared by every parser and writer.
 //!
-//! The model is deliberately close to Straft Studio's screenplay hub tables
+//! The model is deliberately close to Straft's screenplay hub tables
 //! (`screenplay_scene` / `screenplay_element`) but also carries a few
 //! interchange-only constructs (centered text, lyrics, sections, synopses,
 //! forced page breaks) so that Fountain/FDX round trips stay faithful. The
@@ -54,7 +54,7 @@ impl ElementKind {
         }
     }
 
-    /// Parse a Straft Studio stored element type (`screenplay_element.element_type`).
+    /// Parse a Straft stored element type (`screenplay_element.element_type`).
     pub fn from_stored(value: &str) -> Option<ElementKind> {
         Some(match value {
             "action" => ElementKind::Action,

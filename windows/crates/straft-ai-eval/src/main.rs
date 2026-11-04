@@ -32,6 +32,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use serde_json::{Value, json};
 use straft_ai::client::build_body;
 use straft_ai::{ChatRequest, InferenceProvider, ProviderCapabilities, Usage};
 use straft_ai_eval::{
@@ -41,7 +42,6 @@ use straft_application::core::{AppConfig, AppCore};
 use straft_application::events::RecordingSink;
 use straft_application::modules::ai::{intelligence, orchestrator, retrieval, scope, toolbox};
 use straft_domain::AppResult;
-use serde_json::{Value, json};
 
 struct Args {
     gold: PathBuf,
@@ -540,19 +540,58 @@ fn state_holds(core: &AppCore, check: &StateCheck, p: &Project) -> bool {
             .is_none_or(|l| !text.contains(&l.to_lowercase()))
 }
 
-fn scope_args(case: &Case, p: &Project) -> Value {
-    match case.scope.as_ref().and_then(|s| s["kind"].as_str()) {
-        Some("scene") => {
-            let n = case
-                .scope
-                .as_ref()
-                .and_then(|s| s["scene"].as_u64())
-                .unwrap_or(1) as usize;
-            json!({ "kind": "CurrentScene", "draftId": p.draft_id, "sceneId": p.scene_ids.get(n.saturating_sub(1)).cloned().unwrap_or_default() })
-        }
-        // There is no act scope in the panel: an act request is asked of the whole project.
-        _ => json!({ "kind": "WholeProject" }),
+/// The `sections` of the `ai.ask` for a case: the picks the case carries, else (a legacy case) the
+/// leaves the old pipeline would have read for the same message (`legacy::leaves_for`). A legacy
+/// case that points at one scene narrows the Screenplay pick to it.
+fn case_sections(core: &AppCore, case: &Case, p: &Project) -> Result<Vec<Value>, String> {
+    if !case.sections.is_empty() {
+        return straft_ai_eval::picks::resolve(core, &case.sections, &p.scene_ids);
     }
+    let domains = legacy_domains(core, &case.request);
+    let mut leaves = straft_ai_eval::legacy::leaves_for(&case.kind, &case.id, &domains);
+    let scene = case
+        .scope
+        .as_ref()
+        .filter(|s| s["kind"] == "scene")
+        .and_then(|s| s["scene"].as_u64())
+        .and_then(|n| p.scene_ids.get((n as usize).saturating_sub(1)).cloned());
+    if scene.is_some() && !leaves.contains(&"screenplay/scenes") {
+        leaves.truncate(2);
+        leaves.insert(0, "screenplay/scenes");
+    }
+    Ok(leaves
+        .into_iter()
+        .map(|l| match (&scene, l) {
+            (Some(id), "screenplay/scenes") => json!({ "leaf": l, "sceneId": id }),
+            _ => json!({ "leaf": l }),
+        })
+        .collect())
+}
+
+/// The topics the old router read in a message (rules only; no model).
+fn legacy_domains(
+    core: &AppCore,
+    message: &str,
+) -> Vec<straft_application::modules::ai::turn::Domain> {
+    use straft_application::modules::ai::index::{self, Focus};
+    use straft_application::modules::ai::turn::{self, Aids, TurnInput};
+    let Ok(session) = core.project() else {
+        return Vec::new();
+    };
+    let Ok(ix) = index::project_index(&session) else {
+        return Vec::new();
+    };
+    let resolved = index::resolve(&ix, &Focus::default(), message);
+    turn::read(
+        &TurnInput {
+            message,
+            previous_message: None,
+            previous_type: None,
+            resolved: &resolved,
+        },
+        &Aids::none(),
+    )
+    .domains
 }
 
 fn engine_mb() -> u64 {
@@ -669,11 +708,18 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
         o.elapsed_ms = t.elapsed().as_millis() as u64;
         return o;
     }
-    let scope_json = scope_args(case, &p);
+    let sections_json = match case_sections(core, case, &p) {
+        Ok(v) => v,
+        Err(e) => {
+            o.setup_error = Some(format!("sections: {e}"));
+            return o;
+        }
+    };
     if let Ok(session) = core.project() {
-        let parsed: Result<scope::AiScopeArgs, _> = serde_json::from_value(scope_json.clone());
-        if let Ok(parsed) = parsed
-            && let Ok(resolved) = session.store.read(|c| scope::resolve(c, &actor, &parsed))
+        let picks: Result<Vec<straft_application::modules::ai::sections::SectionPick>, _> =
+            serde_json::from_value(Value::Array(sections_json.clone()));
+        if let Ok(picks) = picks
+            && let Ok(resolved) = session.store.read(|c| scope::from_picks(c, &picks))
         {
             o.offered = toolbox::tools_for_request(
                 core,
@@ -690,15 +736,28 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
     // Earlier requests of a conversation case go first in the same conversation; their answers
     // are ignored, they only become the history the real request is asked against.
     let conversation = (!case.before.is_empty()).then(|| format!("eval-{}", case.id));
+    // The earlier turns are asked under the picks they were written for; the selection is kept
+    // when the case does not say it changed.
+    let before_sections = if case.sections_before.is_empty() {
+        sections_json.clone()
+    } else {
+        match straft_ai_eval::picks::resolve(core, &case.sections_before, &p.scene_ids) {
+            Ok(v) => v,
+            Err(e) => {
+                o.setup_error = Some(format!("sections_before: {e}"));
+                return o;
+            }
+        }
+    };
     for earlier in &case.before {
         let _ = op(
             core,
             "ai.ask",
-            json!({ "text": earlier, "scope": scope_json, "conversationId": conversation }),
+            json!({ "text": earlier, "sections": before_sections.clone(), "conversationId": conversation }),
         );
     }
     let t = Instant::now();
-    let mut ask = json!({ "text": case.request, "scope": scope_json });
+    let mut ask = json!({ "text": case.request, "sections": sections_json });
     if let Some(id) = &conversation {
         ask["conversationId"] = json!(id);
     }
@@ -714,6 +773,7 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
     };
     let r = &x["result"];
     o.error_code = r["errorCode"].as_str().map(str::to_string);
+    o.pointer = r["pointer"]["leaf"].as_str().map(str::to_string);
     let mut answer = r["content"].as_str().unwrap_or_default().to_string();
     for d in r["details"].as_array().into_iter().flatten() {
         answer.push('\n');

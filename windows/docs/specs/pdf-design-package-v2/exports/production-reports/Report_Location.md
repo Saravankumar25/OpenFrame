@@ -4,7 +4,7 @@
 |---|---|
 | Export | Production reports, op `reports.export_report` (PDF; CSV and XLSX are separate projections of the same `ReportData`) |
 | Variant | **Report_Location** — portrait, 5 columns |
-| Status | Design reference — not integrated; not validated against Straft Studio's Rust renderer |
+| Status | Design reference — not integrated; not validated against Straft's Rust renderer |
 | Version | v2 — Shooting days in shoot-day order (see K.4 Changes from v1) |
 | Repo commit | `2f5a045416bd2125801329533fc47f986ccc8174` (`main`) |
 | Date | 2026-10-23 |
@@ -168,7 +168,7 @@ Shared rules are in `Report_Scene.md` F.1/G; the items below are this report's s
 - Masthead, context banners and metrics strip are `break-after: avoid`: they stay with the first table rows; page 1 must show at least 3 table rows below the metrics, otherwise the table starts on a new page together with its header.
 - A row is never split; the tallest sample row (Coast Radio Station: 4 day lines) is about 55 pt.
 - 1 page for the 16-row sample; `Page 1 of 1`, no running header.
-- Footer and numbering: shared system — official logo (17 pt high) + `Created using Straft Studio` bottom-left, `Page X of Y` bottom-right, on every page. The old footer text `<project> · <report title>` is **not** reproduced in the footer (brand rule); that identity moves to the running header.
+- Footer and numbering: shared system — official logo (17 pt high) + `Created using Straft` bottom-left, `Page X of Y` bottom-right, on every page. The old footer text `<project> · <report title>` is **not** reproduced in the footer (brand rule); that identity moves to the running header.
 - Running header: `@top-right`, `{PROJECT NAME} · LOCATION REPORT`, only when the report spans more than one page.
 
 ## I. HTML/PDF correspondence
@@ -188,7 +188,7 @@ Shared rules are in `Report_Scene.md` F.1/G; the items below are this report's s
 ## J. Acceptance criteria
 
 - [ ] Page size is Letter portrait; margins 46/46/46/66 pt; nothing drawn in the 66 pt footer band or outside the side margins (`tools/verify_pdf.py --size letter` passes).
-- [ ] Footer on every page: logo lockup + `Created using Straft Studio` + `Page X of Y` with the true total.
+- [ ] Footer on every page: logo lockup + `Created using Straft` + `Page X of Y` with the true total.
 - [ ] Masthead shows, in this order: eyebrow `PRODUCTION REPORT`; title; `Project: … · Source: …` (a part is omitted when blank); right panel `GENERATED` / date / scope (`All rows` | `Filtered rows` | `Saved snapshot`). There is no `Export reference` line and no second logo.
 - [ ] Metrics strip labels and counts equal the source's metrics for this report (`Locations`) and are recomputed from the rows actually printed (filtered rows -> filtered counts).
 - [ ] Column headers are the exact `data.columns` strings, in the order given in section E; header row repeats on every page; header text never splits mid-word.

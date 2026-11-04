@@ -13,7 +13,7 @@
 | `npm audit` (all dependencies) | 14: 2 critical (vitest, tinypool), 11 high (webdriverio and its browser downloader chain, source-map-js), 1 moderate (@vitest/mocker) |
 | `npm audit --omit=dev` | 0 |
 
-Straft Studio never calls `extract` (its own `straft-security::archive` reads entries one by one with limits), and every
+Straft never calls `extract` (its own `straft-security::archive` reads entries one by one with limits), and every
 npm finding was in a test tool that never ships. None was reachable, but the gate wants zero findings.
 
 ## Fix (commit 2b7cffc)

@@ -1,5 +1,5 @@
 // Project settings workspace (UX §3.4 "Project settings", mock 022; §3.37 Templates,
-// mock 153). Sub-pages: Project settings | Writing | Keyboard shortcuts | Templates | Offline AI |
+// mock 153). Sub-pages: Project settings | Writing | Keyboard shortcuts | Templates | Straft AI |
 // Advanced (breakdown categories) | Appearance | Storage.
 
 import { useState } from "react";
@@ -26,7 +26,7 @@ import { StoragePanel } from "../../features/storage/StoragePanel";
 function AppearancePage() {
   return (
     <div className="content" style={{ overflow: "auto" }}>
-      <PageHeader title="Appearance" sub="Mode and theme for Straft Studio on this computer. Your projects are not changed." />
+      <PageHeader title="Appearance" sub="Mode and theme for Straft on this computer. Your projects are not changed." />
       <div style={{ maxWidth: 980 }}>
         <AppearancePanel />
       </div>
@@ -39,7 +39,7 @@ const TABS = [
   { id: "writing", label: "Writing" },
   { id: "shortcuts", label: "Keyboard shortcuts" },
   { id: "templates", label: "Templates" },
-  { id: "offline-ai", label: "Offline AI" },
+  { id: "offline-ai", label: "Straft AI" },
   { id: "advanced", label: "Advanced" },
   { id: "appearance", label: "Appearance" },
   { id: "storage", label: "Storage" },

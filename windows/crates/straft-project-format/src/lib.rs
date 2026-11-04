@@ -25,9 +25,9 @@ use std::fs::{self, File, OpenOptions};
 use std::path::{Path, PathBuf};
 
 use fs4::fs_std::FileExt;
+use serde::{Deserialize, Serialize};
 use straft_domain::{AppError, AppResult, PROJECT_FORMAT_VERSION, now_ms};
 use straft_platform::legacy_names;
-use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 pub const PROJECT_EXTENSION: &str = "straft";
@@ -37,7 +37,8 @@ pub const MANIFEST_FORMAT: &str = "straft-project";
 
 /// True for the manifest file's name, in a project made by this version or an earlier one.
 pub fn is_manifest_name(name: &str) -> bool {
-    name == MANIFEST_FILE || name == legacy_names::MANIFEST_FILE
+    name.eq_ignore_ascii_case(MANIFEST_FILE)
+        || name.eq_ignore_ascii_case(legacy_names::MANIFEST_FILE)
 }
 
 /// True when `dir` holds a project manifest, written by this version or an earlier one.
@@ -206,7 +207,7 @@ pub fn read_manifest(layout: &ProjectLayout) -> AppResult<ProjectManifest> {
     let bytes = fs::read(&path).map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
             AppError::project_format(
-                "This folder isn't a Straft Studio project (its project information file is missing).",
+                "This folder isn't a Straft project (its project information file is missing).",
             )
         } else {
             e.into()
@@ -218,7 +219,7 @@ pub fn read_manifest(layout: &ProjectLayout) -> AppResult<ProjectManifest> {
     })?;
     if manifest.format != MANIFEST_FORMAT && manifest.format != legacy_names::MANIFEST_FORMAT {
         return Err(AppError::project_format(
-            "This folder isn't a Straft Studio project.",
+            "This folder isn't a Straft project.",
         ));
     }
     // The next write records the current name, whichever file this one came from.
@@ -226,7 +227,7 @@ pub fn read_manifest(layout: &ProjectLayout) -> AppResult<ProjectManifest> {
     if manifest.format_version > PROJECT_FORMAT_VERSION {
         return Err(AppError::new(
             "project_format.too_new",
-            "This project was saved by a newer version of Straft Studio. Update Straft Studio to open it. The project has not been changed.",
+            "This project was saved by a newer version of Straft. Update Straft to open it. The project has not been changed.",
         ));
     }
     if !straft_domain::ids::is_valid_id(&manifest.project_id) {
@@ -285,7 +286,7 @@ pub fn remove_stale_temps(layout: &ProjectLayout) -> usize {
 fn in_use_error() -> AppError {
     AppError::new(
         "project_format.in_use",
-        "This project is already open in another Straft Studio window. Close it there first. Straft Studio won't open two editable copies at once.",
+        "This project is already open in another Straft window. Close it there first. Straft won't open two editable copies at once.",
     )
 }
 
@@ -485,8 +486,7 @@ mod tests {
                 .unwrap();
         fs::write(&left, b"half").unwrap();
         let left_root =
-            straft_platform::atomic::unique_temp_path(layout.root(), &layout.manifest())
-                .unwrap();
+            straft_platform::atomic::unique_temp_path(layout.root(), &layout.manifest()).unwrap();
         fs::write(&left_root, b"half").unwrap();
         // A staging file this new may belong to a write in progress and is kept.
         assert_eq!(remove_stale_temps(&layout), 0);
@@ -616,7 +616,10 @@ mod tests {
         assert!(layout.manifest().is_file());
         assert!(!layout.legacy_manifest().exists());
         let back = read_manifest(&layout).unwrap();
-        assert_eq!((back.title.as_str(), back.project_id.as_str()), ("Renamed", id.as_str()));
+        assert_eq!(
+            (back.title.as_str(), back.project_id.as_str()),
+            ("Renamed", id.as_str())
+        );
         let on_disk: serde_json::Value =
             serde_json::from_slice(&fs::read(layout.manifest()).unwrap()).unwrap();
         assert_eq!(on_disk["format"], MANIFEST_FORMAT);
@@ -669,6 +672,10 @@ mod tests {
         assert!(!has_project_extension("Film.sqlite"));
         assert!(is_manifest_name(MANIFEST_FILE));
         assert!(is_manifest_name(legacy_names::MANIFEST_FILE));
+        assert!(is_manifest_name(&MANIFEST_FILE.to_uppercase()));
+        assert!(is_manifest_name(
+            &legacy_names::MANIFEST_FILE.to_uppercase()
+        ));
         assert!(!is_manifest_name("manifest.json"));
     }
 }

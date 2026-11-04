@@ -37,6 +37,8 @@ fn run_check(
         required: &required,
         missing: &missing,
         language: language_of(request),
+        no_list: false,
+        narrative: false,
     };
     check::check(answer, &m, &e)
         .into_iter()
@@ -167,6 +169,8 @@ fn a_digit_number_the_facts_do_not_hold_is_found() {
             required: &[],
             missing: &[],
             language: None,
+            no_list: false,
+            narrative: false,
         },
     );
     assert_eq!(offence[0].items, vec!["99".to_string()]);
@@ -776,6 +780,7 @@ fn memory_with(entry: &str, asked: &str, answered: &str) -> TurnMemory {
                 asked: asked.into(),
                 answered: answered.into(),
                 confirmable: false,
+                leaves: Vec::new(),
             }],
             summary_lines: vec!["asked for a count about LOW TIDE RADIO".into()],
             focus: Focus::default(),
@@ -934,4 +939,228 @@ fn a_passage_the_answer_retells_is_a_source_and_one_it_does_not_is_not() {
     let used = sources_of(&d, "At the bus stop, Arjun meets Meera again in the rain.");
     let ids: Vec<&str> = used.iter().map(|f| f.record_id.as_str()).collect();
     assert_eq!(ids, vec!["scene-2"]);
+}
+
+// ------------------------------------------------------------------ narrative answers (round R5)
+
+fn narrative_expect<'a>(class: LengthClass, no_list: bool) -> Expect<'a> {
+    Expect {
+        class,
+        required: &[],
+        missing: &[],
+        language: None,
+        no_list,
+        narrative: true,
+    }
+}
+
+fn check_narrative(answer: &str, facts: &str, class: LengthClass, no_list: bool) -> Vec<Rule> {
+    let m = Material {
+        facts,
+        request: "Describe Mariamma.",
+        context: "",
+    };
+    check::check(answer, &m, &narrative_expect(class, no_list))
+        .into_iter()
+        .map(|o| o.rule)
+        .collect()
+}
+
+const MARIAMMA: &str = "Character | name: Mariamma | role: Mother | description: Runs the fish stall at the landing centre.\nRelationship | Mariamma is mother of Anjali.";
+
+/// `n` filler words that are not names, numbers or a repeated run.
+fn filler(n: usize) -> String {
+    (0..n)
+        .map(|i| {
+            ["stall", "boat", "net", "rope", "tide", "salt", "wind"][i % 7].to_string()
+                + &"s".repeat(i / 7)
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+#[test]
+fn the_long_classes_have_their_word_limits_in_the_checker() {
+    let ok = format!("Mariamma runs the fish stall. {}.", filler(120));
+    assert!(check_narrative(&ok, MARIAMMA, LengthClass::Long250, true).is_empty());
+    let long = format!("Mariamma runs the fish stall. {}.", filler(260));
+    assert_eq!(
+        check_narrative(&long, MARIAMMA, LengthClass::Long250, true),
+        vec![Rule::Length]
+    );
+    // 260 words is inside the story explanation limit of 350.
+    assert!(check_narrative(&long, MARIAMMA, LengthClass::Long350, true).is_empty());
+    let thin = "Mariamma runs the fish stall.";
+    assert_eq!(
+        check_narrative(thin, MARIAMMA, LengthClass::Long250, true),
+        vec![Rule::TooShort]
+    );
+    assert!(Rule::Length.soft() && Rule::TooShort.soft());
+}
+
+#[test]
+fn a_list_is_refused_for_a_narrative_answer_and_allowed_for_a_scene_by_scene_briefing() {
+    let list = "Scene 1: Mariamma opens the stall.\nScene 2: Anjali arrives.\nScene 3: They talk.\nScene 4: Night.";
+    let rules = check_narrative(list, MARIAMMA, LengthClass::Long250, true);
+    assert!(rules.contains(&Rule::List), "{rules:?}");
+    let rules = check_narrative(list, MARIAMMA, LengthClass::Long250, false);
+    assert!(!rules.contains(&Rule::List), "{rules:?}");
+    // Three paragraphs are not a list.
+    let paras = format!("{}.\n\n{}.\n\n{}.", filler(30), filler(30), filler(30));
+    assert!(!check_narrative(&paras, MARIAMMA, LengthClass::Long250, true).contains(&Rule::List));
+}
+
+#[test]
+fn the_relationship_and_mood_checks_exist_and_stay_off_until_measured() {
+    // Turn them on only when their false positives are under 5 percent (spec 3.7).
+    const _: () = assert!(!check::STRICT_NARRATIVE_CHECKS);
+    let facts = [MARIAMMA];
+    assert_eq!(
+        check::unsupported_relations("Mariamma is the sister of Anjali.", &facts),
+        vec!["sister".to_string()]
+    );
+    assert!(check::unsupported_relations("Mariamma is the mother of Anjali.", &facts).is_empty());
+    assert_eq!(
+        check::unstated_moods("Mariamma is guilty and afraid.", &facts),
+        vec!["afraid".to_string(), "guilty".to_string()]
+    );
+    // Off: an unstated feeling does not fail the answer.
+    let invented = format!("Mariamma is guilty. {}.", filler(60));
+    assert!(check_narrative(&invented, MARIAMMA, LengthClass::Long250, true).is_empty());
+}
+
+#[test]
+fn the_narrative_policy_forbids_invented_motives_and_unrecorded_relationships() {
+    let p = prompt::policy(Group::Narrative);
+    assert!(p.contains("Give no motive, feeling or past that the facts do not state"));
+    assert!(p.contains("only when a relationship line says so"));
+    assert!(p.contains("unless the request says to write one line per scene"));
+    assert!(prompt::length_say(LengthClass::Long250).contains("250"));
+    assert!(prompt::length_say(LengthClass::Long350).contains("350"));
+    assert!(prompt::max_tokens(LengthClass::Long250, None) >= 325);
+    assert!(prompt::max_tokens(LengthClass::Long350, None) >= 455);
+    assert_ne!(
+        prompt::policy(Group::Narrative),
+        prompt::policy(Group::Facts)
+    );
+}
+
+// ------------------------------------------------------------------ round R7 review fixes
+
+#[test]
+fn an_earlier_answer_from_a_section_no_longer_picked_is_dropped_but_its_question_stays() {
+    let turn = |leaves: &[&str], a: &str| RecentTurn {
+        asked: "what is it".into(),
+        answered: a.into(),
+        confirmable: true,
+        leaves: leaves.iter().map(|l| (*l).to_string()).collect(),
+    };
+    let m = TurnMemory {
+        conversation: ConversationMemory {
+            recent: vec![
+                turn(&["production/budget"], "Budget answer"),
+                turn(&["story/characters"], "Character answer"),
+                turn(&["story/characters", "production/budget"], "Both answer"),
+            ],
+            ..ConversationMemory::default()
+        },
+        entries: Vec::new(),
+    };
+    let picked = vec![crate::modules::ai::dossier::LeafUse {
+        leaf: "story/characters",
+        tokens: 0,
+    }];
+    let r = restricted(&m, &picked);
+    let kept: Vec<&str> = r
+        .conversation
+        .recent
+        .iter()
+        .map(|t| t.answered.as_str())
+        .collect();
+    assert_eq!(kept, ["", "Character answer", ""]);
+    assert!(
+        r.conversation
+            .recent
+            .iter()
+            .all(|t| t.asked == "what is it")
+    );
+    assert_eq!(
+        r.conversation
+            .recent
+            .iter()
+            .map(|t| t.confirmable)
+            .collect::<Vec<_>>(),
+        [false, true, false]
+    );
+    // The prompt carries the question and not the dropped answer.
+    let run = Run::new(&["Lead cast is planned at 40,00,000."]);
+    let mut d = lead_cast();
+    d.leaves = picked;
+    run.ask_with("how much", AnswerType::Lookup, &d, &m, &|| false)
+        .unwrap();
+    let sent = user_text(&run.model, 0);
+    assert!(sent.contains("Character answer"), "{sent}");
+    assert!(
+        !sent.contains("Budget answer") && !sent.contains("Both answer"),
+        "{sent}"
+    );
+    assert!(sent.contains("Person: what is it"), "{sent}");
+}
+
+#[test]
+fn short_paragraphs_that_read_as_a_list_are_shown_after_three_passes_not_replaced() {
+    assert!(Rule::List.soft());
+    let reply = "Lead cast is planned at 40,00,000 in the budget for the film.\n\nThe line sits under the cast category in the plan.\n\nNothing else about it is recorded in the project.";
+    let r = Run::new(&[reply, reply, reply]);
+    let a = r
+        .ask(
+            "describe the lead cast line",
+            AnswerType::Describe,
+            &lead_cast(),
+        )
+        .unwrap();
+    assert_eq!(
+        a.shown,
+        Shown::WrittenSoft,
+        "{:?} {}",
+        a.failed_rules(),
+        a.text
+    );
+    assert!(a.failed_rules().contains(&"list".to_string()));
+    assert_eq!(a.text, reply);
+}
+
+#[test]
+fn a_reply_in_another_language_gets_more_tokens() {
+    let en = prompt::max_tokens(LengthClass::Long250, None);
+    assert_eq!(prompt::max_tokens(LengthClass::Long250, Some("en")), en);
+    assert_eq!(prompt::max_tokens(LengthClass::Long250, Some("hi")), en * 3);
+    assert_eq!(prompt::max_tokens(LengthClass::Long250, Some("es")), en * 2);
+}
+
+#[test]
+fn a_briefing_that_stops_short_says_how_far_it_went() {
+    let scene = |n: u32| fact("Scene", &format!("s{n}")).f("scene", n.to_string());
+    let d = Dossier {
+        facts: (1..=4).map(scene).collect(),
+        ..Dossier::default()
+    };
+    let two = "Scene 1: Ravi waits.\nScene 2: Anjali comes.".to_string();
+    let all = "Scene 1: a.\nScene 2: b.\nScene 3: c.\nScene 4: d.".to_string();
+    assert_eq!(
+        coverage(two.clone(), &d, true),
+        format!("{two}\nThis covers the first 2 scenes.")
+    );
+    assert_eq!(coverage(two.clone(), &d, false), two);
+    assert_eq!(coverage(all.clone(), &d, true), all);
+    // Facts that were cut before the writer saw them count as a short briefing too.
+    let cut = Dossier {
+        trimmed: true,
+        ..d.clone()
+    };
+    assert!(coverage(all, &cut, true).ends_with("This covers the first 4 scenes."));
+    assert_eq!(
+        coverage("No scenes here.".into(), &cut, true),
+        "No scenes here."
+    );
 }

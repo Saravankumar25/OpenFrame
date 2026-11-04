@@ -6,6 +6,15 @@
 > built yet. Where a number comes from a run, the run is named; where it is a proposal, it says so. The first spike
 > (section 12) already changed the design in four places; those are marked "spike".
 
+> **Partly superseded by [ADR-0040](../adr/ADR-0040-section-scoped-assistant.md) (2026-11-03).** The person now picks the
+> sections the assistant reads, so the parts of this page that decide where to look are history: the domain detection by
+> topic words (section 5.3, now only a hint for the pointer), the domain fetch plans and the `FETCHERS` registry (section
+> 5.4, replaced by the leaf table `sections::LEAVES` and the per-leaf sources), the wide fetch round, the automatic extra
+> domains and the scope selector of the panel. Each is marked SUPERSEDED where it appears below. Unchanged: the answer
+> stages (answer type, write, check, at most three passes), the guards, the memory, the trace and the evaluation. The
+> narrative answer types, the 250 and 350 word classes and the pointer are in
+> [ai-section-scoped-assistant.md](ai-section-scoped-assistant.md) sections 3.6, 3.7 and 12.
+
 ## 1. What the owner asked for (2026-10-26)
 
 - The assistant is a chat assistant for the whole platform, not a router. It answers any question about any part of the
@@ -176,6 +185,8 @@ Built in slice S6 (`modules/ai/memory/`, stage `memory::prepare`, typed input `m
 
 ### 5.3 Read the answer type (rules, nearest neighbours, one short model call)
 
+> Domains (the second thing read) are SUPERSEDED by ADR-0040: the person picks the sections. `turn/domains.rs` stays as a hint for the pointer only. The answer types gained describe, brief and story explanation (round R5).
+
 Spike: with one list of 12 intents, the model got 20 of 28 right, and half of its misses were overlap between the
 *topic* (budget, schedule) and the *kind of answer* (a count, a lookup). Spike S1b then showed that rules tuned on a
 word list fail on new wording (53% on held-out messages) and that a 1B model confuses close labels. So the turn reads two
@@ -329,7 +340,7 @@ plays", the number for a count, planned and actual and difference for a budget l
 them), the relationship word for two named characters, the name of every person who speaks in a fetched scene, the phone
 and email of a contact question. `Dossier::required` is their union. The checker of section 5.6 requires them.
 
-**The registry.** One table, `FETCHERS` in `dossier/registry.rs`, with one entry per domain: the answer groups it serves,
+**The registry. SUPERSEDED by ADR-0040: the table is now `sections::LEAVES` (one entry per section the person can pick, with its sources) and nothing is fetched that a picked section does not own.** One table, `FETCHERS` in `dossier/registry.rs`, with one entry per domain: the answer groups it serves,
 its token cap, what it reads, and the function `fn(&FetchCtx, &TurnRead, &Resolved) -> Vec<Fact>`. Adding an area is one
 entry and its test. The fetchers do not call the read tools of `toolbox/reads*.rs`, because those return text for the
 model; they use the same lower layers (`queries::scenes`, `character_cues`, `scene_text`, `schedule::board`,
@@ -350,7 +361,7 @@ model; they use the same lower layers (`queries::scenes`, `character_cues`, `sce
 | settings | facts, help | 400 | `project`, `project_member`, the appearance state, the spelling settings |
 | product help | help, facts | 900 | `modules/ai/knowledge.md` (two sections for a help question, one otherwise) |
 
-**Plans per answer group.** The domains come from the read (`TurnRead.domains`), from the names once they are completed,
+**Plans per answer group. SUPERSEDED by ADR-0040 for the choice of domain: the picked sections decide what is read, the answer group decides how much of it.** The domains come from the read (`TurnRead.domains`), from the names once they are completed,
 and from the group:
 
 | Group | What is fetched |
@@ -1043,7 +1054,7 @@ DeepSeek Harness (`github.com/deepseek-ai/deepseek-harness`, MIT, read on 2026-1
 TypeScript, a local web UI, an agent that edits files and runs commands, built for large hosted models. It is not installed
 or shipped (owner decision). Four of its design ideas fit the turn of section 5 and go into the slices:
 
-| Idea in DeepSeek Harness | What Straft Studio does with it | Slice |
+| Idea in DeepSeek Harness | What Straft does with it | Slice |
 |---|---|---|
 | A tool call passes fixed stages (`pre-execute` policy and permission, guards, `execute` with timeout and metrics, `post-execute` that may block, replace or add context, a frozen result) | The turn of section 5 is a fixed list of stages (prepare, resolve, read answer type, fetch, write, check, store), each a function with typed input and output, so a stage can be tested and replaced alone and the eval can report which stage failed | S4 to S7 |
 | Monotonic guards: a deny cannot be undone by a later stage | Role and privacy guards (private notes of others, contact data for roles that may not see it, planted instructions) run before fetch and again on the facts; no later stage, model pass or rewrite can add a fact a guard removed | S5, S7 |

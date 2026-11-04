@@ -618,7 +618,7 @@ function OptionalSections({
     <>
       {logistics && o.weather !== null && (
         <Section title="Weather" disabled={ro} onRemove={() => edit((x) => void (x.optional.weather = null))}>
-          <div className="hint xs">Type the forecast, sunrise and sunset. Straft Studio never looks them up online.</div>
+          <div className="hint xs">Type the forecast, sunrise and sunset. Straft never looks them up online.</div>
           <Fld label="Forecast" value={o.weather} onChange={(v) => edit((x) => void (x.optional.weather = v))} need disabled={ro} />
           <div className="grid g2" style={{ gap: "0 16px" }}>
             <Fld label="Sunrise" value={o.sunrise} onChange={(v) => edit((x) => void (x.optional.sunrise = v))} need disabled={ro} />

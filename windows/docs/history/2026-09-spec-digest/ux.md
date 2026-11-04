@@ -13,7 +13,7 @@
 
 **Authority order:** PRD → FSD → UX/UI Spec → implementation (Spec §0.1).
 - The mockup CSS header says: `Straft Studio — mock UI design system (prototype only; visual design is placeholder and will be replaced later)`.
-- The index says: "Screens are rendered at 1200 × 720 (a Windows 11 desktop app window). The visual design is a placeholder; behaviour and content follow the Straft Studio PRD, FSD, UX/UI, Domain/Data, AI, Import/Export, Offline/Collaboration and Security specifications. Sample project: BLACK RAIN."
+- The index says: "Screens are rendered at 1200 × 720 (a Windows 11 desktop app window). The visual design is a placeholder; behaviour and content follow the Straft PRD, FSD, UX/UI, Domain/Data, AI, Import/Export, Offline/Collaboration and Security specifications. Sample project: BLACK RAIN."
 - So treat mockup **tokens** as the working baseline, and mockup **labels and behaviour** as authoritative wherever they agree with the spec.
 
 **Guiding statements** (use as a design test):
@@ -339,7 +339,7 @@ These screens are defined **only** by Mocks 063–070. §92 still has a page-act
 Spec §1.1:
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
-│ Straft Studio   Project Name ▾     Global Search     Undo Redo   Status   User │
+│ Straft   Project Name ▾     Global Search     Undo Redo   Status   User │
 ├──────────────────────┬─────────────────────────────────────────────────────┤
 │ Home / Idea Vault / Story / Screenplay / Breakdown / Production /           │
 │ Call Sheets / Files  │                    ACTIVE WORKSPACE                 │
@@ -361,7 +361,7 @@ It "must not become a dashboard containing production metrics from every module.
 - Focus Mode title: `Straft Studio — BLACK RAIN — Full-screen writing` (Mock 079).
 
 ### 2.2 Top bar (46px), left to right (Mock 014; numbered callouts ps, gs, ur, ai, gnav, st, cn)
-1. **Brand**: mark plus `Straft Studio`.
+1. **Brand**: mark plus `Straft`.
 2. **Project selector** (callout 1): two lines, `BLACK RAIN` over `<small>Feature Film</small>`, with a chevron.
    - Opens a menu (Mock 013) with `Recent projects` (rows such as "BLACK RAIN / Feature Film · Writing" with `Open`), `Pinned`, `All projects…`, `Archived…` and `Close project`.
    - Spec §1.3: "compact list of recent projects, pinned projects and an All/Archived area." Switching follows the unsaved-work rule (§2.6 below).
@@ -490,18 +490,18 @@ Spec entry points reference "+ command > New Project" (§6) and "Quick Action > 
 ### 2.13 Unsaved switch and recovery (shell-level dialogs)
 - **Unsaved switch** (Spec §73.6, Mock 018, md):
   - Title `This project has changes that are not saved yet.`
-  - Body: `Straft Studio is still trying to save BLACK RAIN . If you leave now you may lose your latest edits.`
+  - Body: `Straft is still trying to save BLACK RAIN . If you leave now you may lose your latest edits.`
   - Buttons: `Stay`, `Retry Save`, `Close Without Leaving`.
   - "Must not use ambiguous button labels such as `OK` and `Cancel`."
 - **Recovery offer** (§73.7, Mock 016, md):
   - Title `We found a recent recovery state for this project.`
-  - Body: `BLACK RAIN was not closed normally last time. Straft Studio kept a more recent automatic recovery state than your last confirmed save.`
+  - Body: `BLACK RAIN was not closed normally last time. Straft kept a more recent automatic recovery state than your last confirmed save.`
   - Comparison: `Last saved version` (`Yesterday, 11:58 PM` · `Screenplay: 41 scenes`) versus `Recovery state` (`Today, 10:37 AM` · `Screenplay: 42 scenes · 9 changes newer`).
   - Note: `Nothing has been replaced. You choose which one to open.`
   - Buttons: `Compare…`, `Keep Saved Version`, `Open Recovery`. "Do not silently select one version."
 - **Save error** (§73.3, Mock 017):
   - Inline banner: `Save error — Your current work is still open. Retry save or open Recovery.` with `Retry Save` and `Open Recovery`.
-  - Dialog title: `Straft Studio could not save the latest changes to the project.`
+  - Dialog title: `Straft could not save the latest changes to the project.`
   - Body: `This is a problem with saving to your computer, not with the internet. Your edits are still on screen and have not been lost.` / `Possible causes: the disk is full, the drive was disconnected, or the folder is read-only.`
   - Buttons: `Keep Editing`, `Save Backup Copy`, `Retry Save`.
   - The error "should not imply that an internet connection is necessary."
@@ -531,10 +531,10 @@ Format per screen: layout → controls (verbatim) → empty state → menus → 
   - Table `Title | Type | Status | Last modified` with row actions `Restore` and `Open`.
 - **Project unavailable** (Mock 007, dialog sm):
   - Title `This project could not be opened`.
-  - Body: `The project location is unavailable. It may be on an external drive that is not connected, or the folder was moved.` / `Project: Salt Road` / `Last known location: E:\Films\Salt Road` / `Straft Studio has not created a replacement project. Reconnect the drive and try again, or locate another copy of the project.`
+  - Body: `The project location is unavailable. It may be on an external drive that is not connected, or the folder was moved.` / `Project: Salt Road` / `Last known location: E:\Films\Salt Road` / `Straft has not created a replacement project. Reconnect the drive and try again, or locate another copy of the project.`
   - Buttons: `Cancel`, `Locate Project…`, `Try Again`.
 - **Delete project** (Mock 023, md, strong confirmation):
-  - Title `Delete “BLACK RAIN”?` / `This is the most destructive action in Straft Studio. The whole project will be removed from this computer.`
+  - Title `Delete “BLACK RAIN”?` / `This is the most destructive action in Straft. The whole project will be removed from this computer.`
   - Checkbox `Create a backup first (recommended) — E:\Backups\BLACK RAIN\`.
   - Field `Type the project name to confirm`.
   - Note: `Archiving instead keeps everything and simply hides the project from your recent list.`
@@ -666,7 +666,7 @@ Format per screen: layout → controls (verbatim) → empty state → menus → 
   - Buttons: `Try Failed Item Again`, `Done`.
 - **Unavailable external file** (Mock 036):
   - Red badge `Unavailable` on the card.
-  - Drawer text: `File unavailable. The original file could not be found at D:\Refs\platform-2.jpg.` / `Straft Studio keeps this item and its notes. Nothing has been deleted.`
+  - Drawer text: `File unavailable. The original file could not be found at D:\Refs\platform-2.jpg.` / `Straft keeps this item and its notes. Nothing has been deleted.`
   - Buttons: `Relink…`, `Open Location`.
   - Note: `This item links to a file outside the project. Files stored inside the project show a different marker.`
 - **Multi-select** (Mock 037): bar `3 selected | Move to Folder, Add to Collection, Tag, Export, Copy to Project, Delete`.
@@ -700,10 +700,10 @@ Format per screen: layout → controls (verbatim) → empty state → menus → 
 - **Research collection** (Mock 045):
   - Header `Collection` / `Research — Police Procedure` / `8 sources`.
   - Rows carry `Why it matters: …` or `Linked to: …` plus a verification flag (§1.7).
-  - Note: `Verification flags are yours to set. Straft Studio never marks research as "true" just because you imported it.`
+  - Note: `Verification flags are yours to set. Straft never marks research as "true" just because you imported it.`
 - **New Collection** (Mock 046, sm):
   - Field `Name *`.
-  - Hint: `Examples: Ending ideas · Visual References · Crazy scenes · Locations · Research · Music · Things to remember. Straft Studio never prescribes names.`
+  - Hint: `Examples: Ending ideas · Visual References · Crazy scenes · Locations · Research · Music · Things to remember. Straft never prescribes names.`
   - Buttons `Cancel`, `Create`.
 - **Shortcuts:** Ctrl/Cmd+F search; Delete deletes the selection; Enter opens; Quick Capture Enter / Ctrl+Enter save, Esc cancel.
 - **Errors:** missing external references stay visible with an unavailable indicator; failed adds report only the failed items.
@@ -751,7 +751,7 @@ Format per screen: layout → controls (verbatim) → empty state → menus → 
   - Act: Rename · Move · Add Sequence · Add Scene · Add Comment · Delete
 - **Multi-select** (Mock 057): bar `3 cards selected | Move, Duplicate, Park, Export, Tag, Delete`. Modifier+click selects.
 - **Parking Lot** (Mock 058; §80.5): different background and dashed border. Card examples: `Cool scene but doesn't fit: the wedding band`, `Cut for now: …`.
-- **Duplicate** (Mock 059), callout: `Duplicate and experiment` / `Duplicate creates a brand-new, independent card with the same description, heading, notes and attachments.` / `Both cards live side by side so you can compare them visually and decide which survives. Straft Studio never tries to merge them.`
+- **Duplicate** (Mock 059), callout: `Duplicate and experiment` / `Duplicate creates a brand-new, independent card with the same description, heading, notes and attachments.` / `Both cards live side by side so you can compare them visually and decide which survives. Straft never tries to merge them.`
 - **New Act** (Mock 051): inline title-only creation. An empty Act shows `Add a sequence or scene.` An empty Sequence (spec) shows `Drop scenes here.`
 - **Beat drawer** (Mock 060, 340px):
   - Type `Beat Card`. Fields `Beat text`, `Note (optional)` (`Add a note…`), `Colour (optional)`.
@@ -840,7 +840,7 @@ Format per screen: layout → controls (verbatim) → empty state → menus → 
 - Header `Story Timeline` / `Optional. Useful only when time continuity matters.` with `Assign Story Day`.
 - Groups: `DAY 1 3 scenes` with rows such as `Sc 1 EXT. BUS STOP — NIGHT night`.
 - `Unassigned 37 scenes` / `Scenes you have not given a story day yet. This is fine — story days are optional.`
-- Soft warning card `Continuity note`: `Scene 9 (Day 1) refers to an event in Scene 12 (Day 3).` / `This is a soft warning. Straft Studio never reorders scenes for you.`
+- Soft warning card `Continuity note`: `Scene 9 (Day 1) refers to an event in Scene 12 (Day 3).` / `This is a soft warning. Straft never reorders scenes for you.`
 
 ### 3.11 Screenplay — Standard mode (Spec §23, §82; Mocks 075–076)
 - **Question:** "What is the movie on the page?"
@@ -963,7 +963,7 @@ Format per screen: layout → controls (verbatim) → empty state → menus → 
 
 ### 3.18 Screenplay Import (Spec §32; Mocks 091–094)
 - **Step 1 — Select source** (lg 780px):
-  - Title `Import Screenplay` / `What existing script do you want to bring into Straft Studio?`
+  - Title `Import Screenplay` / `What existing script do you want to bring into Straft?`
   - Stepper `1 Select source · 2 Preview interpretation · 3 Import`.
   - `Choose a file` (`PDF · Final Draft (.fdx) · Fountain · TXT · DOCX`) with `Browse…`, or `…or paste screenplay text` (textarea).
   - Note: `Importing never replaces your current screenplay. If one exists, the script arrives as a new screenplay or a new draft.`
@@ -1009,7 +1009,7 @@ Format per screen: layout → controls (verbatim) → empty state → menus → 
   - `Series: Monsoon Diaries` / `Which episode am I working on?`
   - `Add Season`, `Add Episode`; season segment `Season 1` | `Season 2`; view segment `List` | `Season Board`.
   - Episode rows `E01 Pilot — First Rain` with summary and status chip (`Locked`, `Writing`, `Development`, `Idea`).
-  - Side card `Series references`: `Recurring characters`, `Recurring locations`, with the note `Episodes can reference these lightweight lists. Straft Studio does not require you to manage cross-episode continuity.`
+  - Side card `Series references`: `Recurring characters`, `Recurring locations`, with the note `Episodes can reference these lightweight lists. Straft does not require you to manage cross-episode continuity.`
   - Nav, top bar and status work as normal (`Series · Monsoon Diaries`).
 - **Season Board:** `Season 1 — Board` / `Plan the season at a glance. Drag episode cards to reorder.` with `Back to list`. Cards: `Episode N`, title, summary.
 - Empty: `Create your first episode.`
@@ -1032,7 +1032,7 @@ Format per screen: layout → controls (verbatim) → empty state → menus → 
 - **Start Production Setup** (md):
   - `Handing the script over to production.` / `Which screenplay draft should become the production source ?`
   - Radio cards: `Draft 6 — Shooting Draft` `Locked` `42 scenes · locked 26 Sep 2026`; `Draft 7 — Director Rewrite` `Not locked · 44 scenes`.
-  - `Straft Studio will create or initialise`: `Breakdown scenes`, `Production catalog`, `Shot-list scene containers`, `Storyboard scene containers`, `Scheduling source`.
+  - `Straft will create or initialise`: `Breakdown scenes`, `Production catalog`, `Shot-list scene containers`, `Storyboard scene containers`, `Scheduling source`.
   - Note `You will not recreate any scene by hand. Your screenplay is not changed.`
   - Buttons `Cancel`, `Set as Production Source`.
 
@@ -1196,7 +1196,7 @@ Format per screen: layout → controls (verbatim) → empty state → menus → 
 - **Grouping suggestion** (drawer 340px):
   - `Scenes 12, 18 and 21 all use the same location.` (`Old Railway Station · confirmed`) / `You may reduce location changes by grouping them.`
   - Buttons `Ask for suggestion`, `Apply manually`, `Dismiss`.
-  - Footer `Suggestions are advice. Straft Studio never rearranges your schedule silently. If nothing helpful is found it says: “No obvious grouping improvement found.”`
+  - Footer `Suggestions are advice. Straft never rearranges your schedule silently. If nothing helpful is found it says: “No obvious grouping improvement found.”`
   - Spec controls: Ask for suggestion, Review, Dismiss, Apply manually, Keep anyway.
 - **Script changed** (md):
   - Title `Script changed in 3 scheduled scenes` / `The production source script changed. Your schedule has not been changed.`
@@ -1275,7 +1275,7 @@ Format per screen: layout → controls (verbatim) → empty state → menus → 
 
 ### 3.34 Budget (Spec §57, P1; Mock 150)
 - `Budget snapshot` / `How much are we roughly planning to spend?` with `Export` and `Add Line`.
-- Banner: `Use a simple estimate for planning. Formal accounting is outside Straft Studio.` This is also the spec's empty-state text.
+- Banner: `Use a simple estimate for planning. Formal accounting is outside Straft.` This is also the spec's empty-state text.
 - Tiles `Planned total` (`₹ 12,00,000`), `Contingency` (`10% ₹ 1,20,000`), `Entered so far`.
 - Table `Category | Line item | Amount`.
 - A line requires a description and a non-negative amount. Negative or malformed values are rejected; valid lines are kept.
@@ -1376,7 +1376,7 @@ Format per screen: layout → controls (verbatim) → empty state → menus → 
   - `Import report`: `Validated ✓ · 2 linked external files are missing on this PC (the project still opens).`
   - Import never silently replaces the current project.
 - **Drive lost** (md):
-  - Title `The project drive was disconnected` / `Straft Studio can no longer reach E:\Films\BLACK RAIN. Your latest edits are kept in memory and have not been lost.` / `No second copy of the project has been created. Reconnect the drive and Straft Studio will continue saving to the same project.`
+  - Title `The project drive was disconnected` / `Straft can no longer reach E:\Films\BLACK RAIN. Your latest edits are kept in memory and have not been lost.` / `No second copy of the project has been created. Reconnect the drive and Straft will continue saving to the same project.`
   - Buttons `Save Backup Copy…`, `Try Again`.
 - **Offline** (Spec §69; Mock 173): normal state; the status strip shows `Offline · Local Project Saved`. Spec text: `Offline — your project is stored locally.` All core workflows remain enabled; AI may be unavailable. Never claim a cloud backup exists.
 
@@ -1397,12 +1397,12 @@ Format per screen: layout → controls (verbatim) → empty state → menus → 
   - The preview must show: counts, modules, structured references, excluded raw text, locked/unauthorised targets, conflicts, resulting state.
 - **Stale** (Mock 178): `This proposal is out of date` / `The project changed after this proposal was prepared (2 scenes edited). It has not been applied.` with `Re-check & Review` and `Cancel`; footnote `AI never applies a stale proposal blindly.`
 - **External disclosure** (Mock 179, dialog md):
-  - Title `Send to an external AI provider?` / `Content from your project will leave Straft Studio and be sent to an external AI service.`
+  - Title `Send to an external AI provider?` / `Content from your project will leave Straft and be sent to an external AI service.`
   - Rows `Provider`, `Context`, `Data sent`, `Private notes` (`Excluded`), `Why`.
-  - Note `Exact counts (for example how many scenes) are computed inside Straft Studio and never need to be sent.`
+  - Note `Exact counts (for example how many scenes) are computed inside Straft and never need to be sent.`
   - Buttons `Cancel`, `Review context…`, `Send to External AI`.
   - Spec controls: Review context / Continue / Cancel. States: Awaiting consent, Sending, Canceled.
-- **Unavailable** (Mock 180): chip `Off`; empty state `AI is not available right now` / `No local model is configured and there is no connection to an external provider. Everything else in Straft Studio works normally.` with `Set up AI…`.
+- **Unavailable** (Mock 180): chip `Off`; empty state `AI is not available right now` / `No local model is configured and there is no connection to an external provider. Everything else in Straft works normally.` with `Set up AI…`.
 - **Denied** (Mock 181): `I can't do part of that.` with bullets such as `You are a Commenter on this project, so deleting cards is not available to you.` / `Nothing was changed.` Private request: `The requested information is private and cannot be accessed in this context.`
 - **All spec states:** AI off, Ready, Interpreting, Retrieving, Generating, Answer, Mutation preview, Awaiting approval, Applying, Applied, Rejected, Stale, Conflict, Failed, External disclosure, Unavailable.
 - **Mutation flow:** resolve target/scope → check permissions/state → prepare exact Change Set → preview → explicit acceptance → apply through the normal action → undo/activity.

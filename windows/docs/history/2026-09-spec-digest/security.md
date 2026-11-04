@@ -11,7 +11,7 @@ Conventions: "Spec:" means near-verbatim wording. **NOT SPECIFIED** means the sp
 
 ## 0. Contract and concepts (§0)
 
-- **Central principle:** **"The filmmaker owns the project; Straft Studio is the workspace."**
+- **Central principle:** **"The filmmaker owns the project; Straft is the workspace."**
 - Security cannot be reduced to "protect the cloud account". Because there is no account, the spec protects:
   - local project access
   - user/project permissions
@@ -25,7 +25,7 @@ Conventions: "Spec:" means near-verbatim wording. **NOT SPECIFIED** means the sp
   - imported content
   - activity history
   - external-provider disclosure (⚠ SUPERSEDED)
-- The header operating model reads: "optional local AI; **optional external AI** (⚠ SUPERSEDED); optional local-network collaboration; no mandatory Straft Studio cloud".
+- The header operating model reads: "optional local AI; **optional external AI** (⚠ SUPERSEDED); optional local-network collaboration; no mandatory Straft cloud".
 - Governing rules (§0.2):
   - The PRD owns intent/scope.
   - The FSD owns behavior.
@@ -46,8 +46,8 @@ Conventions: "Spec:" means near-verbatim wording. **NOT SPECIFIED** means the sp
 
 | # | Principle | Rule |
 |---|---|---|
-| 1.1 | Local ownership | The saved local project is the primary state. Straft Studio must not behave as if the platform owns it |
-| 1.2 | No mandatory cloud account | Create, open, edit, save, import, export, backup, recovery, and core work must not depend on a Straft Studio cloud account |
+| 1.1 | Local ownership | The saved local project is the primary state. Straft must not behave as if the platform owns it |
+| 1.2 | No mandatory cloud account | Create, open, edit, save, import, export, backup, recovery, and core work must not depend on a Straft cloud account |
 | 1.3 | **No silent transmission** | "Project information must not be transmitted outside the local application merely because a user opened a project, edited a screenplay, or used a normal offline-capable workflow" |
 | 1.4 | Explicit external AI disclosure | ⚠ SUPERSEDED (no external AI) |
 | 1.5 | Scope-limited disclosure | Only the context required for the operation. ⚠ It is framed for external AI, but the minimization principle still applies to local model context (§9.1) |
@@ -66,14 +66,14 @@ Conventions: "Spec:" means near-verbatim wording. **NOT SPECIFIED** means the sp
   - breakdowns, catalog, locations, cast/crew records, moodboards, storyboard panels, shots, schedules, call sheets
   - project notes, tasks, lightweight budget, project files, history/recovery state, metadata
   - "The user's local project file is the primary saved working asset."
-- **Straft Studio is not the owner (§2.2).** It "must not present ordinary project data as if it were owned by Straft Studio."
+- **Straft is not the owner (§2.2).** It "must not present ordinary project data as if it were owned by Straft."
 - **Ownership is not unrestricted collaborator access (§2.3).** Sharing does not erase role restrictions, project scope, object/state restrictions, private-note boundaries, screenplay lock, package boundaries, or AI permission boundaries.
 - **Export does not transfer ownership (§2.4).** The four export types:
   - Document export = snapshot
   - Exchange Package = portable collaboration/review snapshot
   - Full Project Package = portable working-project transfer
   - Backup Package = recovery copy
-  - None of them means "Straft Studio taking ownership".
+  - None of them means "Straft taking ownership".
 - **Open-as-copy (§2.5).** A Full Project Package opened as a copy gets a new identity, distinct from the original. The source identity may remain as provenance. The copy must not "accidentally become a second live write path to the original project."
 - **"Replace Existing After Backup" (§2.6)** is a deliberate local replacement, not sync. It does not give the source package permanent control. It is subject to the destination user's permissions and the import safety rules.
 - **Multi-user (§40):**
@@ -82,7 +82,7 @@ Conventions: "Spec:" means near-verbatim wording. **NOT SPECIFIED** means the sp
   - "Private does not mean invisible to the owner": the owner's Private Notes remain in *their* context.
   - Content deliberately turned into shared content follows normal permissions.
 - **Removing a collaborator (§40.5)** changes *future* access only. It does not recall exported PDFs, package files, screenshots, copied text, or other transferred material.
-- **Exported copies (§62).** Distinguish "Straft Studio access control" from "Control over copies already exported". Make outgoing scope clear before export and do not promise "impossible revocation".
+- **Exported copies (§62).** Distinguish "Straft access control" from "Control over copies already exported". Make outgoing scope clear before export and do not promise "impossible revocation".
 - **AI provenance (§43).** "AI output is not project authority." Only the final accepted application mutation becomes project state. "The model itself never becomes an alternate project owner or database."
 - **Source of truth (§41).** A security feature "must not create a second writable copy" of any canonical source:
 
@@ -318,7 +318,7 @@ Data minimization (§9.1) applies even locally:
 - **No encryption is prescribed:** no specific algorithm, encrypted DB format, full-disk encryption, file-level encryption, hardware keys, or KMS. Implementation "may provide additional local encryption, but the product may claim it only when it is actually implemented and tested."
 - **§12.3:** "Local-first does not mean 'automatically secure.'" Anyone with machine or file access may reach the data. The product "must not falsely tell users that keeping a project local automatically makes it inaccessible."
 - **User responsibility (§12.4, §45):**
-  - Straft Studio controls: permission enforcement, private-note boundary, scope selection, AI approval, no blind overwrite, external AI disclosure (⚠), offline behavior, and local persistence rules.
+  - Straft controls: permission enforcement, private-note boundary, scope selection, AI approval, no blind overwrite, external AI disclosure (⚠), offline behavior, and local persistence rules.
   - The user environment controls: physical machine access, OS file permissions, storage-device custody, and who receives exported files.
   - External providers control: model processing, retention, and account/data policies (⚠ N/A).
 - **OS file-permission integration is NOT SPECIFIED** (§66.3).
@@ -398,7 +398,7 @@ Implementation must choose its own temp handling and treat temp data as project-
   - Project: "available according to local project storage, backup, recovery, archive, and deletion behavior."
   - Activity: "meaningful project history, not a full surveillance log."
   - AI conversation: "may be retained according to product settings." There is no universal period, and the product "must not invent a fixed retention promise in product documentation unless separately specified."
-  - External provider retention: outside Straft Studio control (⚠ N/A).
+  - External provider retention: outside Straft control (⚠ N/A).
 - **"Recently Deleted" UI label, retention window, and auto-purge: NOT SPECIFIED.** Only the Deleted Item concept and the "where supported" recovery boundary exist. Any auto-purge timer is a new decision, and SEC-050 forbids unsupported claims about it.
 
 ## 16. Sharing, export, and package rules
@@ -456,7 +456,7 @@ Implementation must choose its own temp handling and treat temp data as project-
 - **Identity mapping (§25.7).** Preserve identity when the package represents an existing object. Create a new identity for a copy. Never merge a new copy into an existing canonical object.
 - **Validation before apply (§25.8).** The Import Session holds the incoming package, target project, base snapshot, preview state, conflicts, and result state. The package is never a direct write-through.
 - **No blind overwrite (§25.9).** Missing external refs appear in the import report (§25.10).
-- **§25.11 (prompt-injection relevant):** "Imported text does not become a Straft Studio command simply because it contains words resembling commands or instructions."
+- **§25.11 (prompt-injection relevant):** "Imported text does not become a Straft command simply because it contains words resembling commands or instructions."
 - **Same-project identity collision (§48):** **Open as copy / replace after backup / cancel**.
 - **Locks.** Import into a locked area follows the same state/permission rules as manual edits (§27.4).
 
@@ -545,7 +545,7 @@ Implementation must choose its own temp handling and treat temp data as project-
   - recovery decision
   - destructive-action confirmation
 - **"Do not create an enterprise security dashboard"** (§55.2). Use plain language.
-- **Out of scope (§49):** cloud identity, account registration, SSO, password policy, MFA, OAuth/OIDC, certificate management, specific LAN crypto, specific encryption, HSM, SIEM, server-side telemetry, DLP, compliance certification, provider retention terms, biometrics, DRM. None may be "presented as existing Straft Studio features unless separately specified, implemented, and tested."
+- **Out of scope (§49):** cloud identity, account registration, SSO, password policy, MFA, OAuth/OIDC, certificate management, specific LAN crypto, specific encryption, HSM, SIEM, server-side telemetry, DLP, compliance certification, provider retention terms, biometrics, DRM. None may be "presented as existing Straft features unless separately specified, implemented, and tested."
 
 ## 22. Threat list and required controls (§48, verbatim; plus §47 path invariants)
 
@@ -589,7 +589,7 @@ Implementation must choose its own temp handling and treat temp data as project-
 ## 23. Requirements SEC-001..060 (condensed)
 
 - 001 Local project ownership
-- 002 No mandatory Straft Studio cloud
+- 002 No mandatory Straft cloud
 - 003 Permission inheritance (local, exchange, LAN, AI, import, export)
 - 004 Canonical role set: Owner/Editor/Commenter/Viewer/Export-only
 - 005 Owner control
@@ -653,7 +653,7 @@ Implementation must choose its own temp handling and treat temp data as project-
 
 | ID | Criterion |
 |---|---|
-| 001 | Create/open/edit/save/back up/import/export/recover with no Straft Studio cloud |
+| 001 | Create/open/edit/save/back up/import/export/recover with no Straft cloud |
 | 002 | Viewer cannot perform edit-requiring op |
 | 003 | Commenter cannot bypass via AI/import/other workflow |
 | 004 | Export-only can create allowed snapshots/packages, cannot enter live editing |
@@ -701,7 +701,7 @@ Implementation must choose its own temp handling and treat temp data as project-
 | 046 | No unsupported encryption/retention/cloud-backup/revocation claims |
 | 047 | Snapshots immutable |
 | 048 | Approval doesn't bypass role/object permissions |
-| 049 | Provider processing not represented as Straft Studio storage ⚠ N/A |
+| 049 | Provider processing not represented as Straft storage ⚠ N/A |
 | 050 | App consistently communicates project is the filmmaker's |
 
 **QA scenarios (§65):**

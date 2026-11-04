@@ -6,10 +6,10 @@
 
 use std::path::{Path, PathBuf};
 
+use serde_json::{Value, json};
 use straft_application::AppConfig;
 use straft_application::modules::project::fault;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 fn test_trash() -> &'static Path {
     fault::trash_into(
@@ -201,8 +201,7 @@ fn a_new_project_in_a_fake_onedrive_folder_is_flagged_and_existing_projects_stay
 #[test]
 fn the_app_refuses_to_start_without_a_documents_folder() {
     let some = |p: &str| Some(PathBuf::from(p));
-    let e =
-        AppConfig::from_system_folders(some(r"C:\Data\Straft Studio"), None, None, "1.0").unwrap_err();
+    let e = AppConfig::from_system_folders(some(r"C:\Data\Straft"), None, None, "1.0").unwrap_err();
     assert_eq!(e.code.0, "storage.documents_unknown");
     assert!(
         e.message.contains("can't find your Documents folder"),
@@ -376,4 +375,65 @@ fn start_up_removes_cover_files_no_project_names_and_nothing_else() {
         "the named cover stays"
     );
     assert!(!recent(&env)[0]["cover"].is_null());
+}
+
+/// Turn a closed project into what an earlier release left on disk: the old folder extension,
+/// the old manifest name and the old format value. Returns the new folder.
+fn make_legacy(folder: &Path) -> PathBuf {
+    use straft_platform::legacy_names;
+    use straft_project_format as pf;
+    let mut manifest: Value =
+        serde_json::from_slice(&std::fs::read(folder.join(pf::MANIFEST_FILE)).unwrap()).unwrap();
+    manifest["format"] = legacy_names::MANIFEST_FORMAT.into();
+    std::fs::write(
+        folder.join(legacy_names::MANIFEST_FILE),
+        serde_json::to_vec_pretty(&manifest).unwrap(),
+    )
+    .unwrap();
+    std::fs::remove_file(folder.join(pf::MANIFEST_FILE)).unwrap();
+    let legacy = folder.with_extension(legacy_names::PROJECT_EXTENSION);
+    std::fs::rename(folder, &legacy).unwrap();
+    legacy
+}
+
+#[test]
+fn picking_the_old_manifest_file_opens_the_project_too() {
+    use straft_project_format as pf;
+    let env = TestEnv::new();
+    let (_, path) = closed_project(&env, "Picked By Mistake");
+    let legacy = make_legacy(&path);
+    let opened = env.ok(
+        "project.open",
+        json!({ "path": legacy.join(straft_platform::legacy_names::MANIFEST_FILE) }),
+    );
+    assert_eq!(opened["project"]["title"], "Picked By Mistake");
+    assert!(
+        Path::new(opened["project"]["path"].as_str().unwrap())
+            .join(pf::MANIFEST_FILE)
+            .is_file()
+    );
+}
+
+#[test]
+fn a_legacy_project_from_a_newer_version_is_refused_and_nothing_on_disk_changes() {
+    use straft_project_format as pf;
+    let env = TestEnv::new();
+    let (id, path) = closed_project(&env, "From The Future");
+    let legacy = make_legacy(&path);
+    let manifest = legacy.join(straft_platform::legacy_names::MANIFEST_FILE);
+    let mut v: Value = serde_json::from_slice(&std::fs::read(&manifest).unwrap()).unwrap();
+    v["formatVersion"] = json!(straft_domain::PROJECT_FORMAT_VERSION + 1);
+    std::fs::write(&manifest, serde_json::to_vec(&v).unwrap()).unwrap();
+    let before = std::fs::read(&manifest).unwrap();
+
+    assert_eq!(
+        env.err("project.open", json!({ "path": legacy })),
+        "project_format.too_new"
+    );
+    assert_eq!(std::fs::read(&manifest).unwrap(), before);
+    assert!(legacy.is_dir() && !legacy.join(pf::MANIFEST_FILE).exists());
+    let rows = recent(&env);
+    assert_eq!(rows.len(), 1, "{rows:?}");
+    assert_eq!(rows[0]["projectId"], json!(id));
+    assert_eq!(Path::new(rows[0]["path"].as_str().unwrap()), path);
 }

@@ -31,7 +31,7 @@ vi.mock("../ipc/client", async () => {
   };
 });
 
-const status: AiStatusDto = { available: true, mode: "AI Ready", bundleState: "NotChecked", problem: null, runtimeState: "Installed", runtimeMessage: null, localOnly: true };
+const status: AiStatusDto = { available: true, mode: "Ready", bundleState: "NotChecked", problem: null, runtimeState: "Installed", runtimeMessage: null, localOnly: true };
 
 function exchange(id: string, text: string): AiExchange {
   return {

@@ -5,8 +5,8 @@ use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::rc::Rc;
 
-use straft_domain::{Actor, AppResult};
 use rusqlite::{Connection, OptionalExtension};
+use straft_domain::{Actor, AppResult};
 
 use super::guard::Guard;
 use super::words::{Msg, title_case};
@@ -45,6 +45,8 @@ pub struct FetchCtx<'a> {
     pub message: String,
     pub m: Msg,
     pub guard: Guard,
+    /// Whether a picked section holds the cast (a leaf that names people): only then may a fact say who plays a character.
+    pub cast_picked: bool,
     drafts: RefCell<HashMap<String, Option<queries::DraftRef>>>,
     presence: RefCell<HashMap<String, Rc<Presence>>>,
     days: RefCell<Option<Rc<Vec<DayRow>>>>,
@@ -64,6 +66,35 @@ impl<'a> FetchCtx<'a> {
             m: Msg::new(&message),
             message,
             guard: Guard::for_actor(input.actor),
+            cast_picked: input.sections.iter().any(|p| {
+                crate::modules::ai::sections::leaf(&p.leaf)
+                    .is_some_and(|l| l.name_kinds.contains(&Kind::Person))
+            }),
+            drafts: RefCell::new(HashMap::new()),
+            presence: RefCell::new(HashMap::new()),
+            days: RefCell::new(None),
+        }
+    }
+
+    /// Read this screenplay from this draft (the one a Screenplay pick chose) instead of its current one.
+    pub fn pin_draft(&self, draft: queries::DraftRef) {
+        self.drafts
+            .borrow_mut()
+            .insert(draft.screenplay_id.clone(), Some(draft));
+    }
+
+    /// The same context for a picked section: its topic words count as said (`Msg::with_topics`).
+    /// The caches start empty; a section reads a handful of drafts at most.
+    pub fn topic(&self, words: &[&str]) -> FetchCtx<'a> {
+        FetchCtx {
+            conn: self.conn,
+            actor: self.actor,
+            index: self.index,
+            core: self.core,
+            message: self.message.clone(),
+            m: Msg::with_topics(&self.message, words),
+            guard: self.guard.clone(),
+            cast_picked: self.cast_picked,
             drafts: RefCell::new(HashMap::new()),
             presence: RefCell::new(HashMap::new()),
             days: RefCell::new(None),

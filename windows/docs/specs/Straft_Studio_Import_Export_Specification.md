@@ -10,7 +10,7 @@
 
 **Platform:** Windows + macOS desktop application
 
-**Operating model:** Local-first, offline-capable, user-owned project files; optional external AI; optional local-network collaboration; no mandatory Straft Studio cloud
+**Operating model:** Local-first, offline-capable, user-owned project files; optional external AI; optional local-network collaboration; no mandatory Straft cloud
 
 **Source baseline:**
 - `Straft_Studio_Mega_PRD_Aligned_Updated(1).md`
@@ -80,7 +80,7 @@ This document joins those specifications; it does not replace them.
 
 # 1. Import/Export Taxonomy
 
-Straft Studio uses four distinct portability concepts.
+Straft uses four distinct portability concepts.
 
 ```text
 A. Document Export
@@ -126,7 +126,7 @@ Document exports are snapshots of the source state at export time.
 
 ## 1.2 Exchange Package
 
-An Exchange Package is a portable project-specific subset intended for review or controlled collaboration without requiring Straft Studio cloud infrastructure.
+An Exchange Package is a portable project-specific subset intended for review or controlled collaboration without requiring Straft cloud infrastructure.
 
 Examples:
 
@@ -141,7 +141,7 @@ An Exchange Package may contain editable project objects, comments, annotations,
 
 ## 1.3 Full Project Package
 
-A Full Project Package is intended to move a working Straft Studio project to another installation.
+A Full Project Package is intended to move a working Straft project to another installation.
 
 It is not merely a PDF collection and is not a review package.
 
@@ -276,7 +276,7 @@ The current product contract supports:
 
 ## 4.2 Import intent
 
-Screenplay import is intended to turn an existing screenplay into Straft Studio screenplay content.
+Screenplay import is intended to turn an existing screenplay into Straft screenplay content.
 
 It is not intended to force every document into screenplay structure.
 
@@ -355,11 +355,11 @@ It must not claim guaranteed screenplay fidelity when structure is ambiguous.
 
 Fountain has explicit screenplay-oriented conventions.
 
-Where valid Fountain structure exists, it should become equivalent Straft Studio screenplay elements.
+Where valid Fountain structure exists, it should become equivalent Straft screenplay elements.
 
 ## 4.10 FDX import
 
-FDX should map supported screenplay structures to Straft Studio screenplay elements as directly as possible.
+FDX should map supported screenplay structures to Straft screenplay elements as directly as possible.
 
 Unsupported FDX-specific metadata may be retained as import metadata or ignored according to the documented import result, but it must not silently corrupt screenplay content.
 
@@ -400,7 +400,7 @@ It should preserve:
 
 FDX export should preserve screenplay structure that maps to FDX.
 
-Unsupported Straft Studio metadata remains internal and must not block ordinary FDX export.
+Unsupported Straft metadata remains internal and must not block ordinary FDX export.
 
 ## 5.4 Fountain
 
@@ -549,7 +549,7 @@ A backup should preserve enough supported project state to restore the project a
 
 ## 8.2 Backup before risky import
 
-For a substantial full-project or change-heavy import, Straft Studio may offer:
+For a substantial full-project or change-heavy import, Straft may offer:
 
 > Create Backup Before Import
 
@@ -574,7 +574,7 @@ The backup summary must distinguish:
 
 Exchange packages solve:
 
-> “I need another person to review or edit this selected part of the project without giving them the entire project or requiring Straft Studio cloud.”
+> “I need another person to review or edit this selected part of the project without giving them the entire project or requiring Straft cloud.”
 
 ## 9.2 Package types
 
@@ -822,7 +822,7 @@ If the package content is intentionally a copy/new object, import creates a new 
 
 ## 14.3 Missing identity
 
-If an old/non-Straft Studio source lacks Straft Studio identity, mapping must use supported contextual rules and surface ambiguity.
+If an old/non-Straft source lacks Straft identity, mapping must use supported contextual rules and surface ambiguity.
 
 ## 14.4 Display numbers are never identity
 
@@ -978,7 +978,7 @@ Unmapped:
 2 annotations
 ```
 
-Straft Studio should support granular safe application where the package type permits it.
+Straft should support granular safe application where the package type permits it.
 
 The system must never report:
 
@@ -1057,13 +1057,13 @@ Round-trip behavior is format-specific.
 | Exchange package | Source identity and selected comments/objects remain mappable without cloud access |
 | Full Project Package | Reopens as a supported working project or safe copy |
 
-“Round-trip” does not mean every internal Straft Studio field becomes portable through every ordinary document format.
+“Round-trip” does not mean every internal Straft field becomes portable through every ordinary document format.
 
 ---
 
 # 24. Unsupported Feature Handling
 
-If a format cannot represent some Straft Studio metadata:
+If a format cannot represent some Straft metadata:
 
 1. preserve it internally when exporting the project itself;
 2. omit it from ordinary document output where appropriate;
@@ -1246,7 +1246,7 @@ Local work
 → Import/reconcile
 ```
 
-No Straft Studio cloud is required.
+No Straft cloud is required.
 
 ---
 
@@ -1466,6 +1466,6 @@ recovery backup
 
 The common rule is:
 
-> **Get the project safely into or out of Straft Studio without making the user's existing work ambiguous, silently overwritten, historically rewritten, or dependent on a cloud service.**
+> **Get the project safely into or out of Straft without making the user's existing work ambiguous, silently overwritten, historically rewritten, or dependent on a cloud service.**
 
 The import/export system is successful when a user can move a screenplay, review a Beat Board, exchange a breakdown, transfer an entire project, or recover from a backup while always knowing what is being exported, what is being imported, what will change, and what will remain untouched.

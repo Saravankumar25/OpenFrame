@@ -4,7 +4,7 @@
 |---|---|
 | Export family | Beat Board (UI name; the Story workspace's board export). Operation `story.export_board` |
 | Variant | Card Board layout (`layout=board`, portrait; v2, user decision) |
-| Status | **Design reference. Not integrated; not validated against Straft Studio's Rust renderer.** |
+| Status | **Design reference. Not integrated; not validated against Straft's Rust renderer.** |
 | Repo commit | `2f5a045416bd2125801329533fc47f986ccc8174` (`main`, sparse checkout, read-only) |
 | Date | 2026-10-23 |
 | Deliverables | `Beat_Board_Card_Board.html` (the design), `Beat_Board_Card_Board.pdf` (rendered from it), `stress-test/Beat_Board_Card_Board_STRESS_TEST.html/.pdf` (everything on, project scope, 3 boards), `stress-test/Beat_Board_Card_Board_STRESS_TEST_B_options_off.html/.pdf` (notes, comments, Parking Lot all off) |
@@ -17,7 +17,7 @@ v1 of this document was landscape (792 x 612 pt, 4 cards per row, 7 pages). **Us
 * The Outline layout is untouched (already portrait).
 
 ## A. Purpose and users
-The card board is the **pin-up / binder copy** of the Beat Board: each sequence is a set of cards in rows and each act a section, like the on-screen board. It is printed portrait (user decision, v2) so that it prints, punches, binds and files like every other Straft Studio document, and is read at arm's length or passed round a room.
+The card board is the **pin-up / binder copy** of the Beat Board: each sequence is a set of cards in rows and each act a section, like the on-screen board. It is printed portrait (user decision, v2) so that it prints, punches, binds and files like every other Straft document, and is read at arm's length or passed round a room.
 * **Writer / story editor**: sees the shape of an act at a glance, which sequence has too many or too few cards, where the beats sit.
 * **Director**: scans cards (slugline + one-line description), the act-level beats, and the notes and comments that need a decision, without reading a list.
 * **Script supervisor / producer**: card numbers (board order), which cards belong to which sequence and act, parked ideas clearly set apart; a sequence that runs over a page must still be labelled on the next page.

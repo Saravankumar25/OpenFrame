@@ -561,7 +561,7 @@ E2E data root: C:\Straft\tests\e2e\.run\2026-10-17T20-26-35-380Z\75-ai-crash-saf
 E2E data root: C:\Straft\tests\e2e\.run\2026-10-17T20-26-35-380Z\76-ai-files-integrity
   specs: 76-ai-files-integrity.test.mjs
 ▶ Offline AI files: missing, damaged, whole again
-  ✖ a missing model file turns AI off and offers the download again; the rest of Straft Studio works (3022.8008ms)
+  ✖ a missing model file turns AI off and offers the download again; the rest of Straft works (3022.8008ms)
   ✔ Download again restores the files from the host and AI answers with the real model (33283.2075ms)
   ✔ an altered model of the right size is caught before any engine starts (6021.7083ms)
   ✔ an altered engine library is caught before launch and asks for a reinstall (10163.425ms)
@@ -575,7 +575,7 @@ E2E data root: C:\Straft\tests\e2e\.run\2026-10-17T20-26-35-380Z\76-ai-files-int
 ℹ todo 0
 ℹ duration_ms 54782.0655
 ✖ failing tests:
-✖ a missing model file turns AI off and offers the download again; the rest of Straft Studio works (3022.8008ms)
+✖ a missing model file turns AI off and offers the download again; the rest of Straft works (3022.8008ms)
 E2E data root: C:\Straft\tests\e2e\.run\2026-10-17T20-26-35-380Z\78-ai-download
   specs: 78-ai-download.test.mjs
 ▶ download Straft AI after install

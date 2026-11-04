@@ -32,6 +32,7 @@ function mainCheckout() {
   return r.status === 0 ? dirname(r.stdout.trim()) : here;
 }
 
+// The common git folder is the same from every worktree, so they all share one lock.
 const LOCK_DIR =
   process.env.STRAFT_CARGO_LOCK ??
   join(mainCheckout(), ".build-cache", "cargo-queue.lock");

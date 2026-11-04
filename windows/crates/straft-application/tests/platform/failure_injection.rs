@@ -25,10 +25,10 @@
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
+use serde_json::{Value, json};
 use straft_application::events::AppEvent;
 use straft_domain::AppError;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------------------------ helpers
 
@@ -484,7 +484,7 @@ fn m1_11_permission_denied_on_the_export_folder() {
 }
 
 /// The project database is read-only (attribute set by another tool or a restore from read-only
-/// media): Straft Studio never changes the file, every refusal is a human message, and the project
+/// media): Straft never changes the file, every refusal is a human message, and the project
 /// opens normally with all content once the attribute is cleared.
 #[cfg(windows)]
 #[test]
@@ -577,7 +577,7 @@ fn m1_11_export_folder_deleted_before_the_write() {
     }
     assert!(
         !dir.exists(),
-        "Straft Studio did not recreate a folder the user deleted"
+        "Straft did not recreate a folder the user deleted"
     );
     assert_eq!(content(env), before);
 }

@@ -72,7 +72,7 @@ pub struct Inputs<'a> {
 
 /// Room kept on top of the model for the engine's own buffers.
 pub const MARGIN_MB: u64 = 1024;
-/// System memory left for Windows and Straft Studio when integrated graphics borrow memory.
+/// System memory left for Windows and Straft when integrated graphics borrow memory.
 pub const SYSTEM_RESERVE_MB: u64 = 2048;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -150,9 +150,7 @@ impl CpuReason {
             CpuReason::NoVulkanLoader => {
                 "This computer's graphics driver does not offer what Straft AI needs."
             }
-            CpuReason::NoVulkanRuntime => {
-                "This copy of Straft Studio has no graphics card engine."
-            }
+            CpuReason::NoVulkanRuntime => "This copy of Straft Studio has no graphics card engine.",
             CpuReason::NoAdapter | CpuReason::OnlySoftware => "No graphics card was found.",
             CpuReason::NotEnoughMemory => {
                 "The graphics card does not have enough memory for Straft AI."

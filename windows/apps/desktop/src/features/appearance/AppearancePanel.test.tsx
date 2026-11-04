@@ -142,7 +142,7 @@ describe("Settings > Appearance", () => {
   });
 
   it("a refused theme says why, cannot be saved and changes nothing", async () => {
-    checkResult = { status: "rejected", theme: null, problems: ['The file has a setting Straft Studio does not know: "script".'], notes: [], contrast: [] };
+    checkResult = { status: "rejected", theme: null, problems: ['The file has a setting Straft does not know: "script".'], notes: [], contrast: [] };
     const user = userEvent.setup();
     renderWithClient(<AppearancePanel />);
     await user.click(await screen.findByRole("button", { name: "Paste Theme…" }));
@@ -150,7 +150,7 @@ describe("Settings > Appearance", () => {
     await user.click(within(dialog).getByLabelText("Theme text"));
     await user.paste('{"script":"alert(1)"}');
     await user.click(within(dialog).getByRole("button", { name: "Check Theme" }));
-    expect(await within(dialog).findByRole("alert")).toHaveTextContent('This theme cannot be used. Nothing was changed.The file has a setting Straft Studio does not know: "script".');
+    expect(await within(dialog).findByRole("alert")).toHaveTextContent('This theme cannot be used. Nothing was changed.The file has a setting Straft does not know: "script".');
     expect(within(dialog).getByRole("button", { name: "Save and Apply" })).toBeDisabled();
     expect(within(dialog).getByRole("button", { name: "Save to My Themes" })).toBeDisabled();
     expect(ops()).toEqual(["appearance.check_theme"]);

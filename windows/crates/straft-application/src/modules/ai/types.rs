@@ -293,7 +293,7 @@ impl PreviewRow {
 }
 
 /// A registry operation call inside a Change Set. Operations are always built
-/// by Straft Studio code from validated tool arguments, never taken verbatim from
+/// by Straft code from validated tool arguments, never taken verbatim from
 /// model output.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -393,8 +393,24 @@ pub struct AiResultDto {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub lane: Option<String>,
+    /// The section the question lives in when it was not picked (spec 12.4): the panel offers
+    /// "Add <label>".
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub pointer: Option<AiPointerDto>,
     #[ts(type = "number")]
     pub created_at: i64,
+}
+
+/// The leaf an answer pointed to.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub struct AiPointerDto {
+    /// `production/budget`
+    pub leaf: String,
+    /// The leaf as the button names it: `Budget`.
+    pub label: String,
 }
 
 /// One audited tool step of an agent run (agentic spec §5).

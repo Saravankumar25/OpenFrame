@@ -1,4 +1,4 @@
-// While a request runs the panel shows what the assistant is doing (progress events of THIS
+// While a request runs the panel shows what Straft AI is doing (progress events of THIS
 // conversation) with a Cancel button; a stopped request ends in an ordinary answer.
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -8,6 +8,7 @@ import type { AiStatusDto } from "../ipc/generated/AiStatusDto";
 import type { AiExchange } from "../ipc/generated/AiExchange";
 import type { AppEvent } from "../ipc/generated/AppEvent";
 import Assistant, { ResultView, newConversationId } from "./Conversation";
+import { useAiPicks } from "./sections";
 import type { AiResultDto } from "../ipc/generated/AiResultDto";
 
 const calls: { op: string; args: Record<string, unknown> }[] = [];
@@ -33,6 +34,13 @@ vi.mock("../ipc/client", async () => {
       switch (op) {
         case "ai.history":
           return { conversationId: null, exchanges: [] };
+        case "ai.sections":
+          return {
+            branches: [{ id: "screenplay", label: "Screenplay", leaves: [{ id: "screenplay/scenes", label: "Scenes", pathLabel: "Screenplay > Scenes", picker: "screenplay", note: null }] }],
+            screenplays: [{ id: "sp1", title: "BLACK RAIN", drafts: [{ id: "d1", name: "Draft 1", current: true }], scenesDraftId: "d1", scenes: [] }],
+            days: [],
+            callSheets: [],
+          };
         case "ai.index_status":
           return "Current";
         case "ai.ask":
@@ -50,7 +58,7 @@ vi.mock("../ipc/client", async () => {
 
 const status: AiStatusDto = {
   available: true,
-  mode: "AI Ready",
+  mode: "Ready",
   bundleState: "NotChecked",
   problem: null,
   runtimeState: "Ready",
@@ -83,6 +91,8 @@ beforeEach(() => {
   calls.length = 0;
   handlers.clear();
   finishAsk = null;
+  // A section is picked, as the person does before asking.
+  useAiPicks.getState().set([{ leaf: "screenplay/scenes" }]);
 });
 
 describe("progress while a request runs", () => {

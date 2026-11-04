@@ -4,10 +4,10 @@
 use std::sync::Arc;
 use std::time::Instant;
 
+use serde_json::{Value, json};
 use straft_ai_eval::fixture;
 use straft_application::core::{AppConfig, AppCore};
 use straft_application::events::RecordingSink;
-use serde_json::{Value, json};
 
 fn core_with_project() -> (tempfile::TempDir, Arc<AppCore>) {
     let dir = tempfile::tempdir().unwrap();
@@ -276,4 +276,65 @@ fn big_project_has_500_scenes_and_5000_notes() {
     );
     assert_eq!(len(&doc["scenes"]), fixture::BIG_SCENES);
     assert_eq!(len(&q(&core, "notes.list", json!({}))), fixture::BIG_NOTES);
+}
+
+#[test]
+fn low_tide_sections_adds_story_days_time_notes_and_a_global_vault() {
+    let (_dir, core) = core_with_project();
+    let built = fixture::build(&core, fixture::LOW_TIDE_SECTIONS).unwrap();
+
+    // The base data is still all there.
+    assert_eq!(len(&q(&core, "story.characters", json!({}))), 13);
+    assert_eq!(len(&q(&core, "locations.list", json!({}))), 16);
+
+    // Five Story Days over 23 scenes (22 left Unassigned), three time notes.
+    let t = q(
+        &core,
+        "story.timeline",
+        json!({ "screenplayId": built.screenplay_id }),
+    );
+    let groups = t["groups"].as_array().unwrap();
+    let n = |day: Option<&str>| {
+        groups
+            .iter()
+            .find(|g| g["storyDay"].as_str() == day)
+            .map_or(0, |g| len(&g["scenes"]))
+    };
+    assert_eq!(
+        [
+            Some("DAY 1"),
+            Some("DAY 2"),
+            Some("DAY 3"),
+            Some("DAY 4"),
+            Some("1999"),
+            None
+        ]
+        .map(n),
+        [5, 5, 4, 5, 4, 22]
+    );
+    let text = t.to_string();
+    for note in ["Late morning", "After midnight", "Dawn, a week later"] {
+        assert!(text.contains(note), "no time note {note}: {text}");
+    }
+
+    // The global vault holds four items, the project vault keeps its four.
+    let global = q(&core, "vault.list", json!({ "store": "global" }));
+    let project = q(&core, "vault.list", json!({ "store": "project" }));
+    let titles = |v: &Value| v.to_string();
+    for t in [
+        "Cold open idea",
+        "Line to steal",
+        "Lighting reference reel",
+        "Title ideas",
+    ] {
+        assert!(
+            titles(&global).contains(t),
+            "{t} missing from the global vault: {global}"
+        );
+        assert!(
+            !titles(&project).contains(t),
+            "{t} leaked into the project vault"
+        );
+    }
+    assert!(titles(&project).contains("Tide song lyrics idea"));
 }

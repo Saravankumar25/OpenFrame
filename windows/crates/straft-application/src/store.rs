@@ -12,12 +12,12 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::migrate::{self, Migration, MigrationPlan};
-use straft_persistence::undo::{self, Direction, RowChange, TableCatalog};
 use parking_lot::{Mutex, RwLock};
 use rusqlite::{Connection, OptionalExtension, TransactionBehavior, params};
 use serde::Serialize;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::migrate::{self, Migration, MigrationPlan};
+use straft_persistence::undo::{self, Direction, RowChange, TableCatalog};
 use ts_rs::TS;
 
 use crate::events::{AppEvent, EventSink, SaveState, SaveStatus, StoreKind};
@@ -60,7 +60,7 @@ impl MutationMeta {
             Capability::Import => "import into this project",
             Capability::ApplyChangeSet => "apply proposed changes",
             Capability::Export | Capability::CreatePackage => "export from this project",
-            Capability::UseAi => "use the assistant",
+            Capability::UseAi => "use Straft AI",
             Capability::View => "view this project",
         };
         Self {
@@ -350,18 +350,18 @@ impl Store {
             if !problems.is_empty() {
                 return Err(AppError::new(
                     "project_format.corrupt",
-                    "This project's data file is damaged. Straft Studio did not change it. You can restore it from a backup or recovery point.",
+                    "This project's data file is damaged. Straft did not change it. You can restore it from a backup or recovery point.",
                 )
                 .with_detail(problems.join("; ")));
             }
             // A project folder may come from anywhere: refuse schemas carrying code
-            // (triggers/views) Straft Studio didn't create, or hostile object names (PKG-03).
+            // (triggers/views) Straft didn't create, or hostile object names (PKG-03).
             let sql: Vec<&str> = migrations.iter().map(|m| m.sql).collect();
             let problems = straft_persistence::untrusted_schema_problems(&conn, &sql)?;
             if !problems.is_empty() {
                 return Err(AppError::new(
                     "project_format.untrusted_schema",
-                    "This project's data file contains content Straft Studio doesn't create, so it was not opened. Straft Studio did not change it.",
+                    "This project's data file contains content Straft doesn't create, so it was not opened. Straft did not change it.",
                 )
                 .with_detail(problems.join("; ")));
             }
@@ -377,7 +377,7 @@ impl Store {
             }
             MigrationPlan::Fresh { .. } if !create => {
                 return Err(AppError::project_format(
-                    "This project's data file is empty or is not a Straft Studio project.",
+                    "This project's data file is empty or is not a Straft project.",
                 ));
             }
             MigrationPlan::Upgrade { from, .. } => {

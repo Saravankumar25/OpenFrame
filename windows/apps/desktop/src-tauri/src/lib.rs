@@ -13,10 +13,10 @@ mod platform;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use serde_json::Value;
 use straft_application::events::{AppEvent, EventSink};
 use straft_application::{AppConfig, AppCore};
 use straft_domain::AppError;
-use serde_json::Value;
 use tauri::{AppHandle, Emitter, Manager, State};
 
 const EVENT_CHANNEL: &str = "of://event";
@@ -147,7 +147,7 @@ async fn of_open_asset(
 }
 
 /// Reveal a known location (project folder, export result, backup) in Explorer.
-/// Only paths that Straft Studio itself produced or registered are accepted.
+/// Only paths that Straft itself produced or registered are accepted.
 #[tauri::command]
 async fn of_reveal_path(
     state: State<'_, CoreState>,
@@ -183,16 +183,13 @@ async fn of_reveal_path(
             if !core.library_ready() {
                 return Err(AppError::new(
                     "library.setup_required",
-                    "Choose where Straft Studio keeps your work first.",
+                    "Choose where Straft keeps your work first.",
                 ));
             }
             let dir = core.data_root();
             std::fs::create_dir_all(&dir).map_err(|e| {
-                AppError::new(
-                    "internal.open_failed",
-                    "Straft Studio couldn't open that folder.",
-                )
-                .with_detail(e.to_string())
+                AppError::new("internal.open_failed", "Straft couldn't open that folder.")
+                    .with_detail(e.to_string())
             })?;
             dir
         }
@@ -218,7 +215,7 @@ async fn of_reveal_path(
             return open_path(dir, false);
         }
         "logs" => core.config.app_data_dir.join("logs"),
-        // Only files Straft Studio itself wrote this session to a location the user chose in a
+        // Only files Straft itself wrote this session to a location the user chose in a
         // save dialog (recorded server-side by the export/package/copy operations). An
         // arbitrary path from the webview (for example a UNC path that would leak credentials)
         // is refused before the filesystem is touched (PATH-01).
@@ -242,7 +239,7 @@ async fn of_open_url(url: String) -> Result<(), AppError> {
     let url = straft_security::web_link(&url)
         .ok_or_else(|| AppError::invalid_input("Only web links (http or https) can be opened."))?;
     straft_platform::shell::open_url(url).map_err(|e| {
-        AppError::new("internal.open_failed", "Straft Studio couldn't open that link.")
+        AppError::new("internal.open_failed", "Straft couldn't open that link.")
             .with_detail(e.to_string())
     })
 }
@@ -266,7 +263,7 @@ async fn of_close_window(
                 gate.unrelease();
                 return Err(AppError::new(
                     "internal.close_failed",
-                    "Straft Studio couldn't close the window.",
+                    "Straft couldn't close the window.",
                 )
                 .with_detail(e.to_string()));
             }
@@ -285,7 +282,7 @@ fn open_path(path: &std::path::Path, reveal: bool) -> Result<(), AppError> {
         straft_platform::shell::open_path(path)
     };
     r.map_err(|e| {
-        AppError::new("internal.open_failed", "Straft Studio couldn't open that file.")
+        AppError::new("internal.open_failed", "Straft couldn't open that file.")
             .with_detail(e.to_string())
     })
 }
@@ -308,7 +305,7 @@ where
 /// Log filter from `STRAFT_LOG` (Security baseline E7, log redaction test / P13).
 ///
 /// Development builds use the variable as written. Release builds accept only plain
-/// `level` and `target=level` directives: Straft Studio's own targets (`straft*`, which never
+/// `level` and `target=level` directives: Straft's own targets (`straft*`, which never
 /// log content) may go up to `trace`, every other crate is capped at `info`, because
 /// third-party debug output can quote paths, request bodies or prompts. Span and field
 /// filters are dropped. The asset protocol's refusal message (it contains the requested
@@ -428,8 +425,9 @@ fn entitlement_debug_controls(release: bool, isolated: bool) -> bool {
     !release && isolated
 }
 
-/// The release channel for the licence and trial check: a process running from an MSIX package is
-/// the Microsoft Store build, a Mac store build (`STRAFT_DISTRIBUTION=store`) is the Mac App
+/// The release channel for the licence and trial check: a process running from an MSIX package, or
+/// a Windows executable built as the store channel (copied out of its package, or run unpackaged
+/// by the end-to-end suite), is the Microsoft Store build, a Mac store build (`STRAFT_DISTRIBUTION=store`) is the Mac App
 /// Store build, and anything else is an internal team build: the Windows installer or the Mac
 /// disk image (ADR-0023, ADR-0024).
 fn entitlement_channel() -> straft_entitlement::Channel {
@@ -442,7 +440,7 @@ fn entitlement_channel() -> straft_entitlement::Channel {
 
 fn channel_for(packaged: bool, mac: bool, store_build: bool) -> straft_entitlement::Channel {
     use straft_entitlement::Channel;
-    if packaged {
+    if packaged || (store_build && !mac) {
         Channel::MicrosoftStore
     } else if mac && store_build {
         Channel::MacAppStore
@@ -504,14 +502,10 @@ pub fn run() {
     config.ai_model_source =
         straft_application::ModelSource::from_build(option_env!("STRAFT_TEST_MODEL_SOURCE"));
     config.ai_deterministic = ai_deterministic(!cfg!(debug_assertions), isolated_root.is_some());
-    // The Mac App Store build hands over the StoreKit bridge and the licence server client; the
-    // first check runs on a background thread after setup. Windows: none.
-    config.mac_inputs = platform::mac_inputs();
-    // The Microsoft Store build's Store calls (GetAppLicenseAsync, RequestPurchaseAsync with the
-    // window handle, and a refresh on OfflineLicensesChanged) need the Partner Center product
-    // identity, which does not exist yet (ADR-0023). Until they are wired here as
-    // `config.microsoft_store`, that build reports NeedsOnlineCheck: a gap in the build, not a
-    // user state.
+    // A release build hides the placeholder social rows (ADR-0039 item 12).
+    config.debug_build = cfg!(debug_assertions);
+    // The Microsoft Store build's Store calls (`config.microsoft_store`) need the main window's
+    // handle and the UI thread, so they are built in setup (platform/microsoft_store.rs).
     config.entitlement_debug_controls =
         entitlement_debug_controls(!cfg!(debug_assertions), isolated_root.is_some());
     // Internal builds ask the team password before anything opens; the core enforces it.
@@ -564,6 +558,10 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .setup(move |app| {
             let sink = Arc::new(TauriSink { app: app.handle().clone() });
+            // The window does not exist yet; the Store reads wait for its handle (20 s at most).
+            let window_handle = platform::WindowHandle::default();
+            config.microsoft_store =
+                platform::microsoft_store_source(config.channel, app.handle(), &window_handle);
             let core = AppCore::new(config, sink).map_err(|e| {
                 tracing::error!(code = e.code_str(), detail = %straft_security::redact(e.detail.as_deref().unwrap_or("")), "failed to start application core");
                 Box::<dyn std::error::Error>::from(e.message.clone())
@@ -575,6 +573,9 @@ pub fn run() {
             let power = straft_platform::power::subscribe(Arc::new(move |event| {
                 if let Some(core) = power_core.upgrade() {
                     core.on_power_event(event);
+                }
+                if event == straft_platform::power::PowerEvent::Resumed {
+                    platform::on_resume();
                 }
             }));
             if power.is_none() {
@@ -602,7 +603,8 @@ pub fn run() {
             if let Some(dir) = webview_dir {
                 window = window.data_directory(dir);
             }
-            window.build()?;
+            // Lets the Store's purchase window open over the app window.
+            window_handle.set(&window.build()?);
             Ok(())
         })
         .manage(close_gate::CloseGate::default())
@@ -652,7 +654,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![of_invoke, of_open_asset, of_reveal_path, of_open_url, of_close_window])
         .build(tauri::generate_context!())
         .expect("error while running Straft Studio")
-        .run(|app, event| platform::on_run_event(app, &event));
+        .run(|_, _| {});
     drop(log_guard);
 }
 
@@ -681,6 +683,8 @@ mod tests {
         // The internal Mac disk image and the internal Windows installer.
         assert_eq!(channel_for(false, true, false), Channel::DirectInstaller);
         assert_eq!(channel_for(false, false, false), Channel::DirectInstaller);
+        // A Store build copied out of its package is still the Store channel: no way around the lock.
+        assert_eq!(channel_for(false, false, true), Channel::MicrosoftStore);
     }
 
     /// A store package never carries the team password hash (ADR-0024 decision 6).
@@ -717,23 +721,15 @@ mod tests {
     #[test]
     fn release_builds_cap_third_party_targets_at_info() {
         let f = |r: &str| log_filter_directives(Some(r), true);
-        assert_eq!(
-            f("trace"),
-            "info,straft=trace,tauri::protocol::asset=off"
-        );
-        assert_eq!(
-            f("debug"),
-            "info,straft=debug,tauri::protocol::asset=off"
-        );
+        assert_eq!(f("trace"), "info,straft=trace,tauri::protocol::asset=off");
+        assert_eq!(f("debug"), "info,straft=debug,tauri::protocol::asset=off");
         assert_eq!(
             f("warn,reqwest=trace,hyper=debug,straft_ai=trace"),
             "warn,reqwest=info,hyper=info,straft_ai=trace,tauri::protocol::asset=off"
         );
         // Span/field filters and junk are dropped; the asset protocol cannot be re-enabled.
         assert_eq!(
-            f(
-                "tauri[cmd{path}]=trace,=debug,x y=info,tauri::protocol::asset=trace,straft=bogus"
-            ),
+            f("tauri[cmd{path}]=trace,=debug,x y=info,tauri::protocol::asset=trace,straft=bogus"),
             "info,tauri::protocol::asset=off"
         );
         assert_eq!(
@@ -775,8 +771,8 @@ mod tests {
     /// the `ofasset` protocol may read: the project that was left is refused at once.
     #[test]
     fn asset_scope_follows_project_open_switch_and_close() {
-        use straft_application::events::RecordingSink;
         use serde_json::json;
+        use straft_application::events::RecordingSink;
         let base = tempfile::tempdir().unwrap();
         let core = AppCore::new(
             AppConfig::isolated(&base.path().join("env")),
@@ -882,13 +878,13 @@ mod tests {
     }
 
     /// Real operations with distinctive content, logged through the production subscriber with
-    /// Straft Studio's own targets at `trace` (the most a release build allows): no marker may
+    /// Straft's own targets at `trace` (the most a release build allows): no marker may
     /// reach the log. Covers screenplay text, notes, contacts, AI prompts, project paths and
     /// key-like values (CORE-014, log redaction test).
     #[test]
     fn real_operations_never_write_content_to_the_log() {
-        use straft_application::events::RecordingSink;
         use serde_json::json;
+        use straft_application::events::RecordingSink;
         use tracing_subscriber::util::SubscriberInitExt;
 
         const MARKERS: [&str; 9] = [
@@ -989,10 +985,10 @@ mod tests {
 
         let log = String::from_utf8_lossy(&capture.0.lock()).into_owned();
         let _ = std::fs::remove_dir_all(&base);
-        // Positive control: Straft Studio's own debug output was captured.
+        // Positive control: Straft's own debug output was captured.
         assert!(
             log.contains("project lock released"),
-            "the capture saw Straft Studio's debug output:\n{log}"
+            "the capture saw Straft's debug output:\n{log}"
         );
         let lower = log.to_lowercase();
         for marker in MARKERS {

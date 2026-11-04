@@ -1,6 +1,6 @@
 [package]
 name = "straft-domain"
-description = "Straft Studio domain vocabulary: identities, errors, roles/capabilities and canonical enums. No I/O."
+description = "Straft domain vocabulary: identities, errors, roles/capabilities and canonical enums. No I/O."
 version.workspace = true
 edition.workspace = true
 license.workspace = true

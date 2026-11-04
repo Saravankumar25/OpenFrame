@@ -5,13 +5,13 @@
 use std::sync::Arc;
 use std::time::Instant;
 
+use serde_json::{Value, json};
 use straft_ai_eval::fixture;
 use straft_application::core::{AppConfig, AppCore};
 use straft_application::events::RecordingSink;
 use straft_application::modules::ai::index::{
     EntityIndex, Focus, How, Kind, Resolved, project_index, resolve,
 };
-use serde_json::{Value, json};
 
 fn core_with_project() -> (tempfile::TempDir, Arc<AppCore>) {
     let dir = tempfile::tempdir().unwrap();

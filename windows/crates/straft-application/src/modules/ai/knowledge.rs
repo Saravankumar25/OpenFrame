@@ -2,7 +2,7 @@
 //! application, retrieved deterministically, never taken from model memory alone.
 
 pub const GUIDE: &str = include_str!("knowledge.md");
-pub const GUIDE_LABEL: &str = "Straft Studio product guide v1";
+pub const GUIDE_LABEL: &str = "Straft product guide v1";
 
 pub fn sections() -> Vec<(&'static str, &'static str)> {
     GUIDE

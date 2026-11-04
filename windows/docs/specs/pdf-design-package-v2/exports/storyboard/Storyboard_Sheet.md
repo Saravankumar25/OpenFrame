@@ -4,7 +4,7 @@
 |---|---|
 | Export | Storyboard sheet (PDF, **portrait** US Letter) |
 | Variant | `Storyboard_Sheet` v2 (primary; 2 or 3 panels per row) + `stress-test/Storyboard_Sheet_STRESS_TEST` |
-| Status | Design reference — not integrated; not validated against Straft Studio's Rust renderer |
+| Status | Design reference — not integrated; not validated against Straft's Rust renderer |
 | Repo commit | `2f5a045416bd2125801329533fc47f986ccc8174` (`main`, Windows tree) |
 | Date | 2026-10-23 |
 | Files | `Storyboard_Sheet.html`; `Storyboard_Sheet.pdf` (2 per row, recommended); `Storyboard_Sheet_3col.pdf` (3 per row); `stress-test/Storyboard_Sheet_STRESS_TEST.html` + `.pdf` (2 per row) + `_3col.pdf`; generator `tools/build/visual/build_storyboard.py`; PDF render step `tools/build/visual/render_storyboard.py` |

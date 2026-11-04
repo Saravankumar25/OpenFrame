@@ -23,11 +23,12 @@
 
 use serde::{Deserialize, Serialize};
 
-/// The zero-price non-consumable that starts the 7-day trial.
-pub const TRIAL_PRODUCT_ID: &str = "com.straft.studio.trial7";
+/// The zero-price non-consumable that starts the 7-day trial. Registered with Apple and signed into
+/// every transaction (ADR-0042 names it).
+pub const TRIAL_PRODUCT_ID: &str = "app.straftstudio.studio.trial7";
 
-/// The paid non-consumable that unlocks the app for good.
-pub const LIFETIME_PRODUCT_ID: &str = "com.straft.studio.lifetime";
+/// The paid non-consumable that unlocks the app for good (ADR-0042 names it).
+pub const LIFETIME_PRODUCT_ID: &str = "app.straftstudio.studio.lifetime";
 
 /// Upper bound for one signed JWS string. Apple's transaction JWS carries a certificate chain in
 /// its header and is a few kilobytes; anything far larger is refused.
@@ -69,7 +70,7 @@ pub struct VerifiedTransaction {
 }
 
 impl VerifiedTransaction {
-    /// Whether the transaction has the shape the core accepts: one of Straft Studio's two products,
+    /// Whether the transaction has the shape the core accepts: one of Straft's two products,
     /// bounded non-empty identifiers (the optional `appTransactionID` too, when present), a
     /// positive Apple purchase date, a revocation date that is
     /// not before the purchase, and a compact JWS of bounded size. A transaction that fails this

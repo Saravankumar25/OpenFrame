@@ -32,7 +32,7 @@ its reason.
 | `crates/straft-application/src/modules/diagnostics.rs` | Fallback OS label in the diagnostics report. Data only, no OS branch. To call `current_os()` instead. |
 | `crates/straft-application/src/modules/project.rs` | Reports the platform name to the interface. Data only, no OS branch. To call `current_os()` instead. |
 | `crates/straft-persistence/src/lib.rs` | Opens SQLite through the `win32-longpath` VFS with a `\\?\` path so projects in deep folders work. The VFS name is Windows-only. |
-| `apps/desktop/src-tauri/src/platform/` | Desktop shell macOS adapter: the StoreKit 2 bridge and the licence server client (section 8). `lib.rs` calls it without any `cfg`; Windows builds get no-op twins. |
+| `apps/desktop/src-tauri/src/platform/` | Desktop shell Windows Store adapter: the Microsoft Store licence and purchase calls and their refresh worker (section 8). Other systems get no-op twins. |
 
 The hardware, security, persistence and the three label entries are exceptions. Each one is listed in section 6 as work that still has to move.
 
@@ -63,9 +63,9 @@ Apple silicon CI runner is available.
 | `exists` | `GetFileAttributesW` for paths shorter than 240 UTF-16 units that contain no NUL and are not links. Links, long paths and everything else fall back to `Path::is_file`. Verified by two tests, including a path longer than 240 units. | `Path::is_file`. The shared tests apply. Unverified on macOS. |
 | `identity` | `GetCurrentPackageFamilyName`, with one retry for a larger buffer. The unit test runs unpackaged and expects `None`. The packaged case (a real MSIX install) has no automated test. | Always `None`. The App Store receipt check belongs to the entitlement adapter and does not exist yet. The bundle identifier is read by the desktop shell, not here. |
 | `keys` | `Ctrl`, `Alt`, `+` between keys. Verified. | Command, Option, Shift, Return and Delete symbols, no separator. The mapping functions take an `Os` argument, so the Windows test run checks the macOS labels as pure text. Real shortcut behaviour in WebKit is untested. |
-| `process` | A Job Object with kill-on-close and die-on-unhandled-exception limits, and `CREATE_NO_WINDOW`. `ChildGuard::kernel_enforced()` is true: the OS ends the child when Straft Studio dies, even in a crash. Verified by `a_guarded_child_dies_when_the_guard_is_dropped`. | The child starts in its own process group and the guard sends SIGTERM to the group when dropped. `kernel_enforced()` is false. If Straft Studio crashes, the drop does not run and nothing ends the child. The test is written, never run. |
+| `process` | A Job Object with kill-on-close and die-on-unhandled-exception limits, and `CREATE_NO_WINDOW`. `ChildGuard::kernel_enforced()` is true: the OS ends the child when Straft dies, even in a crash. Verified by `a_guarded_child_dies_when_the_guard_is_dropped`. | The child starts in its own process group and the guard sends SIGTERM to the group when dropped. `kernel_enforced()` is false. If Straft crashes, the drop does not run and nothing ends the child. The test is written, never run. |
 
-| `spelling` | The Windows Spell Checking API (`ISpellCheckerFactory`, `ISpellChecker`) on one worker thread that owns its COM apartment, so callers never initialise COM and COM objects never cross threads. Every call waits at most 5 seconds; input is bounded (64 K UTF-16 units per check, 64 characters per word). Verified by three tests, one against the real English (United States) dictionary when it is installed. No dictionary files ship with Straft Studio and nothing is downloaded. | Not built. Reports no installed languages and `adapter_available() == false`; the editor then falls back to the web view's own spell checking. The Mac adapter needs `NSSpellChecker` on the main thread and Mac hardware to build and verify. |
+| `spelling` | The Windows Spell Checking API (`ISpellCheckerFactory`, `ISpellChecker`) on one worker thread that owns its COM apartment, so callers never initialise COM and COM objects never cross threads. Every call waits at most 5 seconds; input is bounded (64 K UTF-16 units per check, 64 characters per word). Verified by three tests, one against the real English (United States) dictionary when it is installed. No dictionary files ship with Straft and nothing is downloaded. | Not built. Reports no installed languages and `adapter_available() == false`; the editor then falls back to the web view's own spell checking. The Mac adapter needs `NSSpellChecker` on the main thread and Mac hardware to build and verify. |
 
 ### Process control on macOS: a gap
 
@@ -136,9 +136,7 @@ Each item that is done ends with the entry removed from `OS_ALLOW` or from this 
 
 ## 7. Next steps for Mac continuous integration
 
-`ci.yml` runs on `windows-latest` only. `.github/workflows/mac.yml` (section 8) is a first, narrow macOS job: it builds the
-StoreKit bridge and the desktop shell and runs the `straft-platform`, `straft-entitlement` and desktop unit tests on Apple
-silicon. It has not run yet. Nothing in section 3 marked unverified can be called verified until it has. Still to do, in order:
+`ci.yml` runs on `windows-latest` only. `.github/workflows/mac.yml` was removed on 2026-11-03 with the Tauri Mac shell (ADR-0039); there is no macOS job yet. Nothing in section 3 marked unverified can be called verified until a Mac run passes. Still to do, in order:
 
 1. Add a macOS job on an Apple silicon runner (check the runner label) that runs `cargo fmt --check`, `cargo clippy`,
    `cargo test -p straft-platform` and `cargo test -p straft-entitlement`. These crates need no web view, so they are the first
@@ -154,28 +152,22 @@ silicon. It has not run yet. Nothing in section 3 marked unverified can be calle
 Mac hardware or a Mac runner and an Apple Developer account are owner tasks in
 [owner-decisions.md](../implementation/owner-decisions.md).
 
-## 8. macOS shell adapter: StoreKit bridge
+## 8. Windows shell adapter: Microsoft Store
 
-The Mac App Store build connects StoreKit 2 and the licence server to the entitlement service through the desktop shell. Written
-on 2026-10-06 on Windows. **Unverified: none of it has been compiled on a Mac, linked or run** until the Mac workflow
-(`.github/workflows/mac.yml`) passes. The product rules are in [38-mac-app-store-trial.md](38-mac-app-store-trial.md).
+SUPERSEDED section (2026-11-03): the former text here described the Tauri Mac shell (Swift StoreKit bridge, licence server client,
+revalidation worker). [ADR-0039](../adr/ADR-0039-store-release-licensing.md) retired all of it; the history is in git. The Mac app is a
+SwiftUI shell over the Rust core ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)).
+
+The Microsoft Store build connects `Windows.Services.Store` to the entitlement service through the desktop shell.
 
 | File | What it does |
 |---|---|
-| `apps/desktop/src-tauri/macos/StoreKitBridge/` | Swift package (StoreKit 2 only, macOS 13 or later). Exports C functions that return `strdup` JSON, and listeners on `Transaction.updates` and `Storefront.updates` that call back into Rust. |
-| `apps/desktop/src-tauri/build.rs` | For a macOS target only: `swift build -c release --product StoreKitBridge` into `OUT_DIR`, then links `libStoreKitBridge.a`, the `StoreKit` and `Foundation` frameworks and the Swift runtime paths from `swift -print-target-info`. Allow-listed for rule R5: it starts `swift` at build time, never in the app. |
-| `src/platform/storekit.rs` | The bridge's JSON contract and its mapping onto the `straft-entitlement` types (`VerifiedTransaction`, `BridgeError` and the rest). Pure Rust, compiled on macOS and in tests on every system. |
-| `src/platform/macos_storekit.rs` | The C ABI calls (bounded reads, each string freed once) and `StoreKitChannel`, the crate's `StoreKitBridge` implementation. Allow-listed for rule R4. |
-| `src/platform/mac_inputs.rs` | Builds `MacInputs`: the bridge, an HTTPS licence server client (`reqwest` blocking over rustls, 10 second timeout, 64 KiB answer cap, no redirects), nonces from `OsRng` and the monotonic `InstantClock`. The two server addresses and the Ed25519 response key are placeholders the owner replaces. With the placeholder key no request is ever sent and the state stays NeedsOnlineCheck. |
-| `src/platform/revalidation.rs` | One background thread runs every check: at launch, on resume or reopen, after sleep (wall clock ahead of the monotonic clock), when focus returns after more than 30 minutes, on a StoreKit transaction or storefront change, and when the lease ends. |
+| `src/platform/microsoft_store.rs` | `MicrosoftStore`, the real `StoreLicenceSource`: `GetAppLicenseAsync` on a fresh thread with a 20 second limit, `RequestPurchaseAsync` started on the UI thread (the Store refuses it elsewhere) and awaited with no limit, and one `OfflineLicensesChanged` subscription on a kept context. Any error or timeout is Unreachable; the log holds the error code at warn level, never an identifier, and no code reaches a screen. Allow-listed for rule R4. |
+| `src/platform/store_checks.rs` | The schedule (`next_wake`, `focus_needs_read`: launch, a Store change notice, focus after 5 minutes, wake from sleep, every 15 minutes, local midnight, one second after the trial ends) and the one `straft-entitlement` thread that reads. Only the Microsoft Store channel starts it. Allow-listed for rule R4 (`GetLocalTime`). |
 
-**How it is wired.** `lib.rs` sets `AppConfig::mac_inputs` from `platform::mac_inputs()`, which is `None` on Windows. The
-`EntitlementService` keeps the inputs and builds the Mac adapter on the first check, off the main thread, because building it
-asks StoreKit for the environment. Until that check answers, the state is NeedsOnlineCheck. `EntitlementService::revalidate`
-runs the channel's restore check today, and `EntitlementService::lease` uses fixed intervals by state. Both switch to the Mac
-adapter's `revalidate` and `time_until_check` once `ChannelAdapter` exposes them. The log carries the reason and the state name,
-never an identifier. No Tauri command is added.
+**How it is wired.** `lib.rs` builds the source in `setup` when the channel is the Microsoft Store (it needs the UI thread handle),
+gives it the main window's handle once the window is built, and sets `AppConfig::debug_build`. Every read goes through
+`AppCore::refresh_entitlement`, which tells the page when the answer changed. No Tauri command is added.
 
-**Known limits.** The adapter takes one response key for both server deployments. The environment comes from the verified
-`AppTransaction`, with a build default (Production for release builds) when StoreKit cannot answer. The App Sandbox
-`com.apple.security.network.client` entitlement is not added yet; it belongs to the Mac App Store package area.
+**Not verified without a real Store install:** the purchase window, the trial time the Store reports, and `OfflineLicensesChanged`
+firing. The platform answers an unpackaged process with an active licence that names no SKU; the SKU guard turns that into Unreachable, so the test proves the guard, the call path and the time limit only.

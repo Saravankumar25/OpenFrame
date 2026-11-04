@@ -1,7 +1,7 @@
-// Settings > Offline AI > Technical details (owner change list 2026-10-20, item 4): the card takes a row of its own
+// Settings > Straft AI > Technical details (owner change list 2026-10-20, item 4): the card takes a row of its own
 // at the full width, the long hashes and addresses carry their full text in a tooltip, and the table scrolls inside
 // its card instead of running under the AI health card. Real widths are measured in the app by
-// tests/e2e/specs/98-layout-geometry.test.mjs (Settings, Offline AI at 1200 to 1920).
+// tests/e2e/specs/98-layout-geometry.test.mjs (Settings, Straft AI at 1200 to 1920).
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -31,7 +31,7 @@ vi.mock("../../ipc/client", async () => {
         bundleId: "straft-ai",
         bundleVersion: "1",
         bundleState: "Verified",
-        bundleDir: "C:/Program Files/Straft Studio/ai",
+        bundleDir: "C:/Program Files/Straft/ai",
         bundleBytes: 1_000_000,
         problem: null,
         components: [
@@ -64,7 +64,7 @@ describe("Technical details card", () => {
     const card = screen.getByRole("region", { name: "Technical details" });
     expect(card.className).toContain("ai-tech-card");
     await userEvent.click(within(card).getByText("Technical details"));
-    const table = await within(card).findByRole("table", { name: "Offline AI components" });
+    const table = await within(card).findByRole("table", { name: "Straft AI components" });
     expect(table.parentElement?.className).toBe("ai-tech-scroll");
     expect(within(card).getByTitle(`SHA-256 ${HASH}`)).toBeInTheDocument();
     expect(within(card).getByTitle(LICENCE_URL)).toBeInTheDocument();

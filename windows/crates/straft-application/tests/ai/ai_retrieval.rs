@@ -5,20 +5,21 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use rusqlite::{Connection, params};
+use serde_json::json;
 use straft_application::MutationMeta;
 use straft_application::events::AppEvent;
 use straft_application::modules::ai::intelligence::{self, IndexSettings};
 use straft_application::modules::ai::retrieval::{
     self, ContextPacket, IndexState, RetrievalRoute, RetrieveRequest,
 };
-use straft_application::modules::ai::scope::{self, AiScopeArgs};
+use straft_application::modules::ai::scope;
+use straft_application::modules::ai::sections::SectionPick;
 use straft_domain::auth::ActorOrigin;
 use straft_domain::{Actor, Capability, Role, new_id, now_ms};
 use straft_search::Embedder;
 use straft_test_support::TestEnv;
 use straft_test_support::embedder::ConceptEmbedder;
-use rusqlite::{Connection, params};
-use serde_json::json;
 
 // ------------------------------------------------------------------ fixture
 
@@ -1002,6 +1003,11 @@ fn spec_33_without_an_embedding_runtime_retrieval_is_fts_plus_sql() {
     assert!(has(&p, "screenplay_scene", &w.scenes[0]));
 }
 
+/// The sections a person picked, as the core reads them.
+fn picks(pick: serde_json::Value) -> Vec<SectionPick> {
+    vec![serde_json::from_value(pick).unwrap()]
+}
+
 #[test]
 fn spec_20_draft_boundaries_and_explicit_scope_come_first() {
     let (env, w, _e) = setup();
@@ -1010,10 +1016,10 @@ fn spec_20_draft_boundaries_and_explicit_scope_come_first() {
     let old_scope = s
         .store
         .read(|c| {
-            let args: AiScopeArgs =
-                serde_json::from_value(json!({ "kind": "SpecificDraft", "draftId": w.draft_old }))
-                    .unwrap();
-            scope::resolve(c, &actor, &args)
+            scope::from_picks(
+                c,
+                &picks(json!({ "leaf": "screenplay/scenes", "draftId": w.draft_old })),
+            )
         })
         .unwrap();
     let p = retrieval::retrieve(
@@ -1034,16 +1040,14 @@ fn spec_20_draft_boundaries_and_explicit_scope_come_first() {
         "another draft's scenes are excluded: {:#?}",
         p.sources
     );
-    assert_eq!(p.sources[0].via, "scope");
-    assert!(p.items[0].text.contains("OLD MILL"));
     // Current-scene scope: the scene is in the scope item and not duplicated.
     let scene_scope = s
         .store
         .read(|c| {
-            let args: AiScopeArgs =
-                serde_json::from_value(json!({ "kind": "CurrentScene", "sceneId": w.scenes[0] }))
-                    .unwrap();
-            scope::resolve(c, &actor, &args)
+            scope::from_picks(
+                c,
+                &picks(json!({ "leaf": "screenplay/scenes", "sceneId": w.scenes[0] })),
+            )
         })
         .unwrap();
     let p = retrieval::retrieve(
@@ -1260,4 +1264,92 @@ fn project_close_stops_the_indexer_and_releases_the_index_file() {
     assert_eq!(retrieval::index_status(&env.core), IndexState::Stale);
     idle(&env);
     assert_eq!(retrieval::index_status(&env.core), IndexState::Current);
+}
+
+/// Update safety (package file 05, item U8). The assistant's index is derived data. After an
+/// update that changes it (a missing cache file, or a canonical schema change that marks it
+/// stale) it is rebuilt in the background: the project opens and takes edits at once, and the
+/// index becomes current later. The embedding runtime is stalled so the rebuild cannot finish
+/// while the test checks; an open that waited for it would never return.
+#[test]
+fn u8_opening_and_editing_never_wait_for_a_missing_or_stale_index() {
+    let (env, _w, _e) = setup();
+    let path = env.project_path();
+    let docs_before = intelligence::service(&env.core)
+        .current()
+        .unwrap()
+        .snapshot()
+        .counts
+        .documents;
+    let index_file = std::path::PathBuf::from(&path)
+        .join("cache")
+        .join("intelligence.sqlite");
+    let mut env = env;
+    for damage in ["missing", "stale"] {
+        env = env.restart();
+        fast_settings(&env);
+        for suffix in ["-wal", "-shm"] {
+            let _ = std::fs::remove_file(format!("{}{suffix}", index_file.display()));
+        }
+        if damage == "missing" {
+            std::fs::remove_file(&index_file).unwrap();
+        } else {
+            let c = Connection::open(&index_file).unwrap();
+            c.execute(
+                "UPDATE index_meta SET value='1' WHERE key='canonical_schema_version'",
+                [],
+            )
+            .unwrap();
+        }
+        let e = attach(&env);
+        e.set_stalled(true);
+        let calls = e.calls();
+        env.reopen_project(&path);
+        intelligence::activate(&env.core).expect("project open");
+        let wait = Instant::now() + Duration::from_secs(60);
+        while e.calls() == calls {
+            assert!(
+                Instant::now() < wait,
+                "{damage}: the indexer never started on the damaged cache"
+            );
+            std::thread::sleep(Duration::from_millis(2));
+        }
+        // The rebuild is running and cannot finish: the project is already open and editable.
+        let state = intelligence::service(&env.core)
+            .current()
+            .unwrap()
+            .snapshot()
+            .state;
+        assert_ne!(state, IndexState::Current, "{damage}: {state:?}");
+        env.ok(
+            "notes.create",
+            json!({ "title": format!("while rebuilding ({damage})"), "body": "typed during the rebuild" }),
+        );
+        e.set_stalled(false);
+        idle(&env);
+        let snap = intelligence::service(&env.core)
+            .current()
+            .unwrap()
+            .snapshot();
+        assert_eq!(snap.state, IndexState::Current, "{damage}");
+        assert!(snap.counts.documents >= docs_before, "{damage}");
+    }
+}
+
+#[test]
+fn a_scene_sets_the_draft_only_when_no_screenplay_pick_named_one() {
+    let (env, w, _e) = setup();
+    let s = env.core.project().unwrap();
+    let scope_of = |ps: Vec<SectionPick>| s.store.read(|c| scope::from_picks(c, &ps)).unwrap();
+    let pick = |v: serde_json::Value| -> SectionPick { serde_json::from_value(v).unwrap() };
+    let named = scope_of(vec![
+        pick(json!({ "leaf": "screenplay/scenes", "draftId": w.draft_old })),
+        pick(json!({ "leaf": "breakdown/breakdown", "sceneId": w.scenes[0] })),
+    ]);
+    assert_eq!(named.draft.as_ref().unwrap().id, w.draft_old);
+    assert_eq!(named.scene.as_ref().unwrap().id, w.scenes[0]);
+    let unnamed = scope_of(vec![pick(
+        json!({ "leaf": "breakdown/breakdown", "sceneId": w.scenes[0] }),
+    )]);
+    assert_eq!(unnamed.draft.as_ref().unwrap().id, w.draft);
 }

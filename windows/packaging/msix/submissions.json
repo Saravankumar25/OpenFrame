@@ -1,0 +1,5 @@
+{
+  "$comment": "Record of what was sent to Partner Center. scripts/release-validate.mjs --store reads it: the package version must be higher than lastSubmittedVersion (Major.Minor.Build.0), and the identity must equal firstSubmissionIdentity once that is set, because a different identity is a different app. Who updates it: the owner, or the session that submits, once per submission, in the same change that records the submission. After the first submission set firstSubmissionIdentity to { \"name\": ..., \"publisher\": ... } copied from Partner Center and never change it again. After each submission set lastSubmittedVersion to the package version that was uploaded, for example \"1.0.0.0\". Both stay null until the first upload.",
+  "firstSubmissionIdentity": null,
+  "lastSubmittedVersion": null
+}

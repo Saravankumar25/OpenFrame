@@ -7,6 +7,9 @@
 //! Source: a saved sides snapshot (`side.content_json`, immutable) or the live
 //! selection built by `sides.preview`. Sides never change the screenplay.
 
+use rusqlite::OptionalExtension;
+use serde::Deserialize;
+use serde_json::json;
 use straft_domain::{Actor, AppError, AppResult};
 use straft_import_export::fonts;
 use straft_import_export::layout::{
@@ -15,9 +18,6 @@ use straft_import_export::layout::{
 };
 use straft_import_export::report::Document;
 use straft_import_export::{Element, ElementKind, Scene, ScreenplayDoc, pdf_export};
-use rusqlite::OptionalExtension;
-use serde::Deserialize;
-use serde_json::json;
 use ts_rs::TS;
 
 use super::{Fmt, HINT_EDIT, Job, Output, deliver, destination, plural, require_export};
@@ -315,7 +315,7 @@ fn build_layout(content: &ScheduleSidesContent) -> layout::Layout {
         }
     }
     lay.pages.splice(0..0, cover_pages(content));
-    // Sides are pages of the writer's script: like screenplay files they carry no Straft Studio mark
+    // Sides are pages of the writer's script: like screenplay files they carry no Straft mark
     // and no brand line (owner decision 2026-10-27).
     lay
 }

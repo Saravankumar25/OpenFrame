@@ -19,9 +19,9 @@
 //! the derived index is stale or tampered with. Retrieved text is DATA: the
 //! orchestrator places it inside the untrusted-data boundary.
 
-use straft_domain::{Actor, AppError, AppResult, Capability};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult, Capability};
 use ts_rs::TS;
 
 use super::intelligence::{self, assembler, retriever, router};
@@ -178,7 +178,7 @@ pub fn index_status(core: &AppCore) -> IndexState {
 }
 
 pub fn retrieve(core: &AppCore, actor: &Actor, req: &RetrieveRequest) -> AppResult<ContextPacket> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use Straft AI")?;
     actor.require(Capability::View, "view this project")?;
     let session = core.project()?;
     if req.query.chars().count() > MAX_QUERY_CHARS {
@@ -328,7 +328,7 @@ fn index_rebuild_op(
     actor: &Actor,
     _: AiIndexArgs,
 ) -> AppResult<IndexRebuildStarted> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use Straft AI")?;
     actor.require(Capability::View, "view this project")?;
     core.project()?;
     let ix = intelligence::activate(core).ok_or_else(AppError::no_project_open)?;

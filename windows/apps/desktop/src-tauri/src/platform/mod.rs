@@ -1,65 +1,68 @@
-//! Platform adapters of the desktop shell: the Mac App Store connection.
+//! Platform adapters of the desktop shell: the Microsoft Store checks of the Windows build
+//! (ADR-0039). The Tauri Mac shell and its StoreKit bridge are retired (ADR-0027); the Mac app
+//! is a native SwiftUI shell over the same Rust core.
 //!
-//! `lib.rs` calls the four functions below on every system and never learns which one it runs
-//! on. On macOS they connect the Swift StoreKit 2 bridge and the licence server client to the
-//! entitlement service and run its checks on a background thread. On Windows they do nothing, so
-//! the Windows build behaves exactly as before.
+//! - `microsoft_store.rs`: the real [`StoreLicenceSource`](straft_entitlement::adapters::StoreLicenceSource)
+//!   over `Windows.Services.Store`: the app licence, the purchase window and the subscription to
+//!   `OfflineLicensesChanged`. WinRT part Windows only; its pure helpers are tested everywhere.
+//! - `store_checks.rs`: when to read the licence again (launch, a Store change notice, focus after
+//!   5 minutes, wake from sleep, every 15 minutes, local midnight, the trial's end) and the one
+//!   worker thread that does it. Only the Microsoft Store build starts it; the internal
+//!   installer build does nothing here.
 //!
-//! - `storekit.rs`: the bridge's JSON contract and its mapping onto the entitlement crate's
-//!   types. Pure Rust; compiled on macOS and for the tests on every system.
-//! - `macos_storekit.rs`: the C ABI calls into the Swift package and the crate's `StoreKitBridge`
-//!   implementation. macOS only.
-//! - `mac_inputs.rs`: the HTTPS licence server client, the nonce source and the placeholders the
-//!   owner fills in. macOS only.
-//! - `revalidation.rs`: when to check again (launch, resume, wake, focus, StoreKit changes,
-//!   lease). Its decisions are tested on every system; the worker thread is macOS only.
-//!
-//! No Tauri command is added and the webview never reaches StoreKit or the network: it reads the
-//! state through the existing `entitlement.status` operation. Build: `build.rs` compiles the Swift
-//! package `apps/desktop/src-tauri/macos/StoreKitBridge/` and links it on macOS only
-//! (docs/engineering/37-platform-boundary.md, "macOS shell adapter: StoreKit bridge").
+//! No Tauri command is added and the web view never reaches the Store: it reads the state through
+//! the existing `entitlement.status` operation and hears about a change as a `module` event.
 
-#[cfg(target_os = "macos")]
-mod mac_inputs;
-#[cfg(target_os = "macos")]
-mod macos_storekit;
-#[cfg(any(target_os = "macos", test))]
-mod revalidation;
-#[cfg(any(target_os = "macos", test))]
-mod storekit;
+mod microsoft_store;
+mod store_checks;
 
-use straft_entitlement::mac::MacInputs;
+#[cfg(windows)]
+pub use microsoft_store::MicrosoftStore;
+pub use store_checks::{on_resume, on_window_event, start_entitlement_checks};
 
-#[cfg(target_os = "macos")]
-pub use revalidation::{on_run_event, on_window_event, start_entitlement_checks};
+use std::sync::{Arc, OnceLock};
 
-/// The Mac App Store adapter's inputs. Builds objects only: no StoreKit call, no request.
-#[cfg(target_os = "macos")]
-pub fn mac_inputs() -> Option<MacInputs> {
-    Some(mac_inputs::build())
+use straft_entitlement::Channel;
+use straft_entitlement::adapters::StoreLicenceSource;
+use tauri::{AppHandle, WebviewWindow};
+
+/// The main window's native handle, filled in once the window is built. The Store's purchase
+/// window opens over it, and Store reads wait for it (20 seconds at most).
+#[derive(Clone, Default)]
+pub struct WindowHandle(Arc<OnceLock<isize>>);
+
+impl WindowHandle {
+    pub fn set(&self, window: &WebviewWindow) {
+        #[cfg(windows)]
+        if let Ok(hwnd) = window.hwnd() {
+            let _ = self.0.set(hwnd.0 as isize);
+        }
+        #[cfg(not(windows))]
+        let _ = window;
+    }
 }
 
-/// Windows: no App Store. The entitlement service uses the Windows channels.
-#[cfg(not(target_os = "macos"))]
-pub fn mac_inputs() -> Option<MacInputs> {
-    None
-}
-
-#[cfg(not(target_os = "macos"))]
-pub use no_store::{on_run_event, on_window_event, start_entitlement_checks};
-
-/// Windows twins of the macOS hooks. The Windows channels check at startup and on "Restore
-/// purchase" only, so there is nothing to start or to react to.
-#[cfg(not(target_os = "macos"))]
-mod no_store {
-    use std::sync::Arc;
-
-    use straft_application::AppCore;
-    use tauri::{AppHandle, RunEvent, WindowEvent};
-
-    pub fn start_entitlement_checks(_core: &Arc<AppCore>) {}
-
-    pub fn on_run_event(_app: &AppHandle, _event: &RunEvent) {}
-
-    pub fn on_window_event(_event: &WindowEvent) {}
+/// The Store connection for `channel`: the real Microsoft Store source on the Microsoft Store
+/// channel, nothing for every other build (the internal installer build keeps no Store link).
+pub fn microsoft_store_source(
+    channel: Channel,
+    app: &AppHandle,
+    window: &WindowHandle,
+) -> Option<Box<dyn StoreLicenceSource>> {
+    if !store_checks::starts_worker(channel) {
+        return None;
+    }
+    #[cfg(windows)]
+    {
+        let ui = app.clone();
+        Some(Box::new(MicrosoftStore::new(
+            window.0.clone(),
+            Box::new(move |job| ui.run_on_main_thread(job).is_ok()),
+        )))
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = (app, window);
+        None
+    }
 }

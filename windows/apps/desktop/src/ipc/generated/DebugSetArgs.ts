@@ -6,4 +6,8 @@ export type DebugSetArgs = { channel: Channel, state: EntitlementState,
 /**
  * Forget the reminder day and the three first-run flags.
  */
-resetNotices: boolean, };
+resetNotices: boolean, 
+/**
+ * The end moment of the trial to report, milliseconds since 1970.
+ */
+trialEndsAtMs: number | null, };

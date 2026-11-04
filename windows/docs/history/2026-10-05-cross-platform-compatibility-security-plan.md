@@ -10,14 +10,14 @@
 > model apply to Windows now. External citations in the source were removed; re-check Apple and Microsoft requirements when the work starts.
 
 **Target:** production-grade desktop application for Windows and macOS, with **Windows and macOS as equal first-class production targets**\
-**Baseline:** Straft Studio `main` HEAD
+**Baseline:** Straft `main` HEAD
 `d30b5889ab5edf9f69d60f8e6d600cb11d4921a0`
 
 ------------------------------------------------------------------------
 
 # 1. Product requirement
 
-Straft Studio must not be treated as:
+Straft must not be treated as:
 
 > "a Windows application that happens to compile on Mac."
 
@@ -268,7 +268,7 @@ explicit exceptions when a legitimate capability needs them. Apple
 specifically warns that exceptions should be used only when necessary.
 
 
-For Straft Studio:
+For Straft:
 
 -   avoid JIT-dependent components unless unavoidable
 -   do not enable unsigned executable memory without a demonstrated need
@@ -299,7 +299,7 @@ The macOS implementation must achieve the same security properties.
 ### Required invariant
 
 ``` text
-Straft Studio
+Straft
   │
   ├─ launches trusted sidecar
   │
@@ -315,7 +315,7 @@ Straft Studio
   │
   ├─ hash verified
   │
-  └─ process is terminated with Straft Studio
+  └─ process is terminated with Straft
 ```
 
 Never weaken this on macOS because process APIs are different.
@@ -566,7 +566,7 @@ sensitivity.
 
 # 17. Unicode compatibility
 
-Straft Studio is a creative application and must support international
+Straft is a creative application and must support international
 screenplay content.
 
 Test:
@@ -727,7 +727,7 @@ must mean the same thing on both systems.
 
 # 23. Permissions
 
-Straft Studio should request the minimum OS privileges.
+Straft should request the minimum OS privileges.
 
 Windows:
 
@@ -817,7 +817,7 @@ No silent update.
 Store/App Store channels should use their platform-native update
 mechanism.
 
-Direct channels use Straft Studio's signed updater mechanism.
+Direct channels use Straft's signed updater mechanism.
 
 ------------------------------------------------------------------------
 
@@ -1119,8 +1119,8 @@ Test:
 
 -   AI sidecar crashes
 -   AI sidecar hangs
--   Straft Studio killed during save
--   Straft Studio killed during migration
+-   Straft killed during save
+-   Straft killed during migration
 
 ### Network
 
@@ -1238,7 +1238,7 @@ Only after these gates pass should macOS be called release-ready.
 
 "Never break" cannot mean mathematically zero defects.
 
-For Straft Studio it should mean:
+For Straft it should mean:
 
 > **No known release may violate a protected data, security,
 > compatibility, or recovery invariant.**
@@ -1264,14 +1264,14 @@ Release must be blocked by:
 Do not create:
 
 ``` text
-Straft Studio Windows
-Straft Studio Mac
+Straft Windows
+Straft Mac
 ```
 
 Create:
 
 ``` text
-Straft Studio
+Straft
   ├─ shared product/domain
   ├─ shared project format
   ├─ shared security invariants

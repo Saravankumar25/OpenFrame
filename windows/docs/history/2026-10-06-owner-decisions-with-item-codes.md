@@ -21,7 +21,7 @@
 | D10 | **Crash-safe AI Change Set apply.** Multi-operation apply is not crash-atomic today. | Milestone M1 | Durable apply journal with recovery on open. | [ADR-0019](../adr/ADR-0019-crash-safe-change-set-apply.md) | **Decided 2026-10-05**: recommendation accepted (owner delegated to the recommendation) |
 | D11 | **Publisher and product identity.** Legal entity/umbrella company, publisher display name, product name rights, brand. | Partner Center, MSIX identity, license, policies | Reserve "Straft Studio" in Partner Center early. | ADR-0018 | Open |
 | D12 | **Template inventory.** Repo has 7 built-ins; revised spec recommends 8 (adds Feature, Short, Episodic screenplay templates; drops the daily-report template). | Milestone M7 | Adopt the revised 8 and keep the report layout as a report type. | none (spec) | Open |
-| D13 | **Sample scripts.** Straft Studio-authored, public domain or licensed only. Who writes them. | Milestone M7 | Commission or write 4 fictional samples. | none | Open |
+| D13 | **Sample scripts.** Straft-authored, public domain or licensed only. Who writes them. | Milestone M7 | Commission or write 4 fictional samples. | none | Open |
 | D14 | **Support model.** Channel, owner, response targets, second operator. | Milestone M12 | One company-owned address plus a public KB. | none | Open |
 | D15 | **Direct-download channel in v1.** Needs an Authenticode certificate and updater key. | Milestone M16 | Store first. Direct channel after the Store listing is live. | ADR-0018 | Open |
 | D16 | **Target dates and capacity.** Launch date, who builds, how many agents/people in parallel. | Schedule only | Provide so milestones can be dated. | none | Open |

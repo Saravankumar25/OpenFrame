@@ -1,4 +1,4 @@
-//! The four Straft Studio-owned sample scripts as regression fixtures (masterplan area "Call sheets,
+//! The four Straft-owned sample scripts as regression fixtures (masterplan area "Call sheets,
 //! budget, templates, samples and exports", box "Sample scripts"; `templates/samples/README.md`).
 //!
 //! Every sample must: be embedded in the app, carry the copyright note, follow the writing
@@ -201,9 +201,9 @@ fn every_sample_round_trips_through_fountain_fdx_and_pdf_without_losing_a_scene(
         let (pdf, pages, _) = render_bytes(&doc, ExportFormat::Pdf, &opts).unwrap();
         assert!(pdf.starts_with(b"%PDF-"), "{} exports a PDF", s.id);
         assert!(pages.unwrap_or(0) >= 1, "{} has pages", s.id);
-        // Screenplay files carry no Straft Studio branding.
+        // Screenplay files carry no Straft branding.
         assert!(
-            !String::from_utf8_lossy(&pdf).contains("Created using Straft Studio"),
+            !String::from_utf8_lossy(&pdf).contains("Created using Straft"),
             "{} screenplay PDF is unbranded",
             s.id
         );

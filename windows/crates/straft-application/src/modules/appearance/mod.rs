@@ -7,7 +7,7 @@
 //! level and need no undo step: they are personal preferences, not project content. The assistant
 //! may read the mode and theme (`appearance.get`), never change them. Theme files are untrusted and go through [`theme::parse_theme`] and the
 //! contrast check before anything is stored; stored rows are validated again on every read, so a
-//! damaged or edited row can never be applied and the active theme falls back to Straft Studio
+//! damaged or edited row can never be applied and the active theme falls back to Straft
 //! Default.
 
 pub mod color;
@@ -17,11 +17,11 @@ use std::collections::BTreeMap;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
-use straft_domain::auth::ActorOrigin;
-use straft_domain::{Actor, AppError, AppResult, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use straft_domain::auth::ActorOrigin;
+use straft_domain::{Actor, AppError, AppResult, now_ms};
 use ts_rs::TS;
 
 use crate::core::AppCore;
@@ -349,7 +349,7 @@ fn rows(c: &Connection, id: Option<&str>) -> AppResult<Vec<Row>> {
 }
 
 /// Validate a stored row exactly like an imported file (it may have been damaged or edited
-/// outside Straft Studio). Returns the checked theme or the reason it cannot be used.
+/// outside Straft). Returns the checked theme or the reason it cannot be used.
 fn revalidate(row: &Row) -> Result<Theme, String> {
     let seeds: Value = serde_json::from_str(&row.seeds_json)
         .map_err(|_| "Its saved data is damaged.".to_string())?;
@@ -532,7 +532,7 @@ fn read_theme_file(path: &Path) -> Result<String, String> {
         );
     }
     let text = String::from_utf8(buf).map_err(|_| {
-        "This is not a theme file. Straft Studio theme files are small JSON documents.".to_string()
+        "This is not a theme file. Straft theme files are small JSON documents.".to_string()
     })?;
     Ok(text
         .strip_prefix('\u{feff}')

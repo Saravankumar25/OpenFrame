@@ -89,7 +89,7 @@ Some steps ask the core directly, the same way the screen does. They stand in fo
 1. Ask the core to export the current draft as PDF, with a title page and scene numbers, to `signal-box.pdf` in the exports folder.
 2. Check: the export reports 2 pages.
 3. Check: the PDF file exists and is larger than 500 bytes.
-4. Check: the PDF does not contain the word "Straft Studio" (no branding on a screenplay).
+4. Check: the PDF does not contain the word "Straft" (no branding on a screenplay).
 5. Ask the core to export the current draft as FDX, with a title page and scene numbers, to `signal-box.fdx` in the exports folder.
 6. Check: the FDX file holds a paragraph of type "TELEPHONE", a paragraph that starts a new page, and scene number 1.
 7. Ask the core to preview an import of that FDX file, then apply it as a new draft named "From Final Draft" in the same screenplay.

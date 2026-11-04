@@ -11,7 +11,8 @@ use crate::modules::ai::index::{Resolved, normalize};
 use crate::modules::ai::turn::{AnswerType, TurnRead};
 use crate::modules::exports::{amount_text, money};
 
-pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+/// Production > Budget: planned, actual and difference of a line, a category or the whole budget.
+pub fn budget_leaf(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
     safe("budget", || fetch(ctx, read, r))
 }
 

@@ -22,8 +22,8 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use straft_domain::AppResult;
 use rusqlite::Connection;
+use straft_domain::AppResult;
 
 use super::format::PackageType;
 
@@ -101,7 +101,7 @@ const SYSTEM_STATE: &str = "system state of this installation, not project conte
 const DERIVED_INDEX: &str = "derived search index; rebuilt from project content";
 const NOT_REVIEWED: &str =
     "not part of any exchange package in this format; travels in Backup and Full Project Packages";
-const AI_HISTORY: &str = "Offline AI history stays on the computer that made it";
+const AI_HISTORY: &str = "Straft AI history stays on the computer that made it";
 const PACKAGE_STATE: &str = "records of packages this project received; meaningless elsewhere";
 
 const fn kept() -> Transfer {
@@ -733,7 +733,7 @@ pub const COVERAGE: &[TableCoverage] = &[
     t(
         "ai_memory",
         Transfer::Emptied {
-            why: "the assistant's memory of a person stays on the computer that made it",
+            why: "Straft AI's memory of a person stays on the computer that made it",
         },
         not_carried(AI_HISTORY),
     ),

@@ -10,8 +10,8 @@
 
 The owner approved removal in chat on 2026-10-16 ("if it is safe you can remove the w1 working trees"). Option 1 was
 done: no folder held a junction or link; the 65 files of section 2 (without models and llama.cpp builds) were copied to
-`C:Straft Studio.build-cachesalvage-2026-09-30` (773 KB); the 39 folders were removed and `git worktree prune` run.
-`git worktree list` shows only `C:Straft Studio`. About 4.0 GB freed.
+`C:Straft.build-cachesalvage-2026-09-30` (773 KB); the 39 folders were removed and `git worktree prune` run.
+`git worktree list` shows only `C:Straft`. About 4.0 GB freed.
 
 ## 1. What was found
 

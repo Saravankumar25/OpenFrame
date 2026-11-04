@@ -2,7 +2,7 @@
 // first launch → project → Idea Vault → Story (act, sequence, cards, keyboard
 // reorder, undo) → Build Screenplay → write in the editor → import Fountain →
 // Production Source + accept a suggestion → schedule a scene → call sheet →
-// search (Ctrl+K) → Recently Deleted → the AI panel, ready with the bundled Offline AI and docked
+// search (Ctrl+K) → Recently Deleted → the AI panel, ready with the bundled Straft AI and docked
 // beside every workspace at the smallest supported window size.
 //
 // 02-restart.test.mjs relaunches the app on the same data and checks persistence.
@@ -59,14 +59,14 @@ async function assertQuietConsole(where) {
   assert.ok(overflow.page <= 1 && overflow.main <= 1, `horizontal overflow in ${where}: ${JSON.stringify(overflow)}`);
 }
 
-/** Problems with the docked AI Assistant in one place: it must cover no part of the page and cut off no control. */
+/** Problems with the docked Straft AI in one place: it must cover no part of the page and cut off no control. */
 async function dockProblems(where) {
   const l = await dockedLayout(browser);
   const out = [];
-  if (l.panelWidth === 0) out.push(`${where}: the AI Assistant is not open`);
-  if (l.overlap > 0) out.push(`${where}: the AI Assistant covers ${l.overlap}px of the page`);
-  if (l.panelLeft + l.panelWidth > l.viewport + 1) out.push(`${where}: the AI Assistant runs past the window`);
-  if (l.hidden.length) out.push(`${where}: controls cut off beside the AI Assistant: ${l.hidden.join(", ")}`);
+  if (l.panelWidth === 0) out.push(`${where}: the Straft AI is not open`);
+  if (l.overlap > 0) out.push(`${where}: the Straft AI covers ${l.overlap}px of the page`);
+  if (l.panelLeft + l.panelWidth > l.viewport + 1) out.push(`${where}: the Straft AI runs past the window`);
+  if (l.hidden.length) out.push(`${where}: controls cut off beside the Straft AI: ${l.hidden.join(", ")}`);
   return out;
 }
 
@@ -361,11 +361,11 @@ describe("desktop journey", () => {
     });
   });
 
-  test("AI panel is ready with the bundled Offline AI: no download, no setup (ADR-0025)", async () => {
+  test("AI panel is ready with the bundled Straft AI: no download, no setup (ADR-0025)", async () => {
     await step("ai", async () => {
-      await click(browser, "Assistant");
-      await (await browser.$('//aside[@aria-label="AI Assistant"]//textarea[@aria-label="Ask or command"]')).waitForDisplayed({ timeout: 15_000 });
-      await waitForText(browser, "AI Ready");
+      await click(browser, "Straft AI");
+      await (await browser.$('//aside[@aria-label="Straft AI"]//textarea[@aria-label="Ask or command"]')).waitForDisplayed({ timeout: 15_000 });
+      await waitForText(browser, "Ready");
       // Ordinary UI never names the model, format or runtime (agentic AI spec §36) and never offers a download.
       assert.doesNotMatch(await pageText(browser), /gemma|gguf|q4_k|llama|embedding|download offline ai/i);
       await assertQuietConsole("ai panel");
@@ -374,7 +374,7 @@ describe("desktop journey", () => {
 
   test("every workspace and production tab renders without console problems or unlabelled controls, beside the docked AI panel", async () => {
     await step("tour", async () => {
-      // The AI Assistant stays open from the step before: it docks beside the page (owner decision
+      // The Straft AI stays open from the step before: it docks beside the page (owner decision
       // 2026-10-08), so every workspace is toured with the page narrowed by the panel, at the
       // smallest supported window size (tauri.conf.json minWidth/minHeight).
       await browser.setWindowSize(1200, 720);
@@ -410,11 +410,11 @@ describe("desktop journey", () => {
         await menuItem(page);
         await visit(page);
       }
-      assert.deepEqual(docking, [], "the docked AI Assistant hides part of the page");
-      // Closing the panel (the assistant shortcut, Ctrl+J by default) gives its width back to the page.
+      assert.deepEqual(docking, [], "the docked Straft AI hides part of the page");
+      // Closing the panel (Straft AI shortcut, Ctrl+J by default) gives its width back to the page.
       const docked = await dockedLayout(browser);
       await browser.keys(["Control", "j"]);
-      await (await $('//aside[@aria-label="AI Assistant"]')).waitForExist({ reverse: true, timeout: 10_000, timeoutMsg: "Ctrl+J did not close the AI Assistant" });
+      await (await $('//aside[@aria-label="Straft AI"]')).waitForExist({ reverse: true, timeout: 10_000, timeoutMsg: "Ctrl+J did not close the Straft AI" });
       await sleep(300);
       const full = await dockedLayout(browser);
       assert.equal(full.mainWidth, docked.mainWidth + docked.panelWidth, `closing the panel did not give its width back: ${JSON.stringify({ docked, full })}`);

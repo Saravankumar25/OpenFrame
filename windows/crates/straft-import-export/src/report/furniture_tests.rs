@@ -108,6 +108,11 @@ fn footer_embeds_the_logo_once_losslessly_with_a_soft_mask() {
     let pdf = branded(vec![Block::Styled(lines_table(Some("Items"), 160))]).to_pdf();
     assert!(pdf.pages >= 3, "{} pages", pdf.pages);
     let doc = lopdf::Document::load_mem(&pdf.bytes).unwrap();
+    // Whatever artwork ships: the file records its own size, so the test never hard-codes one.
+    let (art_w, art_h) = image::load_from_memory(include_bytes!("../../assets/straft-logo.png"))
+        .unwrap()
+        .to_rgba8()
+        .dimensions();
     let mut logos = 0;
     let mut masks = 0;
     for obj in doc.objects.values() {
@@ -122,8 +127,14 @@ fn footer_embeds_the_logo_once_losslessly_with_a_soft_mask() {
                 "lossless, never JPEG"
             );
             if s.dict.has(b"SMask") {
-                assert_eq!(s.dict.get(b"Width").unwrap().as_i64().unwrap(), 735);
-                assert_eq!(s.dict.get(b"Height").unwrap().as_i64().unwrap(), 163);
+                assert_eq!(
+                    s.dict.get(b"Width").unwrap().as_i64().unwrap(),
+                    art_w as i64
+                );
+                assert_eq!(
+                    s.dict.get(b"Height").unwrap().as_i64().unwrap(),
+                    art_h as i64
+                );
                 logos += 1;
             } else {
                 masks += 1;
@@ -139,7 +150,10 @@ fn footer_embeds_the_logo_once_losslessly_with_a_soft_mask() {
     for (i, page) in dump(&pdf.bytes).iter().enumerate() {
         let [x, y, w, h] = page.images[0];
         assert_eq!((x, y, h), (46.0, 33.0, 17.0), "page {}", i + 1);
-        assert!((w - 17.0 * 735.0 / 163.0).abs() < 0.01, "ratio kept: {w}");
+        assert!(
+            (w - 17.0 * art_w as f32 / art_h as f32).abs() < 0.01,
+            "ratio kept: {w}"
+        );
     }
 }
 

@@ -1,5 +1,5 @@
 // Reads the Process Monitor CSV from the clean-machine run and writes the summary the release
-// evidence keeps: where the Straft Studio processes talked to the network, which files and registry
+// evidence keeps: where the Straft processes talked to the network, which files and registry
 // keys they wrote, and everything outside the places the app is allowed to use.
 //   node procmon-report.mjs [session.csv] [--out file.md]      --self-test runs it on a tiny CSV
 
@@ -23,7 +23,7 @@ const ALLOWED_FILES = [
   [/^%USERPROFILE%\\Documents\\w9out\\/i, "test output folder"],
   [/^%USERPROFILE%\\AppData\\Local\\Temp\\/i, "temp"],
 ];
-const ALLOWED_REG = /Straft Studio|studio\.straft|WebView2|EdgeWebView|Edge\\(BLBeacon|PreferenceMACs)|Microsoft\\Windows\\CurrentVersion\\(Explorer|Internet Settings)/i;
+const ALLOWED_REG = /Straft|studio\.straft|WebView2|EdgeWebView|Edge\\(BLBeacon|PreferenceMACs)|Microsoft\\Windows\\CurrentVersion\\(Explorer|Internet Settings)/i;
 
 /** One CSV line with quoted fields ("" is an escaped quote). Procmon writes one record per line. */
 export function parseCsvLine(line) {
@@ -91,7 +91,7 @@ export async function summarize(lines) {
 }
 
 export function render(s, defender = "") {
-  const out = [`# Clean-machine network, file and registry activity`, "", `Source: Process Monitor session from the clean Windows 11 guest (${s.rows} events read). Straft Studio processes are exact; \`msedgewebview2.exe\` cannot be tied to the app by name alone (it is the shared WebView2 runtime) and is listed separately.`, ""];
+  const out = [`# Clean-machine network, file and registry activity`, "", `Source: Process Monitor session from the clean Windows 11 guest (${s.rows} events read). Straft processes are exact; \`msedgewebview2.exe\` cannot be tied to the app by name alone (it is the shared WebView2 runtime) and is listed separately.`, ""];
   const flagged = [];
   for (const [name, p] of [...s.procs].sort((a, b) => Number(b[1].own) - Number(a[1].own) || a[0].localeCompare(b[0]))) {
     out.push(`## ${name}${p.own ? "" : " (not attributable to the app by name)"}`, "");

@@ -6,12 +6,12 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+use serde_json::{Value, json};
 use straft_application::events::RecordingSink;
 use straft_application::modules::storage::library;
 use straft_application::{AppConfig, AppCore};
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const OTHER_ID: &str = "0192f0a1-7b3c-7d4e-8f50-123456789abc";
 
@@ -680,10 +680,10 @@ fn the_staging_folder_of_a_crashed_move_is_found_through_its_note() {
 // ====================================================== vault files and moves
 
 use base64::Engine;
-use straft_application::events::AppEvent;
-use straft_domain::AppError;
 use std::io::{Read, Write};
 use std::time::{Duration, Instant};
+use straft_application::events::AppEvent;
+use straft_domain::AppError;
 
 /// Wait for a background task; its result, or the error it ended with.
 fn finish(env: &TestEnv, started: &Value) -> Result<Value, AppError> {
@@ -1096,7 +1096,7 @@ fn restore_refuses_a_damaged_or_unsafe_file_and_leaves_the_vault_alone() {
         "import.vault_incomplete"
     );
 
-    // Made by a newer Straft Studio.
+    // Made by a newer Straft.
     let newer = rewrite_zip(
         &file,
         &bad,
@@ -1395,7 +1395,7 @@ fn locate_refuses_what_is_not_a_usable_vault() {
         .unwrap();
     assert_eq!(refuse(&other), "storage.not_a_vault");
 
-    // A vault saved by a newer Straft Studio.
+    // A vault saved by a newer Straft.
     let maker = TestEnv::new();
     add_note(&maker, "ALPHA");
     maker.core.close_global_store();

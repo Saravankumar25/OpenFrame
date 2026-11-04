@@ -36,7 +36,7 @@ pub trait InferenceProvider: Send + Sync {
     }
 }
 
-/// The bundled llama.cpp engine managed by Straft Studio. Every request goes through the manager,
+/// The bundled llama.cpp engine managed by Straft. Every request goes through the manager,
 /// which checks the bundled files before the first start.
 pub struct LocalRuntimeModel {
     pub(crate) manager: Arc<AiManager>,

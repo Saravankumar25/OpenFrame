@@ -24,7 +24,7 @@ updates it. See [27-microsoft-store.md](27-microsoft-store.md).
 
 **User data is never inside the install directory.** Uninstalling removes the program only. Projects
 (`Documents\Straft Studio`) and app data (`%LOCALAPPDATA%\Straft`) remain. 📋 The NSIS uninstaller should offer an
-explicit, unchecked-by-default "Also remove Straft Studio settings and logs" option. It must never offer to remove
+explicit, unchecked-by-default "Also remove Straft settings and logs" option. It must never offer to remove
 projects.
 
 ## 2. Code signing ⛔ (certificate provider not selected, Engineering Index §7)
@@ -55,7 +55,7 @@ any process running with MSIX package identity. `release-validate --store` enfor
 Plan:
 
 1. Add `tauri-plugin-updater` with `plugins.updater.pubkey` (minisign public key, committed) and HTTPS `endpoints`
-   pointing at the Straft Studio release host (hostname ⛔ open decision). `release-validate` already fails until both
+   pointing at the Straft release host (hostname ⛔ open decision). `release-validate` already fails until both
    are configured.
 2. `bundle.createUpdaterArtifacts: true` (injected in the release config): Tauri signs the installer with
    `TAURI_SIGNING_PRIVATE_KEY` (+ password) from CI secrets and emits `.sig` files, which are uploaded with the release.

@@ -194,7 +194,7 @@ describe("screenplay engine", () => {
       const r = await op("screenplay.export", { draftId, format: "pdf", path: pdf, options: { titlePage: true, sceneNumbers: true } });
       assert.equal(r.pages, 2);
       assert.ok(existsSync(pdf) && statSync(pdf).size > 500);
-      assert.ok(!readFileSync(pdf, "latin1").includes("Straft Studio"), "screenplay PDF carries no branding");
+      assert.ok(!readFileSync(pdf, "latin1").includes("Straft"), "screenplay PDF carries no branding");
       await op("screenplay.export", { draftId, format: "fdx", path: fdx, options: { titlePage: true, sceneNumbers: true } });
       const xml = readFileSync(fdx, "utf8");
       assert.ok(xml.includes('Type="TELEPHONE"') && xml.includes('StartsNewPage="Yes"') && xml.includes('Number="1"'));

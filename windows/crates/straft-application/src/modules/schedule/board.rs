@@ -5,9 +5,9 @@
 
 use std::collections::{BTreeMap, HashMap, HashSet};
 
-use straft_domain::{AppError, AppResult};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::Serialize;
+use straft_domain::{AppError, AppResult};
 use ts_rs::TS;
 
 use super::availability::{self, Availability, DayNeeds};

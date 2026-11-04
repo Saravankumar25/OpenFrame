@@ -7,11 +7,11 @@
 
 use std::path::PathBuf;
 
-use straft_ai::Usage;
-use straft_domain::{Actor, AppError, AppResult, new_id, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_ai::Usage;
+use straft_domain::{Actor, AppError, AppResult, new_id, now_ms};
 use ts_rs::TS;
 
 use super::dossier;
@@ -50,6 +50,16 @@ pub struct TraceRow<'a> {
     /// What the fetch stage gathered (counts only), and how long it took.
     pub dossier: Option<dossier::Summary>,
     pub dossier_ms: u64,
+    /// The leaves the person picked, as `screenplay/scenes,production/cast-crew`.
+    pub sections: &'a str,
+    /// Dossier tokens per picked leaf, `leaf=tokens` comma separated.
+    pub leaf_tokens: &'a str,
+    /// The leaf the answer pointed to, empty when it did not point.
+    pub pointer: &'a str,
+    /// `hybrid`, `fulltext`, or empty when no passages were wanted.
+    pub retrieval: &'a str,
+    /// Retrieval fell back to full text because the project index was not ready.
+    pub degraded: bool,
 }
 
 pub fn record(core: &AppCore, r: &TraceRow<'_>) {
@@ -67,9 +77,10 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
                                       context_fill_pct, prompt_ms, generation_ms, total_ms, passes, checks_failed,
                                       result_kind, error_code, proposed, cached_tokens, lane, runner_up_lane, cancelled,
                                       answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote, turn_ms,
-                                      dossier_facts, dossier_tokens, dossier_missing, dossier_required, dossier_ms)
+                                      dossier_facts, dossier_tokens, dossier_missing, dossier_required, dossier_ms,
+                                      sections, leaf_tokens, pointer, retrieval, degraded)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27,
-                     ?28, ?29, ?30, ?31, ?32, ?33, ?34, ?35, ?36, ?37, ?38, ?39)",
+                     ?28, ?29, ?30, ?31, ?32, ?33, ?34, ?35, ?36, ?37, ?38, ?39, ?40, ?41, ?42, ?43, ?44)",
             params![
                 new_id(),
                 r.request_id,
@@ -110,6 +121,11 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
                 r.dossier.map_or(0, |d| d.missing as i64),
                 r.dossier.map_or(0, |d| d.required as i64),
                 r.dossier_ms.min(i64::MAX as u64) as i64,
+                r.sections,
+                r.leaf_tokens,
+                r.pointer,
+                r.retrieval,
+                r.degraded,
             ],
         )?;
         Ok(())

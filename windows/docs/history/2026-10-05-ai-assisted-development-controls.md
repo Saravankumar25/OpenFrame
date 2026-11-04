@@ -11,14 +11,14 @@
 is developed through fast/AI-assisted/"vibe coding" workflows, and
 convert those risks into enforceable engineering controls.
 
-**Baseline:** Straft Studio `main` at
+**Baseline:** Straft `main` at
 `d30b5889ab5edf9f69d60f8e6d600cb11d4921a0`.
 
 ------------------------------------------------------------------------
 
 # 1. Executive assessment
 
-Straft Studio is no longer a small prototype where "make the screen work" is
+Straft is no longer a small prototype where "make the screen work" is
 enough.
 
 It has:
@@ -115,7 +115,7 @@ If those questions cannot be answered, the implementation is incomplete.
 
 ------------------------------------------------------------------------
 
-# 4. Existing Straft Studio architecture is the anti-vibe-coding safety net
+# 4. Existing Straft architecture is the anti-vibe-coding safety net
 
 The repository already has excellent enforcement points.
 
@@ -392,7 +392,7 @@ If the feature is intentionally hidden, document why.
 
 Do not fine-tune the model every time a feature is added.
 
-Straft Studio's first-line adaptation mechanism should be:
+Straft's first-line adaptation mechanism should be:
 
 1.  operation metadata
 2.  deterministic tools
@@ -979,7 +979,7 @@ after it.
 
 # 30. Core principle
 
-Straft Studio should be developed like this:
+Straft should be developed like this:
 
 ``` text
 fast coding
@@ -1002,4 +1002,4 @@ fast AND safe
 The objective is not to eliminate AI-assisted development.
 
 The objective is to ensure that **AI-assisted development cannot
-silently redefine Straft Studio's architecture**.
+silently redefine Straft's architecture**.

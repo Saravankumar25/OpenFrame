@@ -1,27 +1,43 @@
 // The licence state and the screen due now, read from the Rust core, and the "Buy full version"
 // action for every channel. The core decides; this file only asks and routes.
 
+import { useEffect, useState } from "react";
 import { useQuery, type QueryClient } from "@tanstack/react-query";
 import { create } from "zustand";
-import { call, OpError } from "../../ipc/client";
+import { call, OpError, openUrl } from "../../ipc/client";
+import { toast } from "../../app/toast";
 import type { EntitlementNotice } from "../../ipc/generated/EntitlementNotice";
 import type { BuyOutcome } from "../../ipc/generated/BuyOutcome";
 import type { NoticeKind } from "../../ipc/generated/NoticeKind";
 import type { EntitlementStatus } from "../../ipc/generated/EntitlementStatus";
-import { localDay } from "./rules";
+import { CONTACT_URL, localDay } from "./rules";
 
 export const NOTICE_OP = "entitlement.notice";
 
-/** The licence state and the due screen. Asked at launch, when the window comes back to the front
- * and every 5 minutes while the window is in front. Each ask only reads the state the core already
- * holds: the core works it out at startup, on Restore purchase and, on the Mac, at each online
- * check. On Windows a trial that ends while Straft Studio stays open therefore shows at the next
- * launch. */
+/** The local calendar day, kept current: checked every minute, so it changes soon after local
+ * midnight even when nothing else re-renders and even when the clock or time zone was moved back,
+ * and the day's reminder and the days left are asked for again. */
+function useToday(): string {
+  const [today, setToday] = useState(localDay);
+  useEffect(() => {
+    const timer = setInterval(() => setToday(localDay()), 60_000);
+    return () => clearInterval(timer);
+  }, []);
+  return today;
+}
+
+/** The licence state and the due screen. Asked at launch, when the window comes back to the front,
+ * every 5 minutes while the window is in front, and when the core says the licence changed (the
+ * store refresh or a purchase made elsewhere; see `LicenceScreens`). Each ask only reads the state
+ * the core already holds, so a trial that ends while Straft stays open shows the lock after the
+ * core's next store refresh. */
 export function useLicenceNotice() {
-  const today = localDay();
+  const today = useToday();
   return useQuery<EntitlementNotice, OpError>({
     queryKey: [NOTICE_OP, today],
     queryFn: () => call<EntitlementNotice>(NOTICE_OP, { today }),
+    // Midnight changes the key: keep the screens up while the new day's answer arrives.
+    placeholderData: (previous) => previous,
     staleTime: 60_000,
     refetchOnWindowFocus: true,
     refetchInterval: 5 * 60_000,
@@ -83,6 +99,12 @@ export async function restorePurchase(client: QueryClient): Promise<EntitlementS
   const s = await call<EntitlementStatus>("entitlement.restore_purchase", {});
   await afterStoreChange(client);
   return s;
+}
+
+/** "Contact us": opens the contact page in the browser. No form, no request from the app; a failed
+ * open shows the same toast as the other links. */
+export function openContact(): void {
+  void openUrl(CONTACT_URL).catch((e: unknown) => toast.error(failureText(e, "Straft couldn't open that link.")));
 }
 
 /** Plain words for a failed call: the core's message, or a calm fallback. */

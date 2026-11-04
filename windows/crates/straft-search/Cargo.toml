@@ -1,6 +1,6 @@
 [package]
 name = "straft-search"
-description = "Straft Studio derived intelligence index: semantic documents/chunks, embedded vector search (sqlite-vec), context graph and hybrid ranking. Never canonical; always rebuildable."
+description = "Straft derived intelligence index: semantic documents/chunks, embedded vector search (sqlite-vec), context graph and hybrid ranking. Never canonical; always rebuildable."
 version.workspace = true
 edition.workspace = true
 license.workspace = true

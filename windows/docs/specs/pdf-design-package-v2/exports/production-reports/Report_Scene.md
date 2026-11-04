@@ -4,7 +4,7 @@
 |---|---|
 | Export | Production reports, op `reports.export_report` (PDF; CSV and XLSX are separate projections of the same `ReportData`) |
 | Variant | **Report_Scene** — landscape, 7 columns (the only landscape report) |
-| Status | Design reference — not integrated; not validated against Straft Studio's Rust renderer |
+| Status | Design reference — not integrated; not validated against Straft's Rust renderer |
 | Repo commit | `2f5a045416bd2125801329533fc47f986ccc8174` (`main`) |
 | Date | 2026-10-23 |
 | Files | `exports/production-reports/Report_Scene.html` / `.pdf` / `.md`; stress tests in `exports/production-reports/stress-test/` |
@@ -192,7 +192,7 @@ All six reports (and every saved snapshot) are drawn inside the same shell. Ever
 
 **Scene-specific treatments:** Sc tile (`.tile`, 8.2 pt bold, navy on `--of-tint`, hairline `--of-line-strong`, radius 3.5 pt); I/E-D/N chips (`.chip`, 6.6 pt bold caps, neutral); `Unscheduled` = warn `.st` chip (hollow-ring mark) plus 3 pt orange row stripe, both readable in grayscale as a dark word-chip and a dark bar; metric `Unscheduled` value in amber text when > 0.
 
-**Colours:** `--of-navy` header and keys, `--of-panel` zebra, `--of-amber-*` for the warn chip, `--of-orange` stripe. **Footer:** shared (logo lockup, `Created using Straft Studio`, `Page X of Y`). **Running header:** yes, `LOW TIDE RADIO · SCENE REPORT` (the report spans 3 pages).
+**Colours:** `--of-navy` header and keys, `--of-panel` zebra, `--of-amber-*` for the warn chip, `--of-orange` stripe. **Footer:** shared (logo lockup, `Created using Straft`, `Page X of Y`). **Running header:** yes, `LOW TIDE RADIO · SCENE REPORT` (the report spans 3 pages).
 
 ## G. Dynamic behaviour
 
@@ -230,7 +230,7 @@ Dynamic behaviour shared by all six reports (defined once here).
 - Masthead, context banners and metrics strip are `break-after: avoid`: they stay with the first table rows; page 1 must show at least 3 table rows below the metrics, otherwise the table starts on a new page together with its header.
 - Landscape page body is 500 pt high; in the sample page 1 carries 13 rows and pages 2-3 carry 17 and 15 (current output: 7 / 9 / 10 / 9 / 8 / 1 over 6 pages), depending on wraps.
 - Header row (7 columns) repeats on each page.
-- Footer and numbering: shared system — official logo (17 pt high) + `Created using Straft Studio` bottom-left, `Page X of Y` bottom-right, on every page. The old footer text `<project> · <report title>` is **not** reproduced in the footer (brand rule); that identity moves to the running header.
+- Footer and numbering: shared system — official logo (17 pt high) + `Created using Straft` bottom-left, `Page X of Y` bottom-right, on every page. The old footer text `<project> · <report title>` is **not** reproduced in the footer (brand rule); that identity moves to the running header.
 - Running header: `@top-right`, `{PROJECT NAME} · SCENE REPORT`, only when the report spans more than one page.
 
 ## I. HTML/PDF correspondence
@@ -250,7 +250,7 @@ Dynamic behaviour shared by all six reports (defined once here).
 ## J. Acceptance criteria
 
 - [ ] Page size is Letter landscape; margins 46/46/46/66 pt; nothing drawn in the 66 pt footer band or outside the side margins (`tools/verify_pdf.py --size landscape` passes).
-- [ ] Footer on every page: logo lockup + `Created using Straft Studio` + `Page X of Y` with the true total.
+- [ ] Footer on every page: logo lockup + `Created using Straft` + `Page X of Y` with the true total.
 - [ ] Masthead shows, in this order: eyebrow `PRODUCTION REPORT`; title; `Project: … · Source: …` (a part is omitted when blank); right panel `GENERATED` / date / scope (`All rows` | `Filtered rows` | `Saved snapshot`). There is no `Export reference` line and no second logo.
 - [ ] Metrics strip labels and counts equal the source's metrics for this report (`Scenes`, `Unscheduled`) and are recomputed from the rows actually printed (filtered rows -> filtered counts).
 - [ ] Column headers are the exact `data.columns` strings, in the order given in section E; header row repeats on every page; header text never splits mid-word.

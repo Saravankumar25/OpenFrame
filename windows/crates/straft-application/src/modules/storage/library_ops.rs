@@ -1,4 +1,4 @@
-//! The Straft Studio library (doc 40 section 1, ADR-0038): one folder that holds `library.json`,
+//! The Straft library (doc 40 section 1, ADR-0038): one folder that holds `library.json`,
 //! `Projects/` and `Global Idea Vault/`. The first start asks where it is; nothing is created
 //! before the person confirms. The choice is remembered in `app.sqlite` and in a pointer file
 //! outside the app data (`%APPDATA%\Straft\library-pointer.json`), so a reinstall finds it.
@@ -11,10 +11,10 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use straft_domain::{Actor, AppError, AppResult, now_ms};
-use straft_project_format::{self as pf, ProjectLayout};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppError, AppResult, now_ms};
+use straft_project_format::{self as pf, ProjectLayout};
 use ts_rs::TS;
 
 use super::relocate::{
@@ -56,9 +56,7 @@ impl LibrarySetup {
     pub fn for_current_user(app_data_dir: &Path, pointer_dir: Option<&Path>) -> Option<Self> {
         use straft_platform::dirs;
         let home = dirs::home_dir()?;
-        let pointer_file = pointer_dir
-            .unwrap_or(app_data_dir)
-            .join(POINTER_FILE);
+        let pointer_file = pointer_dir.unwrap_or(app_data_dir).join(POINTER_FILE);
         let mut documents: Vec<PathBuf> = dirs::documents_dir().into_iter().collect();
         documents.push(home.join("Documents"));
         documents.push(home.join("OneDrive").join("Documents"));
@@ -170,6 +168,8 @@ pub(crate) fn place_at_start(conn: &Connection, config: &AppConfig) -> Option<Li
     Some(LibraryPlace::at(&root))
 }
 
+// -------------------------------------------- a library from an earlier release
+
 /// The folder the app last used, whether or not it is there now.
 fn remembered_root(core: &AppCore) -> Option<PathBuf> {
     let from_db = core.with_app_db(|c| Ok(read_db_root(c))).ok().flatten();
@@ -200,7 +200,7 @@ pub(crate) fn remember_root(core: &AppCore, root: Option<&Path>) -> AppResult<()
         });
         return Err(AppError::new(
             "storage.not_writable",
-            "Straft Studio could not save where your library is. Nothing was changed. Try again.",
+            "Straft could not save where your library is. Nothing was changed. Try again.",
         )
         .with_detail(e.message));
     }
@@ -210,8 +210,7 @@ pub(crate) fn remember_root(core: &AppCore, root: Option<&Path>) -> AppResult<()
 fn usable_root(raw: &str) -> Option<PathBuf> {
     let p = PathBuf::from(raw);
     (p.is_absolute()
-        && straft_security::check_user_path(&p, straft_security::NetworkPaths::Refuse)
-            .is_ok())
+        && straft_security::check_user_path(&p, straft_security::NetworkPaths::Refuse).is_ok())
     .then_some(p)
 }
 
@@ -261,6 +260,9 @@ pub fn read_pointer(file: &Path) -> Option<PathBuf> {
         .and_then(|p| usable_root(&p.library_root));
     if root.is_none() {
         tracing::warn!("the library pointer is not valid and is ignored");
+        let mut bad = file.as_os_str().to_owned();
+        bad.push(".bad");
+        let _ = fs::copy(file, bad);
     }
     root
 }
@@ -293,7 +295,7 @@ pub(crate) fn allowed_before_setup(op: &str) -> bool {
 pub(crate) fn setup_required() -> AppError {
     AppError::new(
         "library.setup_required",
-        "Choose where Straft Studio keeps your work first. Your Straft Studio library is not set up yet.",
+        "Choose where Straft keeps your work first. Your Straft library is not set up yet.",
     )
 }
 
@@ -375,7 +377,7 @@ pub struct LibraryDirArgs {
 #[ts(export)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LibraryCreateArgs {
-    /// The folder that will hold the new `Straft Studio` library folder.
+    /// The folder that will hold the new `Straft` library folder.
     pub parent: String,
 }
 
@@ -387,7 +389,7 @@ pub struct LibraryMoveReport {
     /// Projects inside the library that moved with it.
     pub projects_moved: u32,
     pub vault_moved: bool,
-    /// Set when the old folder still holds something Straft Studio did not copy.
+    /// Set when the old folder still holds something Straft did not copy.
     pub source_left_at: Option<String>,
 }
 
@@ -396,34 +398,32 @@ pub struct LibraryMoveReport {
 pub(super) fn register(r: &mut Registry) {
     use crate::registry::{FsEffect as Fs, OperationMetadata as M, hidden as h};
     r.query("library.status", status).meta(
-        M::app_query(
-            "Whether the Straft Studio library is set up, and libraries found on this computer.",
-        )
-        .fs(Fs::ProjectStorage)
-        .hidden(h::USER_PATH),
+        M::app_query("Whether the Straft library is set up, and libraries found on this computer.")
+            .fs(Fs::ProjectStorage)
+            .hidden(h::USER_PATH),
     );
     r.query("library.inspect", inspect).meta(
-        M::app_query("What a folder holds: a Straft Studio library, a project, a vault, or nothing.")
+        M::app_query("What a folder holds: a Straft library, a project, a vault, or nothing.")
             .fs(Fs::ProjectStorage)
             .hidden(h::USER_PATH),
     );
     r.command("library.use_default", use_default).meta(
-        M::app_command("Set up the Straft Studio library in the suggested folder.")
+        M::app_command("Set up the Straft library in the suggested folder.")
             .fs(Fs::ProjectStorage)
             .hidden(h::USER_PATH),
     );
     r.command("library.create_at", create_at).meta(
-        M::app_command("Set up a new Straft Studio library in a folder the person picked.")
+        M::app_command("Set up a new Straft library in a folder the person picked.")
             .fs(Fs::ProjectStorage)
             .hidden(h::USER_PATH),
     );
     r.command("library.connect", connect).meta(
-        M::app_command("Connect a Straft Studio library that already exists.")
+        M::app_command("Connect a Straft library that already exists.")
             .fs(Fs::ProjectStorage)
             .hidden(h::USER_PATH),
     );
     r.command("library.move", move_library_op).meta(
-        M::app_command("Move the whole Straft Studio library to another folder.")
+        M::app_command("Move the whole Straft library to another folder.")
             .fs(Fs::ProjectStorage)
             .long_running()
             .destructive()
@@ -671,23 +671,23 @@ fn message(i: &LibraryInspection) -> String {
     };
     let root = i.library_root.as_deref().unwrap_or_default();
     match i.kind {
-        LibraryPick::LibraryRoot => format!("This is a Straft Studio library with {}.", what()),
+        LibraryPick::LibraryRoot => format!("This is a Straft library with {}.", what()),
         LibraryPick::LibraryParent => format!(
-            "This folder holds a Straft Studio library in “{root}”, with {}. That folder will be connected.",
+            "This folder holds a Straft library in “{root}”, with {}. That folder will be connected.",
             what()
         ),
         LibraryPick::InsideLibrary => format!(
-            "This folder is inside a Straft Studio library. The library is “{root}”, with {}. That folder will be connected.",
+            "This folder is inside a Straft library. The library is “{root}”, with {}. That folder will be connected.",
             what()
         ),
         LibraryPick::Project if i.library_root.is_some() => format!(
-            "This folder is one project. It belongs to the Straft Studio library “{root}”, with {}. That library will be connected.",
+            "This folder is one project. It belongs to the Straft library “{root}”, with {}. That library will be connected.",
             what()
         ),
         LibraryPick::Project => "This folder is one project, not a library. Choose the folder that holds your library, or set up a library first and then open this project from Home.".to_string(),
         LibraryPick::Vault => "This folder is a Global Idea Vault on its own, not a library. Set up a library first, then connect this vault in Settings > Storage with Locate Existing Vault.".to_string(),
-        LibraryPick::Empty => "This folder is empty. There is no Straft Studio library here.".to_string(),
-        LibraryPick::Other => "No Straft Studio library was found in this folder. Choose the folder named Straft Studio that holds library.json and the Projects folder.".to_string(),
+        LibraryPick::Empty => "This folder is empty. There is no Straft library here.".to_string(),
+        LibraryPick::Other => "No Straft library was found in this folder. Choose the folder named Straft that holds library.json and the Projects folder.".to_string(),
     }
 }
 
@@ -696,7 +696,7 @@ fn message(i: &LibraryInspection) -> String {
 fn refuse_when_ready(core: &AppCore) -> AppResult<()> {
     if core.library_ready() {
         return Err(AppError::conflict(
-            "Your Straft Studio library is already set up. To use another folder, move the library or locate an existing one in Settings > Storage.",
+            "Your Straft library is already set up. To use another folder, move the library or locate an existing one in Settings > Storage.",
         ));
     }
     Ok(())
@@ -723,7 +723,7 @@ fn create_at(core: &AppCore, _a: &Actor, args: LibraryCreateArgs) -> AppResult<L
     let parent = checked_folder(core, &args.parent)?;
     if let Some(lib) = parent.ancestors().find(|a| is_library_root(a)) {
         return Err(AppError::invalid_input(format!(
-            "That folder is inside the Straft Studio library “{}”. Choose a folder outside it, or use Locate existing Straft Studio data to connect that library.",
+            "That folder is inside the Straft library “{}”. Choose a folder outside it, or use Locate existing Straft data to connect that library.",
             lib.display()
         )));
     }
@@ -737,7 +737,7 @@ fn create_root(core: &AppCore, root: &Path) -> AppResult<LibraryStatus> {
         return Err(AppError::new(
             "conflict.exists",
             format!(
-                "“{}” already holds a Straft Studio library. Use Locate existing Straft Studio data to connect it.",
+                "“{}” already holds a Straft library. Use Locate existing Straft data to connect it.",
                 root.display()
             ),
         ));
@@ -789,7 +789,7 @@ fn connect_root(core: &AppCore, root: &Path) -> AppResult<LibraryStatus> {
     }
     if library::is_inside(&core.config.app_data_dir, root) {
         return Err(AppError::invalid_input(
-            "That is Straft Studio's own app data folder, not a library.",
+            "That is Straft's own app data folder, not a library.",
         ));
     }
     probe_writable(root)?;
@@ -822,17 +822,17 @@ fn move_library_op(
     if !root.is_dir() {
         return Err(AppError::new(
             "not_found.folder",
-            "Your Straft Studio library can't be found. If it's on an external drive, reconnect it and try again.",
+            "Your Straft library can't be found. If it's on an external drive, reconnect it and try again.",
         ));
     }
     let parent = checked_folder(core, &args.dest_parent)?;
     let dest = parent.join(&name);
     if library::same_place(&dest, &root) {
-        return Err(same_place_error("Your Straft Studio library"));
+        return Err(same_place_error("Your Straft library"));
     }
     if library::is_inside(&root, &dest) || library::is_inside(&dest, &root) {
         return Err(AppError::invalid_input(
-            "Choose a folder outside your Straft Studio library.",
+            "Choose a folder outside your Straft library.",
         ));
     }
     check_destination_free(&dest, true)?;
@@ -1125,7 +1125,7 @@ fn undo_switch(
 fn both_places_error(old: &Path, new: &Path, detail: String) -> AppError {
     rollback_failed(
         format!(
-            "Your Straft Studio library was copied to “{}” but Straft Studio could not switch to it or back. Your work is safe in both “{}” and “{}”. Go to Settings > Storage and use Locate Existing Library to choose the one you want.",
+            "Your Straft library was copied to “{}” but Straft could not switch to it or back. Your work is safe in both “{}” and “{}”. Go to Settings > Storage and use Locate Existing Library to choose the one you want.",
             new.display(),
             old.display(),
             new.display()

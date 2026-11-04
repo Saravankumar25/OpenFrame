@@ -65,7 +65,7 @@ const IDENTITY: Matrix = [1.0, 0.0, 0.0, 1.0, 0.0, 0.0];
 
 /// Marked-content spans tracked at once; deeper nesting is counted, not stored.
 const MAX_MARKED_DEPTH: usize = 64;
-/// Characters kept from one `ActualText` (Straft Studio writes one per printed line).
+/// Characters kept from one `ActualText` (Straft writes one per printed line).
 const MAX_ACTUAL_TEXT_CHARS: usize = 4_096;
 
 /// A PDF text string: UTF-16BE after a byte-order mark, otherwise one byte per
@@ -167,7 +167,7 @@ fn page_runs(
         tm[4] += adv * tm[0];
         tm[5] += adv * tm[1];
     };
-    // Marked-content spans. Inside a span with `ActualText` (Straft Studio writes one
+    // Marked-content spans. Inside a span with `ActualText` (Straft writes one
     // per printed line with embedded fonts) the glyphs are replaced by that exact
     // text, emitted once at the position of the first glyph: shaped Indian
     // scripts (conjuncts, reordered vowel signs, zero-width joiners) can't be
@@ -389,7 +389,7 @@ fn is_number_token(t: &str) -> bool {
 //   * nesting of `[`/`<<` in the file and inside object streams is capped;
 //   * every FlateDecode stream is test-inflated with a hard cap, per stream and in total;
 //   * LZW and filter chains lopdf would expand without bounds are refused;
-//   * page content is decompressed by Straft Studio itself with a per-document budget, so a
+//   * page content is decompressed by Straft itself with a per-document budget, so a
 //     page that references one large stream thousands of times can't multiply memory;
 //   * parsing runs on a dedicated thread with a large stack as a final safety margin.
 
@@ -656,7 +656,7 @@ pub fn preflight(bytes: &[u8]) -> AppResult<()> {
     Ok(())
 }
 
-/// Page content, decompressed by Straft Studio with a budget shared across the document.
+/// Page content, decompressed by Straft with a budget shared across the document.
 fn page_content(
     doc: &Document,
     page_id: ObjectId,
@@ -680,7 +680,7 @@ fn page_content(
                     None => continue,
                 }
             }
-            // Anything else isn't a text content stream Straft Studio can read.
+            // Anything else isn't a text content stream Straft can read.
             _ => continue,
         };
         let len = data.len() as u64;
@@ -970,7 +970,7 @@ fn parse_screened(bytes: &[u8]) -> AppResult<ImportOutcome> {
     let confidence = stats.confidence().capped(ConfidenceLevel::Medium, 0.79);
     warnings.push(Warning::info(
         "pdf_best_effort",
-        "PDF files only describe how pages look, not which text is dialogue or action. Straft Studio recognised the structure from the page layout. Review the result.",
+        "PDF files only describe how pages look, not which text is dialogue or action. Straft recognised the structure from the page layout. Review the result.",
     ));
     if confidence.level == ConfidenceLevel::Low {
         warnings.push(Warning::attention(

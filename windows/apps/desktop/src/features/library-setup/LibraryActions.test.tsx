@@ -1,4 +1,4 @@
-// Settings > Storage, "Your Straft Studio library": Move Library confirms with both paths and runs as
+// Settings > Storage, "Your Straft library": Move Library confirms with both paths and runs as
 // a task; Locate Existing Library previews what it found before connecting.
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -45,38 +45,38 @@ beforeEach(() => {
   vi.mocked(openDialog).mockReset();
 });
 
-describe("Your Straft Studio library actions", () => {
+describe("Your Straft library actions", () => {
   it("moves the library only after a confirmation that names both places", async () => {
     vi.mocked(openDialog).mockResolvedValueOnce("D:\\");
     answer({ "library.move": { taskId: "t1" } });
     renderWithClient(<LibraryActions info={INFO} />);
     fireEvent.click(screen.getByRole("button", { name: "Move Library…" }));
-    const dialog = await screen.findByRole("dialog", { name: "Move Your Straft Studio Library" });
+    const dialog = await screen.findByRole("dialog", { name: "Move Your Straft Library" });
     expect(dialog).toHaveTextContent(`From ${LIB}`);
     expect(dialog).toHaveTextContent("To D:\\Straft");
     expect(dialog).toHaveTextContent(/the Global Idea Vault/);
     expect(calls).toEqual([]);
     fireEvent.click(screen.getByRole("button", { name: "Move Library" }));
-    await screen.findByRole("dialog", { name: "Move Your Straft Studio Library" });
+    await screen.findByRole("dialog", { name: "Move Your Straft Library" });
     expect(calls.find((c) => c.op === "library.move")?.args).toEqual({ destParent: "D:\\" });
   });
 
   it("previews an existing library before connecting it", async () => {
-    vi.mocked(openDialog).mockResolvedValueOnce("E:\\Backup\\Straft Studio");
+    vi.mocked(openDialog).mockResolvedValueOnce("E:\\Backup\\Straft");
     answer({
       "library.inspect": {
-        path: "E:\\Backup\\Straft Studio",
+        path: "E:\\Backup\\Straft",
         kind: "libraryRoot",
-        libraryRoot: "E:\\Backup\\Straft Studio",
+        libraryRoot: "E:\\Backup\\Straft",
         hasLibraryFile: true,
         ownerName: "Meera",
         projectCount: 2,
         vaultFound: true,
         ideaCount: 5,
         cloudService: null,
-        message: "This is a Straft Studio library with 2 projects and a Global Idea Vault with 5 ideas.",
+        message: "This is a Straft library with 2 projects and a Global Idea Vault with 5 ideas.",
       },
-      "library.connect": { state: "ready", root: "E:\\Backup\\Straft Studio", suggested: LIB, cloudService: null, found: [] },
+      "library.connect": { state: "ready", root: "E:\\Backup\\Straft", suggested: LIB, cloudService: null, found: [] },
     });
     renderWithClient(<LibraryActions info={INFO} />);
     fireEvent.click(screen.getByRole("button", { name: "Locate Existing Library…" }));
@@ -85,6 +85,6 @@ describe("Your Straft Studio library actions", () => {
     expect(dialog).toHaveTextContent(/is not moved or deleted/);
     expect(calls.map((c) => c.op)).toEqual(["library.inspect"]);
     fireEvent.click(screen.getByRole("button", { name: "Connect Library" }));
-    await vi.waitFor(() => expect(calls.find((c) => c.op === "library.connect")?.args).toEqual({ dir: "E:\\Backup\\Straft Studio" }));
+    await vi.waitFor(() => expect(calls.find((c) => c.op === "library.connect")?.args).toEqual({ dir: "E:\\Backup\\Straft" }));
   });
 });

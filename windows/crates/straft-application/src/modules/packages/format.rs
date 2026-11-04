@@ -1,6 +1,6 @@
 //! Package container format (Import/Export §9.3, §13; Security threat model).
 //!
-//! Every Straft Studio package is a ZIP written through
+//! Every Straft package is a ZIP written through
 //! `straft_security::archive` (validated entry names, atomic write) with:
 //!
 //! ```text
@@ -20,12 +20,12 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use straft_domain::{
     AppError, AppResult, OLDEST_PACKAGE_FORMAT_VERSION, PACKAGE_FORMAT_VERSION, new_id,
 };
 use straft_security::archive::{self, ArchiveLimits, EntrySource};
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use ts_rs::TS;
 
 pub const FORMAT_NAME: &str = "straft-package";
@@ -238,7 +238,7 @@ pub struct Checksums {
 pub fn not_package() -> AppError {
     AppError::import(
         "not_package",
-        "This file isn't a Straft Studio package, so nothing was imported. Your project was not changed.",
+        "This file isn't a Straft package, so nothing was imported. Your project was not changed.",
     )
 }
 
@@ -261,7 +261,7 @@ pub fn checksum_mismatch(detail: impl Into<String>) -> AppError {
 pub fn too_new(found: u32) -> AppError {
     AppError::import(
         "package_too_new",
-        "This package was created by a newer version of Straft Studio. Update Straft Studio to open it. Nothing was changed.",
+        "This package was created by a newer version of Straft. Update Straft to open it. Nothing was changed.",
     )
     .with_detail(format!(
         "package format {found} > supported {PACKAGE_FORMAT_VERSION}"
@@ -520,8 +520,7 @@ pub fn write_container(
 pub fn parse_manifest(bytes: &[u8]) -> AppResult<PackageManifest> {
     let raw: Value = serde_json::from_slice(bytes).map_err(|_| not_package())?;
     let format = raw.get("format").and_then(Value::as_str);
-    if format != Some(FORMAT_NAME)
-        && format != Some(straft_platform::legacy_names::PACKAGE_FORMAT)
+    if format != Some(FORMAT_NAME) && format != Some(straft_platform::legacy_names::PACKAGE_FORMAT)
     {
         return Err(not_package());
     }
@@ -945,12 +944,7 @@ mod hostile {
     fn checksums(entries: &[(&str, &[u8])]) -> Vec<u8> {
         let files: serde_json::Map<String, Value> = entries
             .iter()
-            .map(|(n, b)| {
-                (
-                    n.to_string(),
-                    Value::from(straft_security::sha256_bytes(b)),
-                )
-            })
+            .map(|(n, b)| (n.to_string(), Value::from(straft_security::sha256_bytes(b))))
             .collect();
         serde_json::to_vec(&serde_json::json!({ "algorithm": "sha256", "files": files })).unwrap()
     }

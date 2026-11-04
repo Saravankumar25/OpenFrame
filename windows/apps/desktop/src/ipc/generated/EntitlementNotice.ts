@@ -10,4 +10,9 @@ export type EntitlementNotice = { status: EntitlementStatus, notice: Notice,
  * The one folder to back up (`AppConfig::data_root`), shown on the data note and in the
  * tutorial. "Show in File Explorer" reveals it through the shell, never from this text.
  */
-dataRoot: string, };
+dataRoot: string, 
+/**
+ * True in a debug build. A release build hides the social rows that have no address yet
+ * (ADR-0039 item 12).
+ */
+debugBuild: boolean, };

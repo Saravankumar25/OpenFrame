@@ -48,7 +48,7 @@ enum Expect {
     Fails(&'static str),
 }
 
-/// A human error: Straft Studio code family, a sentence for the user, no parser internals.
+/// A human error: Straft code family, a sentence for the user, no parser internals.
 #[track_caller]
 fn assert_human(e: &AppError, case: &str) {
     let code = e.code_str();

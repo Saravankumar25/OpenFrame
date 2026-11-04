@@ -745,7 +745,7 @@ This section is deliberately domain-specific. It does not repeat the generic lif
 - [ ] Title-page information is preserved where supported.
 - [ ] Revisions are preserved where supported.
 - [ ] Unknown constructs never silently become unrelated content.
-- [ ] Exported FDX can be re-imported into Straft Studio for round-trip verification.
+- [ ] Exported FDX can be re-imported into Straft for round-trip verification.
 - [ ] Representative fixtures cover dialogue-heavy, action-heavy, multilingual, revised, numbered, custom-element and long-dialogue scripts.
 
 ## Fountain / DOCX / PDF
@@ -756,10 +756,10 @@ This section is deliberately domain-specific. It does not repeat the generic lif
 - [ ] Original PDF source remains untouched during import.
 
 ## Screenplay output branding
-- [ ] Screenplay PDF has no unwanted Straft Studio branding.
-- [ ] FDX has no unwanted Straft Studio branding.
-- [ ] Fountain has no unwanted Straft Studio branding.
-- [ ] Screenplay DOCX has no unwanted Straft Studio branding.
+- [ ] Screenplay PDF has no unwanted Straft branding.
+- [ ] FDX has no unwanted Straft branding.
+- [ ] Fountain has no unwanted Straft branding.
+- [ ] Screenplay DOCX has no unwanted Straft branding.
 
 ---
 
@@ -853,7 +853,7 @@ The supplied production-reference material indicates that a useful indie call sh
 - [ ] The product does not imply full studio accounting capabilities it does not provide.
 
 ## Production-output branding
-- [ ] Call-sheet PDF may use subtle Straft Studio branding according to the approved export policy.
+- [ ] Call-sheet PDF may use subtle Straft branding according to the approved export policy.
 - [ ] Schedule PDF/spreadsheet may use subtle branding according to the approved export policy.
 - [ ] Breakdown/production/DOOD/budget reports follow the same approved branding policy.
 - [ ] Branding never modifies customer-owned source files merely to add product identity.
@@ -862,7 +862,7 @@ The supplied production-reference material indicates that a useful indie call sh
 
 # 6D. Detailed product acceptance — Appearance Theme System (47A)
 
-The revised specification treats the theme system as an **application appearance layer**, not a content-system rewrite. The current Straft Studio appearance remains the factory/default appearance.
+The revised specification treats the theme system as an **application appearance layer**, not a content-system rewrite. The current Straft appearance remains the factory/default appearance.
 
 ## Theme contract
 - [ ] Theme changes appearance only.
@@ -873,7 +873,7 @@ The revised specification treats the theme system as an **application appearance
 - [ ] Theme does not change exports.
 - [ ] Theme does not change shortcuts or permissions.
 - [ ] Theme does not change file paths or project identity.
-- [ ] A user who never visits Appearance Settings sees the canonical Straft Studio default.
+- [ ] A user who never visits Appearance Settings sees the canonical Straft default.
 
 ## Mode / theme separation
 - [ ] Mode supports Light.

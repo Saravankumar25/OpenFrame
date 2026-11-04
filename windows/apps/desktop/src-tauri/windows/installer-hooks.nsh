@@ -9,8 +9,9 @@
 ;   files:   app.sqlite (with its -wal, -shm and -journal side files), engines.json
 ; Any other item in that folder is never removed, and then the folder stays. The root is never
 ; deleted recursively, so a project or anything else a person once placed there survives.
-; The same box clears the same list in the data folder of the earlier product name.
-; The folder lists are checked against the code by scripts/tests/governance.test.mjs.
+; The data folder of the earlier product name is never touched: that app may still be in use, and
+; its folder may be the only copy after a failed first start.
+; The folder list is checked against the code by scripts/tests/governance.test.mjs.
 ;
 ; Projects are normally kept out of this folder: check_project_parent (straft-application/src/util.rs)
 ; refuses it, because protected_roots() lists app_data_dir first. Older builds, received packages and
@@ -20,7 +21,7 @@
   ; An update runs the old uninstaller silently; only a person who chose to uninstall sees this.
   ${If} $UpdateMode <> 1
   ${AndIfNot} ${Silent}
-    MessageBox MB_OK|MB_ICONINFORMATION "Your projects, your Global Idea Vault and your Straft Studio library file are not removed. They stay where you keep them, usually in Documents\Straft Studio, and installing Straft Studio again finds them."
+    MessageBox MB_OK|MB_ICONINFORMATION "Your projects, your Global Idea Vault and your Straft library file are not removed. They stay where you keep them, usually in Documents\Straft Studio, and installing Straft again finds them."
   ${EndIf}
 !macroend
 
@@ -40,17 +41,5 @@
     Delete "$LOCALAPPDATA\Straft\engines.json"
     ; Not recursive: succeeds only when nothing else is left inside.
     RMDir "$LOCALAPPDATA\Straft"
-    RMDir /r "$LOCALAPPDATA\OpenFrame\models" ; LEGACY: Open Frame name kept for migration
-    RMDir /r "$LOCALAPPDATA\OpenFrame\ai" ; LEGACY: Open Frame name kept for migration
-    RMDir /r "$LOCALAPPDATA\OpenFrame\logs" ; LEGACY: Open Frame name kept for migration
-    RMDir /r "$LOCALAPPDATA\OpenFrame\entitlement" ; LEGACY: Open Frame name kept for migration
-    RMDir /r "$LOCALAPPDATA\OpenFrame\tmp" ; LEGACY: Open Frame name kept for migration
-    RMDir /r "$LOCALAPPDATA\OpenFrame\reviews" ; LEGACY: Open Frame name kept for migration
-    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite" ; LEGACY: Open Frame name kept for migration
-    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-wal" ; LEGACY: Open Frame name kept for migration
-    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-shm" ; LEGACY: Open Frame name kept for migration
-    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-journal" ; LEGACY: Open Frame name kept for migration
-    Delete "$LOCALAPPDATA\OpenFrame\engines.json" ; LEGACY: Open Frame name kept for migration
-    RMDir "$LOCALAPPDATA\OpenFrame" ; LEGACY: Open Frame name kept for migration
   ${EndIf}
 !macroend

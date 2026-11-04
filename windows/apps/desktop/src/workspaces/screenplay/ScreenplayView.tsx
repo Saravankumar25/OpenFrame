@@ -121,7 +121,7 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onImpor
   const openId = layout.draftId && drafts.some((d) => d.id === layout.draftId) ? layout.draftId : current.id;
   const draft = drafts.find((d) => d.id === openId) ?? current;
   const doc = useDocument(openId);
-  // The assistant's "Current Screenplay" scope uses the draft open here.
+  // Straft AI's "Current Screenplay" scope uses the draft open here.
   const setOpenDraft = useOpenDraft((s) => s.setDraftId);
   useEffect(() => {
     setOpenDraft(openId);

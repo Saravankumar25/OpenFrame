@@ -11,8 +11,8 @@
 
 use std::collections::HashMap;
 
-use straft_domain::AppResult;
 use rusqlite::Connection;
+use straft_domain::AppResult;
 
 /// One date range (inclusive, `YYYY-MM-DD`) when a person or place cannot be used.
 #[derive(Debug, Clone, PartialEq, Eq)]

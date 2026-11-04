@@ -14,8 +14,8 @@ use std::fs::File;
 use std::io::Read;
 use std::path::{Component, Path, PathBuf};
 
-use straft_domain::{AppError, AppResult};
 use sha2::{Digest, Sha256};
+use straft_domain::{AppError, AppResult};
 
 const WINDOWS_RESERVED: &[&str] = &[
     "CON", "PRN", "AUX", "NUL", "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
@@ -173,7 +173,7 @@ pub const NETWORK_LOCATION_CODE: &str = "project_format.network_location";
 fn network_location_refused(detail: &str) -> AppError {
     AppError::new(
         NETWORK_LOCATION_CODE,
-        "Straft Studio can't use files on a network location here. Copy them to this computer first.",
+        "Straft can't use files on a network location here. Copy them to this computer first.",
     )
     .with_detail(detail.to_string())
 }
@@ -320,7 +320,7 @@ pub fn display_path(canonical: &Path) -> PathBuf {
 
 /// File types Windows *executes* (or that execute code) when "opened" with the default
 /// handler. Project files can come from received packages whose stored names/extensions
-/// are attacker-chosen, so Straft Studio reveals these in Explorer instead of launching them.
+/// are attacker-chosen, so Straft reveals these in Explorer instead of launching them.
 const EXECUTABLE_EXTENSIONS: &[&str] = &[
     "exe",
     "com",
@@ -412,9 +412,7 @@ pub fn is_dangerous_to_open(path: &Path) -> bool {
 }
 
 fn place_protected() -> AppError {
-    AppError::invalid_input(
-        "Straft Studio keeps its own files in that folder. Choose a different folder.",
-    )
+    AppError::invalid_input("Straft keeps its own files in that folder. Choose a different folder.")
 }
 
 /// Destination file chosen in a save dialog (exports, packages, file copies): an absolute

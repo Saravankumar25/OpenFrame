@@ -10,11 +10,14 @@ import userEvent from "@testing-library/user-event";
 import { renderWithClient } from "../../app/home/testUtils";
 import { useNav } from "../../app/stores";
 import { useToasts } from "../../app/toast";
+import { registerPendingSave } from "../../app/pendingSaves";
 import { LicenceSection } from "../../workspaces/settings/Licence";
 import { LicenceScreens, WelcomeDialog } from "./LicenceScreens";
+import { AboutSection } from "../../workspaces/settings/About";
 import { TrialCorner } from "./TrialCorner";
 import { NOTICE_OP, useCheckScreen } from "./licence";
 import {
+  CONTACT_URL,
   SOCIAL_LINKS,
   isAppShortcut,
   isFixedSocialUrl,
@@ -24,6 +27,8 @@ import {
   revealLabel,
   storeName,
   trialChip,
+  trialEndLine,
+  visibleSocialLinks,
   type SocialLink,
 } from "./rules";
 
@@ -31,9 +36,9 @@ import {
 
 type State =
   | { state: "trialActive"; days_left: number }
-  | { state: "trialEnded" | "purchased" | "revoked" | "unknown" | "needsOnlineCheck" | "trialNotStarted" | "internalBuild" };
+  | { state: "trialEnded" | "purchased" | "revoked" | "unknown" | "needsOnlineCheck" | "trialNotStarted" | "internalBuild" | "clockChanged" };
 type Notice =
-  | { kind: "none" | "dataNote" | "tutorial" | "welcome" | "macFirstLaunch" | "locked" | "checkNeeded" }
+  | { kind: "none" | "dataNote" | "tutorial" | "welcome" | "macFirstLaunch" | "locked" | "checkNeeded" | "clockChanged" }
   | { kind: "reminder"; daysLeft: number };
 
 const NOT_CONNECTED = "The Microsoft Store connection is not available in this build.";
@@ -51,6 +56,9 @@ const core = {
   recordFails: null as string | null,
   afterBuy: null as State | null,
   noticeFails: false,
+  /** A debug build shows the placeholder social rows; a release build hides them. */
+  debugBuild: true,
+  endsAtMs: null as number | null,
   calls: [] as { op: string; args: Record<string, unknown> }[],
 };
 
@@ -85,11 +93,21 @@ const status = () => ({
   limitation: null,
   trialDays: 7,
   canEdit: true,
+  trialEndsAtMs: core.endsAtMs,
 });
-const view = (today?: string) => ({ status: status(), notice: due(today), dataRoot: "C:\\Users\\Nisha\\Documents\\Straft Studio" });
+const view = (today?: string) => ({
+  status: status(),
+  notice: due(today),
+  dataRoot: "C:\\Users\\Nisha\\Documents\\Straft Studio",
+  debugBuild: core.debugBuild,
+});
 
 const reveal = vi.fn(async () => undefined);
 const open = vi.fn(async () => undefined);
+const lockOrder: string[] = [];
+const handlers = new Set<(e: unknown) => void>();
+/** What the core pushes when the licence changed. */
+const emit = (e: unknown) => handlers.forEach((h) => h(e));
 
 vi.mock("../../ipc/client", async () => {
   class OpError extends Error {
@@ -106,7 +124,10 @@ vi.mock("../../ipc/client", async () => {
   return {
     OpError,
     inTauri: () => false,
-    onAppEvent: () => Promise.resolve(() => undefined),
+    onAppEvent: (h: (e: unknown) => void) => {
+      handlers.add(h);
+      return Promise.resolve(() => handlers.delete(h));
+    },
     revealLocation: (...a: unknown[]) => reveal(...(a as [])),
     openUrl: (...a: unknown[]) => open(...(a as [])),
     call: vi.fn(async (op: string, args: Record<string, unknown> = {}) => {
@@ -137,6 +158,9 @@ vi.mock("../../ipc/client", async () => {
         case "entitlement.restore_purchase":
           if (core.afterBuy) core.state = core.afterBuy;
           return status();
+        case "entitlement.lock_ready":
+          lockOrder.push("lock_ready");
+          return null;
         default:
           throw new Error(`unexpected operation in test: ${op}`);
       }
@@ -158,7 +182,11 @@ beforeEach(() => {
   core.recordFails = null;
   core.afterBuy = null;
   core.noticeFails = false;
+  core.debugBuild = true;
+  core.endsAtMs = null;
   core.calls = [];
+  handlers.clear();
+  lockOrder.length = 0;
   reveal.mockClear();
   open.mockClear();
   useNav.getState().reset();
@@ -175,15 +203,14 @@ async function settled(client: { getQueryState: (key: unknown[]) => { status: st
   await waitFor(() => expect(client.getQueryState([NOTICE_OP, today])?.status).toBe("success"));
 }
 
-/** Price, currency or pricing-model words that must never appear (ADR-0023). */
+/** A price or a currency must never appear on a licensing screen (ADR-0023). The reminder says "Pay
+ * once, own forever. No subscription." (owner mock 184), so the pricing model words are allowed. */
 const PRICE_TALK = [
   /[$€£₹¥]/,
   /\d[\d.,]*\s*(USD|EUR|GBP|INR|JPY|AUD|CAD|CHF)\b/i,
   /\b(USD|EUR|GBP|INR|JPY|AUD|CAD|CHF)\s*\d/i,
   /\bprices?\b/i,
-  /pay once/i,
-  /subscription/i,
-  /lifetime/i,
+  /\b(rupees?|dollars?|euros?)\b/i,
 ];
 function expectNoPriceTalk(text: string, where: string) {
   for (const re of PRICE_TALK) expect(text, `${where}: ${re}`).not.toMatch(re);
@@ -198,21 +225,49 @@ describe("rules", () => {
   });
 
   it("shows the chip only during the trial and turns it amber in the last 3 days", () => {
-    expect(trialChip({ state: "trialActive", days_left: 7 })).toMatchObject({ label: "Trial: 7 days left", ending: false });
-    expect(trialChip({ state: "trialActive", days_left: 4 })).toMatchObject({ ending: false });
-    expect(trialChip({ state: "trialActive", days_left: 3 })).toMatchObject({ label: "Trial: 3 days left", ending: true });
-    expect(trialChip({ state: "trialActive", days_left: 1 })).toMatchObject({ label: "Trial: 1 day left", ending: true });
-    expect(trialChip({ state: "trialActive", days_left: 1 })?.spoken).toContain("ends today");
-    for (const state of ["purchased", "trialEnded", "revoked", "unknown", "needsOnlineCheck", "trialNotStarted", "internalBuild"] as const) {
+    for (const n of [7, 6, 5, 4, 3, 2, 1]) {
+      const chip = trialChip({ state: "trialActive", days_left: n });
+      expect(chip?.label).toBe(n === 1 ? "Trial ends in 1 day" : `Trial ends in ${n} days`);
+      expect(chip?.ending).toBe(n <= 3);
+      expect(chip?.spoken).toBe(
+        n === 1
+          ? "Free trial, last day. Your trial ends within 24 hours."
+          : `Free trial. Ends in ${n} days.${n <= 3 ? " Your trial ends soon." : ""}`,
+      );
+    }
+    for (const state of ["purchased", "trialEnded", "revoked", "unknown", "needsOnlineCheck", "trialNotStarted", "internalBuild", "clockChanged"] as const) {
       expect(trialChip({ state })).toBeNull();
     }
     expect(trialChip(undefined)).toBeNull();
   });
 
   it("words the reminder for days 5, 6 and 7", () => {
+    const noon = new Date(2026, 10, 4, 12, 0);
     expect(reminderHeadline(3)).toBe("Your free trial ends in 3 days");
     expect(reminderHeadline(2)).toBe("Your free trial ends in 2 days");
-    expect(reminderHeadline(1)).toBe("Your free trial ends today");
+    // The last day: today when the end moment is on today's date, tomorrow when it is on the next.
+    expect(reminderHeadline(1, new Date(2026, 10, 4, 21, 42).getTime(), noon)).toBe("Your free trial ends today");
+    expect(reminderHeadline(1, new Date(2026, 10, 5, 9, 42).getTime(), noon)).toBe("Your free trial ends tomorrow");
+    expect(reminderHeadline(1, null, noon)).toBe("Your free trial ends today");
+    expect(reminderHeadline(1, undefined, noon)).toBe("Your free trial ends today");
+  });
+
+  it("words the end moment in local time, in one fixed shape", () => {
+    // Built from local parts, so the check does not depend on the machine's time zone.
+    expect(trialEndLine(new Date(2026, 10, 5, 21, 42).getTime())).toBe("It ends on Thu 5 Nov at 9:42 PM.");
+    expect(trialEndLine(new Date(2026, 10, 9, 0, 5).getTime())).toBe("It ends on Mon 9 Nov at 12:05 AM.");
+    expect(trialEndLine(new Date(2026, 10, 12, 9, 7).getTime())).toBe("It ends on Thu 12 Nov at 9:07 AM.");
+    expect(trialEndLine(null)).toBeNull();
+    expect(trialEndLine(undefined)).toBeNull();
+  });
+
+  it("keeps the contact address in one place and hides placeholder social rows in a release build", () => {
+    expect(CONTACT_URL).toBe("https://straftstudio.com/contact/");
+    expect(visibleSocialLinks(SOCIAL_LINKS, true)).toHaveLength(8);
+    expect(visibleSocialLinks(SOCIAL_LINKS, false)).toEqual([]);
+    const real: SocialLink = { name: "Instagram", short: "IG", handle: "@a", url: "https://www.instagram.com/a" };
+    const bad: SocialLink = { name: "Bad", short: "B", handle: "@b", url: "https://evil.example/b" };
+    expect(visibleSocialLinks([real, bad, ...SOCIAL_LINKS], false)).toEqual([real]);
   });
 
   it("names each store the way the screens say it", () => {
@@ -284,8 +339,8 @@ describe("trial chip and Buy full version", () => {
     core.state = { state: "trialActive", days_left: 5 };
     renderWithClient(<TrialCorner />);
     const group = await screen.findByRole("group", { name: "Free trial" });
-    expect(within(group).getByText("Trial: 5 days left")).toBeInTheDocument();
-    expect(within(group).getByText("Free trial, 5 days left.")).toHaveClass("sr-only");
+    expect(within(group).getByText("Trial ends in 5 days")).toBeInTheDocument();
+    expect(within(group).getByText("Free trial. Ends in 5 days.")).toHaveClass("sr-only");
     expect(group.querySelector(".chip")).not.toHaveClass("y");
     expect(within(group).getByRole("button", { name: "Buy full version" })).toBeInTheDocument();
   });
@@ -295,7 +350,20 @@ describe("trial chip and Buy full version", () => {
     renderWithClient(<TrialCorner />);
     const group = await screen.findByRole("group", { name: "Free trial" });
     expect(group.querySelector(".chip")).toHaveClass("y");
-    expect(within(group).getByText("Free trial, 2 days left. Your trial ends soon.")).toBeInTheDocument();
+    expect(within(group).getByText("Free trial. Ends in 2 days. Your trial ends soon.")).toBeInTheDocument();
+  });
+
+  it("shows on Application Home through the same component, with the Buy button", async () => {
+    // AppHome mounts <TrialCorner /> in its top bar (src/app/home/AppHome.test.tsx asserts the mount);
+    // here the component alone answers for every day.
+    for (const n of [7, 4, 3, 2, 1]) {
+      core.state = { state: "trialActive", days_left: n };
+      const r = renderWithClient(<TrialCorner />);
+      const group = await screen.findByRole("group", { name: "Free trial" });
+      expect(within(group).getByText(n === 1 ? "Trial ends in 1 day" : `Trial ends in ${n} days`)).toBeInTheDocument();
+      expect(within(group).getByRole("button", { name: "Buy full version" })).toBeInTheDocument();
+      r.unmount();
+    }
   });
 
   it("is gone after the purchase and in every other state", async () => {
@@ -338,7 +406,7 @@ describe("trial chip and Buy full version", () => {
     const r = renderWithClient(
       <>
         <TrialCorner />
-        <LicenceScreens projectOpen />
+        <LicenceScreens />
       </>,
     );
     await settled(r.client);
@@ -353,11 +421,14 @@ describe("trial chip and Buy full version", () => {
 describe("trial reminders", () => {
   it("day 5 says ends in 3 days, is remembered for today and closes with Continue trial", async () => {
     core.state = { state: "trialActive", days_left: 3 };
-    renderWithClient(<LicenceScreens projectOpen />);
+    renderWithClient(<LicenceScreens />);
     const dialog = await screen.findByRole("dialog", { name: "Trial reminder" });
     expect(within(dialog).getByText("Your free trial ends in 3 days")).toBeInTheDocument();
     expect(within(dialog).getByText(/Nothing is deleted when the trial ends/)).toBeInTheDocument();
-    expect(within(dialog).getByText("Buy the full version to keep using Straft Studio.")).toBeInTheDocument();
+    expect(
+      within(dialog).getByText("Buy the full version to keep using Straft Studio. Pay once, own forever. No subscription."),
+    ).toBeInTheDocument();
+    expect(within(dialog).queryByText(/^It ends on/)).toBeNull();
     await waitFor(() => expect(ops("entitlement.record_notice")[0]?.args).toEqual({ notice: "reminder", today }));
     await userEvent.click(within(dialog).getByRole("button", { name: "Continue trial" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
@@ -368,27 +439,75 @@ describe("trial reminders", () => {
 
   it("day 6 says ends in 2 days and day 7 says ends today", async () => {
     core.state = { state: "trialActive", days_left: 2 };
-    const first = renderWithClient(<LicenceScreens projectOpen />);
+    const first = renderWithClient(<LicenceScreens />);
     expect(await screen.findByText("Your free trial ends in 2 days")).toBeInTheDocument();
     first.unmount();
     core.state = { state: "trialActive", days_left: 1 };
     core.reminderDay = null;
-    renderWithClient(<LicenceScreens projectOpen />);
+    renderWithClient(<LicenceScreens />);
     expect(await screen.findByText("Your free trial ends today")).toBeInTheDocument();
   });
 
-  it("never shows on days 1 to 4, on Application Home, or after a purchase", async () => {
+  it("never shows on days 1 to 4 or after a purchase", async () => {
     core.state = { state: "trialActive", days_left: 4 };
-    const a = renderWithClient(<LicenceScreens projectOpen />);
+    const a = renderWithClient(<LicenceScreens />);
     await settled(a.client);
     expect(screen.queryByRole("dialog")).toBeNull();
     a.unmount();
-    core.state = { state: "trialActive", days_left: 2 };
-    const b = renderWithClient(<LicenceScreens projectOpen={false} />);
+    core.state = { state: "purchased" };
+    core.flags = { dataNote: true, tutorial: true, welcome: true };
+    const b = renderWithClient(<LicenceScreens />);
     await settled(b.client);
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(ops("entitlement.record_notice")).toHaveLength(0);
     b.unmount();
+  });
+
+  it("shows on Application Home too: the component needs no open project", async () => {
+    core.state = { state: "trialActive", days_left: 2 };
+    renderWithClient(<LicenceScreens />);
+    expect(await screen.findByRole("dialog", { name: "Trial reminder" })).toBeInTheDocument();
+  });
+
+  it("says the real end moment under the headline, today or tomorrow on the last day", async () => {
+    core.state = { state: "trialActive", days_left: 1 };
+    // Ends later today when it is before midnight now; use today 23:58 so the test is stable.
+    const endsToday = new Date();
+    endsToday.setHours(23, 58, 0, 0);
+    core.endsAtMs = endsToday.getTime();
+    const first = renderWithClient(<LicenceScreens />);
+    const dialog = await screen.findByRole("dialog", { name: "Trial reminder" });
+    expect(within(dialog).getByText("Your free trial ends today")).toBeInTheDocument();
+    expect(within(dialog).getByText(trialEndLine(endsToday.getTime())!)).toBeInTheDocument();
+    first.unmount();
+
+    core.reminderDay = null;
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(9, 42, 0, 0);
+    core.endsAtMs = tomorrow.getTime();
+    renderWithClient(<LicenceScreens />);
+    const next = await screen.findByRole("dialog", { name: "Trial reminder" });
+    expect(within(next).getByText("Your free trial ends tomorrow")).toBeInTheDocument();
+    expect(within(next).getByText(/^It ends on .+ at 9:42 AM\.$/)).toBeInTheDocument();
+  });
+
+  it("closes at once when a purchase is seen, and a later \"none\" answer alone does not close it", async () => {
+    core.state = { state: "trialActive", days_left: 2 };
+    const r = renderWithClient(<LicenceScreens />);
+    await screen.findByRole("dialog", { name: "Trial reminder" });
+    // The reminder was recorded as shown, so the next answer says none: it stays open.
+    await act(async () => {
+      await r.client.invalidateQueries({ queryKey: [NOTICE_OP] });
+    });
+    expect(screen.getByRole("dialog", { name: "Trial reminder" })).toBeInTheDocument();
+    // A purchase made elsewhere: the core says so, and the reminder is gone.
+    core.state = { state: "purchased" };
+    core.flags = { dataNote: true, tutorial: true, welcome: true };
+    await act(async () => {
+      emit({ type: "module", module: "entitlement", name: "changed", payload: null });
+    });
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   });
 
   it("Buy during the reminder, then the purchase mid-trial starts the data note", async () => {
@@ -397,7 +516,7 @@ describe("trial reminders", () => {
     core.buyRoute = { route: "store" };
     core.buyMessage = null;
     core.afterBuy = { state: "purchased" };
-    renderWithClient(<LicenceScreens projectOpen />);
+    renderWithClient(<LicenceScreens />);
     const dialog = await screen.findByRole("dialog", { name: "Trial reminder" });
     await userEvent.click(within(dialog).getByRole("button", { name: "Buy full version" }));
     expect(await screen.findByRole("dialog", { name: "Your data, your responsibility" })).toBeInTheDocument();
@@ -405,7 +524,7 @@ describe("trial reminders", () => {
 
   it("Buy without the store connection says so inside the reminder and keeps it open", async () => {
     core.state = { state: "trialActive", days_left: 3 };
-    renderWithClient(<LicenceScreens projectOpen />);
+    renderWithClient(<LicenceScreens />);
     const dialog = await screen.findByRole("dialog", { name: "Trial reminder" });
     await userEvent.click(within(dialog).getByRole("button", { name: "Buy full version" }));
     expect(await within(dialog).findByText(NOT_CONNECTED)).toBeInTheDocument();
@@ -416,7 +535,7 @@ describe("trial reminders", () => {
     core.recordFails = "The disk is full.";
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     try {
-      renderWithClient(<LicenceScreens projectOpen />);
+      renderWithClient(<LicenceScreens />);
       expect(await screen.findByRole("dialog", { name: "Trial reminder" })).toBeInTheDocument();
       await waitFor(() => expect(warn).toHaveBeenCalledWith(expect.stringContaining("io.write_failed"), expect.anything()));
       expect(useToasts.getState().items).toEqual([]);
@@ -427,7 +546,7 @@ describe("trial reminders", () => {
 
   it("a failed check never crashes and shows nothing", async () => {
     core.noticeFails = true;
-    renderWithClient(<LicenceScreens projectOpen />);
+    renderWithClient(<LicenceScreens />);
     await waitFor(() => expect(ops("entitlement.notice").length).toBeGreaterThan(0));
     expect(screen.queryByRole("dialog")).toBeNull();
   });
@@ -441,7 +560,7 @@ describe("data note", () => {
   });
 
   it("enables OK only after scrolling to the end and ticking, and cannot be closed", async () => {
-    renderWithClient(<LicenceScreens projectOpen />);
+    renderWithClient(<LicenceScreens />);
     const dialog = await screen.findByRole("dialog", { name: "Your data, your responsibility" });
     expect(within(dialog).queryByRole("button", { name: "Close" })).toBeNull();
     expect(within(dialog).getAllByRole("listitem")).toHaveLength(6);
@@ -476,7 +595,7 @@ describe("data note", () => {
       return region(this) ? sizes.scrollTop : 0;
     });
     try {
-      renderWithClient(<LicenceScreens projectOpen />);
+      renderWithClient(<LicenceScreens />);
       const dialog = await screen.findByRole("dialog", { name: "Your data, your responsibility" });
       const ok = within(dialog).getByRole("button", { name: "OK, I understand" });
       const box = within(dialog).getByRole("checkbox");
@@ -503,8 +622,24 @@ describe("data note", () => {
     }
   });
 
+  it("says what uninstalling removes on Windows, and only to back up on the Mac", async () => {
+    const r = renderWithClient(<LicenceScreens />);
+    const dialog = await screen.findByRole("dialog", { name: "Your data, your responsibility" });
+    expect(
+      within(dialog).getByText(
+        "Uninstalling Straft Studio removes its private data on this computer (settings and downloaded AI files), but not your projects in the root folder.",
+      ),
+    ).toBeInTheDocument();
+    r.unmount();
+    core.channel = "macAppStore";
+    renderWithClient(<LicenceScreens />);
+    const mac = await screen.findByRole("dialog", { name: "Your data, your responsibility" });
+    expect(within(mac).getByText("Back up your root folder.")).toBeInTheDocument();
+    expect(within(mac).queryByText(/Uninstalling/)).toBeNull();
+  });
+
   it("shows the real root folder through the platform boundary", async () => {
-    renderWithClient(<LicenceScreens projectOpen />);
+    renderWithClient(<LicenceScreens />);
     const dialog = await screen.findByRole("dialog", { name: "Your data, your responsibility" });
     await userEvent.click(within(dialog).getByRole("button", { name: "Show in File Explorer" }));
     expect(reveal).toHaveBeenCalledWith("dataRoot");
@@ -514,7 +649,7 @@ describe("data note", () => {
     const seen = vi.fn();
     window.addEventListener("keydown", seen);
     try {
-      renderWithClient(<LicenceScreens projectOpen />);
+      renderWithClient(<LicenceScreens />);
       await screen.findByRole("dialog", { name: "Your data, your responsibility" });
       fireEvent.keyDown(window, { key: "k", ctrlKey: true });
       fireEvent.keyDown(window, { key: "j", metaKey: true });
@@ -544,7 +679,7 @@ describe("file safety tutorial and welcome", () => {
   });
 
   it("walks 4 steps by keyboard; Finish needs all three boxes; then the welcome once", async () => {
-    renderWithClient(<LicenceScreens projectOpen />);
+    renderWithClient(<LicenceScreens />);
     const dialog = await screen.findByRole("dialog", { name: "File safety tutorial" });
     expect(within(dialog).queryByRole("button", { name: "Close" })).toBeNull();
     expect(within(dialog).getByText("Step 1 of 4 · mandatory")).toBeInTheDocument();
@@ -583,7 +718,7 @@ describe("file safety tutorial and welcome", () => {
       expect(within(welcome).getByLabelText(`${name} @straftstudio`)).toBeInTheDocument();
     }
     // Placeholder handles have no address, so nothing is a link.
-    expect(within(welcome).getAllByRole("button").map((b) => b.textContent)).not.toContain("Instagram@straftstudio");
+    expect(within(welcome).getAllByRole("button").map((b) => b.textContent).filter(Boolean)).toEqual(["OK"]);
     await userEvent.click(within(welcome).getByRole("button", { name: "OK" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(ops("entitlement.record_notice").map((c) => c.args.notice)).toEqual(["tutorial", "welcome"]);
@@ -602,10 +737,31 @@ describe("file safety tutorial and welcome", () => {
     expect(screen.queryByRole("button", { name: /Evil/ })).toBeNull();
   });
 
+  it("a release build hides the placeholder rows; with none visible it is the thank-you text and OK", async () => {
+    core.state = { state: "purchased" };
+    core.flags = { dataNote: true, tutorial: true, welcome: false };
+    core.debugBuild = false;
+    renderWithClient(<LicenceScreens />);
+    const welcome = await screen.findByRole("dialog", { name: "Welcome to the Straft Studio family" });
+    expect(within(welcome).getByText("Thank you for backing independent filmmaking.")).toBeInTheDocument();
+    expect(within(welcome).queryByText(/community/)).toBeNull();
+    expect(within(welcome).queryByRole("list")).toBeNull();
+    expect(within(welcome).queryByLabelText(/@straftstudio/)).toBeNull();
+    expect(within(welcome).getAllByRole("button").map((b) => b.textContent).filter(Boolean)).toEqual(["OK"]);
+  });
+
+  it("a debug build keeps showing the eight rows", async () => {
+    core.state = { state: "purchased" };
+    core.flags = { dataNote: true, tutorial: true, welcome: false };
+    renderWithClient(<LicenceScreens />);
+    const welcome = await screen.findByRole("dialog", { name: "Welcome to the Straft Studio family" });
+    expect(within(welcome).getAllByRole("listitem")).toHaveLength(8);
+  });
+
   it("trial users see none of the three screens", async () => {
     core.state = { state: "trialActive", days_left: 6 };
     core.flags.dataNote = false;
-    const r = renderWithClient(<LicenceScreens projectOpen />);
+    const r = renderWithClient(<LicenceScreens />);
     await settled(r.client);
     expect(screen.queryByRole("dialog")).toBeNull();
   });
@@ -617,14 +773,87 @@ describe("store screens", () => {
   it("Mac first launch offers the free trial, the purchase and restore, and cannot be closed", async () => {
     core.channel = "macAppStore";
     core.state = { state: "trialNotStarted" };
-    renderWithClient(<LicenceScreens projectOpen={false} />);
+    renderWithClient(<LicenceScreens />);
     const dialog = await screen.findByRole("dialog", { name: "Welcome to Straft Studio" });
     expect(within(dialog).queryByRole("button", { name: "Close" })).toBeNull();
     await userEvent.keyboard("{Escape}");
     expect(screen.getByRole("dialog", { name: "Welcome to Straft Studio" })).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole("button", { name: "Need help? Contact us" }));
+    expect(open).toHaveBeenCalledWith(CONTACT_URL);
     await userEvent.click(within(dialog).getByRole("button", { name: "Start free trial" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(ops("entitlement.start_trial")).toHaveLength(1);
+  });
+
+  it("the clock lock has its own screen so a lock never has none: Check again and the contact link only", async () => {
+    core.channel = "macAppStore";
+    core.state = { state: "clockChanged" };
+    core.fixedNotice = { kind: "clockChanged" };
+    renderWithClient(<LicenceScreens />);
+    const dialog = await screen.findByRole("dialog", { name: "Your Mac's clock looks wrong" });
+    expect(
+      within(dialog).getByText(
+        "Straft Studio checks the date to count your free trial. Turn on Set time and date automatically in System Settings, then choose Check again. Your projects are safe.",
+      ),
+    ).toBeInTheDocument();
+    expect(within(dialog).getAllByRole("button").map((b) => b.textContent)).toEqual(["Check again", "Need help? Contact us"]);
+    await userEvent.keyboard("{Escape}");
+    expect(screen.getByRole("dialog", { name: "Your Mac's clock looks wrong" })).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole("button", { name: "Check again" }));
+    expect(ops("entitlement.restore_purchase")).toHaveLength(1);
+  });
+
+  it("the lock stores typed text first, then tells the core it may close its flush window, once", async () => {
+    const order = lockOrder;
+    const unregister = registerPendingSave(async () => {
+      await new Promise((r) => setTimeout(r, 30));
+      order.push("flushed");
+    });
+    core.state = { state: "trialEnded" };
+    try {
+      renderWithClient(<LicenceScreens />);
+      await screen.findByRole("dialog", { name: "Your free trial has ended" });
+      await waitFor(() => expect(order).toEqual(["flushed", "lock_ready"]));
+      // Later refreshes of the same lock do not repeat it.
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 20));
+      });
+      expect(ops("entitlement.lock_ready")).toHaveLength(1);
+    } finally {
+      unregister();
+    }
+  });
+
+  it("the lock still tells the core when a flush fails, and Escape and an outside click do nothing", async () => {
+    const unregister = registerPendingSave(async () => false);
+    core.state = { state: "revoked" };
+    try {
+      renderWithClient(<LicenceScreens />);
+      await screen.findByRole("dialog", { name: "Your purchase is no longer active" });
+      await waitFor(() => expect(ops("entitlement.lock_ready")).toHaveLength(1));
+      await userEvent.keyboard("{Escape}");
+      fireEvent.pointerDown(document.querySelector(".scrim") ?? document.body);
+      expect(screen.getByRole("dialog", { name: "Your purchase is no longer active" })).toBeInTheDocument();
+    } finally {
+      unregister();
+    }
+  });
+
+  it("the contact path is openUrl only: no form, no request from the app", async () => {
+    core.state = { state: "trialEnded" };
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    try {
+      renderWithClient(<LicenceScreens />);
+      const dialog = await screen.findByRole("dialog", { name: "Your free trial has ended" });
+      expect(dialog.querySelector("form")).toBeNull();
+      expect(dialog.querySelector("input, textarea")).toBeNull();
+      await userEvent.click(within(dialog).getByRole("button", { name: "Need help? Contact us" }));
+      expect(open).toHaveBeenCalledWith(CONTACT_URL);
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   for (const channel of ["macAppStore", "microsoftStore"] as const) {
@@ -634,11 +863,14 @@ describe("store screens", () => {
       core.channel = channel;
       core.state = { state: "trialEnded" };
       core.buyRoute = { route: "store" };
-      core.buyMessage = `Straft Studio could not reach ${store}. Connect to the internet, then try again.`;
-      renderWithClient(<LicenceScreens projectOpen />);
+      core.buyMessage = `Straft could not reach ${store}. Connect to the internet, then try again.`;
+      renderWithClient(<LicenceScreens />);
       const dialog = await screen.findByRole("dialog", { name: "Your free trial has ended" });
-      expect(within(dialog).getAllByRole("button").map((b) => b.textContent)).toEqual(["Buy full version", "Restore purchase"]);
-      expect(within(dialog).getByText(/Nothing is deleted/)).toBeInTheDocument();
+      const again = channel === "macAppStore" ? "Restore purchase" : "Check again";
+      expect(within(dialog).getAllByRole("button").map((b) => b.textContent)).toEqual(["Buy full version", again, "Need help? Contact us"]);
+      expect(within(dialog).getByText("Buy the full version to keep using Straft Studio.")).toBeInTheDocument();
+      const where = channel === "macAppStore" ? "this Mac" : "this computer";
+      expect(within(dialog).getByText(`Your projects are safe on ${where}. Buying unlocks them again exactly as you left them.`)).toBeInTheDocument();
       await userEvent.keyboard("{Escape}");
       fireEvent.keyDown(window, { key: "k", ctrlKey: true });
       expect(screen.getByRole("dialog", { name: "Your free trial has ended" })).toBeInTheDocument();
@@ -647,28 +879,47 @@ describe("store screens", () => {
       // Restore finds the purchase: the lock goes, every query is asked again, the data note follows.
       const infoAsks = ops("app.info").length;
       core.afterBuy = { state: "purchased" };
-      await userEvent.click(within(dialog).getByRole("button", { name: "Restore purchase" }));
+      await userEvent.click(within(dialog).getByRole("button", { name: again }));
       expect(await screen.findByRole("dialog", { name: "Your data, your responsibility" })).toBeInTheDocument();
       await waitFor(() => expect(ops("app.info").length).toBeGreaterThan(infoAsks));
     });
 
-    it(`${channel}: a refund locks too, naming the store`, async () => {
+    it(`${channel}: a refund locks too, with the refunded wording`, async () => {
       core.channel = channel;
       core.state = { state: "revoked" };
-      renderWithClient(<LicenceScreens projectOpen />);
+      renderWithClient(<LicenceScreens />);
       const dialog = await screen.findByRole("dialog", { name: "Your purchase is no longer active" });
-      const named = store.charAt(0).toUpperCase() + store.slice(1);
-      expect(within(dialog).getByText(new RegExp(`^${named} reports that this purchase was refunded or revoked`))).toBeInTheDocument();
+      const again = channel === "macAppStore" ? "Restore purchase" : "Check again";
+      const where = channel === "macAppStore" ? "this Mac" : "this computer";
+      expect(within(dialog).getByText("The store no longer shows a purchase for this account, so Straft Studio is locked.")).toBeInTheDocument();
+      expect(
+        within(dialog).getByText(`Your projects are still on ${where}. If this is a mistake, choose ${again} or contact us.`),
+      ).toBeInTheDocument();
+      expect(within(dialog).getByRole("button", { name: again })).toBeInTheDocument();
       expect(within(dialog).queryByRole("button", { name: "Close" })).toBeNull();
+    });
+
+    it(`${channel}: the contact link opens exactly the contact address, nothing else is called`, async () => {
+      core.channel = channel;
+      core.state = { state: "trialEnded" };
+      renderWithClient(<LicenceScreens />);
+      const dialog = await screen.findByRole("dialog", { name: "Your free trial has ended" });
+      await userEvent.click(within(dialog).getByRole("button", { name: "Need help? Contact us" }));
+      expect(open).toHaveBeenCalledTimes(1);
+      expect(open).toHaveBeenCalledWith("https://straftstudio.com/contact/");
+      expect(ops("entitlement.buy")).toHaveLength(0);
+      expect(useToasts.getState().items).toEqual([]);
     });
 
     it(`${channel}: a licence that cannot be confirmed asks to try again and can be closed`, async () => {
       core.channel = channel;
       core.state = { state: "needsOnlineCheck" };
-      renderWithClient(<LicenceScreens projectOpen />);
+      renderWithClient(<LicenceScreens />);
       const dialog = await screen.findByRole("dialog", { name: "Checking your purchase" });
       expect(within(dialog).getByText(`We could not reach ${store}.`)).toBeInTheDocument();
       expect(within(dialog).getByText("Your projects stay open and can be exported. Nothing is deleted.")).toBeInTheDocument();
+      await userEvent.click(within(dialog).getByRole("button", { name: "Need help? Contact us" }));
+      expect(open).toHaveBeenCalledWith(CONTACT_URL);
       core.afterBuy = { state: "trialActive", days_left: 4 };
       await userEvent.click(within(dialog).getByRole("button", { name: "Try again" }));
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
@@ -683,7 +934,7 @@ describe("store screens", () => {
     try {
       for (const how of ["Not now", "Escape", "Close"] as const) {
         useCheckScreen.setState({ closed: false });
-        const r = renderWithClient(<LicenceScreens projectOpen />);
+        const r = renderWithClient(<LicenceScreens />);
         const dialog = await screen.findByRole("dialog", { name: "Checking your purchase" });
         seen.mockClear();
         fireEvent.keyDown(window, { key: "k", ctrlKey: true });
@@ -704,7 +955,7 @@ describe("store screens", () => {
     const r = renderWithClient(
       <>
         <TrialCorner />
-        <LicenceScreens projectOpen />
+        <LicenceScreens />
       </>,
     );
     const dialog = await screen.findByRole("dialog", { name: "Checking your purchase" });
@@ -739,7 +990,7 @@ describe("what the interface draws for each answer", () => {
       for (const state of ["trialEnded", "needsOnlineCheck", "trialNotStarted", "revoked", "unknown", "internalBuild"] as const) {
         core.channel = channel;
         core.state = { state };
-        const r = renderWithClient(<LicenceScreens projectOpen />);
+        const r = renderWithClient(<LicenceScreens />);
         await settled(r.client);
         expect(screen.queryByRole("dialog")).toBeNull();
         r.unmount();
@@ -759,8 +1010,9 @@ describe("what the interface draws for each answer", () => {
     ] as const;
     for (const [notice, title] of cases) {
       core.fixedNotice = notice;
-      core.state = { state: "trialEnded" };
-      const r = renderWithClient(<LicenceScreens projectOpen />);
+      // The core only names a reminder inside the trial; the screen draws it only then.
+      core.state = notice.kind === "reminder" ? { state: "trialActive", days_left: 2 } : { state: "trialEnded" };
+      const r = renderWithClient(<LicenceScreens />);
       await settled(r.client);
       expect(await screen.findByRole("dialog", { name: title })).toBeInTheDocument();
       expect(screen.getAllByRole("dialog")).toHaveLength(1);
@@ -789,18 +1041,19 @@ describe("no price, currency or pricing model on any licensing screen", () => {
         [{ kind: "macFirstLaunch" }, "Welcome to Straft Studio", { state: "trialNotStarted" }],
         [{ kind: "dataNote" }, "Your data, your responsibility", { state: "purchased" }],
         [{ kind: "welcome" }, "Welcome to the Straft Studio family", { state: "purchased" }],
+        [{ kind: "clockChanged" }, "Your Mac's clock looks wrong", { state: "clockChanged" }],
       ] as const) {
         core.fixedNotice = notice;
         core.state = state;
         useCheckScreen.setState({ closed: false });
-        const r = renderWithClient(<LicenceScreens projectOpen />);
+        const r = renderWithClient(<LicenceScreens />);
         await grab(`${channel} ${notice.kind}`, title);
         r.unmount();
       }
       // Every step of the tutorial.
       core.fixedNotice = { kind: "tutorial" };
       core.state = { state: "purchased" };
-      const t = renderWithClient(<LicenceScreens projectOpen />);
+      const t = renderWithClient(<LicenceScreens />);
       const dialog = await grab(`${channel} tutorial step 1`, "File safety tutorial");
       for (const step of [2, 3, 4]) {
         await userEvent.click(within(dialog).getByRole("button", { name: "Next" }));
@@ -820,16 +1073,69 @@ describe("no price, currency or pricing model on any licensing screen", () => {
       await screen.findByText("Free trial: 3 days left.");
       texts.push([`${channel} chip and Settings > Licence`, document.body.textContent ?? ""]);
       c.unmount();
+      const about = renderWithClient(<AboutSection />);
+      await screen.findByText("Contact us");
+      texts.push([`${channel} About`, document.body.textContent ?? ""]);
+      about.unmount();
     }
     expect(texts.length).toBeGreaterThan(20);
     for (const [where, text] of texts) expectNoPriceTalk(text, where);
   });
 
   it("the scan itself catches price talk", () => {
-    for (const bad of ["Only $9.99", "₹499 once", "Costs 12 EUR", "EUR 12", "See the price", "Pay once, own forever", "No subscription", "Lifetime Access"]) {
+    for (const bad of ["Only $9.99", "₹499 once", "Costs 12 EUR", "EUR 12", "See the price", "89 dollars"]) {
       expect(() => expectNoPriceTalk(bad, "sample")).toThrow();
     }
-    expect(() => expectNoPriceTalk("Your free trial ends in 3 days. 7 days. No credit card.", "sample")).not.toThrow();
+    expect(() => expectNoPriceTalk("Your free trial ends in 3 days. 7 days. No credit card. Pay once, own forever.", "sample")).not.toThrow();
+  });
+});
+
+// The core pushes "entitlement changed" when the store refresh moved the state or a purchase was made
+// elsewhere. Everything is asked again, so a lock that lifts or falls reaches every query.
+describe("entitlement changed event", () => {
+  it("asks every query again, and ignores other events", async () => {
+    const r = renderWithClient(<LicenceScreens />);
+    await settled(r.client);
+    const spy = vi.spyOn(r.client, "invalidateQueries");
+    await act(async () => {
+      emit({ type: "module", module: "other", name: "changed", payload: null });
+      emit({ type: "module", module: "entitlement", name: "other", payload: null });
+      emit({ type: "projectClosed", projectId: "p" });
+    });
+    expect(spy).not.toHaveBeenCalled();
+    await act(async () => {
+      emit({ type: "module", module: "entitlement", name: "changed", payload: null });
+    });
+    expect(spy).toHaveBeenCalledWith();
+    const before = ops("entitlement.notice").length;
+    core.state = { state: "trialEnded" };
+    await act(async () => {
+      emit({ type: "module", module: "entitlement", name: "changed", payload: null });
+    });
+    expect(await screen.findByRole("dialog", { name: "Your free trial has ended" })).toBeInTheDocument();
+    expect(ops("entitlement.notice").length).toBeGreaterThan(before);
+  });
+
+  it("stops listening when the screens go away", async () => {
+    const r = renderWithClient(<LicenceScreens />);
+    await settled(r.client);
+    expect(handlers.size).toBe(1);
+    r.unmount();
+    await waitFor(() => expect(handlers.size).toBe(0));
+  });
+});
+
+// The day rolls over at local midnight even when nothing else re-renders.
+describe("midnight", () => {
+  it("asks for the new day's notice when local midnight passes", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date(2026, 10, 4, 23, 59, 30));
+    renderWithClient(<TrialCorner />);
+    await waitFor(() => expect(ops("entitlement.notice").at(-1)?.args).toEqual({ today: "2026-11-04" }));
+    await act(async () => {
+      vi.advanceTimersByTime(90_000);
+    });
+    await waitFor(() => expect(ops("entitlement.notice").at(-1)?.args).toEqual({ today: "2026-11-05" }));
   });
 });
 
@@ -837,7 +1143,7 @@ describe("no price, currency or pricing model on any licensing screen", () => {
 describe("refresh", () => {
   it("asks the core again on its own", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
-    renderWithClient(<LicenceScreens projectOpen />);
+    renderWithClient(<LicenceScreens />);
     await waitFor(() => expect(ops("entitlement.notice")).toHaveLength(1));
     core.channel = "macAppStore";
     core.state = { state: "trialEnded" };
@@ -845,5 +1151,86 @@ describe("refresh", () => {
       vi.advanceTimersByTime(5 * 60_000 + 10);
     });
     expect(await screen.findByRole("dialog", { name: "Your free trial has ended" })).toBeInTheDocument();
+  });
+});
+
+// Review fixes before the store release.
+describe("reminder, lock and clock edge cases", () => {
+  it("a reminder left open when the trial ends gives way to the lock, which then tells the core", async () => {
+    core.state = { state: "trialActive", days_left: 2 };
+    renderWithClient(<LicenceScreens />);
+    await screen.findByRole("dialog", { name: "Trial reminder" });
+    core.state = { state: "trialEnded" };
+    await act(async () => {
+      emit({ type: "module", module: "entitlement", name: "changed", payload: null });
+    });
+    expect(await screen.findByRole("dialog", { name: "Your free trial has ended" })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Trial reminder" })).toBeNull();
+    await waitFor(() => expect(ops("entitlement.lock_ready")).toHaveLength(1));
+  });
+
+  it("keeps the screen and does not store twice when local midnight passes", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date(2026, 10, 4, 23, 59, 30));
+    core.state = { state: "trialEnded" };
+    renderWithClient(<LicenceScreens />);
+    await screen.findByRole("dialog", { name: "Your free trial has ended" });
+    await waitFor(() => expect(ops("entitlement.lock_ready")).toHaveLength(1));
+    await act(async () => {
+      vi.advanceTimersByTime(90_000);
+    });
+    await waitFor(() => expect(ops("entitlement.notice").at(-1)?.args).toEqual({ today: "2026-11-05" }));
+    expect(screen.getByRole("dialog", { name: "Your free trial has ended" })).toBeInTheDocument();
+    expect(ops("entitlement.lock_ready")).toHaveLength(1);
+  });
+
+  it("still notices the new day after the clock was moved back across midnight", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date(2026, 10, 4, 23, 59, 30));
+    renderWithClient(<TrialCorner />);
+    await waitFor(() => expect(ops("entitlement.notice").at(-1)?.args).toEqual({ today: "2026-11-04" }));
+    vi.setSystemTime(new Date(2026, 10, 4, 12, 0, 0));
+    await act(async () => {
+      vi.advanceTimersByTime(90_000);
+    });
+    expect(ops("entitlement.notice").at(-1)?.args).toEqual({ today: "2026-11-04" });
+    vi.setSystemTime(new Date(2026, 10, 5, 10, 0, 0));
+    await act(async () => {
+      vi.advanceTimersByTime(61_000);
+    });
+    await waitFor(() => expect(ops("entitlement.notice").at(-1)?.args).toEqual({ today: "2026-11-05" }));
+  });
+
+  it("warns on the lock when the latest typing could not be saved, and still tells the core", async () => {
+    const unregister = registerPendingSave(async () => false);
+    core.state = { state: "trialEnded" };
+    try {
+      renderWithClient(<LicenceScreens />);
+      const dialog = await screen.findByRole("dialog", { name: "Your free trial has ended" });
+      expect(
+        await within(dialog).findByText("Some of your latest typing could not be saved. Your projects are safe up to your last saved change."),
+      ).toBeInTheDocument();
+      await waitFor(() => expect(ops("entitlement.lock_ready")).toHaveLength(1));
+    } finally {
+      unregister();
+    }
+  });
+
+  it("shows no typing warning when everything was saved", async () => {
+    core.state = { state: "trialEnded" };
+    renderWithClient(<LicenceScreens />);
+    const dialog = await screen.findByRole("dialog", { name: "Your free trial has ended" });
+    await waitFor(() => expect(ops("entitlement.lock_ready")).toHaveLength(1));
+    expect(within(dialog).queryByText(/could not be saved/)).toBeNull();
+  });
+
+  it("puts the contact link under the buttons on the check screen", async () => {
+    core.state = { state: "needsOnlineCheck" };
+    renderWithClient(<LicenceScreens />);
+    const dialog = await screen.findByRole("dialog", { name: "Checking your purchase" });
+    const contact = within(dialog).getByRole("button", { name: "Need help? Contact us" });
+    const again = within(dialog).getByRole("button", { name: "Try again" });
+    expect(contact.parentElement).not.toBe(again.parentElement);
+    expect(again.compareDocumentPosition(contact) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });

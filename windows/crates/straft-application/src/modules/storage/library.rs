@@ -8,8 +8,8 @@
 
 use std::path::{Path, PathBuf};
 
-use straft_domain::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
+use straft_domain::{AppError, AppResult};
 
 pub const LIBRARY_FILE_NAME: &str = "library.json";
 const FORMAT: u32 = 1;
@@ -313,14 +313,14 @@ mod tests {
     #[test]
     fn a_path_inside_a_folder_follows_it_to_its_new_place() {
         let moved = rebase(
-            Path::new("C:/Users/m/Straft Studio/Projects/Film.straft"),
-            Path::new("c:/users/m/straft studio/"),
-            Path::new("D:/Lib/Straft Studio"),
+            Path::new("C:/Users/m/Straft/Projects/Film.straft"),
+            Path::new("c:/users/m/straft/"),
+            Path::new("D:/Lib/Straft"),
         )
         .unwrap();
         assert!(same_place(
             &moved,
-            Path::new("D:/Lib/Straft Studio/Projects/Film.straft")
+            Path::new("D:/Lib/Straft/Projects/Film.straft")
         ));
         assert_eq!(
             rebase(

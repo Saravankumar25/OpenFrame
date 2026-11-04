@@ -348,7 +348,7 @@ impl<B: StoreKitBridge, S: LicenceServer> MacAppStoreAdapter<B, S> {
                 "Editing your projects",
                 "Creating new projects",
                 "Importing files",
-                "Assistant changes to your projects",
+                "Straft AI changes to your projects",
             ],
             lifetime_price_display: lifetime.display_price,
         })
@@ -377,22 +377,22 @@ impl<B: StoreKitBridge, S: LicenceServer> MacAppStoreAdapter<B, S> {
         let last = self.read_cache().and_then(|c| c.last_confirmed);
         match (reason, last) {
             (OnlineCheckReason::NoConnection, Some(CachedKind::TrialActive)) => {
-                "Straft Studio needs the internet to continue your free trial. Connect and open Straft Studio again. Your projects stay open and can be exported."
+                "Straft needs the internet to continue your free trial. Connect and open Straft again. Your projects stay open and can be exported."
             }
             (OnlineCheckReason::NoConnection, _) => {
-                "Straft Studio needs the internet to check your free trial. Connect and open Straft Studio again. Your projects stay open and can be exported."
+                "Straft needs the internet to check your free trial. Connect and open Straft again. Your projects stay open and can be exported."
             }
             (OnlineCheckReason::LeaseExpired, _) => {
-                "Straft Studio needs to check your free trial again. Connect to the internet, then choose Check again. Your projects stay open and can be exported."
+                "Straft needs to check your free trial again. Connect to the internet, then choose Check again. Your projects stay open and can be exported."
             }
             (OnlineCheckReason::CouldNotConfirm, _) => {
-                "Straft Studio could not confirm your free trial with the App Store. Try again later. Your projects stay open and can be exported."
+                "Straft could not confirm your free trial with the App Store. Try again later. Your projects stay open and can be exported."
             }
             (OnlineCheckReason::AppStoreUnavailable, Some(CachedKind::Lifetime)) => {
-                "Straft Studio could not confirm your purchase with the App Store. Check that you are signed in to the App Store, then open Straft Studio again. Your projects stay open and can be exported."
+                "Straft could not confirm your purchase with the App Store. Check that you are signed in to the App Store, then open Straft again. Your projects stay open and can be exported."
             }
             (OnlineCheckReason::AppStoreUnavailable, _) => {
-                "Straft Studio could not reach the App Store. Check that you are signed in to the App Store, then open Straft Studio again. Your projects stay open and can be exported."
+                "Straft could not reach the App Store. Check that you are signed in to the App Store, then open Straft again. Your projects stay open and can be exported."
             }
         }
     }
@@ -717,7 +717,7 @@ pub fn purchase_failure(e: BridgeError) -> PurchaseFailure {
     let message = match e {
         BridgeError::NotSignedIn => "Sign in to the App Store, then try again.",
         BridgeError::NoConnection => {
-            "Straft Studio could not reach the App Store. Connect to the internet, then try again."
+            "Straft could not reach the App Store. Connect to the internet, then try again."
         }
         BridgeError::StoreUnavailable => {
             "The App Store is not available right now. Try again later."

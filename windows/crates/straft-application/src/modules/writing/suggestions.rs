@@ -8,9 +8,9 @@
 
 use std::collections::HashSet;
 
-use straft_domain::{Actor, AppResult, Capability};
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppResult, Capability};
 use ts_rs::TS;
 
 use crate::core::AppCore;

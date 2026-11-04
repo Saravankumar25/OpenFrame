@@ -84,7 +84,7 @@ describe("contact field", () => {
   it("Owners and Editors see the value with the privacy hint", () => {
     wrap(<ContactField id="c" label="Contact" value="98xxx 10001" hidden={false} canEdit onCommit={() => {}} />);
     expect(screen.getByDisplayValue("98xxx 10001")).toBeInTheDocument();
-    expect(screen.getByText(/Never shared with the assistant or put in exports/)).toBeInTheDocument();
+    expect(screen.getByText(/Never shared with Straft AI or put in exports/)).toBeInTheDocument();
   });
 });
 

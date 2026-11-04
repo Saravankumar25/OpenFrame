@@ -4,7 +4,7 @@
 |---|---|
 | Export | **Call Sheet** (`callsheets.export_pdf`) — one shooting day, one revision |
 | Variants covered | Final (frozen snapshot) · Draft · Draft with missing crew call · Replaced revision · optional sections on/off |
-| Status | **Design reference — not integrated into Straft Studio; not validated against Straft Studio's Rust renderer** |
+| Status | **Design reference — not integrated into Straft; not validated against Straft's Rust renderer** |
 | Repository | `Saravankumar25/StraftStudio`, branch `main`, commit `2f5a045416bd2125801329533fc47f986ccc8174` (Windows tree) |
 | Files | `Call_Sheet.html` · `Call_Sheet.pdf` (4 pp, US Letter portrait) · `stress-test/Call_Sheet_STRESS_TEST_long.{html,pdf}` (9 pp) · `stress-test/Call_Sheet_STRESS_TEST_minimal_draft.{html,pdf}` (1 p) |
 | Design system | `../../00_SYSTEM/PDF_Design_System.md`, `../../00_SYSTEM/assets/straft-print.css` |
@@ -34,8 +34,8 @@ Design priorities: (1) first-glance facts on page 1 (day, date, crew call, locat
 * **Dialog notes (verbatim):** Final: "This call sheet is final: the PDF is made from its frozen snapshot and never changes it. Private notes excluded." Otherwise: "Private notes excluded. Export does not change the shooting schedule. Finalize the call sheet before sending it."
 * **Final vs Draft:** a *Final* sheet is exported from its immutable snapshot (`snapshot.content_json`, keys `document` and `source`); otherwise from the live `document_json`. Draft sheets print a "Draft · Not final" badge and an in-document review callout. A Final sheet that was superseded prints a "Replaced by a newer revision" badge.
 * **Warnings returned in the export result (not printed):** reference-image placeholders; "This call sheet is not final yet, so the PDF is marked Draft."; "The crew call time is empty."; "A newer revision of this call sheet exists. The PDF shows this final version."
-* **Missing values:** anything required but empty prints **"Needs input"** (`NEEDS_INPUT` in `modules/schedule/callsheet.rs`). Straft Studio never invents values (weather, sunrise, sunset are typed by the user).
-* **Branding:** `deliver()` sets `out.doc.brand = BRAND_LINE` ("Created using Straft Studio") for all non-Story-page exports.
+* **Missing values:** anything required but empty prints **"Needs input"** (`NEEDS_INPUT` in `modules/schedule/callsheet.rs`). Straft never invents values (weather, sunrise, sunset are typed by the user).
+* **Branding:** `deliver()` sets `out.doc.brand = BRAND_LINE` ("Created using Straft") for all non-Story-page exports.
 
 ### B.1 Current-output assessment (supplied `Call Sheet — One Shooting Day.pdf`, 5 pp, Letter portrait)
 
@@ -46,7 +46,7 @@ Design priorities: (1) first-glance facts on page 1 (day, date, crew call, locat
 * The "Final · date" badge and "Script: …" note.
 
 **Improve visually**
-* The footer carries project + document + "Page n / N" on the right and a redrawn mark with typeset "Straft Studio STUDIO" on the left (`design::draw_footer`, `lockup()`); replace with the **official logo image**, the brand line beneath it, and `Page X of Y` only (see F).
+* The footer carries project + document + "Page n / N" on the right and a redrawn mark with typeset "Straft STUDIO" on the left (`design::draw_footer`, `lockup()`); replace with the **official logo image**, the brand line beneath it, and `Page X of Y` only (see F).
 * Table type is small (5.8 pt "ESTIMATED"; labels 7 pt): raise the floor to 6.4–6.6 pt.
 * Large unused areas at the bottom of pages 1–2.
 
@@ -179,7 +179,7 @@ Page-start rule: groups are *kept together*, not force-broken — see H. On a fu
 * *Special notes:* amber callout (`#FDF0D9` / `#EFC57E` / `#8A4F00`).
 * *Reference images:* 3-up grid, card padding 6 pt, frame ratio 100 : 66 (as source `ratio: 0.66`), `contain` fit on `#F5F7FA`, caption 8 pt slate centred; missing → flat panel placeholder (dashed hairline) with source wording.
 
-**Footer (every page; identical):** official logo lockup `assets/straft-logo.png` (735 × 163 px, ratio 4.509 : 1) at **17 pt high (≈ 76.7 pt wide)**, left edge on the left margin, its baseline-bottom 33 pt above the page bottom edge; directly beneath it `Created using Straft Studio` 6.8 pt regular slate; `Page X of Y` 7.4 pt ink at the lower-right margin, aligned to the brand-line baseline (≈ 22 pt above the bottom edge). No rule, no project text. Never recolour, outline, crop, or restyle the logo; never typeset "Straft Studio".
+**Footer (every page; identical):** official logo lockup `assets/straft-logo.png` (699 × 163 px, ratio 4.289 : 1) at **17 pt high (≈ 72.9 pt wide)**, left edge on the left margin, its baseline-bottom 33 pt above the page bottom edge; directly beneath it `Created using Straft` 6.8 pt regular slate; `Page X of Y` 7.4 pt ink at the lower-right margin, aligned to the brand-line baseline (≈ 22 pt above the bottom edge). No rule, no project text. Never recolour, outline, crop, or restyle the logo; never typeset "Straft Studio".
 
 **Running header (Call Sheet only):** single line top-right, 6.8 pt regular slate, tracking 0.04 em, baseline ≈ 24 pt below the top edge, no rule, no logo, no second masthead: `LOW TIDE RADIO · SHOOT DAY 01 · REVISION 2`.
 **Derivation (F.8).** `<production title, upper-case> · SHOOT DAY <NN> · REVISION <n>`. `NN` = digits of `day_label` zero-padded to 2 (same `day_number()` helper as the masthead); if `day_label` has no digits, use the day label in upper case; if empty, omit the segment (and its separator). If the title is blank use "CALL SHEET".
@@ -222,7 +222,7 @@ Page-start rule: groups are *kept together*, not force-broken — see H. On a fu
 
 ## J. Acceptance criteria
 
-1. Output is US Letter portrait; every page has the footer: logo image (ratio 4.509 ± 0.02, 17 ± 0.5 pt high), `Created using Straft Studio` directly below it, `Page X of Y` at the lower right with the true total; no other footer text; no rule.
+1. Output is US Letter portrait; every page has the footer: logo image (ratio 4.289 ± 0.02, 17 ± 0.5 pt high), `Created using Straft` directly below it, `Page X of Y` at the lower right with the true total; no other footer text; no rule.
 2. Every page carries the running header `<TITLE> · SHOOT DAY NN · REVISION n` top-right; no rule, no logo; no other repeated header.
 3. Title/production details/day block appear only in the content area of page 1.
 4. Section order exactly as in E (v2): page 1 as before; "Cast & Crew" group = Talent, Extras, Crew, Department notes; "Production Notes" group = Practical/Safety (with the Practical notes card inside it), Weather, Advance schedule, Walkie channels and contacts, Special notes, Attachments & reference images (each group kept together; on a normal sheet each lands on its own page); empty optional sections leave no heading and no gap; there is no separate "Practical notes" heading.
@@ -244,10 +244,10 @@ Page-start rule: groups are *kept together*, not force-broken — see H. On a fu
 **Design choices (mine, to be approved):** header on page 1 as well; contact/notes folded into the talent table; locations single-column; table titles inside table headers; footer without project text; ESTIMATED label size.
 
 **Implementation requirements / risks (verified in source)**
-* `design::draw_footer` + `lockup()` currently *draw* the mark with vector lines (`draw_mark`) and typeset the wordmark. The brief requires the **official PNG artwork**. The PDF writer already embeds JPEG images (`PdfImage`, `ReportImage`), but `ReportImage::decode` re-encodes at JPEG q85 and blends alpha onto white — adequate for photos, **not ideal for a crisp wordmark**. Recommended: embed the logo PNG losslessly (Flate RGB with an alpha mask, 735 × 163), embedded once and reused on all pages.
+* `design::draw_footer` + `lockup()` currently *draw* the mark with vector lines (`draw_mark`) and typeset the wordmark. The brief requires the **official PNG artwork**. The PDF writer already embeds JPEG images (`PdfImage`, `ReportImage`), but `ReportImage::decode` re-encodes at JPEG q85 and blends alpha onto white — adequate for photos, **not ideal for a crisp wordmark**. Recommended: embed the logo PNG losslessly (Flate RGB, 699 × 163, or the 812 × 347 original), embedded once and reused on all pages.
 * **Footer geometry changes.** Today content stops at `MARGIN + FOOTER_SPACE` = 46 + 34 = **80 pt** above the page bottom (`report.rs`, `fn` computing available height). The new footer zone is **66 pt**: logo 17 pt + 3 pt gap + 8 pt brand line, bottom edge 22 pt above the page edge (≥ 18 pt printer-safe). Both constants must be re-derived together; every export gains 14 pt of content height per page, so existing pagination (and any golden PDFs) will change.
 * The first-page "orphan heading" and wrong "(CONTINUED)" label are caused by `StyledTable.continued` + a separate `Section` block; moving the title into the table header (or emitting heading+table as one keep-together unit) fixes both.
-* The logo file is **trimmed to its artwork bounds** (735 × 163 px, transparent background, dark wordmark for light paper). The dark-background master is included (`00_SYSTEM/assets/straft-logo-original.png`, 1406 × 360). Footers sit on white.
+* The logo file was **cropped to its artwork bounds** (69,96–768,259 of 812 × 347) to remove transparent-looking white margins; pixels untouched. The unmodified original is included (`00_SYSTEM/assets/straft-logo-original.png`). The original has a faint near-white gradient at its right edge (≤ 6/255); on white paper it is invisible, but on a tinted page it would show — footers sit on white.
 * Cannot confirm Mac behaviour or non-Latin scripts.
 
 **Unresolved questions for the product owner**

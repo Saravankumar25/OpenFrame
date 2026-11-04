@@ -106,7 +106,7 @@ export function SelectSourceDialog({ open, onOpenChange, onReviewUpdate }: {
       )}
       {!active && drafts.length > 0 && (
         <>
-          <div className="h4" style={{ marginTop: 14 }}>Straft Studio will create or initialise</div>
+          <div className="h4" style={{ marginTop: 14 }}>Straft will create or initialise</div>
           <ul className="sm" style={{ margin: "0 0 8px 18px", padding: 0, lineHeight: 1.6 }}>
             <li>Breakdown scenes: one per screenplay scene, numbered automatically</li>
             <li>Production catalog</li>

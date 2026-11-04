@@ -2,6 +2,6 @@
 
 /**
  * Verification flag on a research source (FSD 107.5): Unchecked, Checked or Needs Expert Check.
- * Only the user sets it; Straft Studio never marks research as true on its own (FSD 107.6).
+ * Only the user sets it; Straft never marks research as true on its own (FSD 107.6).
  */
 export type VaultResearchFlag = "unchecked" | "checked" | "needsExpertCheck";

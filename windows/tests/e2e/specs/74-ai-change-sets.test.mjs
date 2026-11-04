@@ -14,7 +14,7 @@ import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { click, launchApp, sleep, stepper, waitForText } from "../lib/app.mjs";
 import { firstLaunchProject, redo, undo } from "../lib/flows.mjs";
-import { ask, goToTasks, openAssistant, openTaskTitles, proposal, proposalButton } from "../lib/ai.mjs";
+import { ask, goToTasks, openAssistant, openTaskTitles, pickSections, proposal, proposalButton } from "../lib/ai.mjs";
 
 let browser;
 const step = stepper(() => browser, "ai-change-sets");
@@ -46,6 +46,7 @@ describe("AI Change Sets: review, apply, undo, reject, stale", () => {
       await firstLaunchProject(browser, "Night Bus");
       assert.deepEqual(await openTasks(), []);
       await openAssistant(browser);
+      await pickSections(browser, ["Tasks"]);
       const r = await ask(browser, "Create a task to scout the railway station.");
       assert.equal(r.kind, "Proposal", `${r.kind}: ${r.text}`);
       const card = await proposal(browser);
@@ -82,6 +83,7 @@ describe("AI Change Sets: review, apply, undo, reject, stale", () => {
     await step("reject", async () => {
       const before = await openTasks();
       await openAssistant(browser);
+      await pickSections(browser, ["Tasks"]);
       const r = await ask(browser, "Create a task to book the bus for the night shoot.");
       assert.equal(r.kind, "Proposal", `${r.kind}: ${r.text}`);
       await proposalButton(browser, "Reject");
@@ -103,6 +105,7 @@ describe("AI Change Sets: review, apply, undo, reject, stale", () => {
       await click(browser, "Add Task");
       await waitForText(browser, "Added task “Confirm pier permit”");
       await openAssistant(browser);
+      await pickSections(browser, ["Tasks"]);
       const r = await ask(browser, "Mark the task Confirm pier permit as done.");
       assert.equal(r.kind, "Proposal", `${r.kind}: ${r.text}`);
       // The user completes the task by hand before applying the proposal.

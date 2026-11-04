@@ -9,8 +9,8 @@
 
 use std::path::{Path, PathBuf};
 
-use straft_test_support::TestEnv;
 use serde_json::{Value, json};
+use straft_test_support::TestEnv;
 
 use super::pdf_samples::{id_of, still};
 
@@ -403,7 +403,7 @@ fn check_furniture(pdf: &Pdf, header: &str) {
             .filter(|r| r.page == page && r.y < 40.0)
             .map(|r| r.text.as_str())
             .collect();
-        assert!(foot.contains(&"Created using Straft Studio"), "{foot:?}");
+        assert!(foot.contains(&"Created using Straft"), "{foot:?}");
         assert!(
             foot.contains(&format!("Page {page} of {}", pdf.pages).as_str()),
             "{foot:?}"

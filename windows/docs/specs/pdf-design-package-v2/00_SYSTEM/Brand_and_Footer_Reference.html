@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Straft Studio PDF Design System — Brand, Footer and Component Reference</title>
+<title>Straft PDF Design System — Brand, Footer and Component Reference</title>
 <meta name="of-doc" content="Brand and Footer Reference">
 <meta name="of-logo" content="assets/straft-logo.png">
 <link rel="stylesheet" href="assets/straft-print.css">
@@ -57,10 +57,10 @@
     <div>
       <div class="logo-stage">
         <span class="clear"><img src="assets/straft-logo.png" alt="Straft Studio logo lockup"></span>
-        <p class="anno" style="margin-top:16pt">Clear space ≈ ½ the lockup height on all four sides (dashed). Aspect ratio 735 : 163 = 4.509 : 1.</p>
+        <p class="anno" style="margin-top:16pt">Clear space ≈ ½ the lockup height on all four sides (dashed). Aspect ratio 699 : 163 = 4.289 : 1.</p>
       </div>
       <div class="sizes">
-        <figure><img src="assets/straft-logo.png" style="height:17pt;width:auto" alt=""><figcaption>Footer size · 17 pt high (76.7 pt wide)</figcaption></figure>
+        <figure><img src="assets/straft-logo.png" style="height:17pt;width:auto" alt=""><figcaption>Footer size · 17 pt high (72.9 pt wide)</figcaption></figure>
         <figure><img src="assets/straft-logo.png" style="height:14pt;width:auto" alt=""><figcaption>Minimum · 14 pt high</figcaption></figure>
         <figure><img src="assets/straft-logo.png" style="height:26pt;width:auto" alt=""><figcaption>Cover / title use · 26 pt</figcaption></figure>
       </div>
@@ -69,9 +69,9 @@
       <table class="spec">
         <thead><tr><th>Rule</th><th>Value</th></tr></thead>
         <tbody>
-          <tr><td>Artwork</td><td>The official raster logo for light paper (735 × 163 px, RGBA, transparent background). <b>Trimmed to its artwork bounds</b>. Dark-background master (1406 × 360 px) kept in <code>straft-logo-original.png</code>.</td></tr>
+          <tr><td>Artwork</td><td>The supplied raster logo (812 × 347 px, RGBA, opaque). <b>Cropped only to its artwork bounds</b> (x 69–768, y 96–259) to remove empty margin; pixels untouched. Original kept in <code>straft-logo-original.png</code>.</td></tr>
           <tr><td>Never</td><td>retype, redraw, recolour, outline, stretch, crop into the artwork, put on a coloured fill, add effects, or substitute a font.</td></tr>
-          <tr><td>Embedding</td><td>Embed once as a lossless image (Flate RGB with an alpha mask) and reuse on all pages; do not JPEG-recompress.</td></tr>
+          <tr><td>Embedding</td><td>Embed once as a lossless image (Flate RGB) and reuse on all pages — do not JPEG-recompress.</td></tr>
           <tr><td>Where</td><td>Footer, bottom-left, every page. Not in headers. Optional larger use on a title/cover only where a document spec says so (none in this package).</td></tr>
           <tr><td>Source for the app</td><td>Mark gradient (#FF5D6C → #FF9A3D → #FFC23D) and "STUDIO" in orange live inside the artwork; they are <b>not</b> PDF palette colours.</td></tr>
         </tbody>
@@ -81,7 +81,7 @@
   <div class="dont" aria-label="Incorrect uses">
     <figure><span class="x"><img src="assets/straft-logo.png" style="width:90pt;height:10pt" alt=""></span><figcaption>Stretched</figcaption></figure>
     <figure><span class="x"><img src="assets/straft-logo.png" class="gray" alt=""></span><figcaption>Recoloured</figcaption></figure>
-    <figure><span class="x"><span style="font:700 12pt Helvetica,Arial;color:#1a2438">Straft <span style="font-weight:300">Studio</span></span></span><figcaption>Typed wordmark</figcaption></figure>
+    <figure><span class="x"><span style="font:700 12pt Helvetica,Arial;color:#1a2438">Straft</span></span><figcaption>Typed wordmark</figcaption></figure>
     <figure><span class="x"><span style="display:inline-block;width:46pt;height:20pt;overflow:hidden;vertical-align:top"><img src="assets/straft-logo.png" style="height:20pt;width:auto;max-width:none" alt=""></span></span><figcaption>Cropped</figcaption></figure>
   </div>
 </section>
@@ -125,7 +125,7 @@
       <tr><td>Table cell</td><td>8.4 pt</td><td style="font-size:8.4pt">INT. COAST RADIO STATION - TAPE ROOM - DAY</td></tr>
       <tr><td>Label (caps)</td><td>6.8 pt · bold · +0.1 em</td><td style="font-size:6.8pt;font-weight:700;letter-spacing:.1em;color:var(--of-slate)">GENERAL CALL</td></tr>
       <tr><td>Chip (floor)</td><td>6.6 pt · bold caps</td><td><span class="chip">Meal</span> <span class="needs">Needs input</span></td></tr>
-      <tr><td>Footer</td><td>6.8 / 7.4 pt</td><td style="font-size:6.8pt;color:var(--of-slate)">Created using Straft Studio</td></tr>
+      <tr><td>Footer</td><td>6.8 / 7.4 pt</td><td style="font-size:6.8pt;color:var(--of-slate)">Created using Straft</td></tr>
     </tbody>
   </table>
   <p class="note mt-4"><b>Minimum print sizes:</b> nothing under 6.4 pt; running text ≥ 8.4 pt; muted text ≥ 4.5 : 1. <b>Spacing scale (pt):</b> 2 · 4 · 6 · 8 · 12 · 16 · 24 (section gap 12–16; card padding 6/9; table cell padding 4.2/6; grid gap 8). <b>Radii:</b> 3 chips, 4 metrics, 6 cards/callouts. <b>Rules:</b> 1.2 pt navy under section headings, 0.5 pt hairlines elsewhere. No shadows, gradients or opacity (not available in the Rust renderer).</p>
@@ -164,7 +164,7 @@
         <tbody>
           <tr><td>Paper</td><td>US Letter — portrait 612 × 792, landscape 792 × 612 (the paper the current exports use)</td></tr>
           <tr><td>Margins</td><td>46 left / right / top · <b>66 bottom</b> (footer zone)</td></tr>
-          <tr><td>Footer — left</td><td>Logo 17 high, bottom edge 33 above page bottom; below it <b>Created using Straft Studio</b> 6.8 regular, slate (#566277), baseline ≈ 22 above page bottom, left-aligned to the logo</td></tr>
+          <tr><td>Footer — left</td><td>Logo 17 high, bottom edge 33 above page bottom; below it <b>Created using Straft</b> 6.8 regular, slate (#566277), baseline ≈ 22 above page bottom, left-aligned to the logo</td></tr>
           <tr><td>Footer — right</td><td><b>Page X of Y</b> 7.4 regular, ink, right-aligned to the margin, same baseline as the brand line; X and Y are the real page number / total</td></tr>
           <tr><td>No</td><td>footer rule, repeated logo header, project/document string in the footer, hard-coded page numbers</td></tr>
           <tr><td>Running header</td><td>Optional single line, top-right, 6.8 regular slate, no rule/logo. <b>Required only on the Call Sheet</b> (<code>PRODUCTION · SHOOT DAY NN · REVISION n</code>); used elsewhere only where a page-identifying line helps a long printed document (decided per export).</td></tr>
@@ -181,7 +181,7 @@
         <div class="lbl" style="left:3pt;top:150pt">46</div><div class="lbl" style="right:3pt;top:150pt">46</div>
         <div style="position:absolute;left:19pt;right:19pt;top:19pt;bottom:27.5pt;display:flex;align-items:center;justify-content:center;font-size:7pt;color:var(--of-muted)">content area 520 × 680</div>
         <div class="hdr">PRODUCTION · SHOOT DAY 01 · REVISION 2</div>
-        <img class="logo" src="assets/straft-logo.png" alt=""><div class="brand">Created using Straft Studio</div><div class="pg">Page 1 of 4</div>
+        <img class="logo" src="assets/straft-logo.png" alt=""><div class="brand">Created using Straft</div><div class="pg">Page 1 of 4</div>
       </div>
       <p class="note" style="text-align:center;margin-top:4pt">Diagram scaled 0.42; logo/brand/page positions to scale of the real footer.</p>
     </div>

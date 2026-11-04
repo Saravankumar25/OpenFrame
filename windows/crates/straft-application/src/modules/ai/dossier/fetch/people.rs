@@ -5,8 +5,8 @@
 
 use std::sync::LazyLock;
 
-use straft_domain::AppResult;
 use regex::Regex;
+use straft_domain::AppResult;
 
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
 use crate::modules::ai::dossier::words::{Msg, clip};
@@ -60,7 +60,21 @@ const JOB_ALIASES: &[(&str, &[&str])] = &[
     ("location manager", &["location manager"]),
 ];
 
-pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+/// Production > Cast & Crew: who plays whom, the crew and their jobs, availability and (for the roles
+/// that may see them) contact details.
+pub fn cast_crew_leaf(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    // A question about a crew job is not also a question about the cast, or the cast branch would
+    // answer "who is the gaffer" with a list of actors.
+    let mut topics: Vec<&str> = if asks_crew_job(&ctx.m) {
+        Vec::new()
+    } else {
+        vec!["cast"]
+    };
+    // Asked about a person by name, the leaf tells what it knows of when they can work.
+    if !r.persons.is_empty() {
+        topics.push("available");
+    }
+    let ctx = &ctx.topic(&topics);
     safe("people", || fetch(ctx, read, r))
 }
 
@@ -271,7 +285,13 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         ])
         && matches!(
             t,
-            AnswerType::List | AnswerType::Lookup | AnswerType::Count | AnswerType::Explain
+            AnswerType::List
+                | AnswerType::Lookup
+                | AnswerType::Count
+                | AnswerType::Explain
+                | AnswerType::Describe
+                | AnswerType::Brief
+                | AnswerType::StoryExplanation
         )
     {
         if cast.is_empty() {
@@ -329,12 +349,24 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 | AnswerType::Count
                 | AnswerType::Compare
                 | AnswerType::Explain
+                | AnswerType::Describe
+                | AnswerType::Brief
+                | AnswerType::StoryExplanation
         )
         && r.persons.is_empty()
     {
         if crew.is_empty() {
             out.push(Fact::absent("any crew", "Cast and Crew"));
         } else if m.stem("crew") && !job_asked {
+            if t == AnswerType::Count {
+                out.push(
+                    Fact::new("Count", "")
+                        .f("what", "crew members")
+                        .f("value", crew.len().to_string())
+                        .require(crew.len().to_string())
+                        .prio(P_HIGH),
+                );
+            }
             for c in crew.iter().take(40) {
                 out.push(
                     Fact::new("Crew", &c.id)

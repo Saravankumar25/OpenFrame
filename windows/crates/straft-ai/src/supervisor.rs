@@ -1,4 +1,4 @@
-//! Sidecar supervisor for the Straft Studio-managed `llama-server` (Local AI
+//! Sidecar supervisor for the Straft-managed `llama-server` (Local AI
 //! Runtime spec §3, §9).
 //!
 //! ```text
@@ -13,7 +13,7 @@
 //! line), no web UI, offline mode, no console window. Before every launch the
 //! engine files are hashed and compared with the hashes pinned in the bundle lock.
 //! The engine is created suspended, put in a kill-on-close Job Object that
-//! allows one process, and only then resumed, so it can never outlive Straft Studio
+//! allows one process, and only then resumed, so it can never outlive Straft
 //! or start other programs. Every launched engine is recorded so a later start
 //! can stop one left behind by a crash (`engines.rs`).
 
@@ -24,9 +24,9 @@ use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Weak};
 use std::time::{Duration, Instant};
 
-use straft_domain::{AppError, AppResult};
 use parking_lot::{Condvar, Mutex};
 use serde::Serialize;
+use straft_domain::{AppError, AppResult};
 
 use crate::bundle::{ModelStamp, Pooling};
 use crate::client::{Endpoint, unavailable};
@@ -266,7 +266,7 @@ pub type StateListener = Arc<dyn Fn(RuntimeState) + Send + Sync>;
 /// launches again on a new random port with a new key, at most this many times in total.
 pub const START_BIND_ATTEMPTS: u32 = 3;
 
-/// The only variables the engine keeps from Straft Studio's environment.
+/// The only variables the engine keeps from Straft's environment.
 const ENGINE_ENV: [&str; 8] = [
     "SystemRoot",
     "windir",
@@ -451,7 +451,7 @@ impl Supervisor {
             {
                 return Err(AppError::ai(
                     "timeout",
-                    "Offline AI is taking too long to get ready. Nothing was changed. Please try again in a moment.",
+                    "Straft AI is taking too long to get ready. Nothing was changed. Please try again in a moment.",
                 )
                 .retryable());
             }
@@ -641,21 +641,21 @@ fn spawn_locked(shared: &Arc<Shared>, inner: &mut Inner) -> AppResult<()> {
         Ok(c) => c,
         // Masterplan process safety: the sidecar must die with the app and may not start other
         // programs. Where the operating system enforces that (Windows Job Object), the child was
-        // stopped before it ran and Straft Studio refuses to run it.
+        // stopped before it ran and Straft refuses to run it.
         Err(SpawnError::Unguarded | SpawnError::Resume) => {
-            inner.last_error = Some("Offline AI could not start safely on this computer.".into());
+            inner.last_error = Some("Straft AI could not start safely on this computer.".into());
             set_state(shared, inner, RuntimeState::Failed);
             return Err(unavailable("kill-on-close job unavailable"));
         }
         Err(SpawnError::Spawn(e)) => {
-            inner.last_error = Some("Offline AI could not start on this computer.".into());
+            inner.last_error = Some("Straft AI could not start on this computer.".into());
             set_state(shared, inner, RuntimeState::Failed);
             return Err(unavailable(format!("spawn failed: {e}")));
         }
     };
     if job.is_none() {
         // macOS: the guard is best effort; the explicit stop and the startup sweep still run.
-        tracing::warn!("offline AI runtime could not be placed in a kill-on-close guard");
+        tracing::warn!("Straft AI runtime could not be placed in a kill-on-close guard");
     }
     let registry = shared.registry.lock().clone();
     let recorded = registry.and_then(|r| r.record(&child, &spec.program));
@@ -699,9 +699,9 @@ fn forget(shared: &Shared, p: &Proc) {
 /// that claims to be starting or serving without a process).
 fn relaunch(shared: &Arc<Shared>, inner: &mut Inner) {
     if spawn_locked(shared, inner).is_err() {
-        tracing::error!("offline AI runtime could not be restarted");
+        tracing::error!("Straft AI runtime could not be restarted");
         if inner.state != RuntimeState::Failed {
-            inner.last_error = Some("Offline AI could not start on this computer.".into());
+            inner.last_error = Some("Straft AI could not start on this computer.".into());
             set_state(shared, inner, RuntimeState::Failed);
         }
     }
@@ -783,7 +783,7 @@ fn monitor(weak: Weak<Shared>, generation: u64) {
                     inner.endpoint = None;
                     inner.bind_retries += 1;
                     tracing::warn!(
-                        "offline AI runtime could not use its loopback port; starting again on a new port"
+                        "Straft AI runtime could not use its loopback port; starting again on a new port"
                     );
                     relaunch(&shared, &mut inner);
                     return;
@@ -805,16 +805,14 @@ fn monitor(weak: Weak<Shared>, generation: u64) {
                 inner.crashes.pop_front();
             }
             if was_serving && inner.crashes.len() <= shared.cfg.max_restarts {
-                tracing::warn!("offline AI runtime exited unexpectedly; restarting");
+                tracing::warn!("Straft AI runtime exited unexpectedly; restarting");
                 relaunch(&shared, &mut inner);
             } else {
-                tracing::error!(
-                    "offline AI runtime exited and will not be restarted automatically"
-                );
+                tracing::error!("Straft AI runtime exited and will not be restarted automatically");
                 inner.last_error = Some(if was_serving {
-                    "Offline AI stopped unexpectedly. Your project was not changed.".into()
+                    "Straft AI stopped unexpectedly. Your project was not changed.".into()
                 } else {
-                    "Offline AI could not start on this computer.".into()
+                    "Straft AI could not start on this computer.".into()
                 });
                 set_state(&shared, &mut inner, RuntimeState::Failed);
             }
@@ -835,7 +833,7 @@ fn monitor(weak: Weak<Shared>, generation: u64) {
                     }
                     inner.endpoint = None;
                     inner.last_error =
-                        Some("Offline AI took too long to start on this computer.".into());
+                        Some("Straft AI took too long to start on this computer.".into());
                     set_state(&shared, &mut inner, RuntimeState::Failed);
                     return;
                 }
@@ -882,7 +880,7 @@ fn monitor(weak: Weak<Shared>, generation: u64) {
                     && inner.busy == 0
                     && inner.last_used.elapsed() > idle
                 {
-                    tracing::info!("unloading offline AI model after inactivity");
+                    tracing::info!("unloading Straft AI model after inactivity");
                     stop_locked(&shared, &mut inner);
                     return;
                 }

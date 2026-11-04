@@ -462,10 +462,7 @@ fn the_scene_report_is_landscape_and_the_other_five_are_portrait_with_the_shared
                 .filter(|x| x.page == page && x.y < 40.0)
                 .map(|x| x.text.as_str())
                 .collect();
-            assert!(
-                foot.contains(&"Created using Straft Studio"),
-                "{kind}: {foot:?}"
-            );
+            assert!(foot.contains(&"Created using Straft"), "{kind}: {foot:?}");
             assert!(
                 foot.contains(&format!("Page {page} of {}", r.pages).as_str()),
                 "{kind}: {foot:?}"

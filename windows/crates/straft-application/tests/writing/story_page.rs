@@ -3,9 +3,9 @@
 
 use std::io::Read as _;
 
+use serde_json::{Value, json};
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const BOM: &str = "\u{feff}";
 const SMILE: &str = "\u{1F600}";

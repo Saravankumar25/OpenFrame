@@ -1,6 +1,7 @@
-// The corner chip and "Buy full version" button in the top bar (owner mocks 183 and 188). Shown on
-// every project screen from trial day 1 until the purchase; amber in the last 3 days, always with
-// the days in words; gone after the purchase. No price is ever shown.
+// The corner chip and "Buy full version" button in the top bar (owner mocks 183, 188 and 199). One
+// component, mounted in the project shell's top bar and in Application Home's top bar. Shown from
+// trial day 1 until the purchase; amber in the last 3 days, always with the days in words; gone
+// after the purchase. No price is ever shown.
 //
 // On the Mac, after the "Checking your purchase" screen was closed with "Not now", the top bar
 // shows "Check purchase" to open it again, so the way to check is never lost for the session.
@@ -39,7 +40,7 @@ export function TrialCorner() {
       const message = await buyFullVersion(client);
       if (message) toast.info(message);
     } catch (e) {
-      toast.error(failureText(e, "Straft Studio could not start the purchase right now. Everything keeps working."));
+      toast.error(failureText(e, "Straft could not start the purchase right now. Everything keeps working."));
     } finally {
       setBusy(false);
     }

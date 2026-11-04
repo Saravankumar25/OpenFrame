@@ -4,7 +4,7 @@
 |---|---|
 | **Export** | Catalog |
 | **Variant** | Catalog with scene usage (`content="catalog"`; from the Catalog tab Export button and from Export Breakdown → Contents) |
-| **Status** | Design reference — not integrated; not validated against Straft Studio's Rust renderer |
+| **Status** | Design reference — not integrated; not validated against Straft's Rust renderer |
 | **Repo commit** | `2f5a045416bd2125801329533fc47f986ccc8174` (main) |
 | **Date** | 2026-10-23 |
 

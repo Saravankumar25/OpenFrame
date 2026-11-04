@@ -1,33 +1,43 @@
-// WindowsHTML capture section: AI Assistant panel (ready, scopes, a few answers, See sources open, proposed changes), Offline AI states, backup, full project export, exchange and review packages, licence and trial screens through entitlement.debug_set.
+// WindowsHTML capture section: Straft AI panel (ready, section picker, a few answers, See sources open, proposed changes), Straft AI states, backup, full project export, exchange and review packages, licence and trial screens through entitlement.debug_set.
 // See tests/e2e/capture/kit.mjs for the toolkit and the rules every section follows.
 
 import { results } from "../../lib/ai.mjs";
 
-const PANEL = '//aside[@aria-label="AI Assistant"]';
+const PANEL = '//aside[@aria-label="Straft AI"]';
 const DIALOG = '//*[@role="dialog"]';
 const ANSWER_TIMEOUT = 240_000;
 
 export default async function (t) {
   const b = t.browser;
   const text = (sel) => b.execute((s) => document.querySelector(s)?.innerText ?? "", sel);
-  const panelHas = async (s) => (await text('aside[aria-label="AI Assistant"]')).includes(s);
+  const panelHas = async (s) => (await text('aside[aria-label="Straft AI"]')).includes(s);
 
-  // ------------------------------------------------------------------ AI Assistant panel
+  // ------------------------------------------------------------------ Straft AI panel
 
   const openPanel = async () => {
-    if (!(await (await b.$(PANEL)).isExisting())) await t.press("Assistant");
+    if (!(await (await b.$(PANEL)).isExisting())) await t.press("Straft AI");
     await (await t.el(`${PANEL}//textarea[@aria-label="Ask or command"]`, 15_000)).waitForDisplayed();
     await t.sleep(500);
   };
   const closePanel = async () => {
     if (await (await b.$(PANEL)).isExisting()) {
-      await t.press("Close AI Assistant");
+      await t.press("Close Straft AI");
       await (await b.$(PANEL)).waitForExist({ reverse: true, timeout: 10_000 });
     }
   };
-  const setScope = async (label) => {
-    const sel = await t.el(`${PANEL}//select[@id="ai-scope"]`);
-    await sel.selectByVisibleText(label);
+  /** Pick exactly these sections by name, the way a person does (the list opens inline). */
+  const pickSections = async (names) => {
+    for (;;) {
+      const remove = await b.$(`${PANEL}//ul[@aria-label="Chosen sections"]//button[starts-with(@aria-label,"Remove ")]`);
+      if (!(await remove.isExisting())) break;
+      await remove.click();
+    }
+    await t.press("Choose sections", PANEL);
+    for (const name of names) {
+      const row = await t.el(`${PANEL}//*[@aria-label="Sections"]//label[.//span[normalize-space(.)="${name}"]]`);
+      await row.click();
+    }
+    await t.press("Done", PANEL);
     await t.sleep(300);
   };
   const newConversation = async () => {
@@ -45,7 +55,7 @@ export default async function (t) {
       async () =>
         (await results(b)).length > before &&
         (await b.execute((asked) => {
-          const aside = document.querySelector('aside[aria-label="AI Assistant"]');
+          const aside = document.querySelector('aside[aria-label="Straft AI"]');
           if (!aside || aside.querySelector('.msg.a.muted[role="status"]')) return false;
           const all = [...aside.querySelectorAll(".msg.a[data-kind]")];
           const prev = all[all.length - 1]?.previousElementSibling;
@@ -67,7 +77,7 @@ export default async function (t) {
       else await typeQuestion(q);
       await t.press("Send", PANEL);
       // The progress row, whatever its label: "Working on it" gives way to the first progress line.
-      if (workingName && (await b.$('aside[aria-label="AI Assistant"] .ai-progress').isExisting())) await t.state(workingName, null);
+      if (workingName && (await b.$('aside[aria-label="Straft AI"] .ai-progress').isExisting())) await t.state(workingName, null);
       const r = await waitAnswer(q, before);
       await t.state(doneName, null, { wait: 800 });
       if (after) await after(r);
@@ -91,30 +101,34 @@ export default async function (t) {
       // The project context is prepared in the first seconds; a ready panel has no notice.
       await b.waitUntil(async () => !(await panelHas("Preparing project context")), { timeout: 90_000, interval: 1_000 }).catch(() => undefined);
     }, { wait: 1500 });
-    await t.state("ai-settings-menu", () => t.press("Offline AI settings"), { blur: false });
+    await t.state("ai-settings-menu", () => t.press("Straft AI settings"), { blur: false });
     await t.closeOverlays();
-    await t.state("ai-scope-current-screenplay", () => setScope("Current Screenplay"));
-    await t.state("ai-scope-beat-board", () => setScope("Beat Board"));
-    await setScope("Whole Project");
+    await t.state("ai-sections-none-picked", async () => {
+      await t.el(`${PANEL}//*[@id="ai-send-hint"]`);
+    });
+    await t.state("ai-sections-screenplay", () => pickSections(["Scenes"]));
+    await t.state("ai-sections-beat-board", () => pickSections(["Beat Board"]));
+    await t.state("ai-sections-three", () => pickSections(["Scenes", "Cast & Crew", "Budget"]));
+    await pickSections(["Scenes", "Cast & Crew"]);
 
-    // Offline AI settings, reached from the panel's menu, before any request exists.
+    // Straft AI settings, reached from the panel's menu, before any request exists.
     await t.state("ai-offline-settings", async () => {
-      await t.press("Offline AI settings");
-      await t.menuItem("Offline AI settings");
-      await t.el('//section[@aria-label="Offline AI"]', 15_000);
+      await t.press("Straft AI settings");
+      await t.menuItem("Straft AI settings");
+      await t.el('//section[@aria-label="Straft AI"]', 15_000);
       await t.waitText("No requests yet");
-      await t.waitText("AI Ready");
+      await t.waitText("Ready");
     }, { wait: 1000 });
     await t.state("ai-offline-technical-details", async () => {
       await t.go('//section[@aria-label="Technical details"]//summary');
-      await t.el('//table[@aria-label="Offline AI components"]');
+      await t.el('//table[@aria-label="Straft AI components"]');
     });
     await t.go('//section[@aria-label="Technical details"]//summary');
     await t.state("ai-offline-remove-confirm", () => t.press("Remove Straft AI…"));
     await t.press("Cancel", DIALOG);
     await t.workspace("Home");
 
-    // A list answer from the Whole Project scope.
+    // A list answer from the Scenes and Cast & Crew sections.
     await ask("List the characters.", "ai-answer-characters", {
       typedName: "ai-question-typed",
       workingName: "ai-working",
@@ -130,7 +144,7 @@ export default async function (t) {
     await t.state("ai-panel-screenplay", async () => {
       await newConversation();
     });
-    await setScope("Current Screenplay");
+    await pickSections(["Scenes"]);
     await ask("Which locations are used in the screenplay?", "ai-answer-locations", {
       after: async () => {
         const has = await b.$(`${PANEL}//details[contains(@class,"ai-details")]`);
@@ -140,7 +154,7 @@ export default async function (t) {
     await ask("How many scenes are in the script?", "ai-answer-scene-count");
 
     // Proposed changes: reject one, apply a harmless one and undo it.
-    await setScope("Whole Project");
+    await pickSections(["Scenes", "Tasks"]);
     const first = await ask("Create a task to scout the railway station.", "ai-proposed-changes");
     if (first?.kind === "Proposal" && (await panelHas("Reject"))) {
       await t.state("ai-proposal-rejected", () => t.press("Reject", PANEL));
@@ -180,11 +194,11 @@ export default async function (t) {
       });
     }
 
-    // Offline AI settings again: the health figures now hold the requests above.
+    // Straft AI settings again: the health figures now hold the requests above.
     await t.state("ai-offline-health-filled", async () => {
-      await t.press("Offline AI settings");
-      await t.menuItem("Offline AI settings");
-      await t.el('//section[@aria-label="AI health"]', 15_000);
+      await t.press("Straft AI settings");
+      await t.menuItem("Straft AI settings");
+      await t.el('//section[@aria-label="Straft AI health"]', 15_000);
       await t.waitText("REQUESTS COUNTED");
     }, { wait: 1000 });
     await t.workspace("Home");
@@ -424,10 +438,9 @@ export default async function (t) {
     }
   };
 
-  t.unreachable("ai-scope-options-open", "The Scope list is a native select; its drop-down is drawn by Windows outside the page and does not appear in a page capture. Each scope is captured as the chosen value instead");
   t.unreachable("ai-offline-download-states", "The download, paused, failed, not enough space and damaged states of Straft AI need the model host steered through a failed or interrupted download; this tour runs with the models installed");
   t.unreachable("ai-offline-not-downloaded", "Needs a run without the AI models installed; this tour runs with them");
-  t.unreachable("ai-export-report", "Export AI report opens the native save dialog; the saved toast needs a file chosen there");
+  t.unreachable("ai-export-report", "Export Straft AI report opens the native save dialog; the saved toast needs a file chosen there");
   t.unreachable("ai-runtime-failed", "The runtime failed banner needs the AI engine to crash mid-answer (covered by the crash-safe apply spec, not by a capture)");
 
   try {

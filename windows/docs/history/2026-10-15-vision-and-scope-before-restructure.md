@@ -1,12 +1,12 @@
 # Product vision and scope
 
-> Written 2026-10-09 from the owner's statements in chat. This is the one place that says who Straft Studio is for, what the
+> Written 2026-10-09 from the owner's statements in chat. This is the one place that says who Straft is for, what the
 > three chapters of the work are, and what the product will and will not claim. Detailed behaviour stays in the
 > specifications ([specs/](../specs)); decisions stay in the [decision register](../adr/README.md); open owner questions
 > stay in [owner-decisions.md](../implementation/owner-decisions.md). Where this page and an older document disagree on
 > audience, chapters or order of work, this page wins and the older text is history.
 
-## 1. What Straft Studio is
+## 1. What Straft is
 
 Straft Studio is a desktop application for writers, screenwriters and production teams. Everyone uses the same
 application. There are no separate editions for different kinds of user.
@@ -38,7 +38,7 @@ The work is organised in three chapters. Each has its own plan under [../roadmap
 
 | Chapter | Goal | Plan |
 |---|---|---|
-| 1. Complete, test and validate Straft Studio | One fully working application, a Windows `.exe` and a macOS `.dmg` for internal use, installed on the owner's own Windows and Mac laptops, then used by real writers and production teams for 2 to 3 days, with every important problem fixed and re-checked | [chapter-1](../roadmap/chapter-1-complete-test-validate.md) |
+| 1. Complete, test and validate Straft | One fully working application, a Windows `.exe` and a macOS `.dmg` for internal use, installed on the owner's own Windows and Mac laptops, then used by real writers and production teams for 2 to 3 days, with every important problem fixed and re-checked | [chapter-1](../roadmap/chapter-1-complete-test-validate.md) |
 | 2. Product website | A small static website on Cloudflare Pages with product information, tutorials, onboarding, support, contact, Privacy Policy and Terms, built from faithful recreations of the real screens | [chapter-2](../roadmap/chapter-2-website.md) |
 | 3. Commercial distribution | The same application packaged for the Microsoft Store and the Mac App Store, with a 7-day free trial and paid activation, platform signing, notarization, licensing and updates | [chapter-3](../roadmap/chapter-3-commercial-distribution.md) |
 
@@ -74,7 +74,7 @@ still says price and refund rules are open, and [ADR-0023](../adr/ADR-0023-store
 app never shows a price: the store's own purchase window shows it. Neither store's rules are assumed to allow this
 model. Chapter 3 checks them before anything is built.
 
-## 6. What Straft Studio does not do, and must not claim
+## 6. What Straft does not do, and must not claim
 
 - No live network collaboration. Live LAN collaboration was removed ([ADR-0007](../adr/ADR-0007-lan-collaboration-removed.md)).
   The mock-ups 164 to 168 still show it. They must not be used for the website.

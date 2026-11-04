@@ -1,4 +1,4 @@
-//! Straft Studio domain vocabulary.
+//! Straft domain vocabulary.
 //!
 //! This crate is intentionally free of I/O, SQLite, Tauri and AI-runtime types
 //! (ESD §5). It defines stable identities, the error taxonomy (ESD §12),

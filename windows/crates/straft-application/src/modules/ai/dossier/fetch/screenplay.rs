@@ -4,8 +4,8 @@
 
 use std::sync::LazyLock;
 
-use straft_domain::AppResult;
 use regex::Regex;
+use straft_domain::AppResult;
 
 use crate::modules::ai::dossier::ctx::{FetchCtx, SceneRef, safe};
 use crate::modules::ai::dossier::words::{Msg, clip, numbers};
@@ -34,8 +34,10 @@ pub fn asks_speakers(m: &Msg) -> bool {
         && m.any(&["speaking", "speak", "speaks", "dialogue", "lines"])
 }
 
-pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
-    safe("screenplay", || fetch(ctx, read, r))
+/// Screenplay > Scenes: the scenes, who speaks in them, their text, and the size of a screenplay.
+pub fn scenes_leaf(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    let ctx = ctx.topic(&["scenes"]);
+    safe("screenplay", || fetch(&ctx, read, r))
 }
 
 fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fact>> {
@@ -166,6 +168,51 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                     .require(sp.scene_count.to_string())
                     .prio(P_HIGH),
             );
+        }
+    }
+
+    // How the scenes divide, counted from the headings: interior or exterior, night or day.
+    if scenes.is_empty()
+        && r.characters.is_empty()
+        && m.stem("scene")
+        && (t == AnswerType::Count || m.has("how many"))
+        && (m.any(&["interior", "exterior", "int", "ext"])
+            || (m.any(&["night", "day"]) && r.screenplays.is_empty()))
+    {
+        for sp in &sps {
+            let Some(d) = ctx.draft(&sp.id) else { continue };
+            let (mut int, mut ext, mut night, mut day) = (0usize, 0usize, 0usize, 0usize);
+            for s in queries::scenes(ctx.conn, &d.id)?
+                .into_iter()
+                .filter(|s| !s.omitted)
+            {
+                let h = queries::parse_heading(&s.heading);
+                match h.int_ext.as_deref() {
+                    Some(x) if x.starts_with("INT") => int += 1,
+                    Some(x) if x.starts_with("EXT") => ext += 1,
+                    _ => {}
+                }
+                match h.time.as_deref() {
+                    Some("NIGHT") => night += 1,
+                    Some("DAY") => day += 1,
+                    _ => {}
+                }
+            }
+            for (what, n, words) in [
+                ("interior scenes", int, &["interior", "int"][..]),
+                ("exterior scenes", ext, &["exterior", "ext"][..]),
+                ("night scenes", night, &["night"][..]),
+                ("day scenes", day, &["day"][..]),
+            ] {
+                let mut f = Fact::new("Count", &sp.id)
+                    .f("what", format!("{what} in {}", sp.title))
+                    .f("value", n.to_string())
+                    .prio(P_HIGH);
+                if m.any(words) {
+                    f = f.require(n.to_string());
+                }
+                out.push(f);
+            }
         }
     }
 

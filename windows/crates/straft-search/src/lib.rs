@@ -1,4 +1,4 @@
-//! Straft Studio intelligence index — the DERIVED retrieval layer under
+//! Straft intelligence index — the DERIVED retrieval layer under
 //! `<Project>.straft/cache/intelligence.sqlite` (AI/RAG spec §9–§19, §31).
 //!
 //! ```text
@@ -12,7 +12,7 @@
 //!
 //! Nothing in this crate is a source of truth. Every table can be dropped and
 //! rebuilt from `project.sqlite`; the application never writes canonical data
-//! through it. This crate has no knowledge of Straft Studio domains — the
+//! through it. This crate has no knowledge of Straft domains — the
 //! application layer decides what a document is, which rows it depends on and
 //! who may see it.
 

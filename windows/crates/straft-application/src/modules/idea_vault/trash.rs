@@ -2,10 +2,10 @@
 //! restore returns items to their folder (or to All items, and says so);
 //! permanent deletion is a deliberate second action and removes owned files.
 
-use straft_domain::enums::VaultItemType;
-use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::enums::VaultItemType;
+use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
 use ts_rs::TS;
 
 use super::model::type_label;

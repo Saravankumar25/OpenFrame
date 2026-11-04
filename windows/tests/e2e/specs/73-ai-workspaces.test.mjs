@@ -1,34 +1,33 @@
 // @e2e-data-root: own
 //
-// The AI Assistant entry points in every workspace with the REAL bundled model (ADR-0025; AI
-// spec §7.2 scope inheritance; UX §3.40). The assistant opens from the header button and its
-// shortcut everywhere, inherits the scope of the place the user is in, and answers a question
-// asked there with that scope.
+// The Straft AI entry points in every workspace with the REAL bundled model (ADR-0025,
+// ADR-0040; UX §3.40). Straft AI opens from the header button and its shortcut everywhere. It
+// never picks sections from the page the person is on: nothing is picked until they pick, Send says
+// "Pick a section", and a question is answered from the sections picked and says so ("Using: ...").
 //
-// Covers: Home and Idea Vault → Whole Project; Story → Beat Board; Screenplay → Current
-// Scene / Current Screenplay; Breakdown, Production and Call Sheets → Production Workspace;
-// Notes & Tasks → Whole Project; the keyboard shortcut; a scoped question answered in the Story
-// Board, Screenplay and Production workspaces.
+// Covers: every workspace opens Straft AI with nothing picked; the keyboard shortcut; a question
+// asked under Beat Board, under Scenes and under Locations, each answered from that section, with
+// the line that names it.
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { launchApp, openBeatBoard, openWorkspace, stepper } from "../lib/app.mjs";
 import { firstLaunchProject, importFountain, projectMenu } from "../lib/flows.mjs";
-import { NIGHT_BUS, ask, closeAssistant, openAssistant, scopeInfo } from "../lib/ai.mjs";
+import { NIGHT_BUS, ask, closeAssistant, openAssistant, pickSections, sectionsInfo } from "../lib/ai.mjs";
 
 let browser;
 const step = stepper(() => browser, "ai-workspaces");
 
-/** Open the assistant in the current workspace and return its "Using: …" line. */
-async function scopeHere() {
+/** Open Straft AI in the current workspace and return what it shows about the sections. */
+async function sectionsHere() {
   await closeAssistant(browser);
   await openAssistant(browser);
-  // The line shows once the panel has read the assistant's state.
-  await browser.waitUntil(async () => (await scopeInfo(browser)).using.startsWith("Using: "), {
+  // The hint shows once the panel has read the project's sections.
+  await browser.waitUntil(async () => (await sectionsInfo(browser)).hint !== "" || (await sectionsInfo(browser)).chips.length > 0, {
     timeout: 10_000,
-    timeoutMsg: "the assistant shows no scope line",
+    timeoutMsg: "Straft AI shows neither a hint nor a pick",
   });
-  return (await scopeInfo(browser)).using;
+  return sectionsInfo(browser);
 }
 
 const answered = (r) => ["Answer", "Navigate", "Clarify", "Proposal", "Suggestion"].includes(r.kind);
@@ -41,65 +40,58 @@ describe("AI entry points in every workspace", () => {
     await browser?.deleteSession().catch(() => undefined);
   });
 
-  test("the assistant inherits the scope of each workspace", async () => {
-    await step("scopes", async () => {
+  test("Straft AI opens with nothing picked in every workspace", async () => {
+    await step("nothing-picked", async () => {
       await firstLaunchProject(browser, "Night Bus");
       await importFountain(browser, NIGHT_BUS);
-      const expected = [
-        ["Home", "Using: Whole Project"],
-        ["Idea Vault", "Using: Whole Project"],
-        ["Story", "Using: Beat Board"],
-        ["Breakdown", "Using: Production Workspace"],
-        ["Production", "Using: Production Workspace"],
-        ["Call Sheets", "Using: Production Workspace"],
-      ];
-      for (const [ws, using] of expected) {
+      for (const ws of ["Home", "Idea Vault", "Story", "Screenplay", "Breakdown", "Production", "Call Sheets"]) {
         await openWorkspace(browser, ws);
-        assert.equal(await scopeHere(), using, ws);
+        const info = await sectionsHere();
+        assert.deepEqual(info.chips, [], `${ws}: no section is picked for the person`);
+        assert.equal(info.hint, "Pick a section", ws);
       }
-      await openWorkspace(browser, "Screenplay");
-      assert.match(await scopeHere(), /^Using: Current (Scene|Screenplay)$/, "Screenplay");
       await projectMenu(browser, "Notes & Tasks");
-      assert.equal(await scopeHere(), "Using: Whole Project", "Notes & Tasks");
+      assert.equal((await sectionsHere()).hint, "Pick a section", "Notes & Tasks");
     });
   });
 
-  test("the keyboard shortcut opens and closes the assistant", async () => {
+  test("the keyboard shortcut opens and closes Straft AI", async () => {
     await step("shortcut", async () => {
       await closeAssistant(browser);
       await browser.keys(["Control", "j"]);
-      await (await browser.$('//aside[@aria-label="AI Assistant"]')).waitForDisplayed({ timeout: 10_000 });
+      await (await browser.$('//aside[@aria-label="Straft AI"]')).waitForDisplayed({ timeout: 10_000 });
       await browser.keys(["Control", "j"]);
-      await (await browser.$('//aside[@aria-label="AI Assistant"]')).waitForExist({ reverse: true, timeout: 10_000 });
+      await (await browser.$('//aside[@aria-label="Straft AI"]')).waitForExist({ reverse: true, timeout: 10_000 });
     });
   });
 
-  test("a question asked in the Beat Board uses the Beat Board", async () => {
+  test("a question asked under Beat Board is answered from the Beat Board", async () => {
     await step("story", async () => {
       await openBeatBoard(browser);
       await openAssistant(browser);
+      await pickSections(browser, ["Beat Board"]);
       const r = await ask(browser, "What is on the Beat Board?");
       assert.ok(answered(r), `${r.kind}: ${r.text}`);
-      assert.equal((await scopeInfo(browser)).using, "Using: Beat Board");
+      assert.equal((await sectionsInfo(browser)).using, "Using: Beat Board");
     });
   });
 
-  test("a question asked in the Screenplay is about that screenplay", async () => {
+  test("a question asked under Scenes is about that screenplay", async () => {
     await step("screenplay", async () => {
       await openWorkspace(browser, "Screenplay");
       await openAssistant(browser);
-      const sel = await browser.$('//aside[@aria-label="AI Assistant"]//select[@id="ai-scope"]');
-      await sel.selectByVisibleText("Current Screenplay");
+      await pickSections(browser, ["Scenes"]);
       const r = await ask(browser, "Who speaks in this screenplay?");
       assert.ok(answered(r), `${r.kind}: ${r.text}`);
       assert.match(r.text, /ARJUN|MEERA|Arjun|Meera/, "the speaking characters come from the script");
     });
   });
 
-  test("a question asked in Production uses the Production Workspace", async () => {
+  test("a question asked under Scenes about the places in the script is answered from the script", async () => {
     await step("production", async () => {
       await openWorkspace(browser, "Production");
       await openAssistant(browser);
+      await pickSections(browser, ["Scenes"]);
       const r = await ask(browser, "Which locations are used in the script?");
       assert.ok(answered(r), `${r.kind}: ${r.text}`);
       assert.match(r.text + r.sources.join(" "), /BUS STOP|RAILWAY STATION|POLICE STATION/i, "the answer is grounded in the script's locations");

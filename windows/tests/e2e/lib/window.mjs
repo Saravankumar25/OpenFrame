@@ -15,6 +15,28 @@ Add-Type -Namespace OfE2e -Name Close -MemberDefinition @'
 [DllImport("user32.dll")] public static extern bool SetForegroundWindow(System.IntPtr hWnd);
 [DllImport("user32.dll")] public static extern System.IntPtr GetForegroundWindow();
 [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, int flags, System.UIntPtr extra);
+public delegate bool EnumProc(System.IntPtr hWnd, System.IntPtr lParam);
+[DllImport("user32.dll")] static extern bool EnumWindows(EnumProc proc, System.IntPtr lParam);
+[DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(System.IntPtr hWnd, out uint pid);
+[DllImport("user32.dll")] static extern bool IsWindowVisible(System.IntPtr hWnd);
+[DllImport("user32.dll")] static extern int GetWindowTextLengthW(System.IntPtr hWnd);
+[DllImport("user32.dll")] static extern int GetWindowLongW(System.IntPtr hWnd, int index);
+// Process.MainWindowHandle can answer the event loop's hidden message window, whichever comes first
+// in the window order. A close sent there kills event delivery and leaves the app running. The
+// app's window is the visible one with a title that is not a tool window.
+public static System.IntPtr AppWindow(int processId) {
+  System.IntPtr found = System.IntPtr.Zero;
+  EnumWindows((h, _) => {
+    uint pid;
+    GetWindowThreadProcessId(h, out pid);
+    if (pid == (uint)processId && IsWindowVisible(h) && GetWindowTextLengthW(h) > 0 && (GetWindowLongW(h, -20) & 0x80) == 0) {
+      found = h;
+      return false;
+    }
+    return true;
+  }, System.IntPtr.Zero);
+  return found;
+}
 // The close itself is compiled: after the go signal no PowerShell line is interpreted, so the
 // close goes out within milliseconds (the interpreted loop took 114 ms on the installed build).
 public static string Fire(System.IntPtr hWnd, bool altF4) {
@@ -44,8 +66,9 @@ public static string Fire(System.IntPtr hWnd, bool altF4) {
 $deadline = (Get-Date).AddSeconds(20)
 $hwnd = [System.IntPtr]::Zero
 while ($hwnd -eq [System.IntPtr]::Zero -and (Get-Date) -lt $deadline) {
-  $p = Get-Process | Where-Object { $_.Path -eq $env:E2E_APP -and $_.MainWindowHandle -ne 0 } | Select-Object -First 1
-  if ($p) { $hwnd = $p.MainWindowHandle } else { Start-Sleep -Milliseconds 200 }
+  $p = Get-Process | Where-Object { $_.Path -eq $env:E2E_APP } | Select-Object -First 1
+  if ($p) { $hwnd = [OfE2e.Close]::AppWindow($p.Id) }
+  if ($hwnd -eq [System.IntPtr]::Zero) { Start-Sleep -Milliseconds 200 }
 }
 if ($hwnd -eq [System.IntPtr]::Zero) { throw 'The app window was not found.' }
 $altF4 = $env:OF_CLOSE_METHOD -eq 'alt-f4'

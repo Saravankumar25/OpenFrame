@@ -46,7 +46,7 @@ These short forms appear in many files.
 
 **Check: the screen is quiet**: no console error or warning was recorded since the last check, every visible control has an accessible name (a label, a title or visible text), and neither the window nor the workspace scrolls sideways.
 
-**Check: the AI Assistant docks cleanly**: the panel is open, covers no part of the page, does not run past the window, and no control of the page is cut off beside it.
+**Check: the Straft AI docks cleanly**: the panel is open, covers no part of the page, does not run past the window, and no control of the page is cut off beside it.
 
 **Quit the app and start it again on the same data**: end the app, wait about 1 second, start it again, and check Application Home shows ("Your projects") with no project open.
 
@@ -102,7 +102,9 @@ EXT. RAILWAY STATION - DAY
 Meera waits for the late train with a red umbrella.
 ```
 
-**Ask Q** (AI scenarios): open the AI Assistant if it is closed (click Assistant); wait until the Ask or command box is enabled; type Q and press Enter; check that within 4 minutes a new result shows directly after the question Q and no "working" status remains. The first answer also loads the model; one answer takes 20 to 40 seconds on a laptop processor. The AI runs with fixed sampling (temperature 0, fixed seed), so checks look at the kind of result and its effects, never the wording.
+**Pick sections S** (AI scenarios): open the Straft AI if it is closed (click Straft AI); remove every chip under "Sections to read" (Remove ...); click "Choose sections"; tick each section named in S in the list; click Done; check that the chips show exactly S. Nothing is picked for the person, and Send stays off with the hint "Pick a section" until a section is picked.
+
+**Ask Q** (AI scenarios): open the Straft AI if it is closed (click Straft AI); if no section is picked, Pick sections "Scenes"; wait until the Ask or command box is enabled; type Q and press Enter; check that within 4 minutes a new result shows directly after the question Q and no "working" status remains. The first answer also loads the model; one answer takes 20 to 40 seconds on a laptop processor. The AI runs with fixed sampling (temperature 0, fixed seed), so checks look at the kind of result and its effects, never the wording.
 
 ## Files
 

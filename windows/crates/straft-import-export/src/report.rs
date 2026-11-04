@@ -27,7 +27,7 @@
 //! be laid out landscape with a centered header and a custom footer.
 //!
 //! Branding (production depth spec §43; doc 33 section 8; PDF design system section 2): a
-//! document with [`Document::brand`] prints the official Straft Studio logo (embedded once, lossless),
+//! document with [`Document::brand`] prints the official Straft logo (embedded once, lossless),
 //! the brand line under it and "Page X of Y" at the lower right of every page, and a workbook made
 //! with [`tables_to_xlsx_branded`]
 //! names Straft Studio in its document properties and the first sheet's
@@ -38,8 +38,8 @@ use std::collections::HashMap;
 use std::io::{Cursor, Write};
 use std::sync::OnceLock;
 
-use straft_domain::{AppError, AppResult};
 use pdf_writer::Content;
+use straft_domain::{AppError, AppResult};
 use unicode_segmentation::UnicodeSegmentation;
 
 #[cfg(test)]
@@ -367,7 +367,7 @@ pub struct Document {
     /// documents print the logo, the brand line and "Page X of Y" only.
     pub footer: Option<String>,
     pub author: Option<String>,
-    /// Brand line printed under the Straft Studio logo at the bottom of every page.
+    /// Brand line printed under the Straft logo at the bottom of every page.
     pub brand: Option<String>,
     /// One line at the top right of every page (6.8 pt slate); wraps inside the top margin.
     pub running_header: Option<String>,
@@ -375,7 +375,7 @@ pub struct Document {
 }
 
 /// The brand line on production exports.
-pub const BRAND_LINE: &str = "Created using Straft Studio";
+pub const BRAND_LINE: &str = "Created using Straft";
 
 #[derive(Debug, Clone)]
 pub struct ReportPdf {
@@ -404,7 +404,7 @@ impl Document {
         self.running_header = line;
         self
     }
-    /// Print the Straft Studio logo and `line` at the bottom of every page.
+    /// Print the Straft logo and `line` at the bottom of every page.
     pub fn brand(mut self, line: impl Into<String>) -> Self {
         self.brand = Some(line.into());
         self
@@ -824,7 +824,8 @@ pub(crate) const BOTTOM_MARGIN: f32 = 66.0;
 /// Unbranded documents (the Story page manuscript) keep the page body they always had.
 const PLAIN_BOTTOM_MARGIN: f32 = 80.0;
 
-/// The official logo (735 x 163 px artwork bounds), embedded losslessly.
+/// The official logo, embedded losslessly. Placed at a fixed height with the width taken from the
+/// image itself, so any artwork shape keeps its aspect.
 const LOGO_PNG: &[u8] = include_bytes!("../assets/straft-logo.png");
 const LOGO_H: f32 = 17.0;
 /// Bottom edge of the logo above the page bottom.

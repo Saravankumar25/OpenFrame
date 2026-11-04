@@ -7,8 +7,8 @@
 //!     budget_design::write -- --ignored --nocapture
 //! ```
 
-use straft_import_export::report::text_width;
 use serde_json::{Value, json};
+use straft_import_export::report::text_width;
 
 use super::call_sheet_design::{
     FOOTER_Y, HEADER_Y, Run, check_furniture, export, keep_sample, read,
@@ -107,7 +107,7 @@ fn the_budget_has_the_running_header_the_footer_and_the_identity_panel() {
     assert!(
         runs.iter()
             .any(|r| r.text
-                == "A simple estimate for planning. Formal accounting is outside Straft Studio."),
+                == "A simple estimate for planning. Formal accounting is outside Straft."),
         "the disclaimer is verbatim"
     );
 }

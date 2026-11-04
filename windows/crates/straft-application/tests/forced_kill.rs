@@ -16,10 +16,10 @@ use std::process::{Child, Command, Stdio};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use serde_json::{Value, json};
 use straft_application::events::{AppEvent, RecordingSink};
 use straft_application::{AppConfig, AppCore};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const WORKER_ENV: &str = "STRAFT_KILL_WORKER";
 const DIR_ENV: &str = "STRAFT_KILL_DIR";
@@ -679,4 +679,88 @@ fn m1_03_forced_kill_during_package_import_leaves_no_broken_project() {
             close(&core);
         }
     }
+}
+
+/// Update safety (package file 05, item U6). The Store closes a running app to update it; the
+/// clean close is tested in the close path (`closeRequest`, `shutdown`, end-to-end spec
+/// 04-close-keeps-typing). When the process is cut instead, both answers of the recovery question
+/// work on the real killed files: "Open Recovery" keeps every committed edit and clears the offer
+/// for good, and going back to the last confirmed state works, keeps a copy of what was there,
+/// and leaves a project that opens clean. Typing that never reached a save is the only thing a kill can
+/// take (end-to-end spec 26-forced-kill-keeps-work covers it from the screen).
+#[test]
+fn u6_after_a_forced_kill_both_recovery_answers_work_on_the_killed_files() {
+    // Answer 1: keep the latest state.
+    let h = Harness::new();
+    let child = h.spawn("save", &[]);
+    h.kill_at(child, KillAt::AfterFirstCommit(60));
+    let committed = h.committed();
+    assert!(!committed.is_empty(), "the kill hit no real work");
+    let (core, opened) = h.reopen();
+    assert!(!opened["recovery"].is_null(), "{opened}");
+    let call = |core: &AppCore, op: &str, args: Value| {
+        core.dispatch(&core.local_actor(), op, args)
+            .unwrap_or_else(|e| panic!("{op}: {} {:?}", e.message, e.detail))
+    };
+    let state = call(&core, "project.recovery_state", json!({}));
+    assert_eq!(state["hasCheckpoint"], true, "{state}");
+    call(
+        &core,
+        "project.resolve_recovery",
+        json!({ "choice": "latest" }),
+    );
+    assert!(call(&core, "project.recovery_state", json!({}))["offer"].is_null());
+    let cards = card_texts(&core);
+    for text in &committed {
+        assert!(cards.contains(text), "committed edit {text} lost");
+    }
+    integrity_ok(&core);
+    close(&core);
+    core.shutdown();
+    drop(core);
+    let (core, opened) = h.reopen();
+    assert!(
+        opened["recovery"].is_null(),
+        "a clean close ends the offer: {opened}"
+    );
+    close(&core);
+    core.shutdown();
+    drop(core);
+
+    // Answer 2: go back to the last confirmed state.
+    let h = Harness::new();
+    let child = h.spawn("save", &[]);
+    h.kill_at(child, KillAt::AfterFirstCommit(60));
+    let (core, opened) = h.reopen();
+    assert!(!opened["recovery"].is_null(), "{opened}");
+    let restored = call(
+        &core,
+        "project.resolve_recovery",
+        json!({ "choice": "checkpoint" }),
+    );
+    assert!(restored["recovery"].is_null(), "{restored}");
+    integrity_ok(&core);
+    let cards = card_texts(&core);
+    for text in ["Baseline one", "Baseline two"] {
+        assert!(
+            cards.iter().any(|c| c == text),
+            "{text} missing after the restore"
+        );
+    }
+    let copies = fs::read_dir(Path::new(&h.project).join("backups"))
+        .unwrap()
+        .flatten()
+        .filter(|e| {
+            e.file_name()
+                .to_string_lossy()
+                .starts_with("before-recovery-")
+        })
+        .count();
+    assert_eq!(copies, 1, "what was there before the restore is kept");
+    close(&core);
+    core.shutdown();
+    drop(core);
+    let (core, opened) = h.reopen();
+    assert!(opened["recovery"].is_null(), "{opened}");
+    close(&core);
 }

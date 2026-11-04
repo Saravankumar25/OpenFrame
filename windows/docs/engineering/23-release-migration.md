@@ -10,17 +10,17 @@
 
 | Identifier | Where | Current | Changes when |
 |---|---|---|---|
-| App version (SemVer) | `Cargo.toml [workspace.package].version`, `package.json`, `apps/desktop/package.json`, `tauri.conf.json` | 0.1.0 | Every release. All four must match; `release-validate` checks this and the git tag `vX.Y.Z`. |
+| App version (SemVer) | **Source: `Cargo.toml [workspace.package].version`.** `package.json`, `apps/desktop/package.json` and `apps/desktop/src-tauri/tauri.conf.json` must equal it | 0.1.0 | Every release. All four must match; `release-validate` checks this and the git tag `vX.Y.Z`, and `build-msix` refuses to build when `tauri.conf.json` differs from Cargo.toml. The Microsoft Store package version is `X.Y.Z.0`, made from the same number (`msixVersion`), and must rise on every submission (`packaging/msix/submissions.json`). |
 | Project schema version | `PRAGMA user_version` = number of project migrations; mirrored in `straft.json.schemaVersion` | 19 (`0001_core` to `0019_story_page_format`; 10 corrected from 9 on 2026-10-05, 11 added by the crash-safe AI changes item of the build plan, 12 to 14 by the Beat Board, screenplay engine and production depth areas, 15 by the shooting schedule area, 16 by the call sheets, budget, templates, samples and exports area, 17 by the Story page, 18 by the assistant's memory, 19 by the Story page formatting) | A migration is appended |
 | Project format version | `PROJECT_FORMAT_VERSION`, `straft.json.formatVersion` | 1 | Folder layout or manifest changes incompatibly |
 | Package format version | `PACKAGE_FORMAT_VERSION` (oldest read: `OLDEST_PACKAGE_FORMAT_VERSION`) | 2 | Package container or manifest changes; add a `format-N` fixture folder |
 | AI compatibility version | `AI_COMPATIBILITY_VERSION`, `straft.json.aiCompatibilityVersion` | 1 | AI tool or Change Set schemas change incompatibly |
-| Global vault / app DB schema | `user_version` of `vault.sqlite` / `app.sqlite` | 3 / 1 (global corrected from 2 on 2026-10-05: `0001_core`, `0002_idea_vault`, `0003_performance`) | A migration is appended |
+| Global vault / app DB schema | `user_version` of `vault.sqlite` / `app.sqlite` | 4 / 9 (global `0001_core` to `0004_vault_research`; app `0001_app` to `0009_ai_trace_dossier`; the counts come from `migrations/` and `scripts/check-migrations.mjs`) | A migration is appended |
 
 ## 2. Compatibility policy
 
 - **Forward (old app, new project): refused safely.** A project with a newer `formatVersion` or schema is **never
-  modified**. The message is "This project was saved by a newer version of Straft Studio. Update Straft Studio to open it.
+  modified**. The message is "This project was saved by a newer version of Straft. Update Straft to open it.
   The project has not been changed." (`project_format.too_new`) ✅. Read-only opening of newer projects is not
   supported in the first release.
 - **Backward (new app, old project): always supported.** Every shipped schema version must open and migrate in every
@@ -88,8 +88,13 @@ content, and recents can be rebuilt by opening projects.
    where the user can delete. The `schema.rs` test enforces undo-trackability.
 6. Data migrations must be deterministic and idempotent within their transaction, and must never drop user content.
    Obsolete data is kept in a renamed column or table until a later major version, with an ADR.
-7. **Tests:** every new migration adds a fixture database at the previous version (📋 `tests/fixtures/schema-vN.sqlite`)
+7. **Tests:** every new migration adds a fixture database at the previous version
    and a test that opens, migrates, verifies content and verifies that the safety backup exists.
+   From the first shipped release on, each release also adds a frozen baseline folder of what a person's data looked like
+   in that release (`tests/fixtures/release-baseline-N/`: a project, the Global Idea Vault, `app.sqlite`, `notices.json`) and
+   keeps the older folders. `update_from_release_baseline` (in `crates/straft-application/tests/platform/`) opens every
+   baseline with the current build and checks the content, the pre-migration copy, settings, appearance, recents and the
+   notice flags. The baseline files are made once, on purpose, by an ignored generator test on the tree that shipped.
    Failure paths (full drive, read-only file, newer schema, damaged database, unwritable safety backup) are covered
    by `crates/straft-application/tests/migration_failures.rs`, and an interrupted migration by `forced_kill.rs`.
 

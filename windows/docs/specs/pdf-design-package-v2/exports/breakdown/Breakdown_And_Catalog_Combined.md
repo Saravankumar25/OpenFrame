@@ -4,7 +4,7 @@
 |---|---|
 | **Export** | Breakdown Report |
 | **Variant** | Breakdown by scene and Catalog (`content="both"`, UI label “Breakdown by scene and Catalog”, default) |
-| **Status** | Design reference — not integrated; not validated against Straft Studio's Rust renderer |
+| **Status** | Design reference — not integrated; not validated against Straft's Rust renderer |
 | **Repo commit** | `2f5a045416bd2125801329533fc47f986ccc8174` (main) |
 | **Date** | 2026-10-23 |
 
@@ -89,7 +89,7 @@ Catalog sorting unchanged: category canonical order, then name case-insensitive;
 ## F. Visual specification
 ### F.1 Page and furniture
 - US Letter portrait, 612 x 792 pt; margins L/R 46 pt, top 46 pt, bottom 66 pt (footer zone). Content width **520 pt**.
-- Footer (shared system, do not redraw): official logo lockup 17 pt high bottom-left, `Created using Straft Studio` below it, `Page X of Y` bottom-right (real computed values). **Implementation requirement:** the production renderer must embed the official logo PNG; today it redraws a vector mark.
+- Footer (shared system, do not redraw): official logo lockup 17 pt high bottom-left, `Created using Straft` below it, `Page X of Y` bottom-right (real computed values). **Implementation requirement:** the production renderer must embed the official logo PNG; today it redraws a vector mark.
 - **Running header (decision: YES).** One compact line, top-right, 6.8 pt slate, tracked 0.04em, no rule, no logo: `LOW TIDE RADIO · BREAKDOWN REPORT` (= `footer(project, document)` text, uppercased). Reason: this is a many-page document (35-58 pages in the sample) that is torn apart on set; every sheet must say which production and document it belongs to. The masthead keeps the document identity on page 1; the header is not repeated as a second masthead.
 
 ### F.2 Typography (Helvetica regular/bold only)

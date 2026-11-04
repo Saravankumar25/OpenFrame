@@ -58,7 +58,7 @@ export function AddUrlDialog({ scope, onClose, onCreated }: { scope: Scope; onCl
         <Field label="Your note" htmlFor="vv-add-url-note">
           <TextArea id="vv-add-url-note" rows={3} value={note} placeholder="Optional" onChange={(e) => setNote(e.target.value)} />
         </Field>
-        <div className="xs muted">Straft Studio stores the link as you entered it. Nothing is downloaded.</div>
+        <div className="xs muted">Straft stores the link as you entered it. Nothing is downloaded.</div>
         <button type="submit" hidden aria-hidden tabIndex={-1} />
       </form>
     </Dialog>
@@ -131,7 +131,7 @@ export function RecordNoteDialog({ scope, onClose, onSaved, onChooseFile }: {
       } catch {
         if (!cancelled) {
           setPhase("error");
-          setError("Straft Studio couldn't use the microphone. Check that one is connected and that Windows allows apps to use it (Settings › Privacy & security › Microphone).");
+          setError("Straft couldn't use the microphone. Check that one is connected and that Windows allows apps to use it (Settings › Privacy & security › Microphone).");
         }
       }
     })();
@@ -645,7 +645,7 @@ export function NameDialog({ title, label, hint, confirmLabel, initial = "", onS
 }
 
 export const COLLECTION_HINT =
-  "Examples: Ending ideas · Visual References · Crazy scenes · Locations · Research · Music · Things to remember. Straft Studio never prescribes names.";
+  "Examples: Ending ideas · Visual References · Crazy scenes · Locations · Research · Music · Things to remember. Straft never prescribes names.";
 
 // ---------------------------------------------------------- move / collection
 

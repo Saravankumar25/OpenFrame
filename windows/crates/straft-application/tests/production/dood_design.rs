@@ -7,9 +7,9 @@
 //!     dood_design::write -- --ignored --nocapture
 //! ```
 
+use serde_json::{Value, json};
 use straft_import_export::report::text_width;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 use super::call_sheet_design::{Run, export, keep_sample, read};
 use super::pdf_samples::{Film, build_film, id_of, strip_id};
@@ -147,7 +147,7 @@ fn landscape_with_the_running_header_the_shared_footer_and_the_legend_on_every_p
             .filter(|r| r.page == p && r.y < 40.0)
             .map(|r| r.text.as_str())
             .collect();
-        assert!(foot.contains(&"Created using Straft Studio"), "{foot:?}");
+        assert!(foot.contains(&"Created using Straft"), "{foot:?}");
         assert!(
             foot.contains(&format!("Page {p} of {pages}").as_str()),
             "{foot:?}"

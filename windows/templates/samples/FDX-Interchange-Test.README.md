@@ -1,6 +1,6 @@
 # FDX Interchange Test: what each construct tests
 
-Copyright 2026 Straft Studio. Fictional sample written for Straft Studio; you may use it to learn the app.
+Copyright 2026 Straft Studio. Fictional sample written for Straft; you may use it to learn the app.
 
 `FDX-Interchange-Test.fdx` is a short fictional script, "The Three Desks", written to exercise the Final Draft
 importer and exporter. It is well-formed XML with no document type declaration and no entities other than the five

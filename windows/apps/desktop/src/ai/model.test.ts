@@ -8,15 +8,12 @@ import {
   changeSetActions,
   changeSetStateText,
   confidenceLabel,
-  defaultScope,
   formatBytes,
   indexNotice,
   indexStateOf,
   offReason,
   damagedModels,
   panelMode,
-  scopeArgs,
-  scopeOptions,
   sourceChips,
   stepsSummary,
   toRoute,
@@ -35,32 +32,6 @@ function status(p: Partial<AiStatusDto>): AiStatusDto {
   return { available: false, mode: "Off", bundleState: "Missing", problem: null, runtimeState: "Unavailable", runtimeMessage: null, localOnly: true, ...p };
 }
 
-describe("scope resolution", () => {
-  it("inherits the current scene in the Screenplay", () => {
-    const route = { workspace: "screenplay" as const, params: { sceneId: "s1", draftId: "d1" } };
-    expect(defaultScope(route)).toBe("CurrentScene");
-    expect(scopeArgs("CurrentScene", route)).toEqual({ kind: "CurrentScene", draftId: null, sceneId: "s1", selection: [], shootingDayId: null, callSheetId: null });
-    expect(scopeArgs("SpecificDraft", route).draftId).toBe("d1");
-  });
-
-  it("offers only scopes that have a target", () => {
-    const opts = scopeOptions({ workspace: "home" });
-    expect(opts).not.toContain("CurrentScene");
-    expect(opts).not.toContain("CurrentSelection");
-    expect(opts[opts.length - 1]).toBe("WholeProject");
-    expect(defaultScope({ workspace: "home" })).toBe("WholeProject");
-    expect(defaultScope({ workspace: "story" })).toBe("StoryBoard");
-  });
-
-  it("uses the Idea Vault selection in the Idea Vault", () => {
-    const route = { workspace: "vault" as const, params: { itemId: "v1" } };
-    expect(defaultScope(route)).toBe("IdeaVaultSelection");
-    expect(scopeArgs("IdeaVaultSelection", route).selection).toEqual([{ id: "v1" }]);
-    // Selection ids are never sent for unrelated scopes (minimal context).
-    expect(scopeArgs("WholeProject", route).selection).toEqual([]);
-  });
-});
-
 describe("navigation targets", () => {
   it("maps known workspaces and ignores unknown ones", () => {
     expect(toRoute({ workspace: "screenplay", params: { sceneId: "s2" } })).toEqual({ workspace: "screenplay", params: { sceneId: "s2" } });
@@ -69,7 +40,7 @@ describe("navigation targets", () => {
   });
 });
 
-describe("Offline AI", () => {
+describe("Straft AI", () => {
   it("formats sizes in simple units", () => {
     expect(formatBytes(2_497_280_256)).toBe("2.3 GB");
     expect(formatBytes(19_164_803)).toBe("19 MB");
@@ -78,15 +49,15 @@ describe("Offline AI", () => {
 
   it("is ready once downloaded; a missing download or model offers the download, a broken engine a reinstall", () => {
     expect(panelMode(undefined)).toBe("unavailable");
-    expect(panelMode(status({ available: true, mode: "AI Ready", bundleState: "NotChecked", runtimeState: "Installed" }))).toBe("ready");
-    expect(panelMode(status({ available: true, mode: "AI Ready", bundleState: "Verified", runtimeState: "Ready" }))).toBe("ready");
+    expect(panelMode(status({ available: true, mode: "Ready", bundleState: "NotChecked", runtimeState: "Installed" }))).toBe("ready");
+    expect(panelMode(status({ available: true, mode: "Ready", bundleState: "Verified", runtimeState: "Ready" }))).toBe("ready");
     const damaged = status({
       bundleState: "Damaged",
-      problem: { code: "ai.assets_damaged", message: "Offline AI files in this installation were changed or damaged, so Straft Studio did not start them. Reinstall Straft Studio to repair it. Your projects were not changed.", retryable: false },
+      problem: { code: "ai.assets_damaged", message: "Straft AI files in this installation were changed or damaged, so Straft did not start them. Reinstall Straft Studio to repair it. Your projects were not changed.", retryable: false },
     });
     expect(panelMode(damaged)).toBe("off");
     expect(offReason(damaged)).toContain("Reinstall Straft Studio");
-    expect(offReason(status({}))).toBe("AI is currently unavailable. Straft Studio's core workflows continue to work normally.");
+    expect(offReason(status({}))).toBe("Straft AI is currently unavailable. Straft's core workflows continue to work normally.");
     expect(panelMode(status({ bundleState: "NotInstalled", problem: { code: "ai.not_installed", message: "Straft AI is not downloaded yet.", retryable: false } }))).toBe("download");
     const models = status({ bundleState: "Damaged", problem: { code: "ai.models_damaged", message: "A Straft AI file is missing or damaged.", retryable: false } });
     expect(panelMode(models)).toBe("download");
@@ -154,6 +125,6 @@ describe("agent answers", () => {
     expect(indexNotice("Stale")).not.toBeNull();
     for (const quiet of ["Current", "Updating", "Failed", "Unavailable", null]) expect(indexNotice(quiet)).toBeNull();
     expect(PREPARING_TEXT).toBe("Preparing project context…");
-    expect(DEGRADED_TEXT).toBe("AI can still answer some questions while project context is being prepared.");
+    expect(DEGRADED_TEXT).toBe("Straft AI can still answer some questions while project context is being prepared.");
   });
 });

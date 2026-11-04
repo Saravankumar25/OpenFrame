@@ -95,8 +95,8 @@ export function missingAssets(dir = ASSETS_DIR) {
 // ---------------------------------------------------------------------------------------------
 // Configuration and validation
 
-export function loadStoreConfig(env = process.env) {
-  const cfg = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
+export function loadStoreConfig(env = process.env, configPath = CONFIG_PATH) {
+  const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
   const pick = (key, fallback) => (env[key] && env[key].trim() ? env[key].trim() : fallback);
   return {
     identityName: pick("MSIX_IDENTITY_NAME", cfg.identity?.name ?? ""),
@@ -142,8 +142,20 @@ export function msixVersion(version) {
   return `${parts.join(".")}.0`;
 }
 
+/** The one source of the app version: Cargo.toml [workspace.package].version (U1, package file 05). */
+export function cargoWorkspaceVersion(cargoText = fs.readFileSync(path.join(ROOT, "Cargo.toml"), "utf8")) {
+  const section = /\[workspace\.package\]([\s\S]*?)(\n\[|$)/.exec(cargoText);
+  return section ? /\nversion\s*=\s*"([^"]+)"/.exec(section[1])?.[1] : undefined;
+}
+
+/** The version the package is built with: tauri.conf.json, which must equal the Cargo version. */
 export function readAppVersion() {
-  return JSON.parse(fs.readFileSync(TAURI_CONF, "utf8")).version;
+  const version = JSON.parse(fs.readFileSync(TAURI_CONF, "utf8")).version;
+  const source = cargoWorkspaceVersion();
+  if (version !== source) {
+    throw new Error(`tauri.conf.json version "${version}" differs from Cargo.toml [workspace.package] version "${source}"; the Cargo version is the source`);
+  }
+  return version;
 }
 
 const xmlEscape = (s) =>
@@ -253,7 +265,7 @@ function writePriConfig(makepri, outDir) {
   const cfg = path.join(outDir, "priconfig.xml");
   run(makepri, ["createconfig", "/cf", cfg, "/dq", "en-US", "/pv", "10.0.0", "/o"], { quiet: true });
   // A single resources.pri: drop automatic resource-package splitting (only meaningful for bundles
-  // with resource packages, which Straft Studio does not ship).
+  // with resource packages, which Straft does not ship).
   const xml = fs.readFileSync(cfg, "utf8").replace(/<packaging>[\s\S]*?<\/packaging>/, "");
   fs.writeFileSync(cfg, xml);
   return cfg;

@@ -11,10 +11,10 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
-use straft_project_format::{self as pf, ProjectLayout};
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
+use straft_project_format::{self as pf, ProjectLayout};
 use ts_rs::TS;
 
 use super::vault_archive::check_vault_database;
@@ -225,7 +225,7 @@ fn move_vault(
 fn both_places_error(old: &Path, new: &Path, detail: String) -> AppError {
     rollback_failed(
         format!(
-            "Your Global Idea Vault was copied to “{}” but would not open there, and Straft Studio could not switch back. Your vault is safe in both “{}” and “{}”. Go to Settings > Storage and choose the folder you want.",
+            "Your Global Idea Vault was copied to “{}” but would not open there, and Straft could not switch back. Your vault is safe in both “{}” and “{}”. Go to Settings > Storage and choose the folder you want.",
             new.display(),
             old.display(),
             new.display()
@@ -281,7 +281,7 @@ pub(crate) fn locate_vault(core: &AppCore, args: LocateVaultArgs) -> AppResult<S
             if let Err(r) = back {
                 return Err(rollback_failed(
                     format!(
-                        "Straft Studio could not open the vault in “{}” and could not switch back to your earlier vault folder “{}”. Go to Settings > Storage and choose the vault folder.",
+                        "Straft could not open the vault in “{}” and could not switch back to your earlier vault folder “{}”. Go to Settings > Storage and choose the vault folder.",
                         dir.display(),
                         current.display()
                     ),
@@ -443,7 +443,7 @@ fn move_project(
         }
         return Err(rollback_failed(
             format!(
-                "Your project was copied to “{}” but would not open there, and Straft Studio could not switch back. Your project is safe in both “{}” and “{}”. Use Open Project to choose the one you want.",
+                "Your project was copied to “{}” but would not open there, and Straft could not switch back. Your project is safe in both “{}” and “{}”. Use Open Project to choose the one you want.",
                 dest.display(),
                 root.display(),
                 dest.display()

@@ -7,13 +7,13 @@
 //! (Stale or Conflict) and change nothing; "Re-check & Review" must rebuild the proposal
 //! against the user's new data, and only then can it be applied, keeping the user's edit.
 
+use rusqlite::types::ValueRef;
+use serde_json::{Value, json};
 use straft_application::modules::ai::ChangeSetDraft;
-use straft_application::modules::ai::scope::{self, AiScopeArgs, AiScopeKind};
+use straft_application::modules::ai::scope;
 use straft_application::modules::ai::toolbox::{self, ToolStep};
 use straft_application::modules::ai::{change_set, queries};
 use straft_test_support::TestEnv;
-use rusqlite::types::ValueRef;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ helpers
 
@@ -26,20 +26,7 @@ fn propose(env: &TestEnv, tool: &str, args: Value) -> ChangeSetDraft {
         .project()
         .unwrap()
         .store
-        .read(|c| {
-            scope::resolve(
-                c,
-                &actor,
-                &AiScopeArgs {
-                    kind: AiScopeKind::WholeProject,
-                    draft_id: None,
-                    scene_id: None,
-                    selection: Vec::new(),
-                    shooting_day_id: None,
-                    call_sheet_id: None,
-                },
-            )
-        })
+        .read(scope::whole)
         .unwrap();
     match toolbox::run_tool_unlocked(&env.core, &actor, &scope, "test request", tool, &args) {
         Ok(ToolStep::Proposal(d)) => d,

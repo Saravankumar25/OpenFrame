@@ -6,10 +6,10 @@
 
 use std::collections::{BTreeMap, HashSet};
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use ts_rs::TS;
 
 use super::board::{Board, StripRow, current_schedule};
@@ -146,7 +146,7 @@ fn yes() -> bool {
     true
 }
 
-fn build_sides(
+pub(crate) fn build_sides(
     c: &Connection,
     a: &ScheduleSidesArgs,
 ) -> AppResult<(ScheduleSidesContent, String, Option<String>)> {

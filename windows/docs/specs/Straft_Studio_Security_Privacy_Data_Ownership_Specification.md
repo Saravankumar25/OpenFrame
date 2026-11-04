@@ -20,7 +20,7 @@
 
 **Platform:** Windows + macOS desktop application
 
-**Operating model:** Local-first, offline-capable, user-owned project files; optional local AI (Offline AI) only; file-based collaboration through packages; no mandatory Straft Studio cloud
+**Operating model:** Local-first, offline-capable, user-owned project files; optional local AI (Offline AI) only; file-based collaboration through packages; no mandatory Straft cloud
 
 **Current source baseline reviewed:**
 - `Straft_Studio_Mega_PRD_Aligned_Updated(2).md`
@@ -31,13 +31,13 @@
 - `Straft_Studio_Import_Export_Specification(1).md`
 - `Straft_Studio_Offline_Collaboration_Specification(1).md`
 
-**Purpose:** Define the product-level contract for protecting user-owned Straft Studio projects, preserving privacy boundaries, enforcing access permissions, controlling external transmission, preventing unauthorized mutation or disclosure, and keeping data ownership explicit across local work, offline use, AI, import/export, backups, Exchange Packages, and local-network collaboration.
+**Purpose:** Define the product-level contract for protecting user-owned Straft projects, preserving privacy boundaries, enforcing access permissions, controlling external transmission, preventing unauthorized mutation or disclosure, and keeping data ownership explicit across local work, offline use, AI, import/export, backups, Exchange Packages, and local-network collaboration.
 
 **Status:** Cross-cutting Security / Privacy / Data Ownership baseline.
 
 > This specification specializes security, privacy, and ownership behavior already implied by the product documents. It does not replace the PRD's product scope, the FSD's functional behavior, the UX/UI specification's presentation contract, the Domain/Data specification's logical model, the AI specification's AI boundary, or the specialized Import/Export and Offline/Collaboration specifications.
 
-> **AI amendment — 30 September 2026 (authoritative; ADR-0012 §5, ADR-0013).** Straft Studio ships exactly one AI: Offline AI, a local Gemma 3 1B Instruct model plus a local embedding model, both running on the user's computer. There is **no external AI provider path**. §16–§18 describe the implemented AI boundary; §19, §20 and §35 are retired. Every other passage of this document about external AI, provider disclosure, provider retention, "AI Provider Connected" or AI inside LAN sessions — including §1.5 (external part), §32.4, §38.4, §39.2 (AI part), §44.4, §47.3, §56.8, §63, SEC-020, SEC-021, SEC-022, SEC-023, SEC-025, SEC-060, SEC-AC-017, SEC-AC-018, SEC-AC-019, SEC-AC-049 and Scenario 2 — is retired and must not be implemented. Their protective intent is met by construction: project data never leaves the device through AI. LAN passages are retired by ADR-0007.
+> **AI amendment — 30 September 2026 (authoritative; ADR-0012 §5, ADR-0013).** Straft ships exactly one AI: Offline AI, a local Gemma 3 1B Instruct model plus a local embedding model, both running on the user's computer. There is **no external AI provider path**. §16–§18 describe the implemented AI boundary; §19, §20 and §35 are retired. Every other passage of this document about external AI, provider disclosure, provider retention, "AI Provider Connected" or AI inside LAN sessions — including §1.5 (external part), §32.4, §38.4, §39.2 (AI part), §44.4, §47.3, §56.8, §63, SEC-020, SEC-021, SEC-022, SEC-023, SEC-025, SEC-060, SEC-AC-017, SEC-AC-018, SEC-AC-019, SEC-AC-049 and Scenario 2 — is retired and must not be implemented. Their protective intent is met by construction: project data never leaves the device through AI. LAN passages are retired by ADR-0007.
 
 ---
 
@@ -49,9 +49,9 @@ Straft Studio is deliberately designed around local ownership rather than mandat
 
 The central principle is:
 
-> **The filmmaker owns the project; Straft Studio is the workspace.**
+> **The filmmaker owns the project; Straft is the workspace.**
 
-Security therefore cannot be reduced to “protect the cloud account,” because ordinary Straft Studio use does not require such an account. The product must instead protect:
+Security therefore cannot be reduced to “protect the cloud account,” because ordinary Straft use does not require such an account. The product must instead protect:
 
 - local project access;
 - user/project permissions;
@@ -127,7 +127,7 @@ A user may have Editor access while still being prohibited from seeing another u
 
 A package recipient may receive a screenplay review package without receiving project-wide access.
 
-An external AI provider may process selected project context without becoming the owner of the Straft Studio project.
+An external AI provider may process selected project context without becoming the owner of the Straft project.
 
 ---
 
@@ -139,11 +139,11 @@ These are normative.
 
 The saved local project is the primary project state.
 
-Straft Studio must not behave as though the platform owns the user's project.
+Straft must not behave as though the platform owns the user's project.
 
 ## 1.2 No mandatory cloud account
 
-Ordinary project creation, opening, editing, saving, importing, exporting, backup, recovery, and core filmmaking work must not depend on a Straft Studio cloud account.
+Ordinary project creation, opening, editing, saving, importing, exporting, backup, recovery, and core filmmaking work must not depend on a Straft cloud account.
 
 ## 1.3 No silent transmission
 
@@ -178,7 +178,7 @@ The effective permission of the current user applies consistently to:
 
 A request, including a natural-language AI command, does not automatically authorize a project mutation.
 
-Project-changing AI actions still require the normal Straft Studio preview and explicit acceptance workflow.
+Project-changing AI actions still require the normal Straft preview and explicit acceptance workflow.
 
 ## 1.9 No direct AI storage authority
 
@@ -206,7 +206,7 @@ The product must not claim encryption, cloud backup, secure synchronization, pro
 
 ## 2.1 What “user-owned project” means
 
-A project consists of the user's filmmaking work represented by the Straft Studio domain model, including as applicable:
+A project consists of the user's filmmaking work represented by the Straft domain model, including as applicable:
 
 - Idea Vault content;
 - Beat Board content;
@@ -231,13 +231,13 @@ A project consists of the user's filmmaking work represented by the Straft Studi
 
 The user's local project file is the primary saved working asset.
 
-## 2.2 Straft Studio is not the owner
+## 2.2 Straft is not the owner
 
-Straft Studio provides the application workspace, data model, editing tools, export tools, collaboration tools, and optional AI services.
+Straft provides the application workspace, data model, editing tools, export tools, collaboration tools, and optional AI services.
 
-It must not present ordinary project data as if it were owned by Straft Studio.
+It must not present ordinary project data as if it were owned by Straft.
 
-This directly reflects the PRD product design decision that the project is the filmmaker's work and Straft Studio is the workspace.
+This directly reflects the PRD product design decision that the project is the filmmaker's work and Straft is the workspace.
 
 ## 2.3 Ownership does not mean unrestricted access by every collaborator
 
@@ -263,7 +263,7 @@ A Full Project Package is a portable working-project transfer concept.
 
 A Backup Package is a recovery-oriented copy.
 
-None of these should be described as “Straft Studio taking ownership” of the source project.
+None of these should be described as “Straft taking ownership” of the source project.
 
 ## 2.5 Opening a full project package as a copy
 
@@ -329,7 +329,7 @@ Each boundary must preserve the user's effective permissions and relevant privac
 
 # 4. Data Classification Model
 
-The existing product specifications do not define a large enterprise information-classification taxonomy. Straft Studio should therefore use a deliberately small product-level model.
+The existing product specifications do not define a large enterprise information-classification taxonomy. Straft should therefore use a deliberately small product-level model.
 
 ## 4.1 Class A — Project content
 
@@ -451,7 +451,7 @@ The current documents define authorization behavior and local user identity, but
 
 Therefore:
 
-- ordinary local use must not require a Straft Studio cloud login;
+- ordinary local use must not require a Straft cloud login;
 - collaboration must admit only users who have been granted access to the session;
 - the precise technical authentication mechanism for LAN admission is an implementation/security design decision;
 - this specification does not invent passwords, accounts, identity providers, or token formats that are not present in the product baseline.
@@ -709,7 +709,7 @@ This is a portability exception, not a relaxation of normal collaboration privac
 
 ## 9.1 Minimum necessary context
 
-Straft Studio should expose only the context required for the current operation.
+Straft should expose only the context required for the current operation.
 
 Examples:
 
@@ -828,13 +828,13 @@ Therefore the principal project-data boundary is:
 ```text
 User-controlled machine / storage
         ↓
-Straft Studio project
+Straft project
 ```
 
 rather than:
 
 ```text
-Straft Studio cloud account
+Straft cloud account
         ↓
 Project
 ```
@@ -864,7 +864,7 @@ The product therefore must not falsely tell users that keeping a project local a
 
 ## 12.4 User responsibility boundary
 
-Straft Studio controls application behavior.
+Straft controls application behavior.
 
 The user or organization controls the physical/OS environment in which the local files are stored.
 
@@ -991,7 +991,7 @@ Request
 
 ## 15.1 Purpose
 
-Straft Studio Activity History is a lightweight project-orientation and accountability mechanism.
+Straft Activity History is a lightweight project-orientation and accountability mechanism.
 
 It is not an enterprise SIEM, network packet log, or full keystroke recorder.
 
@@ -1061,7 +1061,7 @@ The application should not use Activity History as a mechanism to expose private
 > **Implemented (30 Sept 2026).** This section describes the merged code. Architecture: AI specification §3–§13,
 > ADR-0006, ADR-0013. Threats and tests: `docs/engineering/20-security-threat-model.md` (T17, T18, T25–T33).
 
-## 16.1 System-wide AI, bounded by Straft Studio
+## 16.1 System-wide AI, bounded by Straft
 
 The Straft AI (Offline AI) is one local language model (Gemma 3 1B Instruct) driven by one bounded agent loop, plus
 a local embedding model used only for retrieval. It is not an autonomous filmmaker, not a database, not an
@@ -1089,7 +1089,7 @@ There is no path from model output to SQLite, project files or the network that 
 The model never receives or chooses a file-system path. Every operation that reads or writes a user-picked location
 (imports, exports, packages, adding or relinking files) or returns local file paths is hidden from the assistant by
 explicit operation metadata, with the reason published in `docs/engineering/ai-tool-coverage.md`. The derived
-intelligence index lives in the project's `cache/` folder and is written only by Straft Studio's own indexer.
+intelligence index lives in the project's `cache/` folder and is written only by Straft's own indexer.
 
 ## 16.4 AI inherits effective permissions
 
@@ -1181,7 +1181,7 @@ permissions before it reaches the model.
 ## 18.1 Local processing only
 
 Inference path: React → Rust → local context and retrieval → `llama-server` on 127.0.0.1 → local model → result.
-Prompts, screenplay text, retrieved passages, private notes and AI answers never leave the computer, and Straft Studio has
+Prompts, screenplay text, retrieved passages, private notes and AI answers never leave the computer, and Straft has
 no telemetry. Project data is not sent to Google because the Gemma weights came from Google.
 
 ## 18.2 Local model boundary
@@ -1206,7 +1206,7 @@ suggests cloud processing, because none exists.
 
 # 19. External AI Privacy — retired
 
-Straft Studio has **no external AI path**: no provider setting, no API key field, no code that sends project content to an
+Straft has **no external AI path**: no provider setting, no API key field, no code that sends project content to an
 AI service (ADR-0012 §5, ADR-0013). The previous requirements for pre-transmission disclosure, minimum external
 context, provider retention, cancellation before sending and external-AI failure handling therefore have nothing to
 govern. If an external path were ever proposed, it would need a new ADR and a new version of this section before any
@@ -1272,7 +1272,7 @@ Ending a LAN session:
 - stops the shared session;
 - removes temporary shared-session context;
 - does not delete the project;
-- does not upload/publish the project to Straft Studio cloud;
+- does not upload/publish the project to Straft cloud;
 - does not automatically rewrite normal project permissions.
 
 ## 21.6 Disconnection
@@ -1353,7 +1353,7 @@ Unmapped comments or review material must be retained through the supported revi
 
 ## 23.1 Full Project Package
 
-The Full Project Package is for moving a working Straft Studio project to another installation.
+The Full Project Package is for moving a working Straft project to another installation.
 
 It may contain substantially more project information than an Exchange Package.
 
@@ -1527,7 +1527,7 @@ The application does not silently replace them.
 
 ## 25.11 Imported content remains data
 
-Imported text does not become a Straft Studio command simply because it contains words resembling commands or instructions.
+Imported text does not become a Straft command simply because it contains words resembling commands or instructions.
 
 The import layer's job is to interpret supported document structure, not to execute arbitrary imported content as application operations.
 
@@ -1971,7 +1971,7 @@ Core project work continues.
 
 ## 38.5 No sync queue
 
-Straft Studio does not require a cloud synchronization queue for ordinary local project persistence.
+Straft does not require a cloud synchronization queue for ordinary local project persistence.
 
 A “sync pending” state must not become an unauthorized storage side channel.
 
@@ -2051,7 +2051,7 @@ It does not retroactively recall:
 - copied text;
 - other externally transferred material.
 
-This reflects the basic distinction between changing Straft Studio access and controlling a copy that has already left the project boundary.
+This reflects the basic distinction between changing Straft access and controlling a copy that has already left the project boundary.
 
 ---
 
@@ -2129,7 +2129,7 @@ The model itself never becomes an alternate project owner or database.
 
 # 44. Data Retention Boundaries
 
-## 44.1 Straft Studio local project retention
+## 44.1 Straft local project retention
 
 The core project remains available according to local project storage, backup, recovery, archive, and deletion behavior.
 
@@ -2147,7 +2147,7 @@ Therefore the implementation must not invent a fixed retention promise in produc
 
 ## 44.4 External provider retention
 
-External provider retention is outside the control of Straft Studio unless an explicit provider contract establishes otherwise.
+External provider retention is outside the control of Straft unless an explicit provider contract establishes otherwise.
 
 The product should disclose transmission and configured provider identity where practical without making unsupported guarantees about third-party retention.
 
@@ -2155,7 +2155,7 @@ The product should disclose transmission and configured provider identity where 
 
 # 45. Security Documentation Truthfulness
 
-Straft Studio product documentation, UI, and settings must distinguish:
+Straft product documentation, UI, and settings must distinguish:
 
 ```text
 Implemented security control
@@ -2175,7 +2175,7 @@ Third-party provider policy
 
 Examples:
 
-### Straft Studio controls
+### Straft controls
 
 - permission enforcement;
 - private-note boundary;
@@ -2350,10 +2350,10 @@ Invariant:
 
 # 49. What This Specification Intentionally Does Not Define
 
-To remain consistent with the current Straft Studio product scope, this document does not invent a mandatory technical architecture for:
+To remain consistent with the current Straft product scope, this document does not invent a mandatory technical architecture for:
 
 - cloud identity management;
-- Straft Studio account registration;
+- Straft account registration;
 - enterprise SSO;
 - password policy;
 - MFA;
@@ -2372,7 +2372,7 @@ To remain consistent with the current Straft Studio product scope, this document
 
 Those may be future engineering or product decisions.
 
-They must not be presented as existing Straft Studio features unless separately specified, implemented, and tested.
+They must not be presented as existing Straft features unless separately specified, implemented, and tested.
 
 ---
 
@@ -2383,8 +2383,8 @@ The following are product-level requirements, not technology mandates.
 ### SEC-001 — Local project ownership
 The local project remains the primary user-owned project state.
 
-### SEC-002 — No mandatory Straft Studio cloud
-Core project use does not require Straft Studio cloud sign-in or synchronization.
+### SEC-002 — No mandatory Straft cloud
+Core project use does not require Straft cloud sign-in or synchronization.
 
 ### SEC-003 — Permission inheritance
 Permissions apply consistently across local use, exchange, LAN collaboration, AI, import, and export.
@@ -2538,7 +2538,7 @@ AI during collaboration operates within participant permissions and shared scope
 Offline state does not weaken permission/privacy rules.
 
 ### SEC-050 — No false security claims
-Straft Studio does not claim unimplemented encryption, synchronization, backup, retention, or provider controls.
+Straft does not claim unimplemented encryption, synchronization, backup, retention, or provider controls.
 
 ### SEC-051 — External storage integrity
 External-drive loss does not create a silent divergent project.
@@ -2568,7 +2568,7 @@ The UI and documentation consistently communicate that the project is the filmma
 Technical transport mechanisms are implementation choices but must satisfy product-level authorization and confidentiality outcomes.
 
 ### SEC-060 — Provider-boundary honesty
-External provider behavior is described only to the extent that Straft Studio actually knows and controls it.
+External provider behavior is described only to the extent that Straft actually knows and controls it.
 
 ---
 
@@ -2652,7 +2652,7 @@ The Security specification relies on and preserves:
 - Exchange Collaboration;
 - Local-Network Collaboration;
 - local project ownership;
-- no mandatory Straft Studio cloud;
+- no mandatory Straft cloud;
 - role enforcement;
 - private-note protection;
 - host-selected scope;
@@ -2716,7 +2716,7 @@ Especially relevant fields include:
 
 # 55. UX/UI Security Contract
 
-Security should be visible without turning Straft Studio into an enterprise administration product.
+Security should be visible without turning Straft into an enterprise administration product.
 
 ## 55.1 Required lightweight surfaces
 
@@ -2952,12 +2952,12 @@ A report must not become a covert cross-module data dump simply because several 
 
 # 62. Exported Copies and Control Boundaries
 
-Once the user deliberately exports a file/package outside Straft Studio, the application cannot guarantee control over every later copy.
+Once the user deliberately exports a file/package outside Straft, the application cannot guarantee control over every later copy.
 
 Therefore the product must distinguish:
 
 ```text
-Straft Studio access control
+Straft access control
 ```
 
 from:
@@ -2976,12 +2976,12 @@ It is not to promise impossible revocation of files that have already been copie
 
 When external AI is used:
 
-1. Straft Studio controls whether the request is sent.
-2. Straft Studio controls the authorized/requested project context selected for that request.
-3. Straft Studio must disclose that external processing occurs.
+1. Straft controls whether the request is sent.
+2. Straft controls the authorized/requested project context selected for that request.
+3. Straft must disclose that external processing occurs.
 4. The external provider processes the transmitted information under its own service environment and policies.
-5. Straft Studio must not claim third-party retention/deletion behavior that it does not control or know.
-6. The provider does not become the canonical Straft Studio project database.
+5. Straft must not claim third-party retention/deletion behavior that it does not control or know.
+6. The provider does not become the canonical Straft project database.
 7. The provider does not receive direct mutation authority over the local project.
 
 ---
@@ -2989,7 +2989,7 @@ When external AI is used:
 # 64. Security Acceptance Criteria
 
 ### SEC-AC-001 — Local ownership
-A project can be created, opened, edited, saved, backed up, imported, exported, and recovered without Straft Studio cloud.
+A project can be created, opened, edited, saved, backed up, imported, exported, and recovered without Straft cloud.
 
 ### SEC-AC-002 — Permission enforcement
 A Viewer cannot perform an operation that requires edit permission.
@@ -3046,7 +3046,7 @@ The user can cancel an external request before transmission.
 External AI requests contain only authorized/requested context.
 
 ### SEC-AC-020 — No private-note transmission
-Another user's Private Notes are never sent to an external AI provider by normal Straft Studio behavior.
+Another user's Private Notes are never sent to an external AI provider by normal Straft behavior.
 
 ### SEC-AC-021 — Local AI truthfulness
 When local AI is used, the UI does not imply external transmission.
@@ -3143,7 +3143,7 @@ Historical snapshots remain immutable representations of their captured state.
 Explicit user approval does not bypass role/object permissions.
 
 ### SEC-AC-049 — Provider boundary
-External provider processing is disclosed without being represented as Straft Studio-owned project storage.
+External provider processing is disclosed without being represented as Straft-owned project storage.
 
 ### SEC-AC-050 — Ownership clarity
 The application consistently communicates that the project is the filmmaker's work.
@@ -3259,7 +3259,7 @@ Expected: no Project B information appears.
 
 # 66. Security Design Gaps That Must Remain Explicit
 
-The current source documents give Straft Studio a strong product-level security/privacy model, but they intentionally do not fully specify every technical security mechanism.
+The current source documents give Straft a strong product-level security/privacy model, but they intentionally do not fully specify every technical security mechanism.
 
 The following should therefore remain visible engineering decisions rather than hidden assumptions:
 
@@ -3343,7 +3343,7 @@ Recoverable Local State
 Accurate Security Claims
 ```
 
-If an implementation violates any of these, it is not aligned with the current Straft Studio product definition.
+If an implementation violates any of these, it is not aligned with the current Straft product definition.
 
 ---
 
@@ -3352,7 +3352,7 @@ If an implementation violates any of these, it is not aligned with the current S
 | Security / Privacy Rule | PRD | FSD | UX/UI | Domain/Data | AI | Import/Export | Offline/Collab |
 |---|---|---|---|---|---|---|---|
 | Local ownership | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| No mandatory Straft Studio cloud | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| No mandatory Straft cloud | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
 | Private Notes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
 | Permissions | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
 | Owner/Editor/Commenter/Viewer/Export-only | Yes | Yes | Yes | Role context | Inherited | Enforced | Enforced |
@@ -3387,7 +3387,7 @@ Instead:
                         │
         ┌───────────────┼────────────────┐
         ▼               ▼                ▼
-   Local Straft Studio   Local AI       Collaboration
+   Local Straft   Local AI       Collaboration
         │               │                │
         │               │         ┌──────┴──────┐
         │               │         ▼             ▼
@@ -3411,11 +3411,11 @@ Instead:
 
 The central rule is:
 
-> **Straft Studio should make it easy to work with other people and optional AI without making the filmmaker surrender control of the project's data.**
+> **Straft should make it easy to work with other people and optional AI without making the filmmaker surrender control of the project's data.**
 
 The product therefore protects ownership through local persistence, privacy through explicit scope and Private Note isolation, collaboration through roles and temporary sessions, portability through safe packages, and AI through permission inheritance, deterministic application tools, external-processing disclosure, and explicit mutation approval.
 
-This security model is intentionally simple enough to fit Straft Studio's independent-filmmaker philosophy while being strict enough to prevent the major classes of accidental disclosure, unauthorized mutation, silent overwrite, and false ownership assumptions already identified across the aligned project specifications.
+This security model is intentionally simple enough to fit Straft's independent-filmmaker philosophy while being strict enough to prevent the major classes of accidental disclosure, unauthorized mutation, silent overwrite, and false ownership assumptions already identified across the aligned project specifications.
 
 ---
 

@@ -19,6 +19,6 @@ filesPresent: number,
  */
 filesMissing: number, 
 /**
- * This is the vault Straft Studio uses now.
+ * This is the vault Straft uses now.
  */
 active: boolean, };

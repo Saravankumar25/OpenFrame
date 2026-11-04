@@ -6,22 +6,17 @@ use crate::modules::ai::dossier::words::clip;
 use crate::modules::ai::dossier::{Fact, P_HIGH, P_MID};
 use crate::modules::ai::index::Resolved;
 use crate::modules::ai::knowledge;
-use crate::modules::ai::turn::{Group, TurnRead};
+use crate::modules::ai::turn::TurnRead;
 
-/// Sections given to a help question, and to a question of another kind that asks about the app.
-const SECTIONS_HELP: usize = 2;
-const SECTIONS_OTHER: usize = 1;
+/// Sections given to a question asked under the Product Guide.
+const SECTIONS: usize = 3;
 /// Longest section text given.
 const SECTION_CHARS: usize = 1_400;
 
-pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, _r: &Resolved) -> Vec<Fact> {
-    let n = if read.group == Group::Help {
-        SECTIONS_HELP
-    } else {
-        SECTIONS_OTHER
-    };
-    let found = knowledge::relevant(&ctx.message, n);
-    if found.is_empty() && read.group == Group::Help {
+/// App Help & Settings > Product Guide: the sections of the guide that match the question.
+pub fn guide_leaf(ctx: &FetchCtx<'_>, _read: &TurnRead, _r: &Resolved) -> Vec<Fact> {
+    let found = knowledge::relevant(&ctx.message, SECTIONS);
+    if found.is_empty() {
         return vec![Fact::absent("a section on that", "the product guide")];
     }
     found

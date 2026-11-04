@@ -612,7 +612,7 @@ export function SuggestionsDrawer({ view, onClose }: { view: ScheduleView; onClo
       width="n"
       footer={
         <div className="hint">
-          Suggestions are advice. Straft Studio never rearranges your schedule silently.
+          Suggestions are advice. Straft never rearranges your schedule silently.
         </div>
       }
     >

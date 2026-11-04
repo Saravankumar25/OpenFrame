@@ -7,11 +7,11 @@
 
 use std::sync::Arc;
 
+use serde_json::{Value, json};
 use straft_ai::{ChatRequest, InferenceProvider};
 use straft_application::modules::ai;
 use straft_domain::AppResult;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const SHORT: &[u8] = include_bytes!("../../../../templates/samples/Example-Short.fountain");
 
@@ -74,7 +74,7 @@ fn two_screenplays() -> TestEnv {
 fn ask_in(env: &TestEnv, text: &str, conversation: &str) -> Value {
     env.ok(
         "ai.ask",
-        json!({ "text": text, "scope": { "kind": "WholeProject" }, "conversationId": conversation }),
+        json!({ "text": text, "sections": [{ "leaf": "screenplay/scenes" }], "conversationId": conversation }),
     )
 }
 
@@ -111,7 +111,7 @@ fn a_title_in_the_message_becomes_the_focus_of_the_conversation() {
     let _ = env.core.dispatch(
         &env.core.local_actor(),
         "ai.ask",
-        json!({ "text": "How many scenes does Night Shift have?", "scope": { "kind": "WholeProject" }, "conversationId": "c-title" }),
+        json!({ "text": "How many scenes does Night Shift have?", "sections": [{ "leaf": "screenplay/scenes" }], "conversationId": "c-title" }),
     );
     let (scope_json, night): (String, String) = env
         .core
@@ -175,7 +175,7 @@ fn ask_lenient(env: &TestEnv, text: &str, conversation: &str) -> Value {
     let asked = env.core.dispatch(
         &env.core.local_actor(),
         "ai.ask",
-        json!({ "text": text, "scope": { "kind": "WholeProject" }, "conversationId": conversation }),
+        json!({ "text": text, "sections": [{ "leaf": "screenplay/scenes" }], "conversationId": conversation }),
     );
     if let Ok(x) = asked {
         return x;
@@ -234,7 +234,7 @@ fn the_answer_type_is_read_stored_in_the_focus_and_kept_in_the_trace() {
     let (t, g, _, class, _) = trace_turn(&env, &brief);
     assert_eq!(
         (t.as_str(), g.as_str(), class.as_str()),
-        ("explain", "narrative", "short")
+        ("story_explanation", "narrative", "long250")
     );
     let hello = ask_lenient(&env, "thanks, that is all", "c-turn-3");
     let (t, g, domains, class, _) = trace_turn(&env, &hello);

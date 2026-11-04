@@ -1,20 +1,22 @@
 //! Production: locations (and where a scene is shot), tasks, permits and call sheet status.
 //! Reads `location`, `catalog_item`, `breakdown_element`, `task`, `call_sheet`.
 
-use straft_domain::AppResult;
 use serde_json::Value;
+use straft_domain::AppResult;
 
-use super::{files, schedule};
 use crate::modules::ai::dossier::ctx::{FetchCtx, SceneRef, safe};
-use crate::modules::ai::dossier::words::{clip, date_of};
-use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
+use crate::modules::ai::dossier::words::clip;
+use crate::modules::ai::dossier::{Fact, P_HIGH, P_MID};
 use crate::modules::ai::index::Resolved;
 use crate::modules::ai::queries;
 use crate::modules::ai::turn::{AnswerType, TurnRead};
 use crate::modules::production::availability::{self as av, AvailabilityOwner};
 
-pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
-    safe("production", || fetch(ctx, read, r))
+/// Production > Locations: each location with its status, address, notes, hospital and availability,
+/// the places a scene is shot, and (for the roles that may see them) contact details.
+pub fn locations_leaf(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    let ctx = &ctx.topic(&["locations"]);
+    safe("locations", || fetch(ctx, read, r))
 }
 
 struct Loc {
@@ -172,33 +174,6 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         }
     }
 
-    // ---- tasks and permits
-    let tasks_asked = m.stem("task") || m.any(&["todo", "to do", "due", "overdue", "deadline"]);
-    let permit_asked = m.stem("permit");
-    if tasks_asked || permit_asked {
-        // A permit question reads the tasks that mention a permit, not the whole list.
-        let only = (!tasks_asked).then_some("permit");
-        out.extend(tasks(ctx, read, tasks_asked, only)?);
-    }
-    if permit_asked {
-        out.extend(files::notes_matching(ctx, &["permit", "permits"], 4)?);
-    }
-
-    // ---- call sheet status
-    if m.any(&[
-        "call sheet",
-        "call sheets",
-        "callsheet",
-        "callsheets",
-        "sides",
-    ]) {
-        out.extend(schedule::call_sheets(
-            ctx,
-            read,
-            &schedule::named_days(ctx, r),
-            false,
-        )?);
-    }
     Ok(out)
 }
 
@@ -296,89 +271,4 @@ fn scene_location(
         f = f.f("locations", parts.join("; "));
     }
     Ok((Some(f), ids))
-}
-
-fn tasks(
-    ctx: &FetchCtx<'_>,
-    read: &TurnRead,
-    listed: bool,
-    only: Option<&str>,
-) -> AppResult<Vec<Fact>> {
-    let t = read.answer_type;
-    let mut st = ctx.conn.prepare(
-        "SELECT id, title, status, due_at, COALESCE(notes, '') FROM task WHERE deleted_at IS NULL
-         ORDER BY (due_at IS NULL), due_at, position LIMIT 60",
-    )?;
-    let rows: Vec<(String, String, String, Option<i64>, String)> = st
-        .query_map([], |r| {
-            Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?))
-        })?
-        .collect::<Result<_, _>>()?;
-    let mut out = Vec::new();
-    if rows.is_empty() {
-        out.push(Fact::absent("any tasks", "Notes and Tasks"));
-        return Ok(out);
-    }
-    let rows: Vec<_> = match only {
-        Some(w) => rows
-            .into_iter()
-            .filter(|r| format!("{} {}", r.1, r.4).to_lowercase().contains(w))
-            .collect(),
-        None => rows,
-    };
-    if rows.is_empty() {
-        return Ok(out);
-    }
-    let m = &ctx.m;
-    let open = rows.iter().filter(|r| r.2 == "Open").count();
-    let done = rows.len() - open;
-    if listed || t == AnswerType::Count {
-        let mut f = Fact::new("Count", "")
-            .f("what", "open tasks")
-            .f("value", open.to_string())
-            .prio(P_HIGH);
-        if t == AnswerType::Count && !m.has("done") {
-            f = f.require(open.to_string());
-        }
-        out.push(f);
-        let mut f = Fact::new("Count", "")
-            .f("what", "done tasks")
-            .f("value", done.to_string())
-            .prio(P_HIGH);
-        if t == AnswerType::Count && m.has("done") {
-            f = f.require(done.to_string());
-        }
-        out.push(f);
-    }
-    let want_done = m.any(&["done", "finished", "completed"]);
-    let want_open = m.any(&["open", "pending", "outstanding", "left", "todo"]);
-    let due_first = m.any(&[
-        "due first",
-        "first due",
-        "earliest",
-        "next due",
-        "due soon",
-        "due next",
-    ]);
-    let mut first_open = true;
-    for (id, title, status, due, notes) in &rows {
-        let shown = (want_done && status == "Done")
-            || (want_open && status == "Open")
-            || (!want_done && !want_open);
-        let mut f = Fact::new("Task", id)
-            .f("title", title)
-            .f("status", status)
-            .f("due", due.map(date_of).unwrap_or_default())
-            .f("notes", clip(notes, 200))
-            .prio(if shown { P_HIGH } else { P_LOW });
-        if shown && (want_done || want_open) && matches!(t, AnswerType::List | AnswerType::Lookup) {
-            f = f.require(title);
-        }
-        if due_first && status == "Open" && due.is_some() && first_open {
-            f = f.require(title);
-            first_open = false;
-        }
-        out.push(f);
-    }
-    Ok(out)
 }

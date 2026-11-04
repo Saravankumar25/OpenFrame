@@ -91,7 +91,7 @@ fn a_typical_daily_view_is_one_page_without_a_running_header() {
         label.as_str(),
         "Rain rig on standby.",
         "Production order · numbers are scene numbers",
-        "Created using Straft Studio",
+        "Created using Straft",
         "Page 1 of 1",
         "DRAFT",
         "Total · 2 scenes",

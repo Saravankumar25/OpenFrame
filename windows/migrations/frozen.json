@@ -11,6 +11,7 @@
     "app/0007_project_cover.sql": "35a3ffa6b888618516d06219f0d2599a1fc743abdf3795c13f50b5834ec9b2a5",
     "app/0008_ai_trace_turn.sql": "85a25a0cb90cb656eb735680a8d8bd46a849420fe51d028aaefe1ff14e28829f",
     "app/0009_ai_trace_dossier.sql": "066cc3a33165b5ed9eba61da9df51a1eec1addf84260d0d1a8805b3900e8d706",
+    "app/0010_ai_trace_sections.sql": "2ae90bbce54899bbe9d973741e4207346032be399453036ba438506a29deb795",
     "global/0001_core.sql": "b2fc89d194836a131442d244614b7cdb0224a709ff0c680245da26570aef7f56",
     "global/0002_idea_vault.sql": "4e89401ff4a0ddbdcbc40a9756a0c3b4e70289b48fa43c0815add5e1fb68db4d",
     "global/0003_performance.sql": "20991335c0382f385a6cb227709826c0d4bc4379503929dd3bbd96adaa226caf",

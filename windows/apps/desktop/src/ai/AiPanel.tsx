@@ -1,10 +1,10 @@
-// AI Assistant side panel (FSD §42; UX §3.40; mockups 174 to 181; Local AI Runtime spec §1; ADR-0026).
+// Straft AI side panel (FSD §42; UX §3.40; mockups 174 to 181; Local AI Runtime spec §1; ADR-0026).
 //
 // - The panel docks beside the page (owner decision 2026-10-08): the Shell places it after the
 //   page in the layout row, so opening it narrows the page and never covers a control.
 // - Straft AI is a one-time download after install, started by the person: until it is
 //   downloaded (or when a downloaded file is damaged) the panel offers the download; when the
-//   engine in the app is missing or damaged it says to reinstall. Nothing else in Straft Studio
+//   engine in the app is missing or damaged it says to reinstall. Nothing else in Straft
 //   depends on it.
 // - Everything runs on this computer; the UI never shows model files, formats or ports.
 // - The conversation, sources and "Proposed Changes" review live in ./Conversation
@@ -87,7 +87,7 @@ function ResizeHandle({ width, setWidth }: { width: number; setWidth: (w: number
       className="ai-resize"
       role="separator"
       aria-orientation="vertical"
-      aria-label="Resize the AI Assistant"
+      aria-label="Resize Straft AI"
       aria-valuenow={width}
       aria-valuemin={MIN_WIDTH}
       tabIndex={0}
@@ -119,12 +119,12 @@ export default function AiPanel({ onClose }: { onClose: () => void }) {
   const mode = panelMode(s);
   const go = useNav((st) => st.go);
   const settings = [
-    { label: "Offline AI", header: true },
+    { label: "Straft AI", header: true },
     // The panel is docked beside the page, so it stays open next to the settings it opens.
     ...(project.data
       ? [
           {
-            label: "Offline AI settings…",
+            label: "Straft AI settings…",
             onSelect: () => go({ workspace: "settings", sub: "offline-ai" }),
           },
         ]
@@ -132,19 +132,19 @@ export default function AiPanel({ onClose }: { onClose: () => void }) {
     ...(s?.available
       ? [
           {
-            label: "Stop Offline AI (free memory)",
-            onSelect: () => void call("ai.stop_runtime").then(() => toast.info("Offline AI stopped. It starts again when you ask something.")).catch(reportError),
+            label: "Stop Straft AI (free memory)",
+            onSelect: () => void call("ai.stop_runtime").then(() => toast.info("Straft AI stopped. It starts again when you ask something.")).catch(reportError),
           },
         ]
       : []),
   ];
 
   return (
-    <aside className="ai" aria-label="AI Assistant" style={{ width }}>
+    <aside className="ai" aria-label="Straft AI" style={{ width }}>
       <ResizeHandle width={width} setWidth={setWidth} />
       <div className="ahd">
         <Sparkles size={16} aria-hidden />
-        AI Assistant
+        Straft AI
         <span className="grow" />
         <Chip tone={s?.available ? "g" : "default"} title={s?.available ? "Runs on this computer" : undefined}>
           {s?.mode ?? "Off"}
@@ -154,13 +154,13 @@ export default function AiPanel({ onClose }: { onClose: () => void }) {
             align="end"
             items={settings}
             trigger={
-              <button type="button" className="iconbtn" aria-label="Offline AI settings" title="Offline AI settings">
+              <button type="button" className="iconbtn" aria-label="Straft AI settings" title="Straft AI settings">
                 <MoreHorizontal size={16} />
               </button>
             }
           />
         )}
-        <IconButton label="Close AI Assistant" onClick={onClose}>
+        <IconButton label="Close Straft AI" onClick={onClose}>
           <X size={16} />
         </IconButton>
       </div>
@@ -178,7 +178,7 @@ export default function AiPanel({ onClose }: { onClose: () => void }) {
       ) : mode === "off" ? (
         <Unavailable text={offReason(s!)} />
       ) : (
-        <Assistant status={s!} hasProject={!!project.data} />
+        <Assistant status={s!} hasProject={!!project.data} projectId={project.data?.id ?? null} />
       )}
     </aside>
   );
@@ -186,7 +186,7 @@ export default function AiPanel({ onClose }: { onClose: () => void }) {
 
 // ----------------------------------------------------------------- unavailable
 
-/** Offline AI cannot run: the subsystem is unreachable, or the engine in the app is missing or damaged. */
+/** Straft AI cannot run: the subsystem is unreachable, or the engine in the app is missing or damaged. */
 function Unavailable({ text }: { text: string }) {
   return (
     <div className="body">
@@ -194,9 +194,9 @@ function Unavailable({ text }: { text: string }) {
         <div className="ico" aria-hidden>
           <Sparkles size={26} />
         </div>
-        <h2 style={{ fontSize: 15 }}>AI is not available right now</h2>
+        <h2 style={{ fontSize: 15 }}>Straft AI is not available right now</h2>
         <p className="sm">{text}</p>
-        <p className="xs muted">Everything else in Straft Studio works normally.</p>
+        <p className="xs muted">Everything else in Straft works normally.</p>
       </div>
     </div>
   );

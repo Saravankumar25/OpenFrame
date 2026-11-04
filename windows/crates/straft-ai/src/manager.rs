@@ -1,4 +1,4 @@
-//! Offline AI façade used by the application layer (Local AI Runtime spec; agentic AI spec
+//! Straft AI façade used by the application layer (Local AI Runtime spec; agentic AI spec
 //! §12, §23; ADR-0026): the engine that ships with the app, the models downloaded after install,
 //! their integrity check before the first engine start, and the two managed engines (chat and
 //! embeddings).
@@ -20,9 +20,9 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
 
-use straft_domain::{AppError, AppResult};
 use parking_lot::{Mutex, RwLock};
 use serde::Serialize;
+use straft_domain::{AppError, AppResult};
 
 use crate::bundle::{self, AssetLock, BundledAi, ModelRole, ModelStamp, Pooling};
 use crate::client::{self, EMBED_BATCH};
@@ -53,7 +53,7 @@ const EMBED_TIMEOUT: Duration = Duration::from_secs(120);
 /// Sampling seed of deterministic runs (the end-to-end suite).
 pub const DETERMINISTIC_SEED: u32 = 42;
 
-/// Errors of the Offline AI subsystem (the application-wide error type).
+/// Errors of the Straft AI subsystem (the application-wide error type).
 pub type AiError = AppError;
 
 #[derive(Clone)]
@@ -108,7 +108,7 @@ impl ManagerConfig {
     }
 }
 
-/// Where the Offline AI stands on this installation.
+/// Where the Straft AI stands on this installation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum BundleState {
     /// No model set has been downloaded (or it was removed).
@@ -166,7 +166,7 @@ pub enum ComponentKind {
     EmbeddingModel,
 }
 
-/// Technical details for Settings > Offline AI (never the normal UI).
+/// Technical details for Settings > Straft AI (never the normal UI).
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ComponentDiagnostics {
@@ -199,7 +199,7 @@ pub struct Diagnostics {
     pub log_file: String,
     /// Where the chat engine runs, in one plain sentence.
     pub placement: String,
-    /// Settings, Offline AI, Graphics card is Off.
+    /// Settings, Straft AI, Graphics card is Off.
     pub graphics_off: bool,
 }
 
@@ -322,7 +322,7 @@ impl AiManager {
                     tracing::warn!(
                         code = e.code_str(),
                         detail = e.detail.as_deref().unwrap_or(""),
-                        "the Offline AI is not usable"
+                        "the Straft AI is not usable"
                     );
                 }
                 let loaded = Loaded {
@@ -462,7 +462,7 @@ impl AiManager {
         tracing::error!(
             code = e.code_str(),
             detail = e.detail.as_deref().unwrap_or(""),
-            "the bundled Offline AI failed its check; AI stays off"
+            "the bundled Straft AI failed its check; AI stays off"
         );
         *self.state.write() = (state_of(&e), Some(e.clone()));
         self.configure();
@@ -823,7 +823,7 @@ impl AiManager {
         placement::describe(&self.placement.lock())
     }
 
-    /// Settings, Offline AI, Graphics card: `off` keeps the AI on the processor. The engine
+    /// Settings, Straft AI, Graphics card: `off` keeps the AI on the processor. The engine
     /// restarts in its new place on the next request.
     pub fn set_graphics_off(&self, off: bool) -> AppResult<()> {
         let _one = self.placement_lock.lock();
@@ -1164,7 +1164,7 @@ impl AiManager {
             }
             return Err(AppError::ai(
                 "remove_first",
-                "Remove Straft AI in Settings, Offline AI, then download it again.",
+                "Remove Straft AI in Settings, Straft AI, then download it again.",
             )
             .with_detail("the active set of this version is damaged"));
         }
@@ -1269,7 +1269,7 @@ impl AiManager {
 
     // ----------------------------------------------------------- diagnostics
 
-    /// Technical details for Settings > Offline AI.
+    /// Technical details for Settings > Straft AI.
     pub fn diagnostics(&self) -> Diagnostics {
         let lock = &self.cfg.lock;
         let st = self.state();

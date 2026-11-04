@@ -1372,11 +1372,9 @@ fn total_usable_time_across_any_sequence_of_leases_never_exceeds_168_hours() {
 
 // ------------------------------------------------------------------ the shared wire fixture
 
-/// One request and the response the licence server signed for it with its test key, written by
-/// `services/licence-server` (`write_the_shared_wire_fixture`). Both sides are tested against
-/// these exact bytes.
-const WIRE_FIXTURE: &str =
-    include_str!("../../../../services/licence-server/tests/fixtures/mac-validate-v1.json");
+/// One request and the response the licence server signed for it with its test key. The writer
+/// left with the server (ADR-0039); it is `write_the_shared_wire_fixture` in git history.
+const WIRE_FIXTURE: &str = include_str!("fixtures/mac-validate-v1.json");
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -1552,7 +1550,7 @@ fn the_screens_buy_and_start_the_trial_through_the_adapter_trait() {
     assert_eq!(
         adapter.buy_full_version(),
         Some(Err(PurchaseFailure {
-            message: "Straft Studio could not reach the App Store. Connect to the internet, then try again."
+            message: "Straft could not reach the App Store. Connect to the internet, then try again."
         }))
     );
     // Then bought: the first-run screens are due.

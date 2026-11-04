@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Straft Studio Offline AI benchmark (Local AI Runtime spec §4, §16; agentic AI spec §23).
+// Straft Offline AI benchmark (Local AI Runtime spec §4, §16; agentic AI spec §23).
 //
 // Runs candidate chat-model files through the REAL runtime path — the pinned llama.cpp
-// `llama-server`, launched with the same flags Straft Studio's supervisor uses (loopback, random
+// `llama-server`, launched with the same flags Straft's supervisor uses (loopback, random
 // port, per-launch API key, --parallel 1, --no-webui, --offline) — and measures, in the order of
 // the product priorities:
-//   1. tool calling: the real Straft Studio planner prompt + grammar-constrained JSON schema
+//   1. tool calling: the real Straft planner prompt + grammar-constrained JSON schema
 //      (scripts/ai-benchmark/planner-request.json, captured from the application), scored for
 //      schema-valid JSON, correct tool and correct key arguments; plus the same requests WITHOUT a
 //      grammar (raw JSON discipline);
@@ -169,7 +169,7 @@ for (const v of PLANNER.schema.oneOf ?? []) {
   v.properties = { [key]: v.properties[key], arguments: v.properties.arguments };
 }
 
-/** Requests from the Straft Studio evaluation categories (agentic spec §35) with the expected tool. */
+/** Requests from the Straft evaluation categories (agentic spec §35) with the expected tool. */
 const CASES = [
   { q: "How many scenes are in the current draft?", tool: "count_scenes" },
   { q: "Open Scene 12.", tool: "open_scene", args: (a) => a.sceneNumber === 12 },

@@ -72,6 +72,8 @@ const SQL_WRITE_ALLOW = {
     "Vault file: scrubs a private staging copy of the vault database for a package, and read-only integrity checks of a vault before it is restored or connected.",
   "crates/straft-application/src/modules/storage/relocate.rs":
     "Read-only integrity and identity check of the copy of a project made by Move Project, before it replaces the original.",
+  "crates/straft-application/src/modules/storage/legacy_rename.rs":
+    "One transaction on app.sqlite (Recent Projects and the library root) when the library folder takes the new name at start.",
   "crates/straft-application/src/modules/storage/library_ops.rs":
     "Read-only (immutable) counts of a library's vault for the setup preview, and one transaction on app.sqlite (Recent Projects paths, no project content) when a library moves.",
 };
@@ -90,8 +92,10 @@ const UNSAFE_ALLOW = {
   "crates/straft-platform/src/graphics.rs": "DXGI adapter enumeration (COM) and GetSystemDirectoryW for the graphics-card decision (platform boundary, ADR-0029); SAFETY comments in place.",
   "crates/straft-platform/src/exists.rs": "GetFileAttributesW fast existence check (platform boundary); SAFETY comment in place.",
   "crates/straft-platform/src/identity.rs": "GetCurrentPackageFamilyName (platform boundary); SAFETY comment in place.",
-  "apps/desktop/src-tauri/src/platform/macos_storekit.rs":
-    "C ABI calls into the Swift StoreKit bridge (macOS only); every pointer is owned by the bridge and freed with storekit_free; SAFETY comments in place.",
+  "apps/desktop/src-tauri/src/platform/microsoft_store.rs":
+    "Windows.Services.Store over WinRT for the Microsoft Store licence and purchase (ADR-0039): COM apartment start, the window handle for the purchase dialog, the local clock; every call runs on its own short-lived thread with a time limit and no raw error code reaches the screen; SAFETY comments in place.",
+  "apps/desktop/src-tauri/src/platform/store_checks.rs":
+    "GetLocalTime to find the next local midnight for the licence check; no pointer is kept; SAFETY comment in place.",
   "crates/straft-platform/src/process.rs":
     "Suspended creation, Windows Job Object and thread resume, process start times and the stray-engine stop, macOS process group (platform boundary); SAFETY comments in place.",
   "crates/straft-platform/src/drives.rs":
@@ -114,8 +118,6 @@ const SPAWN_ALLOW = {
     "Configures and guards a child process for the supervisor (no window, kill with the app); spawns only in its own tests.",
   "crates/straft-platform/src/shell.rs":
     "macOS adapter only: runs /usr/bin/open (open a file or link, or `open -R` to reveal) for an absolute path the desktop shell resolved from an id.",
-  "apps/desktop/src-tauri/build.rs":
-    "Build script, not the app: compiles and links the Swift StoreKit bridge on macOS only (`swift build`, `swift -print-target-info`); runs at build time on the build machine, never in Straft Studio.",
 };
 
 // R6: the only places that may know the operating system (build plan area "Platform adapter layer").
@@ -126,7 +128,7 @@ const OS_ALLOW = {
   "crates/straft-ai/src/hardware.rs":
     "DXGI adapter enumeration for the hardware check; to move behind straft-platform when the Mac (Metal) check is written.",
   "apps/desktop/src-tauri/src/platform/":
-    "Desktop shell macOS adapter: the StoreKit 2 bridge over a C ABI, compiled only for target_os = macos; Windows builds get the no-op.",
+    "Desktop shell Windows Store adapter: the Microsoft Store licence and purchase calls and their refresh worker (ADR-0039); other systems get a no-op.",
 };
 
 const TAURI_COMMANDS = ["of_invoke", "of_open_asset", "of_reveal_path", "of_open_url", "of_close_window"];
@@ -180,7 +182,7 @@ function scanRust() {
     const lisRe = /\b(TcpListener|UdpSocket)\b|\bhyper::server\b|\baxum::serve\b|\bwarp::serve\b|\btiny_http\b/g;
     each(code, lisRe, (m, line) => {
       if (allowed(LISTENER_ALLOW, file)) allowedHits.push(`R3 ${file}:${line} ${m[0]}`);
-      else fail("R3", file, line, `network socket \`${m[0]}\`. Straft Studio has no network listener (ADR-0007, the security standard in the build plan).`);
+      else fail("R3", file, line, `network socket \`${m[0]}\`. Straft has no network listener (ADR-0007, the security standard in the build plan).`);
     });
 
     // R4 unsafe

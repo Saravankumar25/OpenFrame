@@ -12,8 +12,8 @@
 //! Every candidate carries the matched phrase as evidence and a plain-language
 //! confidence ("Likely" / "Possible"), never a numeric score (FSD §27.7).
 
-use straft_domain::enums::BreakdownCategory as Cat;
 use serde::Serialize;
+use straft_domain::enums::BreakdownCategory as Cat;
 use ts_rs::TS;
 
 pub const LIKELY: &str = "Likely";

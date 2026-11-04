@@ -19,6 +19,13 @@ limitation: string | null,
  */
 trialDays: number, 
 /**
- * Whether the state permits editing. Nothing is locked on it yet.
+ * Whether the state permits editing; when false, operations that change a project are
+ * refused in Rust ([`EntitlementService::check_edit`]).
  */
-canEdit: boolean, };
+canEdit: boolean, 
+/**
+ * When the running trial ends, in milliseconds since 1970: the time the store last reported
+ * plus now. `null` outside a trial. The shell formats it in local time; the core never reads
+ * the time zone (ADR-0039 item 7).
+ */
+trialEndsAtMs: number | null, };

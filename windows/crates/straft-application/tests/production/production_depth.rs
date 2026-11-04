@@ -7,13 +7,13 @@
 //! people fields, availability windows, contact privacy by role and for the assistant, stable
 //! identity and explicit references, search coverage and the migration from schema 13.
 
+use rusqlite::params;
+use serde_json::{Value, json};
 use straft_application::MutationMeta;
-use straft_application::modules::ai::scope::{self, AiScopeArgs, AiScopeKind};
+use straft_application::modules::ai::scope;
 use straft_application::modules::ai::toolbox::{self, ToolStep};
 use straft_domain::{Capability, Role, new_id, now_ms};
 use straft_test_support::TestEnv;
-use rusqlite::params;
-use serde_json::{Value, json};
 
 // ---------------------------------------------------------------- fixtures
 
@@ -709,10 +709,7 @@ fn locations_hold_call_sheet_fields_availability_notes_and_photos() {
         loc["emergencyContact"], "Station office 0861 222 333",
         "omitted fields are unchanged"
     );
-    let photo = env.write_file(
-        "platform.png",
-        &straft_test_support::stress::png(4, 4, 1),
-    );
+    let photo = env.write_file("platform.png", &straft_test_support::stress::png(4, 4, 1));
     let loc = env.ok(
         "locations.add_photos",
         json!({ "id": id, "paths": [photo] }),
@@ -921,20 +918,7 @@ fn contact_data_is_hidden_by_role_from_the_assistant_and_from_exports() {
             .project()
             .unwrap()
             .store
-            .read(|c| {
-                scope::resolve(
-                    c,
-                    actor,
-                    &AiScopeArgs {
-                        kind: AiScopeKind::WholeProject,
-                        draft_id: None,
-                        scene_id: None,
-                        selection: Vec::new(),
-                        shooting_day_id: None,
-                        call_sheet_id: None,
-                    },
-                )
-            })
+            .read(scope::whole)
             .unwrap();
         let step = toolbox::run_tool_unlocked(&env.core, actor, &scope, "who to call", tool, args)
             .unwrap();

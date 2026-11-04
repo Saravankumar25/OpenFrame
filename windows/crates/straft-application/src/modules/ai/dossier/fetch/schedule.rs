@@ -5,8 +5,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::LazyLock;
 
-use straft_domain::AppResult;
 use regex::Regex;
+use straft_domain::AppResult;
 
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
 use crate::modules::ai::dossier::words::{clip, clock, numbers};
@@ -29,8 +29,19 @@ const NOT_A_PLACE: &[&str] = &[
     "wrap", "pickup", "pick", "rest", "our", "your",
 ];
 
-pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+/// Production > Schedule: the shooting days, which scenes are on which day, call times and warnings.
+pub fn schedule_leaf(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    let ctx = &ctx.topic(&["schedule", "days"]);
     safe("schedule", || fetch(ctx, read, r))
+}
+
+/// Call Sheets: each sheet's status and day, and for the days named the times and lists written on it.
+pub fn call_sheets_leaf(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    let ctx = &ctx.topic(&["call sheets"]);
+    safe("call sheets", || {
+        let named = named_days(ctx, r);
+        call_sheets(ctx, read, &named, !named.is_empty())
+    })
 }
 
 /// The shooting days a message names: the resolved ones and "day 4".
@@ -102,9 +113,6 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 "a shooting schedule or any shoot days",
                 "the Schedule",
             ));
-        }
-        if m.any(&["call sheet", "call sheets", "sides"]) {
-            out.extend(call_sheets(ctx, read, &named_days(ctx, r), false)?);
         }
         return Ok(out);
     }
@@ -345,34 +353,6 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         out.extend(warnings(ctx, read, &target)?);
     }
 
-    // ---- call sheets of the days shown, with the times and the crew on them
-    if !target.is_empty() || m.any(&["call sheet", "call sheets", "sides"]) {
-        let detailed = !target.is_empty()
-            && m.any(&[
-                "call",
-                "calls",
-                "crew",
-                "makeup",
-                "lunch",
-                "wrap",
-                "time",
-                "times",
-                "meal",
-                "parking",
-                "safety",
-                "emergency",
-                "weather",
-                "sunrise",
-                "sunset",
-                "hospital",
-            ]);
-        out.extend(call_sheets(
-            ctx,
-            read,
-            &target.iter().copied().collect::<Vec<_>>(),
-            detailed,
-        )?);
-    }
     Ok(out)
 }
 

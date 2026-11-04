@@ -33,7 +33,7 @@
 //!   changes nothing in the project).
 //! - Branding (production depth spec §43; doc 33 section 8): every export here
 //!   is a production document, so [`deliver`] brands it in one place. A PDF
-//!   prints the small Straft Studio mark and "Created using Straft Studio" at the
+//!   prints the small Straft mark and "Created using Straft" at the
 //!   bottom of every page (Sides print the line in the page's bottom margin), a
 //!   workbook names Straft Studio in its document properties and the first
 //!   sheet's footer, and a plain-text export ends with the line. CSV stays pure
@@ -59,12 +59,12 @@ mod visual;
 
 use std::path::{Path, PathBuf};
 
+use rusqlite::params;
+use serde::Serialize;
 use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use straft_import_export::report::{
     BRAND_LINE, Document, ReportImage, Table, tables_to_xlsx_branded,
 };
-use rusqlite::params;
-use serde::Serialize;
 use ts_rs::TS;
 
 use crate::core::AppCore;

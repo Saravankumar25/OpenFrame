@@ -30,12 +30,13 @@ pub mod schema;
 
 use std::collections::BTreeSet;
 
-use straft_domain::{Actor, AppError, AppResult, Capability};
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult, Capability};
 
 use super::catalog::{self, PropCtx, ProposalSpec};
 use super::queries;
 use super::scope::ResolvedScope;
+use super::sections::tools::Gate;
 use super::tools::{self, ToolCtx, ToolOutput, ToolSpec};
 use super::types::*;
 use crate::core::AppCore;
@@ -116,11 +117,8 @@ fn lookup(name: &str) -> Option<Tool> {
 }
 
 fn unknown(name: &str) -> AppError {
-    AppError::ai(
-        "unknown_tool",
-        "That isn't something the assistant can do yet.",
-    )
-    .with_detail(format!("tool {}", queries::truncate_chars(name, 64)))
+    AppError::ai("unknown_tool", "That isn't something Straft AI can do yet.")
+        .with_detail(format!("tool {}", queries::truncate_chars(name, 64)))
 }
 
 fn retrieve_schema() -> Value {
@@ -358,7 +356,17 @@ pub fn tools_for_request(
     request: &str,
     max_chars: usize,
 ) -> Vec<ToolDef> {
-    let all = tools_for(core, actor, scope);
+    // Only the tools homed in the sections the person picked are offered (spec 3.9, round R6); the
+    // old scoring by scope label is gone.
+    let all: Vec<ToolDef> = tools_for(core, actor, scope)
+        .into_iter()
+        .filter(|t| {
+            matches!(
+                super::sections::tools::gate_tool(&scope.sections, &t.name),
+                Gate::Open
+            )
+        })
+        .collect();
     let want: Vec<String> = words(request);
     // Meaning, not only English words (W6 tool picker): the tools closest to the request in the
     // search model's space get a bonus by rank, so a request in Hindi or Japanese finds them too.
@@ -372,7 +380,6 @@ pub fn tools_for_request(
                 .iter()
                 .zip(&bonus)
                 .any(|(t, b)| t.mutating && *b >= SEMANTIC_TOP_BONUS));
-    let scope_words = words(scope.kind.label());
     let mut scored: Vec<(i64, usize, &ToolDef)> = all
         .iter()
         .enumerate()
@@ -386,11 +393,6 @@ pub fn tools_for_request(
                 if name_words.contains(w) {
                     score += 3;
                 } else if desc_words.contains(w) {
-                    score += 1;
-                }
-            }
-            for w in &scope_words {
-                if name_words.contains(w) || desc_words.contains(w) {
                     score += 1;
                 }
             }
@@ -677,7 +679,7 @@ pub fn rebuild_proposal(
     if !proposal_available(&core.registry, p) {
         return Err(AppError::ai(
             "unsupported",
-            "I can't prepare that change in this version of Straft Studio. Nothing was changed.",
+            "I can't prepare that change in this version of Straft. Nothing was changed.",
         ));
     }
     if !proposal_allowed(ctx.actor, p) {
@@ -703,7 +705,7 @@ fn check_proposal(
     let refuse = |why: String| {
         AppError::ai(
             "unsupported",
-            "I can't prepare that change in this version of Straft Studio. Nothing was changed.",
+            "I can't prepare that change in this version of Straft. Nothing was changed.",
         )
         .with_detail(why)
     };

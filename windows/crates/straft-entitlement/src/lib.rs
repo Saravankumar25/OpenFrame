@@ -8,7 +8,7 @@
 //!
 //! | Channel | Adapter | State |
 //! |---|---|---|
-//! | Microsoft Store (`.msix`) | [`adapters::MicrosoftStoreAdapter`] | stub: waits for the Partner Center account |
+//! | Microsoft Store (`.msix`) | [`adapters::MicrosoftStoreAdapter`] | the Store owns the trial; the shell supplies the Store calls (ADR-0039) |
 //! | Mac App Store (`.pkg`) | [`mac::MacAppStoreAdapter`] | StoreKit 2 trial and lifetime unlock, built and tested with fakes; the Swift bridge and the licensing server are not connected yet |
 //! | Internal team builds (`.exe`, `.dmg`) | none | never sold: no trial, no purchase, no lock (ADR-0023, ADR-0024); the team password gate is [`team_gate`] |
 //!
@@ -26,7 +26,7 @@
 //!   builds for the owner's team: no trial, no purchase, no lock
 //!   ([`EntitlementState::InternalBuild`], ADR-0023 and ADR-0024), and a team password on every
 //!   launch ([`team_gate`]).
-//! - **The stores keep the trial clock.** Straft Studio keeps no trial timer of its own, so a clock
+//! - **The stores keep the trial clock.** Straft keeps no trial timer of its own, so a clock
 //!   turned back on this computer gives no days back.
 //! - **No project data in any check.** Adapters receive nothing but the channel's own proof of
 //!   purchase.
@@ -43,7 +43,7 @@ pub use adapters::{ChannelAdapter, PurchaseFailure};
 pub use notices::{CalendarDay, Notice, NoticeRecord, NoticeStore};
 
 /// Length of the free trial in both stores, in days. The stores run the trial clock (ADR-0022,
-/// ADR-0023); Straft Studio keeps no trial timer of its own.
+/// ADR-0023); Straft keeps no trial timer of its own.
 pub const TRIAL_DAYS: u32 = 7;
 
 /// The release channel this build was made for. Set once at build time by the desktop shell.
@@ -96,6 +96,10 @@ pub enum EntitlementState {
     /// ADR-0024).
     /// Everything is allowed and no trial, reminder or purchase screen ever shows.
     InternalBuild,
+    /// Mac only: the clock is behind a date the app already trusted (ADR-0039 item 8). Locks the
+    /// app like an ended trial until the clock is right and the purchase is checked again. The
+    /// Windows shell never reaches it.
+    ClockChanged,
 }
 
 /// Things the user may want to do that the entitlement can gate.
@@ -112,7 +116,7 @@ pub enum Permission {
 impl EntitlementState {
     /// Whether `perm` is allowed in this state on `channel`.
     ///
-    /// - **A store build, TrialEnded or Revoked:** nothing. Opening, editing and exporting all
+    /// - **A store build, TrialEnded, Revoked or ClockChanged:** nothing. Opening, editing and exporting all
     ///   wait for a purchase or a restore (ADR-0022 for the Mac, ADR-0023 for the Microsoft
     ///   Store). The application core refuses every project operation in this case, see
     ///   [`Self::locks_the_app`].
@@ -135,33 +139,42 @@ impl EntitlementState {
     }
 
     /// True when the whole app waits for a purchase or a restore: a store build (Mac App Store,
-    /// ADR-0022; Microsoft Store, ADR-0023) after the trial ended without a purchase, or after a
-    /// refund or revocation. The internal installer build never locks. NeedsOnlineCheck never
+    /// ADR-0022; Microsoft Store, ADR-0023) after the trial ended without a purchase, after a
+    /// refund or revocation, or (Mac) when the clock went behind a trusted date. The internal
+    /// installer build never locks. NeedsOnlineCheck never
     /// locks either: a failed check keeps opening and exporting (ADR-0018 decision 6).
     pub const fn locks_the_app(self, channel: Channel) -> bool {
         matches!(channel, Channel::MacAppStore | Channel::MicrosoftStore)
             && matches!(
                 self,
-                EntitlementState::TrialEnded | EntitlementState::Revoked
+                EntitlementState::TrialEnded
+                    | EntitlementState::Revoked
+                    | EntitlementState::ClockChanged
             )
     }
 
     /// Plain words for the Settings screen and the trial banner.
     pub fn summary(self, channel: Channel) -> String {
         if self.locks_the_app(channel) {
-            let first = if self == EntitlementState::Revoked {
-                "This purchase was refunded or revoked."
+            let (this, again) = if channel == Channel::MicrosoftStore {
+                ("this computer", "Check again")
             } else {
-                "Your free trial has ended."
+                ("this Mac", "Restore purchase")
             };
-            return format!(
-                "{first} Buy Straft Studio or restore your purchase to open your projects again. Nothing is deleted."
-            );
+            return match self {
+                EntitlementState::Revoked => format!(
+                    "Your purchase is no longer active. The store no longer shows a purchase for this account, so Straft Studio is locked. Your projects are still on {this}. If this is a mistake, choose {again} or contact us."
+                ),
+                EntitlementState::ClockChanged => CLOCK_CHANGED_SUMMARY.to_string(),
+                _ => format!(
+                    "Your free trial has ended. Buy the full version to keep using Straft Studio. Your projects are safe on {this}. Buying unlocks them again exactly as you left them."
+                ),
+            };
         }
         match self {
-            EntitlementState::TrialActive { days_left: 1 } => "Free trial: 1 day left.".to_string(),
+            EntitlementState::TrialActive { days_left: 1 } => "Trial ends in 1 day.".to_string(),
             EntitlementState::TrialActive { days_left } => {
-                format!("Free trial: {days_left} days left.")
+                format!("Trial ends in {days_left} days.")
             }
             EntitlementState::TrialEnded => {
                 "Your free trial has ended. You can still open and export your projects. Buy Straft Studio to keep editing."
@@ -173,7 +186,7 @@ impl EntitlementState {
                     .to_string()
             }
             EntitlementState::Unknown => {
-                "Straft Studio could not check your licence right now. Everything keeps working; it will check again later."
+                "Straft could not check your licence right now. Everything keeps working; it will check again later."
                     .to_string()
             }
             EntitlementState::NeedsOnlineCheck => {
@@ -183,7 +196,7 @@ impl EntitlementState {
                     "the App Store"
                 };
                 format!(
-                    "Straft Studio needs to check your licence with {store}. Connect to the internet and open Straft Studio again. Your projects stay open and can be exported."
+                    "Straft needs to check your licence with {store}. Connect to the internet and open Straft again. Your projects stay open and can be exported."
                 )
             }
             EntitlementState::TrialNotStarted => {
@@ -191,9 +204,12 @@ impl EntitlementState {
                     .to_string()
             }
             EntitlementState::InternalBuild => "Internal build, not for sale.".to_string(),
+            EntitlementState::ClockChanged => CLOCK_CHANGED_SUMMARY.to_string(),
         }
     }
 }
+
+const CLOCK_CHANGED_SUMMARY: &str = "Your Mac's clock looks wrong. Turn on Set time and date automatically in System Settings, then choose Check again. Your projects are safe.";
 
 /// What a channel adapter knows about a purchase.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -212,7 +228,7 @@ pub enum PurchaseStatus {
 mod tests {
     use super::*;
 
-    const ALL: [EntitlementState; 8] = [
+    const ALL: [EntitlementState; 9] = [
         EntitlementState::TrialActive { days_left: 3 },
         EntitlementState::TrialEnded,
         EntitlementState::Purchased,
@@ -221,6 +237,7 @@ mod tests {
         EntitlementState::NeedsOnlineCheck,
         EntitlementState::TrialNotStarted,
         EntitlementState::InternalBuild,
+        EntitlementState::ClockChanged,
     ];
 
     #[test]
@@ -250,7 +267,12 @@ mod tests {
     fn both_stores_lock_everything_only_after_the_trial_ended_or_a_refund() {
         for store in [Channel::MacAppStore, Channel::MicrosoftStore] {
             for s in ALL {
-                let locked = matches!(s, EntitlementState::TrialEnded | EntitlementState::Revoked);
+                let locked = matches!(
+                    s,
+                    EntitlementState::TrialEnded
+                        | EntitlementState::Revoked
+                        | EntitlementState::ClockChanged
+                );
                 assert_eq!(s.locks_the_app(store), locked, "{store:?} {s:?}");
                 for perm in [Permission::Open, Permission::Export] {
                     assert_eq!(s.permits(store, perm), !locked, "{store:?} {s:?} {perm:?}");
@@ -278,6 +300,7 @@ mod tests {
             assert!(!edit(EntitlementState::Revoked));
             assert!(!edit(EntitlementState::NeedsOnlineCheck));
             assert!(!edit(EntitlementState::TrialNotStarted));
+            assert!(!edit(EntitlementState::ClockChanged));
             assert!(edit(EntitlementState::InternalBuild));
         }
     }
@@ -298,13 +321,25 @@ mod tests {
         }
         assert_eq!(
             EntitlementState::TrialActive { days_left: 1 }.summary(win),
-            "Free trial: 1 day left."
+            "Trial ends in 1 day."
+        );
+        assert_eq!(
+            EntitlementState::TrialActive { days_left: 4 }.summary(win),
+            "Trial ends in 4 days."
         );
         // The lock in either store says how to get back in; the price is never named.
+        let ms = Channel::MicrosoftStore;
         assert_eq!(
-            EntitlementState::TrialEnded.summary(Channel::MicrosoftStore),
-            EntitlementState::TrialEnded.summary(mac)
+            EntitlementState::TrialEnded.summary(ms),
+            "Your free trial has ended. Buy the full version to keep using Straft Studio. Your projects are safe on this computer. Buying unlocks them again exactly as you left them."
         );
+        assert_eq!(
+            EntitlementState::Revoked.summary(ms),
+            "Your purchase is no longer active. The store no longer shows a purchase for this account, so Straft Studio is locked. Your projects are still on this computer. If this is a mistake, choose Check again or contact us."
+        );
+        let clock = "Your Mac's clock looks wrong. Turn on Set time and date automatically in System Settings, then choose Check again. Your projects are safe.";
+        assert_eq!(EntitlementState::ClockChanged.summary(mac), clock);
+        assert_eq!(EntitlementState::ClockChanged.summary(ms), clock);
         assert!(
             EntitlementState::NeedsOnlineCheck
                 .summary(Channel::MicrosoftStore)
@@ -312,15 +347,15 @@ mod tests {
         );
         assert_eq!(
             EntitlementState::TrialEnded.summary(mac),
-            "Your free trial has ended. Buy Straft Studio or restore your purchase to open your projects again. Nothing is deleted."
+            "Your free trial has ended. Buy the full version to keep using Straft Studio. Your projects are safe on this Mac. Buying unlocks them again exactly as you left them."
         );
         assert_eq!(
             EntitlementState::Revoked.summary(mac),
-            "This purchase was refunded or revoked. Buy Straft Studio or restore your purchase to open your projects again. Nothing is deleted."
+            "Your purchase is no longer active. The store no longer shows a purchase for this account, so Straft Studio is locked. Your projects are still on this Mac. If this is a mistake, choose Restore purchase or contact us."
         );
         assert_eq!(
             EntitlementState::NeedsOnlineCheck.summary(mac),
-            "Straft Studio needs to check your licence with the App Store. Connect to the internet and open Straft Studio again. Your projects stay open and can be exported."
+            "Straft needs to check your licence with the App Store. Connect to the internet and open Straft again. Your projects stay open and can be exported."
         );
         assert_eq!(
             EntitlementState::TrialNotStarted.summary(mac),

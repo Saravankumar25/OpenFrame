@@ -2,9 +2,9 @@
 //! AI records are personal (filtered by user) and never undoable project edits.
 //! No hidden reasoning and no full-context copies are stored.
 
-use straft_domain::{Actor, AppResult, Capability, new_id, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::Value;
+use straft_domain::{Actor, AppResult, Capability, new_id, now_ms};
 
 use super::change_set;
 use super::types::*;
@@ -13,7 +13,7 @@ use crate::store::{MutationMeta, Tx};
 /// Metadata for AI bookkeeping writes: the user's own AI history, not project edits
 /// (no undo step, no activity entry).
 pub fn ai_meta(action: &'static str) -> MutationMeta {
-    MutationMeta::new(action, "Assistant history", Capability::UseAi)
+    MutationMeta::new(action, "Straft AI history", Capability::UseAi)
         .not_undoable()
         .quiet()
 }
@@ -367,10 +367,14 @@ fn load_result(c: &Connection, actor: &Actor, request_id: &str) -> AppResult<Opt
         .and_then(|d| d.get("lane"))
         .and_then(Value::as_str)
         .map(str::to_string);
+    let pointer = data
+        .and_then(|d| d.get("pointer"))
+        .and_then(|p| serde_json::from_value(p.clone()).ok());
     Ok(Some(AiResultDto {
         steps: load_steps(c, request_id)?,
         task_id,
         lane,
+        pointer,
         id,
         kind: AiResultKind::parse(&kind),
         status: AiResultStatus::parse(&status),

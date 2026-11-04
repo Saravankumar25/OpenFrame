@@ -59,7 +59,7 @@ suggestions, and **prepares** changes that the user reviews. It is:
 The database and application core own truth. Retrieval helps the model find context. The model understands intent and
 chooses tools. Tools perform exact reads. Change Sets represent proposed writes. **The human owns the final decision.**
 
-Straft Studio is fully usable if AI is never installed. Nothing outside the AI module depends on it
+Straft is fully usable if AI is never installed. Nothing outside the AI module depends on it
 (`fsd_ai_001_straft_works_fully_without_offline_ai`).
 
 ## 1.1 One model, no choice
@@ -77,11 +77,11 @@ Technical details, third-party notices, the privacy policy, the user manual and 
 
 ## 1.2 Core promise
 
-- AI runs on this computer. Project data is never sent to Straft Studio, Google or any AI service.
+- AI runs on this computer. Project data is never sent to Straft, Google or any AI service.
 - The AI can do only what the current user can do: **AI authority ≤ user authority**.
 - The AI never changes the project on its own. Every change is a proposal the user applies with **Apply Changes**.
 - There is **no auto mode**: no "always allow", no remembered approval, no background writes by the AI.
-- Exact facts come from Straft Studio code, never from the model.
+- Exact facts come from Straft code, never from the model.
 
 ---
 
@@ -153,7 +153,7 @@ downloads and inference adapters.
 Full contract: runtime spec §1–§9, §14–§15.
 
 - **Not installed:** the AI panel shows "Offline AI is not installed." with **Enable Offline AI** — "Download the AI
-  components required for Straft Studio's AI features. AI runs on this computer and project data is not sent to Straft Studio
+  components required for Straft's AI features. AI runs on this computer and project data is not sent to Straft
   or an AI cloud service." — the exact download size, bytes already downloaded, free space needed and available, and
   whether it will run on the graphics card or the processor. One button: **Download Offline AI**.
 - **Installing:** Checking device → Downloading → Verifying → Installing → Starting → Ready, one combined progress bar,
@@ -246,7 +246,7 @@ edges per node, relation priorities from the question; the permission check runs
 
 | Question | Route | Retrieval |
 |---|---|---|
-| How Straft Studio works | `ProductHelp` | Product guide sections (`knowledge.rs`), no project RAG |
+| How Straft works | `ProductHelp` | Product guide sections (`knowledge.rs`), no project RAG |
 | Counts, lists, status, "open scene …" | `Structured` | Explicit scope only; exact facts come from SQL-backed tools |
 | Short lookups, quoted text | `Lexical` | FTS5 |
 | Meaning/theme questions, change requests | `Hybrid` | FTS5 + vectors |
@@ -270,7 +270,7 @@ graph-related entities as ≤ 320-character summaries (≤ 6). Each item carries
 | No embedding runtime / vectors not ready / vector error | FTS + SQL tools; `degraded = true`; notice "AI can still answer some questions while project context is being prepared." |
 | FTS error | SQL tools + explicit scope |
 | Index unavailable | Same; never an error for the user |
-| Language model unavailable | The request ends as Unavailable; the rest of Straft Studio is unaffected |
+| Language model unavailable | The request ends as Unavailable; the rest of Straft is unaffected |
 
 ## 6.7 Measured budgets (spec §34)
 
@@ -401,7 +401,7 @@ Details that matter:
 - `escape_untrusted` removes control characters and neutralises every opening/closing delimiter and the
   "User request:" marker with length-preserving ASCII case folding; the scope label is escaped too
   (`ai_01_prompt_delimiters_survive_unicode_case_folding`).
-- Observations fed back to the model are re-serialised by Straft Studio (never the raw model text).
+- Observations fed back to the model are re-serialised by Straft (never the raw model text).
 - The real boundary is structural: the model can only pick offered tools; tools run with the user's permissions;
   mutations become proposals; acceptance is not a tool. Tests: `prompt_injection_in_project_text_is_data_not_instructions`,
   `injected_text_in_project_content_stays_data_inside_observations`, `read_tools_never_mutate_and_resist_injection_text`,
@@ -498,7 +498,7 @@ Ordinary workflow UI never shows: Gemma, GGUF, Q8_0, embedding model, sqlite-vec
 | Header chip | **AI Ready** (installed) · **Off** (not installed) |
 | Not installed | "Offline AI is not installed." · **Enable Offline AI** · **[Download Offline AI]** |
 | Installing | Checking device · Downloading · Verifying · Installing · Starting · Ready; **Pause** / **Cancel download** |
-| Runtime failed | "AI is currently unavailable. Straft Studio's core workflows continue to work normally." + "Ask again to restart it." |
+| Runtime failed | "AI is currently unavailable. Straft's core workflows continue to work normally." + "Ask again to restart it." |
 | Index rebuilding | **Preparing project context…** "AI can still answer some questions while project context is being prepared." |
 | Working | "Working on it on this computer…" |
 | Answer labels | "Exact · from project data" · "Inferred · written by Offline AI" · "Suggested" |

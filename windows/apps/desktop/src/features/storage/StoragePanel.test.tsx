@@ -52,7 +52,7 @@ describe("Settings > Storage", () => {
   it("shows the library, the folder for new projects, the vault, this project and the app data", async () => {
     answer({ "storage.info": INFO, "project.orphan_notes": [] });
     renderWithClient(<StoragePanel />);
-    for (const title of ["Your Straft Studio library", "Folder for new projects", "Global Idea Vault", "This project", "App data"]) {
+    for (const title of ["Your Straft library", "Folder for new projects", "Global Idea Vault", "This project", "App data"]) {
       expect(await screen.findByRole("region", { name: title })).toBeInTheDocument();
     }
     expect(screen.getByText(/Changing it does not move the projects you already have/)).toBeInTheDocument();

@@ -4,7 +4,7 @@
 |---|---|
 | Export | Moodboard (PDF, landscape US Letter) |
 | Variant | `Moodboard` (primary) + `stress-test/Moodboard_STRESS_TEST` |
-| Status | Design reference — not integrated; not validated against Straft Studio's Rust renderer |
+| Status | Design reference — not integrated; not validated against Straft's Rust renderer |
 | Repo commit | `2f5a045416bd2125801329533fc47f986ccc8174` (`main`, Windows tree) |
 | Date | 2026-10-23 |
 | Files | `Moodboard.html` / `.pdf` / `.md`; `stress-test/Moodboard_STRESS_TEST.html` / `.pdf`; generator `tools/build/visual/build_moodboard.py` |
@@ -13,7 +13,7 @@
 
 ## A. Purpose and users
 
-A moodboard PDF is the reference deck a director, DOP, production designer or costume/art lead sends to someone who will never open Straft Studio: "this is what the film should feel like". Roles and what they must find fast:
+A moodboard PDF is the reference deck a director, DOP, production designer or costume/art lead sends to someone who will never open Straft: "this is what the film should feel like". Roles and what they must find fast:
 
 - **Director / DOP / production designer:** the pictures, large and uncropped, with the one-line caption saying why each image is there (palette, texture, light).
 - **Producer / department heads receiving it:** which board this is (name, project), which scene it supports (when linked), the notes and links that explain the pictures.
@@ -60,7 +60,7 @@ Other args: `moodboardId`, `format` ("pdf"), `path`.
 - p.1: the masthead title uses the 28 pt display size, so a normal board name wraps to two lines and eats ~35 pt of the page; use the compact (20 pt) title for landscape.
 - p.1: 4 images fall 3 + 1; the lone fourth card sits under empty space. Row-height equalisation (retained) means a caption-less card has a blank strip where the neighbours have text.
 - Orange eyebrow text (3.0:1 on white) → slate eyebrow, orange only as brand fill (shared system rule).
-- Footer carries project + board name in a long tracked line; the shared footer (logo, "Created using Straft Studio", "Page X of Y") replaces it and a one-line running header carries the document identity.
+- Footer carries project + board name in a long tracked line; the shared footer (logo, "Created using Straft", "Page X of Y") replaces it and a one-line running header carries the document identity.
 - Frame placeholder is a plain grey rect with faint text (`pal::FAINT`, 3.1:1) → muted text (4.8:1).
 - Internal label is 6.4 pt coloured text only → chip with the word "Internal" (6.6 pt floor, amber fill, text label survives grayscale).
 
@@ -125,7 +125,7 @@ Table of changes versus the current output:
 
 ## F. Visual specification
 
-**Page.** US Letter landscape 792 × 612 pt; margins 46 / 46 / 46 top-left-right, 66 bottom (footer zone); content box 700 × 500 pt. Footer: shared system (logo lockup 17 pt high, "Created using Straft Studio", "Page X of Y"). **Running header:** yes, compact single line top-right, 6.8 pt, slate, tracked: `{PROJECT} · MOODBOARD`; with "Project title and board name" off: `MOODBOARD`. It does not carry the board name (a long name would not fit one line; it is in the masthead).
+**Page.** US Letter landscape 792 × 612 pt; margins 46 / 46 / 46 top-left-right, 66 bottom (footer zone); content box 700 × 500 pt. Footer: shared system (logo lockup 17 pt high, "Created using Straft", "Page X of Y"). **Running header:** yes, compact single line top-right, 6.8 pt, slate, tracked: `{PROJECT} · MOODBOARD`; with "Project title and board name" off: `MOODBOARD`. It does not carry the board name (a long name would not fit one line; it is in the masthead).
 
 **Masthead.** Eyebrow 7.6 pt bold tracked slate; board name 20 pt bold navy; project 9.6 pt slate; optional scene line 8.6 pt slate; right: stat box (fill `--of-panel`, 0.5 pt `--of-line`, radius 6, padding 7 / 14 / 8, min-width 118): bold 9.6 pt navy "4 images" + 8.2 pt slate "Exported 22 Oct 2026". Rule 1.2 pt navy under the block, 8 pt padding above it, 10 pt below. Title off: plain 20 pt "Moodboard" + the same rule.
 
@@ -178,7 +178,7 @@ Table of changes versus the current output:
 
 ## J. Acceptance criteria
 
-1. Landscape Letter; every page has footer logo (17 pt high), "Created using Straft Studio", "Page X of Y" with the true total; nothing but the footer inside the bottom 66 pt.
+1. Landscape Letter; every page has footer logo (17 pt high), "Created using Straft", "Page X of Y" with the true total; nothing but the footer inside the bottom 66 pt.
 2. Running header is exactly `{project} · MOODBOARD` (or `MOODBOARD` when the title option is off) on every page; the board name never appears in it.
 3. With default options no text of any item with `is_private`, and not `board.notes`, appears anywhere in the PDF (search the PDF text for the private strings).
 4. With Internal notes ticked each private item shows "Internal" and the board notes appear under "Internal notes" with "Not for distribution".

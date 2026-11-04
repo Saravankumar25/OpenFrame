@@ -33,9 +33,9 @@ pub mod warm;
 use std::sync::Arc;
 use std::time::Duration;
 
+use serde::{Deserialize, Serialize};
 use straft_ai::InferenceProvider;
 use straft_search::Embedder;
-use serde::{Deserialize, Serialize};
 
 use super::index::Resolved;
 
@@ -46,6 +46,11 @@ pub fn domains_for(message: &str, resolved: &Resolved, answer_type: AnswerType) 
     domains::find(message, resolved, answer_type)
 }
 pub use neighbour::{LooRead, leave_one_out};
+
+/// Whether a briefing goes scene by scene (an act, a day, a range of scenes).
+pub fn scene_by_scene(message: &str) -> bool {
+    rules::scene_by_scene(message)
+}
 
 /// How long a request waits for the embedding step. The first message after the app starts embeds
 /// every example, which takes longer; the vector cache then makes later messages fast.
@@ -58,6 +63,12 @@ pub enum AnswerType {
     List,
     Count,
     Explain,
+    /// Describe a character, a place, a scene or a look (spec 3.7, round R5).
+    Describe,
+    /// Brief a scene, a day, a call sheet or an act.
+    Brief,
+    /// Explain the story, an act, or why something happens.
+    StoryExplanation,
     Relation,
     Compare,
     Brainstorm,
@@ -67,11 +78,14 @@ pub enum AnswerType {
     Chat,
 }
 
-pub const ANSWER_TYPES: [AnswerType; 11] = [
+pub const ANSWER_TYPES: [AnswerType; 14] = [
     AnswerType::Lookup,
     AnswerType::List,
     AnswerType::Count,
     AnswerType::Explain,
+    AnswerType::Describe,
+    AnswerType::Brief,
+    AnswerType::StoryExplanation,
     AnswerType::Relation,
     AnswerType::Compare,
     AnswerType::Brainstorm,
@@ -88,6 +102,9 @@ impl AnswerType {
             AnswerType::List => "list",
             AnswerType::Count => "count",
             AnswerType::Explain => "explain",
+            AnswerType::Describe => "describe",
+            AnswerType::Brief => "brief",
+            AnswerType::StoryExplanation => "story_explanation",
             AnswerType::Relation => "relation",
             AnswerType::Compare => "compare",
             AnswerType::Brainstorm => "brainstorm",
@@ -108,7 +125,11 @@ impl AnswerType {
             AnswerType::Lookup | AnswerType::List | AnswerType::Count | AnswerType::Compare => {
                 Group::Facts
             }
-            AnswerType::Explain | AnswerType::Relation => Group::Narrative,
+            AnswerType::Explain
+            | AnswerType::Describe
+            | AnswerType::Brief
+            | AnswerType::StoryExplanation
+            | AnswerType::Relation => Group::Narrative,
             AnswerType::Brainstorm => Group::Brainstorm,
             AnswerType::Navigate => Group::Navigate,
             AnswerType::Change => Group::Change,
@@ -123,12 +144,25 @@ impl AnswerType {
                 LengthClass::OneSentence
             }
             AnswerType::List | AnswerType::Compare => LengthClass::Short,
-            AnswerType::Explain
-            | AnswerType::Relation
-            | AnswerType::Brainstorm
-            | AnswerType::Help => LengthClass::Paragraph,
+            AnswerType::Explain | AnswerType::Brainstorm | AnswerType::Help => {
+                LengthClass::Paragraph
+            }
+            AnswerType::Describe | AnswerType::Brief | AnswerType::Relation => LengthClass::Long250,
+            AnswerType::StoryExplanation => LengthClass::Long350,
             AnswerType::Chat => LengthClass::Brief,
         }
+    }
+
+    /// An explaining type: the old Explain and the narrative types of round R5. The fetchers read
+    /// the same material for all of them (descriptions, relationships, scene text).
+    pub fn narrates(self) -> bool {
+        matches!(
+            self,
+            AnswerType::Explain
+                | AnswerType::Describe
+                | AnswerType::Brief
+                | AnswerType::StoryExplanation
+        )
     }
 }
 
@@ -166,6 +200,10 @@ pub enum LengthClass {
     Short,
     Paragraph,
     Brief,
+    /// A describe, brief or relationship answer: up to 250 words (spec 3.7).
+    Long250,
+    /// A story explanation: up to 350 words.
+    Long350,
 }
 
 impl LengthClass {
@@ -175,6 +213,8 @@ impl LengthClass {
             LengthClass::Short => "short",
             LengthClass::Paragraph => "paragraph",
             LengthClass::Brief => "brief",
+            LengthClass::Long250 => "long250",
+            LengthClass::Long350 => "long350",
         }
     }
 
@@ -185,25 +225,36 @@ impl LengthClass {
             LengthClass::Short => (1, 80),
             LengthClass::Paragraph => (40, 200),
             LengthClass::Brief => (1, 40),
+            LengthClass::Long250 => (40, 250),
+            LengthClass::Long350 => (60, 350),
         }
     }
 
     /// One class shorter. Chat and the one-sentence class are already as short as they go.
     fn shorter(self) -> Self {
         match self {
+            LengthClass::Long350 => LengthClass::Long250,
+            LengthClass::Long250 => LengthClass::Paragraph,
             LengthClass::Paragraph => LengthClass::Short,
             LengthClass::Short => LengthClass::OneSentence,
             other => other,
         }
     }
 
-    /// One class longer, up to a paragraph. A chat reply stays brief.
+    /// One class longer, up to the long classes. A chat reply stays brief.
     fn longer(self) -> Self {
         match self {
             LengthClass::OneSentence => LengthClass::Short,
             LengthClass::Short => LengthClass::Paragraph,
+            LengthClass::Paragraph => LengthClass::Long250,
+            LengthClass::Long250 => LengthClass::Long350,
             other => other,
         }
+    }
+
+    /// A narrative class: the answer is a few paragraphs and the dossier is the larger one.
+    pub fn is_long(self) -> bool {
+        matches!(self, LengthClass::Long250 | LengthClass::Long350)
     }
 }
 
@@ -318,6 +369,11 @@ fn decide(message: &str, input: &TurnInput<'_>, aids: &Aids<'_>) -> (AnswerType,
                 // Anger is never a change or a count, whatever the neighbours say.
                 if angry && matches!(t, AnswerType::Change | AnswerType::Count) {
                     AnswerType::Chat
+                } else if !angry
+                    && matches!(t, AnswerType::Change | AnswerType::Chat)
+                    && rules::wh_question(message)
+                {
+                    AnswerType::Lookup
                 } else {
                     t
                 }

@@ -115,9 +115,9 @@ describe("Settings > Licence", () => {
   });
 
   it("explains when the status cannot be loaded", async () => {
-    statusFail = { code: "internal.unexpected", message: "Something went wrong inside Straft Studio. Your project was not changed." };
+    statusFail = { code: "internal.unexpected", message: "Something went wrong inside Straft. Your project was not changed." };
     renderWithClient(<LicenceSection />);
-    expect(await within(section()).findByRole("alert")).toHaveTextContent("Something went wrong inside Straft Studio");
+    expect(await within(section()).findByRole("alert")).toHaveTextContent("Something went wrong inside Straft");
     expect(screen.getByRole("button", { name: "Restore purchase" })).toBeEnabled();
   });
 

@@ -1,4 +1,4 @@
-Multilingual E5 small (the Offline AI search model for every language other than English, Q8_0 GGUF file)
+Multilingual E5 small (the Straft AI search model for every language other than English, Q8_0 GGUF file)
 by Liang Wang, Nan Yang, Xiaolong Huang, Linjun Yang, Rangan Majumder and Furu Wei
 https://huggingface.co/intfloat/multilingual-e5-small
 

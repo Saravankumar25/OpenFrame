@@ -1,5 +1,5 @@
-//! Visual: shot lists, storyboards, mood boards and the Idea Vault.
-//! Reads `shot`, `storyboard`, `storyboard_panel`, `moodboard`, `moodboard_item`, `vault_item`.
+//! Visual: shot lists, storyboards and mood boards (one leaf each); the Idea Vault is `vault.rs`.
+//! Reads `shot`, `storyboard`, `storyboard_panel`, `moodboard`, `moodboard_item`.
 //! Items a person marked private on a mood board are never read.
 
 use straft_domain::AppResult;
@@ -7,46 +7,33 @@ use straft_domain::AppResult;
 use crate::modules::ai::dossier::ctx::{FetchCtx, SceneRef, safe};
 use crate::modules::ai::dossier::words::clip;
 use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
-use crate::modules::ai::index::{Kind, Resolved, normalize};
-use crate::modules::ai::turn::{AnswerType, Group, TurnRead};
+use crate::modules::ai::index::{Resolved, normalize};
+use crate::modules::ai::turn::{AnswerType, TurnRead};
 
-pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
-    safe("visual", || fetch(ctx, read, r))
-}
-
-fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fact>> {
-    let m = &ctx.m;
-    let t = read.answer_type;
-    let scenes = ctx.focus_scenes(r);
-    let mut out = Vec::new();
-    if m.any(&["shots", "shot list", "shot lists", "setups"]) || (m.has("shot") && m.has("many")) {
+/// Production > Shot Lists: the shots planned for a scene, or how many there are in all.
+pub fn shot_lists_leaf(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    safe("shot lists", || {
+        let t = read.answer_type;
+        let scenes = ctx.focus_scenes(r);
+        let mut out = Vec::new();
         if scenes.is_empty() {
             out.extend(shot_total(ctx, t)?);
         }
         for s in scenes.iter().take(4) {
             out.extend(shots(ctx, t, s)?);
         }
-    }
-    if m.stem("storyboard") {
-        out.extend(storyboards(ctx, &scenes)?);
-    }
-    if m.stem("moodboard") || m.any(&["mood board", "mood boards"]) {
-        out.extend(moodboards(ctx)?);
-    }
-    let vault_items: Vec<_> = r
-        .others
-        .iter()
-        .filter(|(k, _)| *k == Kind::VaultItem)
-        .map(|(_, h)| h)
-        .collect();
-    if m.has("vault") || m.has("idea vault") || !vault_items.is_empty() {
-        out.extend(vault(
-            ctx,
-            read,
-            &vault_items.iter().map(|h| h.id.clone()).collect::<Vec<_>>(),
-        )?);
-    }
-    Ok(out)
+        Ok(out)
+    })
+}
+
+/// Production > Storyboards: the storyboards, and the panels of the ones for a scene.
+pub fn storyboards_leaf(ctx: &FetchCtx<'_>, _read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    safe("storyboards", || storyboards(ctx, &ctx.focus_scenes(r)))
+}
+
+/// Production > Moodboards: the boards, and the notes and items on the one named (or the only one).
+pub fn moodboards_leaf(ctx: &FetchCtx<'_>, _read: &TurnRead, _r: &Resolved) -> Vec<Fact> {
+    safe("moodboards", || moodboards(ctx))
 }
 
 fn shot_total(ctx: &FetchCtx<'_>, t: AnswerType) -> AppResult<Vec<Fact>> {
@@ -132,11 +119,20 @@ fn storyboards(ctx: &FetchCtx<'_>, scenes: &[SceneRef]) -> AppResult<Vec<Fact>> 
         if rows.is_empty() {
             return Ok(vec![Fact::absent("any storyboards", "Storyboards")]);
         }
-        for (id, name, _, _, n) in rows.iter().take(20) {
+        let ids: Vec<String> = rows.iter().filter_map(|r| r.2.clone()).collect();
+        let numbers = ctx.scene_numbers(&ids);
+        for (id, name, scene_id, _, n) in rows.iter().take(20) {
+            let scene = scene_id
+                .as_ref()
+                .and_then(|s| numbers.get(s))
+                .map(|(n, _)| n.to_string())
+                .unwrap_or_default();
             out.push(
                 Fact::new("Storyboard", id)
                     .f("name", name)
+                    .f("scene", scene)
                     .f("panels", n.to_string())
+                    .f("panels without a picture", empty_panels(ctx, id)?)
                     .prio(P_MID),
             );
         }
@@ -175,6 +171,7 @@ fn storyboards(ctx: &FetchCtx<'_>, scenes: &[SceneRef]) -> AppResult<Vec<Fact>> 
                     .f("name", name)
                     .f("scene", s.number.to_string())
                     .f("panels", n.to_string())
+                    .f("panels without a picture", empty_panels(ctx, id)?)
                     .f("panel notes", clip(&panels.join("; "), 360))
                     .prio(P_HIGH)
                     .require(name)
@@ -183,6 +180,16 @@ fn storyboards(ctx: &FetchCtx<'_>, scenes: &[SceneRef]) -> AppResult<Vec<Fact>> 
         }
     }
     Ok(out)
+}
+
+/// How many panels of a storyboard are still the Empty Panel the screen adds (no image, no sketch).
+fn empty_panels(ctx: &FetchCtx<'_>, board_id: &str) -> AppResult<String> {
+    let n: i64 = ctx.conn.query_row(
+        "SELECT count(*) FROM storyboard_panel WHERE storyboard_id = ?1 AND deleted_at IS NULL AND visual_kind = 'placeholder'",
+        [board_id],
+        |r| r.get(0),
+    )?;
+    Ok(format!("{n} (empty panels)"))
 }
 
 fn moodboards(ctx: &FetchCtx<'_>) -> AppResult<Vec<Fact>> {
@@ -225,42 +232,6 @@ fn moodboards(ctx: &FetchCtx<'_>) -> AppResult<Vec<Fact>> {
                 })?
                 .collect::<Result<_, _>>()?;
             f = f.f("items", clip(&items.join("; "), 520));
-        }
-        out.push(f);
-    }
-    Ok(out)
-}
-
-fn vault(ctx: &FetchCtx<'_>, read: &TurnRead, named: &[String]) -> AppResult<Vec<Fact>> {
-    let mut st = ctx.conn.prepare(
-        "SELECT id, COALESCE(title, ''), item_type, COALESCE(body, ''), COALESCE(caption, '') FROM vault_item
-         WHERE deleted_at IS NULL ORDER BY created_at, id LIMIT 200",
-    )?;
-    let rows: Vec<(String, String, String, String, String)> = st
-        .query_map([], |r| {
-            Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?))
-        })?
-        .collect::<Result<_, _>>()?;
-    if rows.is_empty() {
-        return Ok(vec![Fact::absent("any items", "the Idea Vault")]);
-    }
-    let narrative = matches!(read.group, Group::Narrative | Group::Brainstorm);
-    let list = read.answer_type == AnswerType::List;
-    let mut out = Vec::new();
-    for (id, title, kind, body, caption) in &rows {
-        let is_named = named.contains(id);
-        if !is_named && !list && !ctx.m.has("vault") {
-            continue;
-        }
-        let mut f = Fact::new("Idea Vault item", id)
-            .f("title", title)
-            .f("type", kind)
-            .prio(if is_named { P_HIGH } else { P_MID });
-        if is_named || narrative {
-            f = f.f("text", clip(&format!("{body} {caption}"), 360));
-        }
-        if list && rows.len() <= 14 {
-            f = f.require(title);
         }
         out.push(f);
     }

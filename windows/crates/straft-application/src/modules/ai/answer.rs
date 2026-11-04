@@ -184,22 +184,81 @@ fn stopped(passes: Vec<PassLog>) -> Answered {
     }
 }
 
+/// Whether a picked section holds the cast: only then may the focus line say who plays a character.
+fn cast_picked(i: &Input<'_>) -> bool {
+    i.dossier.is_some_and(|d| {
+        d.leaves.iter().any(|u| {
+            super::sections::leaf(u.leaf)
+                .is_some_and(|l| l.name_kinds.contains(&super::index::Kind::Person))
+        })
+    })
+}
+
+/// A scene-by-scene briefing that did not reach every scene says so in a line code writes: the
+/// model stopped at its token limit, the text was cut to the word limit, or the facts were cut
+/// before it wrote. The writer never states how far it got.
+fn coverage(text: String, d: &Dossier, briefing: bool) -> String {
+    if !briefing {
+        return text;
+    }
+    let covered = text
+        .lines()
+        .filter(|l| {
+            let l = l.trim_start().to_lowercase();
+            l.strip_prefix("scene ")
+                .is_some_and(|r| r.starts_with(|c: char| c.is_ascii_digit()))
+        })
+        .count();
+    let total = d.facts.iter().filter(|f| f.kind == "Scene").count();
+    if covered == 0 || (covered >= total && !d.trimmed) {
+        return text;
+    }
+    let what = if covered == 1 {
+        "scene".to_string()
+    } else {
+        format!("{covered} scenes")
+    };
+    format!("{}\nThis covers the first {what}.", text.trim_end())
+}
+
+/// The memory the writer and the checker may use under the sections picked now. An earlier answer
+/// stays only when every section it was asked under is still picked (spec 3, 1): otherwise its text
+/// could carry facts of a section the person has since left out. The question is kept; the answer is
+/// dropped, and so is the right to confirm it. With no picks (an internal call) nothing is dropped.
+fn restricted(m: &TurnMemory, picked: &[super::dossier::LeafUse]) -> TurnMemory {
+    let mut out = m.clone();
+    if picked.is_empty() {
+        return out;
+    }
+    for t in &mut out.conversation.recent {
+        if !t
+            .leaves
+            .iter()
+            .all(|l| picked.iter().any(|p| p.leaf == l.as_str()))
+        {
+            t.answered.clear();
+            t.confirmable = false;
+        }
+    }
+    out
+}
+
 /// The text that tells the checker what the answer may rest on, besides the facts.
-fn context_text(i: &Input<'_>) -> String {
+fn context_text(i: &Input<'_>, memory: &TurnMemory) -> String {
     let mut c = String::new();
-    for e in &i.memory.entries {
+    for e in &memory.entries {
         c.push_str(&e.text);
         c.push('\n');
     }
-    c.push_str(&i.memory.conversation.summary_text());
+    c.push_str(&memory.conversation.summary_text());
     c.push('\n');
-    for t in &i.memory.conversation.recent {
+    for t in &memory.conversation.recent {
         c.push_str(&t.asked);
         c.push('\n');
         c.push_str(&t.answered);
         c.push('\n');
     }
-    c.push_str(&prompt::focus_text(i.focus, i.index));
+    c.push_str(&prompt::focus_text(i.focus, i.index, cast_picked(i)));
     c.push('\n');
     if let Some(ix) = i.index {
         c.push_str(&prompt::map_titles(ix));
@@ -227,34 +286,55 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
         facts_text.push_str(m);
         facts_text.push('\n');
     }
-    let context = context_text(i);
+    let memory = restricted(i.memory, &dossier.leaves);
+    let context = context_text(i, &memory);
     let material = Material {
         facts: &facts_text,
         request: i.message,
         context: &context,
     };
+    // The narrative types are plain paragraphs; a briefing that goes scene by scene is the one list.
+    let narrative = matches!(
+        i.read.answer_type,
+        AnswerType::Describe
+            | AnswerType::Brief
+            | AnswerType::StoryExplanation
+            | AnswerType::Relation
+    );
+    let briefing =
+        i.read.answer_type == AnswerType::Brief && super::turn::scene_by_scene(i.message);
     let expect = Expect {
         class,
         required: &dossier.required,
         missing: &dossier.missing,
         language: language_of(i.message),
+        no_list: narrative && !briefing,
+        narrative,
     };
 
-    let map = i.index.map(prompt::project_map).unwrap_or_default();
-    let focus = prompt::focus_text(i.focus, i.index);
+    let map = i
+        .dossier
+        .map(|d| prompt::project_map(&d.leaves))
+        .unwrap_or_default();
+    let focus = prompt::focus_text(i.focus, i.index, cast_picked(i));
     let base = prompt::build(&prompt::Parts {
         group,
         class,
         map: &map,
-        memory: i.memory,
+        memory: &memory,
         focus: &focus,
         dossier: (!chat).then_some(dossier),
         resolved: i.resolved,
         message: i.message,
         language: expect.language,
+        briefing,
     });
 
-    let say = prompt::length_say(class);
+    let say = if briefing {
+        format!("{} {}", prompt::BRIEFING_SAY, prompt::length_say(class))
+    } else {
+        prompt::length_say(class).to_string()
+    };
     let mut messages: Vec<ChatMessage> = base;
     let mut logs: Vec<PassLog> = Vec::new();
     let mut attempts: Vec<(String, Vec<Offence>)> = Vec::new();
@@ -272,7 +352,7 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
             },
         );
         let mut req = ChatRequest::new(messages.clone())
-            .max_tokens(prompt::max_tokens(class))
+            .max_tokens(prompt::max_tokens(class, expect.language))
             .temperature(TEMPERATURE)
             .slot(SLOT_ANSWER);
         req.top_p = None;
@@ -292,12 +372,12 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
         if offences.is_empty() {
             return Ok(Answered {
                 sources: sources_of(dossier, &written),
-                text: written,
+                text: coverage(written, dossier, briefing),
                 shown: Shown::Written,
                 passes: logs,
             });
         }
-        let ask = check::feedback(&offences, say);
+        let ask = check::feedback(&offences, &say);
         attempts.push((written.clone(), offences));
         if pass == MAX_PASSES || i.started.elapsed() >= VERIFY_BUDGET {
             break;
@@ -324,7 +404,7 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
         };
         return Ok(Answered {
             sources: sources_of(dossier, &shown),
-            text: shown,
+            text: coverage(shown, dossier, briefing),
             shown: Shown::WrittenSoft,
             passes: logs,
         });
@@ -415,4 +495,15 @@ fn mentions(seen_norm: &str, value: &str) -> bool {
         return false;
     }
     !v.is_empty() && seen_norm.contains(v)
+}
+
+/// For the evaluation: whether the checks for an unsupported relationship word and an unstated
+/// feeling (off in the app, `check::STRICT_NARRATIVE_CHECKS`) would flag `answer`, given the texts
+/// the answer may rest on. The harness runs it over the expected answers of the section-scoped
+/// cases to measure the false positives before the checks are turned on (spec 3.7).
+pub fn narrative_flags(answer: &str, evidence: &[&str]) -> (bool, bool) {
+    (
+        !check::unsupported_relations(answer, evidence).is_empty(),
+        !check::unstated_moods(answer, evidence).is_empty(),
+    )
 }

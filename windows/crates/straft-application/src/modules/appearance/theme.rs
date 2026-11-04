@@ -337,9 +337,7 @@ pub fn parse_theme(text: &str, origin: Origin) -> Result<Theme, Vec<String>> {
         return Err(vec!["The theme is empty.".into()]);
     }
     let value: Value = serde_json::from_str(text).map_err(|_| {
-        vec![
-            "This is not a theme file. Straft Studio theme files are small JSON documents.".to_string(),
-        ]
+        vec!["This is not a theme file. Straft theme files are small JSON documents.".to_string()]
     })?;
     parse_value(&value, origin)
 }
@@ -363,7 +361,7 @@ fn parse_value(value: &Value, origin: Origin) -> Result<Theme, Vec<String>> {
     for k in obj.keys() {
         if !KEYS.contains(&k.as_str()) {
             problems.push(format!(
-                "The file has a setting Straft Studio does not know: \"{}\".",
+                "The file has a setting Straft does not know: \"{}\".",
                 shown(k)
             ));
         }
@@ -371,8 +369,7 @@ fn parse_value(value: &Value, origin: Origin) -> Result<Theme, Vec<String>> {
     match obj.get("formatVersion") {
         Some(Value::Number(n)) if n.as_u64() == Some(FORMAT_VERSION) => {}
         Some(Value::Number(n)) if n.as_u64().is_some_and(|v| v > FORMAT_VERSION) => problems.push(
-            "This theme was made for a newer version of Straft Studio. Update Straft Studio to use it."
-                .into(),
+            "This theme was made for a newer version of Straft. Update Straft to use it.".into(),
         ),
         Some(_) => problems.push("\"formatVersion\" must be 1.".into()),
         None => problems.push("The file has no \"formatVersion\".".into()),
@@ -569,7 +566,7 @@ fn parse_seeds(v: Option<&Value>, problems: &mut Vec<String>) -> Option<Seeds> {
     for k in obj.keys() {
         if !SEED_RANGES.iter().any(|(n, _, _)| n == k) {
             problems.push(format!(
-                "\"seeds\" has a value Straft Studio does not know: \"{}\".",
+                "\"seeds\" has a value Straft does not know: \"{}\".",
                 shown(k)
             ));
         }
@@ -980,6 +977,16 @@ mod tests {
     use super::*;
 
     #[test]
+    fn a_stored_id_of_the_earlier_default_theme_means_straft_default() {
+        assert_eq!(
+            current_id(straft_platform::legacy_names::DEFAULT_THEME_ID),
+            DEFAULT_THEME_ID
+        );
+        assert_eq!(current_id("black-and-white"), "black-and-white");
+        assert!(builtin(current_id(straft_platform::legacy_names::DEFAULT_THEME_ID)).is_some());
+    }
+
+    #[test]
     fn the_catalog_loads_and_starts_with_straft_default() {
         let all = builtin_themes();
         assert_eq!(all[0].id, DEFAULT_THEME_ID);
@@ -990,7 +997,7 @@ mod tests {
         );
     }
 
-    /// Every built-in theme, Straft Default included, passes every pair in both modes. Straft Studio
+    /// Every built-in theme, Straft Default included, passes every pair in both modes. Straft
     /// Default had six Light-mode pairs below 4.5 to 1 until the owner decision of 2026-10-07
     /// (ADR-0014 amendment) raised them; no exception is allowed any more.
     #[test]

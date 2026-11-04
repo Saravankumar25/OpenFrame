@@ -27,6 +27,8 @@ pub(super) struct Tree {
     /// Every folder (relative, forward slashes), so empty ones are recreated too.
     pub dirs: Vec<String>,
     pub bytes: u64,
+    /// Links (symbolic links, junctions) that were not followed, relative.
+    pub links: Vec<String>,
 }
 
 /// What was copied, for the check and for the removal of the source.
@@ -53,7 +55,9 @@ pub(super) fn walk(root: &Path, skip_top: &[&str]) -> AppResult<Tree> {
                 format!("{rel_dir}/{name}")
             };
             let kind = entry.file_type()?;
-            if kind.is_dir() {
+            if kind.is_symlink() {
+                tree.links.push(rel);
+            } else if kind.is_dir() {
                 tree.dirs.push(rel.clone());
                 pending.push((entry.path(), rel));
             } else if kind.is_file() {
@@ -159,7 +163,7 @@ pub(super) fn verify(
 /// `discard` (rebuildable leftovers such as a cache, deleted whole), then every folder that is
 /// empty by now. Anything else stays: the top-level names in `kept` were deliberately not copied
 /// (a vault's safety backups) and are only removed when they are already empty. A folder that
-/// still holds something Straft Studio did not copy is left as it is. Returns true when the whole
+/// still holds something Straft did not copy is left as it is. Returns true when the whole
 /// source folder is gone.
 pub(super) fn remove_source(root: &Path, tree: &Tree, discard: &[&str], kept: &[&str]) -> bool {
     for file in &tree.files {

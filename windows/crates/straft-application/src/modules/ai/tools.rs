@@ -9,11 +9,11 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use straft_domain::{Actor, AppError, AppResult, Capability};
 use rusqlite::{Connection, params};
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult, Capability};
 
 use super::queries::{self, DraftRef, SceneRow, join_and};
 use super::scope::ResolvedScope;
@@ -240,7 +240,7 @@ pub const TOOLS: &[ToolSpec] = &[
     ToolSpec {
         name: "open_workspace",
         class: OperationClass::Navigate,
-        description: "Open a Straft Studio workspace.",
+        description: "Open a Straft workspace.",
         schema: workspace_args,
     },
     ToolSpec {
@@ -637,11 +637,10 @@ pub fn execute(ctx: &ToolCtx<'_>, name: &str, args: &Value) -> AppResult<ToolOut
             let a: PrivateArgs = parse_args(name, args)?;
             private_information(ctx, &a.whose)
         }
-        other => Err(AppError::ai(
-            "unknown_tool",
-            "That isn't something the assistant can do yet.",
-        )
-        .with_detail(format!("tool {other}"))),
+        other => Err(
+            AppError::ai("unknown_tool", "That isn't something Straft AI can do yet.")
+                .with_detail(format!("tool {other}")),
+        ),
     }
 }
 
@@ -996,11 +995,10 @@ fn scene_fact(ctx: &ToolCtx<'_>, a: &SceneFactArgs) -> AppResult<ToolOutput> {
             }
         }
         other => {
-            return Err(AppError::ai(
-                "unknown_tool",
-                "That isn't something the assistant can do yet.",
-            )
-            .with_detail(format!("scene fact {other}")));
+            return Err(
+                AppError::ai("unknown_tool", "That isn't something Straft AI can do yet.")
+                    .with_detail(format!("scene fact {other}")),
+            );
         }
     };
     let mut o = ToolOutput::exact(content);
@@ -1127,7 +1125,7 @@ fn dialogue_fact(ctx: &ToolCtx<'_>, a: &DialogueFactArgs) -> AppResult<ToolOutpu
                 other => {
                     return Err(AppError::ai(
                         "unknown_tool",
-                        "That isn't something the assistant can do yet.",
+                        "That isn't something Straft AI can do yet.",
                     )
                     .with_detail(format!("dialogue fact {other}")));
                 }
@@ -1668,7 +1666,7 @@ fn compare_drafts(ctx: &ToolCtx<'_>, from: &str, to: &str) -> AppResult<ToolOutp
     list.dedup_by_key(|s| s.id.clone());
     o.items = scene_items(&b, &list);
     Ok(o.prov("Drafts", format!("{} → {}", a.label(), b.label()))
-        .prov("Basis", "Straft Studio draft comparison by scene identity"))
+        .prov("Basis", "Straft draft comparison by scene identity"))
 }
 
 fn breakdown_status(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
@@ -1833,15 +1831,25 @@ pub fn search_hits(
     actor: &Actor,
     text: &str,
     limit: usize,
+    types: Option<&[&str]>,
 ) -> AppResult<Vec<(String, String, String, Value)>> {
     let Some(q) = fts_query(text) else {
         return Ok(Vec::new());
     };
-    let mut stmt = c.prepare(
+    // Only the entity types of the picked sections. The names come from the section table, never
+    // from the person, so they are safe to quote.
+    let only = types.map_or(String::new(), |t| {
+        let list: Vec<String> = t
+            .iter()
+            .map(|e| format!("'{}'", e.replace('\'', "")))
+            .collect();
+        format!(" AND d.entity_type IN ({})", list.join(","))
+    });
+    let mut stmt = c.prepare(&format!(
         "SELECT d.entity_type, d.title, d.context, d.nav_json FROM search_fts f JOIN search_doc d ON d.rowid=f.rowid
-         WHERE search_fts MATCH ?1 AND (d.owner_user_id IS NULL OR d.owner_user_id=?2)
-         ORDER BY bm25(search_fts) LIMIT ?3",
-    )?;
+         WHERE search_fts MATCH ?1 AND (d.owner_user_id IS NULL OR d.owner_user_id=?2){only}
+         ORDER BY bm25(search_fts) LIMIT ?3"
+    ))?;
     let rows = stmt
         .query_map(params![q, actor.user_id, limit as i64], |r| {
             let nav: String = r.get(3)?;
@@ -1942,16 +1950,20 @@ fn category_query(text: &str) -> Option<&'static str> {
 }
 
 fn search_project(ctx: &ToolCtx<'_>, text: &str) -> AppResult<ToolOutput> {
+    // Under picks, only the picked sections are searched, and a category shortcut counts only a
+    // category the picks cover.
+    let types = super::sections::tools::picked_entity_types(&ctx.scope.sections);
+    let covers = |e: &str| types.as_ref().is_none_or(|t| t.contains(&e));
     let by_category = match category_query(text) {
-        Some("scenes") => count_scenes(ctx, None).ok(),
-        Some("characters") => count_characters(ctx, None).ok(),
-        Some("locations") => location_statistics(ctx, None).ok(),
+        Some("scenes") if covers("screenplay_scene") => count_scenes(ctx, None).ok(),
+        Some("characters") if covers("story_character") => count_characters(ctx, None).ok(),
+        Some("locations") if covers("location") => location_statistics(ctx, None).ok(),
         _ => None,
     };
     if let Some(o) = by_category {
         return Ok(o);
     }
-    let hits = search_hits(ctx.conn, ctx.actor, text, 50)?;
+    let hits = search_hits(ctx.conn, ctx.actor, text, 50, types.as_deref())?;
     if hits.is_empty() {
         return Ok(ToolOutput::exact(format!(
             "Nothing in this project mentions “{}”.",
@@ -2064,14 +2076,14 @@ fn open_workspace(ws: &str, sub: Option<&str>) -> AppResult<ToolOutput> {
     let (id, label) = WORKSPACES
         .iter()
         .find(|(id, label)| *id == ws || label.eq_ignore_ascii_case(ws))
-        .ok_or_else(|| AppError::ai("not_found", "I don't know that part of Straft Studio."))?;
+        .ok_or_else(|| AppError::ai("not_found", "I don't know that part of Straft."))?;
     let mut nav = NavTarget::to(id);
     let mut said = format!("Opening {label}.");
     if let Some(sub) = sub {
         if *id != "production" || !PRODUCTION_TABS.contains(&sub) {
             return Err(AppError::ai(
                 "not_found",
-                "I don't know that part of Straft Studio.",
+                "I don't know that part of Straft.",
             ));
         }
         nav = nav.with_sub(sub);
@@ -2089,7 +2101,7 @@ fn open_workspace(ws: &str, sub: Option<&str>) -> AppResult<ToolOutput> {
 }
 
 fn open_object(ctx: &ToolCtx<'_>, text: &str) -> AppResult<ToolOutput> {
-    let hits = search_hits(ctx.conn, ctx.actor, text, 5)?;
+    let hits = search_hits(ctx.conn, ctx.actor, text, 5, None)?;
     let Some((etype, title, context, nav)) = hits.first() else {
         return Ok(ToolOutput::exact(format!(
             "I couldn't find anything called “{}” in this project.",

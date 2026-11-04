@@ -1,4 +1,4 @@
-# Straft Studio — Local Agentic AI + Hybrid RAG + Context Graph Implementation Spec
+# Straft — Local Agentic AI + Hybrid RAG + Context Graph Implementation Spec
 
 > **Current decisions (2026-10-15).** [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) overrides this text where it differs: one Gemma 3 1B model becomes two tiers chosen by a measured bake-off; the graph retrieval stage stays only if the evaluation shows it beats plain hybrid retrieval; tool offering by embedding similarity; a deterministic verifier loop; memory and languages as the ADR states. Human-only Change Sets and crash-safe apply stand. Delivery per [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md); engine behind the provider interface of [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md).
 
@@ -33,7 +33,7 @@ Before changing code, inspect the current repository at HEAD and reconcile this 
 
 # 1. Product Decision
 
-Straft Studio will use **one local AI model only**:
+Straft will use **one local AI model only**:
 
 **Google Gemma 3 1B Instruct**, running locally through the existing `llama.cpp` sidecar.
 
@@ -42,7 +42,7 @@ The application UI must **not expose model-selection complexity** to ordinary us
 The user-facing interaction should be approximately:
 
 > Enable Offline AI  
-> Download the AI components required for Straft Studio's AI features. AI runs on this computer and project data is not sent to Straft Studio or an AI cloud service.
+> Download the AI components required for Straft's AI features. AI runs on this computer and project data is not sent to Straft or an AI cloud service.
 
 The exact model/vendor/quantization/runtime details belong in:
 
@@ -54,7 +54,7 @@ The exact model/vendor/quantization/runtime details belong in:
 
 They do not need to be the primary product UI.
 
-Straft Studio must remain fully usable if AI is never installed.
+Straft must remain fully usable if AI is never installed.
 
 ---
 
@@ -86,7 +86,7 @@ Target mental model:
 
 The final goal is:
 
-> If a human can perform a meaningful action through the Straft Studio product, the AI should be able to understand and prepare that same action through a safe application tool.
+> If a human can perform a meaningful action through the Straft product, the AI should be able to understand and prepare that same action through a safe application tool.
 
 However, **AI is never allowed to directly mutate canonical project data**.
 
@@ -113,7 +113,7 @@ MUTATION
     -> show exactly what will change
     -> human explicitly clicks Accept / Apply
     -> revalidate permissions + project revisions
-    -> apply through normal Straft Studio registry commands
+    -> apply through normal Straft registry commands
 ```
 
 The AI must never:
@@ -140,13 +140,13 @@ Human approval must be represented by a real UI action initiated by the user.
 
 Do **not** introduce CrewAI, LangGraph, AutoGen, or a swarm of named agents.
 
-Use **one Straft Studio Agent / Orchestrator** plus deterministic validators.
+Use **one Straft Agent / Orchestrator** plus deterministic validators.
 
 Reason:
 
 - Gemma 3 1B is intentionally small.
 - Multiple LLM agents would multiply latency and memory.
-- Most Straft Studio intelligence should come from good tools and good context, not model-to-model conversations.
+- Most Straft intelligence should come from good tools and good context, not model-to-model conversations.
 - The current Rust architecture already provides deterministic permissions, validation, search, history, undo and Change Sets.
 
 Target:
@@ -212,7 +212,7 @@ Human sees preview
 
 Human approves
 
-Normal Straft Studio commands apply the changes
+Normal Straft commands apply the changes
 ```
 
 Requirements:
@@ -240,7 +240,7 @@ Requirements:
 
 # 6. Universal Product Tool Surface
 
-The current AI tool set only exposes a subset of Straft Studio.
+The current AI tool set only exposes a subset of Straft.
 
 The target is **full product coverage**.
 
@@ -454,7 +454,7 @@ AI can temporarily fall back to FTS/tools while the semantic index is rebuilding
 
 # 10. Hybrid Retrieval
 
-Straft Studio should use **three complementary retrieval paths**.
+Straft should use **three complementary retrieval paths**.
 
 ```text
 1. Deterministic structured queries
@@ -600,7 +600,7 @@ Gemma 3 1B
 
 Show one total download/progress experience.
 
-Store AI components globally in Straft Studio application data so they are shared across projects.
+Store AI components globally in Straft application data so they are shared across projects.
 
 Do not download a separate embedding model for every project.
 
@@ -763,7 +763,7 @@ Create a derived contextual graph in `intelligence.sqlite`.
 
 Do not add Neo4j.
 
-The graph represents relationships that already exist in the Straft Studio domain plus carefully derived relationships.
+The graph represents relationships that already exist in the Straft domain plus carefully derived relationships.
 
 Example:
 
@@ -1037,7 +1037,7 @@ Do not expose technical profile names to ordinary users.
 
 Use a verified Gemma 3 1B Instruct GGUF compatible with llama.cpp.
 
-Choose the quantization based on actual Straft Studio benchmarks, with priorities:
+Choose the quantization based on actual Straft benchmarks, with priorities:
 
 1. reliable JSON/tool calling;
 2. acceptable creative/summarization quality;
@@ -1102,7 +1102,7 @@ Requirements:
 - health check before "Ready";
 - clear retry;
 - uninstall/remove AI option;
-- no Straft Studio project corruption if installation fails.
+- no Straft project corruption if installation fails.
 
 After successful download, the user should be able to use AI immediately without restarting the application.
 
@@ -1407,7 +1407,7 @@ If any of these fail:
 then:
 
 ```text
-Straft Studio core continues normally.
+Straft core continues normally.
 ```
 
 Fallback hierarchy:
@@ -1423,7 +1423,7 @@ FTS unavailable/rebuilding
  -> direct SQL tools + explicit scope
 
 LLM unavailable
- -> normal Straft Studio UI remains fully usable
+ -> normal Straft UI remains fully usable
 ```
 
 ---
@@ -1452,7 +1452,7 @@ Add measurement tests/benchmarks rather than claiming these budgets without evid
 
 # 35. Evaluation Harness
 
-Build an AI evaluation suite specific to Straft Studio.
+Build an AI evaluation suite specific to Straft.
 
 Create representative fixture projects and test categories.
 
@@ -1909,7 +1909,7 @@ The implementation is complete only when all of these are true.
 
 ## Installation
 
-- Fresh Straft Studio install contains no mandatory AI model.
+- Fresh Straft install contains no mandatory AI model.
 - User can click one button to download Offline AI.
 - Required runtime/model/embedding components install automatically.
 - Downloads are resumable and integrity-verified.
@@ -1983,7 +1983,7 @@ Do not add:
 - PostgreSQL;
 - external vector DB;
 - remote agent server;
-- MCP server just to call Straft Studio's own internal features;
+- MCP server just to call Straft's own internal features;
 - multi-agent swarm;
 - autonomous background mutation;
 - auto-approval;
@@ -1998,7 +1998,7 @@ Do not add:
 
 ```text
 ┌──────────────────────────────────────────────────────────────┐
-│                         STRAFT STUDIO UI                         │
+│                         STRAFT UI                         │
 │                                                              │
 │   AI chat / command bar         Human Change Review          │
 └─────────────────────┬───────────────────────┬────────────────┘
@@ -2049,7 +2049,7 @@ cache/intelligence.sqlite
 
 # 48. Important Engineering Principle
 
-Do not turn Straft Studio into "an LLM with a database".
+Do not turn Straft into "an LLM with a database".
 
 It should remain:
 
@@ -2126,4 +2126,4 @@ At the end, provide an engineering report containing:
 9. manual test procedure;
 10. any release blockers.
 
-Do not mark the work complete while major user-facing Straft Studio actions are still inaccessible to the AI without documenting them explicitly.
+Do not mark the work complete while major user-facing Straft actions are still inaccessible to the AI without documenting them explicitly.

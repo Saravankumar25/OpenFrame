@@ -563,7 +563,7 @@ fn write_shot_and_storyboard_samples() {
 // ------------------------------------------------------------------ rules
 
 fn is_footer(r: &Run) -> bool {
-    r.text == "Created using Straft Studio" || r.text.starts_with("Page ")
+    r.text == "Created using Straft" || r.text.starts_with("Page ")
 }
 
 /// Rules every one of these documents keeps: portrait Letter, footer and nothing below it,

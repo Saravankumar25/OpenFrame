@@ -21,12 +21,12 @@
 //! user's own words are an instruction. Mutations are proposals the user must explicitly apply from
 //! the review card (acceptance is not a tool and is refused for anything but a local user action).
 
-use straft_ai::InferenceProvider;
-use straft_domain::auth::ActorOrigin;
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::Deserialize;
 use serde_json::{Value, json};
+use straft_ai::InferenceProvider;
+use straft_domain::auth::ActorOrigin;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id};
 use ts_rs::TS;
 
 use super::action;
@@ -36,7 +36,9 @@ use super::index::{self, EntityIndex, Focus, Resolved};
 use super::memory::{self, TurnMemory};
 use super::queries;
 use super::records::{self, NewRequest, NewResult, NewStep, RequestOutcome, ai_meta};
-use super::scope::{self, AiScopeArgs, ResolvedScope};
+use super::scope::{self, ResolvedScope};
+use super::sections::pointer::{self, Decision, Place};
+use super::sections::{self, SectionPick};
 use super::service::service;
 use super::tools::ToolOutput;
 use super::turn::{self, AnswerType, Group, TurnRead};
@@ -51,7 +53,9 @@ use crate::events::AppEvent;
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AskArgs {
     pub text: String,
-    pub scope: AiScopeArgs,
+    /// The sections the question reads: one to three, each with the choices made under it. The
+    /// assistant reads nothing else (spec section 12.2).
+    pub sections: Vec<SectionPick>,
     #[serde(default)]
     pub conversation_id: Option<String>,
     /// Step budget for a change request (default 4; never more than 12).
@@ -452,6 +456,8 @@ struct Turn<'a> {
     /// The one question the names left open, when nothing the dossier knows settled it.
     question: Option<&'a index::Question>,
     dossier: Option<&'a Dossier>,
+    /// Where the question lives when it is in a section that was not picked (round R4).
+    pointer: Option<&'a Decision>,
     memory: &'a TurnMemory,
     index: Option<&'a EntityIndex>,
     focus: &'a Focus,
@@ -511,6 +517,18 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
         max_steps: t.max_steps,
         ids: t.ids,
     };
+    // The thing asked, or the scene or screen to open, lives in a section that was not picked: one
+    // fixed sentence, no model, no fact from that section. A section the person may not read is
+    // never named. (A navigation has nothing to answer, so it only ever points or opens.)
+    match t.pointer {
+        Some(Decision::NotFound(s)) => return fixed(AiResultKind::Answer, s.clone()),
+        Some(Decision::Point(p)) if p.place == Place::Only || t.read.group == Group::Navigate => {
+            let mut out = fixed(AiResultKind::Answer, p.sentence.clone());
+            pointer::attach(&mut out.output, p);
+            return out;
+        }
+        _ => {}
+    }
     match t.read.group {
         Group::Navigate => {
             let named = t.resolved.cloned().unwrap_or_default();
@@ -571,9 +589,17 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
         });
         o
     };
+    // Part of the question fit the pick: the answer came from the picked facts and passed its
+    // checks; the pointer sentence follows it, added by code (the writer never sees it).
+    if answered.shown != Shown::Stopped
+        && let Some(Decision::Point(p)) = t.pointer
+    {
+        o.content = format!("{}\n\n{}", o.content, p.sentence);
+        pointer::attach(&mut o, p);
+    }
     if answered.shown == Shown::Abstained && t.read.group != Group::Chat {
         o.details.push(
-            "The assistant could not write a reliable answer, so this is what the project holds."
+            "Straft AI could not write a reliable answer, so this is what the project holds."
                 .into(),
         );
     }
@@ -638,11 +664,11 @@ fn stage_log(
 
 /// Handle one assistant request end to end.
 pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use Straft AI")?;
     // The assistant never runs on behalf of an applied Change Set (no recursive agents).
     if matches!(actor.origin, ActorOrigin::Ai { .. }) {
         return Err(AppError::permission_denied(
-            "start an assistant request from a proposal",
+            "start a Straft AI request from a proposal",
         ));
     }
     let text = args.text.trim().to_string();
@@ -654,13 +680,15 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             "Please keep requests under {MAX_REQUEST_CHARS} characters."
         )));
     }
+    // The picks are the one boundary of what is read: refused in plain words before anything else runs.
+    sections::validate(actor, &args.sections)?;
     let max_steps = args
         .max_steps
         .map_or(DEFAULT_MAX_STEPS, |n| (n as usize).clamp(1, HARD_MAX_STEPS));
     let s = core.project()?;
     let svc = service(core);
     let model = svc.model().ok_or_else(|| svc.unavailable_reason())?;
-    let mut scope = s.store.read(|c| scope::resolve(c, actor, &args.scope))?;
+    let mut scope = s.store.read(|c| scope::from_picks(c, &args.sections))?;
     let conversation = args
         .conversation_id
         .filter(|c| valid_conversation_id(c))
@@ -734,13 +762,49 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
                     selected_scene: scope.scene.as_ref().map(|s| s.id.as_str()),
                     focus: Some(&r.focus_after),
                     previous_message: r.previous_message.as_deref(),
+                    sections: &args.sections,
                 }))
             })
             .ok()
             .flatten()
     });
     let dossier_ms = dossier_started.elapsed().as_millis() as u64;
+    // Code alone decides whether the question lives in a section that was not picked.
+    let decision = dossier
+        .as_ref()
+        .filter(|_| pointer::applies(turn_read.group) || turn_read.group == Group::Navigate)
+        .and_then(|d| {
+            s.store
+                .read(|c| {
+                    let input = pointer::Input {
+                        conn: c,
+                        user_id: &actor.user_id,
+                        message: &text,
+                        read: &turn_read,
+                        dossier: d,
+                        picks: &args.sections,
+                        may: &|l| actor.can(l.min_capability),
+                        vault: Some((core, actor)),
+                    };
+                    Ok(if turn_read.group == Group::Navigate {
+                        pointer::decide_open(&input)
+                    } else {
+                        pointer::decide(&input)
+                    })
+                })
+                .ok()
+                .flatten()
+        });
     let dossier_summary = dossier.as_ref().map(Dossier::summary);
+    let leaf_tokens = dossier
+        .as_ref()
+        .map(Dossier::leaf_tokens)
+        .unwrap_or_default();
+    let (retrieval_code, retrieval_degraded) = match dossier.as_ref().and_then(|d| d.retrieval) {
+        Some(r) if r.hybrid => ("hybrid", r.degraded),
+        Some(r) => ("fulltext", r.degraded),
+        None => ("", false),
+    };
     // The screenplay the request will read is the one the conversation is about from now on, and
     // the type just read is the answer type the next message may be a correction of.
     let mentioned = memory::mentioned_ids(reading.as_ref().map(|r| &r.resolved));
@@ -779,7 +843,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
                 id: &request_id,
                 project_id: Some(project_id.clone()),
                 conversation_id: &conversation,
-                scope_kind: scope.kind.as_str(),
+                scope_kind: scope::SCOPE_KIND,
                 scope_json: &scope_json,
                 scope_label: &scope.label,
                 text: &text,
@@ -829,6 +893,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         resolved: named.as_ref(),
         question,
         dossier: dossier.as_ref(),
+        pointer: decision.as_ref(),
         memory: &turn_memory,
         index: project_ix.as_deref(),
         focus: &focus_after,
@@ -858,6 +923,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         }
     }
     let stopped = is_stopped(&outcome.output);
+    let pointer_leaf = pointer_leaf_of(&outcome.output);
     let (passes, checks_failed) = match &outcome.written {
         Some(w) => (w.answered.pass_count(), w.answered.failed_rules()),
         None => (1, Vec::new()),
@@ -898,7 +964,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         &trace::TraceRow {
             request_id: &request_id,
             project_id: Some(&project_id),
-            scope_kind: scope.kind.as_str(),
+            scope_kind: scope::SCOPE_KIND,
             model_reference: Some(&model_ref),
             context_tokens: Some(model.capabilities().context_tokens),
             tools_offered: 0,
@@ -919,11 +985,32 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             turn_ms,
             dossier: dossier_summary,
             dossier_ms,
+            sections: &scope
+                .sections
+                .iter()
+                .map(|p| p.leaf.as_str())
+                .collect::<Vec<_>>()
+                .join(","),
+            leaf_tokens: &leaf_tokens,
+            pointer: &pointer_leaf,
+            retrieval: retrieval_code,
+            degraded: retrieval_degraded,
         },
     );
     s.store
         .read(|c| records::load_exchange(c, actor, &request_id))?
-        .ok_or_else(|| AppError::internal("assistant exchange not recorded"))
+        .ok_or_else(|| AppError::internal("Straft AI exchange not recorded"))
+}
+
+/// The leaf the answer pointed to, for the trace; empty when it did not point.
+fn pointer_leaf_of(out: &ToolOutput) -> String {
+    out.structured
+        .as_ref()
+        .and_then(|s| s.get("pointer"))
+        .and_then(|p| p.get("leaf"))
+        .and_then(Value::as_str)
+        .unwrap_or_default()
+        .to_string()
 }
 
 /// Record the path in the result's structured data, where the screen reads it.

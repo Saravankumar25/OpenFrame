@@ -2,7 +2,7 @@
 
 **Variant:** Single Scene: scope "Current scene" (one scene group)
 **Version / orientation:** v2, **PORTRAIT** US Letter 612 x 792 pt (user decision; supersedes the landscape v1 design). The current builder calls `.landscape(true)` and must change to portrait.
-**Status:** Design reference — not integrated; not validated against Straft Studio's Rust renderer
+**Status:** Design reference — not integrated; not validated against Straft's Rust renderer
 **Repo commit:** `2f5a045416bd2125801329533fc47f986ccc8174` (windows/ tree)
 **Date:** 2026-10-23
 **Files:** `Shot_List_Single_Scene.html` (source), `Shot_List_Single_Scene.pdf` (rendered), `stress-test/Shot_List_Single_Scene_STRESS_TEST.html/.pdf`
@@ -98,7 +98,7 @@ Single-scene specifics in `export_shots`: `single = groups.len() == 1`; `documen
 | Notes: `Sound: ...` | `ShotDto.sound_note` (trimmed by `nonblank`) | optional line | line omitted |
 | Notes: `Camera: ...` | `ShotDto.camera_notes` (trimmed by `nonblank`) | optional line | line omitted |
 | Notes block (v2: stacked under the Description text, same cell) | present for a shot only if it has characters, panels, sound note or camera notes; the builder's `has_notes` no longer creates a column | conditional per shot | nothing printed; the row is just as tall as the description |
-| Footer | shared system footer (logo, "Created using Straft Studio", "Page X of Y") | constant | n/a |
+| Footer | shared system footer (logo, "Created using Straft", "Page X of Y") | constant | n/a |
 | Running header (design) | project name uppercased + " · SHOT LIST" (+ " · SCENE N" in a one-scene document) | derived | omitted when the document is one page |
 
 Not printed although present in `ShotDto` / available: `order` (CSV/XLSX only), `created_at`, `updated_at`, `rev`, `storyboard_panel_id`, `visual_kind`, `scene_id`, `scene_lineage_id`. CSV/XLSX (one flat `Table "Shot List"`, same rows) carry 14 columns: Scene, Scene heading, Shot, Order, Description, Size, Movement, Angle, Lens, Characters, Sound note, Camera notes, Storyboard, Status ("Scene removed" / "Scene changed since planning" / blank). The PDF is the only format designed here.
@@ -176,7 +176,7 @@ Honest readability notes from the portrait render: rows that carry notes are tal
 
 **F.7 Pictures.** Frame 80 x 45 pt (16:9), fill `#eef1f5`, 0.5 pt `--of-line` stroke, radius 2 pt, image scaled to fit (`contain`), centred, never cropped or stretched; portrait, square and 2.39:1 references letterbox inside the frame. Missing picture: frame fill `#f1f3f6`, label 7 pt `--of-muted` (the current label uses the 3.1:1 faint grey; `--of-muted` is the legible choice), centred, **wrapped inside the frame**; the frame grows in height (never in width) when the label needs more than 45 pt. Labels exactly as the builder: "No image", "Image unavailable: {original_name}", "Image can't be printed".
 
-**F.8 Footer and running header.** Footer = shared system (logo lockup 17 pt high, "Created using Straft Studio", "Page X of Y"). The current footer text "PROJECT · SHOT LIST · Page N / M" is replaced; the project name moves to the running header. Running header (top-right, 6.8 pt, `--of-slate`, tracking .04 em, no rule, no logo) only when the document has more than one page; decision per document is stated in section H.
+**F.8 Footer and running header.** Footer = shared system (logo lockup 17 pt high, "Created using Straft", "Page X of Y"). The current footer text "PROJECT · SHOT LIST · Page N / M" is replaced; the project name moves to the running header. Running header (top-right, 6.8 pt, `--of-slate`, tracking .04 em, no rule, no logo) only when the document has more than one page; decision per document is stated in section H.
 
 **F.9 Colour use.** Navy for structure, orange only as the eyebrow tint on navy and the "changed" stripe, no colour carries meaning alone.
 
@@ -208,7 +208,7 @@ Honest readability notes from the portrait render: rows that carry notes are tal
 
 `Shot_List_Single_Scene.html` is the Chrome-printed reference. It uses `../../00_SYSTEM/assets/straft-print.css` + one inline `<style>` (generated). The PDF was rendered with `python tools/render_pdf.py` (headless Chrome 155, `--no-pdf-header-footer`, margins and footer from `@page`) and checked with `python tools/verify_pdf.py <pdf> --size letter --no-header`.
 
-State captured in the PDF: scope Current scene, scene 1 "EXT. OPEN SEA - NIGHT (1999)", 3 real shots (1A with the app-screenshot image `shot-sample-01.png`, which is how the user's real project looks: **that sample picture is a screenshot of the Straft Studio app welcome dialog embedded as shot 1A's reference image in the supplied export; it is kept as real sample data**), coverage strip on, no status row.
+State captured in the PDF: scope Current scene, scene 1 "EXT. OPEN SEA - NIGHT (1999)", 3 real shots (1A with the app-screenshot image `shot-sample-01.png`, which is how the user's real project looks: **that sample picture is a screenshot of the Straft app welcome dialog embedded as shot 1A's reference image in the supplied export; it is kept as real sample data**), coverage strip on, no status row.
 
 Preview toggles (toolbar): *Scene coverage strip* (on), *State: scene changed since planning* (off), *State: scene removed from the script (kept for reference)* (off). Toggling both statuses together is a preview convenience; the builder prints at most one.
 
@@ -220,7 +220,7 @@ v2 note: the portrait HTML uses no `landscape` class and `@page { size: 8.5in 11
 ## J. Acceptance criteria
 
 Run on the rendered PDF (every page is **612 x 792 pt portrait** Letter; `verify_pdf.py --size letter`):
-- [ ] Footer on every page: logo image 17 pt high, aspect 735:163 undistorted, "Created using Straft Studio", "Page X of Y" with the true total; no content inside the bottom 66 pt (`tools/verify_pdf.py --size landscape`).
+- [ ] Footer on every page: logo image 17 pt high, aspect 699:163 undistorted, "Created using Straft", "Page X of Y" with the true total; no content inside the bottom 66 pt (`tools/verify_pdf.py --size landscape`).
 - [ ] No content outside the 46 pt side margins; no text overlaps its neighbour column; no word is split mid-word in Size, Movement, Angle, Lens or Shot (search the extracted text for "Overhea", "anamorphi", "MOVEMEN" immediately followed by a lone letter on the next line).
 - [ ] Column order is Done, Image, Shot, Description, Size, Movement, Angle, Lens (no Notes column); a column is absent exactly when no shot of the export has that data; the grid is identical in every scene table of the document; content width 520 pt.
 - [ ] Notes lines appear inside the Description cell, below the description text, in the order Characters, Storyboard, Sound, Camera, with the builder's wording; a shot without notes has no gap or empty line; no text smaller than 6.8 pt.

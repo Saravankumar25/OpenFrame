@@ -1,4 +1,4 @@
-//! Straft Studio application layer (ESD §5–§8, Rust Domain & Command Architecture).
+//! Straft application layer (ESD §5–§8, Rust Domain & Command Architecture).
 //!
 //! ```text
 //! Tauri adapter ──► Registry::dispatch(op, args)

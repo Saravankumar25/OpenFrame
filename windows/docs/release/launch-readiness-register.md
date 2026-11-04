@@ -691,7 +691,7 @@ This section is specific to the screenplay product. It does not repeat the gener
 - [ ] Title-page information is preserved where supported.
 - [ ] Revisions are preserved where supported.
 - [ ] Unknown constructs never silently become unrelated content.
-- [ ] Exported FDX can be re-imported into Straft Studio for round-trip verification.
+- [ ] Exported FDX can be re-imported into Straft for round-trip verification.
 - [ ] Representative fixtures cover dialogue-heavy, action-heavy, multilingual, revised, numbered, custom-element and long-dialogue scripts.
 
 ## Fountain / DOCX / PDF
@@ -702,10 +702,10 @@ This section is specific to the screenplay product. It does not repeat the gener
 - [ ] Original PDF source remains untouched during import.
 
 ## Screenplay output branding
-- [ ] Screenplay PDF has no unwanted Straft Studio branding.
-- [ ] FDX has no unwanted Straft Studio branding.
-- [ ] Fountain has no unwanted Straft Studio branding.
-- [ ] Screenplay DOCX has no unwanted Straft Studio branding.
+- [ ] Screenplay PDF has no unwanted Straft branding.
+- [ ] FDX has no unwanted Straft branding.
+- [ ] Fountain has no unwanted Straft branding.
+- [ ] Screenplay DOCX has no unwanted Straft branding.
 
 ---
 
@@ -799,7 +799,7 @@ The supplied production-reference material indicates that a useful indie call sh
 - [ ] The product does not imply full studio accounting capabilities it does not provide.
 
 ## Production-output branding
-- [ ] Call-sheet PDF may use subtle Straft Studio branding according to the approved export policy.
+- [ ] Call-sheet PDF may use subtle Straft branding according to the approved export policy.
 - [ ] Schedule PDF/spreadsheet may use subtle branding according to the approved export policy.
 - [ ] Breakdown/production/DOOD/budget reports follow the same approved branding policy.
 - [ ] Branding never modifies customer-owned source files merely to add product identity.
@@ -808,7 +808,7 @@ The supplied production-reference material indicates that a useful indie call sh
 
 # Appearance and theme acceptance
 
-The revised specification treats the theme system as an **application appearance layer**, not a content-system rewrite. The current Straft Studio appearance remains the factory/default appearance.
+The revised specification treats the theme system as an **application appearance layer**, not a content-system rewrite. The current Straft appearance remains the factory/default appearance.
 
 ## Theme contract
 - [ ] Theme changes appearance only.
@@ -819,7 +819,7 @@ The revised specification treats the theme system as an **application appearance
 - [ ] Theme does not change exports.
 - [ ] Theme does not change shortcuts or permissions.
 - [ ] Theme does not change file paths or project identity.
-- [ ] A user who never visits Appearance Settings sees the canonical Straft Studio default.
+- [ ] A user who never visits Appearance Settings sees the canonical Straft default.
 
 ## Mode / theme separation
 - [ ] Mode supports Light.
@@ -1529,3 +1529,18 @@ Requirements present in the owner's notes (`docs/history/notes/store-certificati
 | `DATA-008` | Multi-operation AI Change Set apply is crash-safe (ADR-0019) | Must ship | Data safety and crash recovery |
 | `REL-011` | Desktop E2E is a required release gate | Must ship | Test infrastructure and quality gates |
 | `REL-012` | Supply-chain checks (cargo deny, npm audit, licence inventory) pass without bypass | Must ship | Project controls and baseline |
+# Additions from the owner's release package (2026-11-03)
+
+Requirements from `docs/release/package-2026-11-03/` and [ADR-0039](../adr/ADR-0039-store-release-licensing.md) items 14 to 17.
+Keys are new and stable. Status starts at Specified, except where the code already exists (then the evidence is named). The
+manifest capability row `STORE-012` above is current: both capabilities are declared.
+
+| Key | Requirement | Importance | Where it is built |
+|---|---|---|---|
+| `STORE-017` | No `REPLACE_WITH_` placeholder remains in a Store release: `scripts/check-release-placeholders.mjs`, run by `release-validate --store` (CI identity variables count as real values); debug, test and internal builds ignore it | Must ship | Microsoft Store package |
+| `STORE-018` | Store package version rises on every submission and ends in `.0`; the identity equals the one recorded at the first submission (`packaging/msix/submissions.json`, updated once per submission) | Must ship | Microsoft Store package |
+| `STORE-019` | Manual Store walk on a clean PC with a limited audience submission, recorded: [windows-store-test](windows-store-test.md) | Must ship | Final review and submission |
+| `STORE-020` | Update simulation N to N+1 with the same identity, recorded; staged rollout and fix-forward rule: [update-simulation](update-simulation.md) | Must ship | Final review and submission |
+| `STORE-021` | Store submission checklist worked through, with the publisher display name decided by the owner: [store-submission-checklist](store-submission-checklist.md) | Must ship | Final review and submission |
+| `STORE-022` | Windows ARM64 not shipped now; x64 package confirmed in Partner Center validation for Windows 11 on ARM; native ARM64 only after a run on real ARM64 hardware (ADR-0039 item 17) | Should ship | Microsoft Store package |
+| `PRIV-007` | Privacy policy and support page live at `https://straftstudio.com/legal/privacy/` and `https://straftstudio.com/contact/`, matching `docs/store/privacy-policy.md`; counsel review before publication | Must ship | Legal, privacy, website and support |

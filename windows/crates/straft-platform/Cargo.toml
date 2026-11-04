@@ -1,6 +1,6 @@
 [package]
 name = "straft-platform"
-description = "Platform boundary: the one place that knows which operating system Straft Studio runs on. App folders, atomic file replace, fast existence checks, managed child processes, package identity, keyboard labels and operating system spelling dictionaries, with a Windows adapter and a macOS adapter."
+description = "Platform boundary: the one place that knows which operating system Straft runs on. App folders, atomic file replace, fast existence checks, managed child processes, package identity, keyboard labels and operating system spelling dictionaries, with a Windows adapter and a macOS adapter."
 version.workspace = true
 edition.workspace = true
 license.workspace = true

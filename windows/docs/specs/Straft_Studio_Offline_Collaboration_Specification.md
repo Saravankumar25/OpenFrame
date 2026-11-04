@@ -11,7 +11,7 @@
 
 **Platform:** Windows + macOS desktop application
 
-**Operating model:** Local-first, offline-capable, user-owned project files; optional local AI; optional external AI; optional local-network collaboration; no mandatory Straft Studio cloud
+**Operating model:** Local-first, offline-capable, user-owned project files; optional local AI; optional external AI; optional local-network collaboration; no mandatory Straft cloud
 
 **Source baseline:**
 - `Straft_Studio_Mega_PRD_Aligned_Updated(1).md`
@@ -30,7 +30,7 @@
 
 ## 0.1 Core idea
 
-Straft Studio is a **local-first desktop application**.
+Straft is a **local-first desktop application**.
 
 The user's project remains their local working asset.
 
@@ -68,7 +68,7 @@ This document specializes the offline/collaboration behavior and must not contra
 4. Core filmmaking workflows remain available offline.
 5. Local AI may remain available offline when configured.
 6. External AI is unavailable without network access to its provider.
-7. No Straft Studio cloud account is required for ordinary local use.
+7. No Straft cloud account is required for ordinary local use.
 8. Remote collaboration can use file-based Exchange Packages.
 9. Local-network collaboration is optional.
 10. Collaboration permissions remain active during LAN sessions.
@@ -77,7 +77,7 @@ This document specializes the offline/collaboration behavior and must not contra
 13. Same-object conflicts must be visible.
 14. No silent last-write-wins data loss.
 15. Collaboration session state is temporary and is not a permanent project permission.
-16. Ending a LAN session does not publish the project to Straft Studio cloud.
+16. Ending a LAN session does not publish the project to Straft cloud.
 17. Exchange Packages remain the safe fallback when users are not connected to the same network.
 18. AI cannot bypass offline, permission, conflict, or approval rules.
 
@@ -140,7 +140,7 @@ Originator imports/reviews
 
 The communication channel can be email, messaging, USB, file-sharing, or another ordinary file-transfer method.
 
-Straft Studio does not own the transport.
+Straft does not own the transport.
 
 ## 1.3 Local-Network Collaboration
 
@@ -148,7 +148,7 @@ Straft Studio does not own the transport.
 
 Used when users are on the same private network.
 
-One Straft Studio installation becomes the host for a temporary project session.
+One Straft installation becomes the host for a temporary project session.
 
 Participants connect to the host.
 
@@ -210,7 +210,7 @@ The following remain available without internet:
 
 Offline mode must not:
 
-- require sign-in to Straft Studio cloud;
+- require sign-in to Straft cloud;
 - block project opening because synchronization is unavailable;
 - create a hidden replacement copy of the project;
 - claim that the project is cloud-backed;
@@ -394,7 +394,7 @@ Machine B
 Open as project/copy
 ```
 
-without needing Straft Studio cloud.
+without needing Straft cloud.
 
 ## 7.3 Identity collision
 
@@ -500,7 +500,7 @@ A user can explicitly turn information into ordinary shared project content thro
 
 ## 11.1 Why this exists
 
-Straft Studio should not require a cloud platform merely to send a screenplay to another person.
+Straft should not require a cloud platform merely to send a screenplay to another person.
 
 ## 11.2 Remote workflow
 
@@ -534,7 +534,7 @@ The transport layer can be:
 - user-selected file sharing;
 - other ordinary transfer methods.
 
-Straft Studio does not become responsible for the transport.
+Straft does not become responsible for the transport.
 
 ---
 
@@ -614,7 +614,7 @@ Ending it does not:
 
 - delete the project;
 - publish the project;
-- upload the project to Straft Studio cloud;
+- upload the project to Straft cloud;
 - alter normal project permissions.
 
 ---
@@ -908,7 +908,7 @@ A resolved conflict should produce a clear resulting project state and history/a
 
 # 24. Exchange Package Fallback
 
-When users are not on the same network, Straft Studio uses Exchange Packages.
+When users are not on the same network, Straft uses Exchange Packages.
 
 When a LAN session becomes unavailable, users should be able to fall back to:
 
@@ -948,7 +948,7 @@ When unavailable:
 
 ## 25.3 No AI dependency
 
-Straft Studio must remain fully usable for its core workflows when AI is unavailable.
+Straft must remain fully usable for its core workflows when AI is unavailable.
 
 ---
 
@@ -1101,7 +1101,7 @@ Ending the session removes the temporary shared-session context but does not del
 
 # 32. No Cloud Dependency
 
-The following do not require Straft Studio cloud:
+The following do not require Straft cloud:
 
 - ordinary local use;
 - offline editing;
@@ -1111,7 +1111,7 @@ The following do not require Straft Studio cloud:
 - review Exchange Packages;
 - LAN collaboration.
 
-External services may be used optionally by the user, but Straft Studio's core ownership model remains local.
+External services may be used optionally by the user, but Straft's core ownership model remains local.
 
 ---
 
@@ -1479,7 +1479,7 @@ Reconnection does not blindly overwrite the host.
 
 ## OC-031
 
-Ending a LAN session does not upload/publish the project to Straft Studio cloud.
+Ending a LAN session does not upload/publish the project to Straft cloud.
 
 ## OC-032
 
@@ -1487,7 +1487,7 @@ Remote collaboration can fall back to Exchange Packages.
 
 ## OC-033
 
-Exchange Packages can be used without Straft Studio cloud.
+Exchange Packages can be used without Straft cloud.
 
 ## OC-034
 
@@ -1653,7 +1653,7 @@ Preserves:
 
 # 44. Important Boundary: Collaboration Is Not a New Source of Truth
 
-Straft Studio has one logical project.
+Straft has one logical project.
 
 ```text
 Local Project
@@ -1677,7 +1677,7 @@ This keeps the project coherent.
 
 # 45. Important Boundary: Offline Is Not a Separate Product Mode
 
-Offline is a state of normal Straft Studio operation, not a reduced “offline edition.”
+Offline is a state of normal Straft operation, not a reduced “offline edition.”
 
 The user should not feel as though they opened a different application.
 
@@ -1696,7 +1696,7 @@ without changing its logical identity.
 
 # 46. Final Offline & Collaboration Definition
 
-Straft Studio must let filmmakers own and work on their projects locally, collaborate remotely through portable exchange packages, and collaborate live on a private network without requiring Straft Studio cloud infrastructure.
+Straft Studio must let filmmakers own and work on their projects locally, collaborate remotely through portable exchange packages, and collaborate live on a private network without requiring Straft cloud infrastructure.
 
 The core safety model is:
 

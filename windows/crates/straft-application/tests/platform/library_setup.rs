@@ -1,4 +1,4 @@
-//! The Straft Studio library on the first start, after a reinstall and when it moves (doc 40 section
+//! The Straft library on the first start, after a reinstall and when it moves (doc 40 section
 //! 1, ADR-0038): nothing is created before the person chooses, an existing library is found and
 //! connected with its identity, and a moved library takes every new file with it.
 
@@ -8,14 +8,14 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use base64::Engine;
+use serde_json::{Value, json};
 use straft_application::events::{AppEvent, RecordingSink};
 use straft_application::modules::storage::{library, library_ops};
 use straft_application::{AppConfig, AppCore};
 use straft_domain::AppError;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
-/// A computer where Straft Studio starts for the first time: everything lives under `dir`.
+/// A computer where Straft starts for the first time: everything lives under `dir`.
 fn fresh(dir: tempfile::TempDir) -> TestEnv {
     let sink = Arc::new(RecordingSink::default());
     let core =

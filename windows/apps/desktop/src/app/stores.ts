@@ -93,7 +93,7 @@ export const useNav = create<NavState>((set) => ({
 
 /**
  * The screenplay draft open in the Screenplay workspace. A project may hold
- * several screenplays, so the assistant's "Current Screenplay" scope sends
+ * several screenplays, so Straft AI's "Current Screenplay" scope sends
  * this draft instead of letting the app guess which screenplay is meant.
  */
 interface OpenDraftState {
@@ -106,7 +106,7 @@ export const useOpenDraft = create<OpenDraftState>((set) => ({
   setDraftId: (draftId) => set({ draftId }),
 }));
 
-/** Where the AI Assistant panel remembers whether it is open (a per-user layout preference, like
+/** Where the Straft AI panel remembers whether it is open (a per-user layout preference, like
  * the Beat Board zoom; never project data). */
 export const AI_PANEL_KEY = "straft.ai.panelOpen";
 
@@ -144,7 +144,7 @@ interface UiState {
   focusMode: boolean;
   setFocusMode: (v: boolean) => void;
   searchOpen: boolean;
-  /** The AI Assistant panel is docked beside the page (owner decision 2026-10-08). */
+  /** The Straft AI panel is docked beside the page (owner decision 2026-10-08). */
   aiOpen: boolean;
   quickOpen: boolean;
   /** Which store global undo/redo targets (the Global Idea Vault has its own history). */

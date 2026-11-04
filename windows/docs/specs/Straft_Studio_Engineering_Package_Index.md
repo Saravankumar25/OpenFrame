@@ -18,7 +18,7 @@
 
 ## Authority and non-conflict rule
 
-This engineering document implements the approved Straft Studio specifications. It does **not** redefine product behavior.
+This engineering document implements the approved Straft specifications. It does **not** redefine product behavior.
 
 Implementation precedence is:
 
@@ -46,9 +46,9 @@ These decisions were explicitly approved for the first implementation baseline:
 | Core/business logic | Rust owns domain rules; React is presentation/input |
 | Local persistence | SQLite + filesystem assets |
 | Project UX | One `.straft` project concept; internal files are implementation detail |
-| Offline AI | One-click **Download Offline AI**; Straft Studio installs runtime + language model + embedding model in one download |
+| Offline AI | One-click **Download Offline AI**; Straft installs runtime + language model + embedding model in one download |
 | Model selection | **One profile, no choice** (`straft-local-ai-v1`): Gemma 3 1B Instruct Q8_0 + BGE small English v1.5 (ADR-0013; supersedes the Qwen tiers) |
-| Model distribution | Straft Studio-controlled public model distribution endpoint/CDN, Ed25519-signed manifest |
+| Model distribution | Straft-controlled public model distribution endpoint/CDN, Ed25519-signed manifest |
 | AI providers | **Local AI only** for v1; no cloud AI provider integration |
 | AI retrieval | Derived per-project `cache/intelligence.sqlite`: FTS5 (canonical) + sqlite-vec vectors + SQLite context graph; no vector/graph server (ADR-0013) |
 | AI authority | Universal toolbox from explicit operation metadata; bounded agent loop; every write is a Change Set the user applies; no auto mode; AI authority ≤ user authority (ADR-0013) |
@@ -66,7 +66,7 @@ These decisions were explicitly approved for the first implementation baseline:
 
 ## 1. Package purpose
 
-The existing Straft Studio documents already define the product in depth. This package fills the engineering gap between those behavioral specifications and a production codebase. It deliberately does not regenerate or replace the PRD, FSD, UX/UI, Domain/Data, AI, Import/Export, Offline/Collaboration, Security/Privacy, or User Manual.
+The existing Straft documents already define the product in depth. This package fills the engineering gap between those behavioral specifications and a production codebase. It deliberately does not regenerate or replace the PRD, FSD, UX/UI, Domain/Data, AI, Import/Export, Offline/Collaboration, Security/Privacy, or User Manual.
 
 ## 2. Existing authoritative inputs
 

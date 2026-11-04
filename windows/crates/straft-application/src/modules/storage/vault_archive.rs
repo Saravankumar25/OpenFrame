@@ -10,10 +10,10 @@ use std::collections::{BTreeSet, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use straft_domain::{AppError, AppResult, now_ms};
-use straft_security::archive::{self, ArchiveLimits};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use straft_domain::{AppError, AppResult, now_ms};
+use straft_security::archive::{self, ArchiveLimits};
 use ts_rs::TS;
 
 use super::{
@@ -116,7 +116,7 @@ pub struct VaultRestoreReport {
 fn not_vault() -> AppError {
     AppError::import(
         "not_vault",
-        "This file isn't a Straft Studio vault backup, so nothing was restored. Your vault was not changed.",
+        "This file isn't a Straft vault backup, so nothing was restored. Your vault was not changed.",
     )
 }
 
@@ -139,7 +139,7 @@ fn changed(detail: impl Into<String>) -> AppError {
 fn too_new(detail: impl Into<String>) -> AppError {
     AppError::import(
         "vault_too_new",
-        "This vault file was saved by a newer version of Straft Studio. Update Straft Studio to restore it. Nothing was changed.",
+        "This vault file was saved by a newer version of Straft. Update Straft to restore it. Nothing was changed.",
     )
     .with_detail(detail)
 }
@@ -341,7 +341,7 @@ fn write_archive(
         let conn = straft_persistence::open_connection(&copy, false)?;
         if kind == VaultArchiveKind::Package {
             drop_recently_deleted(&conn)?;
-            // VACUUM works through a temporary attached database, which Straft Studio's connections
+            // VACUUM works through a temporary attached database, which Straft's connections
             // never allow; this one is a scratch copy of ours.
             conn.set_limit(rusqlite::limits::Limit::SQLITE_LIMIT_ATTACHED, 2)?;
             conn.execute_batch("VACUUM;")?;
@@ -581,14 +581,14 @@ fn check_restored(root: &Path, manifest: &VaultManifest) -> AppResult<()> {
     Ok(())
 }
 
-/// A database that is a Straft Studio Global Idea Vault this version can open: the vault tables are
+/// A database that is a Straft Global Idea Vault this version can open: the vault tables are
 /// there, it passes the full integrity check, it is not newer than this version and it carries no
-/// code Straft Studio does not create. Used for a restore, a located vault and a moved copy.
+/// code Straft does not create. Used for a restore, a located vault and a moved copy.
 pub(super) fn check_vault_database(db: &Path) -> AppResult<()> {
     let not_a_vault = || {
         AppError::new(
             "storage.not_a_vault",
-            "That isn't a Straft Studio Global Idea Vault, so nothing was changed.",
+            "That isn't a Straft Global Idea Vault, so nothing was changed.",
         )
     };
     let conn = straft_persistence::open_connection(db, false).map_err(|_| not_a_vault())?;
@@ -620,7 +620,7 @@ pub(super) fn check_vault_database(db: &Path) -> AppResult<()> {
     if found > supported_schema() {
         return Err(AppError::new(
             "storage.vault_too_new",
-            "This vault was saved by a newer version of Straft Studio. Update Straft Studio to use it. Nothing was changed.",
+            "This vault was saved by a newer version of Straft. Update Straft to use it. Nothing was changed.",
         )
         .with_detail(format!("schema {found} > supported {}", supported_schema())));
     }
@@ -632,7 +632,7 @@ pub(super) fn check_vault_database(db: &Path) -> AppResult<()> {
     if !problems.is_empty() {
         return Err(AppError::new(
             "storage.untrusted_schema",
-            "This vault contains something Straft Studio doesn't create, so nothing was changed.",
+            "This vault contains something Straft doesn't create, so nothing was changed.",
         )
         .with_detail(problems.join("; ")));
     }
@@ -643,10 +643,10 @@ pub(super) fn check_vault_database(db: &Path) -> AppResult<()> {
 fn rollback_failed(kept: Option<&Path>, detail: impl Into<String>) -> AppError {
     let message = match kept {
         Some(k) => format!(
-            "Straft Studio could not put your earlier Global Idea Vault back in place. It is safe in the folder “{}”. Close Straft Studio, then rename that folder to the vault folder name, or choose it in Settings > Storage.",
+            "Straft could not put your earlier Global Idea Vault back in place. It is safe in the folder “{}”. Close Straft, then rename that folder to the vault folder name, or choose it in Settings > Storage.",
             k.display()
         ),
-        None => "Straft Studio could not remove the restored vault that would not open. Close Straft Studio and delete the vault folder by hand.".to_string(),
+        None => "Straft could not remove the restored vault that would not open. Close Straft and delete the vault folder by hand.".to_string(),
     };
     AppError::new(ROLLBACK_FAILED, message).with_detail(detail)
 }

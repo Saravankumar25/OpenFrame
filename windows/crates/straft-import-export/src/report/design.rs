@@ -1,4 +1,4 @@
-//! The Straft Studio production document design system (change specs 02 to 05 and the shot list,
+//! The Straft production document design system (change specs 02 to 05 and the shot list,
 //! storyboard, moodboard, report and budget redesign).
 //!
 //! Navy ink structure on white paper, a warm orange accent, restrained status colours. Every

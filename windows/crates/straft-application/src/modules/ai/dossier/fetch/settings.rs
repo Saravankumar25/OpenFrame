@@ -8,11 +8,42 @@ use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
 use crate::modules::ai::dossier::words::clip;
 use crate::modules::ai::dossier::{Fact, P_HIGH, P_MID};
 use crate::modules::ai::index::Resolved;
+use crate::modules::ai::knowledge;
 use crate::modules::ai::turn::TurnRead;
 use crate::modules::appearance::{AppearanceMode, state, theme};
 
-pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
-    safe("settings", || fetch(ctx, read, r))
+/// App Help & Settings > Settings: the project's details and members, the appearance and spell checking.
+pub fn settings_leaf(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    let ctx = &ctx.topic(&["project"]);
+    let mut out = safe("settings", || fetch(ctx, read, r));
+    // The tabs of Settings, the appearance, the writing and the engine settings are explained in the
+    // product guide; the sections that match the question are part of what this leaf reads.
+    for (i, (title, body)) in settings_sections(&ctx.message).into_iter().enumerate() {
+        out.push(
+            Fact::new(
+                "Settings guide",
+                format!("guide:{}", title.to_lowercase().replace(' ', "-")),
+            )
+            .f("section", title)
+            .f("text", clip(body, 1_400))
+            .prio(if i == 0 { P_HIGH } else { P_MID }),
+        );
+    }
+    out
+}
+
+/// The guide sections this leaf reads: the two best matches, and the Settings section itself (the
+/// tabs and what each holds, under 500 characters) whenever they are not it.
+fn settings_sections(message: &str) -> Vec<(&'static str, &'static str)> {
+    let mut found = knowledge::relevant(message, 2);
+    if !found.iter().any(|(t, _)| *t == "Settings")
+        && let Some(s) = knowledge::sections()
+            .into_iter()
+            .find(|(t, _)| *t == "Settings")
+    {
+        found.push(s);
+    }
+    found
 }
 
 fn fetch(ctx: &FetchCtx<'_>, _read: &TurnRead, _r: &Resolved) -> AppResult<Vec<Fact>> {

@@ -3,6 +3,7 @@
 //! Data comes from the visual module's own read queries, so labels (12A),
 //! panel numbers and scene resolution are exactly what the workspace shows.
 
+use serde::Deserialize;
 use straft_domain::{Actor, AppError, AppResult};
 use straft_import_export::report::{
     Align, BRAND_LINE, Block, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem,
@@ -10,7 +11,6 @@ use straft_import_export::report::{
     ReportImage, Rgb, Rich, Row, Run, SceneBanner, Section, Side, StyledTable, Table, Tone, Txt,
     pal, text_width,
 };
-use serde::Deserialize;
 use ts_rs::TS;
 
 use super::style::nb;

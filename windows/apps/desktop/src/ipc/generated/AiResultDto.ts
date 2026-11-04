@@ -2,6 +2,7 @@
 import type { AiChangeSetDto } from "./AiChangeSetDto";
 import type { AiConfidence } from "./AiConfidence";
 import type { AiNavTarget } from "./AiNavTarget";
+import type { AiPointerDto } from "./AiPointerDto";
 import type { AiProvenance } from "./AiProvenance";
 import type { AiResultItem } from "./AiResultItem";
 import type { AiResultKind } from "./AiResultKind";
@@ -25,4 +26,9 @@ taskId: string | null,
 /**
  * The path that answered: write, navigate, change or fixed (harness spec, section 5).
  */
-lane?: string, createdAt: number, };
+lane?: string, 
+/**
+ * The section the question lives in when it was not picked (spec 12.4): the panel offers
+ * "Add <label>".
+ */
+pointer?: AiPointerDto, createdAt: number, };

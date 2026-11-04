@@ -12,8 +12,7 @@ use straft_application::core::{AppConfig, AppCore};
 use straft_application::events::RecordingSink;
 use straft_application::modules::ai::turn::{Aids, AnswerType, ReadHow};
 
-const EXAMPLES: &str =
-    include_str!("../../straft-application/src/modules/ai/turn_examples.jsonl");
+const EXAMPLES: &str = include_str!("../../straft-application/src/modules/ai/turn_examples.jsonl");
 
 fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -70,7 +69,7 @@ fn no_example_is_a_gold_request_or_a_spike_message() {
         );
         n += 1;
     }
-    assert_eq!(n, 275);
+    assert_eq!(n, 338);
 }
 
 /// Read every measured turn with the rules alone: (labelled type, read type, how, message).

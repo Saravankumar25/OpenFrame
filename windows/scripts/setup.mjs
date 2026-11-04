@@ -160,7 +160,7 @@ if (IS_WIN) {
 } else {
   warn(
     "Platform",
-    `${process.platform}: Straft Studio v1 targets Windows 11`,
+    `${process.platform}: Straft v1 targets Windows 11`,
     "Rust/TypeScript checks and tests work here; building the desktop bundle requires Windows (see DEVELOPMENT.md).",
   );
 }

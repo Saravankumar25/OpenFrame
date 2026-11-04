@@ -1,1 +1,0 @@
-The visual baseline was removed for the product rename, because its pictures showed the old name; they stay in git history. Recreate it on Windows on the next run with `E2E_UPDATE_BASELINE=1`, which writes to this folder (`BASELINE_DIR` in `tests/e2e/specs/90-visual-baseline.test.mjs`).

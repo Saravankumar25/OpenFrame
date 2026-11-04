@@ -127,7 +127,7 @@ export function ContactField({ id, label, value, hidden, canEdit, onCommit, maxL
       disabled={!canEdit}
       maxLength={maxLength}
       onCommit={onCommit}
-      hint="Private: visible to Owners and Editors only. Never shared with the assistant or put in exports."
+      hint="Private: visible to Owners and Editors only. Never shared with Straft AI or put in exports."
     />
   );
 }

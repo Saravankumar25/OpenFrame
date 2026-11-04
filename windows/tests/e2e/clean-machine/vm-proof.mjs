@@ -404,8 +404,8 @@ step("install-previous", [
   assert(ai.some((f) => /\.exe$/i.test(f)), "no engine executable in ai\\");
   notes.vcDllsNextToEngine = ai.filter((f) => /^(vcruntime|msvcp|concrt|vcomp).*\.dll$/i.test(f));
   assert(notes.vcDllsNextToEngine.length > 0, "the VC++ DLLs are not next to the engine in ai\\");
-  notes.hklmUninstall = cmd(String.raw`reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall /s /f "Straft Studio"`).stdout.includes("Straft Studio") ? "present (unexpected)" : "none";
-  notes.hkcuUninstall = cmd(String.raw`reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall /s /f "Straft Studio"`).stdout.includes("Straft Studio") ? "present" : "none";
+  notes.hklmUninstall = cmd(String.raw`reg query HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall /s /f "Straft"`).stdout.includes("Straft") ? "present (unexpected)" : "none";
+  notes.hkcuUninstall = cmd(String.raw`reg query HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall /s /f "Straft"`).stdout.includes("Straft") ? "present" : "none";
   assert(notes.hklmUninstall === "none", "the installer wrote a machine-wide uninstall entry");
   shot("install-previous");
 });
@@ -538,7 +538,7 @@ step("gate-bypass", [
 });
 
 step("ai-download", [
-  "launch, password, open the project, open the AI Assistant, click Download Straft AI",
+  "launch, password, open the project, open the Straft AI, click Download Straft AI",
   "poll the card every 20 s until the question box appears (up to 90 min); record the time and the size of %LOCALAPPDATA%\\Straft\\models",
   "setNetwork(false): controlvm setlinkstate1 off (guest firewall block if the driver stops answering); assert huggingface.co is unreachable",
   "ask 'Summarise this project in one sentence.' (CPU only, up to 10 min); record the time to the first answer; network stays off",
@@ -552,7 +552,7 @@ step("ai-download", [
     await b.waitUntil(async () => /Download Straft AI/.test(await card()), { timeout: 30_000, timeoutMsg: "no download card (is the AI already installed?)" });
     notes.cardBefore = (await card()).slice(0, 300);
     shot("ai-before-download");
-    const box = '//aside[@aria-label="AI Assistant"]//textarea[@aria-label="Ask or command"]';
+    const box = '//aside[@aria-label="Straft AI"]//textarea[@aria-label="Ask or command"]';
     await app.click(b, "Download Straft AI");
     const t0 = Date.now();
     let lastLog = 0;
@@ -700,13 +700,13 @@ step("power-loss", [
 step("uninstall-keeps-projects", [
   "run uninstall.exe (not silent) through an interactive task",
   "screenshot every 5 s; press Enter on the pages (confirm page, the message box saying projects are kept, finish); the 'delete app data' box is left at its default",
-  "assert the program is gone and every entry of Documents\\Straft Studio is still there; list what remains in %LOCALAPPDATA%\\Straft",
+  "assert the program is gone and every entry of Documents\\Straft is still there; list what remains in %LOCALAPPDATA%\\Straft",
 ], async (notes) => {
   killApp();
   await stopDriver();
   const before = cmd(`dir /b "${DOCS_OF}"`).stdout.trim().split(/\r?\n/).filter(Boolean);
   notes.documentsBefore = before;
-  assert(before.length > 0, "Documents\\Straft Studio is empty before the uninstall (nothing to keep)");
+  assert(before.length > 0, "Documents\\Straft is empty before the uninstall (nothing to keep)");
   await task("uninstall", `"${INSTALL_DIR}\\uninstall.exe"`, { wait: false });
   const gone = () => !cmd(`if exist "${APP_EXE}" echo yes`).stdout.includes("yes");
   let presses = 0;
@@ -724,7 +724,7 @@ step("uninstall-keeps-projects", [
   assert(gone(), "the program is still installed after the uninstaller ran (see the uninstall screenshots)");
   const after = cmd(`dir /b "${DOCS_OF}"`).stdout.trim().split(/\r?\n/).filter(Boolean);
   notes.documentsAfter = after;
-  assert(before.every((f) => after.includes(f)), `Documents\\Straft Studio lost entries: ${before.filter((f) => !after.includes(f)).join(", ")}`);
+  assert(before.every((f) => after.includes(f)), `Documents\\Straft lost entries: ${before.filter((f) => !after.includes(f)).join(", ")}`);
   notes.appDataRemaining = cmd(`dir /b "${APPDATA}"`).stdout.trim().split(/\r?\n/);
   notes.installFolderRemaining = cmd(`dir /b "${INSTALL_DIR}"`).stdout.trim() || "gone";
   shot("uninstall-done");

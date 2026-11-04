@@ -20,13 +20,13 @@
 //! - **The clock cannot remove an item early by going back.** A delete time later than now (the
 //!   clock was turned back after the delete, or the item came from a computer whose clock ran
 //!   ahead) counts as a delete made just now: the screens show 30 days and nothing is removed.
-//!   A clock turned forward removes what is more than 30 days old by that clock; Straft Studio has no
+//!   A clock turned forward removes what is more than 30 days old by that clock; Straft has no
 //!   other time source without the network, and the items were already deleted by the user.
 //! - **Bounded work.** At most [`MAX_PER_RUN`] items are removed per open, so opening a project
 //!   never waits long; anything left is removed at the next open.
 
-use straft_domain::{Actor, AppResult, Capability, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
+use straft_domain::{Actor, AppResult, Capability, now_ms};
 
 use crate::store::{MutationMeta, Store, load_deleted, purge_deleted};
 

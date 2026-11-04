@@ -128,8 +128,8 @@ describe("Scene Hub, comments, drafts and compare", () => {
         const m = await browser.execute(probeCompareBar);
         assert.ok(m.ok, `compare bar at ${w}x${h}: ${JSON.stringify(m)}`);
       }
-      // And with the AI Assistant docked beside the page, which narrows it.
-      const ai = await browser.$('//header//button[@aria-label="Assistant"]');
+      // And with the Straft AI docked beside the page, which narrows it.
+      const ai = await browser.$('//header//button[@aria-label="Straft AI"]');
       if ((await ai.getAttribute("aria-pressed")) !== "true") await ai.click();
       await sleep(400);
       const docked = await browser.execute(probeCompareBar);

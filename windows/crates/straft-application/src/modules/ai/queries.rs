@@ -4,9 +4,9 @@
 
 use std::collections::{BTreeMap, HashMap};
 
+use rusqlite::{Connection, OptionalExtension, params};
 use straft_domain::{AppError, AppResult};
 use straft_persistence::undo::quote_ident;
-use rusqlite::{Connection, OptionalExtension, params};
 
 pub fn table_exists(c: &Connection, name: &str) -> AppResult<bool> {
     Ok(c.query_row(
@@ -636,7 +636,7 @@ mod tests {
 
     #[test]
     fn scene_labels_use_a_colon_never_a_dash() {
-        // Owner decision 2026-10-08: no em or en dash in text Straft Studio writes itself. The
+        // Owner decision 2026-10-08: no em or en dash in text Straft writes itself. The
         // heading after the colon is the writer's own text and stays as typed.
         let row = |heading: &str| SceneRow {
             id: "s".into(),

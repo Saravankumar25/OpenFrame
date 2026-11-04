@@ -7,13 +7,35 @@ use straft_domain::AppResult;
 
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
 use crate::modules::ai::dossier::words::{clip, relation_sentence, relation_word, title_case};
-use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
+use crate::modules::ai::dossier::{Fact, P_HIGH, P_MID};
 use crate::modules::ai::index::{Hit, Kind, Resolved, normalize};
 use crate::modules::ai::queries;
 use crate::modules::ai::turn::{AnswerType, Group, TurnRead};
 
-pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
-    safe("story", || fetch(ctx, read, r))
+/// Story > Characters: who they are, who plays them, how they relate and the cast of characters.
+pub fn characters_leaf(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    let ctx = &ctx.topic(&["characters"]);
+    safe("story characters", || fetch(ctx, read, r))
+}
+
+/// Story > Beat Board: the acts and the cards in them.
+pub fn board_leaf(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    let ctx = &ctx.topic(&["board"]);
+    safe("story board", || acts_and_cards(ctx, read, r, true))
+}
+
+/// Story > Outline shows the same acts and cards as the Beat Board, as an ordered list. Its facts
+/// carry their own kinds, so a section picked on the Outline never needs the Beat Board.
+pub fn outline_leaf(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+    let mut facts = board_leaf(ctx, read, r);
+    for f in &mut facts {
+        f.kind = match f.kind {
+            "Act" => "Outline act",
+            "Card" => "Outline card",
+            other => other,
+        };
+    }
+    facts
 }
 
 struct Ch {
@@ -86,7 +108,13 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     let wants_description = narrative
         || asks_names
         || m.any(&["who is", "what is", "about", "describe", "like", "tell"])
-        || matches!(t, AnswerType::Explain);
+        || matches!(
+            t,
+            AnswerType::Explain
+                | AnswerType::Describe
+                | AnswerType::Brief
+                | AnswerType::StoryExplanation
+        );
     for ch in &named {
         let mut f = Fact::new("Character", &ch.id)
             .f("name", &ch.name)
@@ -104,7 +132,9 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 f = f.require(n);
             }
         }
-        if narrative || m.any(&["plays", "played", "actor", "actress", "cast"]) {
+        // Who plays a character is cast data: it is read only when a cast section is picked.
+        if ctx.cast_picked && (narrative || m.any(&["plays", "played", "actor", "actress", "cast"]))
+        {
             let who: Vec<String> = ctx
                 .index
                 .played_by(&ch.id)
@@ -121,13 +151,21 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         && m.stem("relationship")
         && matches!(
             t,
-            AnswerType::Relation | AnswerType::Explain | AnswerType::List
+            AnswerType::Relation
+                | AnswerType::Explain
+                | AnswerType::Describe
+                | AnswerType::Brief
+                | AnswerType::StoryExplanation
+                | AnswerType::List
         );
     let asks_relations = !named.is_empty()
         && (matches!(
             t,
             AnswerType::Relation
                 | AnswerType::Explain
+                | AnswerType::Describe
+                | AnswerType::Brief
+                | AnswerType::StoryExplanation
                 | AnswerType::Lookup
                 | AnswerType::List
                 | AnswerType::Compare
@@ -136,6 +174,20 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
             || m.stem("connect"));
     if asks_relations || general_relations {
         out.extend(relationships(ctx, read, &named, &by_id, general_relations)?);
+    }
+    if named.is_empty() && m.stem("relationship") && t == AnswerType::Count {
+        let n: i64 = ctx.conn.query_row(
+            "SELECT count(*) FROM story_character_relationship WHERE deleted_at IS NULL",
+            [],
+            |r| r.get(0),
+        )?;
+        out.push(
+            Fact::new("Count", "")
+                .f("what", "relationships")
+                .f("value", n.to_string())
+                .require(n.to_string())
+                .prio(P_HIGH),
+        );
     }
 
     // ---- the cast of characters as a whole
@@ -164,7 +216,12 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
             );
         } else if matches!(
             t,
-            AnswerType::List | AnswerType::Explain | AnswerType::Lookup
+            AnswerType::List
+                | AnswerType::Explain
+                | AnswerType::Describe
+                | AnswerType::Brief
+                | AnswerType::StoryExplanation
+                | AnswerType::Lookup
         ) || narrative
         {
             let few = all.len() <= 14;
@@ -213,20 +270,8 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         ));
     }
 
-    // ---- acts and cards
-    out.extend(acts_and_cards(ctx, read, r, narrative)?);
-
-    // The relationship line comes first, then the cards.
+    // The relationship line comes first.
     out.sort_by_key(|f| f.kind != "Relationship");
-
-    // ---- the project in a few words, for "explain the story"
-    if narrative
-        && named.is_empty()
-        && r.scenes.is_empty()
-        && matches!(t, AnswerType::Explain | AnswerType::Brainstorm)
-    {
-        out.extend(project_line(ctx)?);
-    }
     Ok(out)
 }
 
@@ -559,25 +604,4 @@ fn acts_and_cards(
         }
     }
     Ok(out)
-}
-
-fn project_line(ctx: &FetchCtx<'_>) -> AppResult<Vec<Fact>> {
-    let row: Option<(String, String, String)> = ctx
-        .conn
-        .query_row(
-            "SELECT title, COALESCE(logline, ''), COALESCE(genre, '') FROM project LIMIT 1",
-            [],
-            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
-        )
-        .ok();
-    Ok(row
-        .into_iter()
-        .map(|(title, logline, genre)| {
-            Fact::new("Project", "")
-                .f("title", title)
-                .f("logline", clip(&logline, 400))
-                .f("genre", genre)
-                .prio(P_LOW + 40)
-        })
-        .collect())
 }

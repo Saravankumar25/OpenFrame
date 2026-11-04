@@ -1,9 +1,9 @@
 //! Distribution channel and MSIX packaging context
 //! (docs/engineering/27-microsoft-store.md §5, docs/engineering/24-windows-packaging-updater.md §3).
 //!
-//! Straft Studio ships through two channels:
+//! Straft ships through two channels:
 //!
-//! * **direct**: NSIS/MSI installers from the Straft Studio release host (the default build);
+//! * **direct**: NSIS/MSI installers from the Straft release host (the default build);
 //! * **store**: an MSIX package that the Microsoft Store distributes, signs and updates.
 //!
 //! The channel is fixed at build time with `STRAFT_DISTRIBUTION=store|direct`. `build.rs`
@@ -22,10 +22,8 @@ pub const WEBVIEW2_DOWNLOAD_URL: &str =
 /// Build-channel marker. It is logged at startup, so it stays in the executable, and
 /// `scripts/build-msix.mjs --store` refuses to package an executable that doesn't contain the
 /// `store` marker.
-pub const CHANNEL_MARKER: &str = concat!(
-    "straft-distribution-channel:",
-    env!("STRAFT_DISTRIBUTION")
-);
+pub const CHANNEL_MARKER: &str =
+    concat!("straft-distribution-channel:", env!("STRAFT_DISTRIBUTION"));
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Channel {
@@ -113,6 +111,9 @@ pub fn packaged_app_data_dir(local_app_data: &Path, family: &str) -> Option<Path
             .join("Packages")
             .join(family)
             .join("LocalState")
+            // "Straft": never change after the first release. The Store keeps people's settings,
+            // logs and downloaded AI in this folder, and a new name would orphan them (package
+            // file 05 U3, golden test below).
             .join("Straft")
     })
 }
@@ -199,7 +200,7 @@ fn ask_yes_no(_title: &str, text: &str) -> bool {
     false
 }
 
-/// Tell the user, in plain words, why Straft Studio cannot start (no window can open yet).
+/// Tell the user, in plain words, why Straft cannot start (no window can open yet).
 pub fn show_startup_error(text: &str) {
     #[cfg(windows)]
     message_box("Straft Studio", text, win::MB_OK);
@@ -250,6 +251,20 @@ mod tests {
                 .join("LocalState")
                 .join("Straft")
         );
+    }
+
+    /// Golden: the exact folder a packaged app keeps its data in. If this line has to change, the
+    /// people who already installed lose their settings; do not edit it to make a build pass.
+    #[cfg(windows)]
+    #[test]
+    fn packaged_data_dir_golden_path() {
+        let dir = packaged_app_data_dir(Path::new(r"C:\L"), "Straft.Studio_8wekyb3d8bbwe");
+        assert_eq!(
+            dir.unwrap().to_str().unwrap(),
+            r"C:\L\Packages\Straft.Studio_8wekyb3d8bbwe\LocalState\Straft"
+        );
+        // A name that is not a real family name (no 13 character publisher id) builds no path.
+        assert!(packaged_app_data_dir(Path::new(r"C:\L"), "A.B_xyz").is_none());
     }
 
     #[test]

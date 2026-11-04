@@ -102,7 +102,7 @@ Source: `Straft_Studio_Functional_Specification_Document_Aligned_Updated.md`, li
 
 ## §62 Error and Recovery (L2365)
 - Every error must explain in plain language, preserve work, give a next action, and avoid internal jargon.
-- **Save failure:** "Straft Studio could not save the latest changes to the project." Actions: **Retry Save**, **Save Backup Copy**, **Keep Editing**.
+- **Save failure:** "Straft could not save the latest changes to the project." Actions: **Retry Save**, **Save Backup Copy**, **Keep Editing**.
 - **Import failure:** show the source file, the failure stage, whether a partial preview is available, and whether the source file is untouched.
 - **Export failure:** the project is unchanged. The user can retry to another destination.
 - **Missing linked file:** show a relink action and project path info. Never delete the reference.
@@ -202,7 +202,7 @@ Source: `Straft_Studio_Functional_Specification_Document_Aligned_Updated.md`, li
 - FSD-OFF-002 P0 — Local save is the source of truth (edit/save/reopen offline).
 - FSD-COL-001 P0 — Export a portable exchange package; inspect it in another installation.
 - FSD-COL-002 P0 — Review package import does not blindly overwrite the host (import stale response).
-- FSD-COL-003 P1 — Local-network session works without Straft Studio cloud (host/join on LAN).
+- FSD-COL-003 P1 — Local-network session works without Straft cloud (host/join on LAN).
 - FSD-COL-004 P1 — Same-object conflicts are surfaced, not silently lost.
 - FSD-AI-001 P1 — AI optional; core works with AI disabled.
 - FSD-AI-002 P1 — AI modifications require user confirmation (ask AI to create a card).
@@ -815,7 +815,7 @@ New Project · Open Project · Idea Vault · Add Note · Add File · Add Image �
 ## §127 Cross-Cutting Constraints (L4142)
 - **Privacy:**
   - A local project is readable only via the user's machine/file access unless shared/exported.
-  - External AI use must clearly state that selected/project info leaves Straft Studio.
+  - External AI use must clearly state that selected/project info leaves Straft.
   - **Private notes never appear in standard exports, exchange packages or call sheets.** [V1]
   - Collaborators can see their own role and access scope.
 - **Accessibility:**
@@ -1148,9 +1148,9 @@ All 21 must be specified and tested: entry point, empty state, creation, editing
 - Export-only participants cannot join live editing.
 
 ## §154 Offline/Online UI States (L5074) — never conflate
-- **Offline** = all core local functions. **Online** = optional external services. **Local Session** = connected to another Straft Studio on the private network. **Cloud AI** = provider connected.
+- **Offline** = all core local functions. **Online** = optional external services. **Local Session** = connected to another Straft on the private network. **Cloud AI** = provider connected.
 - Status copy: `Offline · Local Project Saved` · `Local Session · 2 collaborators connected` · `AI Provider Connected`.
-- **No "Syncing to Straft Studio Cloud" state exists.**
+- **No "Syncing to Straft Cloud" state exists.**
 
 ## §155 External AI Flow (L5103)
 1. Determine selected context.

@@ -10,11 +10,11 @@ use std::collections::VecDeque;
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::Duration;
 
+use serde_json::{Value, json};
 use straft_ai::{ChatRequest, InferenceProvider};
 use straft_application::modules::ai;
 use straft_domain::{AppError, AppResult};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const SHORT: &[u8] = include_bytes!("../../../../templates/samples/Example-Short.fountain");
 
@@ -82,7 +82,7 @@ impl InferenceProvider for ScriptedModel {
         self.replies.lock().unwrap().pop_front().ok_or_else(|| {
             AppError::ai(
                 "unavailable",
-                "AI is currently unavailable. Straft Studio's core workflows continue to work normally.",
+                "AI is currently unavailable. Straft's core workflows continue to work normally.",
             )
         })
     }
@@ -112,7 +112,7 @@ fn project() -> (TestEnv, Arc<ScriptedModel>) {
 }
 
 fn ask_in(env: &TestEnv, text: &str, conversation: Option<&str>) -> Value {
-    let mut args = json!({ "text": text, "scope": { "kind": "WholeProject" } });
+    let mut args = json!({ "text": text, "sections": [{ "leaf": "screenplay/scenes" }] });
     if let Some(c) = conversation {
         args["conversationId"] = json!(c);
     }

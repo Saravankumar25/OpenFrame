@@ -8,7 +8,7 @@
 ## Context
 
 Filmmakers must experience a project as **one thing** they own, can copy and can back up. Internally the project
-holds structured data (SQLite with WAL), large media and recovery artifacts. Two Straft Studio windows or processes
+holds structured data (SQLite with WAL), large media and recovery artifacts. Two Straft windows or processes
 writing the same SQLite file would corrupt state. SQLite WAL is unsafe on network file systems (SMB), yet the PRD
 mentions "network drive where supported" (PRD S-3).
 
@@ -21,7 +21,7 @@ mentions "network drive where supported" (PRD S-3).
    `cache/` (rebuildable), `recovery/` (`session.json` crash marker, `checkpoint.sqlite`), `backups/` (safety
    backups) and `.lock`. The internal layout is an implementation detail and is never shown as a set of files to
    manage.
-2. **Single writer.** On open, Straft Studio takes an exclusive OS file lock on `.lock` (`fs4::try_lock_exclusive`) and
+2. **Single writer.** On open, Straft takes an exclusive OS file lock on `.lock` (`fs4::try_lock_exclusive`) and
    holds it for the session. A second opener gets `project_format.in_use`. The OS releases the lock automatically
    when the process exits, including after a crash, so no stale lock can block the user. The Tauri single-instance
    plugin also focuses the existing window instead of starting a second process.

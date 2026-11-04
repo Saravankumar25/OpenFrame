@@ -7,10 +7,9 @@
     { "address": "http://ipc.localhost", "online": false, "why": "Tauri IPC origin in the content security policy; local to the app, never the network." },
     { "address": "http://ofasset.localhost", "online": false, "why": "Local asset protocol for project images (asset_scope.rs and the content security policy); never the network." },
     { "address": "https://huggingface.co", "prefix": true, "online": true, "why": "The Straft AI model download after the person's click (download.rs, fetch.rs; ADR-0032): the pinned files at fixed commits, redirects only to huggingface.co or *.hf.co." },
+    { "address": "https://straftstudio.com/contact/", "online": true, "why": "Opened in the browser when the person chooses Contact us; the app sends nothing." },
     { "address": "http://127.0.0.1:", "prefix": true, "online": false, "why": "The local llama.cpp server the app starts on a random loopback port (supervisor.rs); never leaves the computer." },
     { "address": "http://schemas.openxmlformats.org/", "prefix": true, "online": false, "why": "XML namespace names written inside exported DOCX files (docx.rs); identifiers, never fetched." },
-    { "address": "http://purl.org/dc/elements/1.1", "online": false, "why": "Dublin Core namespace name inside exported DOCX files (docx.rs); an identifier, never fetched." },
-    { "address": "https://licence.straft.invalid/v1/mac/validate", "online": false, "why": "Placeholder in the retired Tauri Mac shell (mac_inputs.rs, Mac builds only); the .invalid domain cannot resolve. Removed in Mac phase M1 (ADR-0027)." },
-    { "address": "https://licence-sandbox.straft.invalid/v1/mac/validate", "online": false, "why": "Sandbox placeholder next to the one above; removed in Mac phase M1 (ADR-0027)." }
+    { "address": "http://purl.org/dc/elements/1.1", "online": false, "why": "Dublin Core namespace name inside exported DOCX files (docx.rs); an identifier, never fetched." }
   ]
 }

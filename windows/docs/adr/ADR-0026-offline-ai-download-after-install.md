@@ -31,7 +31,7 @@ and the store listings and privacy policy must describe the one network use.
 2. **The AI models are downloaded after install.** The Gemma 3 1B Instruct chat model (Q8_0, about 1,069 MB), the BGE
    small English embedding model (about 37 MB) and their tokenizer data are not in the package. They download as one
    combined, resumable set.
-3. **Download happens only after an explicit user click.** The first run and the AI settings show **Download Straft Studio
+3. **Download happens only after an explicit user click.** The first run and the AI settings show **Download Straft
    AI** with the size, the free space needed and a plain statement that the download uses the internet. The app never
    starts a download on its own, never downloads as a repair, and never downloads at install time.
 4. **Superseded 2026-10-16 by [ADR-0032](ADR-0032-models-from-hugging-face.md) (the sizes and SHA-256 in the app are the
@@ -45,7 +45,7 @@ and the store listings and privacy policy must describe the one network use.
 6. **Storage.** Models live in `%LOCALAPPDATA%\Straft\models\` (Windows) and the platform app-data folder on the Mac,
    once per user, never per project. Projects never contain models. The Mac App Store build keeps the models in its
    container, inside App Sandbox.
-7. **Without the AI.** Before the download, and if it is removed, Straft Studio works fully. AI features show "not installed"
+7. **Without the AI.** Before the download, and if it is removed, Straft works fully. AI features show "not installed"
    with the download button. Nothing else changes (ADR-0006 decision 7).
 8. **Superseded 2026-10-16 by [ADR-0032](ADR-0032-models-from-hugging-face.md) (the files come from Hugging Face; no owner
    host, no key).** **Model host and keys.** The owner chooses and runs the HTTPS model host. The owner generates the production Ed25519

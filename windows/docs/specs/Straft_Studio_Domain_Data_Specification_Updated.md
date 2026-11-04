@@ -11,7 +11,7 @@
 
 **Platform:** Windows + macOS desktop
 
-**Operating model:** Local-first, offline-capable, user-owned project files; optional internet-assisted AI; optional local-network collaboration; no mandatory Straft Studio cloud.
+**Operating model:** Local-first, offline-capable, user-owned project files; optional internet-assisted AI; optional local-network collaboration; no mandatory Straft cloud.
 
 **Source documents:** `Straft_Studio_Mega_PRD_Aligned_Updated.md`, `Straft_Studio_Functional_Specification_Document_Aligned_Updated.md`, `Straft_Studio_UX_UI_Specification_Updated.md`, `Straft_Studio_AI_Specification_Updated.md`
 
@@ -163,7 +163,7 @@ The following definitions are normative for engineering and UX behavior. If anot
 
 ## Application User
 
-A person using Straft Studio; identity/role context for local ownership or collaboration sessions; not an HR/talent object.
+A person using Straft; identity/role context for local ownership or collaboration sessions; not an HR/talent object.
 
 | Field | Meaning | Rule |
 |---|---|---|
@@ -1015,7 +1015,7 @@ A bounded collection of changes produced by a user edit, review response, packag
 | approver_user_id | user who explicitly accepted the change | required before application |
 | approved_at | approval timestamp | required before application |
 | target_objects | affected objects | required |
-| affected_modules | affected Straft Studio workspaces | required for material batch changes |
+| affected_modules | affected Straft workspaces | required for material batch changes |
 | operations | ordered changes | required |
 | base_version | version/state at creation | required |
 | review_state | Pending/Accepted/Rejected/Applied/Stale/Conflict | required |
@@ -1469,7 +1469,7 @@ Session context may resolve references such as “this scene” or “that draft
 
 ## 18.9 AI-generated project content
 
-When a user accepts an AI-generated object/content proposal, it becomes a normal canonical Straft Studio object of the appropriate type.
+When a user accepts an AI-generated object/content proposal, it becomes a normal canonical Straft object of the appropriate type.
 
 The AI layer does not create a parallel class of “AI scene cards,” “AI characters” or “AI breakdowns.”
 
@@ -1928,7 +1928,7 @@ The 11 auxiliary shorthand FSD IDs are treated as alias/acceptance labels outsid
 
 # 28. Final Domain/Data Boundary
 
-Straft Studio should be implemented as a connected set of domain objects with clear authority rather than as a collection of duplicated records. The most important logical separation is: Idea Vault is memory, Beat Board is outline, Screenplay is written truth, Production Source selects the screenplay baseline for production planning, Breakdown/Catalog represent production requirements, Shot List/Storyboard represent visual planning, Schedule represents shooting order, and Call Sheet represents the communication document for a shooting day.
+Straft should be implemented as a connected set of domain objects with clear authority rather than as a collection of duplicated records. The most important logical separation is: Idea Vault is memory, Beat Board is outline, Screenplay is written truth, Production Source selects the screenplay baseline for production planning, Breakdown/Catalog represent production requirements, Shot List/Storyboard represent visual planning, Schedule represents shooting order, and Call Sheet represents the communication document for a shooting day.
 
 That separation is what allows the product to remain simple for independent filmmakers while still supporting professional pre-production behavior. The domain model intentionally avoids creating a giant universal object that tries to synchronize every module with every other module.
 

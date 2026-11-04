@@ -11,13 +11,13 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use rusqlite::{Connection, OpenFlags, OptionalExtension, params};
+use serde::{Deserialize, Serialize};
 use straft_domain::{
     Actor, AppError, AppResult, Capability, PACKAGE_FORMAT_VERSION, new_id, now_ms,
 };
 use straft_persistence::undo::quote_ident;
 use straft_project_format::{self as pf, ProjectLayout, ProjectLock, ProjectManifest};
-use rusqlite::{Connection, OpenFlags, OptionalExtension, params};
-use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use super::format::{
@@ -432,10 +432,7 @@ pub(crate) fn backup_preview(core: &AppCore, actor: &Actor) -> AppResult<BackupP
             |r| r.get(0),
         )?;
         Ok(BackupPreview {
-            base_name: straft_security::sanitize_file_name(&format!(
-                "{title} {}",
-                local_stamp()
-            )),
+            base_name: straft_security::sanitize_file_name(&format!("{title} {}", local_stamp())),
             project_title: title.clone(),
             default_dir: core
                 .projects_dir()
@@ -742,8 +739,7 @@ fn external_status_here(refs: Vec<ExternalRef>) -> Vec<BackupFileEntry> {
                     .external_path
                     .as_deref()
                     .map(|p| {
-                        straft_security::is_local_disk_path(Path::new(p))
-                            && Path::new(p).is_file()
+                        straft_security::is_local_disk_path(Path::new(p)) && Path::new(p).is_file()
                     })
                     .unwrap_or(false) =>
                 {
@@ -946,7 +942,7 @@ pub fn import_project_package(
     if pf::is_network_path(&parent) {
         return Err(AppError::new(
             "project_format.network_location",
-            "Straft Studio projects can't be edited directly from a network folder. Choose a folder on this computer.",
+            "Straft projects can't be edited directly from a network folder. Choose a folder on this computer.",
         ));
     }
     // Absolute, local, no device/reserved names, not inside protected folders (PATH-03).
@@ -987,7 +983,7 @@ pub fn import_project_package(
         );
     }
     // The database inside a package is untrusted: no foreign triggers/views, no hostile
-    // object names (they would run or be interpolated inside Straft Studio; PKG-03).
+    // object names (they would run or be interpolated inside Straft; PKG-03).
     let sql: Vec<&str> = crate::schema::PROJECT_MIGRATIONS
         .iter()
         .map(|m| m.sql)
@@ -1056,8 +1052,7 @@ pub fn import_project_package(
                     .external_path
                     .as_deref()
                     .map(|p| {
-                        straft_security::is_local_disk_path(Path::new(p))
-                            && Path::new(p).is_file()
+                        straft_security::is_local_disk_path(Path::new(p)) && Path::new(p).is_file()
                     })
                     .unwrap_or(false);
                 if !here {
@@ -1172,7 +1167,7 @@ pub fn import_project_package(
             fs::rename(&existing_root, &displaced).map_err(|e| {
                 AppError::new(
                     "storage.replace_failed",
-                    "Straft Studio couldn't replace the existing project. It was not changed.",
+                    "Straft couldn't replace the existing project. It was not changed.",
                 )
                 .with_detail(e.to_string())
             })?;
@@ -1185,7 +1180,7 @@ pub fn import_project_package(
                 }
                 return Err(AppError::new(
                     "storage.replace_failed",
-                    "Straft Studio couldn't replace the existing project. It was not changed.",
+                    "Straft couldn't replace the existing project. It was not changed.",
                 )
                 .with_detail(e.to_string()));
             }
@@ -1326,7 +1321,7 @@ fn stranded_error(displaced: &Path, original: &Path) -> AppError {
     AppError::new(
         "storage.replace_rollback_failed",
         format!(
-            "Straft Studio couldn't replace the existing project and couldn't put it back in place. \
+            "Straft couldn't replace the existing project and couldn't put it back in place. \
              Your project is safe in the hidden folder \"{}\" in {place}. Rename that folder to \"{}\" to use it again.",
             name(displaced),
             name(original)

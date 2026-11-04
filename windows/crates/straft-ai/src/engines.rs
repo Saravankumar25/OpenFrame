@@ -4,7 +4,7 @@
 //!   lock (`packaging/ai/ai-assets.lock.json`, ADR-0025) and checked again before every launch. A
 //!   changed or missing file, or an added program file (an `.exe`, `.dll`, `.dylib` or `.so`
 //!   planted next to the engine), stops the launch.
-//! - [`EngineRegistry`]: every engine Straft Studio launches is recorded with its pid, start time and
+//! - [`EngineRegistry`]: every engine Straft launches is recorded with its pid, start time and
 //!   program (`engines.json`) and removed when it stops. At the next start, an engine still
 //!   running from a record (left behind by a crash) is stopped. A reused pid of another program is
 //!   never touched: the start time and program must match too (`straft_platform::process`).
@@ -14,11 +14,11 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::Child;
 
-use straft_domain::{AppError, AppResult};
-use straft_platform::process::{ProcessStamp, SweepOutcome, stamp, stop_if_same};
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use straft_domain::{AppError, AppResult};
+use straft_platform::process::{ProcessStamp, SweepOutcome, stamp, stop_if_same};
 
 use crate::bundle::PinnedFile;
 
@@ -230,7 +230,7 @@ impl EngineRegistry {
         if stopped > 0 {
             tracing::warn!(
                 stopped,
-                "stopped offline AI engines left running by an earlier session"
+                "stopped Straft AI engines left running by an earlier session"
             );
         }
         self.write(&[]);
@@ -364,5 +364,10 @@ mod tests {
         std::fs::write(tmp.path().join("engines.json"), b"{broken").unwrap();
         let reg = EngineRegistry::new(tmp.path().join("engines.json"));
         assert_eq!(reg.sweep(), 0);
+        assert_eq!(
+            std::fs::read(tmp.path().join("engines.json.bad")).unwrap(),
+            b"{broken",
+            "the unreadable record is kept beside the file"
+        );
     }
 }

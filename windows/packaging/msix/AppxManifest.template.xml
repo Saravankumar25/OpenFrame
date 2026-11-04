@@ -8,13 +8,22 @@
   variables MSIX_IDENTITY_NAME / MSIX_PUBLISHER / MSIX_PUBLISHER_DISPLAY_NAME.
   {{VERSION}} is the tauri.conf.json version as X.Y.Z.0 (the Store reserves the fourth part).
 
-  Capabilities:
-    runFullTrust    (restricted) required for every packaged Win32 desktop app. Straft Studio is a
+  Capabilities (ADR-0039 items 16 and 17, docs/engineering/27-microsoft-store.md section 4):
+    internetClient  (general) for the AI model download that the person starts with a click
+                    (ADR-0026, ADR-0032). The models come from Hugging Face; nothing else is fetched.
+                    Store builds have no in-app updater, links open in the browser, and the AI engine
+                    talks to Straft over loopback only.
+    runFullTrust    (restricted) required for every packaged Win32 desktop app. Straft is a
                     Tauri (Rust + WebView2) desktop app, not a UWP app. Justification text is in
                     docs/engineering/27-microsoft-store.md section 7.
-    No internetClient: the Offline AI ships inside the package (ADR-0025) and nothing is
-                    downloaded, Store builds have no in-app updater, and links open in the user's
-                    browser. The Offline AI engine talks to Straft Studio over loopback only.
+    Order: the schema wants the general capability first, then the restricted one. Do not add
+    another capability without a written justification; scripts/release-validate.mjs fails when
+    the set differs from internetClient and runFullTrust.
+
+  Architecture: x64 only today (ADR-0039 item 17). There is no ARM64 engine in
+  packaging/ai/ai-assets.lock.json and no ARM64 test PC. The x64 package runs on Windows 11 on ARM
+  under emulation. ARM64 needs its own manifest or a second package and a bundle, later, after it
+  has run on real ARM64 hardware.
 -->
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
@@ -69,6 +78,7 @@
   </Applications>
 
   <Capabilities>
+    <Capability Name="internetClient" />
     <rescap:Capability Name="runFullTrust" />
   </Capabilities>
 </Package>

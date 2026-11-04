@@ -172,7 +172,7 @@ fn pdf_preflight_accepts_ordinary_structure() {
 fn pdf_page_content_amplification_is_bounded() {
     use lopdf::{Document, Object, Stream, dictionary};
     // One ~1 MiB content stream referenced by the page 1,500 times: lopdf's own
-    // get_page_content would concatenate ~1.5 GiB. Straft Studio refuses the page instead.
+    // get_page_content would concatenate ~1.5 GiB. Straft refuses the page instead.
     let mut doc = Document::with_version("1.7");
     let pages_id = doc.new_object_id();
     let mut text = Vec::new();

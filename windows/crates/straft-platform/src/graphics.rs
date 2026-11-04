@@ -4,7 +4,7 @@
 //! system memory it may borrow, the software flag and the user-mode driver version (the probe result
 //! is remembered per adapter, driver and runtime). The Vulkan loader counts only when `vulkan-1.dll`
 //! is in the System32 folder, which the graphics driver installs; no other folder is searched, so a
-//! file planted next to Straft Studio or in the current folder never counts. Nothing here starts an engine.
+//! file planted next to Straft or in the current folder never counts. Nothing here starts an engine.
 
 /// One graphics adapter.
 #[derive(Debug, Clone, PartialEq, Eq)]

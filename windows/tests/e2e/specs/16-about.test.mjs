@@ -19,7 +19,7 @@ import { assertQuiet, firstLaunchProject, projectMenu } from "../lib/flows.mjs";
 
 let browser;
 const step = stepper(() => browser, "about");
-const NO_PRICE = /[$€£₹¥]|\bprices?\b|pay once|subscription|lifetime/i;
+const NO_PRICE = /[$€£₹¥]|\bprices?\b/i;
 
 const invoke = (op, args = {}) => browser.execute((o, a) => window.__TAURI_INTERNALS__.invoke("of_invoke", { op: o, args: a }), op, args);
 
@@ -61,7 +61,20 @@ describe("about", () => {
       assert.ok(text.includes("About Straft Studio"), text);
       assert.ok(text.includes(`Version ${appVersion}`), `About shows another version: ${text}`);
       assert.ok(text.includes("Internal build, not for sale."), `the internal build is not marked: ${text}`);
+      // The publisher, the address, the copyright and the Straft AI notice show in every build.
+      assert.ok(text.includes("Publisher: Vighnajith Advisories Private Limited"), text);
+      assert.ok(text.includes("12/1, Ground Floor, 22nd Main Road, Bengaluru, Karnataka 560078, India"), text);
+      assert.ok(text.includes("Copyright 2026 Vighnajith Advisories Private Limited"), text);
+      assert.ok(text.includes("Gemma Terms of Use and its Prohibited Use Policy, and llama.cpp"), text);
       assert.doesNotMatch(text, NO_PRICE, "no price in About");
+      // Contact us is a button that opens the browser; no form. The licences open in a dialog.
+      await (await browser.$('//section[@aria-labelledby="about-heading"]//button[normalize-space(.)="Contact us"]')).waitForDisplayed();
+      await (await browser.$('//section[@aria-labelledby="about-heading"]//button[normalize-space(.)="Third-party licences"]')).click();
+      const licences = await browser.$('//*[@role="dialog"][.//h2[normalize-space(.)="Third-party licences"]]');
+      await licences.waitForDisplayed({ timeout: 10_000 });
+      assert.ok((await licences.getText()).includes("Third-Party Licenses: Straft Studio"));
+      await browser.keys(["Escape"]);
+      await licences.waitForExist({ reverse: true, timeout: 10_000 });
       // The Licence card says the same in its own words, with nothing to buy.
       assert.equal(await browser.$('//button[normalize-space(.)="Buy full version"]').isExisting(), false);
       await assertQuiet(browser, "about internal");

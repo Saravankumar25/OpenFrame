@@ -1,6 +1,6 @@
 // @e2e-data-root: own
 //
-// Performance with the Offline AI running (Windows phase W4; docs/engineering/21-performance-budgets.md).
+// Performance with the Straft AI running (Windows phase W4; docs/engineering/21-performance-budgets.md).
 // Measured on whatever build the run drives; the numbers that count are the release run's
 // (`--release=open`). With the shipped 36-scene "Example Feature" script:
 //   P1  start again, process launch to Application Home shown (WebDriver start-up included, so an upper bound);

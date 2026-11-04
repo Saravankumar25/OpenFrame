@@ -7,9 +7,9 @@
 
 use std::collections::HashMap;
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use ts_rs::TS;
 
 use crate::core::AppCore;

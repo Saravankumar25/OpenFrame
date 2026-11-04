@@ -14,19 +14,19 @@
 //! - The summary holds only fixed facts (app/OS version, architecture, channel, schema
 //!   versions). No project id, title, path, user name or content is read into it.
 //! - The log tail is rebuilt field by field from the local JSON log. A message is kept only
-//!   when it is one of Straft Studio's own fixed log messages; any other text becomes
+//!   when it is one of Straft's own fixed log messages; any other text becomes
 //!   "[message omitted]". String fields are kept only for a short allow-list of
 //!   identifier-shaped fields (`op` must be a registered operation, `code` an error code);
 //!   every other string field is replaced by "[omitted]". Numbers and booleans are kept.
 //! - The AI section copies states, versions and sizes only; the runtime folder, the
 //!   runtime log path and free-text runtime messages are never copied.
-//! - Defence in depth: Straft Studio's own folders (project, app data, Global Idea Vault,
+//! - Defence in depth: Straft's own folders (project, app data, Global Idea Vault,
 //!   projects folder, user profile) are scrubbed from every file and the result goes through
 //!   `straft_security::redact` (home paths, e-mail addresses, key/token values).
 //!
 //! The bundle is written atomically (`archive::write_zip`: temporary file + rename) and
 //! the destination follows the export rules: an absolute path in an existing folder, a name
-//! Windows accepts, never inside the open project, Straft Studio's app folder or the Global
+//! Windows accepts, never inside the open project, Straft's app folder or the Global
 //! Idea Vault. Exporting changes nothing in the project, so there is no undo step; when a
 //! project is open, one Activity entry records the export. Diagnostics are not project
 //! content and have no search document.
@@ -35,11 +35,11 @@ use std::collections::BTreeMap;
 use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_security::archive::{EntrySource, write_zip};
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_security::archive::{EntrySource, write_zip};
 use ts_rs::TS;
 
 use crate::core::AppCore;
@@ -104,7 +104,7 @@ pub struct DiagnosticsFile {
 #[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct DiagnosticsPreview {
-    /// "Straft Studio Diagnostics 2026-10-05.zip" (no project name).
+    /// "Straft Diagnostics 2026-10-05.zip" (no project name).
     pub suggested_file_name: String,
     pub files: Vec<DiagnosticsFile>,
     /// What a bundle never contains.
@@ -236,7 +236,7 @@ fn destination(core: &AppCore, raw: &str) -> AppResult<PathBuf> {
     if straft_security::is_within(&core.config.app_data_dir, parent) {
         return Err(AppError::export(
             "inside_app_folder",
-            "The diagnostics bundle can't be saved inside Straft Studio's own app folder. Choose another location, such as Documents.",
+            "The diagnostics bundle can't be saved inside Straft's own app folder. Choose another location, such as Documents.",
         ));
     }
     // Protected folders resolved through links, the Global Idea Vault; remembers the path
@@ -314,7 +314,7 @@ const NEVER_INCLUDED: [&str; 6] = [
     "Screenplay text, notes, comments and any other project content",
     "Project titles, file names and folder paths",
     "Names, contacts and e-mail addresses",
-    "Assistant questions and answers",
+    "Straft AI questions and answers",
     "Passwords, keys and tokens",
     "Nothing is sent automatically. The bundle stays on this computer until you share it.",
 ];
@@ -326,7 +326,7 @@ const FILES: [(&str, &str); 6] = [
     ),
     (
         "summary.json",
-        "Straft Studio version, Windows version, architecture, distribution channel and database schema versions.",
+        "Straft version, Windows version, architecture, distribution channel and database schema versions.",
     ),
     (
         "errors.json",
@@ -342,7 +342,7 @@ const FILES: [(&str, &str); 6] = [
     ),
     (
         "ai-status.json",
-        "Offline AI status: available or not, bundle check, engine state and component versions. No folders or file paths.",
+        "Straft AI status: available or not, bundle check, engine state and component versions. No folders or file paths.",
     ),
 ];
 
@@ -420,13 +420,13 @@ fn now_rfc3339() -> String {
         .unwrap_or_default()
 }
 
-/// "Straft Studio Diagnostics 2026-10-05.zip".
+/// "Straft Diagnostics 2026-10-05.zip".
 fn suggested_file_name(created_at: &str) -> String {
     let date: String = created_at.chars().take(10).collect();
     if date.len() == 10 {
-        format!("Straft Studio Diagnostics {date}.zip")
+        format!("Straft Diagnostics {date}.zip")
     } else {
-        "Straft Studio Diagnostics.zip".into()
+        "Straft Diagnostics.zip".into()
     }
 }
 
@@ -579,7 +579,7 @@ const MAX_GROUPS: usize = 100;
 const OMITTED: &str = "[omitted]";
 const MESSAGE_OMITTED: &str = "[message omitted]";
 
-/// Straft Studio's own fixed log messages (tracing call sites). Only these are copied; any
+/// Straft's own fixed log messages (tracing call sites). Only these are copied; any
 /// other message text is replaced, so a message can never carry content into the bundle.
 /// A new log message shows as "[message omitted]" until it is added here.
 const KNOWN_MESSAGES: &[&str] = &[
@@ -594,7 +594,7 @@ const KNOWN_MESSAGES: &[&str] = &[
     "could not record an automatic history point",
     "could not record diagnostics export activity",
     "could not record export activity",
-    "could not record the Offline AI check",
+    "could not record the Straft AI check",
     "could not recover an interrupted AI change set",
     "could not remove purged file; it was left in place",
     "could not roll back a partially applied AI change set",
@@ -612,12 +612,12 @@ const KNOWN_MESSAGES: &[&str] = &[
     "journal closed",
     "lexical retrieval failed; using scope and tools only",
     "mutation failed to persist",
-    "Offline AI could not initialise; the rest of Straft Studio is unaffected",
-    "offline AI runtime could not be placed in a kill-on-close job",
-    "offline AI runtime could not be restarted",
-    "offline AI runtime could not use its loopback port; starting again on a new port",
-    "offline AI runtime exited and will not be restarted automatically",
-    "offline AI runtime exited unexpectedly; restarting",
+    "Straft AI could not initialise; the rest of Straft is unaffected",
+    "Straft AI runtime could not be placed in a kill-on-close job",
+    "Straft AI runtime could not be restarted",
+    "Straft AI runtime could not use its loopback port; starting again on a new port",
+    "Straft AI runtime exited and will not be restarted automatically",
+    "Straft AI runtime exited unexpectedly; restarting",
     "Straft Studio starting",
     "operation",
     "operation failed",
@@ -633,7 +633,7 @@ const KNOWN_MESSAGES: &[&str] = &[
     "the AI engine place was chosen",
     "the AI trace could not find the request of a proposal",
     "the AI trace could not read the undo step",
-    "the bundled Offline AI failed its check; AI stays off",
+    "the bundled Straft AI failed its check; AI stays off",
     "the engine did not start for the graphics card check",
     "the graphics card check could not be recorded",
     "the graphics card check could not run fully; the processor is used",
@@ -642,7 +642,7 @@ const KNOWN_MESSAGES: &[&str] = &[
     "the graphics card engine could not list devices",
     "the graphics card record could not be read; it starts again",
     "the test model source this build was made with is not valid; Straft AI cannot be downloaded",
-    "the Offline AI is not usable",
+    "the Straft AI is not usable",
     "the Straft AI download stopped",
     "a Straft AI model file was imported",
     "an answer stayed in its first language after the verifier passes",
@@ -650,7 +650,7 @@ const KNOWN_MESSAGES: &[&str] = &[
     "the new Straft AI set failed its health check; going back to the previous set",
     "the previous Straft AI set could not be restored",
     "the previous Straft AI set could not be removed yet",
-    "unloading offline AI model after inactivity",
+    "unloading Straft AI model after inactivity",
     "WAL journal mode unavailable; continuing with fallback mode",
     "WebView2 runtime available",
     "WebView2 runtime not available",
@@ -865,9 +865,7 @@ fn sanitize_message(target: &str, raw: &str) -> String {
     // only (panic messages can quote values).
     let ours = target.starts_with("straft")
         || target.starts_with(straft_platform::legacy_names::LOG_TARGET_PREFIX);
-    if ours
-        && let Some(rest) = raw.strip_prefix("panic at ")
-    {
+    if ours && let Some(rest) = raw.strip_prefix("panic at ") {
         let loc = rest.split(": ").next().unwrap_or("");
         return if is_location(loc) {
             format!("panic at {loc} (message omitted)")
@@ -884,7 +882,7 @@ fn sanitize_field(core: &AppCore, key: &str, v: &Value) -> String {
         Value::Number(n) => n.to_string(),
         Value::String(s) => {
             let ok = match key {
-                // An operation name is kept only if Straft Studio registers it (the webview
+                // An operation name is kept only if Straft registers it (the webview
                 // could send any string as an op name).
                 "op" => core.registry.get(s).is_some(),
                 "code" | "action" => is_code(s),
@@ -937,7 +935,7 @@ fn errors_json(scan: &LogScan) -> Value {
     let total = rows.len();
     rows.truncate(MAX_GROUPS);
     json!({
-        "note": "Error codes and operation names from the local log, grouped. Messages are Straft Studio's own fixed texts.",
+        "note": "Error codes and operation names from the local log, grouped. Messages are Straft's own fixed texts.",
         "groups": total,
         "errors": rows.into_iter().map(|((code, op, message), g)| json!({
             "code": code,
@@ -987,7 +985,7 @@ fn timings_json(scan: &LogScan) -> Value {
 
 fn log_tail(scan: &LogScan) -> String {
     let mut out = String::from(
-        "# Straft Studio log tail (most recent entries, oldest first)\n\
+        "# Straft log tail (most recent entries, oldest first)\n\
          # Rebuilt from fixed messages, operation names, error codes and numbers only.\n\
          # Any other text is shown as [message omitted] or [omitted].\n",
     );
@@ -1016,7 +1014,7 @@ fn log_tail(scan: &LogScan) -> String {
 
 // ------------------------------------------------------------------ defence in depth
 
-/// Straft Studio's folders and the user profile: removed from every file even though the
+/// Straft's folders and the user profile: removed from every file even though the
 /// collectors never copy a path.
 fn sensitive_paths(core: &AppCore) -> Vec<String> {
     let mut v: Vec<PathBuf> = vec![

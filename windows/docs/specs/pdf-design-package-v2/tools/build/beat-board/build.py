@@ -29,7 +29,7 @@ OUT = ROOT / "exports" / "story-beat-board"
 COLS = int(os.environ.get("BB_COLS", "3"))
 GAP = {3: 8, 4: 6}[COLS]
 EXPORT_DATE = "22 Oct 2026"          # as in the supplied PDFs ("Exported 22 Oct 2026")
-SCRATCH = pathlib.Path(r"C:/Users/avuku/AppData/Local/Temp/claude/d--web-development-projects-Straft Studio-export-changes/7f45d7c4-514c-4b3e-a651-c0d0a68695ea/scratchpad/bb")
+SCRATCH = pathlib.Path(r"C:/Users/avuku/AppData/Local/Temp/claude/d--web-development-projects-Straft-export-changes/7f45d7c4-514c-4b3e-a651-c0d0a68695ea/scratchpad/bb")
 
 
 def esc(s):

@@ -15,10 +15,10 @@
 use std::path::Path;
 use std::time::{Duration, Instant};
 
+use serde_json::{Value, json};
 use straft_application::events::AppEvent;
 use straft_test_support::TestEnv;
 use straft_test_support::stress::{self, StressProject, StressSpec};
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ harness
 

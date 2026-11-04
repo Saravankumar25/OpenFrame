@@ -6,12 +6,12 @@ Tags: `@e2e-data-root: own`, `@e2e-ai-models: none`
 
 Before: an empty data folder of its own, with nothing downloaded. The host serves the model set normally.
 
-"The card" is the section "Download Straft AI" (in the AI panel or in Settings, Offline AI). "Ready" means: click Assistant if it is closed, and check that within 4 minutes the Ask or command box shows. "The language model file" and "the search model file" are the two files the host's signed list names.
+"The card" is the section "Download Straft AI" (in the AI panel or in Settings, Straft AI). "Ready" means: click Straft AI if it is closed, and check that within 4 minutes the Ask or command box shows. "The language model file" and "the search model file" are the two files the host's signed list names.
 
 ## Before the click: the not-installed state with the size, and no request to the host
 
 1. Do the first launch: name 'E2E Tester', project title 'Harbour Lights'.
-2. Click Assistant.
+2. Click Straft AI.
 3. Check: within 15 seconds the card shows "A one-time download of <size> GB. It needs <size> GB of free space" and "uses the internet once".
 4. Check: the panel has no question box.
 5. Check: the host was asked nothing.
@@ -40,7 +40,7 @@ Before: an empty data folder of its own, with nothing downloaded. The host serve
 
 ## Remove takes the AI away; a damaged file is set aside; Pause and Resume continue the download
 
-1. Make the host serve normally. Click Offline AI settings, then choose Offline AI settings.
+1. Make the host serve normally. Click Straft AI settings, then choose Straft AI settings.
 2. Click Remove Straft AI…, then Remove.
 3. Check: the screen shows "Straft AI was removed." and "Not downloaded".
 4. Make the host send the language model file with one byte changed. Click Download Straft AI.
@@ -48,7 +48,7 @@ Before: an empty data folder of its own, with nothing downloaded. The host serve
 6. Make the host send slowly (40 MB a second). Click Try again.
 7. Check: the card shows "Downloading:" with some bytes. Click Pause. Check: the card shows "Paused at".
 8. Make the host serve normally. Click Resume download.
-9. Check: within 4 minutes the screen shows "AI Ready", and a request for the language model file asked for the rest only.
+9. Check: within 4 minutes the screen shows "Ready", and a request for the language model file asked for the rest only.
 10. Check: ready.
 
 ## Platform notes

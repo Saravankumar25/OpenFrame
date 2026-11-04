@@ -13,6 +13,7 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use rusqlite::{Connection, params};
 use straft_application::MutationMeta;
 use straft_application::modules::ai::intelligence::{self, IndexSettings};
 use straft_application::modules::ai::retrieval::{self, RetrievalRoute, RetrieveRequest};
@@ -21,7 +22,6 @@ use straft_search::graph::{self, TraversalLimits};
 use straft_search::{Embedder, SemanticIndex, SqliteVecIndex, docs};
 use straft_test_support::TestEnv;
 use straft_test_support::embedder::ConceptEmbedder;
-use rusqlite::{Connection, params};
 
 const SCENES: usize = 240;
 const ELEMENTS_PER_SCENE: usize = 12;

@@ -7,11 +7,14 @@
 //     scripts/with-msvc-linker.mjs. Never an installer or bundle. "gated" is the internal team build
 //     with the team password screen, made with a throwaway password that exists only in this run's
 //     memory (never the real team password); "open" is the same executable built as the store
-//     channel, which has no team password screen. Both honour STRAFT_DATA_ROOT for file
+//     channel, which has no team password screen. A store build is the Microsoft Store channel
+//     even outside its package, so an open run starts on "Checking your purchase" (the Store
+//     cannot answer unpackaged; lib/app.mjs closes it) and editing is refused in Rust: use it for
+//     what the store channel shows and keeps working, and the gated build for editing specs. Both honour STRAFT_DATA_ROOT for file
 //     locations only (ADR-0031).
 //
 // Every build goes through the machine-wide build queue (scripts/cargo-queued.cmd as Tauri's cargo
-// runner). The build carries the Offline AI engine exactly like the package does:
+// runner). The build carries the Straft AI engine exactly like the package does:
 // scripts/prepare-ai-assets.mjs verifies the pinned engine files against
 // packaging/ai/ai-assets.lock.json and stages them, and the Tauri overlay config copies them to
 // `ai/` next to the executable. A missing or altered file stops the build (fail closed). The models
@@ -35,7 +38,7 @@ const QUEUE_RUNNER = join(REPO_ROOT, "scripts", "cargo-queued.cmd");
 export function appBinary(release = false) {
   return join(TARGET_DIR, release ? "release" : "debug", "straft-desktop.exe");
 }
-/** The Offline AI engine next to the test build (the app's resource folder). */
+/** The Straft AI engine next to the test build (the app's resource folder). */
 export function appAiDir(release = false) {
   return join(TARGET_DIR, release ? "release" : "debug", "ai");
 }
@@ -48,7 +51,7 @@ export const APP_AI_DIR = appAiDir(false);
  */
 export function buildApp({ release = false, gatePassword } = {}) {
   prepare();
-  console.log(`Building Straft Studio (${release ? `release, ${release}` : "debug"}, embedded UI, Offline AI engine, test model host)…`);
+  console.log(`Building Straft Studio (${release ? `release, ${release}` : "debug"}, embedded UI, Straft AI engine, test model host)…`);
   // STRAFT_TEST_BUILD lets the release profile accept the loopback test host (build.rs).
   const env = { ...process.env, STRAFT_TEST_MODEL_SOURCE: MODEL_HOST_URL, STRAFT_TEST_BUILD: "1" };
   // The debug and open builds never see the build machine's team password, even when it is set.
@@ -68,7 +71,7 @@ export function buildApp({ release = false, gatePassword } = {}) {
   const r = spawnSync(command, { cwd: REPO_ROOT, stdio: "inherit", shell: true, env });
   const binary = appBinary(Boolean(release));
   if (r.status !== 0 || !existsSync(binary)) throw new Error("Building the desktop app failed.");
-  if (!existsSync(join(appAiDir(Boolean(release)), "runtimes"))) throw new Error(`The test build has no Offline AI engine in ${appAiDir(Boolean(release))}.`);
+  if (!existsSync(join(appAiDir(Boolean(release)), "runtimes"))) throw new Error(`The test build has no Straft AI engine in ${appAiDir(Boolean(release))}.`);
   return binary;
 }
 

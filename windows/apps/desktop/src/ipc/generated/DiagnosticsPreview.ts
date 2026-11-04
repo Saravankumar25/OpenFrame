@@ -3,7 +3,7 @@ import type { DiagnosticsFile } from "./DiagnosticsFile";
 
 export type DiagnosticsPreview = { 
 /**
- * "Straft Studio Diagnostics 2026-10-05.zip" (no project name).
+ * "Straft Diagnostics 2026-10-05.zip" (no project name).
  */
 suggestedFileName: string, files: Array<DiagnosticsFile>, 
 /**

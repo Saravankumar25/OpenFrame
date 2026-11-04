@@ -14,10 +14,11 @@
 | 1, Windows track (W1 to W10) | [chapter-1a-windows-phases.md](chapter-1a-windows-phases.md) | Phase W1 is next. No installer has been built |
 | 1, Mac track (M1 to M10) | [chapter-1b-mac-phases.md](chapter-1b-mac-phases.md) | Starts when W10 has closed. A native SwiftUI shell over the same Rust core |
 | 2. Product website | [chapter-2-website.md](chapter-2-website.md) | Not started. Its implementation plan is written when Chapter 1 closes |
-| 3. Commercial distribution | [chapter-3-commercial-distribution.md](chapter-3-commercial-distribution.md) | Not started. Its implementation plan is written when Chapter 2 closes |
+| 3. Commercial distribution | [chapter-3-commercial-distribution.md](chapter-3-commercial-distribution.md) | **Started by the owner 2026-11-03** ([ADR-0039](../adr/ADR-0039-store-release-licensing.md)). The work list is the [release package](../release/package-2026-11-03/00_README_START_HERE.md) |
 
-The order is strict: Windows application, internal `.exe`, team testing; then the Mac application, internal `.dmg`, team
-testing; then the website; then the store packages. No later chapter's code is written early.
+The order was: Windows application, internal `.exe`, team testing; then the Mac application, internal `.dmg`, team
+testing; then the website; then the store packages. The owner started the store work on 2026-11-03, ahead of that order
+([ADR-0039](../adr/ADR-0039-store-release-licensing.md)).
 
 Related: [testing strategy](../testing/README.md), [internal test plan](../testing/internal-test-plan.md),
 [development storage policy](../development-storage-policy.md), [decision register](../adr/README.md).

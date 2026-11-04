@@ -22,7 +22,7 @@ download finished, and roughly how long it took.
 
 On day 3, also do this:
 - [ ] I uninstalled the app. The message said my projects are kept.
-- [ ] The Documents\Straft Studio folder was still there.
+- [ ] The Documents\Straft folder was still there.
 - [ ] I reinstalled the app.
 - [ ] With Wi-Fi off, I started it and my project opened.
 

@@ -8,7 +8,7 @@
 
 | If you want to know | Read |
 |---|---|
-| What Straft Studio is, who it is for, the chapters | [product/vision-and-scope.md](product/vision-and-scope.md) |
+| What Straft is, who it is for, the chapters | [product/vision-and-scope.md](product/vision-and-scope.md) |
 | What to do next | [implementation/handoff.md](implementation/handoff.md), then [roadmap/README.md](roadmap/README.md) |
 | The Windows plan, ten phases | [roadmap/chapter-1a-windows-phases.md](roadmap/chapter-1a-windows-phases.md) |
 | The Mac plan, ten phases | [roadmap/chapter-1b-mac-phases.md](roadmap/chapter-1b-mac-phases.md); what to port from the 2026-10-24 upgrade: [roadmap/mac-port-list-2026-10-24.md](roadmap/mac-port-list-2026-10-24.md) |
@@ -34,7 +34,7 @@ docs/
   engineering/               implementation documents 11 to 39, AI tool coverage (generated)
   ux/                        Windows UX audit, layout and scroll contract, feature preservation and visual matrices
   implementation/            build plan, feature status, owner decisions, handoff, progress and reconciliation logs
-  release/                   launch readiness register, evidence folders
+  release/                   launch readiness register, evidence folders, Store test pages (windows-store-test, update-simulation, store-submission-checklist), the owner's release package (package-2026-11-03/, verbatim)
   store/                     Microsoft Store listing and privacy policy drafts (Chapter 3)
   website/                   website source notes and supplied prompts (Chapter 2)
   manual/                    user manual (.docx, .pdf), manual testing guide (.docx, .csv), test-data/ sample files
@@ -162,7 +162,7 @@ When a change alters behaviour it must also update, in the same change:
 | User-visible behaviour | The spec section, the manual source, in-app help, the Store listing draft if it is a listed feature, and the README status table |
 | A decision | A new ADR **and** a row in [adr/README.md](adr/README.md); mark the replaced text superseded, never delete it |
 | A chapter plan item | The chapter page and the matching build plan box |
-| Release or Store setup | `engineering/27-microsoft-store.md`, `release/launch-readiness-register.md` |
+| Release or Store setup | `engineering/27-microsoft-store.md`, `release/store-submission-checklist.md`, `release/windows-store-test.md`, `release/update-simulation.md`, `release/launch-readiness-register.md`, `release/package-2026-11-03/` |
 | README status claims | The feature status file first; README follows it |
 | A feature's screen or tests | The "How a user reaches it" and "Tests" columns of the feature status file (checked by `scripts/check-feature-status.mjs`) |
 | An architecture exception (raw SQLite write, `unsafe`, listener, process, IPC command, asset scope) | The reviewed allow-list and reason in `scripts/architecture-lint.mjs`; a security review |

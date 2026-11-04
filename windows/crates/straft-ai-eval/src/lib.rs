@@ -5,14 +5,16 @@
 
 pub mod fixture;
 pub mod latency;
+pub mod legacy;
+pub mod picks;
 pub mod turn;
 
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use straft_ai_checks as checks;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use straft_ai_checks as checks;
 
 // ------------------------------------------------------------------ gold cases
 
@@ -26,6 +28,14 @@ pub struct Case {
     pub setup: Vec<SetupOp>,
     #[serde(default)]
     pub scope: Option<Value>,
+    /// The sections picked before asking (spec ai-section-scoped-assistant 12.2). A case with none is
+    /// a legacy case: `legacy::leaves_for` picks what the old pipeline would have read.
+    #[serde(default)]
+    pub sections: Vec<CaseSection>,
+    /// Multi-turn cases whose selection changed between turns: the picks the earlier turns were
+    /// asked under.
+    #[serde(default)]
+    pub sections_before: Vec<CaseSection>,
     pub request: String,
     /// Conversation cases: earlier requests, sent first in the same conversation; their answers
     /// are ignored.
@@ -35,6 +45,19 @@ pub struct Case {
     pub review: Option<String>,
     #[serde(default)]
     pub expect: Expect,
+}
+
+/// One pick of a gold case, in the words of the fixture: a screenplay by title, a scene by its
+/// ordinal, a shooting day by its number. `ai-eval` turns them into the ids of the project.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct CaseSection {
+    pub leaf: String,
+    #[serde(default)]
+    pub screenplay: Option<String>,
+    #[serde(default)]
+    pub scene: Option<usize>,
+    #[serde(default)]
+    pub day: Option<usize>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -108,6 +131,19 @@ pub struct Expect {
     /// The answer type the turn must read (spec 5.3), scored exactly and by group from the trace.
     #[serde(default)]
     pub answer_type: Option<String>,
+    /// Section-scoped cases: the leaf the answer must point to (it lives in a leaf that was not
+    /// picked). Scored from round R4, when the pointer exists.
+    #[serde(default)]
+    pub pointer: Option<String>,
+    /// The narrative answer type and length class of rounds R5: parsed so the file loads, scored
+    /// from R5.
+    #[serde(default)]
+    pub new_answer_type: Option<String>,
+    #[serde(default)]
+    pub new_length_class: Option<String>,
+    /// Expected values computed from the fixture; the dossier-only run looks for them too.
+    #[serde(default)]
+    pub derived: Vec<Value>,
     // Parsed and reported as not counted: the build cannot measure them yet.
     // shortcut: needs the answer's source record ids in the Observation, added by spec slice S3.
     #[serde(default)]
@@ -316,6 +352,9 @@ pub struct Observation {
     /// report. The engine figures are added by the runner.
     #[serde(default)]
     pub timing: Option<latency::CaseTiming>,
+    /// The leaf the answer pointed to (round R4), when it pointed.
+    #[serde(default)]
+    pub pointer: Option<String>,
 }
 
 /// What the answer-type stage (spec slice S4) recorded for one request: codes and a number only.
@@ -355,8 +394,7 @@ pub fn turn_from_trace(c: &rusqlite::Connection, request_id: &str) -> Option<Tur
 
 /// The group of an answer type code, or None for a code that is not a type.
 pub fn group_of(answer_type: &str) -> Option<&'static str> {
-    straft_application::modules::ai::turn::AnswerType::parse(answer_type)
-        .map(|t| t.group().code())
+    straft_application::modules::ai::turn::AnswerType::parse(answer_type).map(|t| t.group().code())
 }
 
 /// The path of one request, as the trace recorded it: `lane` holds the answer path (`write`,
@@ -424,6 +462,16 @@ pub struct Score {
     /// Conversation `answer_type`: the turn read exactly the expected type, or the expected group.
     pub answer_type_ok: Option<bool>,
     pub answer_group_ok: Option<bool>,
+    /// The narrative type and length class of round R5 (`new_answer_type`, `new_length_class`).
+    #[serde(default)]
+    pub new_type_ok: Option<bool>,
+    #[serde(default)]
+    pub new_class_ok: Option<bool>,
+    /// Round R4: the leaf the case expects the answer to point to, and the one it pointed to.
+    #[serde(default)]
+    pub pointer_expected: Option<String>,
+    #[serde(default)]
+    pub pointer_fired: Option<String>,
     /// The turn read recorded for the request.
     #[serde(default)]
     pub turn: Option<TurnObs>,
@@ -605,6 +653,22 @@ fn conversation_scores(case: &Case, o: &Observation, s: &mut Score) {
             None => s.not_counted += 1,
         }
     }
+    // Round R5: the narrative answer type and the long length class the turn read.
+    if let Some(want) = &e.new_answer_type {
+        match &o.turn {
+            Some(t) => s.new_type_ok = Some(t.answer_type == *want),
+            None => s.not_counted += 1,
+        }
+    }
+    if let Some(want) = &e.new_length_class {
+        match &o.turn {
+            Some(t) => s.new_class_ok = Some(t.length_class == *want),
+            None => s.not_counted += 1,
+        }
+    }
+    // Round R4: where the answer pointed, against where the case says it should.
+    s.pointer_expected = e.pointer.clone();
+    s.pointer_fired = o.pointer.clone();
     s.not_counted +=
         usize::from(!e.facts_from.is_empty()) + usize::from(e.focus.is_some()) + e.turns.len();
 }
@@ -760,6 +824,23 @@ pub struct ConversationGroup {
     pub answer_type: Rate,
     #[serde(default)]
     pub answer_group: Rate,
+    /// Round R5: the turn read the narrative type and the long length class the case expects.
+    #[serde(default)]
+    pub new_type: Rate,
+    #[serde(default)]
+    pub new_class: Rate,
+    /// Round R4. Cases that expect a pointer; cases whose answer pointed; pointers to the expected
+    /// leaf; cases that expect none and still got one; cases that expect none.
+    #[serde(default)]
+    pub pointer_expected: usize,
+    #[serde(default)]
+    pub pointer_fired: usize,
+    #[serde(default)]
+    pub pointer_right: usize,
+    #[serde(default)]
+    pub pointer_false: usize,
+    #[serde(default)]
+    pub pointer_none_expected: usize,
     /// Flags set by cases that the build cannot measure yet (facts from, focus, turns, and an answer
     /// type when the trace has no row).
     pub not_counted: usize,
@@ -795,6 +876,19 @@ impl ConversationGroup {
         self.no_reask.add(s.no_reask_ok);
         self.answer_type.add(s.answer_type_ok);
         self.answer_group.add(s.answer_group_ok);
+        self.new_type.add(s.new_type_ok);
+        self.new_class.add(s.new_class_ok);
+        let (want, fired) = (s.pointer_expected.as_deref(), s.pointer_fired.as_deref());
+        if want.is_some() {
+            self.pointer_expected += 1;
+        } else {
+            self.pointer_none_expected += 1;
+            self.pointer_false += usize::from(fired.is_some());
+        }
+        if fired.is_some() {
+            self.pointer_fired += 1;
+            self.pointer_right += usize::from(fired == want);
+        }
         self.not_counted += s.not_counted;
         for (field, wrong, total) in [
             (
@@ -1002,6 +1096,37 @@ fn conversation_section(s: &Summary) -> String {
     t.push_str(&flags("all", &s.conversation));
     for (kind, g) in &s.conversation_by_type {
         t.push_str(&flags(kind, g));
+    }
+    t.push_str(
+        "\nPointer (spec 12.4). Precision is the share of pointers that went to the expected leaf, recall the share of expected pointers that fired right, false pointers the share of cases that expect none and still got one. Bars: precision and recall at least 90 percent, false pointers at most 5 percent.\n\n| Question type | Expect a pointer | Pointed | Precision | Recall | False pointers |\n|---|---|---|---|---|---|\n",
+    );
+    let pointer = |name: &str, g: &ConversationGroup| {
+        format!(
+            "| {name} | {} | {} | {} | {} | {} |\n",
+            g.pointer_expected,
+            g.pointer_fired,
+            ratio(g.pointer_right, g.pointer_fired),
+            ratio(g.pointer_right, g.pointer_expected),
+            ratio(g.pointer_false, g.pointer_none_expected),
+        )
+    };
+    t.push_str(&pointer("all", &s.conversation));
+    for (kind, g) in &s.conversation_by_type {
+        t.push_str(&pointer(kind, g));
+    }
+    t.push_str(
+        "\nNarrative answers (spec 12.5): the turn read the expected narrative type and long length class.\n\n| Question type | Narrative type | Long length class |\n|---|---|---|\n",
+    );
+    let narrative = |name: &str, g: &ConversationGroup| {
+        format!(
+            "| {name} | {} | {} |\n",
+            pct(&g.new_type),
+            pct(&g.new_class)
+        )
+    };
+    t.push_str(&narrative("all", &s.conversation));
+    for (kind, g) in &s.conversation_by_type {
+        t.push_str(&narrative(kind, g));
     }
     t
 }
@@ -1620,6 +1745,81 @@ mod tests {
                 ..Observation::default()
             },
         )
+    }
+
+    fn pointer_score(expect: serde_json::Value, pointed: Option<&str>) -> Score {
+        score(
+            &conversation_case(expect),
+            &Observation {
+                answer: "Anything.".into(),
+                pointer: pointed.map(str::to_string),
+                ..Observation::default()
+            },
+        )
+    }
+
+    #[test]
+    fn the_pointer_is_scored_as_precision_recall_and_false_pointers() {
+        let mut g = ConversationGroup::default();
+        // Expected and right, expected and wrong, expected and missed, none expected and none given,
+        // none expected and one given.
+        for s in [
+            pointer_score(
+                json!({ "pointer": "production/budget" }),
+                Some("production/budget"),
+            ),
+            pointer_score(
+                json!({ "pointer": "production/budget" }),
+                Some("files/files"),
+            ),
+            pointer_score(json!({ "pointer": "production/budget" }), None),
+            pointer_score(json!({}), None),
+            pointer_score(json!({}), Some("files/files")),
+        ] {
+            g.add(&s);
+        }
+        assert_eq!(
+            (g.pointer_expected, g.pointer_fired, g.pointer_right),
+            (3, 3, 1)
+        );
+        assert_eq!((g.pointer_false, g.pointer_none_expected), (1, 2));
+        let sum = summarize(&[pointer_score(
+            json!({ "pointer": "files/files" }),
+            Some("files/files"),
+        )]);
+        let report = markdown("t", &sum, &[]);
+        assert!(report.contains("Pointer (spec 12.4)"), "{report}");
+        assert!(
+            report.contains("| all | 1 | 1 | 100.0% (1/1) | 100.0% (1/1) | none |"),
+            "{report}"
+        );
+    }
+
+    #[test]
+    fn the_narrative_type_and_long_class_are_scored_from_the_turn_read() {
+        let read = |t: &str, c: &str| TurnObs {
+            answer_type: t.into(),
+            length_class: c.into(),
+            ..TurnObs::default()
+        };
+        let case =
+            conversation_case(json!({ "new_answer_type": "brief", "new_length_class": "long250" }));
+        let obs = |t: TurnObs| Observation {
+            answer: "Anything.".into(),
+            turn: Some(t),
+            ..Observation::default()
+        };
+        let s = score(&case, &obs(read("brief", "long250")));
+        assert_eq!((s.new_type_ok, s.new_class_ok), (Some(true), Some(true)));
+        let s = score(&case, &obs(read("describe", "paragraph")));
+        assert_eq!((s.new_type_ok, s.new_class_ok), (Some(false), Some(false)));
+    }
+
+    #[test]
+    fn the_long_classes_have_twice_the_time_of_the_short_ones() {
+        assert_eq!(latency::class_bars("short"), (15_000, 30_000));
+        assert_eq!(latency::class_bars("long250"), (30_000, 60_000));
+        assert_eq!(latency::class_bars("long350"), (30_000, 60_000));
     }
 
     #[test]
