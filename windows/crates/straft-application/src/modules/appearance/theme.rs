@@ -25,6 +25,15 @@ pub const MIN_CONTRAST: f64 = 4.5;
 /// The theme a new installation and every fallback uses.
 pub const DEFAULT_THEME_ID: &str = "straft-default";
 
+/// The id to use for a stored or received theme id: the default theme's earlier id is this one.
+pub fn current_id(id: &str) -> &str {
+    if id == straft_platform::legacy_names::DEFAULT_THEME_ID {
+        DEFAULT_THEME_ID
+    } else {
+        id
+    }
+}
+
 pub const MAX_NAME_CHARS: usize = 60;
 pub const MAX_DESCRIPTION_CHARS: usize = 200;
 pub const MAX_AUTHOR_CHARS: usize = 80;

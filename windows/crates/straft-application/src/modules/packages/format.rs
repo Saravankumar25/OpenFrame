@@ -519,7 +519,10 @@ pub fn write_container(
 /// version (too new → refuse clearly), then the required metadata.
 pub fn parse_manifest(bytes: &[u8]) -> AppResult<PackageManifest> {
     let raw: Value = serde_json::from_slice(bytes).map_err(|_| not_package())?;
-    if raw.get("format").and_then(Value::as_str) != Some(FORMAT_NAME) {
+    let format = raw.get("format").and_then(Value::as_str);
+    if format != Some(FORMAT_NAME)
+        && format != Some(straft_platform::legacy_names::PACKAGE_FORMAT)
+    {
         return Err(not_package());
     }
     let version = raw
@@ -928,6 +931,15 @@ mod hostile {
             "commentsIncluded": false, "attachmentsIncluded": false, "privateNotesIncluded": false,
             "originatingUser": { "userId": new_id(), "displayName": "Mallory" }
         })
+    }
+
+    #[test]
+    fn a_manifest_with_the_format_name_of_an_earlier_version_is_a_package() {
+        let mut m = manifest_json("story");
+        m["format"] = straft_platform::legacy_names::PACKAGE_FORMAT.into();
+        assert!(parse_manifest(&serde_json::to_vec(&m).unwrap()).is_ok());
+        m["format"] = "another-app-package".into();
+        assert!(parse_manifest(&serde_json::to_vec(&m).unwrap()).is_err());
     }
 
     fn checksums(entries: &[(&str, &[u8])]) -> Vec<u8> {

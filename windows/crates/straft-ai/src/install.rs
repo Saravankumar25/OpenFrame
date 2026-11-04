@@ -1,7 +1,7 @@
 //! Download after install, steps 3 to 5: preflight, check, activation, quarantine (ADR-0026
 //! decision 5; Windows phase W8).
 //!
-//! The models folder (`%LOCALAPPDATA%\Straft Studio\models` on Windows) holds:
+//! The models folder (`%LOCALAPPDATA%\Straft\models` on Windows) holds:
 //!
 //! ```text
 //! staging/<version>/<name>.partial   files being downloaded (resumable)

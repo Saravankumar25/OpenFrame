@@ -22,7 +22,7 @@ import pymupdf
 PAPER = {"letter": (612, 792), "landscape": (792, 612)}
 MARGIN_X, MARGIN_TOP, MARGIN_BOTTOM = 46, 46, 66
 TOL = 1.5
-LOGO_RATIO = 699 / 163
+LOGO_RATIO = 735 / 163
 
 
 def main():

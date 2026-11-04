@@ -385,7 +385,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ### 2026-10-18 (last stretch of the endgame session), W9 closed: final installer rebuilt, gate has no Open row
 - **Areas and items worked:** Windows installer (area 20); security hardening (area 6); test infrastructure (area 5);
   AI assistant quality (English rerun); storage; Mac handoff.
-- **Done:** a security review found a medium issue in the uninstaller (it removed the whole `%LOCALAPPDATA%\Straft Studio`
+- **Done:** a security review found a medium issue in the uninstaller (it removed the whole `%LOCALAPPDATA%\Straft`
   folder when the app data box was ticked). Fixed in 6f9a280: it removes only the app's own items, then the folder only
   if empty; a governance test guards it. Final installer rebuilt at 028d8b6: `Straft-Studio-0.1.0-internal-028d8b6.exe`,
   27,016,597 bytes, SHA-256 `97b71221...d50f`, clean tree, gate on, scan-installer OK (53 files), check-binary OK,

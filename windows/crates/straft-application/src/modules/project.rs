@@ -780,7 +780,7 @@ fn create(core: &AppCore, actor: &Actor, args: CreateProjectArgs) -> AppResult<O
 
 fn open(core: &AppCore, actor: &Actor, args: OpenProjectArgs) -> AppResult<OpenProjectResult> {
     let mut path = PathBuf::from(args.path.trim());
-    if path.file_name().and_then(|n| n.to_str()) == Some(pf::MANIFEST_FILE) {
+    if path.file_name().and_then(|n| n.to_str()).is_some_and(pf::is_manifest_name) {
         path = path.parent().map(Path::to_path_buf).unwrap_or(path);
     }
     open_at(core, actor, &path)
@@ -933,6 +933,11 @@ pub(crate) fn open_at_unguarded(
         manifest.schema_version = report.schema_version;
         manifest.app_version = core.config.app_version.clone();
         pf::write_manifest(&layout, &manifest)?;
+    } else if layout.legacy_manifest().exists()
+        && let Err(e) = pf::write_manifest(&layout, &manifest)
+    {
+        // The earlier manifest keeps working, so this never stops the project from opening.
+        tracing::warn!(code = e.code_str(), "the project manifest could not be renewed yet");
     }
     let session = Arc::new(ProjectSession::new(
         layout,
@@ -1310,7 +1315,7 @@ fn remove_recent(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResul
 
 fn locate(core: &AppCore, actor: &Actor, args: LocateArgs) -> AppResult<OpenProjectResult> {
     let mut path = PathBuf::from(args.path.trim());
-    if path.file_name().and_then(|n| n.to_str()) == Some(pf::MANIFEST_FILE) {
+    if path.file_name().and_then(|n| n.to_str()).is_some_and(pf::is_manifest_name) {
         path = path.parent().map(Path::to_path_buf).unwrap_or(path);
     }
     // Validate before touching the filesystem or updating Recent Projects.

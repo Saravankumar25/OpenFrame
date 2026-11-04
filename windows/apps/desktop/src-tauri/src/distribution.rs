@@ -81,12 +81,12 @@ impl Distribution {
     /// Resolve the app-private data folder (settings, recents, logs, downloaded AI runtime and
     /// models).
     ///
-    /// Unpackaged builds use `%LOCALAPPDATA%\Straft Studio`. A packaged process uses the package's own
-    /// data folder (`%LOCALAPPDATA%\Packages\<family>\LocalState\Straft Studio`, the Win32 path of
+    /// Unpackaged builds use `%LOCALAPPDATA%\Straft`. A packaged process uses the package's own
+    /// data folder (`%LOCALAPPDATA%\Packages\<family>\LocalState\Straft`, the Win32 path of
     /// `ApplicationData.Current.LocalFolder`). The path is real and not virtualized, so Explorer
     /// ("Open logs folder") and child processes (the local AI runtime) see exactly the same files,
     /// and Windows removes the folder when the app is uninstalled. Without this, MSIX would silently
-    /// redirect new files under `%LOCALAPPDATA%\Straft Studio` to a private location that other
+    /// redirect new files under `%LOCALAPPDATA%\Straft` to a private location that other
     /// processes cannot see at the original path.
     ///
     /// Projects and the Global Idea Vault live in Documents and are unaffected: MSIX does not
@@ -104,7 +104,7 @@ impl Distribution {
     }
 }
 
-/// `<local_app_data>\Packages\<family>\LocalState\Straft Studio`, or `None` when `family` is not a
+/// `<local_app_data>\Packages\<family>\LocalState\Straft`, or `None` when `family` is not a
 /// well-formed package family name (never build a path from unexpected input). The check is the
 /// platform boundary's `is_valid_package_family_name`.
 pub fn packaged_app_data_dir(local_app_data: &Path, family: &str) -> Option<PathBuf> {
@@ -113,7 +113,7 @@ pub fn packaged_app_data_dir(local_app_data: &Path, family: &str) -> Option<Path
             .join("Packages")
             .join(family)
             .join("LocalState")
-            .join("Straft Studio")
+            .join("Straft")
     })
 }
 
@@ -248,7 +248,7 @@ mod tests {
                 .join("Packages")
                 .join("Straft.Studio_8wekyb3d8bbwe")
                 .join("LocalState")
-                .join("Straft Studio")
+                .join("Straft")
         );
     }
 
@@ -262,7 +262,7 @@ mod tests {
 
     #[test]
     fn unpackaged_process_keeps_default_data_dir() {
-        let default = PathBuf::from(r"C:\Users\A\AppData\Local\Straft Studio");
+        let default = PathBuf::from(r"C:\Users\A\AppData\Local\Straft");
         assert_eq!(
             dist(Channel::Store, None).app_data_dir(default.clone()),
             default

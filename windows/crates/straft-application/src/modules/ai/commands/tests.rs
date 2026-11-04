@@ -16,6 +16,9 @@ fn licence_and_payment_requests_get_a_plain_refusal() {
         "Remove the licence check.",
         "Extend my free trial.",
         "How can I use Straft Studio for free?",
+        "How can I use Straft for free?",
+        // LEGACY: Open Frame name kept for migration
+        "How can I use OpenFrame for free?",
     ] {
         assert!(not_the_assistants(text).is_some(), "{text}");
     }

@@ -221,7 +221,7 @@ Some words you will meet:
 | Process | A running program | `straft-desktop.exe`; also the two AI helper programs |
 | Window | What the process shows | The Straft Studio window, 1440 by 900 at start |
 | Install folder | Where the program files go | Windows: your user's program folder (per-user install) |
-| User data folder | Where the program keeps settings | `%LOCALAPPDATA%\Straft Studio` (settings, logs) |
+| User data folder | Where the program keeps settings | `%LOCALAPPDATA%\Straft` (settings, logs) |
 | Documents | Where people expect their work | `Documents\Straft Studio\Projects\Title.straft` |
 | Crash | The program dies without warning | A power cut while saving; the app must reopen safely |
 
@@ -915,13 +915,13 @@ The function `run()` in `apps/desktop/src-tauri/src/lib.rs` (line 407) does this
 
 1. **Detect how it was installed** (`distribution.rs`): store package or not; packaged builds keep data in the package's
    data folder.
-2. **Choose the data folders.** Normally `%LOCALAPPDATA%\Straft Studio` for settings and `Documents\Straft Studio` for work. The
+2. **Choose the data folders.** Normally `%LOCALAPPDATA%\Straft` for settings and `Documents\Straft Studio` for work. The
    end-to-end tests set `STRAFT_DATA_ROOT`, honoured by debug builds only, so tests never touch real data.
 3. **Decide the channel**: Microsoft Store (if running inside an MSIX package), Mac App Store (store build on a Mac), or
    an internal team build (everything else).
 4. **Find the bundled AI folder** next to the program (`<app resources>/ai`).
 5. **Read the team password hash** if this build has one (embedded at build time by `build.rs`).
-6. **Start logging** to `%LOCALAPPDATA%\Straft Studio\logs`: daily files, 14 kept, JSON lines; a panic hook records a redacted
+6. **Start logging** to `%LOCALAPPDATA%\Straft\logs`: daily files, 14 kept, JSON lines; a panic hook records a redacted
    summary; release builds cap third-party log detail so no content can leak.
 7. **Check the WebView2 runtime.** If missing, a message box offers Microsoft's download page and the program stops.
 8. **Allow only one copy** of the program (second launch focuses the first), except in tests.
@@ -1019,9 +1019,9 @@ Documents\Straft Studio\Projects\Night Bus.straft\
 Other places:
 
 - `Documents\Straft Studio\Global Idea Vault\` with its own `vault.sqlite` and `assets`.
-- `%LOCALAPPDATA%\Straft Studio\app.sqlite`: settings, recent projects, shortcuts, themes, the local profile.
-- `%LOCALAPPDATA%\Straft Studio\logs\`: 14 days of redacted logs.
-- `%LOCALAPPDATA%\Straft Studio\entitlement\`: licence notices and, in internal builds, the team gate counter.
+- `%LOCALAPPDATA%\Straft\app.sqlite`: settings, recent projects, shortcuts, themes, the local profile.
+- `%LOCALAPPDATA%\Straft\logs\`: 14 days of redacted logs.
+- `%LOCALAPPDATA%\Straft\entitlement\`: licence notices and, in internal builds, the team gate counter.
 
 ### 5.8 Opening a project (`open_at`, `project.rs` line 750)
 
@@ -1117,7 +1117,7 @@ One code base. `straft-platform` hides the differences behind plain functions.
 | Topic | Windows (written and run) | macOS (written, compiled in CI, never run) |
 |---|---|---|
 | Program folder | Per-user install under the user profile | `.app` bundle; resources in `Contents/Resources` |
-| Settings folder | `%LOCALAPPDATA%\Straft Studio` | `~/Library/Application Support/Straft Studio` |
+| Settings folder | `%LOCALAPPDATA%\Straft` | `~/Library/Application Support/Straft` |
 | Documents | Known Documents folder (may be inside OneDrive) | `~/Documents` |
 | Kill helper programs with the app | Job Object with kill-on-close | Process group |
 | Atomic file replace | Windows replace call | POSIX rename |

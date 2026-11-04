@@ -2,7 +2,7 @@
 //! (`bundle.rs`); the downloaded models live in `models/` (`install.rs`, ADR-0026 decision 6).
 //!
 //! ```text
-//! %LOCALAPPDATA%/Straft Studio/                  (macOS: ~/Library/Application Support/Straft Studio)
+//! %LOCALAPPDATA%/Straft/                  (macOS: ~/Library/Application Support/Straft)
 //! ├─ ai/bundle-check.json                    result of the last full check of the engine and models
 //! ├─ models/                                 the downloaded model sets (install.rs)
 //! ├─ engines.json                            engines launched and not yet stopped
@@ -21,7 +21,7 @@ pub struct AiPaths {
 }
 
 impl AiPaths {
-    /// `app_data_dir` = `%LOCALAPPDATA%/Straft Studio` (or an isolated test root).
+    /// `app_data_dir` = `%LOCALAPPDATA%/Straft` (or an isolated test root).
     pub fn new(app_data_dir: &Path) -> Self {
         Self {
             root: app_data_dir.to_path_buf(),

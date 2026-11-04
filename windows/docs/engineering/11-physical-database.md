@@ -10,7 +10,7 @@
 |---|---|---|---|---|
 | Project ✅ | `<Title>.straft/project.sqlite` | `migrations/project/0001…0009` | All canonical project data | Yes (canonical tables) |
 | Global Idea Vault ✅ | `Documents/Straft Studio/Global Idea Vault/vault.sqlite` | `migrations/global/0001…0002` | Global vault items, their assets, trash, search | Yes |
-| Application ✅ | `%LOCALAPPDATA%/Straft Studio/app.sqlite` | `migrations/app/0001` | Local profile, recent projects registry, settings, global templates. **Never project content.** | No |
+| Application ✅ | `%LOCALAPPDATA%/Straft/app.sqlite` | `migrations/app/0001` | Local profile, recent projects registry, settings, global templates. **Never project content.** | No |
 
 Migrations are embedded in the binary (`include_str!` in `schema.rs`). The migration number is fixed per module so
 modules can be developed independently:

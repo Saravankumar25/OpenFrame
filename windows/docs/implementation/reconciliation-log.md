@@ -6,6 +6,20 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-11-04: product renamed to Straft Studio, names changed across the documents
+
+Owner decision of 2026-11-04 ([ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md)). The product name, the assistant name
+(Straft AI), crate and package names, identifiers and the data folder changed in every living document, in the three Word
+manuals (inside their compressed XML, other content untouched) and in the file names under `docs/`, `.github/` and the root.
+The `docs/history` records, which CLAUDE.md normally forbids editing, were edited in place for the product name only, by the
+owner's instruction of the same day. No fact, date, number or decision was changed. The domain, the Instagram account name and
+the `.of*` package extensions were left as they were. Renamed documents are linked by their new names (`node scripts/check-links.mjs`
+passes). The app data folder is `Straft` (`%LOCALAPPDATA%\Straft`, `%APPDATA%\Straft`), because the per-user program folder is
+`%LOCALAPPDATA%\Straft Studio`.
+The 15 pictures and the checksum list in `docs/release/evidence/M0/M0.20-visual-baseline/` showed the old name and were removed;
+they stay in git history. Spec 90 needs `E2E_UPDATE_BASELINE=1` on Windows to recreate them (the README in that folder says so).
+The saved WindowsHTML pages keep their old CSS file names (content hashes of the earlier text) until the next capture.
+
 ## 2026-10-27: old report and session prompt moved to history
 
 Owner rule (chat): only the current application's documentation stays in `docs`; older material goes to `docs/history/`.

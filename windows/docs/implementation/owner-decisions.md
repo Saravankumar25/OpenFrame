@@ -20,6 +20,7 @@
 | Price in the app | Never shown; Buy opens the store's own purchase window | 2026-10-07 | [ADR-0023](../adr/ADR-0023-store-trial-and-internal-installer.md) |
 | Microsoft Store trial and lock | The Store runs the 7-day trial; ended and not bought gives a full block except Buy and Restore | 2026-10-07 | ADR-0023 |
 | Mac App Store trial and lock | Zero-price "7-day Trial" and paid "Lifetime Access" non-consumables, server-checked expiry; full block at expiry; confirmed 2026-10-08 | 2026-10-06 | [ADR-0018](../adr/ADR-0018-distribution-licensing-commerce.md), [ADR-0022](../adr/ADR-0022-mac-trial-end-lock.md) |
+| Product name | The product is Straft Studio and the assistant is Straft AI. Decided before the first store release, so identifiers change at no customer cost: bundle id `app.straftstudio.studio`, Windows id `studio.straft.desktop`, MSIX identity `Straft.Studio`, project extension `.straft`, manifest `straft.json`, app data folder `Straft`, library folder `Straft Studio`. The domain and the Instagram account name stay for now. The GitHub repository becomes `Saravankumar25/StraftStudio` at push time. The owner renames the local folders when convenient | 2026-11-04 | [ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md) |
 | Diagnostics, telemetry and analytics | The app sends nothing automatically; the user can export an inspectable, redacted diagnostics file and an AI report | 2026-10-05 | [ADR-0021](../adr/ADR-0021-diagnostics-telemetry-analytics-policy.md) |
 | App screen language | English only; the AI answers in the language of the request | 2026-10-15 | [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) |
 | Website | Purchased domain with company email; hosting proposed on Cloudflare Pages; built from faithful recreations of the real screens; "built manually" to be clarified when the Chapter 2 plan is written | 2026-10-15 | [Chapter 2](../roadmap/chapter-2-website.md) |
@@ -125,6 +126,7 @@ The "Recommendation" column is advice, not a decision. "Blocks" names the phase 
 
 | Decision | Blocks | Recommendation | Record |
 |---|---|---|---|
+| Package extensions `.ofproject`, `.ofbackup` and the other `.of*` ones, and the website domain | Chapter 3, website | Keep the extensions (changing them breaks files people hold); decide the domain with the website plan | [ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md) |
 | Price, currency, what the trial unlocks | Chapter 3, website | Owner, 2026-10-08: decided later. Nothing touches pricing until then | [ADR-0018](../adr/ADR-0018-distribution-licensing-commerce.md) |
 | Final prices (3,000 or 2,999 rupees) | Chapter 3 | Confirm; check which prices each store allows | [Chapter 3](../roadmap/chapter-3-commercial-distribution.md) |
 | Refund rules | Chapter 3 | Follow each store's own rules | ADR-0018 |

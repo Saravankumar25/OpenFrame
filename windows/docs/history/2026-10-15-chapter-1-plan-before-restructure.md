@@ -228,7 +228,7 @@ The owner has a Mac now. Everything Mac-specific is unverified until it runs the
    keep it unsigned, and document the Gatekeeper steps (right-click Open, or remove the quarantine flag) as an
    installation restriction.
 4. **Check the Mac behaviours.** Spell check (the Mac adapter is written but never run), file dialogs, shortcuts with the
-   Command key, window close and quit, data in `~/Library/Application Support/Straft Studio`, documents in
+   Command key, window close and quit, data in `~/Library/Application Support/Straft`, documents in
    `~/Documents/Straft Studio`.
 5. **Mac test automation.** `tauri-driver`, which the end-to-end suite uses, does not support macOS (the Tauri
    documentation says so). Options: the WebdriverIO Tauri service named in the same documentation, or a written manual

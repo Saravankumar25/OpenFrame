@@ -226,6 +226,7 @@ const NOT_NAMES: &[&str] = &[
     "dusk",
     "continuous",
     "straft",
+    "studio",
     "inferred",
     "exact",
 ];
@@ -343,6 +344,7 @@ const ALLOWED: &[&str] = &[
     "act",
     "acts",
     "straft",
+    "studio",
     "vo",
     "os",
     "cont'd",

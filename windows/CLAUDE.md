@@ -76,8 +76,10 @@ standard" section of `masterplan.md`. Run `security-guidance` and `ecc:security-
 process control, settings, imports and anything that touches payment or licence checks.
 
 ### Writing standard (permanent)
-No em dashes and no AI-sounding writing anywhere: app screens, errors, exports, installers, listings, website, manual,
-documents, code comments, commit and pull request text. Rules and banned phrases: `docs/engineering/35-writing-standard.md`.
+The product is **Straft Studio** and its assistant is **Straft AI** (ADR-0042). Use no other name in text, code or file
+names; the only kept legacy names are the website domain and the Instagram account. No em dashes and no AI-sounding
+writing anywhere: app screens, errors, exports, installers, listings, website, manual, documents, code comments, commit
+and pull request text. Rules and banned phrases: `docs/engineering/35-writing-standard.md`.
 `npm run check:writing` is a ratchet that fails when a count goes up. When you touch a file, fix its hits.
 
 ### Clean as you go (permanent)
@@ -117,7 +119,7 @@ The repository stays private. **Never build an installer or a release executable
 
 ### Storage and workspace hygiene (permanent)
 Full policy: `docs/development-storage-policy.md` (sections 7 and 8 hold the root causes and the final rules).
-- `C:\Straft` is the canonical checkout. Create a worktree only when parallel isolated work genuinely needs one, and
+- `C:\Straft` is the canonical checkout (the owner renames the Windows and the local Mac folders when convenient). Create a worktree only when parallel isolated work genuinely needs one, and
   remove it as soon as its work is merged and verified. Before removal prove its commits and uncommitted work are
   preserved. Never merge or remove a worktree merely because its branch looks merged.
 - Rust `target/`, `node_modules`, packages, caches and logs are reproducible. One build folder per checkout under

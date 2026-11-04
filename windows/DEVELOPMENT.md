@@ -40,7 +40,7 @@ All commands run from the repository root.
 | `npm run build` | `tauri build`: optimized release build plus NSIS and MSI installers in `target/release/bundle/`, with the Offline AI engine; the models download from Hugging Face after install at the revisions pinned in `packaging/ai/ai-assets.lock.json` (ADR-0026, ADR-0032). No model host or manifest key is needed. Local builds are unsigned. Fails closed when the pinned engine files are missing or altered. Run it only when the owner says so. |
 | `npm run ai:assets` | Verifies `.ai-assets` (or `STRAFT_AI_ASSETS_DIR`) against `packaging/ai/ai-assets.lock.json` and stages the engine in `.build-cache/ai-bundle` (`-- --check` verifies only). A git worktree uses the main checkout's `.ai-assets`. |
 | `npm run bundle` | Same as `build`, restricted to `--bundles nsis,msi` |
-| `npm run installer:internal` | Builds the unsigned per-user NSIS installer for the team into `release-out/` (git-ignored) as `Straft-<n>.exe`, numbered in build order so the highest number is the latest, with a `.sha256`, a `.json` build record and Rust and npm SBOMs, then runs the binary and string scans. Needs a clean tree (or `-- --allow-dirty`) and the team password in `STRAFT_TEAM_PASSWORD` or the Windows user variable of that name (8 characters or more). Never uses the test model host. Uninstall keeps projects and the vault; the optional "delete app data" box removes `%LOCALAPPDATA%\Straft Studio` only |
+| `npm run installer:internal` | Builds the unsigned per-user NSIS installer for the team into `release-out/` (git-ignored) as `Straft-<n>.exe`, numbered in build order so the highest number is the latest, with a `.sha256`, a `.json` build record and Rust and npm SBOMs, then runs the binary and string scans. Needs a clean tree (or `-- --allow-dirty`) and the team password in `STRAFT_TEAM_PASSWORD` or the Windows user variable of that name (8 characters or more). Never uses the test model host. Uninstall keeps projects and the vault; the optional "delete app data" box removes `%LOCALAPPDATA%\Straft` only |
 | `npm run test` | `cargo test --workspace`, then Vitest (`apps/desktop`) |
 | `npm run test:rust` / `npm run test:web` | One side only |
 | `npm run lint` | `cargo clippy --workspace --all-targets -- -D warnings`, then `eslint src --max-warnings 0` |
@@ -73,11 +73,11 @@ cd apps/desktop; npx vitest                          # watch mode
 
 | What | Where |
 |---|---|
-| Application data (local profile, recent projects, settings) | `%LOCALAPPDATA%\Straft Studio\app.sqlite` |
-| Logs | `%LOCALAPPDATA%\Straft Studio\logs\straft.YYYY-MM-DD.log`: JSON lines, rotated daily, 14 files kept |
+| Application data (local profile, recent projects, settings) | `%LOCALAPPDATA%\Straft\app.sqlite` |
+| Logs | `%LOCALAPPDATA%\Straft\logs\straft.YYYY-MM-DD.log`: JSON lines, rotated daily, 14 files kept |
 | New projects (default) | `Documents\Straft Studio\Projects\<Title>.straft\` |
 | Global Idea Vault | `Documents\Straft Studio\Global Idea Vault\` (`vault.sqlite` + `assets/`) |
-| Offline AI engine (in the package, read-only) and models (downloaded after install, ADR-0026) | engine: `ai\` next to `straft-desktop.exe` (installer, MSIX and development builds); models: `%LOCALAPPDATA%\Straft Studio\models\<version>\`; writable AI records in `%LOCALAPPDATA%\Straft Studio\ai\` and `logs\` (Store builds: `LocalState\Straft Studio`, see doc 27). `ai\graphics.json` holds the Graphics card setting and what the card checks found; set `"forceIntegratedProbe": true` there by hand to check integrated graphics even when the memory rule says no (ADR-0029, never shown in the app) |
+| Offline AI engine (in the package, read-only) and models (downloaded after install, ADR-0026) | engine: `ai\` next to `straft-desktop.exe` (installer, MSIX and development builds); models: `%LOCALAPPDATA%\Straft\models\<version>\`; writable AI records in `%LOCALAPPDATA%\Straft\ai\` and `logs\` (Store builds: `LocalState\Straft Studio`, see doc 27). `ai\graphics.json` holds the Graphics card setting and what the card checks found; set `"forceIntegratedProbe": true` there by hand to check integrated graphics even when the memory rule says no (ADR-0029, never shown in the app) |
 
 **Log level.** Set the `STRAFT_LOG` environment variable. It uses
 [`tracing_subscriber::EnvFilter`](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html)

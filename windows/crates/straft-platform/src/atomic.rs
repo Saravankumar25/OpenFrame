@@ -216,7 +216,16 @@ fn is_our_temp_name(path: &Path) -> bool {
     }
 }
 
-fn rename_with_retry(from: &Path, to: &Path) -> io::Result<()> {
+/// Flush a folder's entries to the drive, so a rename or a new file inside it survives a power cut.
+/// Best effort: Windows cannot open a folder this way and flushes its metadata itself.
+pub fn sync_folder(folder: &Path) {
+    if let Ok(dir) = File::open(folder) {
+        let _ = dir.sync_all();
+    }
+}
+
+/// Rename, retrying for a moment when a scanner holds the file or folder.
+pub fn rename_with_retry(from: &Path, to: &Path) -> io::Result<()> {
     let mut attempt = 0;
     loop {
         match fs::rename(from, to) {

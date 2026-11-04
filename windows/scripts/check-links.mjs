@@ -14,7 +14,7 @@ const ROOT = process.env.STRAFT_CHECK_ROOT
   ? path.resolve(process.env.STRAFT_CHECK_ROOT)
   : path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
 // StraftMac and changes are local, uncommitted reference folders the owner supplies (listed in .git/info/exclude).
-const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", ".claude", ".build-cache", "dist", "gen", "StraftMac", "changes"]);
+const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", ".claude", ".build-cache", "release-out", "dist", "gen", "StraftMac", "changes"]);
 const RECORD_PREFIXES = ["docs/audits/", "docs/history/", "docs/release/evidence/"];
 // Documents whose older sections are kept as written; links after the marker line are not checked.
 const HISTORY_MARKERS = {
@@ -27,7 +27,8 @@ function* walk(dir) {
     if (SKIP_DIRS.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) yield* walk(full);
-    else if (entry.name.endsWith(".md")) yield full;
+    // Only real files: a link can point at a file that has moved, and a link's text is checked at its target.
+    else if (entry.isFile() && entry.name.endsWith(".md")) yield full;
   }
 }
 

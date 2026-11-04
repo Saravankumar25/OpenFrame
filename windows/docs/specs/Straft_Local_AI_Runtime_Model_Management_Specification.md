@@ -98,7 +98,7 @@ straft-ai  AiManager
    ├─ hardware    RAM / CPU / GPU (DXGI) / Vulkan loader / free disk — never transmitted
    ├─ selection   device check: graphics card or processor, layers, disk needed, "may be slow"
    ├─ download    resumable, retried, SHA-256 verified, quarantining downloads
-   ├─ store       %LOCALAPPDATA%/Straft Studio/{models,runtimes} + atomic active.json
+   ├─ store       %LOCALAPPDATA%/Straft/{models,runtimes} + atomic active.json
    ├─ supervisor  chat sidecar  (llama-server, loopback, -c 8192)
    │              embedding sidecar (llama-server --embedding --pooling cls, CPU only)   [Superseded in part, ADR-0029, 2026-10-16 sweep: the graphics-card decision function chooses CPU or GPU per device; CPU stays the fallback.]
    └─ model       InferenceProvider (with capabilities, W5); AiManager::embed / embedding_info (C1 API)
@@ -204,7 +204,7 @@ Trust: Ed25519 signature over the exact bytes, public key compiled in. Developme
 ## 8. Storage
 
 ```text
-%LOCALAPPDATA%/Straft Studio/            (Microsoft Store edition: %LOCALAPPDATA%\Packages\<PackageFamilyName>\LocalState\Straft Studio, 27-microsoft-store.md §5.2)
+%LOCALAPPDATA%/Straft/            (Microsoft Store edition: %LOCALAPPDATA%\Packages\<PackageFamilyName>\LocalState\Straft Studio, 27-microsoft-store.md §5.2)
 ├─ models/
 │  ├─ manifest-cache.json (+ .sig)
 │  ├─ active.json                     { schema: 2, profileId, profileVersion, runtimeId, backend,

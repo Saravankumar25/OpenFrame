@@ -21,7 +21,7 @@ const callMock = vi.mocked(call);
 const calls: { op: string; args: Record<string, unknown> }[] = [];
 const LIB = "C:\\Users\\me\\Straft Studio";
 const INFO: StorageInfo = {
-  appDataDir: "C:\\Users\\me\\AppData\\Local\\Straft Studio",
+  appDataDir: "C:\\Users\\me\\AppData\\Local\\Straft",
   libraryDir: LIB,
   libraryFile: `${LIB}\\library.json`,
   projectsDir: `${LIB}\\Projects`,

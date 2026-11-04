@@ -314,7 +314,7 @@ mod tests {
     fn a_path_inside_a_folder_follows_it_to_its_new_place() {
         let moved = rebase(
             Path::new("C:/Users/m/Straft Studio/Projects/Film.straft"),
-            Path::new("c:/users/m/straft/"),
+            Path::new("c:/users/m/straft studio/"),
             Path::new("D:/Lib/Straft Studio"),
         )
         .unwrap();

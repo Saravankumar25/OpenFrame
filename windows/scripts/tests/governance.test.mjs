@@ -627,13 +627,33 @@ test("every end-to-end spec has its plain-step scenario file, and every scenario
 
 test("the uninstaller never deletes the app data root recursively and removes only folders the app creates", () => {
   const hook = fs.readFileSync(path.join(REPO, "apps/desktop/src-tauri/windows/installer-hooks.nsh"), "utf8");
-  assert.ok(!/RMDir\s+\/r\s+"\$LOCALAPPDATA\\Straft Studio"/i.test(hook), "recursive delete of the app data root");
+  assert.ok(!/RMDir\s+\/r\s+"\$LOCALAPPDATA\\Straft"/i.test(hook), "recursive delete of the app data root");
   // Folders the code creates under app_data_dir: models (straft-ai/src/model_download.rs), ai (store.rs),
   // logs (apps/desktop/src-tauri/src/lib.rs), entitlement (straft-entitlement), tmp and reviews
   // (straft-application/src/modules/packages).
   const known = ["models", "ai", "logs", "entitlement", "tmp", "reviews"];
-  const removed = [...hook.matchAll(/^\s*RMDir\s+\/r\s+"\$LOCALAPPDATA\\Straft Studio\\([^"\\]+)"/gim)].map((m) => m[1]);
+  const removed = [...hook.matchAll(/^\s*RMDir\s+\/r\s+"\$LOCALAPPDATA\\Straft\\([^"\\]+)"/gim)].map((m) => m[1]);
   assert.deepEqual(removed.filter((n) => !known.includes(n)), [], "hook removes a folder the app does not create");
   assert.deepEqual(known.filter((n) => !removed.includes(n)), [], "hook leaves a known folder behind");
-  assert.match(hook, /^\s*RMDir\s+"\$LOCALAPPDATA\\Straft Studio"\s*$/m, "final non-recursive RMDir of the root");
+  assert.match(hook, /^\s*RMDir\s+"\$LOCALAPPDATA\\Straft"\s*$/m, "final non-recursive RMDir of the root");
+});
+
+test("the uninstaller clears the earlier data folder by the same rules and marks every line", () => {
+  const hook = fs.readFileSync(path.join(REPO, "apps/desktop/src-tauri/windows/installer-hooks.nsh"), "utf8");
+  const code = hook.split("\n").filter((l) => !/^\s*;/.test(l));
+  const legacyFolder = "OpenFrame"; // LEGACY: Open Frame name kept for migration
+  const list = (verb, base) =>
+    code.map((l) => l.match(new RegExp(`^\\s*${verb}\\s+"\\$LOCALAPPDATA\\\\${base}\\\\([^"\\\\]+)"`, "i"))).filter(Boolean).map((m) => m[1]);
+  assert.ok(list("RMDir /r", "Straft").length > 0);
+  assert.deepEqual(list("RMDir /r", legacyFolder), list("RMDir /r", "Straft"), "same folders in both places");
+  assert.deepEqual(list("Delete", legacyFolder), list("Delete", "Straft"), "same files in both places");
+  assert.ok(!code.some((l) => new RegExp(`RMDir\\s+/r\\s+"\\$LOCALAPPDATA\\\\${legacyFolder}"`, "i").test(l)), "recursive delete of the earlier root");
+  assert.ok(code.some((l) => new RegExp(`^\\s*RMDir\\s+"\\$LOCALAPPDATA\\\\${legacyFolder}"`, "i").test(l)), "final non-recursive RMDir of the earlier root");
+  // The folder name has a space, so an unquoted path would remove the wrong thing.
+  for (const l of code.filter((x) => /^\s*(RMDir|Delete)\b/.test(x))) {
+    assert.match(l, /^\s*(RMDir|Delete)(\s+\/r)?\s+"[^"]+"/, `unquoted path: ${l}`);
+  }
+  for (const l of code.filter((x) => /open[ _-]?frame/i.test(x))) {
+    assert.ok(l.includes("; LEGACY: Open Frame name kept for migration"), `no marker: ${l}`);
+  }
 });

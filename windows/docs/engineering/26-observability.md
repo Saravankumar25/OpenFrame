@@ -21,7 +21,7 @@
 
 | Property | Value |
 |---|---|
-| Location | `%LOCALAPPDATA%\Straft Studio\logs\straft.YYYY-MM-DD.log` |
+| Location | `%LOCALAPPDATA%\Straft\logs\straft.YYYY-MM-DD.log` |
 | Format | JSON lines (`tracing-subscriber` JSON formatter): `timestamp`, `level`, `target`, `fields`, `message` |
 | Rotation / retention | Daily rotation, **14 files** kept (`tracing-appender` rolling builder) |
 | Writer | Non-blocking background writer. The guard is held for the process lifetime and flushed on exit. |

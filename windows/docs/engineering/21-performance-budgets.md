@@ -101,7 +101,7 @@ evaluation gates in the Local AI Runtime spec §16.
 3. A release-candidate checklist (22-qa-test-strategy.md §5) records P1–P6 on minimum hardware. Any regression
    > 10% or budget breach blocks the release.
 4. Slow operations (> 250 ms) are already logged at `info` with op name and duration, and must be reviewed before
-   release (`%LOCALAPPDATA%\Straft Studio\logs`).
+   release (`%LOCALAPPDATA%\Straft\logs`).
 
 ## 5. Measured results (2026-09-30)
 

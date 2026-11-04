@@ -36,7 +36,7 @@ mentions "network drive where supported" (PRD S-3).
    assets are copied to `*.importing` and then renamed.
 6. **Default locations:** projects in `Documents\Straft Studio\Projects`, the Global Idea Vault in
    `Documents\Straft Studio\Global Idea Vault` (user content belongs in Documents), and app-private state in
-   `%LOCALAPPDATA%\Straft Studio`.
+   `%LOCALAPPDATA%\Straft`.
 
 ## Consequences
 

@@ -33,7 +33,7 @@
 
 ## Next items, in order
 
-1. Owner hand test of the new screens; the cofounder's log `%LOCALAPPDATA%\Straft Studio\logs\straft.2026-10-27.log`
+1. Owner hand test of the new screens; the cofounder's log `%LOCALAPPDATA%\Straft\logs\straft.2026-10-27.log`
    to confirm the vault cause.
 2. The next internal installer on the owner's word.
 3. Reinstall drill for the storage box in `masterplan.md`, then tick it.

@@ -122,7 +122,7 @@ fn footer_embeds_the_logo_once_losslessly_with_a_soft_mask() {
                 "lossless, never JPEG"
             );
             if s.dict.has(b"SMask") {
-                assert_eq!(s.dict.get(b"Width").unwrap().as_i64().unwrap(), 699);
+                assert_eq!(s.dict.get(b"Width").unwrap().as_i64().unwrap(), 735);
                 assert_eq!(s.dict.get(b"Height").unwrap().as_i64().unwrap(), 163);
                 logos += 1;
             } else {
@@ -139,7 +139,7 @@ fn footer_embeds_the_logo_once_losslessly_with_a_soft_mask() {
     for (i, page) in dump(&pdf.bytes).iter().enumerate() {
         let [x, y, w, h] = page.images[0];
         assert_eq!((x, y, h), (46.0, 33.0, 17.0), "page {}", i + 1);
-        assert!((w - 17.0 * 699.0 / 163.0).abs() < 0.01, "ratio kept: {w}");
+        assert!((w - 17.0 * 735.0 / 163.0).abs() < 0.01, "ratio kept: {w}");
     }
 }
 

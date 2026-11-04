@@ -675,8 +675,8 @@ mod tests {
                 r"load %USERPROFILE%\[path]",
             ),
             (
-                r"model C:\Users\Asha\AppData\Local\Straft Studio\models\chat.gguf",
-                r"model %USERPROFILE%\AppData\Local\Straft Studio\models\chat.gguf",
+                r"model C:\Users\Asha\AppData\Local\Straft\models\chat.gguf",
+                r"model %USERPROFILE%\AppData\Local\Straft\models\chat.gguf",
             ),
             (
                 "error: cannot open /Users/asha/Movies/Railway.straft",

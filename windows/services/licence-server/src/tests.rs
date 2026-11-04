@@ -41,7 +41,7 @@ const NONCE: &str = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789a
 const APP_TX_ID: &str = "705000000001";
 
 /// The server's response key in tests and in the shared fixture. Test only: never deployed.
-const TEST_RESPONSE_SEED: [u8; 32] = *b"straft-test-only-response-key";
+const TEST_RESPONSE_SEED: [u8; 32] = *b"straft-test-only-response-key-01";
 
 const FIXTURE_PATH: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),

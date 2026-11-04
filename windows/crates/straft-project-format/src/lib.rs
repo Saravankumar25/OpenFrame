@@ -13,12 +13,19 @@
 //! ├─ backups/              automatic safety backups (pre-migration, pre-replace)
 //! └─ .lock                 single-writer lock (prevents two apps writing at once)
 //! ```
+//!
+//! Projects made before the rename keep their folder name (`straft_platform::legacy_names`) and may
+//! still hold the earlier manifest file. One rule: `straft.json` wins whenever it exists. The earlier
+//! file is read only when there is no `straft.json`, and every manifest write creates `straft.json`
+//! first and removes the earlier file only once the new one is on the drive, so the two can never
+//! disagree.
 
 use std::fs::{self, File, OpenOptions};
 use std::path::{Path, PathBuf};
 
 use fs4::fs_std::FileExt;
 use straft_domain::{AppError, AppResult, PROJECT_FORMAT_VERSION, now_ms};
+use straft_platform::legacy_names;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -26,6 +33,27 @@ pub const PROJECT_EXTENSION: &str = "straft";
 pub const MANIFEST_FILE: &str = "straft.json";
 pub const DB_FILE: &str = "project.sqlite";
 pub const MANIFEST_FORMAT: &str = "straft-project";
+
+/// True for the manifest file's name, in a project made by this version or an earlier one.
+pub fn is_manifest_name(name: &str) -> bool {
+    name == MANIFEST_FILE || name == legacy_names::MANIFEST_FILE
+}
+
+/// True when `dir` holds a project manifest, written by this version or an earlier one.
+pub fn is_project_folder(dir: &Path) -> bool {
+    dir.join(MANIFEST_FILE).is_file() || dir.join(legacy_names::MANIFEST_FILE).is_file()
+}
+
+/// True for a folder named like a project (`<Title>.straft`, or the earlier extension). Any case.
+pub fn has_project_extension(name: &str) -> bool {
+    let name = name.to_lowercase();
+    [PROJECT_EXTENSION, legacy_names::PROJECT_EXTENSION]
+        .iter()
+        .any(|ext| {
+            name.strip_suffix(ext)
+                .is_some_and(|stem| stem.ends_with('.'))
+        })
+}
 
 /// Paths inside a project folder.
 #[derive(Debug, Clone)]
@@ -40,8 +68,26 @@ impl ProjectLayout {
     pub fn root(&self) -> &Path {
         &self.root
     }
+    /// Where the manifest is written. Read it with [`read_manifest`].
     pub fn manifest(&self) -> PathBuf {
         self.root.join(MANIFEST_FILE)
+    }
+    /// The manifest file of a project an earlier version wrote.
+    pub fn legacy_manifest(&self) -> PathBuf {
+        self.root.join(legacy_names::MANIFEST_FILE)
+    }
+    /// True when the folder holds a manifest under either name.
+    pub fn has_manifest(&self) -> bool {
+        is_project_folder(&self.root)
+    }
+    /// The file [`read_manifest`] reads: `straft.json` whenever it is there.
+    fn manifest_to_read(&self) -> PathBuf {
+        let current = self.manifest();
+        if current.exists() {
+            return current;
+        }
+        let earlier = self.legacy_manifest();
+        if earlier.is_file() { earlier } else { current }
     }
     pub fn database(&self) -> PathBuf {
         self.root.join(DB_FILE)
@@ -109,7 +155,7 @@ impl ProjectLayout {
     }
 
     pub fn looks_like_project(&self) -> bool {
-        self.manifest().is_file() && self.database().is_file()
+        self.has_manifest() && self.database().is_file()
     }
 }
 
@@ -149,13 +195,14 @@ impl ProjectManifest {
 pub fn read_manifest(layout: &ProjectLayout) -> AppResult<ProjectManifest> {
     // The manifest is a few hundred bytes; a huge one (e.g. inside a received package)
     // is refused before it is read into memory.
-    if fs::metadata(layout.manifest()).is_ok_and(|m| m.len() > 1 << 20) {
+    let path = layout.manifest_to_read();
+    if fs::metadata(&path).is_ok_and(|m| m.len() > 1 << 20) {
         return Err(
             AppError::project_format("This project's information file is damaged.")
                 .with_detail("manifest larger than 1 MiB"),
         );
     }
-    let bytes = fs::read(layout.manifest()).map_err(|e| {
+    let bytes = fs::read(&path).map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
             AppError::project_format(
                 "This folder isn't a Straft Studio project (its project information file is missing).",
@@ -164,15 +211,17 @@ pub fn read_manifest(layout: &ProjectLayout) -> AppResult<ProjectManifest> {
             e.into()
         }
     })?;
-    let manifest: ProjectManifest = serde_json::from_slice(&bytes).map_err(|e| {
+    let mut manifest: ProjectManifest = serde_json::from_slice(&bytes).map_err(|e| {
         AppError::project_format("This project's information file is damaged.")
             .with_detail(e.to_string())
     })?;
-    if manifest.format != MANIFEST_FORMAT {
+    if manifest.format != MANIFEST_FORMAT && manifest.format != legacy_names::MANIFEST_FORMAT {
         return Err(AppError::project_format(
             "This folder isn't a Straft Studio project.",
         ));
     }
+    // The next write records the current name, whichever file this one came from.
+    manifest.format = MANIFEST_FORMAT.to_string();
     if manifest.format_version > PROJECT_FORMAT_VERSION {
         return Err(AppError::new(
             "project_format.too_new",
@@ -187,10 +236,22 @@ pub fn read_manifest(layout: &ProjectLayout) -> AppResult<ProjectManifest> {
     Ok(manifest)
 }
 
+/// Write `straft.json` atomically. An earlier manifest file in the folder is removed only after the
+/// new file is on the drive. If that removal fails nothing is wrong: `straft.json` wins on every read
+/// and the next write tries again.
 pub fn write_manifest(layout: &ProjectLayout, manifest: &ProjectManifest) -> AppResult<()> {
     let bytes =
         serde_json::to_vec_pretty(manifest).map_err(|e| AppError::internal(e.to_string()))?;
-    atomic_write(&layout.manifest(), &bytes)
+    atomic_write(&layout.manifest(), &bytes)?;
+    let earlier = layout.legacy_manifest();
+    if earlier.exists() {
+        straft_platform::atomic::sync_folder(layout.root());
+        if let Err(e) = fs::remove_file(&earlier) {
+            // The path holds the project name: never log it.
+            tracing::warn!(error = %e.kind(), "the earlier project manifest could not be removed yet");
+        }
+    }
+    Ok(())
 }
 
 /// Crash-safe file replacement through the shared atomic replace
@@ -330,8 +391,8 @@ pub fn default_global_vault_dir() -> Option<PathBuf> {
     straft_platform::dirs::user_content_dir().map(|d| d.join("Global Idea Vault"))
 }
 
-/// Application-private data (`%LOCALAPPDATA%\Straft Studio` on Windows,
-/// `~/Library/Application Support/Straft Studio` on macOS): settings, recents, models, logs.
+/// Application-private data (`%LOCALAPPDATA%\Straft` on Windows,
+/// `~/Library/Application Support/Straft` on macOS): settings, recents, models, logs.
 pub fn app_data_dir() -> Option<PathBuf> {
     straft_platform::dirs::app_data_dir()
 }
@@ -510,5 +571,103 @@ mod tests {
         assert!(!is_network_path(
             &dir.path().join("New").join("Film.straft")
         ));
+    }
+
+    /// A manifest an earlier version wrote, in a folder with the earlier extension.
+    fn earlier_project(dir: &Path) -> (ProjectLayout, String) {
+        let root = dir.join(format!("Film.{}", legacy_names::PROJECT_EXTENSION));
+        let layout = ProjectLayout::new(&root);
+        layout.create_dirs().unwrap();
+        let id = straft_domain::new_id();
+        let mut json = serde_json::to_value(ProjectManifest::new(&id, "Film", "0.1.0", 7)).unwrap();
+        json["format"] = legacy_names::MANIFEST_FORMAT.into();
+        fs::write(
+            layout.legacy_manifest(),
+            serde_json::to_vec_pretty(&json).unwrap(),
+        )
+        .unwrap();
+        fs::write(layout.database(), b"").unwrap();
+        (layout, id)
+    }
+
+    #[test]
+    fn a_project_from_an_earlier_version_reads_and_counts_as_a_project() {
+        let dir = tempfile::tempdir().unwrap();
+        let (layout, id) = earlier_project(dir.path());
+        assert!(!layout.manifest().exists());
+        assert!(layout.has_manifest() && layout.looks_like_project());
+        assert!(is_project_folder(layout.root()));
+        let m = read_manifest(&layout).unwrap();
+        assert_eq!(m.project_id, id);
+        assert_eq!(m.format, MANIFEST_FORMAT, "normalised for the next write");
+        // Reading never writes: a read-only place stays as it was.
+        assert!(!layout.manifest().exists());
+        assert!(layout.legacy_manifest().is_file());
+    }
+
+    #[test]
+    fn the_first_write_replaces_the_earlier_manifest_and_only_after_the_new_one_exists() {
+        let dir = tempfile::tempdir().unwrap();
+        let (layout, id) = earlier_project(dir.path());
+        let mut m = read_manifest(&layout).unwrap();
+        m.title = "Renamed".into();
+        write_manifest(&layout, &m).unwrap();
+        assert!(layout.manifest().is_file());
+        assert!(!layout.legacy_manifest().exists());
+        let back = read_manifest(&layout).unwrap();
+        assert_eq!((back.title.as_str(), back.project_id.as_str()), ("Renamed", id.as_str()));
+        let on_disk: serde_json::Value =
+            serde_json::from_slice(&fs::read(layout.manifest()).unwrap()).unwrap();
+        assert_eq!(on_disk["format"], MANIFEST_FORMAT);
+    }
+
+    /// A crash between the two steps leaves both files. There is one answer: the new file wins, an
+    /// edit in the earlier file never comes back, and the next write removes it.
+    #[test]
+    fn with_both_manifests_the_new_one_wins_and_the_next_write_tidies_up() {
+        let dir = tempfile::tempdir().unwrap();
+        let (layout, id) = earlier_project(dir.path());
+        let mut new = read_manifest(&layout).unwrap();
+        new.title = "New title".into();
+        atomic_write(
+            &layout.manifest(),
+            &serde_json::to_vec_pretty(&new).unwrap(),
+        )
+        .unwrap();
+        assert!(layout.legacy_manifest().is_file());
+        assert_eq!(read_manifest(&layout).unwrap().title, "New title");
+        write_manifest(&layout, &new).unwrap();
+        assert!(!layout.legacy_manifest().exists());
+        assert_eq!(read_manifest(&layout).unwrap().project_id, id);
+
+        // A damaged new file is reported; it never silently falls back to older facts.
+        let (layout, _) = earlier_project(&dir.path().join("second"));
+        fs::write(layout.manifest(), b"{ nope").unwrap();
+        assert!(read_manifest(&layout).unwrap_err().is("project_format"));
+    }
+
+    #[test]
+    fn a_manifest_with_some_other_format_is_still_refused() {
+        let dir = tempfile::tempdir().unwrap();
+        let (layout, _) = earlier_project(dir.path());
+        let mut json: serde_json::Value =
+            serde_json::from_slice(&fs::read(layout.legacy_manifest()).unwrap()).unwrap();
+        json["format"] = "another-app-project".into();
+        fs::write(layout.legacy_manifest(), serde_json::to_vec(&json).unwrap()).unwrap();
+        assert!(read_manifest(&layout).unwrap_err().is("project_format"));
+    }
+
+    #[test]
+    fn project_names_are_recognised_under_both_extensions() {
+        let earlier = legacy_names::PROJECT_EXTENSION;
+        assert!(has_project_extension("Film.straft"));
+        assert!(has_project_extension("FILM.STRAFT"));
+        assert!(has_project_extension(&format!("Film.{earlier}")));
+        assert!(!has_project_extension("straft"));
+        assert!(!has_project_extension(earlier));
+        assert!(!has_project_extension("Film.sqlite"));
+        assert!(is_manifest_name(MANIFEST_FILE));
+        assert!(is_manifest_name(legacy_names::MANIFEST_FILE));
+        assert!(!is_manifest_name("manifest.json"));
     }
 }

@@ -16,7 +16,7 @@ const HF_HOST = /(^|\.)(huggingface\.co|hf\.co)$|^cdn-lfs/i;
 const LOOPBACK = /^(localhost|127\.\d+\.\d+\.\d+|::1|\[::1\]|0\.0\.0\.0)$/i;
 
 const ALLOWED_FILES = [
-  [/^%USERPROFILE%\\AppData\\Local\\Straft Studio\\/i, "app data"],
+  [/^%USERPROFILE%\\AppData\\Local\\Straft\\/i, "app data"],
   [/^%USERPROFILE%\\AppData\\Local\\Programs\\Straft Studio\\/i, "install folder"],
   [/^%USERPROFILE%\\AppData\\Local\\studio\.straft\.desktop\\/i, "WebView2 data"],
   [/^%USERPROFILE%\\Documents\\Straft Studio\\/i, "projects"],
@@ -136,7 +136,7 @@ export function render(s, defender = "") {
   }
   out.push("## Flagged (outside the allowed places)", "");
   out.push(flagged.length ? flagged.map((f) => `- ${f}`).join("\n") : "Nothing flagged.", "");
-  out.push("Allowed: `%LOCALAPPDATA%\\Straft Studio`, `%LOCALAPPDATA%\\Programs\\Straft Studio`, `%LOCALAPPDATA%\\studio.straft.desktop`, `Documents\\Straft Studio`, the w9out folder, Temp; network only to loopback and Hugging Face (huggingface.co, *.hf.co, cdn-lfs*).", "");
+  out.push("Allowed: `%LOCALAPPDATA%\\Straft`, `%LOCALAPPDATA%\\Programs\\Straft Studio`, `%LOCALAPPDATA%\\studio.straft.desktop`, `Documents\\Straft Studio`, the w9out folder, Temp; network only to loopback and Hugging Face (huggingface.co, *.hf.co, cdn-lfs*).", "");
   if (defender) out.push("## Microsoft Defender scans of the installers", "", defender, "");
   return { text: out.join("\n"), flagged };
 }
@@ -158,7 +158,7 @@ async function selfTest() {
     '"1:00:00 PM","straft-desktop.exe","10","TCP Connect","vm.local:50000 -> localhost:4445","SUCCESS",""',
     '"1:00:01 PM","llama-server.exe","11","TCP Send","vm.local:50001 -> cdn-lfs.hf.co:https","SUCCESS",""',
     '"1:00:02 PM","straft-desktop.exe","10","TCP Connect","vm.local:50002 -> evil.example.com:443","SUCCESS",""',
-    '"1:00:03 PM","straft-desktop.exe","10","WriteFile","C:\\Users\\tester\\AppData\\Local\\Straft Studio\\settings.json","SUCCESS","Offset: 0"',
+    '"1:00:03 PM","straft-desktop.exe","10","WriteFile","C:\\Users\\tester\\AppData\\Local\\Straft\\settings.json","SUCCESS","Offset: 0"',
     '"1:00:04 PM","straft-desktop.exe","10","WriteFile","C:\\Users\\tester\\Desktop\\oops.txt","SUCCESS","Offset: 0"',
     '"1:00:05 PM","straft-desktop.exe","10","CreateFile","C:\\Users\\tester\\Documents\\Straft Studio\\Night, Bus\\db.sqlite","SUCCESS","Desired Access: Generic Write, Read Attributes, Disposition: OpenIf"',
     '"1:00:06 PM","straft-desktop.exe","10","RegSetValue","HKCU\\Software\\studio.straft.desktop\\x","SUCCESS","Type: REG_DWORD"',
@@ -175,7 +175,7 @@ async function selfTest() {
   must(flagged.some((f) => f.includes("evil.example.com")), "evil host not flagged");
   must(!flagged.some((f) => f.includes("hf.co")), "hugging face flagged");
   must(!flagged.some((f) => f.includes("localhost")), "loopback flagged");
-  must(!flagged.some((f) => f.includes("bad.example.org")), "a non-Straft Studio process was reported");
+  must(!flagged.some((f) => f.includes("bad.example.org")), "a process other than Straft Studio was reported");
   must(flagged.some((f) => f.includes("Desktop\\oops.txt")), "stray file not flagged");
   must(flagged.some((f) => f.includes("Software\\Other")), "stray registry key not flagged");
   must(!flagged.some((f) => f.includes("db.sqlite") || f.includes("settings.json") || f.includes("EBWebView")), "allowed path flagged");

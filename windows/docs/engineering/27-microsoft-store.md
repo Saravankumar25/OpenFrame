@@ -119,13 +119,13 @@ folder.
 `ApplicationData.Current.LocalFolder`. It is a real, non-virtualized path, so the app, Explorer and
 child processes see the same files. It needs no extra capability (the alternative, disabling
 virtualization, needs the restricted `unvirtualizedResources` capability), and Windows removes it on
-uninstall (Store policy 10.2.7 clean uninstall). Unpackaged builds keep `%LOCALAPPDATA%\Straft Studio`.
+uninstall (Store policy 10.2.7 clean uninstall). Unpackaged builds keep `%LOCALAPPDATA%\Straft`.
 Implemented in the Tauri adapter (`lib.rs` overrides the field); the foundation crates are unchanged.
 
 Consequence: a user who moves from the direct build to the Store build starts with empty settings
 and an empty recent-projects list (the AI runtime comes with either package; the AI models download after a user click). Their projects and Global
 Idea Vault are unaffected (§5.3). They reopen projects with *Open project*. 📋 An optional one-time
-import of `%LOCALAPPDATA%\Straft Studio\` settings and recents could be added later.
+import of `%LOCALAPPDATA%\Straft\` settings and recents could be added later.
 
 Tauri's WebView2 profile (`%LOCALAPPDATA%\studio.straft.desktop\EBWebView`) stays on the
 default path. It is virtualized into the package's private storage, which is harmless because only

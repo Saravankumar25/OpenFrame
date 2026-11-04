@@ -408,7 +408,8 @@ pub(crate) fn state(core: &AppCore) -> AppResult<AppearanceState> {
             .and_then(|m| AppearanceMode::parse(&m))
             .unwrap_or(AppearanceMode::System);
         let mine = my_themes(c)?;
-        let wanted = read_pref(c, KEY_THEME)?.unwrap_or_else(|| DEFAULT_THEME_ID.to_string());
+        let wanted = read_pref(c, KEY_THEME)?
+            .map_or_else(|| DEFAULT_THEME_ID.to_string(), |id| theme::current_id(&id).to_string());
         let usable = theme::builtin(&wanted).is_some()
             || mine.iter().any(|(m, t)| m.id == wanted && t.is_some());
         let (theme_id, fallback_notice) = if usable {
@@ -467,7 +468,7 @@ fn set_mode(core: &AppCore, actor: &Actor, args: SetModeArgs) -> AppResult<Appea
 
 fn set_theme(core: &AppCore, actor: &Actor, args: SetThemeArgs) -> AppResult<AppearanceState> {
     require_local(actor)?;
-    let id = args.theme_id;
+    let id = theme::current_id(&args.theme_id).to_string();
     let usable = theme::valid_id(&id)
         && (theme::builtin(&id).is_some()
             || core.with_app_db(|c| {

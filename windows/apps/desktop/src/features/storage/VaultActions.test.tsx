@@ -23,7 +23,7 @@ vi.mock("../../app/toast", () => ({ toast: { success: vi.fn(), error: vi.fn(), i
 const calls: { op: string; args: Record<string, unknown> }[] = [];
 
 const INFO: StorageInfo = {
-  appDataDir: "C:\\Users\\me\\AppData\\Local\\Straft Studio",
+  appDataDir: "C:\\Users\\me\\AppData\\Local\\Straft",
   libraryDir: "C:\\Users\\me\\Documents\\Straft Studio",
   libraryFile: "C:\\Users\\me\\Documents\\Straft Studio\\library.json",
   projectsDir: "C:\\Users\\me\\Documents\\Straft Studio\\Projects",

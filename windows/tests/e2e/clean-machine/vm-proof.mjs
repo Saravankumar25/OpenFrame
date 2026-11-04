@@ -26,7 +26,7 @@ const T = String.raw`C:\w9tools`;
 const HOME = String.raw`C:\Users\tester`;
 const INSTALL_DIR = String.raw`${HOME}\AppData\Local\Programs\Straft Studio`;
 const APP_EXE = String.raw`${INSTALL_DIR}\straft-desktop.exe`;
-const APPDATA = String.raw`${HOME}\AppData\Local\Straft Studio`;
+const APPDATA = String.raw`${HOME}\AppData\Local\Straft`;
 const OUT_DIR = String.raw`${HOME}\Documents\w9out`;
 const DOCS_OF = String.raw`${HOME}\Documents\Straft Studio`;
 const WEBVIEW2_KEY = String.raw`HKLM\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}`;
@@ -476,7 +476,7 @@ step("upgrade", [
 
 const TAMPER_PS = String.raw`
 param([string]$Mode)
-$root = Join-Path $env:LOCALAPPDATA 'Straft Studio'
+$root = Join-Path $env:LOCALAPPDATA 'Straft'
 $bak = 'C:\w9tools\bypass-backup'
 $rx = 'gate|team|lock|password|unlock|verified|entitle|licen|trial'
 $script:count = 0
@@ -508,7 +508,7 @@ switch ($Mode) {
 `;
 
 step("gate-bypass", [
-  "app closed: list %LOCALAPPDATA%\\Straft Studio, back it up (without models) to C:\\w9tools\\bypass-backup",
+  "app closed: list %LOCALAPPDATA%\\Straft, back it up (without models) to C:\\w9tools\\bypass-backup",
   "variants: gate/team/lock/password booleans flipped to true; to false; files named like gate/team/lock deleted (incl. the wrong-try record); HKCU keys named like the app; all three together",
   "after each variant launch and assert the password screen still shows and Home is not reachable; restore after each variant and at the end",
 ], async (notes) => {
@@ -539,7 +539,7 @@ step("gate-bypass", [
 
 step("ai-download", [
   "launch, password, open the project, open the AI Assistant, click Download Straft AI",
-  "poll the card every 20 s until the question box appears (up to 90 min); record the time and the size of %LOCALAPPDATA%\\Straft Studio\\models",
+  "poll the card every 20 s until the question box appears (up to 90 min); record the time and the size of %LOCALAPPDATA%\\Straft\\models",
   "setNetwork(false): controlvm setlinkstate1 off (guest firewall block if the driver stops answering); assert huggingface.co is unreachable",
   "ask 'Summarise this project in one sentence.' (CPU only, up to 10 min); record the time to the first answer; network stays off",
 ], async (notes) => {
@@ -700,7 +700,7 @@ step("power-loss", [
 step("uninstall-keeps-projects", [
   "run uninstall.exe (not silent) through an interactive task",
   "screenshot every 5 s; press Enter on the pages (confirm page, the message box saying projects are kept, finish); the 'delete app data' box is left at its default",
-  "assert the program is gone and every entry of Documents\\Straft Studio is still there; list what remains in %LOCALAPPDATA%\\Straft Studio",
+  "assert the program is gone and every entry of Documents\\Straft Studio is still there; list what remains in %LOCALAPPDATA%\\Straft",
 ], async (notes) => {
   killApp();
   await stopDriver();
