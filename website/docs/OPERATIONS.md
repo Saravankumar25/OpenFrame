@@ -186,6 +186,11 @@ https://developers.cloudflare.com/ssl/edge-certificates/additional-options/minim
 
 ### 4.4 Web Analytics (cookie-free)
 
+The zone `straftstudio.com` injects the beacon by itself, while the privacy page says the site runs no analytics. So the content security policy
+blocks the beacon on normal pages, and `no-transform` stops the injection into screen pages. Until the owner either switches the setting off
+(Analytics & Logs, Web Analytics, straftstudio.com, Disable) or turns it on with an updated privacy page, the browser console shows one
+blocked script on each page.
+
 What it is: Cloudflare's free analytics for page views, visits, countries, pages, referrers and Core Web Vitals. Cloudflare
 states that it does not use client-side state such as cookies or localStorage to track users, and does not identify
 individuals by IP address, user agent or other data. Cloudflare's own Web Analytics pages give no statement about

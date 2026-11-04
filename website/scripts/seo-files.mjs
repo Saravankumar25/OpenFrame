@@ -73,8 +73,8 @@ ${link('/features/', 'Features', 'every capability, marked for Windows and Mac.'
 export function headersFile(BOOT) {
   const bootHash = crypto.createHash('sha256').update(BOOT).digest('base64');
   // Cloudflare Web Analytics is off until the owner switches it on in the dashboard; its script and beacon hosts are allowed now.
-  const CSP = ["default-src 'self'", `script-src 'self' 'sha256-${bootHash}' https://static.cloudflareinsights.com`, "style-src 'self'", "img-src 'self' data:", "font-src 'self'",
-    "connect-src 'self' https://cloudflareinsights.com", "manifest-src 'self'", "frame-src 'self'", "object-src 'none'", "worker-src 'none'", "base-uri 'self'", "form-action 'none'", "frame-ancestors 'none'", 'upgrade-insecure-requests'].join('; ');
+  const CSP = ["default-src 'self'", `script-src 'self' 'sha256-${bootHash}'`, "style-src 'self'", "img-src 'self' data:", "font-src 'self'",
+    "connect-src 'self'", "manifest-src 'self'", "frame-src 'self'", "object-src 'none'", "worker-src 'none'", "base-uri 'self'", "form-action 'none'", "frame-ancestors 'none'", 'upgrade-insecure-requests'].join('; ');
   // The app screens are static pages with their own inline styles and no script. Only this site may frame them.
   const MOCK_CSP = ["default-src 'none'", "style-src 'self' 'unsafe-inline'", "img-src 'self' data:", "font-src 'self' data:", "base-uri 'none'", "form-action 'none'", "frame-ancestors 'self'"].join('; ');
   const PERMISSIONS = ['accelerometer', 'bluetooth', 'browsing-topics', 'camera', 'clipboard-read', 'display-capture', 'geolocation', 'gyroscope', 'hid', 'idle-detection', 'magnetometer', 'microphone', 'midi', 'payment', 'screen-wake-lock', 'serial', 'usb'].map((f) => `${f}=()`).join(', ');
@@ -94,7 +94,7 @@ export function headersFile(BOOT) {
   Content-Security-Policy: ${MOCK_CSP}
   X-Frame-Options: SAMEORIGIN
   X-Robots-Tag: noindex
-  Cache-Control: public, max-age=604800
+  Cache-Control: public, max-age=604800, no-transform
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 /403.html
