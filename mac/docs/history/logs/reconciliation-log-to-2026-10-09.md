@@ -41,7 +41,7 @@ The joined `session-2` passed every gate and the full end-to-end run (evidence:
 
 | Row | Stale statement | Now |
 |---|---|---|
-| THEME-007 | OpenFrame Default Light has 6 pairs below 4.5 to 1, an owner question | The owner decided on 2026-10-07 to raise them; `theme.rs` (unit) `contrast_every_builtin_theme_passes_in_light_and_dark` allows no exception |
+| THEME-007 | Straft Default Light has 6 pairs below 4.5 to 1, an owner question | The owner decided on 2026-10-07 to raise them; `theme.rs` (unit) `contrast_every_builtin_theme_passes_in_light_and_dark` allows no exception |
 | STORY-CARD-005 | Several screenplays per project is still an open owner decision | Decided and built on 2026-10-08 (ADR-0012 amendment); new rows SCRIPT-024 and SCRIPT-025 |
 | SCRIPT-017 | The Production column shows data once the ADR-0015 migration lands | Migration 0013 landed on 2026-10-07 and fills the column |
 | CORE-007 | The 30-day purge has no E2E run | `25-recently-deleted-purge.test.mjs` passes |
@@ -59,7 +59,7 @@ Branch `area/08-bundled-offline-ai`. The code that downloaded Offline AI is dele
 
 **Documents brought in line with the code (checked 2026-10-08):** `docs/engineering/22-qa-test-strategy.md` (offline
 gate, AI test layers, failure injection), `23-release-migration.md` §7 (rewritten: bundled AI prerequisites),
-`25-ci-cd.md` (`OPENFRAME_AI_ASSETS_DIR`, the overlay config), `27-microsoft-store.md` (§5.4 rewritten, `internetClient`
+`25-ci-cd.md` (`STRAFT_AI_ASSETS_DIR`, the overlay config), `27-microsoft-store.md` (§5.4 rewritten, `internetClient`
 removed, certification notes), `20-security-threat-model.md` (T16 and T33 rewritten, REL-01 marked superseded),
 `SECURITY_REVIEW_2026-09-30.md` (REL-01 marked superseded), `docs/store/privacy-policy.md`, `docs/store/listing.md`,
 `docs/release/launch-readiness-register.md` (STORE-012), `docs/implementation/feature-status.md` (AI-001, AI-002,
@@ -67,16 +67,16 @@ AI-006, AI-007, AI-011 updated; AI-012 Removed; CORE-013 journey step), `README.
 `docs/engineering/ai-tool-coverage.md` (it was also stale for call sheet and template operations merged earlier in
 session 2; regenerated from the live registry).
 
-**Superseded in place (banner at the top, text kept):** `docs/specs/OpenFrame_Local_AI_Runtime_Model_Management_Specification.md`,
-`OpenFrame_Studio_AI_Specification_Updated.md`, `openframe_ai_agentic_rag_spec_prompt.md`,
-`OpenFrame_ESD_Technical_Architecture.md`, `OpenFrame_Studio_Engineering_Package_Index.md` and
-`OpenFrame_Studio_Security_Privacy_Data_Ownership_Specification.md`: every passage about **Download Offline AI**, the signed
+**Superseded in place (banner at the top, text kept):** `docs/specs/Straft_Local_AI_Runtime_Model_Management_Specification.md`,
+`Straft_Studio_AI_Specification_Updated.md`, `straft_ai_agentic_rag_spec_prompt.md`,
+`Straft_ESD_Technical_Architecture.md`, `Straft_Studio_Engineering_Package_Index.md` and
+`Straft_Studio_Security_Privacy_Data_Ownership_Specification.md`: every passage about **Download Offline AI**, the signed
 manifest, the model host, install, update, remove and the graphics-card build is history. `docs/spec-digest/prd.md` is a
 digest of the supplied material and keeps its note as written.
 
-**Removed with the code:** `crates/openframe-ai/{keys,manifest,tools}/` (development manifest, its key and signing
-tool), the `MODEL_DISTRIBUTION_BASE_URL` and `OPENFRAME_MANIFEST_PUBLIC_KEY` build variables and the release check 6b,
-the Ed25519 helper in `openframe-security`, the graphics-card (Vulkan) runtime choice: only the processor build is
+**Removed with the code:** `crates/straft-ai/{keys,manifest,tools}/` (development manifest, its key and signing
+tool), the `MODEL_DISTRIBUTION_BASE_URL` and `STRAFT_MANIFEST_PUBLIC_KEY` build variables and the release check 6b,
+the Ed25519 helper in `straft-security`, the graphics-card (Vulkan) runtime choice: only the processor build is
 pinned, so nothing else could be tested together as one set (ADR-0025 decision 4).
 
 ## 2026-10-08: current goal, store publishing later, Offline AI bundled in every package
@@ -85,7 +85,7 @@ Owner answers in chat on 2026-10-08: (A) the current goal is to finish building,
 and packaging of the internal Windows `.exe` and Mac `.dmg`; publishing to the Microsoft Store and the Mac App Store is a
 later step; (B) the `.dmg` is built and tested on a real Apple silicon Mac later; (C) the internal builds stay unsigned
 for now and signing moves to the store and public step; (D) the team password gate stays on and the owner sets
-`OPENFRAME_TEAM_PASSWORD` on the build PC; (E) every package contains the complete offline AI and nothing is downloaded
+`STRAFT_TEAM_PASSWORD` on the build PC; (E) every package contains the complete offline AI and nothing is downloaded
 (new [ADR-0025](../history/adr/ADR-0025-offline-ai-bundled-in-every-package.md)). All five are in the decided table of
 [owner-decisions.md](owner-decisions.md).
 
@@ -139,7 +139,7 @@ screenplays, so they do not answer the decision. The one-screenplay limit lives 
 
 | Place | What it assumes | Change needed |
 |---|---|---|
-| `crates/openframe-application/src/modules/screenplay/mod.rs` (module comment) | One screenplay per project or episode | Reword |
+| `crates/straft-application/src/modules/screenplay/mod.rs` (module comment) | One screenplay per project or episode | Reword |
 | `screenplay/mod.rs` `screenplay_for_scope` | `LIMIT 1` returns the oldest screenplay only | Return a list, or take a `screenplay_id` |
 | `screenplay/mod.rs` `ScreenplayOverview` | One `screenplay`; arguments only `episode_id` | Add the list and a `screenplay_id` argument |
 | `screenplay/drafts.rs` | Creating a screenplay is refused when one exists | Remove the guard |
@@ -317,7 +317,7 @@ The sections below are the original log. They keep the codes they were written w
 | C14 | Scene card has only `short_description`; spec wants a long description. | `0003_story.sql` [V] | Additive column. | Engineering |
 | C15 | Screenplay element types are a fixed CHECK list of 8; custom elements and page breaks need more. | `0004_screenplay.sql` [V] | SQLite cannot alter a CHECK in place: table-rebuild migration with the id/rev/timestamps preserved (doc 23 §4 rule 3). | Engineering |
 | C16 | Audit says LAN residue remains in code (`Capability::HostSession`, `ActorOrigin::Lan`, "local-network collaboration" message). | No match in `crates/` for those symbols; `ActorOrigin` has Local, Exchange, Ai; the network-folder message already points to copy or packages [V] | **Already resolved in code.** Remaining LAN text is in specification and manual files (321 mentions in 35 Markdown files). Banners now, body rewrite tracked as DOC-003. ADR-0007 consequences note updated. | Docs |
-| C17 | Audit says `DEVELOPMENT.md` claims later crates do not exist. | `DEVELOPMENT.md` §5 text; crates `openframe-search`, `-import-export`, `-ai` exist [V] | Corrected in `DEVELOPMENT.md`. | Docs |
+| C17 | Audit says `DEVELOPMENT.md` claims later crates do not exist. | `DEVELOPMENT.md` §5 text; crates `straft-search`, `-import-export`, `-ai` exist [V] | Corrected in `DEVELOPMENT.md`. | Docs |
 | C18 | Doc 23 says project schema version 9. | 10 files in `migrations/project/` [V] | Corrected to 10. | Docs |
 | C19 | `LICENSE-PENDING.md` and older notes mention a Qwen GGUF. | `LICENSE-PENDING.md` L26 [V]; ADR-0013 and Local AI spec say Gemma 3 1B and BGE small | Corrected in `LICENSE-PENDING.md`. | Docs |
 | C20 | Engineering Index lists documents `10_` to `30_` by names that do not exist; real files are `docs/engineering/NN-*.md` and the specifications in `docs/specs/`. | [V] | Index rewritten with real paths. | Docs |
@@ -325,21 +325,21 @@ The sections below are the original log. They keep the codes they were written w
 | C22 | Completion plan says "no screenplay pagination; build once". The repo already has a PDF layout engine (`layout.rs`, 868 lines) with MORE/CONT'D. | [V] | Plan treats it as the starting point; editor parity is verified in M2. | Engineering |
 | C23 | Store listing and privacy policy describe features the README marks "In development". | `docs/store/listing.md` vs README [V] | Listing carries a gating banner: no claim may be submitted until its ledger row is S5. | Release |
 | C24 | The supplied checklist and the completion plan use different phase numbers (0 to 13 vs 0 to 11), the OS plan uses A to F, the Store audit uses P0/P1/P2. | [V] | Single milestone list M0 to M16 in the masterplan with a crosswalk (§3). | Docs |
-| C25 | AI "agentic spec" file `openframe_ai_agentic_rag_spec_prompt.md` sits in the root as a prompt. | [V] | Kept in place because code and docs cite its section numbers; classified as the implemented AI behaviour spec in `docs/README.md`. | Docs |
+| C25 | AI "agentic spec" file `straft_ai_agentic_rag_spec_prompt.md` sits in the root as a prompt. | [V] | Kept in place because code and docs cite its section numbers; classified as the implemented AI behaviour spec in `docs/README.md`. | Docs |
 | C26 | The user manual (`.docx`, `.pdf`) still contains the LAN figures 164 to 168. | **Verified 2026-10-05 [V]:** text extracted from the `.docx` has 181 figures and shows "Starting a local collaboration session (host)" (164) and "Joining a session (participant)" (165) | Regeneration planned (DOC-007). Source of truth for the manual to be decided in M10. | Docs |
 
 ### Where each supplied document lives now
 
 | Supplied document | Now | Treatment |
 |---|---|---|
-| `OpenFrame_New_Spec_Revised.md` | `OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md` (repo root) | Promoted to a normative specification (Revision 1), header added, content unchanged. §47A kept with its numbering. |
-| `OpenFrame_End_to_End_Completion_Implementation_Plan_2026-10-03.md` | `docs/archive/2026-10-03-end-to-end-completion-plan-source.md` | Archived with a banner. Its strategy, laws, completion states, AI integration pipeline, PR checklist and agent protocol are absorbed into `00-masterplan.md`, `CONTRIBUTING.md` and doc 31. |
-| `OpenFrame_Manual_vs_GitHub_Audit_Updated_2026-10-03.md` | `docs/history/audits/2026-10-03-manual-vs-repository-audit.md` | Evidence snapshot. 181-figure table stays here; the ledger references figure ranges. |
-| `OpenFrame_Production_Microsoft_Store_Readiness_Audit_2026-10-02.md` | `docs/history/audits/2026-10-02-production-and-store-readiness-audit.md` | Evidence snapshot. Every P0/P1/P2 item became a masterplan or ledger row (see §4). |
-| `OpenFrame_Master_Product_Launch_Operations_Readiness_Checklist_REVISED.md` | `docs/release/launch-readiness-register.md` | Promoted as the canonical operations register; additions from the intake notes appended (Appendix F). |
-| `OpenFrame_Optimal_HLD_LLD_Desktop_App_2026-10-03.md` | `docs/engineering/29-desktop-hld-lld.md` | Promoted as target architecture; header explains overlap with the ESD. |
-| `OpenFrame_Strong_OS_Compatibility_and_Security_Windows_macOS_2026-10-03_REVISED.md` | `docs/engineering/28-cross-platform-compatibility-security.md` | Promoted; scoped by ADR-0017. |
-| `OpenFrame_Vibe_Coding_Gaps_and_Coverage_2026-10-03.md` | `docs/engineering/31-ai-assisted-development-controls.md` | Promoted; CONTRIBUTING points to it. |
+| `Straft_New_Spec_Revised.md` | `Straft_Studio_Screenplay_and_Production_Depth_Specification.md` (repo root) | Promoted to a normative specification (Revision 1), header added, content unchanged. §47A kept with its numbering. |
+| `Straft_End_to_End_Completion_Implementation_Plan_2026-10-03.md` | `docs/archive/2026-10-03-end-to-end-completion-plan-source.md` | Archived with a banner. Its strategy, laws, completion states, AI integration pipeline, PR checklist and agent protocol are absorbed into `00-masterplan.md`, `CONTRIBUTING.md` and doc 31. |
+| `Straft_Manual_vs_GitHub_Audit_Updated_2026-10-03.md` | `docs/history/audits/2026-10-03-manual-vs-repository-audit.md` | Evidence snapshot. 181-figure table stays here; the ledger references figure ranges. |
+| `Straft_Production_Microsoft_Store_Readiness_Audit_2026-10-02.md` | `docs/history/audits/2026-10-02-production-and-store-readiness-audit.md` | Evidence snapshot. Every P0/P1/P2 item became a masterplan or ledger row (see §4). |
+| `Straft_Master_Product_Launch_Operations_Readiness_Checklist_REVISED.md` | `docs/release/launch-readiness-register.md` | Promoted as the canonical operations register; additions from the intake notes appended (Appendix F). |
+| `Straft_Optimal_HLD_LLD_Desktop_App_2026-10-03.md` | `docs/engineering/29-desktop-hld-lld.md` | Promoted as target architecture; header explains overlap with the ESD. |
+| `Straft_Strong_OS_Compatibility_and_Security_Windows_macOS_2026-10-03_REVISED.md` | `docs/engineering/28-cross-platform-compatibility-security.md` | Promoted; scoped by ADR-0017. |
+| `Straft_Vibe_Coding_Gaps_and_Coverage_2026-10-03.md` | `docs/engineering/31-ai-assisted-development-controls.md` | Promoted; CONTRIBUTING points to it. |
 | `claude_premium_website_design_motion_prompt.md` | `docs/website/prompts/premium-website-design-motion-prompt.md` | Kept as a prompt. Used by `docs/website/README.md`. Tool names in it are unverified. |
 | `claude_production_readiness_anti_ai_slop_prompt.md` | `docs/website/prompts/production-readiness-anti-ai-slop-prompt.md` | Same. |
 | `info.txt` (Store certification tips, brand checklist, 40 extra items) | `docs/archive/notes/store-certification-and-launch-gap-notes.md` | Content absorbed into `27-microsoft-store.md` §12 and register Appendix F. |
@@ -407,21 +407,21 @@ Reason: the repository root held 13 loose specification files plus the manual. T
 
 | Old path (repository root) | New path |
 |---|---|
-| `OpenFrame_Studio_Mega_PRD_Aligned_Updated.md` | `docs/specs/OpenFrame_Studio_Mega_PRD_Aligned_Updated.md` |
-| `OpenFrame_Studio_Functional_Specification_Document_Aligned_Updated.md` | `docs/specs/OpenFrame_Studio_Functional_Specification_Document_Aligned_Updated.md` |
-| `OpenFrame_Studio_UX_UI_Specification_Updated.md` | `docs/specs/OpenFrame_Studio_UX_UI_Specification_Updated.md` |
-| `OpenFrame_Studio_Domain_Data_Specification_Updated.md` | `docs/specs/OpenFrame_Studio_Domain_Data_Specification_Updated.md` |
-| `OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md` | `docs/specs/OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md` |
-| `OpenFrame_Studio_Offline_Collaboration_Specification.md` | `docs/specs/OpenFrame_Studio_Offline_Collaboration_Specification.md` |
-| `OpenFrame_Studio_Import_Export_Specification.md` | `docs/specs/OpenFrame_Studio_Import_Export_Specification.md` |
-| `OpenFrame_Studio_Security_Privacy_Data_Ownership_Specification.md` | `docs/specs/OpenFrame_Studio_Security_Privacy_Data_Ownership_Specification.md` |
-| `OpenFrame_Studio_AI_Specification_Updated.md` | `docs/specs/OpenFrame_Studio_AI_Specification_Updated.md` |
-| `OpenFrame_Local_AI_Runtime_Model_Management_Specification.md` | `docs/specs/OpenFrame_Local_AI_Runtime_Model_Management_Specification.md` |
-| `openframe_ai_agentic_rag_spec_prompt.md` | `docs/specs/openframe_ai_agentic_rag_spec_prompt.md` |
-| `OpenFrame_ESD_Technical_Architecture.md` | `docs/specs/OpenFrame_ESD_Technical_Architecture.md` |
-| `OpenFrame_Studio_Engineering_Package_Index.md` | `docs/specs/OpenFrame_Studio_Engineering_Package_Index.md` |
-| `OpenFrame_Studio_User_Manual.docx` | `docs/manual/OpenFrame_Studio_User_Manual.docx` |
-| `OpenFrame_Studio_User_Manual.pdf` | `docs/manual/OpenFrame_Studio_User_Manual.pdf` |
+| `Straft_Studio_Mega_PRD_Aligned_Updated.md` | `docs/specs/Straft_Studio_Mega_PRD_Aligned_Updated.md` |
+| `Straft_Studio_Functional_Specification_Document_Aligned_Updated.md` | `docs/specs/Straft_Studio_Functional_Specification_Document_Aligned_Updated.md` |
+| `Straft_Studio_UX_UI_Specification_Updated.md` | `docs/specs/Straft_Studio_UX_UI_Specification_Updated.md` |
+| `Straft_Studio_Domain_Data_Specification_Updated.md` | `docs/specs/Straft_Studio_Domain_Data_Specification_Updated.md` |
+| `Straft_Studio_Screenplay_and_Production_Depth_Specification.md` | `docs/specs/Straft_Studio_Screenplay_and_Production_Depth_Specification.md` |
+| `Straft_Studio_Offline_Collaboration_Specification.md` | `docs/specs/Straft_Studio_Offline_Collaboration_Specification.md` |
+| `Straft_Studio_Import_Export_Specification.md` | `docs/specs/Straft_Studio_Import_Export_Specification.md` |
+| `Straft_Studio_Security_Privacy_Data_Ownership_Specification.md` | `docs/specs/Straft_Studio_Security_Privacy_Data_Ownership_Specification.md` |
+| `Straft_Studio_AI_Specification_Updated.md` | `docs/specs/Straft_Studio_AI_Specification_Updated.md` |
+| `Straft_Local_AI_Runtime_Model_Management_Specification.md` | `docs/specs/Straft_Local_AI_Runtime_Model_Management_Specification.md` |
+| `straft_ai_agentic_rag_spec_prompt.md` | `docs/specs/straft_ai_agentic_rag_spec_prompt.md` |
+| `Straft_ESD_Technical_Architecture.md` | `docs/specs/Straft_ESD_Technical_Architecture.md` |
+| `Straft_Studio_Engineering_Package_Index.md` | `docs/specs/Straft_Studio_Engineering_Package_Index.md` |
+| `Straft_Studio_User_Manual.docx` | `docs/manual/Straft_Studio_User_Manual.docx` |
+| `Straft_Studio_User_Manual.pdf` | `docs/manual/Straft_Studio_User_Manual.pdf` |
 
 Also created: `docs/adr/README.md` (decision register: active, superseded, proposed), `docs/specs/README.md` (status of each specification), `docs/spec-digest/README.md` (digests are derived and partly stale).
 

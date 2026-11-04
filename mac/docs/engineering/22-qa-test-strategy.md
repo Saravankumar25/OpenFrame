@@ -11,7 +11,7 @@
 | Level | Tooling | Location | Runs in | Status |
 |---|---|---|---|---|
 | Unit (pure logic, SQL helpers, parsers, security primitives) | `cargo test` `#[cfg(test)]` | each crate | CI `rust` job | ✅ domain, persistence, security, project-format, search |
-| Application integration (ops through the real pipeline, real SQLite, temp dirs) | `openframe-test-support::TestEnv` | `crates/openframe-application/tests/<area>/*.rs` (four area binaries since W1) | CI `rust` job | ✅ `platform/core_pipeline.rs`; one file per module inside its area |
+| Application integration (ops through the real pipeline, real SQLite, temp dirs) | `straft-test-support::TestEnv` | `crates/straft-application/tests/<area>/*.rs` (four area binaries since W1) | CI `rust` job | ✅ `platform/core_pipeline.rs`; one file per module inside its area |
 | Frontend unit/component | Vitest + Testing Library + jsdom | `apps/desktop/src/**/*.test.ts(x)` | CI `web` job | ✅ harness (`src/test/setup.ts`); 🚧 module tests |
 | Golden files (deterministic exports, import parsing) | Rust tests comparing bytes or normalized text | module test dirs | CI `rust` job | 🚧 with import/export |
 | End-to-end desktop | Playwright (WebView2 CDP) or WebdriverIO + `tauri-driver` against a built app | `tests/e2e/` | Release-candidate pipeline (Windows runner) | 🚧 `specs/01-journey`, `02-restart` (AI: "not installed" only) |
@@ -45,7 +45,7 @@ unmodified.
 
 - Fixtures live only in tests. Shipped code has no demo or fake data.
 - Fixtures are synthetic or public domain. No real user projects, and no personal data.
-- Tests never touch `%LOCALAPPDATA%\OpenFrame` or `Documents\OpenFrame` (hermetic temp dirs).
+- Tests never touch `%LOCALAPPDATA%\Straft` or `Documents\Straft Studio` (hermetic temp dirs).
 - Deterministic: no wall-clock dependence beyond ordering (use relative comparisons), and no network.
 
 ## 4. Traceability
@@ -78,14 +78,14 @@ unmodified.
 Design (ADR-0026, ADR-0032): the runtime ships in every package; the two models download after a user click, straight
 from Hugging Face at the commits `packaging/ai/ai-assets.lock.json` pins, verified by the sizes and SHA-256 hashes compiled
 into the app. The test suite serves the same files from a local host at the same paths. Rust tests in CI use a deterministic scripted `InferenceProvider` and a deterministic
-test embedder (`openframe_test_support`), never shipped. The real bundled components are exercised by the opt-in
+test embedder (`straft_test_support`), never shipped. The real bundled components are exercised by the opt-in
 Rust tests, the benchmark and the desktop E2E AI specs, which run the test build with the bundled model.
 
 | Layer | What it proves | Location | Runs in |
 |---|---|---|---|
-| Runtime unit + integration | Bundle lock validation (unsafe paths, hashes, roles, embedded tokenizer, processor build only), first launch with the not-installed state and the download offer (to be built, ADR-0026: signature failure, hash mismatch, interrupted and resumed download, disk full, quarantine, atomic activation, last known-good kept), hash check before the first engine start with the check record in app data, altered / missing / linked / replaced files, a new app version re-checks everything, engine files re-hashed before every launch, supervisor lifecycle, retired download clean-up, with the test executable standing in for `llama-server` | `crates/openframe-ai/src/**`, `tests/{bundled,supervisor,soak_sidecar,sidecar_log_redaction}.rs` | CI `rust` |
-| Derived index | Index open/trust/rebuild on identity change or damage, vector module not global, graph traversal limits, RRF ranking | `crates/openframe-search/src/**` (unit) | CI `rust` |
-| Retrieval | Documents/chunks/vectors/graph for every domain, private notes and contact details, hybrid vs keyword, graph expansion, incremental indexing incl. undo/redo/delete/restore, saves never wait, embedding failure fallback, router, restart/rebuild, index ops, project close | `crates/openframe-application/tests/ai_retrieval.rs` | CI `rust` |
+| Runtime unit + integration | Bundle lock validation (unsafe paths, hashes, roles, embedded tokenizer, processor build only), first launch with the not-installed state and the download offer (to be built, ADR-0026: signature failure, hash mismatch, interrupted and resumed download, disk full, quarantine, atomic activation, last known-good kept), hash check before the first engine start with the check record in app data, altered / missing / linked / replaced files, a new app version re-checks everything, engine files re-hashed before every launch, supervisor lifecycle, retired download clean-up, with the test executable standing in for `llama-server` | `crates/straft-ai/src/**`, `tests/{bundled,supervisor,soak_sidecar,sidecar_log_redaction}.rs` | CI `rust` |
+| Derived index | Index open/trust/rebuild on identity change or damage, vector module not global, graph traversal limits, RRF ranking | `crates/straft-search/src/**` (unit) | CI `rust` |
+| Retrieval | Documents/chunks/vectors/graph for every domain, private notes and contact details, hybrid vs keyword, graph expansion, incremental indexing incl. undo/redo/delete/restore, saves never wait, embedding failure fallback, router, restart/rebuild, index ops, project close | `crates/straft-application/tests/ai_retrieval.rs` | CI `rust` |
 | Retrieval budgets (§34) | FTS, vector, graph, hybrid + assembly and save latency on a generated feature-length fixture | `tests/ai_retrieval_perf.rs` | CI `rust` (3× budget in debug) |
 | Toolbox | No tool reviews/applies Change Sets or runs `ai.*`; unknown tool / bad args; proposals never write; reads never mutate; role filtering; private notes; ambiguity; every proposal builds registry-valid operations; schema coverage; request-relevant tool subset | `tests/ai_toolbox.rs` | CI `rust` |
 | Coverage matrix | Every registered operation has metadata; tools match metadata; strict bounded schemas; `ai-tool-coverage.md` regenerated from the Registry (fails on drift) | `tests/ai_tool_coverage.rs` | CI `rust` |
@@ -93,7 +93,7 @@ Rust tests, the benchmark and the desktop E2E AI specs, which run the test build
 | Assistant acceptance (AI-AC-xxx) | Works without AI, exact counts, no invented facts, navigation, suggestions create nothing, preview → accept → one undo step, permissions, stale/conflict, rename exclusions, all-or-nothing apply, allow-list, ambiguity, private notes, injection, malformed output, audit without context copies, personal history | `tests/ai.rs`, `tests/security_review.rs` (`ai_01_*`, `ai_02_*`) | CI `rust` |
 | Frontend | Panel states (ready, off with the repair message, not installed with the download offer, no download without a click), proposal card actions, scope options, index notice | `apps/desktop/src/ai/*.test.ts(x)` | CI `web` |
 | E2E (real bundled model, deterministic sampling) | Ready on first launch; exact and retrieved answers with sources; navigation; scope in every workspace; propose, apply, undo, redo, reject, stale; kill on apply (ADR-0019 all or nothing) and while the engine answers; missing and altered bundle files; loopback-only network use | `tests/e2e/specs/7{2..6}-ai-*.test.mjs`, journey step in `01-journey.test.mjs` | RC pipeline |
-| Real components (manual / opt-in) | Full check of the staged bundle → chat (deterministic) → grammar-constrained JSON → embeddings → recorded check on the next start; the assistant through the operation registry (exact count, retrieval, propose, apply, undo, reject); model benchmark | `OPENFRAME_AI_BUNDLE_DIR=.build-cache/ai-bundle cargo test -p openframe-ai --test real_runtime -- --ignored`; the same variable with `-p openframe-application --test ai ai_real_model:: -- --ignored --test-threads=1`; `node scripts/ai-benchmark.mjs` | Offline AI bundle gate |
+| Real components (manual / opt-in) | Full check of the staged bundle → chat (deterministic) → grammar-constrained JSON → embeddings → recorded check on the next start; the assistant through the operation registry (exact count, retrieval, propose, apply, undo, reject); model benchmark | `STRAFT_AI_BUNDLE_DIR=.build-cache/ai-bundle cargo test -p straft-ai --test real_runtime -- --ignored`; the same variable with `-p straft-application --test ai ai_real_model:: -- --ignored --test-threads=1`; `node scripts/ai-benchmark.mjs` | Offline AI bundle gate |
 
 Not covered yet: a retrieval **quality** evaluation set (Recall@K / MRR, FTS vs vector vs hybrid vs hybrid+graph,
 agentic spec §35); an E2E index rebuild with the real model; the web view's own network use in the no-egress check
@@ -117,22 +117,22 @@ agentic spec §35); an E2E index rebuild with the real model; the web view's own
 
 | Suite | What it proves | How |
 |---|---|---|
-| `crates/openframe-application/tests/platform/soak.rs` | Concurrent IPC (4 writer and 2 reader threads on one `AppCore`), rapid explicit saves (every 50–150 ms), thousands of mutations, undo and redo during an index rebuild, close and reopen during indexing with writes racing the close, repeated AI cancel (`app.cancel_task` on `ai.index_rebuild`, assistant requests whose model call is cancelled or unavailable) | Real ops through `AppCore::dispatch`; the test embedder from `openframe-test-support`; a local `InferenceProvider` that always ends abnormally. Each writer keeps a model of what it wrote; phase 2 checks the content against the model after every undo and redo. End checks: `integrity_check`, `foreign_key_check`, undo history (states, 300 cap, parseable steps, undo/redo round trip), counts equal the models, index current and complete, no save error, every task ended, working set growth under 256 MB, clean close and restart without a recovery offer. Every phase runs under a watchdog and every op under a 30 s bound, so a deadlock fails instead of hanging. |
-| `crates/openframe-ai/tests/soak_sidecar.rs` | Sidecar crash and restart loop with requests cancelled in flight; explicit stop and start; crash storm ends in Failed with a plain-language reason and an explicit start recovers | The test binary re-launched as a fake `llama-server` (as in `supervisor.rs`). Checks a new loopback port and key per launch, never Busy after a cancel, old ports closed, no fake server process left, working set growth under 64 MB. |
+| `crates/straft-application/tests/platform/soak.rs` | Concurrent IPC (4 writer and 2 reader threads on one `AppCore`), rapid explicit saves (every 50–150 ms), thousands of mutations, undo and redo during an index rebuild, close and reopen during indexing with writes racing the close, repeated AI cancel (`app.cancel_task` on `ai.index_rebuild`, assistant requests whose model call is cancelled or unavailable) | Real ops through `AppCore::dispatch`; the test embedder from `straft-test-support`; a local `InferenceProvider` that always ends abnormally. Each writer keeps a model of what it wrote; phase 2 checks the content against the model after every undo and redo. End checks: `integrity_check`, `foreign_key_check`, undo history (states, 300 cap, parseable steps, undo/redo round trip), counts equal the models, index current and complete, no save error, every task ended, working set growth under 256 MB, clean close and restart without a recovery offer. Every phase runs under a watchdog and every op under a 30 s bound, so a deadlock fails instead of hanging. |
+| `crates/straft-ai/tests/soak_sidecar.rs` | Sidecar crash and restart loop with requests cancelled in flight; explicit stop and start; crash storm ends in Failed with a plain-language reason and an explicit start recovers | The test binary re-launched as a fake `llama-server` (as in `supervisor.rs`). Checks a new loopback port and key per launch, never Busy after a cancel, old ports closed, no fake server process left, working set growth under 64 MB. |
 
-Profiles: `OPENFRAME_SOAK_SECS` sets the total time. The short profile runs in `cargo test` (60 s for
+Profiles: `STRAFT_SOAK_SECS` sets the total time. The short profile runs in `cargo test` (60 s for
 `soak.rs`, 20 s for the sidecar loop). The ignored long profiles default to 30 minutes:
 
 ```text
-OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-application --test platform -- --ignored --nocapture soak::m1_08_soak_long
-OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-ai --test soak_sidecar -- --ignored --nocapture m1_08_sidecar_soak_long
+STRAFT_SOAK_SECS=1800 cargo test -p straft-application --test platform -- --ignored --nocapture soak::m1_08_soak_long
+STRAFT_SOAK_SECS=1800 cargo test -p straft-ai --test soak_sidecar -- --ignored --nocapture m1_08_sidecar_soak_long
 ```
 
 Evidence: `docs/history/evidence/M1/M1.08-soak.txt` (evidence folders and file names keep their old item codes on purpose; see the evidence README).
 
 ### Failure injection
 
-`crates/openframe-application/tests/failure_injection.rs`. Every
+`crates/straft-application/tests/failure_injection.rs`. Every
 case expects a human error code and message, no partial file where the user would find it, no data loss, and a
 project that still opens with every acknowledged change.
 

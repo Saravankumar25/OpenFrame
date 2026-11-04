@@ -313,7 +313,7 @@ export default function BudgetTab() {
         }
       />
       <div style={{ marginBottom: 10 }}>
-        <Banner tone="info">Use a simple estimate for planning. Formal accounting is outside OpenFrame.</Banner>
+        <Banner tone="info">Use a simple estimate for planning. Formal accounting is outside Straft Studio.</Banner>
       </div>
       {b && v.reviewReminder && (
         <div style={{ marginBottom: 10 }}>

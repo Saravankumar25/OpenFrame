@@ -7,7 +7,7 @@
 -- the user has not written one.
 --
 -- vault_item.research_flag: the user's own verification flag for a research source. NULL means no
--- flag. OpenFrame never sets it on its own (FSD 107.6). The same column is added to the Global Idea
+-- flag. Straft Studio never sets it on its own (FSD 107.6). The same column is added to the Global Idea
 -- Vault by migrations/global/0004_vault_research.sql so one module serves both stores.
 --
 -- Card Display Settings are view settings, not content: they live in sys_view_state and need no table.

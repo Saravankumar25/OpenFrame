@@ -2,7 +2,7 @@
 // mocks 091 source → 092 preview → 094 report, 093 failure).
 // Nothing is created until the user confirms the preview; an existing
 // screenplay is never overwritten (new screenplay or new named draft only).
-// The four sample scripts that ship with OpenFrame open through the same
+// The four sample scripts that ship with Straft Studio open through the same
 // preview and import steps as a file the user picks.
 
 import { useEffect, useRef, useState } from "react";
@@ -409,7 +409,7 @@ function ImportFlow({ onClose, onImported, openScreenplayId }: {
       onOpenChange={(v) => !v && onClose()}
       size="lg"
       title="Import Screenplay"
-      sub="What existing script do you want to bring into OpenFrame?"
+      sub="What existing script do you want to bring into Straft Studio?"
       footer={
         <>
           <Button onClick={onClose}>Cancel</Button>
@@ -450,7 +450,7 @@ function ImportFlow({ onClose, onImported, openScreenplayId }: {
             <BookOpen size={14} aria-hidden /> Or open a sample script
           </div>
           <div className="xs muted" style={{ marginBottom: 6 }}>
-            Fictional scripts written and owned by OpenFrame, for learning the app.
+            Fictional scripts written and owned by Straft Studio, for learning the app.
           </div>
           <div className="row" role="radiogroup" aria-label="Sample script" style={{ gap: 6, flexWrap: "wrap" }}>
             {samples.data!.map((s) => (

@@ -7,7 +7,7 @@
 |---|---|
 | Export | Daily View — `schedule.export_daily_view` ("Shoot Day N - Daily View") |
 | Variant | PDF, portrait US Letter (and the TXT twin) |
-| Status | **Design reference — not integrated; not validated against OpenFrame's Rust renderer** |
+| Status | **Design reference — not integrated; not validated against Straft Studio's Rust renderer** |
 | Repo commit | `2f5a045416bd2125801329533fc47f986ccc8174` (`main`) |
 | Date | 2026-10-23 |
 | Files | `Daily_View.html` / `.pdf` (1 page) · `stress-test/Daily_View_STRESS_TEST.html` / `.pdf` (6 pages, 4 variants) · generator `tools/build/scheduling/build_daily.py` |
@@ -116,7 +116,7 @@ Changes versus the builder, and why
 * Cast / Scene Order tables: shared `tbl zebra boxed compact`; header navy 6.9 pt caps; body 8.4 pt; name column bold navy; Call and Est. right-aligned, tabular.
 * Call sheet: status chip 7.4 pt + 8.8 pt sentence. Notes: 8.8 pt paragraphs, break chips 8 pt bold. Breakdown items: pill chips 8 pt, wrapping.
 * **Status redundancy**: call-sheet status is always the word (FINAL / NEEDS REFRESH / DRAFT) in the chip; gaps are words ("Address missing"), not colour.
-* Footer: shared system (PNG logo lockup, "Created using OpenFrame", "Page X of Y").
+* Footer: shared system (PNG logo lockup, "Created using Straft Studio", "Page X of Y").
 * **Running header decision**: none on a one-page Daily View (verified `--no-header`). **Rule for the renderer**: print a compact top-right line `<PROJECT> · <SHOOT DAY N> · DAILY VIEW` only when the document has more than one page, because page 2 of a long day otherwise carries no day identity. The multi-page stress test shows this (with a generic text because it contains several days).
 
 ## G. Dynamic behaviour

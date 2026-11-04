@@ -5,12 +5,12 @@ latest Windows app, keeps its own Apple design, and takes the owner's change lis
 brief. This page is the requirement inventory and its status. Code is the truth; where this page and the code
 disagree, the code wins and this page is fixed.
 
-- **Windows baseline:** GitHub `Saravankumar25/OpenFrame` commit `324cd963` (folder `windows/`), imported as
+- **Windows baseline:** GitHub `Saravankumar25/StraftStudio` commit `324cd963` (folder `windows/`), imported as
   commit `e9f2619` on top of the W9 merge `973a8ee` and merged into the Mac branch (`af5e41f`). The shared Rust
   core is therefore one core again (ADR-0034).
 - **Mac branch:** `mac/windows-parity` (from `mac/m1-toolchain`).
 - **Inputs read:** `changes.zip` (all_changes.docx items 1 to 22, five PDF change specs with references,
-  read_this.txt), `new changes.docx` (items 1 to 5), `openframe-chnages.docx` (items 1 and 2), `OpenFrameAI.docx`
+  read_this.txt), `new changes.docx` (items 1 to 5), `straft-chnages.docx` (items 1 and 2), `StraftAI.docx`
   (sections 1 to 12, exhibits E01 to E12), the Windows AI context-engineering brief and the Windows UX brief.
 
 Status words: **Done** (built on the Mac and tested), **Core** (done in the shared core, so the Mac has it with
@@ -57,7 +57,7 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | 13 | Focus mode shows only the screenplay | Done |
 | 14 | Screenplay zoom with the mouse | Done (pinch; see item 10) |
 | 15 | +Beat, +Scene overflow | Done (the rows wrap) |
-| 16 | OpenFrame Default dark | Core (themes.json); the Mac engine matches the reference for all 17 themes |
+| 16 | Straft Default dark | Core (themes.json); the Mac engine matches the reference for all 17 themes |
 | 17 | Logo or name to all projects | Done (labelled button) |
 | 18 | Long draft names | Done (the toolbar draft menu shortens a long name in the middle; the full name is in the tooltip and the menu) |
 | 19 | Breakdown sidebar breaking the page | Same (Mac split view); "Hide scenes" and "Hide panel" in the source bar, remembered on this Mac | 
@@ -66,7 +66,7 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | 21 | Shot list grid view | Done (List and Grid; a card shows the reference image or the first storyboard panel, then size, angle, movement, lens, description and characters; reordering stays in List as on Windows) |
 | 22 | PDF exports redesign | Core (the Windows PDF redesign is in the merged core; Mac exports use it) |
 
-## 3. New changes and openframe-changes
+## 3. New changes and straft-changes
 
 | Item | Status on the Mac |
 |---|---|
@@ -99,7 +99,7 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | Settings button did nothing | Fixed: the Home Settings button and "Offline AI settings" used a message recent macOS ignores; they now use SwiftUI's openSettings action, and the window-fit scenario clicks the button |
 | Page and section headers | Done: every page header has the Windows layout (title and line on the left, actions on the right, under the title in a narrow page); section titles are small grey capitals; Home cards carry the five Windows previews |
 
-## 4. AI (OpenFrameAI.docx and the Windows AI brief)
+## 4. AI (StraftAI.docx and the Windows AI brief)
 
 | Item | Status |
 |---|---|
@@ -119,7 +119,7 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 
 ## 5. Verification
 
-- Rust: `cargo test -p openframe-application -p openframe-ffi -p openframe-import-export`, 30 suites pass (976 core
+- Rust: `cargo test -p straft-application -p straft-ffi -p straft-import-export`, 30 suites pass (976 core
   tests), plus the Daily View export tests.
 - Swift: `apps/macos/scripts/test.sh`, 606 tests; failures after the merge were stale expectations (fixed) and one
   Trash test that passes alone.

@@ -7,7 +7,7 @@ import { AiHealthCard } from "./AiHealth";
 // Test fixtures only: the IPC boundary and the system Save dialog are replaced.
 const calls: { op: string; args: Record<string, unknown> }[] = [];
 let health: Record<string, unknown> = {};
-const saveMock = vi.fn(async (_o: unknown) => "C:\\Reports\\openframe-ai-report.json" as string | null);
+const saveMock = vi.fn(async (_o: unknown) => "C:\\Reports\\straft-ai-report.json" as string | null);
 
 vi.mock("@tauri-apps/plugin-dialog", () => ({ open: vi.fn(async () => null), save: (o: unknown) => saveMock(o) }));
 
@@ -22,7 +22,7 @@ vi.mock("../../ipc/client", async () => {
     call: vi.fn(async (op: string, args: Record<string, unknown> = {}) => {
       calls.push({ op, args });
       if (op === "ai.health") return health;
-      if (op === "ai.export_report") return { fileName: "openframe-ai-report.json", rows: 12 };
+      if (op === "ai.export_report") return { fileName: "straft-ai-report.json", rows: 12 };
       return null;
     }),
   };
@@ -56,7 +56,7 @@ describe("AI health card", () => {
     renderWithClient(<AiHealthCard />);
     await userEvent.click(await screen.findByRole("button", { name: "Export AI report" }));
     await waitFor(() => expect(calls.some((c) => c.op === "ai.export_report")).toBe(true));
-    expect(calls.find((c) => c.op === "ai.export_report")?.args).toEqual({ path: "C:\\Reports\\openframe-ai-report.json" });
+    expect(calls.find((c) => c.op === "ai.export_report")?.args).toEqual({ path: "C:\\Reports\\straft-ai-report.json" });
 
     calls.length = 0;
     saveMock.mockResolvedValueOnce(null);

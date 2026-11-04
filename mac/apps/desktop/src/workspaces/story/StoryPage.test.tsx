@@ -49,7 +49,7 @@ vi.mock("../../ipc/client", async () => {
           stored = { ...stored, rev: stored.rev + 1 };
           throw new OpError("conflict.stale", "This Story page was changed by someone else.");
         }
-        if (fail === "disk") throw new OpError("storage.write_failed", "OpenFrame could not save this change yet.");
+        if (fail === "disk") throw new OpError("storage.write_failed", "Straft Studio could not save this change yet.");
         if (args.expectedRev !== stored.rev) throw new OpError("conflict.stale", "stale");
         stored = { text: args.text as string, format: (args.format as string | null) ?? null, rev: stored.rev + 1, updatedAt: 2 };
         return { rev: stored.rev, updatedAt: 2 };
@@ -96,7 +96,7 @@ beforeEach(async () => {
   stored = { text: "In the beginning.", format: null, rev: 3, updatedAt: 1 };
   saveFailures = [];
   readFails = false;
-  window.localStorage.removeItem("openframe.story.zoom");
+  window.localStorage.removeItem("straft.story.zoom");
 });
 
 describe("Story page", () => {
@@ -222,7 +222,7 @@ describe("Story page", () => {
     expect(sheet.style.getPropertyValue("--story-zoom")).toBe("1.1");
     const desk = sheet.parentElement!;
     fireEvent.wheel(desk, { deltaY: -400, ctrlKey: true });
-    expect(Number(window.localStorage.getItem("openframe.story.zoom"))).toBeGreaterThan(1.1);
+    expect(Number(window.localStorage.getItem("straft.story.zoom"))).toBeGreaterThan(1.1);
     const zoomed = screen.getByRole("group", { name: "Page zoom" }).textContent;
     // A wheel without Ctrl scrolls and leaves the zoom alone.
     fireEvent.wheel(desk, { deltaY: 400 });
@@ -295,7 +295,7 @@ describe("Story page", () => {
   });
 
   it("turns the sheet dark and back, and remembers the choice", async () => {
-    window.localStorage.removeItem("openframe.story.darkPage");
+    window.localStorage.removeItem("straft.story.darkPage");
     const first = wrap(<StoryPage />);
     const v = await editor();
     const sheet = v.dom.closest(".story-a4") as HTMLElement;
@@ -309,7 +309,7 @@ describe("Story page", () => {
     wrap(<StoryPage />);
     expect((await editor()).dom.closest(".story-a4")).toHaveAttribute("data-paper", "dark");
     fireEvent.click(screen.getByRole("button", { name: "Dark page" }));
-    expect(window.localStorage.getItem("openframe.story.darkPage")).toBe("0");
+    expect(window.localStorage.getItem("straft.story.darkPage")).toBe("0");
   });
 
   it("does not open the page for writing when it cannot be read", async () => {

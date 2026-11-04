@@ -3,7 +3,7 @@
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned.
 > Source: `store.rs` (`Store::mutate`, `SaveTracker`, undo/redo), `persistence/{lib.rs,undo.rs}`,
 > `modules/{project.rs,history.rs}`, `project-format` (crash marker). Decisions: ADR-0003, ADR-0005, ADR-0010.
-> Tests: `crates/openframe-application/tests/core_pipeline.rs`.
+> Tests: `crates/straft-application/tests/core_pipeline.rs`.
 
 ## 1. Guarantees
 
@@ -13,7 +13,7 @@
 | No partial writes | A failed write leaves no partial state | Transaction rollback; files created in the transaction are removed; purged files are deleted only after commit ✅ |
 | Recovery choice after a crash | After an abnormal exit, the user chooses: latest autosave or last confirmed save | Crash marker + `recovery/checkpoint.sqlite` ✅ |
 | Safe undo | Undo never overwrites later work | Stale check against full row images (ADR-0005) ✅ |
-| Safe upgrade | Upgrading OpenFrame never destroys a project | Verified safety backup before migration; atomic migration; too-new refused ✅ |
+| Safe upgrade | Upgrading Straft Studio never destroys a project | Verified safety backup before migration; atomic migration; too-new refused ✅ |
 | Recoverable deletion | Deletion is recoverable until deliberately purged | `deleted_at` + `deleted_item`; purge is a separate Owner action ✅ |
 
 ## 2. Autosave ✅
@@ -90,7 +90,7 @@ never touched. A delete time later than now (clock turned back) counts as now: n
 30 days. A clock turned forward removes what is 30 days old by that clock. Both Recently Deleted screens show the whole days
 left ("Removed in": 30 to 1 day left, `daysLeft` on `DeletedItemView` and `VaultTrashRow`); the Owner can still delete
 permanently earlier. Private notes of another member are left in place (their owner's own app removes them). Tests:
-`crates/openframe-application/tests/recently_deleted_purge.rs`.
+`crates/straft-application/tests/recently_deleted_purge.rs`.
 
 ## 6. Backups
 

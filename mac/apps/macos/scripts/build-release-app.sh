@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
-# Builds the internal release app bundle of OpenFrame Studio for Apple silicon (Mac phase M9).
+# Builds the internal release app bundle of Straft Studio for Apple silicon (Mac phase M9).
 #
 #   1. the Rust core in the release profile;
 #   2. the Swift app in the release configuration, in a staging copy of apps/macos so a release
 #      build never replaces the debug core that development and tests link;
-#   3. OpenFrame Studio.app: executable, resources, the AI engine (when fetched), Info.plist,
+#   3. Straft Studio.app: executable, resources, the AI engine (when fetched), Info.plist,
 #      privacy manifest and icon, signed ad hoc (internal build: no Developer ID, not notarised).
 #
-# With --store it builds the Mac App Store app instead (`cfg(openframe_store)`, sandbox, the owner's
+# With --store it builds the Mac App Store app instead (`cfg(straft_store)`, sandbox, the owner's
 # Apple Distribution identity) and then the installer package for upload. That path fails closed
 # while a REPLACE_WITH_ placeholder remains, while a signing identity is missing, or when the build
 # number did not rise. Its upload step lives in .github/workflows/release.yml.
 #
 # Usage: apps/macos/scripts/build-release-app.sh [--store]
-# Output: release-out/mac/OpenFrame Studio.app, and with --store release-out/mac-store/OpenFrame-Studio.pkg
+# Output: release-out/mac/Straft Studio.app, and with --store release-out/mac-store/Straft-Studio.pkg
 set -euo pipefail
 STORE=0
 [[ "${1:-}" == "--store" ]] && STORE=1
@@ -31,10 +31,10 @@ export CARGO_INCREMENTAL=0
 # Outside the home folder: build paths end up in the binary and must not name the builder.
 # A private per-user temporary folder (mode 700), not a shared fixed path another account could
 # prepare in advance.
-STAGE="$(getconf DARWIN_USER_TEMP_DIR)openframe-release-stage/macos"
+STAGE="$(getconf DARWIN_USER_TEMP_DIR)straft-release-stage/macos"
 OUT="$ROOT/release-out/mac"
 if [[ "$STORE" == 1 ]]; then OUT="$ROOT/release-out/mac-store"; fi
-APP="$OUT/OpenFrame Studio.app"
+APP="$OUT/Straft Studio.app"
 VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' "$ROOT/Cargo.toml" | head -1)"
 COMMIT="$(git -C "$ROOT" rev-parse --short HEAD)"
 # The store accepts at most three numbers in CFBundleVersion: the build number is the commit count.
@@ -49,8 +49,8 @@ if [[ "$STORE" == 1 ]]; then
   : "${MAC_APPLICATION_IDENTITY:?the Apple Distribution certificate name is required}"
   : "${MAC_INSTALLER_IDENTITY:?the Mac Installer Distribution certificate name is required}"
   : "${MAC_PROVISIONING_PROFILE:?the path of the provisioning profile is required}"
-  # `cfg(openframe_store)`: the store channel, with no internal build path compiled in.
-  export OPENFRAME_DISTRIBUTION=store
+  # `cfg(straft_store)`: the store channel, with no internal build path compiled in.
+  export STRAFT_DISTRIBUTION=store
 fi
 
 echo "== 1. Rust core (release)"
@@ -59,39 +59,39 @@ cd "$ROOT"
 # (scripts/with-msvc-linker.mjs), so the binary does not carry the builder's folders.
 CARGO_HOME_DIR="${CARGO_HOME:-$HOME/.cargo}"
 RUSTUP_HOME_DIR="${RUSTUP_HOME:-$HOME/.rustup}"
-export RUSTFLAGS="--remap-path-prefix=$ROOT=openframe --remap-path-prefix=$CARGO_HOME_DIR=cargo --remap-path-prefix=$RUSTUP_HOME_DIR=rustup"
-cargo build -p openframe-ffi --lib --release
-LIB="$ROOT/target/release/libopenframe_ffi.a"
+export RUSTFLAGS="--remap-path-prefix=$ROOT=straft --remap-path-prefix=$CARGO_HOME_DIR=cargo --remap-path-prefix=$RUSTUP_HOME_DIR=rustup"
+cargo build -p straft-ffi --lib --release
+LIB="$ROOT/target/release/libstraft_ffi.a"
 [[ -f "$LIB" ]] || { echo "missing $LIB" >&2; exit 1; }
 
 echo "== 2. Swift app (release) in $STAGE"
 mkdir -p "$STAGE"
 rsync -a --delete --exclude .build --exclude Frameworks --exclude build "$MACOS/" "$STAGE/"
-XCF="$STAGE/Frameworks/OpenFrameFFI.xcframework"
+XCF="$STAGE/Frameworks/StraftFFI.xcframework"
 rm -rf "$STAGE/Frameworks"
 mkdir -p "$XCF/macos-arm64/Headers"
-cp "$LIB" "$XCF/macos-arm64/libopenframe_ffi.a"
-cp "$MACOS/Frameworks/OpenFrameFFI.xcframework/macos-arm64/Headers/"* "$XCF/macos-arm64/Headers/"
-cp "$MACOS/Frameworks/OpenFrameFFI.xcframework/Info.plist" "$XCF/Info.plist"
+cp "$LIB" "$XCF/macos-arm64/libstraft_ffi.a"
+cp "$MACOS/Frameworks/StraftFFI.xcframework/macos-arm64/Headers/"* "$XCF/macos-arm64/Headers/"
+cp "$MACOS/Frameworks/StraftFFI.xcframework/Info.plist" "$XCF/Info.plist"
 # The Swift interface is generated from this very library: one generated earlier from another
 # build of the core fails its checksum check and the app stops at start (2026-10-27).
 GEN_DIR="$(mktemp -d)"
-(cd "$ROOT" && RUSTFLAGS= cargo run -q -p openframe-ffi --features bindgen --bin uniffi-bindgen -- \
+(cd "$ROOT" && RUSTFLAGS= cargo run -q -p straft-ffi --features bindgen --bin uniffi-bindgen -- \
   generate --library "$LIB" --language swift --out-dir "$GEN_DIR" >/dev/null)
-cp "$GEN_DIR/openframe_ffi.swift" "$STAGE/Sources/OpenFrameCore/Generated/openframe_ffi.swift"
-cp "$GEN_DIR/openframe_ffiFFI.h" "$XCF/macos-arm64/Headers/openframe_ffiFFI.h"
+cp "$GEN_DIR/straft_ffi.swift" "$STAGE/Sources/StraftCore/Generated/straft_ffi.swift"
+cp "$GEN_DIR/straft_ffiFFI.h" "$XCF/macos-arm64/Headers/straft_ffiFFI.h"
 rm -rf "$GEN_DIR"
 cd "$STAGE"
-SWIFT_FLAGS=(-c release -Xswiftc -file-prefix-map -Xswiftc "$STAGE=openframe")
-swift build "${SWIFT_FLAGS[@]}" --product OpenFrameStudio
-if [[ "$STORE" == 0 ]]; then swift build "${SWIFT_FLAGS[@]}" --product OpenFrameE2EDriver; fi
-BIN="$(swift build "${SWIFT_FLAGS[@]}" --product OpenFrameStudio --show-bin-path)"
+SWIFT_FLAGS=(-c release -Xswiftc -file-prefix-map -Xswiftc "$STAGE=straft")
+swift build "${SWIFT_FLAGS[@]}" --product StraftStudio
+if [[ "$STORE" == 0 ]]; then swift build "${SWIFT_FLAGS[@]}" --product StraftE2EDriver; fi
+BIN="$(swift build "${SWIFT_FLAGS[@]}" --product StraftStudio --show-bin-path)"
 
 echo "== 3. App bundle"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$BIN/OpenFrameStudio" "$APP/Contents/MacOS/OpenFrameStudio"
-strip -x "$APP/Contents/MacOS/OpenFrameStudio" 2>/dev/null || true
+cp "$BIN/StraftStudio" "$APP/Contents/MacOS/StraftStudio"
+strip -x "$APP/Contents/MacOS/StraftStudio" 2>/dev/null || true
 for b in "$BIN"/*.bundle; do [[ -e "$b" ]] && cp -R "$b" "$APP/Contents/Resources/"; done
 cp "$MACOS/packaging/PrivacyInfo.xcprivacy" "$APP/Contents/Resources/PrivacyInfo.xcprivacy"
 # The third-party notices the About window's Licences sheet shows.
@@ -122,14 +122,14 @@ if [[ "$STORE" == 1 ]]; then
       --entitlements "$MACOS/packaging/llama-server-store.entitlements" "$helper"
   done < <(find "$APP/Contents/Helpers/ai" -type f -name 'llama-server' -print0 2>/dev/null)
   codesign --force --sign "$MAC_APPLICATION_IDENTITY" --timestamp --options runtime \
-    --entitlements "$MACOS/packaging/OpenFrameStudio-store.entitlements" "$APP"
+    --entitlements "$MACOS/packaging/StraftStudio-store.entitlements" "$APP"
   codesign --verify --deep --strict "$APP"
   echo "== 4. Secret and personal-path scan of the bundle"
   node "$ROOT/scripts/scan-installer.mjs" "$APP"
   echo "== 5. Installer package"
-  productbuild --component "$APP" /Applications --sign "$MAC_INSTALLER_IDENTITY" "$OUT/OpenFrame-Studio.pkg"
+  productbuild --component "$APP" /Applications --sign "$MAC_INSTALLER_IDENTITY" "$OUT/Straft-Studio.pkg"
   echo "== Done"
-  echo "$OUT/OpenFrame-Studio.pkg"
+  echo "$OUT/Straft-Studio.pkg"
   echo "version $VERSION, build $BUILD, commit $COMMIT"
   exit 0
 fi
@@ -139,10 +139,10 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleName</key><string>OpenFrame Studio</string>
-	<key>CFBundleDisplayName</key><string>OpenFrame Studio</string>
-	<key>CFBundleIdentifier</key><string>app.openframestudio.studio</string>
-	<key>CFBundleExecutable</key><string>OpenFrameStudio</string>
+	<key>CFBundleName</key><string>Straft Studio</string>
+	<key>CFBundleDisplayName</key><string>Straft Studio</string>
+	<key>CFBundleIdentifier</key><string>app.straftstudio.studio</string>
+	<key>CFBundleExecutable</key><string>StraftStudio</string>
 	<key>CFBundleIconFile</key><string>AppIcon</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
 	<key>CFBundleShortVersionString</key><string>${VERSION}</string>
@@ -152,8 +152,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 	<key>LSRequiresNativeExecution</key><true/>
 	<key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
 	<key>NSHighResolutionCapable</key><true/>
-	<key>NSHumanReadableCopyright</key><string>OpenFrame Studio internal build ${COMMIT}</string>
-	<key>NSMicrophoneUsageDescription</key><string>OpenFrame Studio records voice notes into your Idea Vault only when you press Record.</string>
+	<key>NSHumanReadableCopyright</key><string>Straft Studio internal build ${COMMIT}</string>
+	<key>NSMicrophoneUsageDescription</key><string>Straft Studio records voice notes into your Idea Vault only when you press Record.</string>
 	<key>NSSupportsAutomaticTermination</key><false/>
 	<key>NSSupportsSuddenTermination</key><false/>
 	<key>LSFileQuarantineEnabled</key><true/>
@@ -167,7 +167,7 @@ plutil -lint "$APP/Contents/Info.plist" >/dev/null
 # The hardened runtime is on: no DYLD_* environment variables, no unsigned code loaded into the
 # process. The only exception the app needs is the microphone for voice notes. The end-to-end
 # runner re-signs a private copy without it to inject its driver (apps/macos/E2E/run.sh).
-ENT="$MACOS/packaging/OpenFrameStudio-internal.entitlements"
+ENT="$MACOS/packaging/StraftStudio-internal.entitlements"
 # The engine files keep the bytes pinned in packaging/ai/ai-assets.lock.json (the core checks
 # their SHA-256 before every start), so they are sealed as resources and never re-signed.
 codesign --force --sign - --timestamp=none --options runtime --entitlements "$ENT" "$APP"
@@ -179,4 +179,4 @@ node "$ROOT/scripts/scan-installer.mjs" "$APP"
 echo "== Done"
 echo "$APP"
 echo "version $VERSION, build $BUILD, commit $COMMIT"
-shasum -a 256 "$APP/Contents/MacOS/OpenFrameStudio"
+shasum -a 256 "$APP/Contents/MacOS/StraftStudio"

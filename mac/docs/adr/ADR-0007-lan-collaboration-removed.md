@@ -17,8 +17,8 @@ otherwise offline, listener-free application.
 
 ## Decision
 
-**Real-time local-network collaboration is removed from OpenFrame Studio entirely**, by product-owner decision
-(rationale: scope reduction). The first release of OpenFrame has **no** host or join sessions, network discovery, presence, soft locks,
+**Real-time local-network collaboration is removed from Straft Studio entirely**, by product-owner decision
+(rationale: scope reduction). The first release of Straft Studio has **no** host or join sessions, network discovery, presence, soft locks,
 WebSocket or other network server, or live co-editing.
 
 **Remote collaboration is file-based only**, through **Exchange, Review and Response packages** (export package →
@@ -38,7 +38,7 @@ workflows permit (ADR-0009).
 
 **Engineering consequences:**
 
-- There will be no `openframe-collaboration` crate. Package exchange lives in the application's package/import-export
+- There will be no `straft-collaboration` crate. Package exchange lives in the application's package/import-export
   modules.
 - The application never opens a listening socket. Outbound network use is limited to explicit, user-approved
   downloads (local AI model, updates) and to handing web links to the browser.

@@ -2,7 +2,7 @@
 
 > **Current decisions (2026-10-15).** Chapter 3 material. The Mac StoreKit bridge moves into the SwiftUI application when Chapter 3 starts ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). The team password gate of the internal builds was removed on 2026-10-27 (owner decision); section 11 is history only.
 
-> Written 2026-10-06 from the code in `crates/openframe-entitlement/src/` (then `lib.rs`, `trial.rs`, `licence.rs`, `adapters.rs`).
+> Written 2026-10-06 from the code in `crates/straft-entitlement/src/` (then `lib.rs`, `trial.rs`, `licence.rs`, `adapters.rs`).
 > Decisions behind it: [ADR-0018](../adr/ADR-0018-distribution-licensing-commerce.md). Plan area: "Payment and free trial in all
 > three channels" in [masterplan.md](../implementation/masterplan.md). State of the feature: [feature-status.md](../implementation/feature-status.md)
 > (rows PLAT-009, PLAT-012 to PLAT-014 and PLAT-015). Open decisions: [owner-decisions.md](../implementation/owner-decisions.md).
@@ -19,7 +19,7 @@
 
 ## 1. Purpose
 
-OpenFrame Studio is a paid app with a 7-day free trial and no credit card to start, sold through two stores. The entitlement
+Straft Studio is a paid app with a 7-day free trial and no credit card to start, sold through two stores. The entitlement
 crate is the one place in the Rust core that answers three questions for the rest of the app:
 
 1. Is the trial running, and how many days are left?
@@ -27,7 +27,7 @@ crate is the one place in the Rust core that answers three questions for the res
 3. What may the user do right now?
 
 The crate never talks to a store from its core. Each release file has one adapter behind the `ChannelAdapter` trait (section 7).
-Both stores own the trial and decide the whole state themselves (`ChannelAdapter::channel_state`); OpenFrame keeps no trial timer
+Both stores own the trial and decide the whole state themselves (`ChannelAdapter::channel_state`); Straft Studio keeps no trial timer
 of its own (ADR-0023). The Windows installer is an internal build for the owner's team: its state is InternalBuild and nothing
 is asked, shown or locked.
 
@@ -63,7 +63,7 @@ single function that decides; `EntitlementState::locks_the_app(channel)` says wh
 
 **The store lock is enforced in Rust.** `EntitlementService::check_operation` runs inside `Registry::dispatch`, the one path every
 operation takes (the interface, the assistant's change sets and package imports). While `locks_the_app` holds, every operation is
-refused with `permission.licence_required` ("Buy OpenFrame Studio or restore your purchase to open your projects again. Nothing
+refused with `permission.licence_required` ("Buy Straft Studio or restore your purchase to open your projects again. Nothing
 is deleted.") except `entitlement.*` and `ALLOWED_WHILE_LOCKED` (`app.info` and `appearance.get`, which the lock screen needs to
 draw; both touch no project). Editing alone is not yet gated per operation in NeedsOnlineCheck and TrialNotStarted: that is
 the open plan item "Enforce Permission::Edit in the Rust operation path" (section 8).
@@ -114,7 +114,7 @@ section 4 starts, counts or extends a Mac trial. The owner decided the Mac metho
 
 | Rule | What happens |
 |---|---|
-| Products | Apple's non-subscription trial model. A zero-price Non-Consumable "7-day Trial" (`app.openframestudio.studio.trial7`) and a separate paid Non-Consumable "Lifetime Access" (`app.openframestudio.studio.lifetime`). No auto-renewing subscription. Family Sharing is off. |
+| Products | Apple's non-subscription trial model. A zero-price Non-Consumable "7-day Trial" (`app.straftstudio.studio.trial7`) and a separate paid Non-Consumable "Lifetime Access" (`app.straftstudio.studio.lifetime`). No auto-renewing subscription. Family Sharing is off. |
 | Before the trial | The app shows the 7-day length and offers the trial, the purchase and restore. It names no price (ADR-0023); Apple's sheet shows it. The trial begins only after the verified free StoreKit transaction succeeds. |
 | Source of truth | Only cryptographically verified StoreKit 2 transactions are authoritative. The installation date, the system clock, the time zone, UserDefaults, SQLite, files, Keychain and frontend state are never the source of truth. Local state is a cache. |
 | Trial state | Built from the verified trial transaction: product id, Apple transaction id and the Apple-recorded purchase date. The trial starts at that transaction's `purchaseDate` (or its own earlier `originalPurchaseDate`), never at `AppTransaction.originalPurchaseDate`. Apple's `appTransactionID` only links the Apple Account to the app and is optional, because Apple provides it on macOS 15.4 and later only. |
@@ -138,7 +138,7 @@ prevent (a different Apple Account gets a new trial; no device fingerprinting) i
 
 | Rule | What happens |
 |---|---|
-| Trial | Owned by the Store (Partner Center trial). OpenFrame keeps no timer and no `trial.json` for this channel. |
+| Trial | Owned by the Store (Partner Center trial). Straft Studio keeps no timer and no `trial.json` for this channel. |
 | Licence | `StoreContext.GetAppLicenseAsync`: IsActive, IsTrial and TrialTimeRemaining, read at launch, on "Restore purchase" and when the Store raises `OfflineLicensesChanged`. The call sits behind `adapters::StoreLicenceSource`, supplied by the Windows shell as `AppConfig::microsoft_store`. |
 | Mapping (`store_licence_state`) | Active and not a trial: Purchased. Active trial: TrialActive with TrialTimeRemaining in whole days, rounded up, 1 to 7. Not active: TrialEnded. No answer and no cached licence: NeedsOnlineCheck. |
 | After the trial | The whole app locks, as on the Mac: only **Buy full version** and **Restore purchase**, not closable, enforced in Rust. Nothing is deleted. |
@@ -151,7 +151,7 @@ prevent (a different Apple Account gets a new trial; no device fingerprinting) i
 An internal build for the owner's team, never sold: no trial, no payment, no Buy, no reminder, no lock. The state is
 InternalBuild, Settings > Licence and Settings > About say "Internal build, not for sale." and nothing can be restored. The
 internal Mac disk image (ADR-0024) is the same channel (`Channel::DirectInstaller`, "Internal build" on screen): a Mac build made
-without `OPENFRAME_DISTRIBUTION=store` is an internal build, a Mac build with it is the Mac App Store build. Both internal builds
+without `STRAFT_DISTRIBUTION=store` is an internal build, a Mac build with it is the Mac App Store build. Both internal builds
 open without a password (the team gate was removed on 2026-10-27, section 11). The installer licence file code was removed on 2026-10-07.
 
 ### Not decided (owner decisions)
@@ -166,9 +166,9 @@ or this document decides them:
 
 > SUPERSEDED 2026-10-07: no channel reads or writes this file any more, and `trial.rs` was removed the same day. History only.
 
-Path: `<app data>/entitlement/trial.json`, where `<app data>` is the folder from `openframe_platform::dirs::app_data_dir`
+Path: `<app data>/entitlement/trial.json`, where `<app data>` is the folder from `straft_platform::dirs::app_data_dir`
 (see [37-platform-boundary.md](37-platform-boundary.md)). The file is written with the shared atomic replace
-(`openframe_platform::atomic::replace_bytes`), so a crash never leaves a half-written record.
+(`straft_platform::atomic::replace_bytes`), so a crash never leaves a half-written record.
 
 | Field | Meaning |
 |---|---|
@@ -217,14 +217,14 @@ Path: `<app data>/entitlement/licence.json`. The file is JSON with two text fiel
 | Field | Meaning |
 |---|---|
 | `payload` | The claims as JSON bytes, kept exactly as they were signed. |
-| `signature` | The 64-byte Ed25519 signature over the domain prefix `openframe-licence-v1` followed by a zero byte and then the payload bytes. |
+| `signature` | The 64-byte Ed25519 signature over the domain prefix `straft-licence-v1` followed by a zero byte and then the payload bytes. |
 
 The claims inside the payload:
 
 | Claim | Meaning |
 |---|---|
 | `schema` | Claims format version. Must be 1. An unknown value is refused. |
-| `product` | Must be `openframe-studio`. Any other value is refused. |
+| `product` | Must be `straft-studio`. Any other value is refused. |
 | `licenseeHash` | Hex SHA-256 of the buyer's e-mail address, trimmed and lower-cased (ASCII only, so both sides agree). Support can find a licence from it. The address itself is never stored in the file or the app. |
 | `issuedAtMs` | Unix milliseconds when the licence was issued. Informational. |
 | `licenceId` | A unique id, kept for refunds and a future signed denylist. |
@@ -234,7 +234,7 @@ Checks, in order (`DirectInstallerAdapter::check_file`, `licence::parse` and `li
 1. At most 8 KiB plus one byte of the file is read. A larger file, a file that is not valid text, or text that is not a licence
    file is refused as unreadable. The decoded payload is also capped at 8 KiB.
 2. The signature decodes and verifies against the embedded public key, with strict verification (non-canonical signatures are
-   refused). The domain prefix stops a signature made for another OpenFrame file from being replayed as a licence.
+   refused). The domain prefix stops a signature made for another Straft Studio file from being replayed as a licence.
 3. Only after that is the payload parsed. The schema and the product must match.
 
 The signature covers the stored payload bytes and not a re-serialisation, so a later change to field order or to the Rust types
@@ -257,7 +257,7 @@ Limits that follow from the code:
 | Channel | Adapter | State today |
 |---|---|---|
 | Microsoft Store (`.msix`) | `MicrosoftStoreAdapter` over `StoreLicenceSource` | **Mapping, lock and purchase path built and tested with a fake source; not connected to the Store.** `channel_state` and `restore_channel_state` read the Store licence and map it with `store_licence_state` (section 3). `buy_full_version` runs the Store's purchase dialog. Without a source (`MicrosoftStoreAdapter::unavailable`, every build today) the state is NeedsOnlineCheck with the limitation "The Microsoft Store connection is not available in this build." and Buy returns that message. The real `GetAppLicenseAsync`, `RequestPurchaseAsync` and `OfflineLicensesChanged` calls in the Windows shell need the Partner Center product identity (owner task). |
-| Mac App Store (`.pkg`) | `mac::MacAppStoreAdapter` | **Built and tested with fakes; not connected to Apple.** The policy and the adapter are in `crates/openframe-entitlement/src/mac/`, tested against a fake StoreKit bridge; design and test list in [38-mac-app-store-trial.md](38-mac-app-store-trial.md). Without the shell's `MacInputs` (every build today) `for_channel` builds it over `UnavailableBridge`: NeedsOnlineCheck with "The App Store connection is not available in this build.", nothing granted, nothing cached. That is a gap in the build, not a user state. |
+| Mac App Store (`.pkg`) | `mac::MacAppStoreAdapter` | **Built and tested with fakes; not connected to Apple.** The policy and the adapter are in `crates/straft-entitlement/src/mac/`, tested against a fake StoreKit bridge; design and test list in [38-mac-app-store-trial.md](38-mac-app-store-trial.md). Without the shell's `MacInputs` (every build today) `for_channel` builds it over `UnavailableBridge`: NeedsOnlineCheck with "The App Store connection is not available in this build.", nothing granted, nothing cached. That is a gap in the build, not a user state. |
 | Internal builds (`.exe`, `.dmg`) | none | **Internal build** (ADR-0023, ADR-0024). `for_channel` returns no adapter and the core sets InternalBuild without asking anything. There is no team password gate (removed 2026-10-27, section 11). |
 
 `for_channel` builds the adapter from the channel, the app data folder, optional `MacInputs` and an optional
@@ -268,7 +268,7 @@ Limits that follow from the code:
 
 ## 8. What still has to be built
 
-The crate is wired into `AppCore` through `EntitlementService` (`crates/openframe-application/src/modules/entitlement.rs`). It
+The crate is wired into `AppCore` through `EntitlementService` (`crates/straft-application/src/modules/entitlement.rs`). It
 builds the adapter for the configured channel, computes the state at start-up, on "Restore purchase" and when the shell asks again
 (`refresh` for the Microsoft Store's `OfflineLicensesChanged`, `revalidate` on the Mac), serves it through `entitlement.status`
 and the screen operations (section 10), and refuses every operation during the store lock (section 2). To finish the plan area:
@@ -285,10 +285,10 @@ and the screen operations (section 10), and refuses every operation during the s
 
 ## 9. Tests in the crate
 
-All 76 pass on Windows 11 with `cargo test -p openframe-entitlement` (run 2026-10-07 after the clean-up): the tests below, 11 in
+All 76 pass on Windows 11 with `cargo test -p straft-entitlement` (run 2026-10-07 after the clean-up): the tests below, 11 in
 `notices.rs` (section 10), 8 in `team_gate` (section 11; removed with the gate on 2026-10-27, so the count is now lower) and the Mac module's, listed in
 [38-mac-app-store-trial.md](38-mac-app-store-trial.md). The app's behaviour is tested in
-`crates/openframe-application/tests/entitlement.rs`, `tests/trial_first_run.rs` (and `tests/team_gate.rs` until 2026-10-27).
+`crates/straft-application/tests/entitlement.rs`, `tests/trial_first_run.rs` (and `tests/team_gate.rs` until 2026-10-27).
 
 | File | Test |
 |---|---|
@@ -302,7 +302,7 @@ All 76 pass on Windows 11 with `cargo test -p openframe-entitlement` (run 2026-1
 | `adapters.rs` | `mac_channel_without_inputs_needs_an_online_check_and_grants_nothing` |
 | `adapters.rs` | `the_internal_builds_have_no_channel_to_ask` |
 
-App-level tests for the lock and the channels (`crates/openframe-application/tests/entitlement.rs`):
+App-level tests for the lock and the channels (`crates/straft-application/tests/entitlement.rs`):
 `plat_009_the_internal_installer_build_is_never_sold_and_never_locks`,
 `plat_009_the_microsoft_store_trial_comes_from_the_store_licence`,
 `plat_009_the_microsoft_store_trial_over_locks_every_project_operation_until_bought`,
@@ -317,8 +317,8 @@ App-level tests for the lock and the channels (`crates/openframe-application/tes
 
 Written 2026-10-07 from the owner's mocks `Trial_Licensing_Mocks/182-lic-flow.html` to `198-lic-welcome.html` and their change
 note, section 4 "Rules to implement", and updated the same day for ADR-0022 and ADR-0023. The Rust core decides which screen is
-due; the interface only shows it. Code: `crates/openframe-entitlement/src/notices.rs`,
-`crates/openframe-application/src/modules/entitlement.rs`, `apps/desktop/src/features/licensing/`. Feature rows PLAT-009
+due; the interface only shows it. Code: `crates/straft-entitlement/src/notices.rs`,
+`crates/straft-application/src/modules/entitlement.rs`, `apps/desktop/src/features/licensing/`. Feature rows PLAT-009
 (screens in the app) and PLAT-015 (first-run safety screens).
 
 ### 10.1 The screens
@@ -326,14 +326,14 @@ due; the interface only shows it. Code: `crates/openframe-entitlement/src/notice
 | Mock | Screen | When | Can it be closed? |
 |---|---|---|---|
 | 183, 188 | Corner chip "Trial: N days left" and **Buy full version** in the top bar | Either store, every project screen while the state is TrialActive. Amber with the words "Your trial ends soon." for screen readers in the last 3 days; never colour alone. Gone after the purchase. Never on the internal build. After the check screen was closed with **Not now**, the top bar shows **Check purchase** to open it again. | Not a dialog |
-| 184, 185, 189 | Trial reminder: day 5 "Your free trial ends in 3 days", day 6 "ends in 2 days", day 7 "ends today"; "Buy the full version to keep using OpenFrame Studio."; **Buy full version** and **Continue trial** | Either store, TrialActive with 3, 2 or 1 days left, a project open, at most once per calendar day | Yes (Continue trial or Escape) |
+| 184, 185, 189 | Trial reminder: day 5 "Your free trial ends in 3 days", day 6 "ends in 2 days", day 7 "ends today"; "Buy the full version to keep using Straft Studio."; **Buy full version** and **Continue trial** | Either store, TrialActive with 3, 2 or 1 days left, a project open, at most once per calendar day | Yes (Continue trial or Escape) |
 | 186, 190 | The lock: "Your free trial has ended" (or "Your purchase is no longer active" after a refund, naming the store) with only **Buy full version** and **Restore purchase**; "Your projects are safe on this Mac (this computer). Nothing is deleted." | Either store, TrialEnded or Revoked (ADR-0022, ADR-0023) | No: no close button, no Escape, no click outside, app shortcuts held back, focus trapped. The core refuses every project operation underneath it |
 | 187 | Mac first launch: **Start free trial**, **Buy full version**, **Restore purchase** | Mac, TrialNotStarted | No |
-| 191 | The store's own purchase window: Apple's payment sheet, or the Microsoft Store purchase dialog | Through `ChannelAdapter::buy_full_version`. OpenFrame never draws it; it shows the price. | The store's |
+| 191 | The store's own purchase window: Apple's payment sheet, or the Microsoft Store purchase dialog | Through `ChannelAdapter::buy_full_version`. Straft Studio never draws it; it shows the price. | The store's |
 | 192 | "Checking your purchase" with **Not now**, **Buy full version** and **Try again**, naming the store; "Your projects stay open and can be exported. Nothing is deleted." | Either store, NeedsOnlineCheck | Yes (Not now, Escape or Close), ADR-0018 decision 6. Stays closed for the session while it is due |
 | 193 | "Your data, your responsibility": six points, the real root folder, **Show in File Explorer** or **Show in Finder**, a tick box, **OK, I understand** | Purchased and not yet acknowledged | No. The box enables only after the list is scrolled to its end; OK only after the box is ticked |
-| 194 to 197 | File safety tutorial, 4 steps; **Finish** needs all three boxes on step 4. Step 3 says how to install per channel: the App Store with the same Apple Account, the Microsoft Store with the same Microsoft account, or (internal build) just "Install OpenFrame Studio on the new laptop." | Purchased, note acknowledged, tutorial not finished | No |
-| 198 | "Welcome to the OpenFrame Studio family" with the eight community accounts and **OK** | Purchased, tutorial finished, welcome not shown | Yes |
+| 194 to 197 | File safety tutorial, 4 steps; **Finish** needs all three boxes on step 4. Step 3 says how to install per channel: the App Store with the same Apple Account, the Microsoft Store with the same Microsoft account, or (internal build) just "Install Straft Studio on the new laptop." | Purchased, note acknowledged, tutorial not finished | No |
+| 198 | "Welcome to the Straft Studio family" with the eight community accounts and **OK** | Purchased, tutorial finished, welcome not shown | Yes |
 
 **No price anywhere (ADR-0023).** No screen names a price, a currency, or a pricing model ("pay once", "subscription",
 "lifetime"). The button says "Buy full version" with no amount. The Vitest test
@@ -387,7 +387,7 @@ the person at this computer (`permission.denied` for the assistant and for packa
 
 | Operation | Does |
 |---|---|
-| `entitlement.notice` (query, `{ today? }`) | The status, the screen due now and `dataRoot`, the one folder to back up (`AppConfig::data_root`: the folder holding both the projects folder and the Global Idea Vault, `Documents/OpenFrame` by default). |
+| `entitlement.notice` (query, `{ today? }`) | The status, the screen due now and `dataRoot`, the one folder to back up (`AppConfig::data_root`: the folder holding both the projects folder and the Global Idea Vault, `Documents/Straft Studio` by default). |
 | `entitlement.record_notice` (command, `{ notice, today? }`) | Remembers a reminder day or a finished screen. Out of order is refused with `conflict.state`: a reminder only during the trial, the note only after a purchase, the tutorial only after the note, the welcome only after the tutorial. |
 | `entitlement.buy` (command) | The store's own purchase window through `ChannelAdapter::buy_full_version`: Apple's payment sheet, or the Microsoft Store purchase dialog. The route is `store`; a failure comes back in plain words, a closed window changes nothing. Without a store connection the route is `unavailable` with "The App Store (Microsoft Store) connection is not available in this build." The internal build answers "This is an internal build and is not for sale." (the interface shows no Buy there). After any answer the interface asks every query again, so a lifted lock shows at once. |
 | `entitlement.start_trial` (command) | Mac only: the zero-price trial product through `ChannelAdapter::start_trial`. The Microsoft Store starts its trial itself. |
@@ -440,11 +440,11 @@ store behind it: Buy then says the store connection is not available. A hand-set
 The internal Windows installer and the internal Mac disk image ask the team password on every launch, before anything opens.
 Store packages carry neither the check nor a hash.
 
-**Build.** `apps/desktop/src-tauri/build.rs` reads `OPENFRAME_TEAM_PASSWORD` on the build machine for a `direct` build (the
-default `OPENFRAME_DISTRIBUTION`), hashes it with Argon2id (64 MiB, 3 passes, 1 lane, 16 random bytes of salt from the system's
+**Build.** `apps/desktop/src-tauri/build.rs` reads `STRAFT_TEAM_PASSWORD` on the build machine for a `direct` build (the
+default `STRAFT_DISTRIBUTION`), hashes it with Argon2id (64 MiB, 3 passes, 1 lane, 16 random bytes of salt from the system's
 secure random generator) and writes only the PHC string to `OUT_DIR/team_gate_hash.txt`, which the shell embeds under
-`cfg(openframe_team_gate)` and hands to the core as `AppConfig::team_password_hash`. The rules are one shared file,
-`crates/openframe-entitlement/src/team_gate/build_hash.rs`, which the build script includes by path and the crate compiles, so
+`cfg(straft_team_gate)` and hands to the core as `AppConfig::team_password_hash`. The rules are one shared file,
+`crates/straft-entitlement/src/team_gate/build_hash.rs`, which the build script includes by path and the crate compiles, so
 the build and the check cannot disagree:
 
 | Build | Result |
@@ -457,7 +457,7 @@ the build and the check cannot disagree:
 
 While the variable is set the build script reruns on every build instead of asking Cargo to watch the variable, because Cargo
 keeps the value of a watched variable in the target folder to compare later. The release workflow passes the
-`OPENFRAME_TEAM_PASSWORD` secret to the internal build step only. Changing the password means changing the secret and building
+`STRAFT_TEAM_PASSWORD` secret to the internal build step only. Changing the password means changing the secret and building
 again.
 
 **Check.** `team_gate::TeamGate` in the Rust core. `verify_team_password` accepts only an Argon2id hash, refuses passwords over
@@ -481,10 +481,10 @@ use and does not stop a person who holds the file and guesses the hash offline.
 **Screen.** `apps/desktop/src/features/team-gate/TeamGate.tsx` wraps the whole app: a dialog that cannot be closed, with a
 password field, the core's plain-words answer, and a countdown while a wait runs. Store builds pass straight through.
 
-**Tests.** `crates/openframe-entitlement/src/team_gate/tests.rs` (9, test-only password and small costs, plus one hash with the
+**Tests.** `crates/straft-entitlement/src/team_gate/tests.rs` (9, test-only password and small costs, plus one hash with the
 build costs): right and wrong, the waits 1, 2, 4, 8, 16, 30, 30, 30 minutes, restart keeps the count and the wait, a try counted
 before the check, a damaged count file, a clock turned back (seen by the screen and seen by a try), the build hash shape, and the build rules (store build without a
-gate, missing variable, short password). `crates/openframe-application/tests/team_gate.rs` (4): nothing opens before the
+gate, missing variable, short password). `crates/straft-application/tests/team_gate.rs` (4): nothing opens before the
 password, the waits and a restart through the core, a store build without a gate, and only the person at the computer can unlock.
 `apps/desktop/src-tauri/src/lib.rs`: a store build embeds no hash. Vitest: `TeamGate.test.tsx` (4) and `About.test.tsx` (2). Not
 run: a signed internal build with a real secret, and the end-to-end suite (it runs debug builds without the variable).

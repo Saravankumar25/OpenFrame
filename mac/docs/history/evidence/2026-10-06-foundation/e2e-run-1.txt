@@ -1,23 +1,23 @@
 
-> openframe-studio@0.1.0 test:e2e
+> straft-studio@0.1.0 test:e2e
 > npm --workspace tests/e2e run test
 
 
-> @openframe/e2e@0.1.0 test
+> @straft/e2e@0.1.0 test
 > node run.mjs
 
 WebView2 Runtime 154.0.4258.53
 msedgedriver 154.0.4258.53 already installed.
 tauri-driver already installed.
-Building OpenFrame Studio (debug, embedded UI)…
+Building Straft Studio (debug, embedded UI)…
 
-> @openframe/desktop@0.1.0 tauri
+> @straft/desktop@0.1.0 tauri
 > tauri build --debug --no-bundle
 
         Info Looking up installed tauri packages to check mismatched versions...
      Running beforeBuildCommand `npm run build:web`
 
-> @openframe/desktop@0.1.0 build:web
+> @straft/desktop@0.1.0 build:web
 > tsc --noEmit -p . && vite build
 
 vite v7.3.6 building client environment for production...
@@ -70,17 +70,17 @@ dist/assets/index-CyIW1dVg.js                187.85 kB │ gzip:  52.33 kB
 dist/assets/index-WsaF8uym.js                320.14 kB │ gzip:  96.43 kB
 dist/assets/index-BqA1uI3B.js                519.81 kB │ gzip: 159.53 kB
 ✓ built in 23.82s
-   Compiling openframe-security v0.1.0 (C:\OpenFrame\crates\openframe-security)
-   Compiling openframe-entitlement v0.1.0 (C:\OpenFrame\crates\openframe-entitlement)
-   Compiling openframe-project-format v0.1.0 (C:\OpenFrame\crates\openframe-project-format)
-   Compiling openframe-import-export v0.1.0 (C:\OpenFrame\crates\openframe-import-export)
-   Compiling openframe-ai v0.1.0 (C:\OpenFrame\crates\openframe-ai)
-   Compiling openframe-application v0.1.0 (C:\OpenFrame\crates\openframe-application)
-   Compiling openframe-desktop v0.1.0 (C:\OpenFrame\apps\desktop\src-tauri)
+   Compiling straft-security v0.1.0 (C:\Straft\crates\straft-security)
+   Compiling straft-entitlement v0.1.0 (C:\Straft\crates\straft-entitlement)
+   Compiling straft-project-format v0.1.0 (C:\Straft\crates\straft-project-format)
+   Compiling straft-import-export v0.1.0 (C:\Straft\crates\straft-import-export)
+   Compiling straft-ai v0.1.0 (C:\Straft\crates\straft-ai)
+   Compiling straft-application v0.1.0 (C:\Straft\crates\straft-application)
+   Compiling straft-desktop v0.1.0 (C:\Straft\apps\desktop\src-tauri)
     Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 12s
-       Built application at: C:\OpenFrame\target\debug\openframe-desktop.exe
+       Built application at: C:\Straft\target\debug\straft-desktop.exe
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\shared
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-18-22-850Z\shared
   specs: 01-journey.test.mjs, 02-restart.test.mjs
 ▶ desktop journey
   ✔ first launch → name → create project → Project Home (1046.52ms)
@@ -111,7 +111,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\shared
 ℹ todo 0
 ℹ duration_ms 86876.877
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\10-home
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-18-22-850Z\10-home
   specs: 10-home.test.mjs
 ▶ home
   ✔ first launch creates a project that opens on an empty Project Home (883.9527ms)
@@ -134,22 +134,22 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\10-home
 test at specs\10-home.test.mjs:59:3
 ⚠ Application Home lists a renamed project without leaving the page (10949.4927ms) # product defect: the list stays stale after Rename on Application Home (AppHome.tsx:485 has no refetch; project.rs rename of a closed project emits no change event)
   Error: rename-refresh failed: card not renamed until Application Home is reopened
-    screenshot: C:\OpenFrame\tests\e2e\artifacts\home-03-rename-refresh.png
-      at file:///C:/OpenFrame/tests/e2e/lib/app.mjs:120:13
-      at async TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/10-home.test.mjs:60:5)
+    screenshot: C:\Straft\tests\e2e\artifacts\home-03-rename-refresh.png
+      at file:///C:/Straft/tests/e2e/lib/app.mjs:120:13
+      at async TestContext.<anonymous> (file:///C:/Straft/tests/e2e/specs/10-home.test.mjs:60:5)
       at async Test.run (node:internal/test_runner/test:1125:7)
       at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7) {
     [cause]: Error: card not renamed until Application Home is reopened
-        at file:///C:/OpenFrame/node_modules/webdriverio/build/node.js:6474:15
-        at async Browser.wrapCommandFn (file:///C:/OpenFrame/node_modules/@wdio/utils/build/index.js:1100:23)
-        at async file:///C:/OpenFrame/tests/e2e/specs/10-home.test.mjs:68:7
-        at async file:///C:/OpenFrame/tests/e2e/lib/app.mjs:116:7
-        at async TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/10-home.test.mjs:60:5)
+        at file:///C:/Straft/node_modules/webdriverio/build/node.js:6474:15
+        at async Browser.wrapCommandFn (file:///C:/Straft/node_modules/@wdio/utils/build/index.js:1100:23)
+        at async file:///C:/Straft/tests/e2e/specs/10-home.test.mjs:68:7
+        at async file:///C:/Straft/tests/e2e/lib/app.mjs:116:7
+        at async TestContext.<anonymous> (file:///C:/Straft/tests/e2e/specs/10-home.test.mjs:60:5)
         at async Test.run (node:internal/test_runner/test:1125:7)
         at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7)
   }
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\20-idea-vault
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-18-22-850Z\20-idea-vault
   specs: 20-idea-vault.test.mjs
 ▶ idea vault
   ✔ Quick Capture adds an idea to the project's Vault (1552.2169ms)
@@ -166,7 +166,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\20-idea-vaul
 ℹ todo 0
 ℹ duration_ms 9305.6825
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\30-story
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-18-22-850Z\30-story
   specs: 30-story.test.mjs
 ▶ story
   ✔ act, sequence and two Scene Cards (2330.7147ms)
@@ -186,7 +186,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\30-story
 ℹ todo 0
 ℹ duration_ms 17232.0578
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\40-screenplay
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-18-22-850Z\40-screenplay
   specs: 40-screenplay.test.mjs
 ▶ screenplay
   ✔ new screenplay: write a scene with the Enter flow (autosaved) (2418.3167ms)
@@ -208,22 +208,22 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\40-screenpla
 test at specs\40-screenplay.test.mjs:91:3
 ✖ a second draft is edited independently, renamed, deleted and restored (13508.3082ms)
   Error: drafts failed: draft not renamed
-    screenshot: C:\OpenFrame\tests\e2e\artifacts\screenplay-03-drafts.png
-      at file:///C:/OpenFrame/tests/e2e/lib/app.mjs:120:13
-      at async TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/40-screenplay.test.mjs:92:5)
+    screenshot: C:\Straft\tests\e2e\artifacts\screenplay-03-drafts.png
+      at file:///C:/Straft/tests/e2e/lib/app.mjs:120:13
+      at async TestContext.<anonymous> (file:///C:/Straft/tests/e2e/specs/40-screenplay.test.mjs:92:5)
       at async Test.run (node:internal/test_runner/test:1125:7)
       at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7) {
     [cause]: Error: draft not renamed
-        at file:///C:/OpenFrame/node_modules/webdriverio/build/node.js:6474:15
-        at async Browser.wrapCommandFn (file:///C:/OpenFrame/node_modules/@wdio/utils/build/index.js:1100:23)
-        at async file:///C:/OpenFrame/tests/e2e/specs/40-screenplay.test.mjs:122:7
-        at async file:///C:/OpenFrame/tests/e2e/lib/app.mjs:116:7
-        at async TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/40-screenplay.test.mjs:92:5)
+        at file:///C:/Straft/node_modules/webdriverio/build/node.js:6474:15
+        at async Browser.wrapCommandFn (file:///C:/Straft/node_modules/@wdio/utils/build/index.js:1100:23)
+        at async file:///C:/Straft/tests/e2e/specs/40-screenplay.test.mjs:122:7
+        at async file:///C:/Straft/tests/e2e/lib/app.mjs:116:7
+        at async TestContext.<anonymous> (file:///C:/Straft/tests/e2e/specs/40-screenplay.test.mjs:92:5)
         at async Test.run (node:internal/test_runner/test:1125:7)
         at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7)
   }
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\50-breakdown
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-18-22-850Z\50-breakdown
   specs: 50-breakdown.test.mjs
 ▶ breakdown
   ✔ import a screenplay and choose it as the Production Source (3563.0729ms)
@@ -242,7 +242,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\50-breakdown
 ℹ todo 0
 ℹ duration_ms 13761.5247
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\80-notes-tasks
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-18-22-850Z\80-notes-tasks
   specs: 80-notes-tasks.test.mjs
 ▶ notes and tasks
   ✔ a new note autosaves its title and text; undo and redo the edit (2124.6458ms)
@@ -259,7 +259,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\80-notes-tas
 ℹ todo 0
 ℹ duration_ms 10512.9102
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\85-project-pages
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-18-22-850Z\85-project-pages
   specs: 85-project-pages.test.mjs
 ▶ project pages
   ✔ Project settings: change title and logline, save, undo, redo (2026.3193ms)
@@ -281,16 +281,16 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\85-project-p
 test at specs\85-project-pages.test.mjs:116:3
 ✖ relaunch: settings, the restored template and the purge persist (4197.3226ms)
   Error: relaunch failed: restored template missing after relaunch: 
-    screenshot: C:\OpenFrame\tests\e2e\artifacts\project-pages-04-relaunch.png
-      at file:///C:/OpenFrame/tests/e2e/lib/app.mjs:120:13
-      at async TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/85-project-pages.test.mjs:117:5)
+    screenshot: C:\Straft\tests\e2e\artifacts\project-pages-04-relaunch.png
+      at file:///C:/Straft/tests/e2e/lib/app.mjs:120:13
+      at async TestContext.<anonymous> (file:///C:/Straft/tests/e2e/specs/85-project-pages.test.mjs:117:5)
       at async Test.run (node:internal/test_runner/test:1125:7)
       at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7) {
     [cause]: AssertionError [ERR_ASSERTION]: restored template missing after relaunch: 
-        at file:///C:/OpenFrame/tests/e2e/specs/85-project-pages.test.mjs:125:14
+        at file:///C:/Straft/tests/e2e/specs/85-project-pages.test.mjs:125:14
         at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
-        at async file:///C:/OpenFrame/tests/e2e/lib/app.mjs:116:7
-        at async TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/85-project-pages.test.mjs:117:5)
+        at async file:///C:/Straft/tests/e2e/lib/app.mjs:116:7
+        at async TestContext.<anonymous> (file:///C:/Straft/tests/e2e/specs/85-project-pages.test.mjs:117:5)
         at async Test.run (node:internal/test_runner/test:1125:7)
         at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7) {
       generatedMessage: false,
@@ -302,16 +302,16 @@ test at specs\85-project-pages.test.mjs:116:3
     }
   }
 
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\shared
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-06T16-18-22-850Z\shared
   specs: 90-visual-baseline.test.mjs, 95-reachability.test.mjs
 2026-10-06T16:21:51.022Z WARN webdriver: Request encountered a stale element - terminating request
 2026-10-06T16:21:51.025Z WARN webdriver: Request encountered a stale element - terminating request
   visual ok   01-application-home: 0 px differ (0.0000 %), 2 ignore regions
-  visual FAIL 02-project-home: 70931 px differ (2.6674 %), 8 ignore regions — 70931 of 2659209 pixels differ (2.667 % > 0.100 %); C:\OpenFrame\tests\e2e\artifacts\visual\02-project-home.{actual,diff}.png
+  visual FAIL 02-project-home: 70931 px differ (2.6674 %), 8 ignore regions — 70931 of 2659209 pixels differ (2.667 % > 0.100 %); C:\Straft\tests\e2e\artifacts\visual\02-project-home.{actual,diff}.png
   visual ok   03-idea-vault: 0 px differ (0.0000 %), 2 ignore regions
   visual ok   04-story-board: 0 px differ (0.0000 %), 1 ignore regions
   visual ok   05-story-outline: 0 px differ (0.0000 %), 0 ignore regions
-  visual FAIL 06-screenplay-editor: 23897 px differ (0.8195 %), 0 ignore regions — 23897 of 2916000 pixels differ (0.820 % > 0.100 %); C:\OpenFrame\tests\e2e\artifacts\visual\06-screenplay-editor.{actual,diff}.png
+  visual FAIL 06-screenplay-editor: 23897 px differ (0.8195 %), 0 ignore regions — 23897 of 2916000 pixels differ (0.820 % > 0.100 %); C:\Straft\tests\e2e\artifacts\visual\06-screenplay-editor.{actual,diff}.png
   visual ok   07-breakdown: 0 px differ (0.0000 %), 0 ignore regions
   visual ok   08-production-overview: 0 px differ (0.0000 %), 0 ignore regions
   visual ok   09-production-catalog: 0 px differ (0.0000 %), 0 ignore regions
@@ -320,7 +320,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\shared
   visual ok   12-files: 0 px differ (0.0000 %), 1 ignore regions
   visual ok   13-notes-and-tasks: 0 px differ (0.0000 %), 0 ignore regions
   visual ok   14-recently-deleted: 0 px differ (0.0000 %), 0 ignore regions
-  visual FAIL 15-project-settings: 42859 px differ (1.4893 %), 3 ignore regions — 42859 of 2877742 pixels differ (1.489 % > 0.100 %); C:\OpenFrame\tests\e2e\artifacts\visual\15-project-settings.{actual,diff}.png
+  visual FAIL 15-project-settings: 42859 px differ (1.4893 %), 3 ignore regions — 42859 of 2877742 pixels differ (1.489 % > 0.100 %); C:\Straft\tests\e2e\artifacts\visual\15-project-settings.{actual,diff}.png
 ▶ visual regression against the visual baseline baseline
   ✖ 15 representative screens (38818.1221ms)
 ✖ visual regression against the visual baseline baseline (40114.6135ms)
@@ -351,7 +351,7 @@ test at specs\90-visual-baseline.test.mjs:180:3
   + ]
   - []
   
-      at TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/90-visual-baseline.test.mjs:245:14)
+      at TestContext.<anonymous> (file:///C:/Straft/tests/e2e/specs/90-visual-baseline.test.mjs:245:14)
       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
       at async Test.run (node:internal/test_runner/test:1125:7)
       at async Promise.all (index 0)
@@ -368,9 +368,9 @@ test at specs\90-visual-baseline.test.mjs:180:3
 E2E FAILED: 40-screenplay.test.mjs, 85-project-pages.test.mjs, 90-visual-baseline.test.mjs, 95-reachability.test.mjs
 npm error Lifecycle script `test` failed with error:
 npm error code 1
-npm error path C:\OpenFrame\tests\e2e
-npm error workspace @openframe/e2e@0.1.0
-npm error location C:\OpenFrame\tests\e2e
+npm error path C:\Straft\tests\e2e
+npm error workspace @straft/e2e@0.1.0
+npm error location C:\Straft\tests\e2e
 npm error command failed
 npm error command C:\Windows\system32\cmd.exe /d /s /c node run.mjs
 EXIT=1

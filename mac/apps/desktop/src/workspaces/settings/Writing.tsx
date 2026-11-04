@@ -104,7 +104,7 @@ export function WritingSettings() {
               <Banner tone="warn">Spell checking is not available right now. Your writing is not affected; try again in a moment.</Banner>
             )}
             {!state.adapterAvailable && (
-              <Banner tone="info">On this computer the page uses the system's own spell checking. The language and personal dictionary settings below apply once OpenFrame can read this system's dictionaries.</Banner>
+              <Banner tone="info">On this computer the page uses the system's own spell checking. The language and personal dictionary settings below apply once Straft Studio can read this system's dictionaries.</Banner>
             )}
             {state.adapterAvailable && !state.serviceError && installed.length === 0 && (
               <Banner tone="warn">No spelling dictionaries are installed on this computer. Add a language in Windows Settings, then come back here.</Banner>

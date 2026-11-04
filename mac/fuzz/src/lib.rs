@@ -4,23 +4,23 @@
 //! they run on the Windows development machine (libFuzzer does not link there).
 //! Every target must return for any input: a document or a human error, never a panic or a hang.
 
-use openframe_project_format::{ProjectLayout, read_manifest};
-use openframe_security::archive::{self, ArchiveLimits};
+use straft_project_format::{ProjectLayout, read_manifest};
+use straft_security::archive::{self, ArchiveLimits};
 
 /// Final Draft (.fdx) import.
 pub fn fdx(data: &[u8]) {
-    let _ = openframe_import_export::fdx::parse(data);
+    let _ = straft_import_export::fdx::parse(data);
 }
 
 /// Fountain import.
 pub fn fountain(data: &[u8]) {
     let text = String::from_utf8_lossy(data);
-    let _ = openframe_import_export::fountain::parse(&text);
+    let _ = straft_import_export::fountain::parse(&text);
 }
 
 /// The bounded XML reader under FDX and DOCX import.
 pub fn xml(data: &[u8]) {
-    let _ = openframe_import_export::xml::parse(data);
+    let _ = straft_import_export::xml::parse(data);
 }
 
 /// Word (.docx) import from a file: zip container, then XML.
@@ -28,7 +28,7 @@ pub fn docx(data: &[u8]) {
     let dir = tempfile::tempdir().expect("temp folder");
     let path = dir.path().join("input.docx");
     std::fs::write(&path, data).expect("write input");
-    let _ = openframe_import_export::docx::parse(&path);
+    let _ = straft_import_export::docx::parse(&path);
 }
 
 // The package limits allow gigabytes; the fuzzer uses the same checks with small numbers so a
@@ -69,10 +69,10 @@ pub fn package_archive(data: &[u8]) {
     }
 }
 
-/// The project manifest (openframe.json) read when a project or a package opens.
+/// The project manifest (straft.json) read when a project or a package opens.
 pub fn project_manifest(data: &[u8]) {
     let dir = tempfile::tempdir().expect("temp folder");
-    let layout = ProjectLayout::new(dir.path().join("Fuzz.openframe"));
+    let layout = ProjectLayout::new(dir.path().join("Fuzz.straft"));
     std::fs::create_dir_all(layout.root()).expect("project folder");
     std::fs::write(layout.manifest(), data).expect("write manifest");
     let _ = read_manifest(&layout);
@@ -87,12 +87,12 @@ pub struct Target {
 }
 
 pub const TARGETS: &[Target] = &[
-    Target { name: "fdx", run: fdx, seeds: &[("crates/openframe-import-export/tests/fixtures/hostile/fdx", &["fdx"]), ("crates/openframe-import-export/tests/fixtures/fdx-suite", &["fdx"]), ("crates/openframe-import-export/tests/fixtures/screenplay", &["fdx"])] },
-    Target { name: "fountain", run: fountain, seeds: &[("crates/openframe-import-export/tests/fixtures/hostile/fountain", &["fountain"]), ("crates/openframe-import-export/tests/fixtures/screenplay", &["fountain", "txt"])] },
-    Target { name: "xml", run: xml, seeds: &[("crates/openframe-import-export/tests/fixtures/hostile/fdx", &["fdx"]), ("crates/openframe-import-export/tests/fixtures/fdx-suite", &["fdx"])] },
-    Target { name: "docx", run: docx, seeds: &[("crates/openframe-import-export/tests/fixtures/hostile/docx", &["docx"])] },
-    Target { name: "package_archive", run: package_archive, seeds: &[("crates/openframe-import-export/tests/fixtures/hostile/zip", &["zip"]), ("crates/openframe-import-export/tests/fixtures/hostile/packages", &["ofproject", "ofbackup", "zip"]), ("crates/openframe-application/tests/fixtures/packages", &["ofproject", "ofbackup", "ofresponse", "ofscriptreview", "ofstory"])] },
-    Target { name: "project_manifest", run: project_manifest, seeds: &[("crates/openframe-import-export/tests/fixtures/hostile/packages", &["json"])] },
+    Target { name: "fdx", run: fdx, seeds: &[("crates/straft-import-export/tests/fixtures/hostile/fdx", &["fdx"]), ("crates/straft-import-export/tests/fixtures/fdx-suite", &["fdx"]), ("crates/straft-import-export/tests/fixtures/screenplay", &["fdx"])] },
+    Target { name: "fountain", run: fountain, seeds: &[("crates/straft-import-export/tests/fixtures/hostile/fountain", &["fountain"]), ("crates/straft-import-export/tests/fixtures/screenplay", &["fountain", "txt"])] },
+    Target { name: "xml", run: xml, seeds: &[("crates/straft-import-export/tests/fixtures/hostile/fdx", &["fdx"]), ("crates/straft-import-export/tests/fixtures/fdx-suite", &["fdx"])] },
+    Target { name: "docx", run: docx, seeds: &[("crates/straft-import-export/tests/fixtures/hostile/docx", &["docx"])] },
+    Target { name: "package_archive", run: package_archive, seeds: &[("crates/straft-import-export/tests/fixtures/hostile/zip", &["zip"]), ("crates/straft-import-export/tests/fixtures/hostile/packages", &["ofproject", "ofbackup", "zip"]), ("crates/straft-application/tests/fixtures/packages", &["ofproject", "ofbackup", "ofresponse", "ofscriptreview", "ofstory"])] },
+    Target { name: "project_manifest", run: project_manifest, seeds: &[("crates/straft-import-export/tests/fixtures/hostile/packages", &["json"])] },
 ];
 
 /// Every seed file of a target, read from the repository at `root`.
@@ -118,7 +118,7 @@ pub fn seeds(root: &std::path::Path, target: &Target) -> Vec<Vec<u8>> {
         }
     }
     if target.name == "project_manifest" {
-        out.push(br#"{"format":"openframe-project","formatVersion":1,"projectId":"p","title":"T","projectType":"Feature Film","schemaVersion":16,"createdAt":0,"createdWith":"0.1.0"}"#.to_vec());
+        out.push(br#"{"format":"straft-project","formatVersion":1,"projectId":"p","title":"T","projectType":"Feature Film","schemaVersion":16,"createdAt":0,"createdWith":"0.1.0"}"#.to_vec());
     }
     if out.is_empty() {
         out.push(Vec::new());

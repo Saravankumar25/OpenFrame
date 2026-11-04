@@ -1,4 +1,4 @@
-     Running unittests src\lib.rs (target\debug\deps\openframe_ai-06ac51f6fc20418a.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_ai-06ac51f6fc20418a.exe)
 test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.25s
      Running tests\download.rs (target\debug\deps\download-b12150efde66699a.exe)
 test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
@@ -12,7 +12,7 @@ test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; fini
 test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
      Running tests\supervisor.rs (target\debug\deps\supervisor-26a778b50b9d35b9.exe)
 test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.38s
-     Running unittests src\lib.rs (target\debug\deps\openframe_application-1141092d4d65ba14.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_application-1141092d4d65ba14.exe)
 test result: ok. 721 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.09s
      Running tests\ai.rs (target\debug\deps\ai-2ffc7e946cf88176.exe)
 test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.70s
@@ -56,13 +56,13 @@ test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fin
 test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.16s
      Running tests\visual.rs (target\debug\deps\visual-8676760419ac4bf4.exe)
 test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.10s
-     Running unittests src\lib.rs (target\debug\deps\openframe_desktop_lib-2c0516eab000fbaf.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_desktop_lib-2c0516eab000fbaf.exe)
 test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
-     Running unittests src\main.rs (target\debug\deps\openframe_desktop-0c31c133a2c5faf8.exe)
+     Running unittests src\main.rs (target\debug\deps\straft_desktop-0c31c133a2c5faf8.exe)
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-     Running unittests src\lib.rs (target\debug\deps\openframe_domain-8b523cfa109b047a.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_domain-8b523cfa109b047a.exe)
 test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
-     Running unittests src\lib.rs (target\debug\deps\openframe_import_export-aaa69d52cffecf16.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_import_export-aaa69d52cffecf16.exe)
 test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
      Running tests\docx.rs (target\debug\deps\docx-5b9bd0fa1ad344f5.exe)
 test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
@@ -80,35 +80,35 @@ test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
      Running tests\txt.rs (target\debug\deps\txt-9d17b92e5ef82b96.exe)
 test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
-     Running unittests src\lib.rs (target\debug\deps\openframe_persistence-1ed4e41714c54ff0.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_persistence-1ed4e41714c54ff0.exe)
 test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
-     Running unittests src\lib.rs (target\debug\deps\openframe_project_format-271566e6b19651f0.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_project_format-271566e6b19651f0.exe)
 test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
-     Running unittests src\lib.rs (target\debug\deps\openframe_search-0b86890822e38aea.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_search-0b86890822e38aea.exe)
 test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
-     Running unittests src\lib.rs (target\debug\deps\openframe_security-94eae5ec44f84c64.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_security-94eae5ec44f84c64.exe)
 test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
      Running tests\security_paths.rs (target\debug\deps\security_paths-c3e4f5535d0d03e4.exe)
 test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
-     Running unittests src\lib.rs (target\debug\deps\openframe_test_support-65246b0e8c48d5d0.exe)
+     Running unittests src\lib.rs (target\debug\deps\straft_test_support-65246b0e8c48d5d0.exe)
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-   Doc-tests openframe_ai
+   Doc-tests straft_ai
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-   Doc-tests openframe_application
+   Doc-tests straft_application
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-   Doc-tests openframe_desktop_lib
+   Doc-tests straft_desktop_lib
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-   Doc-tests openframe_domain
+   Doc-tests straft_domain
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-   Doc-tests openframe_import_export
+   Doc-tests straft_import_export
 test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
-   Doc-tests openframe_persistence
+   Doc-tests straft_persistence
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-   Doc-tests openframe_project_format
+   Doc-tests straft_project_format
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-   Doc-tests openframe_search
+   Doc-tests straft_search
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-   Doc-tests openframe_security
+   Doc-tests straft_security
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-   Doc-tests openframe_test_support
+   Doc-tests straft_test_support
 test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s

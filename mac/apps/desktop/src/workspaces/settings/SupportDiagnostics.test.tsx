@@ -7,7 +7,7 @@ import { SupportSection, formatBytes } from "./SupportDiagnostics";
 const calls: { op: string; args: Record<string, unknown> }[] = [];
 let previewFail: { code: string; message: string } | null = null;
 let exportFail: { code: string; message: string } | null = null;
-const saveMock = vi.fn(async (_o: { defaultPath?: string; filters?: unknown }) => "C:\\Support\\OpenFrame Diagnostics 2026-10-05.zip" as string | null);
+const saveMock = vi.fn(async (_o: { defaultPath?: string; filters?: unknown }) => "C:\\Support\\Straft Studio Diagnostics 2026-10-05.zip" as string | null);
 const reveal = vi.fn(async (..._a: unknown[]) => undefined);
 
 vi.mock("@tauri-apps/plugin-dialog", () => ({
@@ -37,9 +37,9 @@ vi.mock("../../ipc/client", async () => {
       if (op === "diagnostics.preview") {
         if (previewFail) throw new OpError(previewFail.code, previewFail.message);
         return {
-          suggestedFileName: "OpenFrame Diagnostics 2026-10-05.zip",
+          suggestedFileName: "Straft Studio Diagnostics 2026-10-05.zip",
           files: [
-            { name: "manifest.json", description: "List of every file in this bundle.", bytes: 812, content: '{ "format": "openframe-diagnostics" }' },
+            { name: "manifest.json", description: "List of every file in this bundle.", bytes: 812, content: '{ "format": "straft-diagnostics" }' },
             { name: "log-tail.txt", description: "The most recent log entries.", bytes: 2048, content: "INFO operation failed op=notes.create code=validation.invalid_input" },
           ],
           neverIncluded: ["Screenplay text, notes, comments and any other project content", "Passwords, keys and tokens"],
@@ -49,7 +49,7 @@ vi.mock("../../ipc/client", async () => {
         if (exportFail) throw new OpError(exportFail.code, exportFail.message);
         return {
           path: args.path,
-          fileName: "OpenFrame Diagnostics 2026-10-05.zip",
+          fileName: "Straft Studio Diagnostics 2026-10-05.zip",
           bytesWritten: 4096,
           files: ["manifest.json", "log-tail.txt"],
           summary: "Saved.",
@@ -114,18 +114,18 @@ describe("Support > Export Diagnostics", () => {
     await screen.findByText("Export complete");
     expect(saveMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        defaultPath: "OpenFrame Diagnostics 2026-10-05.zip",
+        defaultPath: "Straft Studio Diagnostics 2026-10-05.zip",
         filters: [{ name: "ZIP archive", extensions: ["zip"] }],
       }),
     );
     expect(calls.at(-1)).toEqual({
       op: "diagnostics.export_bundle",
-      args: { path: "C:\\Support\\OpenFrame Diagnostics 2026-10-05.zip" },
+      args: { path: "C:\\Support\\Straft Studio Diagnostics 2026-10-05.zip" },
     });
     expect(screen.getByText(/Nothing was sent\./)).toBeInTheDocument();
     expect(screen.getByText("4.0 KB")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Reveal in File Manager" }));
-    expect(reveal).toHaveBeenCalledWith("exported", undefined, "C:\\Support\\OpenFrame Diagnostics 2026-10-05.zip");
+    expect(reveal).toHaveBeenCalledWith("exported", undefined, "C:\\Support\\Straft Studio Diagnostics 2026-10-05.zip");
   });
 
   it("does nothing when the Save dialog is cancelled", async () => {

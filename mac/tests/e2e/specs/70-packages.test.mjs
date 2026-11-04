@@ -143,7 +143,7 @@ describe("packages and backup", () => {
       await inDialog(browser, "Open as Copy");
       await waitForText(browser, "Opened as a copy.", 60_000);
       await inDialog(browser, "Close");
-      await browser.waitUntil(async () => (await browser.execute(() => document.title)) === "Harbour Lights (copy) - OpenFrame Studio", {
+      await browser.waitUntil(async () => (await browser.execute(() => document.title)) === "Harbour Lights (copy) - Straft Studio", {
         timeout: 20_000,
         timeoutMsg: "the restored copy did not open",
       });

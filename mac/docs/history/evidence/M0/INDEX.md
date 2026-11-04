@@ -7,7 +7,7 @@
 | Row | Box | Ledger | Date | Commit | Command or source | Result | File |
 |---|---|---|---|---|---|---|---|
 | M0-01 | M0.18 | all | 2026-10-05 | cd60f08 | `git tag -a baseline/pre-masterplan-2026-10 cd60f08` (local, not pushed) | PASS | tag |
-| M0-02 | M0.18 | all | 2026-10-05 | cd60f08+dirty | `npm run verify` attempt 1: stale `target/` build-script output from the old checkout path `C:\dev\OpenFrame` | FAIL (environment) | fixed by `cargo clean --profile dev` |
+| M0-02 | M0.18 | all | 2026-10-05 | cd60f08+dirty | `npm run verify` attempt 1: stale `target/` build-script output from the old checkout path `C:\dev\Straft Studio` | FAIL (environment) | fixed by `cargo clean --profile dev` |
 | M0-03 | M0.18 | all | 2026-10-05 | cd60f08+dirty | `npm run verify` attempts 2 and 3: out of memory while another cargo build ran (os error 1455) | FAIL (environment) | see row M0-12 |
 | M0-04 | M0.18 | all | 2026-10-05 | cd60f08+dirty | `cargo fmt --check`, `cargo clippy --workspace --all-targets -D warnings`, ESLint `--max-warnings 0`, `tsc --noEmit` | PASS | console (verify run 3 reached tests) |
 | M0-05 | M0.18 | all | 2026-10-05 | cd60f08+dirty | `cargo test --workspace` (`CARGO_BUILD_JOBS=4`) | PASS: 1286 passed, 0 failed, 4 ignored | [M0.18-rust-test-results.txt](M0.18-rust-test-results.txt) |

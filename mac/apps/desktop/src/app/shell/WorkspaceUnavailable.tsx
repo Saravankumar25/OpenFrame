@@ -4,7 +4,7 @@ import { EmptyState } from "../../design-system";
 export function WorkspaceUnavailable() {
   return (
     <EmptyState title="This workspace isn't available in this build.">
-      Reinstall OpenFrame Studio. Your project is safe and unchanged.
+      Reinstall Straft Studio. Your project is safe and unchanged.
     </EmptyState>
   );
 }

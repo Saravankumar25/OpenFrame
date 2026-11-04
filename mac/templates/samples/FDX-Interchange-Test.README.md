@@ -1,6 +1,6 @@
 # FDX Interchange Test: what each construct tests
 
-Copyright 2026 OpenFrame Studio. Fictional sample written for OpenFrame; you may use it to learn the app.
+Copyright 2026 Straft Studio. Fictional sample written for Straft Studio; you may use it to learn the app.
 
 `FDX-Interchange-Test.fdx` is a short fictional script, "The Three Desks", written to exercise the Final Draft
 importer and exporter. It is well-formed XML with no document type declaration and no entities other than the five
@@ -39,4 +39,4 @@ It must never turn it silently into Action.
 
 What this file does not contain on purpose: a document type declaration, custom entities, external references and
 anything larger than a few kilobytes. Hostile inputs of that kind live in
-`crates/openframe-import-export/tests/fixtures/hostile/fdx/`.
+`crates/straft-import-export/tests/fixtures/hostile/fdx/`.

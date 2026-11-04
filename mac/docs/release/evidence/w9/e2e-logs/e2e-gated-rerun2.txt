@@ -1,4 +1,4 @@
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T21-34-55-469Z\shared
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-17T21-34-55-469Z\shared
   specs: 01-journey.test.mjs, 02-restart.test.mjs
 ▶ desktop journey
   ✔ first launch → name → create project → Project Home (1039.7245ms)
@@ -28,7 +28,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T21-34-55-469Z\shared
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 62847.3984
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T21-34-55-469Z\41-screenplay-engine
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-17T21-34-55-469Z\41-screenplay-engine
   specs: 41-screenplay-engine.test.mjs
 ▶ screenplay engine
   ✔ write with the element flow and insert a page break (2472.9329ms)
@@ -48,7 +48,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T21-34-55-469Z\41-screenpla
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 16925.6705
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T21-34-55-469Z\62-call-sheets-exports
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-17T21-34-55-469Z\62-call-sheets-exports
   specs: 62-call-sheets-exports.test.mjs
 ▶ call sheets, budget, templates, samples and exports
   ✔ open a sample script that ships with the app (2723.5183ms)
@@ -70,7 +70,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T21-34-55-469Z\62-call-shee
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 22128.7723
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T21-34-55-469Z\shared
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-17T21-34-55-469Z\shared
   specs: 90-visual-baseline.test.mjs, 91-appearance-themes.test.mjs, 95-reachability.test.mjs
 ▶ visual regression against the visual baseline baseline
   ✔ 15 representative screens (35822.0779ms)

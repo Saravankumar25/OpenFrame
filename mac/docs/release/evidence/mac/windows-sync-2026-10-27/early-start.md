@@ -11,14 +11,14 @@ Orders: `docs/roadmap/mac-ai-harness-port-orders.md` section 8, items 1 to 3.
   (`.build-cache/e2e.lock`) was held for every run, the Mac app was open, and `dsymutil` or `swift-frontend` used a
   full core in pairs 3 to 5. The load average is in each row.
 - Two `ai-eval` binaries built from one source snapshot (`git archive` of `5c6aeae5` plus the memory fix below), the
-  only difference being `START_ENGINE` in `crates/openframe-application/src/modules/ai/intelligence/warm.rs`. Both
+  only difference being `START_ENGINE` in `crates/straft-application/src/modules/ai/intelligence/warm.rs`. Both
   run with `--warmup on`, so both build the project index and the example vectors before the first question; only
   the "on" binary also starts the chat engine and reads the fixed prompt starts (`AiManager::prime`). Comparing
   `--warmup on` with `--warmup off` on one binary would also have removed the index and example warm-up, so it would
   not isolate the engine start.
 - Command per run, a fresh process each time, the order alternating between pairs:
-  `ai-eval --gold crates/openframe-ai-eval/gold --out <dir> --only conv-lt-scene-001 --graphics auto --warmup on`
-  with absolute `OPENFRAME_AI_BUNDLE_DIR` and `OPENFRAME_AI_ASSETS_DIR`. The first-question time is
+  `ai-eval --gold crates/straft-ai-eval/gold --out <dir> --only conv-lt-scene-001 --graphics auto --warmup on`
+  with absolute `STRAFT_AI_BUNDLE_DIR` and `STRAFT_AI_ASSETS_DIR`. The first-question time is
   `first_question_ms` of `latency.json` (the time of `ai.ask` for "Explain scene 3 of LOW TIDE RADIO.", three engine
   calls, 2,898 prompt tokens, 444 written).
 
@@ -40,11 +40,11 @@ Three readings in a row (MB):
 The early start needs `model_mb + EARLY_START_HEADROOM_MB` = 1,275 + 1,536 = 2,811 MB free. With sysinfo (1,967 MB
 here, about 900 MB earlier in the day) it never started on this Mac; with the kernel reading it does.
 
-Fix (`crates/openframe-ai/src/hardware.rs`, macOS only): the kernel's free (speculative included), inactive and
+Fix (`crates/straft-ai/src/hardware.rs`, macOS only): the kernel's free (speculative included), inactive and
 purgeable pages from `host_statistics64(HOST_VM_INFO64)` through `libc`, times `sysconf(_SC_PAGESIZE)`, nothing
 taken off for the compressor, never below the sysinfo reading and never above the installed memory. Any kernel error
-keeps the sysinfo reading. Windows and Linux are unchanged. `libc` was already in the lock (openframe-platform); it is
-now a macOS-only dependency of openframe-ai. On the Mac this reading feeds `room_to_start` and Settings; the Metal
+keeps the sysinfo reading. Windows and Linux are unchanged. `libc` was already in the lock (straft-platform); it is
+now a macOS-only dependency of straft-ai. On the Mac this reading feeds `room_to_start` and Settings; the Metal
 placement checks installed memory only, and `placement::plan` with free memory runs on Windows only.
 
 ## Item 1: first-question time, early start off and on (ms)
@@ -122,7 +122,7 @@ One "on" run sampled every second (`footprint` and `ps`):
   (no engine, then a stopped index ends the warm-up in under 500 ms) and the first half of
   `the_engine_is_prepared_early_without_counting_and_obeys_stop` (no models: nothing starts; `stop` true: the engine
   stays down).
-- `power_event(sleeping)` does not stop background work. It does not hold. `CoreHandle::power_event(true)` (openframe-ffi) calls
+- `power_event(sleeping)` does not stop background work. It does not hold. `CoreHandle::power_event(true)` (straft-ffi) calls
   `AppCore::on_power_event(Suspending)`, which only folds the write-ahead logs into the database files (test
   `failure_injection.rs`, "project log folded before sleep"). It does not stop the indexer, the warm-up or the
   engines. With `START_ENGINE` off nothing large runs in the background, so this is a gap to close in the shared core
@@ -130,9 +130,9 @@ One "on" run sampled every second (`footprint` and `ps`):
 
 ## Checks run
 
-- `cargo test -p openframe-ai`: all pass, including the two new hardware tests and
+- `cargo test -p straft-ai`: all pass, including the two new hardware tests and
   `the_engine_is_prepared_early_without_counting_and_obeys_stop`.
-- `cargo clippy -p openframe-ai --all-targets -- -D warnings`: clean. `cargo fmt -p openframe-ai`: applied.
+- `cargo clippy -p straft-ai --all-targets -- -D warnings`: clean. `cargo fmt -p straft-ai`: applied.
 - Not run: the Windows and Linux builds of `hardware.rs` (the macOS code is behind `cfg(target_os = "macos")`); five
   pairs on a quiet Mac.
 

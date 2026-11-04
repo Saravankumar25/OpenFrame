@@ -4,7 +4,7 @@
 import type { BreakdownSceneFilter } from "../../ipc/generated/BreakdownSceneFilter";
 import type { BreakdownCategory } from "../../ipc/generated/BreakdownCategory";
 
-const FILTER_KEY = "openframe.breakdown.sceneFilter";
+const FILTER_KEY = "straft.breakdown.sceneFilter";
 export type SavedFilter = { filter: BreakdownSceneFilter; category: BreakdownCategory | null };
 const FILTERS: readonly BreakdownSceneFilter[] = ["all", "unreviewed", "suggested", "missing", "needsReview", "complete", "incomplete"];
 const CATEGORIES: readonly BreakdownCategory[] = [
@@ -31,7 +31,7 @@ export function writeFilter(v: SavedFilter) {
   }
 }
 
-const PANEL_KEY = "openframe.breakdown.panelHidden";
+const PANEL_KEY = "straft.breakdown.panelHidden";
 /** Whether the scene breakdown panel is hidden (owner item 10); view preference only. */
 export function readPanelHidden(): boolean {
   try {
@@ -48,7 +48,7 @@ export function writePanelHidden(v: boolean) {
   }
 }
 
-const ZOOM_KEY = "openframe.breakdown.zoom";
+const ZOOM_KEY = "straft.breakdown.zoom";
 /** The Breakdown script zoom (owner item 14); view preference only, 0.6 to 2. */
 export function readZoom(): number {
   try {

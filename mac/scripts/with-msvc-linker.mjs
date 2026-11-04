@@ -33,7 +33,7 @@ export function hardenedEnv(env, { platform = process.platform, repo = REPO, hom
   const flags = [
     ["-C", "control-flow-guard"],
     ["-C", "link-arg=/CETCOMPAT"], // hardware shadow stack (BinSkim BA2025)
-    [`--remap-path-prefix=${repo}=openframe`],
+    [`--remap-path-prefix=${repo}=straft`],
     [`--remap-path-prefix=${cargoHome}=cargo`],
     [`--remap-path-prefix=${rustupHome}=rustup`],
   ].flat();

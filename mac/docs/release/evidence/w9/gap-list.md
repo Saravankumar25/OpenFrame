@@ -38,7 +38,7 @@ Specs run through the real operations the dialogs call when the native Save or O
 | Feature (short) | Line | Proof now | Decision | Evidence or next step |
 |---|---|---|---|---|
 | Project create, open, close, duplicate, archive, delete | 56 | 1 | covered-L3 | `10-home`: rename, duplicate, archive and restore, Delete Project with the typed name, relaunch; `00` and `01` create, close, reopen. The "no test for delete and locate" text is stale (`project_lifecycle.rs`, 4 tests). Locate has no spec |
-| Single-writer lock; network paths refused | 57 | 1 | needs-test | No spec. Add to `10-home`: open a `\\localhost\share` path and a second open of a held project, expect the plain refusal. Mapped-drive text is stale (`openframe-platform/src/drives.rs`, `DRIVE_REMOTE`) |
+| Single-writer lock; network paths refused | 57 | 1 | needs-test | No spec. Add to `10-home`: open a `\\localhost\share` path and a second open of a held project, expect the plain refusal. Mapped-drive text is stale (`straft-platform/src/drives.rs`, `DRIVE_REMOTE`) |
 | Autosave, Save checkpoint, save indicator | 58 | 1 | needs-test | Autosave and "Saved" are in `01`, `40`, `26`. Ctrl+S checkpoint and the save-error state have no spec. Add both to `40` |
 | Crash detection and recovery offer | 59 | 1 | covered-L3 | `26-forced-kill-keeps-work`: kill, relaunch, click "Open Recovery", every piece of work is there, new work saves. Wording-defect text is stale (fixed in `RecoveryDialogs.tsx`) |
 | Migrations: backup first, refuse newer | 60 | 1 | needs-test | Rust only (`migration_fixtures.rs`, `migration_failures.rs`). Add to `02-restart`: open a project folder made at an older schema (fixture) on the release build and see it upgrade with its backup |
@@ -78,7 +78,7 @@ Specs run through the real operations the dialogs call when the native Save or O
 | PDF import with preview and safe failure | 152 | 1 | needs-test | `63` re-imports FDX, Fountain, DOCX, TXT but not the PDF it just wrote. Add `pdf` to that loop, plus a scanned-style PDF refusal |
 | TXT and pasted text import | 153 | 1 | covered-L3 | `63` TXT round trip; `01` "import pasted Fountain from the quick actions menu" |
 | Import report exact; export failure leaves source | 154 | 1 | needs-test | `63` asserts scene counts. Add a damaged file to `63` and assert the project is unchanged (as `70` does for a damaged backup) |
-| Screenplay outputs carry no branding | 155 | 1 | needs-test | `41` asserts the PDF has no "OpenFrame". Add the same assert for FDX, DOCX, Fountain and TXT in `63` |
+| Screenplay outputs carry no branding | 155 | 1 | needs-test | `41` asserts the PDF has no "Straft Studio". Add the same assert for FDX, DOCX, Fountain and TXT in `63` |
 | PDF visual regression | 156 | 1 | needs-test | Rust goldens (`pdf_golden.rs`, `pdf_regression.rs`). Release proof is the owner's choice (last section) |
 | Script change reconciliation, Needs Review | 168 | 1 | needs-test | No spec edits the source script after a breakdown. Add to `50`: change a heading, see Needs Review, nothing deleted |
 | Large-project performance | 172 | 1 | needs-test | `97` proves start and project open on the 36-scene example. Filters: run `npm run perf` once on the final commit and file the output (no new code) |
@@ -89,7 +89,7 @@ Specs run through the real operations the dialogs call when the native Save or O
 | Shot list and details | 186 | 1 | needs-test | `62` exports the shot list from a template. Creating, ordering and editing shots has no spec. Add to `86` |
 | Call sheet branded printable PDF | 216 | 1 | covered-L3 | `62`: `callsheets.export_pdf` after finalize, brand line checked in `exportAndCheck` |
 | Project notes, tasks, Activity | 219 | 1 | covered-L3 | `80` (note autosave, delete, restore, task, undo, relaunch), `85` (Activity lists and filters) |
-| Retrieval gold set and metrics | 248 | none | needs-work | Small. Harness and gold sets exist (`crates/openframe-ai-eval`, `gold/retrieval.en.jsonl`; Recall@1, 5, 10, MRR and grounding in `w6/report.md`). nDCG, leakage and stale-result metrics are not in `ai-eval`. Row text "pending" is stale for the rest |
+| Retrieval gold set and metrics | 248 | none | needs-work | Small. Harness and gold sets exist (`crates/straft-ai-eval`, `gold/retrieval.en.jsonl`; Recall@1, 5, 10, MRR and grounding in `w6/report.md`). nDCG, leakage and stale-result metrics are not in `ai-eval`. Row text "pending" is stale for the rest |
 | Hardware benchmark | 249 | 1 | clean-machine | Done for the owner's laptop (`w5/README.md`, `w7`). Needs an 8 GB computer and the second laptop (W9 step 5) |
 | Real-model E2E | 251 | 1 | needs-test | `72` to `75` run on the release build with the real models (ask, retrieve, propose, apply, reject, stale, restart, crash). Index rebuild is missing. Add one rebuild step to `72` |
 | No-egress test | 252 | 1 | covered-L3 | `72` "no network: loopback only while AI works"; `05` covers both web view runs, so the T33 gap text is stale |
@@ -131,16 +131,16 @@ Specs run through the real operations the dialogs call when the native Save or O
 | 2: Owner review of the documentation set (206) | clean-machine | Owner task |
 | 3: Typed text survives closing the window (221) | covered-L3 | `04-close-keeps-typing`: close button and Alt+F4, 20 rounds, on the release build. Mac half is Mac track |
 | 3: Cloud-synced project folders (222) | clean-machine | Detection and tests done (`w2/`). Manual OneDrive typing test (`docs/testing/onedrive-typing-test.md`) is the owner's |
-| 4: Long-running soak tests (230) | needs-test | Run the ignored `soak::m1_08_soak_long` once (`OPENFRAME_SOAK_SECS=1800`) and file the result; no code |
+| 4: Long-running soak tests (230) | needs-test | Run the ignored `soak::m1_08_soak_long` once (`STRAFT_SOAK_SECS=1800`) and file the result; no code |
 | 5: Desktop E2E in CI as release gate (239) | clean-machine | Needs a push to see the GitHub runner |
 | 5: One spec per workspace and one journey (240) | needs-test | Only a Files spec is missing (see row 63); export then re-import is now in `63` |
-| 5: Hostile file collection (242) | stale | Corpus `crates/openframe-import-export/tests/fixtures/hostile/` (including `packages/`), `hostile_corpus.rs`, `packages.rs`; fuzz of 6 targets in `w3/fuzz-2026-10-16.md`. libFuzzer CI run waits for a push |
+| 5: Hostile file collection (242) | stale | Corpus `crates/straft-import-export/tests/fixtures/hostile/` (including `packages/`), `hostile_corpus.rs`, `packages.rs`; fuzz of 6 targets in `w3/fuzz-2026-10-16.md`. libFuzzer CI run waits for a push |
 | 5: PDF image comparison tests (243) | stale | `pdf_golden.rs` (title page, continuation, revision marks, long word, A4, multilingual) and `pdf_regression.rs` (call sheet). Schedule, sides and reports have no golden |
 | 5: Log redaction test (245) | needs-test | `sidecar_log_redaction.rs` and `panic_log_lines_are_redacted_and_bounded` exist. Add the release-log scan from row 69 |
 | 5: Performance budgets extended (247) | needs-test | `97` covers typing, idle, memory, start, open. `perf.rs` has call sheet and PDF budgets. Run `npm run perf` on the final commit |
 | 5: Writing standard hits to zero (249) | needs-work | `check:writing` now reports app 16, crates 202, scripts and CI 26, living docs 29. App 16 is small and user-visible; the rest is larger |
 | 5: Dead code check in CI (250) | needs-work | Small. Add the tool as a warning job |
-| 5: One test binary per crate (252) | stale | `openframe-application` is now 6 binaries (`tests/{ai,platform,production,writing}/main.rs`, `forced_kill.rs`, `perf.rs`). `openframe-import-export` (16) and `openframe-ai` (5) remain; optional |
+| 5: One test binary per crate (252) | stale | `straft-application` is now 6 binaries (`tests/{ai,platform,production,writing}/main.rs`, `forced_kill.rs`, `perf.rs`). `straft-import-export` (16) and `straft-ai` (5) remain; optional |
 | 6: Asset protocol scope (260) | stale | `asset_scope.rs`: `replacing_the_roots_revokes_the_previous_project_at_once` |
 | 6: App database migration safety (264) | needs-work | Small. `core.rs` calls `migrate::apply` on `app.sqlite` with no integrity check and no backup first |
 | 6: Release hardening flags (265) | needs-work | Small. Control-flow guard, path remap and `check-binary.mjs` exist; CET evaluation is not recorded |
@@ -170,7 +170,7 @@ Specs run through the real operations the dialogs call when the native Save or O
 | 8: Download validation, `.app` (305) | later | Store publishing, Mac hardware |
 | 8: Download resilience (306) | needs-test | `78` covers resume, pause, damaged file set aside, host down. Disk-space check and retry status codes are Rust only. Add a low-disk and a 503 step to `78` using the local test host |
 | 8: Model update regression suite (307) | later | Needed when a model changes after release |
-| 8: AI engine lifecycle (308) | needs-test | `75` covers kill during answer and no stray engine. Hang, timeout, refusal when the job object fails and the one-process rule have no named test (`crates/openframe-ai/tests/supervisor.rs`) |
+| 8: AI engine lifecycle (308) | needs-test | `75` covers kill during answer and no stray engine. Hang, timeout, refusal when the job object fails and the one-process rule have no named test (`crates/straft-ai/tests/supervisor.rs`) |
 | 8: Report AI output (309) | later | Support address, Chapter 2 |
 | 8: Hardware benchmarks (310) | clean-machine | Owner's laptop done; 8 GB machine and published minimum need other computers |
 | 8: Real-model E2E (311) | needs-test | Only index rebuild is missing (row 251) |
@@ -208,7 +208,7 @@ Ordered by value. Items 1 to 8 are added steps in existing specs, so one re-run 
 | 8 | AI: index rebuild step, planted injection question, low-disk and 503 download steps | 251, 311, 253, 306 | `72`, `78` |
 | 9 | Gated-run checks: wrong password and lockout, log scan for typed text and paths | 290, 520, 69, 245 | `tests/e2e/run.mjs` gated variant, new log-scan step |
 | 10 | Runs with no new code, filed as evidence: `npm run perf`, the 30-minute soak, the governance suite, `check-binary` and `scan-installer` on the built installer | 172, 247, 230, 270, 524 | `docs/release/evidence/w9/` |
-| 11 | Small code: integrity check and backup before migrating `app.sqlite`; nDCG, leakage and stale-result metrics in `ai-eval`; missing `knowledge.md` sections; CET note; checksum and SBOM script; the 16 app writing-standard hits | 264, 265, 248, 292, 296, 282, 249 (B) | `crates/openframe-application/src/core.rs`, `crates/openframe-ai-eval/src/lib.rs`, `crates/openframe-application/src/modules/ai/knowledge.md`, `scripts/` |
+| 11 | Small code: integrity check and backup before migrating `app.sqlite`; nDCG, leakage and stale-result metrics in `ai-eval`; missing `knowledge.md` sections; CET note; checksum and SBOM script; the 16 app writing-standard hits | 264, 265, 248, 292, 296, 282, 249 (B) | `crates/straft-application/src/core.rs`, `crates/straft-ai-eval/src/lib.rs`, `crates/straft-application/src/modules/ai/knowledge.md`, `scripts/` |
 | 12 | Documents: move the 21 covered rows to proof 3 after the final run; mark the 9 stale boxes and row 269 done with the evidence named above; author release notes and known issues | 283 and the stale items | `docs/implementation/feature-status.md`, `masterplan.md`, `reconciliation-log.md` |
 
 Settled, not an owner question: the decided row "Tests from a release-ready point of view" (owner-decisions.md,

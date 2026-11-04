@@ -50,12 +50,12 @@ export const storyEditors = new WeakMap<Element, EditorView>();
 
 // ------------------------------------------------------------------ zoom
 
-const ZOOM_KEY = "openframe.story.zoom";
+const ZOOM_KEY = "straft.story.zoom";
 const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 2;
 
 /** The page zoom is a per-user view preference, never project data. */
-const DARK_KEY = "openframe.story.darkPage";
+const DARK_KEY = "straft.story.darkPage";
 
 function readZoom(): number {
   try {

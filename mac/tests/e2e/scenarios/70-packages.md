@@ -85,7 +85,7 @@ File names used below, all in `package-out`:
 7. Click Open as Copy in the dialog.
 8. Check: within 60 seconds the screen shows "Opened as a copy."
 9. Click Close in the dialog.
-10. Check: the window title is "Harbour Lights (copy) - OpenFrame Studio".
+10. Check: the window title is "Harbour Lights (copy) - Straft Studio".
 11. Check: the screen is quiet.
 
 ## A damaged backup is refused and nothing is created

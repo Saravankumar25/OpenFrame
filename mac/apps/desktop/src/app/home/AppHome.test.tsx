@@ -40,7 +40,7 @@ vi.setConfig({ testTimeout: 20_000 });
 
 const info = (displayNameSet = true) => ({
   appVersion: "0.1.0",
-  projectsDir: "C:\\Users\\me\\Documents\\OpenFrame\\Projects",
+  projectsDir: "C:\\Users\\me\\Documents\\Straft Studio\\Projects",
   globalVaultDir: "C:\\vault",
   profile: { userId: "u1", displayName: "Nisha Verma" },
   platform: "windows",
@@ -142,7 +142,7 @@ describe("Application Home", () => {
     const user = userEvent.setup();
     const setName = vi.fn(() => ({ userId: "u1", displayName: "Rohan Das" }));
     setup({ "project.list_recent": [], "app.info": info(false), "app.set_display_name": setName });
-    expect(await screen.findByRole("heading", { name: "Welcome to OpenFrame Studio" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Welcome to Straft Studio" })).toBeInTheDocument();
     const field = screen.getByRole("textbox", { name: /Your name/ });
     await user.clear(field);
     await user.type(field, "Rohan Das");

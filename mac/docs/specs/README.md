@@ -8,19 +8,19 @@
 
 | File | Role | Status |
 |---|---|---|
-| `OpenFrame_Studio_Mega_PRD_Aligned_Updated.md` | Product requirements (what and why) | Active. LAN requirements superseded (2 sections marked); amended by Revision 1 |
-| `OpenFrame_Studio_Functional_Specification_Document_Aligned_Updated.md` | Feature behaviour and acceptance criteria | Active. LAN sections §48 to 49, 62.6, 119 to 120, 152 superseded (13 marked); amended by Revision 1 |
-| `OpenFrame_Studio_UX_UI_Specification_Updated.md` | Screens and interaction | Active. Screens 66 to 68 (LAN) superseded; light-only rule under amendment (ADR-0014) |
-| `OpenFrame_Studio_Domain_Data_Specification_Updated.md` | Objects, identity, lifecycle | Active. "Collaboration Session" superseded; amended by Revision 1 |
-| `OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md` | **Revision 1**: screenplay depth, indie production depth, themes (§47A) | Active, newest. Wins over the four above for the areas it covers. Three points await ADR-0014, 0015, 0016 |
-| `OpenFrame_Studio_Offline_Collaboration_Specification.md` | Solo, offline and package workflows | **Superseded in part**: live LAN parts (16 sections marked). Packages remain normative |
-| `OpenFrame_Studio_Import_Export_Specification.md` | Formats and import and export rules | Active; amended by Revision 1 §§36 to 43; PDF scripts await ADR-0016 |
-| `OpenFrame_Studio_Security_Privacy_Data_Ownership_Specification.md` | Permissions, privacy, data ownership | Active. LAN sections superseded (22 marked); telemetry wording awaits ADR-0021 |
-| `OpenFrame_Studio_AI_Specification_Updated.md` | AI product, safety, Change Sets | Active; implemented by ADR-0013 |
-| `OpenFrame_Local_AI_Runtime_Model_Management_Specification.md` | Offline AI runtime, one profile, manifest, download | Active (single Gemma profile) |
-| `openframe_ai_agentic_rag_spec_prompt.md` | Agentic AI and hybrid RAG behaviour (originally written as an implementation prompt) | Active, implemented; code and docs cite its section numbers |
-| `OpenFrame_ESD_Technical_Architecture.md` | Engineering system design | Active, with a status note; target additions in `docs/engineering/29` |
-| `OpenFrame_Studio_Engineering_Package_Index.md` | Locked engineering decisions, phases, invariants | Active; some locked decisions marked under amendment (see the register) |
+| `Straft_Studio_Mega_PRD_Aligned_Updated.md` | Product requirements (what and why) | Active. LAN requirements superseded (2 sections marked); amended by Revision 1 |
+| `Straft_Studio_Functional_Specification_Document_Aligned_Updated.md` | Feature behaviour and acceptance criteria | Active. LAN sections §48 to 49, 62.6, 119 to 120, 152 superseded (13 marked); amended by Revision 1 |
+| `Straft_Studio_UX_UI_Specification_Updated.md` | Screens and interaction | Active. Screens 66 to 68 (LAN) superseded; light-only rule under amendment (ADR-0014) |
+| `Straft_Studio_Domain_Data_Specification_Updated.md` | Objects, identity, lifecycle | Active. "Collaboration Session" superseded; amended by Revision 1 |
+| `Straft_Studio_Screenplay_and_Production_Depth_Specification.md` | **Revision 1**: screenplay depth, indie production depth, themes (§47A) | Active, newest. Wins over the four above for the areas it covers. Three points await ADR-0014, 0015, 0016 |
+| `Straft_Studio_Offline_Collaboration_Specification.md` | Solo, offline and package workflows | **Superseded in part**: live LAN parts (16 sections marked). Packages remain normative |
+| `Straft_Studio_Import_Export_Specification.md` | Formats and import and export rules | Active; amended by Revision 1 §§36 to 43; PDF scripts await ADR-0016 |
+| `Straft_Studio_Security_Privacy_Data_Ownership_Specification.md` | Permissions, privacy, data ownership | Active. LAN sections superseded (22 marked); telemetry wording awaits ADR-0021 |
+| `Straft_Studio_AI_Specification_Updated.md` | AI product, safety, Change Sets | Active; implemented by ADR-0013 |
+| `Straft_Local_AI_Runtime_Model_Management_Specification.md` | Offline AI runtime, one profile, manifest, download | Active (single Gemma profile) |
+| `straft_ai_agentic_rag_spec_prompt.md` | Agentic AI and hybrid RAG behaviour (originally written as an implementation prompt) | Active, implemented; code and docs cite its section numbers |
+| `Straft_ESD_Technical_Architecture.md` | Engineering system design | Active, with a status note; target additions in `docs/engineering/29` |
+| `Straft_Studio_Engineering_Package_Index.md` | Locked engineering decisions, phases, invariants | Active; some locked decisions marked under amendment (see the register) |
 | `screenplay-formatting-standard-v5.md` | Screenplay page layout: spacing, keep rules, continuation, title page, numbering (added 2026-10-24) | Active. Replaces version 4 (in [../history/specs/](../history/specs/)); amends ADR-0008 for the screenplay profile |
 | `pdf-design-package-v2/` | Design package for every production PDF: system rules, one specification per export, reference HTML and PDFs (added 2026-10-24) | Active design source, [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md); the renderer slice follows |
 | `ai-conversational-harness.md` | Conversational assistant: design, the deterministic policy, coverage, evaluation and the build slices S0 to S9 (added 2026-10-26) | Active, companion to [ADR-0037](../adr/ADR-0037-conversational-assistant-focus-and-dossiers.md); replaces the AI harness rebuild plan (in [../history/](../history/2026-10-24-ai-harness-rebuild-plan.md)) |

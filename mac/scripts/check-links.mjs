@@ -10,11 +10,11 @@ import fs from "node:fs";
 import path from "node:path";
 import url from "node:url";
 
-const ROOT = process.env.OPENFRAME_CHECK_ROOT
-  ? path.resolve(process.env.OPENFRAME_CHECK_ROOT)
+const ROOT = process.env.STRAFT_CHECK_ROOT
+  ? path.resolve(process.env.STRAFT_CHECK_ROOT)
   : path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
-// OpenFrameMac and changes are local, uncommitted reference folders the owner supplies (listed in .git/info/exclude).
-const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", ".claude", ".build-cache", "dist", "gen", "OpenFrameMac", "changes"]);
+// StraftMac and changes are local, uncommitted reference folders the owner supplies (listed in .git/info/exclude).
+const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", ".claude", ".build-cache", "release-out", "dist", "gen", "StraftMac", "changes"]);
 const RECORD_PREFIXES = ["docs/history/", "docs/release/evidence/"];
 // Documents whose older sections are kept as written; links after the marker line are not checked. The old log
 // sections moved to docs/history/logs on 2026-10-27, so no living document needs a marker today.
@@ -25,7 +25,8 @@ function* walk(dir) {
     if (SKIP_DIRS.has(entry.name)) continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) yield* walk(full);
-    else if (entry.name.endsWith(".md")) yield full;
+    // Only real files: a link can point at a file that has moved, and a link's text is checked at its target.
+    else if (entry.isFile() && entry.name.endsWith(".md")) yield full;
   }
 }
 
@@ -62,12 +63,12 @@ const APP_SOURCES = [
   "apps/desktop/src",
   "apps/desktop/src-tauri/src",
   "apps/desktop/src-tauri/capabilities",
-  "apps/macos/Sources/OpenFrameUI",
-  "apps/macos/Sources/OpenFrameCore",
-  "apps/macos/Sources/OpenFrameStudio",
+  "apps/macos/Sources/StraftUI",
+  "apps/macos/Sources/StraftCore",
+  "apps/macos/Sources/StraftStudio",
   // The gold project builder is a development tool, never shipped: its addresses are film research links in project data.
   ...(fs.existsSync(path.join(ROOT, "crates"))
-    ? fs.readdirSync(path.join(ROOT, "crates")).filter((c) => c !== "openframe-gold-project").map((c) => `crates/${c}/src`)
+    ? fs.readdirSync(path.join(ROOT, "crates")).filter((c) => c !== "straft-gold-project").map((c) => `crates/${c}/src`)
     : []),
 ];
 const APP_FILES = ["apps/desktop/src-tauri/tauri.conf.json", "apps/desktop/index.html"];

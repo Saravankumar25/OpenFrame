@@ -73,7 +73,7 @@ impl AssetScope {
             || requested
                 .components()
                 .any(|c| matches!(c, Component::ParentDir | Component::CurDir))
-            || !openframe_security::is_local_disk_path(&requested)
+            || !straft_security::is_local_disk_path(&requested)
         {
             return None;
         }
@@ -261,8 +261,8 @@ mod tests {
     #[test]
     fn replacing_the_roots_revokes_the_previous_project_at_once() {
         let tmp = tempfile::tempdir().unwrap();
-        let a = tmp.path().join("A.openframe").join("assets");
-        let b = tmp.path().join("B.openframe").join("assets");
+        let a = tmp.path().join("A.straft").join("assets");
+        let b = tmp.path().join("B.straft").join("assets");
         std::fs::create_dir_all(&a).unwrap();
         std::fs::create_dir_all(&b).unwrap();
         std::fs::write(a.join("still.png"), b"a").unwrap();
@@ -286,7 +286,7 @@ mod tests {
     #[test]
     fn only_files_inside_an_assets_folder_are_served() {
         let tmp = tempfile::tempdir().unwrap();
-        let project = tmp.path().join("Railway.openframe");
+        let project = tmp.path().join("Railway.straft");
         let assets = project.join("assets");
         std::fs::create_dir_all(assets.join("ab")).unwrap();
         std::fs::create_dir_all(project.join("cache")).unwrap();
@@ -321,9 +321,9 @@ mod tests {
     #[test]
     fn a_link_inside_assets_that_points_outside_is_refused() {
         let tmp = tempfile::tempdir().unwrap();
-        let assets = tmp.path().join("P.openframe").join("assets");
+        let assets = tmp.path().join("P.straft").join("assets");
         std::fs::create_dir_all(&assets).unwrap();
-        let db = tmp.path().join("P.openframe").join("project.sqlite");
+        let db = tmp.path().join("P.straft").join("project.sqlite");
         std::fs::write(&db, b"db").unwrap();
         std::os::unix::fs::symlink(&db, assets.join("db.png")).unwrap();
         let scope = AssetScope::default();
@@ -334,7 +334,7 @@ mod tests {
     #[test]
     fn unicode_paths_round_trip() {
         let tmp = tempfile::tempdir().unwrap();
-        let assets = tmp.path().join("రైలు फ़िल्म.openframe").join("assets");
+        let assets = tmp.path().join("రైలు फ़िल्म.straft").join("assets");
         std::fs::create_dir_all(&assets).unwrap();
         std::fs::write(assets.join("దృశ్యం.png"), b"x").unwrap();
         let scope = AssetScope::default();

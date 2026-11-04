@@ -36,7 +36,7 @@ only the existing AI code. W7 and W8 may run side by side after W6.
   in the 2026-10-15 documentation restructure.
 - **Proof level column.** Add the five proof levels of ADR-0030 to the feature status file and extend
   `scripts/check-feature-status.mjs` to require a level and its evidence. Relabel today's "Verified" rows as level 2.
-- **Team password minimum.** *(Superseded 2026-10-27: the team password gate was removed; see [owner-decisions.md](../implementation/owner-decisions.md).)* Change the build rule in `crates/openframe-entitlement/src/team_gate/build_hash.rs` from 12 to
+- **Team password minimum.** *(Superseded 2026-10-27: the team password gate was removed; see [owner-decisions.md](../implementation/owner-decisions.md).)* Change the build rule in `crates/straft-entitlement/src/team_gate/build_hash.rs` from 12 to
   8 characters, update its tests and ADR-0024's text. The password itself is set only in the build computer's environment.
 - **Gates.** Add a secret scan of the working tree and history, a link checker for documents and for every address the
   application can open (with an allow-list), and a scan of a built installer for secrets and personal paths (used in W9).
@@ -44,7 +44,7 @@ only the existing AI code. W7 and W8 may run side by side after W6.
 - **Windows-only dependencies.** ~~Remove `reqwest` from the Windows shell build.~~ Corrected 2026-10-15: the shell
   already compiles `reqwest` for macOS only (`[target.'cfg(target_os = "macos")'.dependencies]` in
   `apps/desktop/src-tauri/Cargo.toml`, used by `platform/mac_inputs.rs`). Windows builds keep it only through
-  `openframe-ai`, which needs it. The Mac-only code and its dependency go with the Tauri Mac shell in phase M1
+  `straft-ai`, which needs it. The Mac-only code and its dependency go with the Tauri Mac shell in phase M1
   ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). No W1 code change.
 - **History that needs code changes.** Move `docs/spec-digest/`, `docs/engineering/AGENT_BRIEF.md`,
   `SECURITY_REVIEW_2026-09-30.md` and the plan documents 28, 29 and 31 into the archive; update the exempt list in
@@ -53,7 +53,7 @@ only the existing AI code. W7 and W8 may run side by side after W6.
 - **Storage hygiene.** Lower the debug level of the development profile, merge integration test programs into fewer
   binaries, and review the 39 dead worktree folders and 31 unmerged agent branches. Nothing is deleted before the owner
   approves the review table. Found 2026-10-15: the 39 folders under `.claude/worktrees` (4.2 GB) point at
-  `C:/dev/OpenFrame/.git`, which no longer exists, so their branches are gone and git does not list them; the review
+  `C:/dev/Straft/.git`, which no longer exists, so their branches are gone and git does not list them; the review
   compares each folder's files with `main`.
 - **Wording.** Change "filmmakers" to "writers, screenwriters and production teams" in the window description, the
   installer text, the AI policy text and the README, once the owner approves the sentence. Done 2026-10-16 for the window,
@@ -78,7 +78,7 @@ only the existing AI code. W7 and W8 may run side by side after W6.
   existing projects. Verify with a test under a fake `OneDrive` root and a manual 10-minute typing test on a laptop with
   Documents backed up by OneDrive.
 - **Documents folder unknown.** The application refuses to start with a plain message instead of writing into the
-  temporary folder (`openframe_project_format::documents_dir`). A test covers it. The owner confirms this choice at review.
+  temporary folder (`straft_project_format::documents_dir`). A test covers it. The owner confirms this choice at review.
 - **Project delete and locate tests (Small).** Two integration tests and one end-to-end step on Home. Break the operation
   once on purpose to prove the tests fail.
 - **Migration backup restore (Small).** Extend the migration test so the pre-migration backup is opened with the old reader
@@ -171,7 +171,7 @@ Each step ends with a rerun of the W5 harness; a step stays only if a number imp
   and similar) with one small model step at a time. The existing direct commands are the first recipes.
 - **Verifier loop.** The checks and the three-pass, 60-second loop of ADR-0028 decisions 5 and 6, with machine-written
   feedback; the trace records each pass. The checks are deterministic code in one crate shared with the W5 harness; no model judges at runtime; an answer that passes every check on pass 1 is shown at once.
-- **Memory v1.** Working, project, episodic and procedural memory, per project with opt-in sharing, the "What OpenFrame AI
+- **Memory v1.** Working, project, episodic and procedural memory, per project with opt-in sharing, the "What Straft AI
   has learned" screen, caps and decay, writes only from the person's own actions.
 - **Languages.** Instructions in English, answer in the language of the request, language check as a verifier, a
   multilingual embedding model if the bake-off chose one, a language-neutral stop-word handling in retrieval.
@@ -207,7 +207,7 @@ A card without a measurement is documented as "designed, unit tested".
 **Goal.** Rebuild the download flow removed on 2026-10-08 ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)).
 
 - Order (ADR-0032 replaced the signed manifest with pins compiled into the app): the `*.partial` download with resume; the disk-space preflight; atomic activation;
-  quarantine for a bad file; the tests named in ADR-0026 decision 10; then the screens (Download OpenFrame AI, progress,
+  quarantine for a bad file; the tests named in ADR-0026 decision 10; then the screens (Download Straft AI, progress,
   pause, resume, remove).
 - The lock pins each model file at a Hugging Face commit; a second tier comes with the W6 model choice.
 - CI tests the flow against a local host that serves the same files at the same paths.

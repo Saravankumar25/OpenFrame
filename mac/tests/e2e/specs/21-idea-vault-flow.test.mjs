@@ -89,7 +89,7 @@ describe("idea vault flow", () => {
       const sel = await browser.$("#vv-research");
       await sel.waitForDisplayed({ timeout: 10_000 });
       assert.equal(await sel.getValue(), "checked");
-      await waitForText(browser, "OpenFrame never marks research as true just because you imported it.");
+      await waitForText(browser, "Straft Studio never marks research as true just because you imported it.");
       const close = await browser.$('//aside//button[@aria-label="Close"]');
       await close.click();
       await close.waitForExist({ reverse: true, timeout: 10_000 });

@@ -33,7 +33,7 @@ export function writeReadme({ manifest, results, commit, threshold, maxRatio, wi
   const sections = [...bySection].map(([k, v]) => `| ${k} | ${v} |`).join("\n");
   const text = `# WindowsHTML
 
-Every screen and state of OpenFrame Studio for Windows, captured from the running app as standalone HTML pages,
+Every screen and state of Straft Studio for Windows, captured from the running app as standalone HTML pages,
 in Light and Dark mode of the default theme. It is the source for the website's screen recreations (Chapter 2).
 
 - **${manifest.screens.length} screens and states**, each in \`light/\` and \`dark/\` under the same \`NNN-name.html\`.

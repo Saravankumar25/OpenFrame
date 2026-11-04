@@ -4,7 +4,7 @@
 > tool package was valid. Raw results are in [binskim/](binskim/): `app.sarif` (first run on the app),
 > `app-after.sarif` (after the fixes in commit 995bfac), `engine.sarif` (the AI engine files).
 
-## The app: `openframe-desktop.exe` (release build, commit 995bfac)
+## The app: `straft-desktop.exe` (release build, commit 995bfac)
 
 | Rule | Check | Result |
 |---|---|---|
@@ -41,7 +41,7 @@ Mitigations for exception 4:
 - A Job Object with kill-on-close ends it when the app exits.
 - A start that cannot be verified fails closed.
 - Every engine file hash is checked before each launch (`an_engine_whose_files_changed_after_install_is_not_started` in
-  `crates/openframe-ai/tests/supervisor.rs`).
+  `crates/straft-ai/tests/supervisor.rs`).
 - Its inputs are only hash-verified model files and local requests.
 
 ## Final build 028d8b6 (2026-10-18)

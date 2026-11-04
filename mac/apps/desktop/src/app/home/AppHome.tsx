@@ -169,7 +169,7 @@ function ProjectsHome() {
   };
 
   const openExisting = async () => {
-    const dir = await openDialog({ directory: true, title: "Open an OpenFrame project folder" });
+    const dir = await openDialog({ directory: true, title: "Open a Straft Studio project folder" });
     if (typeof dir !== "string") return;
     try {
       await call("project.open", { path: dir });
@@ -589,7 +589,7 @@ function DeleteProjectDialog({ project, onClose, onArchiveInstead }: { project: 
         </>
       }
     >
-      <Banner tone="err"><b>This is the most destructive action in OpenFrame. The whole project will be removed from this computer.</b></Banner>
+      <Banner tone="err"><b>This is the most destructive action in Straft Studio. The whole project will be removed from this computer.</b></Banner>
       <p className="sm" style={{ margin: "10px 0" }}>
         The project folder (ideas, story, screenplay, production plans and stored files) is moved to the Windows Recycle Bin. Files linked from other folders are not touched.
       </p>
@@ -641,7 +641,7 @@ function UnavailableDialog({ project, onClose }: { project: RecentProject; onClo
         <br />
         Last known location: <b className="selectable-text" style={{ wordBreak: "break-all" }}>{project.path}</b>
       </p>
-      <p style={{ margin: 0 }}>OpenFrame has not created a replacement project. Reconnect the drive and try again, or locate another copy of the project.</p>
+      <p style={{ margin: 0 }}>Straft Studio has not created a replacement project. Reconnect the drive and try again, or locate another copy of the project.</p>
     </Dialog>
   );
 }

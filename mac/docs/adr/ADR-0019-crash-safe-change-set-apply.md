@@ -2,7 +2,7 @@
 
 - **Status:** Accepted 2026-10-05 (owner decision: crash-safe AI changes; the owner delegated the choice to the recorded recommendation in the first governance session). Amends ADR-0013 (Change Set apply).
 - **Date:** 2026-10-05
-- **Related:** ADR-0005, ADR-0013; `crates/openframe-application/src/modules/ai/change_set.rs`;
+- **Related:** ADR-0005, ADR-0013; `crates/straft-application/src/modules/ai/change_set.rs`;
   `docs/history/audits/2026-10-02-production-and-store-readiness-audit.md` §10
 
 ## Context
@@ -44,7 +44,7 @@ operations 1 and 2 stay committed, the Change Set stays `Accepted` and no compen
   declare one (`story.create_character`, `storyboard.add_panel`) are reviewed exceptions because no proposal schema can
   produce their file arguments, and apply refuses any Change Set operation with a declared filesystem effect that
   carries a file argument (`FILE_ARGUMENTS`).
-- Decision 5: `crates/openframe-application/tests/ai_apply_recovery.rs` stops the apply at every boundary (after
+- Decision 5: `crates/straft-application/tests/ai_apply_recovery.rs` stops the apply at every boundary (after
   acceptance, after each operation, after grouping) through a debug-only fault-injection point and reopens the project
   as after a crash; 8 tests.
 - Review (2026-10-05, Rust review of this change) led to: the undo seal, the `undo_seq_before` read and the journal

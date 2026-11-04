@@ -27,8 +27,8 @@ All steps below are one scenario.
 ## Mode, theme, import, rename, restart and delete
 
 1. Do the first launch: type 'E2E Tester' as the name, click Continue, click Create Project, type 'Harbour Lights' as the title, click Create.
-2. Check: the theme is "openframe-default" and the preference is "system".
-3. Check: the top bar shows the OpenFrame logo.
+2. Check: the theme is "straft-default" and the preference is "system".
+3. Check: the top bar shows the Straft Studio logo.
 4. Open the project menu and choose Appearance.
 5. Check: the "Theme" choice shows.
 6. Click Dark.
@@ -61,7 +61,7 @@ All steps below are one scenario.
 33. Check: a dialog with the "Theme" choice shows.
 34. Click Delete Harbour Lamps.
 35. Click Delete Theme in the dialog.
-36. Check: the theme is "openframe-default" at once.
+36. Check: the theme is "straft-default" at once.
 37. Click System.
 38. Check: the preference is "system".
 39. Click Done in the dialog.

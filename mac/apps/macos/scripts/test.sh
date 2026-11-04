@@ -11,8 +11,8 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MACOS="$(cd "$HERE/.." && pwd)"
 cd "$MACOS"
 
-if [[ ! -d Frameworks/OpenFrameFFI.xcframework ]]; then
-  echo "Frameworks/OpenFrameFFI.xcframework is missing: run apps/macos/scripts/build-core.sh first" >&2
+if [[ ! -d Frameworks/StraftFFI.xcframework ]]; then
+  echo "Frameworks/StraftFFI.xcframework is missing: run apps/macos/scripts/build-core.sh first" >&2
   exit 1
 fi
 

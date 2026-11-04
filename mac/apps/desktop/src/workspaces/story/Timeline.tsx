@@ -1,5 +1,5 @@
 // Story Timeline (FSD §14, UX §3.10, mock 070): optional Story Day and
-// time-of-day notes on screenplay scenes. Grouping only; OpenFrame never
+// time-of-day notes on screenplay scenes. Grouping only; Straft Studio never
 // reorders scenes for you.
 
 import { useEffect, useRef, useState } from "react";
@@ -97,7 +97,7 @@ export function TimelineView({ episodeId, readOnly }: { episodeId: string | null
           ))}
         </section>
       ))}
-      <p className="muted" style={{ fontSize: 12 }}>This is a grouping view only. OpenFrame never reorders scenes for you.</p>
+      <p className="muted" style={{ fontSize: 12 }}>This is a grouping view only. Straft Studio never reorders scenes for you.</p>
       {assign && (
         <AssignDayDialog
           count={picked.size}

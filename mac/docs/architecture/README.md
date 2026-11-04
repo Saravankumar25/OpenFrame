@@ -26,7 +26,7 @@
                                 |
                                 v
 +-------------------------------------------------------------+
-| Application core (crates/openframe-application)               |
+| Application core (crates/straft-application)               |
 |  AppCore: registry of 483 operations, entitlement check,       |
 |  Store::mutate (the only way to change data), 21 modules       |
 +----+---------------+----------------+-----------------+------+
@@ -38,16 +38,16 @@
  undo capture    layout, fonts                          bundle check
      |
      v
- project folder on disk: Title.openframe/
-   project.sqlite   openframe.json   assets/   cache/   recovery/   backups/
+ project folder on disk: Title.straft/
+   project.sqlite   straft.json   assets/   cache/   recovery/   backups/
 ```
 
 The diagram shows the Windows shell. On the Mac the top two boxes are replaced by a SwiftUI application ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)); everything below the single door is shared.
 
-Other crates: `openframe-domain` (shared types, errors, roles), `openframe-security` (path confinement, archive limits,
-redaction), `openframe-platform` (everything that differs between Windows and macOS), `openframe-entitlement` (trial
-and licence; the team password gate was removed on 2026-10-27), `openframe-project-format` (folder layout and the single-writer lock),
-`openframe-test-support` (test helpers).  The Mac store trial is counted offline (ADR-0040); there is no licence server.
+Other crates: `straft-domain` (shared types, errors, roles), `straft-security` (path confinement, archive limits,
+redaction), `straft-platform` (everything that differs between Windows and macOS), `straft-entitlement` (trial
+and licence; the team password gate was removed on 2026-10-27), `straft-project-format` (folder layout and the single-writer lock),
+`straft-test-support` (test helpers).  The Mac store trial is counted offline (ADR-0040); there is no licence server.
 
 ## 2. What happens when a person types a letter
 
@@ -67,7 +67,7 @@ If step 2 is never reached (the window is destroyed first), up to 400 ms of typi
 - React never touches files, SQLite or the network.
 - Every change to project data goes through `Store::mutate`.
 - The AI can only propose changes; only a local user action applies them.
-- Operating-system code lives only in `openframe-platform` (lint rule R6).
+- Operating-system code lives only in `straft-platform` (lint rule R6).
 - Migrations are numbered, never edited once shipped, and each upgrade is preceded by a verified backup.
 - The webview cannot read the database, the intelligence index, recovery data or backups.
 
@@ -75,7 +75,7 @@ If step 2 is never reached (the window is destroyed first), up to 400 ms of typi
 
 ## 4. Windows and macOS
 
-One Rust core, two shells. `openframe-platform` holds the differences: folders, the atomic file replace, killing child processes with
+One Rust core, two shells. `straft-platform` holds the differences: folders, the atomic file replace, killing child processes with
 the app (Job Object on Windows, process group on the Mac), key labels, spell checking, power events, package identity.
 On the Mac the shell is a native SwiftUI application that calls the same core through a generated interface (UniFFI). It is built in the Mac track, after the Windows track closes ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)); the Tauri Mac shell is retired. The Mac platform adapter has never run. The AI engine is pinned only for Windows today (processor build); the engine provider interface, a Vulkan build and the Mac engine come in phases W5, W7 and M8.
 

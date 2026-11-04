@@ -1,4 +1,4 @@
-// Answers read like a conversation (OpenFrameAI.docx sections 4.1 and 4.3): plain text first,
+// Answers read like a conversation (StraftAI.docx sections 4.1 and 4.3): plain text first,
 // sources, steps and supporting lists behind "See sources"; a list the person asked for stays under
 // the answer, and a long one is complete behind "Show all".
 

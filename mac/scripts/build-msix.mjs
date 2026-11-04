@@ -1,18 +1,18 @@
 #!/usr/bin/env node
-// Builds the OpenFrame Studio MSIX package (docs/engineering/27-microsoft-store.md).
+// Builds the Straft Studio MSIX package (docs/engineering/27-microsoft-store.md).
 //
-// Input: the Tauri release build (target/release/openframe-desktop.exe; the frontend is embedded in
+// Input: the Tauri release build (target/release/straft-desktop.exe; the frontend is embedded in
 // the executable), packaging/msix/AppxManifest.template.xml, packaging/msix/store.config.json, the
 // visual assets in packaging/msix/Assets and the Offline AI engine (ADR-0026 decision 1): the pinned
 // engine files are verified against packaging/ai/ai-assets.lock.json by scripts/prepare-ai-assets.mjs
 // and placed in the package as `ai/` next to the executable, where the app reads them read-only. The
 // models are downloaded after install (ADR-0026). A missing or altered file stops the build; CI fails
 // here until the build inputs are provided to it.
-// Output (target/msix/): OpenFrame-Studio-<ver>-x64.msix, optional .msixbundle, msix-build.json.
+// Output (target/msix/): Straft-Studio-<ver>-x64.msix, optional .msixbundle, msix-build.json.
 //
 //   node scripts/build-msix.mjs --store              Store upload package. Requires the Partner Center
 //                                                    identity and an exe built with
-//                                                    OPENFRAME_DISTRIBUTION=store. Unsigned: the
+//                                                    STRAFT_DISTRIBUTION=store. Unsigned: the
 //                                                    Store signs it during ingestion.
 //   node scripts/build-msix.mjs --dev                Local test package (default): test identity,
 //                                                    signed with a throwaway self-signed certificate
@@ -39,15 +39,15 @@ export const CONFIG_PATH = path.join(MSIX_DIR, "store.config.json");
 export const ASSETS_DIR = path.join(MSIX_DIR, "Assets");
 export const ICON_SOURCE = path.join(ROOT, "apps", "desktop", "src-tauri", "icons", "source.png");
 export const TAURI_CONF = path.join(ROOT, "apps", "desktop", "src-tauri", "tauri.conf.json");
-export const EXECUTABLE = "openframe-desktop.exe";
+export const EXECUTABLE = "straft-desktop.exe";
 /** Embedded by apps/desktop/src-tauri/src/distribution.rs (CHANNEL_MARKER). */
-export const CHANNEL_MARKER_PREFIX = "openframe-distribution-channel:";
+export const CHANNEL_MARKER_PREFIX = "straft-distribution-channel:";
 
 const PLACEHOLDER = /REPLACE_/;
 const DEV_IDENTITY = {
-  identityName: "OpenFrameStudio.LocalTest",
-  publisher: "CN=OpenFrame Studio Local Test",
-  publisherDisplayName: "OpenFrame Studio (local test build)",
+  identityName: "StraftStudio.LocalTest",
+  publisher: "CN=Straft Studio Local Test",
+  publisherDisplayName: "Straft Studio (local test build)",
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -253,7 +253,7 @@ function writePriConfig(makepri, outDir) {
   const cfg = path.join(outDir, "priconfig.xml");
   run(makepri, ["createconfig", "/cf", cfg, "/dq", "en-US", "/pv", "10.0.0", "/o"], { quiet: true });
   // A single resources.pri: drop automatic resource-package splitting (only meaningful for bundles
-  // with resource packages, which OpenFrame does not ship).
+  // with resource packages, which Straft Studio does not ship).
   const xml = fs.readFileSync(cfg, "utf8").replace(/<packaging>[\s\S]*?<\/packaging>/, "");
   fs.writeFileSync(cfg, xml);
   return cfg;
@@ -261,8 +261,8 @@ function writePriConfig(makepri, outDir) {
 
 function ensureDevCertificate(certDir, subject) {
   fs.mkdirSync(certDir, { recursive: true });
-  const pfx = path.join(certDir, "OpenFrame-LocalTest.pfx");
-  const cer = path.join(certDir, "OpenFrame-LocalTest.cer");
+  const pfx = path.join(certDir, "Straft-LocalTest.pfx");
+  const cer = path.join(certDir, "Straft-LocalTest.cer");
   const meta = path.join(certDir, "certificate.json");
   if (fs.existsSync(pfx) && fs.existsSync(cer) && fs.existsSync(meta)) {
     const m = JSON.parse(fs.readFileSync(meta, "utf8"));
@@ -331,7 +331,7 @@ async function main() {
   }
   if (process.platform !== "win32") throw new Error("MSIX packaging requires Windows (makeappx/makepri/signtool).");
 
-  console.log(`\nOpenFrame Studio: MSIX build (${args.mode})\n`);
+  console.log(`\nStraft Studio: MSIX build (${args.mode})\n`);
   if (args.generateAssets) {
     console.log("• Generating visual assets from apps/desktop/src-tauri/icons/source.png");
     generateAssets();
@@ -348,16 +348,16 @@ async function main() {
     if (problems.length) throw new Error(`Store identity incomplete:\n  - ${problems.join("\n  - ")}`);
     identity = { identityName: cfg.identityName, publisher: cfg.publisher, publisherDisplayName: cfg.publisherDisplayName, displayName: cfg.displayName };
   } else {
-    identity = { ...DEV_IDENTITY, displayName: `${cfg.displayName || "OpenFrame Studio"} (Test)` };
+    identity = { ...DEV_IDENTITY, displayName: `${cfg.displayName || "Straft Studio"} (Test)` };
   }
 
   const targetDir = process.env.CARGO_TARGET_DIR ? path.resolve(process.env.CARGO_TARGET_DIR) : path.join(ROOT, "target");
   const exe = path.resolve(args.exe ?? path.join(targetDir, "release", EXECUTABLE));
-  if (!fs.existsSync(exe)) throw new Error(`${exe} not found. Build first: npm run build (Store: $env:OPENFRAME_DISTRIBUTION='store'; npm run build -- --no-bundle)`);
+  if (!fs.existsSync(exe)) throw new Error(`${exe} not found. Build first: npm run build (Store: $env:STRAFT_DISTRIBUTION='store'; npm run build -- --no-bundle)`);
   const exeBytes = fs.readFileSync(exe);
   const channel = ["store", "direct"].find((c) => exeBytes.includes(Buffer.from(CHANNEL_MARKER_PREFIX + c)));
   if (args.mode === "store" && channel !== "store") {
-    throw new Error(`${path.basename(exe)} was built for the "${channel ?? "unknown"}" channel. Rebuild with OPENFRAME_DISTRIBUTION=store so the in-app updater is compiled out.`);
+    throw new Error(`${path.basename(exe)} was built for the "${channel ?? "unknown"}" channel. Rebuild with STRAFT_DISTRIBUTION=store so the in-app updater is compiled out.`);
   }
   console.log(`• Executable: ${path.relative(ROOT, exe)} (channel: ${channel ?? "unknown"}, ${(exeBytes.length / 1048576).toFixed(1)} MB)`);
   console.log(`• Version: ${appVersion} -> ${version}`);
@@ -398,7 +398,7 @@ async function main() {
   console.log("• resources.pri generated (scale/target-size asset variants)");
 
   const suffix = args.mode === "dev" ? "-localtest" : "";
-  const msix = path.join(outDir, `OpenFrame-Studio-${appVersion}-x64${suffix}.msix`);
+  const msix = path.join(outDir, `Straft-Studio-${appVersion}-x64${suffix}.msix`);
   fs.rmSync(msix, { force: true });
   run(makeappx, ["pack", "/d", stage, "/p", msix, "/o"], { quiet: true });
   console.log(`• makeappx pack: ${path.relative(ROOT, msix)} (manifest schema and file references validated)`);
@@ -417,7 +417,7 @@ async function main() {
     fs.rmSync(bundleDir, { recursive: true, force: true });
     fs.mkdirSync(bundleDir, { recursive: true });
     fs.copyFileSync(msix, path.join(bundleDir, path.basename(msix)));
-    bundle = path.join(outDir, `OpenFrame-Studio-${appVersion}${suffix}.msixbundle`);
+    bundle = path.join(outDir, `Straft-Studio-${appVersion}${suffix}.msixbundle`);
     run(makeappx, ["bundle", "/d", bundleDir, "/p", bundle, "/bv", version, "/o"], { quiet: true });
     if (args.sign) run(findSdkTool("signtool.exe"), ["sign", "/fd", "SHA256", "/f", cert.pfx, "/p", cert.password, bundle], { quiet: true });
     console.log(`• makeappx bundle: ${path.relative(ROOT, bundle)}`);
@@ -457,7 +457,7 @@ Remove it again with: Get-AppxPackage ${DEV_IDENTITY.identityName} | Remove-Appx
   if (args.register) {
     if (args.mode !== "dev") throw new Error("--register is only for local test packages (--dev)");
     powershell(`$ErrorActionPreference='Stop'; Add-AppxPackage -Register "${path.join(stage, "AppxManifest.xml")}"`);
-    console.log(`• Registered loose layout ${path.relative(ROOT, stage)} (Developer Mode). Start "OpenFrame Studio (Test)" from Start.`);
+    console.log(`• Registered loose layout ${path.relative(ROOT, stage)} (Developer Mode). Start "Straft Studio (Test)" from Start.`);
   }
 }
 

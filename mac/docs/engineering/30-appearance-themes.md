@@ -8,25 +8,25 @@
 ## 1. What the user gets
 
 - **Mode:** Light, Dark or System. System follows Windows live (no restart). Mode and theme are separate settings.
-- **Theme:** OpenFrame Default (today's look, unchanged), Black and White (added 2026-10-20 at the owner's request: black
+- **Theme:** Straft Default (today's look, unchanged), Black and White (added 2026-10-20 at the owner's request: black
   text on white in Light, white text on black in Dark), plus the fifteen themes of the reference mocks: Studio Amber,
   Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain, Sunset Boulevard, Arctic
   Frame, Neon Reel, Location Scout, Desert Dune, Colorist Neutral, Silver Screen, High Contrast.
 - **Import theme:** a `.json` file or pasted text, checked and previewed in Light and Dark before anything is saved.
-- **My Themes:** apply, rename, export, delete. Deleting the active theme applies OpenFrame Default at once.
-- **Logo:** the film-frame mark and the "OpenFrame" wordmark follow the theme (section 8).
+- **My Themes:** apply, rename, export, delete. Deleting the active theme applies Straft Default at once.
+- **Logo:** the film-frame mark and the "Straft Studio" wordmark follow the theme (section 8).
 - Where: Settings > Appearance (project menu > Appearance, or the Settings tabs) and Home > Appearance (palette icon).
 
 ## 2. Files
 
 | Part | File |
 |---|---|
-| One list: engine constants and the built-in themes | `crates/openframe-application/src/modules/appearance/themes.json` |
-| Validator, contrast, corrections (Rust) | `crates/openframe-application/src/modules/appearance/{theme.rs,color.rs}` |
-| Operations and storage | `crates/openframe-application/src/modules/appearance/mod.rs` |
+| One list: engine constants and the built-in themes | `crates/straft-application/src/modules/appearance/themes.json` |
+| Validator, contrast, corrections (Rust) | `crates/straft-application/src/modules/appearance/{theme.rs,color.rs}` |
+| Operations and storage | `crates/straft-application/src/modules/appearance/mod.rs` |
 | App migration | `migrations/app/0002_appearance.sql` |
 | Style layer, mode, System listener (webview) | `apps/desktop/src/theme/engine.ts`, `useAppearance.ts` |
-| Logo | `apps/desktop/src/theme/BrandLogo.tsx`, `.brandlogo` rules in `styles/openframe.css` |
+| Logo | `apps/desktop/src/theme/BrandLogo.tsx`, `.brandlogo` rules in `styles/straft.css` |
 | Settings > Appearance | `apps/desktop/src/features/appearance/` |
 | App icon source | `apps/desktop/src-tauri/icons/source.svg` |
 
@@ -47,8 +47,8 @@ import (file / paste) ─► Rust validator + contrast check ─► preview unde
   side, side2, side-ink, side-mut, accent, accent-d (strong), accent-soft, accent-line, accent-ring, accent-ink,
   status (blue, green, red, purple, teal, yellow, each with `-soft`, `-t` text and `-line`), paper and paper-ink
   (fixed, section 7), lg1 to lg3 (logo).
-- **Role tokens** (`engine.roles`) name a component colour that OpenFrame Default needs exactly but other themes derive
-  (for example `beat-ink`, `stripe-a`, `placeholder`, `label-orange`). Every role has an exact OpenFrame Default value.
+- **Role tokens** (`engine.roles`) name a component colour that Straft Default needs exactly but other themes derive
+  (for example `beat-ink`, `stripe-a`, `placeholder`, `label-orange`). Every role has an exact Straft Default value.
 - WebView2 (Chromium) supports `oklch()`, `color-mix()` and relative colour syntax (used for the logo); the app ships
   on WebView2 only.
 - Before the first frame `applyStartupHint()` applies the last built-in choice from a localStorage hint (re-checked
@@ -58,15 +58,15 @@ import (file / paste) ─► Rust validator + contrast check ─► preview unde
 
 `app.sqlite` migration `0002`: `sys_appearance_pref(key, value, updated_at)` with keys `mode` and `theme`;
 `sys_user_theme(id, name, description, author, seeds_json, overrides_json, format_version, created_at, updated_at)`.
-Never in a project. A missing row means System and OpenFrame Default, so an existing installation keeps today's look.
+Never in a project. A missing row means System and Straft Default, so an existing installation keeps today's look.
 Every read validates stored themes again: a damaged or edited row is listed with its problem, cannot be applied or
-exported, and an active theme that is unusable or deleted falls back to OpenFrame Default with a notice.
+exported, and an active theme that is unusable or deleted falls back to Straft Default with a notice.
 
 Operations (application level, hidden from the assistant, no undo step because they are preferences, only the local
 person, never package changes or the assistant): `appearance.get`, `appearance.set_mode`, `appearance.set_theme`,
 `appearance.check_theme` (reads the file the user picked or pasted text, saves nothing), `appearance.import_theme`
 (reads and checks the source again), `appearance.rename_theme`, `appearance.export_theme` (writes where the user
-chose, never inside OpenFrame's own folders, atomic write), `appearance.delete_theme` (destructive, confirmed).
+chose, never inside Straft Studio's own folders, atomic write), `appearance.delete_theme` (destructive, confirmed).
 My Themes holds at most 100 themes.
 
 ## 5. Validation (Rust)
@@ -122,7 +122,7 @@ High Contrast already had; Slate Noir, Midnight Reel, Sunset Boulevard, Neon Ree
 1 or 2 points darker; Teal & Orange, Velvet Curtain and High Contrast get a darker strong accent text). Every built-in
 theme then passes all pairs in both modes (`theme.rs` test `contrast_every_builtin_theme_passes_in_light_and_dark`).
 
-**OpenFrame Default in Light mode is today's palette with three colours raised to 4.5 to 1** (owner decision
+**Straft Default in Light mode is today's palette with three colours raised to 4.5 to 1** (owner decision
 2026-10-07, ADR-0014 amendment). The six pairs that were below the line now pass with the smallest change, and no
 background moves: muted text `#7a8291` becomes `#666e7c` (4.55 to 1 on the window background, was 3.42; on panels and
 table headers too), the strong accent text `#b96a1a` becomes `#a15c17` (4.56 to 1 on the selected tab, was 3.60, and on
@@ -130,27 +130,27 @@ panels, was 4.08), and button text on the accent changes from white (2.92) to th
 Studio Amber, Cutting Room and Location Scout already do. Nothing becomes pure black, so the page stays calm for long
 writing sessions. The contrast test allows no exception for any theme. The default-look screenshots are regenerated
 with this reason in the final E2E run.
-OpenFrame Default in Dark mode uses the Studio Amber seeds and passes every pair. High Contrast keeps 7 to 1 or more for
+Straft Default in Dark mode uses the Studio Amber seeds and passes every pair. High Contrast keeps 7 to 1 or more for
 main and muted text in both modes.
 
-**Mac palette of OpenFrame Default: Screening Room** (owner choice 2026-10-27, Mac only; the options are in
+**Mac palette of Straft Default: Screening Room** (owner choice 2026-10-27, Mac only; the options are in
 `docs/design/theme-options/default-theme-options.html`). The Mac lays
-`apps/macos/Sources/OpenFrameUI/Resources/macDefaultTheme.json` over the shared OpenFrame Default entry when it loads
+`apps/macos/Sources/StraftUI/Resources/macDefaultTheme.json` over the shared Straft Default entry when it loads
 `themes.json` (`ThemeCatalog.withMacDefault`); Windows and every other theme are unchanged. Cool slate neutrals (Light
-window `#f4f6f9`, panels white; Dark window `#12151b`, panels `#191d25`) and the OpenFrame amber accent (`#e08a1e`
+window `#f4f6f9`, panels white; Dark window `#12151b`, panels `#191d25`) and the Straft Studio amber accent (`#e08a1e`
 Light, `#f0a040` Dark) used only for selection, focus, links and the one prominent button per screen. The prominent
 button (`.ofProminent`) is amber with dark text `#1a1206`. Controls macOS draws with white text (selected segment,
 default button, switch) take the Mac-only token `control-tint`, a deeper amber (`#a65b0a` Light, `#b8650f` Dark), so
 white text keeps about 4.3 to 5.1 to 1. Ordinary push buttons are neutral (`.ofStandard`, set for every window by
-`openFrameTheme`); before this a window-wide accent tint drew every button label in orange. Test:
-`ThemeEngineTests.macPaletteChangesOnlyOpenFrameDefaultAndStaysReadable`.
+`straftTheme`); before this a window-wide accent tint drew every button label in orange. Test:
+`ThemeEngineTests.macPaletteChangesOnlyStraftDefaultAndStaysReadable`.
 
 ## 7. Fixed and document colours
 
 A colour literal in the React app must be a token, or be marked on its line or the line above as
 `fixed colour: <reason>` or `document colour: <reason>`; `scripts/architecture-lint.mjs` rule T1 fails otherwise.
 Only neutral black shadows are allowed unmarked. Shadows are tokens: `--shadow`, `--shadow-s` and `--shadow-side` (the side
-panels and drawers). In Light mode they keep OpenFrame Default's navy tint, set once in `openframe.css` and marked as a fixed
+panels and drawers). In Light mode they keep Straft Default's navy tint, set once in `straft.css` and marked as a fixed
 colour so the default look stays unchanged; in Dark mode they are neutral black. A tinted shadow written anywhere else fails T1.
 The marked classes:
 
@@ -166,8 +166,8 @@ labelled orange stays orange in every theme.
 ## 8. Logo
 
 Owner request 2026-10-07 (mocks section 5). `BrandLogo` renders the film-frame mark (24 by 24 grid, stroke 1.6, round
-caps and joins) and the wordmark "OpenFrame" ("Open" weight 300, "Frame" weight 700, letter spacing -0.02em, no STUDIO
-line). The gradient stops are `--lg1`, `--lg2`, `--lg3`: OpenFrame Default and Studio Amber use the website stops
+caps and joins) and the wordmark "Straft Studio" ("Open" weight 300, "Frame" weight 700, letter spacing -0.02em, no STUDIO
+line). The gradient stops are `--lg1`, `--lg2`, `--lg3`: Straft Default and Studio Amber use the website stops
 `#ff5d6c`, `#ff9a3d`, `#ffc23d`; every other theme derives them from its accent (`oklch(from var(--accent) ...)`).
 There is no separate logo setting. Each mark has its own gradient id (`useId`). Shown on Home, the project top bar,
 the start-up screen and the theme preview cards. The window title bar uses the app icon; the app has no About box yet.
@@ -186,7 +186,7 @@ the transparent 1024 px render (`--ios-color "#00000000"`, `ios/AppIcon-512@2x.p
 | Persistence | `mode_and_theme_survive_a_restart`, `import_from_text_preview_save_apply_and_restart`, `a_damaged_or_missing_saved_theme_falls_back_to_default`, `rename_export_reimport_and_delete`, `migration_fixtures.rs::every_app_database_version_upgrades_and_keeps_recents_and_settings` |
 | Contrast | `theme.rs` contrast tests; E2E `91-appearance-themes` measures rendered text in all 17 themes, both modes, 15 screens |
 | Paper | `exports.rs::screenplay_pdf_and_call_sheet_paper_never_change_with_the_theme` (byte-identical PDF and Fountain under four theme and mode combinations), `engine.test.ts` paper test, E2E paper check |
-| Default look | E2E `90-visual-baseline` (OpenFrame Default against the captured baseline) |
+| Default look | E2E `90-visual-baseline` (Straft Default against the captured baseline) |
 | UI | `AppearancePanel.test.tsx` (includes keyboard use of the mode and theme groups), E2E `60-appearance` (own data root, includes a relaunch), E2E `91-appearance-themes` (relaunch) |
 | E2E status | The E2E specs above are written; the whole suite runs once at the end of session 2, so the feature rows stay Reachable until it passes. |
 | Architecture | lint rule T1 with governance tests; `engine.test.ts` checks every `var(--token)` used by a screen is defined |

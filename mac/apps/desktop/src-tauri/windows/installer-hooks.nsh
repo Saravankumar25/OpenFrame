@@ -1,17 +1,18 @@
 ; Uninstaller behaviour for the internal Windows installer (Tauri NSIS hooks).
 ;
 ; Uninstalling removes the program. It never touches projects, the Global Idea Vault or the library
-; file (Documents\OpenFrame\library.json, ADR-0038), which keeps the person's identity, so a
+; file (Documents\Straft Studio\library.json, ADR-0038), which keeps the person's identity, so a
 ; reinstall finds their work and their private notes again even when the app data was deleted.
 ; The "delete app data" checkbox (Tauri's $DeleteAppDataCheckboxState) removes only the items the
-; app itself creates inside %LOCALAPPDATA%\OpenFrame, then the folder itself if it is empty:
+; app itself creates inside %LOCALAPPDATA%\Straft, then the folder itself if it is empty:
 ;   folders: models, ai, logs, entitlement, tmp, reviews
 ;   files:   app.sqlite (with its -wal, -shm and -journal side files), engines.json
 ; Any other item in that folder is never removed, and then the folder stays. The root is never
 ; deleted recursively, so a project or anything else a person once placed there survives.
-; The folder list is checked against the code by scripts/tests/governance.test.mjs.
+; The same box clears the same list in the data folder of the earlier product name.
+; The folder lists are checked against the code by scripts/tests/governance.test.mjs.
 ;
-; Projects are normally kept out of this folder: check_project_parent (openframe-application/src/util.rs)
+; Projects are normally kept out of this folder: check_project_parent (straft-application/src/util.rs)
 ; refuses it, because protected_roots() lists app_data_dir first. Older builds, received packages and
 ; hand-made folders were not covered by that check, hence the explicit list.
 
@@ -19,25 +20,37 @@
   ; An update runs the old uninstaller silently; only a person who chose to uninstall sees this.
   ${If} $UpdateMode <> 1
   ${AndIfNot} ${Silent}
-    MessageBox MB_OK|MB_ICONINFORMATION "Your projects, your Global Idea Vault and your OpenFrame library file are not removed. They stay where you keep them, usually in Documents\OpenFrame, and installing OpenFrame again finds them."
+    MessageBox MB_OK|MB_ICONINFORMATION "Your projects, your Global Idea Vault and your Straft Studio library file are not removed. They stay where you keep them, usually in Documents\Straft Studio, and installing Straft Studio again finds them."
   ${EndIf}
 !macroend
 
 !macro NSIS_HOOK_POSTUNINSTALL
   ${If} $DeleteAppDataCheckboxState = 1
   ${AndIf} $UpdateMode <> 1
-    RMDir /r "$LOCALAPPDATA\OpenFrame\models"
-    RMDir /r "$LOCALAPPDATA\OpenFrame\ai"
-    RMDir /r "$LOCALAPPDATA\OpenFrame\logs"
-    RMDir /r "$LOCALAPPDATA\OpenFrame\entitlement"
-    RMDir /r "$LOCALAPPDATA\OpenFrame\tmp"
-    RMDir /r "$LOCALAPPDATA\OpenFrame\reviews"
-    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite"
-    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-wal"
-    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-shm"
-    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-journal"
-    Delete "$LOCALAPPDATA\OpenFrame\engines.json"
+    RMDir /r "$LOCALAPPDATA\Straft\models"
+    RMDir /r "$LOCALAPPDATA\Straft\ai"
+    RMDir /r "$LOCALAPPDATA\Straft\logs"
+    RMDir /r "$LOCALAPPDATA\Straft\entitlement"
+    RMDir /r "$LOCALAPPDATA\Straft\tmp"
+    RMDir /r "$LOCALAPPDATA\Straft\reviews"
+    Delete "$LOCALAPPDATA\Straft\app.sqlite"
+    Delete "$LOCALAPPDATA\Straft\app.sqlite-wal"
+    Delete "$LOCALAPPDATA\Straft\app.sqlite-shm"
+    Delete "$LOCALAPPDATA\Straft\app.sqlite-journal"
+    Delete "$LOCALAPPDATA\Straft\engines.json"
     ; Not recursive: succeeds only when nothing else is left inside.
-    RMDir "$LOCALAPPDATA\OpenFrame"
+    RMDir "$LOCALAPPDATA\Straft"
+    RMDir /r "$LOCALAPPDATA\OpenFrame\models" ; LEGACY: Open Frame name kept for migration
+    RMDir /r "$LOCALAPPDATA\OpenFrame\ai" ; LEGACY: Open Frame name kept for migration
+    RMDir /r "$LOCALAPPDATA\OpenFrame\logs" ; LEGACY: Open Frame name kept for migration
+    RMDir /r "$LOCALAPPDATA\OpenFrame\entitlement" ; LEGACY: Open Frame name kept for migration
+    RMDir /r "$LOCALAPPDATA\OpenFrame\tmp" ; LEGACY: Open Frame name kept for migration
+    RMDir /r "$LOCALAPPDATA\OpenFrame\reviews" ; LEGACY: Open Frame name kept for migration
+    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite" ; LEGACY: Open Frame name kept for migration
+    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-wal" ; LEGACY: Open Frame name kept for migration
+    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-shm" ; LEGACY: Open Frame name kept for migration
+    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-journal" ; LEGACY: Open Frame name kept for migration
+    Delete "$LOCALAPPDATA\OpenFrame\engines.json" ; LEGACY: Open Frame name kept for migration
+    RMDir "$LOCALAPPDATA\OpenFrame" ; LEGACY: Open Frame name kept for migration
   ${EndIf}
 !macroend

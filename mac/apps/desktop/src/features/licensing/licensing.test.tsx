@@ -75,8 +75,8 @@ function due(today: string | undefined): Notice {
 
 const SUMMARY: Record<string, string> = {
   internalBuild: "Internal build, not for sale.",
-  trialEnded: "Your free trial has ended. Buy OpenFrame Studio or restore your purchase to open your projects again. Nothing is deleted.",
-  purchased: "OpenFrame Studio is unlocked. Thank you.",
+  trialEnded: "Your free trial has ended. Buy Straft Studio or restore your purchase to open your projects again. Nothing is deleted.",
+  purchased: "Straft Studio is unlocked. Thank you.",
 };
 const status = () => ({
   channel: core.channel,
@@ -86,7 +86,7 @@ const status = () => ({
   trialDays: 7,
   canEdit: true,
 });
-const view = (today?: string) => ({ status: status(), notice: due(today), dataRoot: "C:\\Users\\Nisha\\Documents\\OpenFrame" });
+const view = (today?: string) => ({ status: status(), notice: due(today), dataRoot: "C:\\Users\\Nisha\\Documents\\Straft Studio" });
 
 const reveal = vi.fn(async () => undefined);
 const open = vi.fn(async () => undefined);
@@ -223,7 +223,7 @@ describe("rules", () => {
   it("words the new-laptop install step for each channel and names no account for the internal build", () => {
     expect(newLaptopInstallStep("macAppStore")).toContain("App Store, signed in with the same Apple Account");
     expect(newLaptopInstallStep("microsoftStore")).toContain("Microsoft Store, signed in with the same Microsoft account");
-    expect(newLaptopInstallStep("directInstaller")).toBe("Install OpenFrame Studio on the new laptop.");
+    expect(newLaptopInstallStep("directInstaller")).toBe("Install Straft Studio on the new laptop.");
     expect(newLaptopInstallStep("directInstaller")).not.toMatch(/account|sign in|store/i);
   });
 
@@ -357,7 +357,7 @@ describe("trial reminders", () => {
     const dialog = await screen.findByRole("dialog", { name: "Trial reminder" });
     expect(within(dialog).getByText("Your free trial ends in 3 days")).toBeInTheDocument();
     expect(within(dialog).getByText(/Nothing is deleted when the trial ends/)).toBeInTheDocument();
-    expect(within(dialog).getByText("Buy the full version to keep using OpenFrame Studio.")).toBeInTheDocument();
+    expect(within(dialog).getByText("Buy the full version to keep using Straft Studio.")).toBeInTheDocument();
     await waitFor(() => expect(ops("entitlement.record_notice")[0]?.args).toEqual({ notice: "reminder", today }));
     await userEvent.click(within(dialog).getByRole("button", { name: "Continue trial" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
@@ -445,7 +445,7 @@ describe("data note", () => {
     const dialog = await screen.findByRole("dialog", { name: "Your data, your responsibility" });
     expect(within(dialog).queryByRole("button", { name: "Close" })).toBeNull();
     expect(within(dialog).getAllByRole("listitem")).toHaveLength(6);
-    expect(within(dialog).getByText("C:\\Users\\Nisha\\Documents\\OpenFrame")).toBeInTheDocument();
+    expect(within(dialog).getByText("C:\\Users\\Nisha\\Documents\\Straft Studio")).toBeInTheDocument();
 
     // jsdom has no layout, so the list "fits" at first; give it a real scroll size and scroll it.
     const list = within(dialog).getByRole("region", { name: "Six points about your data" });
@@ -577,7 +577,7 @@ describe("file safety tutorial and welcome", () => {
     expect(finish).toBeEnabled();
     await userEvent.click(finish);
 
-    const welcome = await screen.findByRole("dialog", { name: "Welcome to the OpenFrame Studio family" });
+    const welcome = await screen.findByRole("dialog", { name: "Welcome to the Straft Studio family" });
     expect(within(welcome).getByText("Thank you for backing independent filmmaking. Be a part of our community.")).toBeInTheDocument();
     for (const name of ["Instagram", "YouTube", "X", "Facebook", "LinkedIn", "Reddit", "Discord", "Threads"]) {
       expect(within(welcome).getByLabelText(`${name} @openframestudio`)).toBeInTheDocument();
@@ -618,10 +618,10 @@ describe("store screens", () => {
     core.channel = "macAppStore";
     core.state = { state: "trialNotStarted" };
     renderWithClient(<LicenceScreens projectOpen={false} />);
-    const dialog = await screen.findByRole("dialog", { name: "Welcome to OpenFrame Studio" });
+    const dialog = await screen.findByRole("dialog", { name: "Welcome to Straft Studio" });
     expect(within(dialog).queryByRole("button", { name: "Close" })).toBeNull();
     await userEvent.keyboard("{Escape}");
-    expect(screen.getByRole("dialog", { name: "Welcome to OpenFrame Studio" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Welcome to Straft Studio" })).toBeInTheDocument();
     await userEvent.click(within(dialog).getByRole("button", { name: "Start free trial" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(ops("entitlement.start_trial")).toHaveLength(1);
@@ -634,7 +634,7 @@ describe("store screens", () => {
       core.channel = channel;
       core.state = { state: "trialEnded" };
       core.buyRoute = { route: "store" };
-      core.buyMessage = `OpenFrame could not reach ${store}. Connect to the internet, then try again.`;
+      core.buyMessage = `Straft Studio could not reach ${store}. Connect to the internet, then try again.`;
       renderWithClient(<LicenceScreens projectOpen />);
       const dialog = await screen.findByRole("dialog", { name: "Your free trial has ended" });
       expect(within(dialog).getAllByRole("button").map((b) => b.textContent)).toEqual(["Buy full version", "Restore purchase"]);
@@ -749,12 +749,12 @@ describe("what the interface draws for each answer", () => {
 
   it("draws exactly the screen the core names", async () => {
     const cases = [
-      [{ kind: "macFirstLaunch" }, "Welcome to OpenFrame Studio"],
+      [{ kind: "macFirstLaunch" }, "Welcome to Straft Studio"],
       [{ kind: "locked" }, "Your free trial has ended"],
       [{ kind: "checkNeeded" }, "Checking your purchase"],
       [{ kind: "dataNote" }, "Your data, your responsibility"],
       [{ kind: "tutorial" }, "File safety tutorial"],
-      [{ kind: "welcome" }, "Welcome to the OpenFrame Studio family"],
+      [{ kind: "welcome" }, "Welcome to the Straft Studio family"],
       [{ kind: "reminder", daysLeft: 2 }, "Trial reminder"],
     ] as const;
     for (const [notice, title] of cases) {
@@ -786,9 +786,9 @@ describe("no price, currency or pricing model on any licensing screen", () => {
         [{ kind: "locked" }, "Your free trial has ended", { state: "trialEnded" }],
         [{ kind: "locked" }, "Your purchase is no longer active", { state: "revoked" }],
         [{ kind: "checkNeeded" }, "Checking your purchase", { state: "needsOnlineCheck" }],
-        [{ kind: "macFirstLaunch" }, "Welcome to OpenFrame Studio", { state: "trialNotStarted" }],
+        [{ kind: "macFirstLaunch" }, "Welcome to Straft Studio", { state: "trialNotStarted" }],
         [{ kind: "dataNote" }, "Your data, your responsibility", { state: "purchased" }],
-        [{ kind: "welcome" }, "Welcome to the OpenFrame Studio family", { state: "purchased" }],
+        [{ kind: "welcome" }, "Welcome to the Straft Studio family", { state: "purchased" }],
       ] as const) {
         core.fixedNotice = notice;
         core.state = state;

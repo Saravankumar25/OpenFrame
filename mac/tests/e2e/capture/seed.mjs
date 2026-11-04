@@ -59,7 +59,7 @@ export async function seed(t, { dataRoot }) {
   const b = t.browser;
 
   // First launch.
-  await t.waitText("Welcome to OpenFrame Studio", { timeout: 30_000 });
+  await t.waitText("Welcome to Straft Studio", { timeout: 30_000 });
   await t.state("app-first-launch-welcome");
   await t.state("app-first-launch-name-required", async () => {
     await t.type("#dn-name", "");

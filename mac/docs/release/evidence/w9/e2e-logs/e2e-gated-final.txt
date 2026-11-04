@@ -1,4 +1,4 @@
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\00-release-smoke
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\00-release-smoke
   specs: 00-release-smoke.test.mjs
 ▶ release smoke
   ✔ start, create a project, type in the screenplay until it says Saved, close the project (3145.6215ms)
@@ -13,7 +13,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\00-release-s
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 17720.0786
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\shared
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\shared
   specs: 01-journey.test.mjs, 02-restart.test.mjs
 ▶ desktop journey
   ✔ first launch → name → create project → Project Home (753.5735ms)
@@ -43,7 +43,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\shared
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 55491.1277
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\04-close-keeps-typing
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\04-close-keeps-typing
   specs: 04-close-keeps-typing.test.mjs
 ▶ closing the window keeps the last typed text
   ✔ type, close within 100 ms by the close button and by Alt+F4, reopen, find the text (20 rounds) (211167.7142ms)
@@ -56,7 +56,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\04-close-kee
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 212807.0514
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\05-webview-network
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\05-webview-network
   specs: 05-webview-network.test.mjs
 ▶ the web view stays off the network
   ✔ through WebDriver, with a project open, no WebView2 process of the app leaves this computer (46543.0108ms)
@@ -70,7 +70,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\05-webview-n
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 177930.9312
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\10-home
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\10-home
   specs: 10-home.test.mjs
 ▶ home
   ✔ first launch creates a project that opens on an empty Project Home (742.6293ms)
@@ -88,7 +88,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\10-home
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 12745.3471
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\17-internal-build-release
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\17-internal-build-release
   specs: 17-internal-build-release.test.mjs
 ▶ the internal build as it ships
   ✔ no trial chip, no Buy and no popup, and About says internal build, not for sale (2833.5209ms)
@@ -101,7 +101,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\17-internal-
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 4529.9738
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\20-idea-vault
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\20-idea-vault
   specs: 20-idea-vault.test.mjs
 ▶ idea vault
   ✔ Quick Capture adds an idea to the project's Vault (1563.1198ms)
@@ -117,7 +117,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\20-idea-vaul
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 9990.6254
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\21-idea-vault-flow
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\21-idea-vault-flow
   specs: 21-idea-vault-flow.test.mjs (fake media devices)
 ▶ idea vault flow
   ✔ record a voice note with the microphone (3317.8944ms)
@@ -134,7 +134,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\21-idea-vaul
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 15461.8925
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\25-recently-deleted-purge
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\25-recently-deleted-purge
   specs: 25-recently-deleted-purge.test.mjs
 ▶ Recently Deleted 30-day purge
   ✔ deleted items show 30 days left on both Recently Deleted screens (4693.8971ms)
@@ -150,7 +150,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\25-recently-
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 17275.0261
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\26-forced-kill-keeps-work
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\26-forced-kill-keeps-work
   specs: 26-forced-kill-keeps-work.test.mjs
 ▶ work survives a forced kill
   ✔ add an idea, an act and a card, a character, a note and a screenplay line; each one saves (6200.2404ms)
@@ -165,7 +165,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\26-forced-ki
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 15577.2127
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\30-story
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\30-story
   specs: 30-story.test.mjs
 ▶ story
   ✔ act, sequence and two Scene Cards (2279.5003ms)
@@ -184,7 +184,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\30-story
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 14917.7719
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\31-story-board-flow
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\31-story-board-flow
   specs: 31-story-board-flow.test.mjs
 ▶ story board flow
   ✔ create an act, a sequence and three cards (2753.6345ms)
@@ -205,7 +205,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\31-story-boa
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 17219.6472
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\40-screenplay
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\40-screenplay
   specs: 40-screenplay.test.mjs
 ▶ screenplay
   ✔ new screenplay: write a scene with the Enter flow (autosaved) (2504.7802ms)
@@ -221,7 +221,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\40-screenpla
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 17625.3573
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\41-screenplay-engine
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\41-screenplay-engine
   specs: 41-screenplay-engine.test.mjs
 ▶ screenplay engine
   ✔ write with the element flow and insert a page break (2141.9097ms)
@@ -241,7 +241,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\41-screenpla
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 15032.7958
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\42-writing-comfort
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\42-writing-comfort
   specs: 42-writing-comfort.test.mjs
 ▶ writing comfort
   ✔ smart suggestions build a scene without retyping and never change text silently (2546.2062ms)
@@ -262,7 +262,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\42-writing-c
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 16492.5146
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\43-several-screenplays
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\43-several-screenplays
   specs: 43-several-screenplays.test.mjs
 ▶ several screenplays per project
   ✔ add a second screenplay, write in both and switch between them (4376.485ms)
@@ -277,7 +277,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\43-several-s
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 13886.6651
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\44-scene-hub-comments-compare
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\44-scene-hub-comments-compare
   specs: 44-scene-hub-comments-compare.test.mjs
 ▶ Scene Hub, comments, drafts and compare
   ✔ the Scene Hub opens from a scene's context menu and lists what exists around the scene (2647.4505ms)
@@ -292,7 +292,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\44-scene-hub
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 10439.7228
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\50-breakdown
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\50-breakdown
   specs: 50-breakdown.test.mjs
 ▶ breakdown
   ✔ import a screenplay and choose it as the Production Source (3282.945ms)
@@ -310,7 +310,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\50-breakdown
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 12891.8
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\51-breakdown-depth
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\51-breakdown-depth
   specs: 51-breakdown-depth.test.mjs
 ▶ breakdown depth
   ✔ source, and every category shows colour with icon, text and tooltip (3808.1076ms)
@@ -328,7 +328,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\51-breakdown
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 18744.3273
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\60-appearance
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\60-appearance
   specs: 60-appearance.test.mjs
 ▶ appearance
   ✔ mode, theme, import, rename, restart and delete (8178.4429ms)
@@ -341,7 +341,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\60-appearanc
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 10265.0105
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\61-schedule
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\61-schedule
   specs: 61-schedule.test.mjs
 ▶ shooting schedule and Day Out of Days
   ✔ create the schedule from the Production Source (8802.8341ms)
@@ -362,7 +362,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\61-schedule
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 33210.5087
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\62-call-sheets-exports
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\62-call-sheets-exports
   specs: 62-call-sheets-exports.test.mjs
 ▶ call sheets, budget, templates, samples and exports
   ✔ open a sample script that ships with the app (1727.7623ms)
@@ -384,7 +384,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\62-call-shee
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 18862.9522
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\63-every-export
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\63-every-export
   specs: 63-every-export.test.mjs
 ▶ every export format
   ✔ the screenplay exports as PDF, Final Draft, Fountain, DOCX and plain text, and each text format imports back (2379.793ms)
@@ -399,7 +399,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\63-every-exp
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 5433.7517
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\70-packages
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\70-packages
   specs: 70-packages.test.mjs
 ▶ packages and backup
   ✔ create a backup through Create Backup and the Save dialog (5246.3465ms)
@@ -417,7 +417,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\70-packages
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 24555.212
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\72-ai-assistant
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\72-ai-assistant
   specs: 72-ai-assistant.test.mjs
 ▶ Offline AI assistant with the bundled model
   ✔ AI is ready once its models are installed: no setup, no model names (4061.3073ms)
@@ -438,7 +438,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\72-ai-assist
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 104730.223
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\73-ai-workspaces
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\73-ai-workspaces
   specs: 73-ai-workspaces.test.mjs
 ▶ AI entry points in every workspace
   ✔ the assistant inherits the scope of each workspace (6024.3216ms)
@@ -455,7 +455,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\73-ai-worksp
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 101078.5576
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\74-ai-change-sets
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\74-ai-change-sets
   specs: 74-ai-change-sets.test.mjs
 ▶ AI Change Sets: review, apply, undo, reject, stale
   ✔ a requested change arrives as a proposal and nothing changes before Apply (7329.3231ms)
@@ -471,7 +471,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\74-ai-change
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 25582.0952
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\75-ai-crash-safe-apply
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\75-ai-crash-safe-apply
   specs: 75-ai-crash-safe-apply.test.mjs
 ▶ AI work survives a crash
   ✔ killed while applying: after relaunch the Change Set is all there or not there at all (9837.3727ms)
@@ -485,10 +485,10 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\75-ai-crash-
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 22258.2029
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\76-ai-files-integrity
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\76-ai-files-integrity
   specs: 76-ai-files-integrity.test.mjs
 ▶ Offline AI files: missing, damaged, whole again
-  ✔ a missing model file turns AI off and offers the download again; the rest of OpenFrame works (3778.7472ms)
+  ✔ a missing model file turns AI off and offers the download again; the rest of Straft Studio works (3778.7472ms)
   ✔ Download again restores the files from the host and AI answers with the real model (74719.0885ms)
   ✔ an altered model of the right size is caught before any engine starts (5859.4886ms)
   ✔ an altered engine library is caught before launch and asks for a reinstall (4294.5636ms)
@@ -501,15 +501,15 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\76-ai-files-
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 90308.1807
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\78-ai-download
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\78-ai-download
   specs: 78-ai-download.test.mjs
-▶ download OpenFrame AI after install
+▶ download Straft AI after install
   ✔ before the click: the not-installed state with the size, and no request to the host (860.1532ms)
   ✔ an interrupted download resumes where it stopped and AI becomes ready (3401.5078ms)
   ✔ with the host down, AI answers on this computer (71190.3599ms)
-  ✔ a restart with the host down finds OpenFrame AI and asks the host nothing (3433.9754ms)
+  ✔ a restart with the host down finds Straft AI and asks the host nothing (3433.9754ms)
   ✔ Remove takes the AI away; a damaged file is set aside; Pause and Resume continue the download (8018.9889ms)
-✔ download OpenFrame AI after install (88123.815ms)
+✔ download Straft AI after install (88123.815ms)
 ℹ tests 5
 ℹ suites 1
 ℹ pass 5
@@ -518,7 +518,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\78-ai-downlo
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 88759.1018
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\80-notes-tasks
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\80-notes-tasks
   specs: 80-notes-tasks.test.mjs
 ▶ notes and tasks
   ✔ a new note autosaves its title and text; undo and redo the edit (2357.3493ms)
@@ -534,7 +534,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\80-notes-tas
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 11116.4459
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\85-project-pages
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\85-project-pages
   specs: 85-project-pages.test.mjs
 ▶ project pages
   ✔ Project settings: change title and logline, save, undo, redo (1825.9344ms)
@@ -550,7 +550,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\85-project-p
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 12641.0825
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\86-visual-planning
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\86-visual-planning
   specs: 86-visual-planning.test.mjs
 ▶ visual planning
   ✔ a note on the moodboard canvas is dragged to a new place (5091.8162ms)
@@ -566,7 +566,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\86-visual-pl
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 16093.5011
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\shared
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\shared
   specs: 90-visual-baseline.test.mjs, 91-appearance-themes.test.mjs, 95-reachability.test.mjs
 ▶ visual regression against the visual baseline baseline
   ✔ 15 representative screens (34515.9796ms)
@@ -587,7 +587,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\shared
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 498227.7331
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\96-keyboard-and-screen-reader
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\96-keyboard-and-screen-reader
   specs: 96-keyboard-and-screen-reader.test.mjs
 ▶ keyboard and screen reader pass
   ✔ a project with a screenplay to walk through (2123.0229ms)
@@ -608,7 +608,7 @@ E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\96-keyboard-
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 34897.1629
-E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\97-performance
+E2E data root: C:\Straft\tests\e2e\.run\2026-10-18T00-37-25-891Z\97-performance
   specs: 97-performance.test.mjs
 ▶ performance with the AI running
   ✔ a project with the 36-scene Example Feature (2228.1045ms)

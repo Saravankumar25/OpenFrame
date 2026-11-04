@@ -1,4 +1,4 @@
-# OpenFrame Studio: Mac App Store release (package file 04, M7). The Windows tree keeps its own
+# Straft Studio: Mac App Store release (package file 04, M7). The Windows tree keeps its own
 # workflow; this tree builds the Mac app.
 #
 # Runs on demand only. FAILS CLOSED: nothing is built while a store-only value is a placeholder
@@ -115,7 +115,7 @@ jobs:
         run: |
           mkdir -p "$HOME/.appstoreconnect/private_keys"
           echo "$ASC_API_KEY_P8_B64" | base64 --decode > "$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_API_KEY_ID}.p8"
-          PKG="release-out/mac-store/OpenFrame-Studio.pkg"
+          PKG="release-out/mac-store/Straft-Studio.pkg"
           xcrun altool --validate-app -f "$PKG" -t macos --apiKey "$ASC_API_KEY_ID" --apiIssuer "$ASC_API_ISSUER_ID"
           if [[ "$UPLOAD" == "true" && "$GITHUB_REF" == "refs/heads/main" ]]; then
             xcrun altool --upload-app -f "$PKG" -t macos --apiKey "$ASC_API_KEY_ID" --apiIssuer "$ASC_API_ISSUER_ID"
@@ -125,8 +125,8 @@ jobs:
       - name: Keep the package
         uses: actions/upload-artifact@v4
         with:
-          name: OpenFrame-Studio-pkg
-          path: release-out/mac-store/OpenFrame-Studio.pkg
+          name: Straft-Studio-pkg
+          path: release-out/mac-store/Straft-Studio.pkg
           retention-days: 14
 
       - name: Remove the temporary keychain and every secret left on disk

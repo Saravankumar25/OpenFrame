@@ -19,6 +19,6 @@ filesPresent: number,
  */
 filesMissing: number, 
 /**
- * This is the vault OpenFrame uses now.
+ * This is the vault Straft Studio uses now.
  */
 active: boolean, };

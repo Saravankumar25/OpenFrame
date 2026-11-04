@@ -20,7 +20,7 @@ and only compare loosely.
 
 ## New test set
 
-`crates/openframe-ai-eval/gold/sections.lowtide.en.jsonl`, 395 cases written at development time from the fixture's `FACTS.md`:
+`crates/straft-ai-eval/gold/sections.lowtide.en.jsonl`, 395 cases written at development time from the fixture's `FACTS.md`:
 225 per leaf, 30 pairs, 10 triples, 60 out-of-section negatives, 10 look-alikes for false pointers, 40 conversational, 20 follow-ups.
 
 **Smaller than the design asked.** The design says about 30 questions per leaf. This set has about 10 per leaf with data, and

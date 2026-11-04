@@ -1,4 +1,4 @@
-// Settings > Storage: where OpenFrame keeps each kind of data on this computer, and the actions
+// Settings > Storage: where Straft Studio keeps each kind of data on this computer, and the actions
 // that change a place (docs/engineering/40-storage-locations-and-recovery.md, ADR-0038).
 // Plain words keep the kinds apart: the library folder (the one to back up), the folder for new
 // projects, the Global Idea Vault, the open project and the app's own technical data.
@@ -49,7 +49,7 @@ export function StoragePanel() {
   return (
     <div style={{ maxWidth: 820 }}>
       <Place
-        title="Your OpenFrame library"
+        title="Your Straft Studio library"
         path={s.libraryDir}
         note="Back up this folder. It holds library.json, which remembers who you are on this computer and where your work is, so a reinstall finds everything again. By default it also holds your projects and the Global Idea Vault."
       >

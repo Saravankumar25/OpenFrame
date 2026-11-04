@@ -17,7 +17,7 @@ Proof level 2 (development computer, ADR-0030). Decision record: [ADR-0033](../.
 
 ## English bar (ADR-0028 decision 2), default provider, 420 English cases
 
-Command: `OPENFRAME_AI_BUNDLE_DIR=.build-cache/ai-runtime/macos-arm64 OPENFRAME_AI_ASSETS_DIR=.ai-assets target/release/ai-eval --gold crates/openframe-ai-eval/gold --out docs/release/evidence/mac/m8-eval-en --only en --graphics auto`
+Command: `STRAFT_AI_BUNDLE_DIR=.build-cache/ai-runtime/macos-arm64 STRAFT_AI_ASSETS_DIR=.ai-assets target/release/ai-eval --gold crates/straft-ai-eval/gold --out docs/release/evidence/mac/m8-eval-en --only en --graphics auto`
 (wall time 34.3 min). Files: [report.md](m8-eval-en/report.md), [summary.json](m8-eval-en/summary.json), [results.jsonl](m8-eval-en/results.jsonl).
 
 | Measure | Result | Bar |
@@ -57,7 +57,7 @@ Files: [report.md](m8-eval-poisoned/report.md), [results.jsonl](m8-eval-poisoned
 
 - While the evaluation ran, `lsof -i` on the engine and harness processes showed only sockets on 127.0.0.1 (the engine
   listening on its port, the harness connected to it). No other address.
-- The launch tests in `crates/openframe-ai/tests/supervisor.rs` (loopback only, key not on the command line, offline flag)
+- The launch tests in `crates/straft-ai/tests/supervisor.rs` (loopback only, key not on the command line, offline flag)
   pass on the Mac.
 - `node scripts/architecture-lint.mjs` (rule R3, no network listener) passes: OK.
 - The Windows test `the_core_workflow_opens_no_network_listener` uses `netstat -ano` and is `#[cfg(windows)]`; it does not
@@ -65,7 +65,7 @@ Files: [report.md](m8-eval-poisoned/report.md), [results.jsonl](m8-eval-poisoned
 
 ## Metal against the processor (same engine, same prompt)
 
-`OPENFRAME_EVIDENCE_OUT=... cargo test -p openframe-ai --test real_runtime -- --ignored real_graphics`
+`STRAFT_EVIDENCE_OUT=... cargo test -p straft-ai --test real_runtime -- --ignored real_graphics`
 ([m8-metal-vs-processor.json](m8-metal-vs-processor.json)), a 125-word answer:
 
 | Place | First answer | Warm answer |
@@ -79,10 +79,10 @@ processor as "much slower, not precisely measured". This is why ADR-0033 runs Me
 
 ## Tests
 
-`RUSTC_WRAPPER= CARGO_INCREMENTAL=0 cargo test -p openframe-ai -p openframe-ai-eval`: all pass (openframe-ai lib 37,
+`RUSTC_WRAPPER= CARGO_INCREMENTAL=0 cargo test -p straft-ai -p straft-ai-eval`: all pass (straft-ai lib 37,
 bundled 27, supervisor 3, soak short profile 2 with 1 long ignored, others 9; ai-eval 9). The ignored real-engine tests
 `real_bundled_runtime_checks_then_chats_and_embeds` (full check 5 s, chat 3 s, embeddings, shortcut on next start) and
-`real_graphics_card_probe_and_benchmark` pass with the Mac runtime. `cargo clippy -p openframe-ai --all-targets` is clean.
+`real_graphics_card_probe_and_benchmark` pass with the Mac runtime. `cargo clippy -p straft-ai --all-targets` is clean.
 New tests: `the_mac_engine_is_one_metal_build`, `the_mac_engine_lists_one_metal_device`.
 
 ## Open items

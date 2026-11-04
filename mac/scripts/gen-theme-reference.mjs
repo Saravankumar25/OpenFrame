@@ -1,4 +1,4 @@
-// Writes apps/macos/Tests/OpenFrameUITests/theme-reference.json: the sRGB hex of a few key tokens for
+// Writes apps/macos/Tests/StraftUITests/theme-reference.json: the sRGB hex of a few key tokens for
 // every theme in both modes, computed here with an independent implementation of the CSS maths
 // (the CSS Color 4 XYZ matrices, hand-written token rules). The Swift tests compare the Mac theme
 // engine against this file with a tolerance of 1/255 per channel.
@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const file = JSON.parse(
-  readFileSync(join(root, "crates/openframe-application/src/modules/appearance/themes.json"), "utf8"),
+  readFileSync(join(root, "crates/straft-application/src/modules/appearance/themes.json"), "utf8"),
 );
 const E = file.engine;
 const TOKENS = ["bg", "panel", "ink", "accent", "accent-soft", "side", "red", "yellow-t", "lg1"];
@@ -116,6 +116,6 @@ function resolve(theme, mode) {
 
 const out = { generatedBy: "scripts/gen-theme-reference.mjs", tokens: TOKENS, themes: {} };
 for (const t of file.themes) out.themes[t.id] = { light: resolve(t, "light"), dark: resolve(t, "dark") };
-const dest = join(root, "apps/macos/Tests/OpenFrameUITests/theme-reference.json");
+const dest = join(root, "apps/macos/Tests/StraftUITests/theme-reference.json");
 writeFileSync(dest, JSON.stringify(out, null, 1) + "\n");
 console.log(`wrote ${dest}`);

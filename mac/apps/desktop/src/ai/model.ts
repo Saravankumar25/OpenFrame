@@ -38,7 +38,7 @@ export function formatBytes(n: number): string {
 export type PanelMode = "unavailable" | "off" | "download" | "ready";
 
 /**
- * Which top-level view the panel shows (ADR-0026). OpenFrame AI is ready once its models are
+ * Which top-level view the panel shows (ADR-0026). Straft AI is ready once its models are
  * downloaded; before that, and when a downloaded file is missing or damaged, the panel offers the
  * download ("download"); a missing or damaged engine needs a reinstall ("off", with the reason).
  */
@@ -119,7 +119,7 @@ export function changeCount(n: number): string {
 }
 
 export const STALE_HINT = "AI never applies a stale proposal blindly. It must be re-checked against the current project.";
-export const UNAVAILABLE_TEXT = "AI is currently unavailable. OpenFrame's core workflows continue to work normally.";
+export const UNAVAILABLE_TEXT = "AI is currently unavailable. Straft Studio's core workflows continue to work normally.";
 export const PREPARING_TEXT = "Preparing project context…";
 export const DEGRADED_TEXT = "AI can still answer some questions while project context is being prepared.";
 

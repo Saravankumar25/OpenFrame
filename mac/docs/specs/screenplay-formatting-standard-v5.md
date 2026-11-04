@@ -1,8 +1,8 @@
-# OpenFrame Studio — Vendor-Neutral Screenplay Formatting Standard
+# Straft Studio — Vendor-Neutral Screenplay Formatting Standard
 
 ## Purpose and scope
 
-This document defines a **vendor-neutral default profile for a US Letter feature-film screenplay**. It is intended to help OpenFrame produce clean, readable, conventional screenplay PDFs. It is not a request to copy Final Draft, StudioBinder, or any other application's quirks, and it does not claim that every measurement below is legally or universally mandated by the film industry.
+This document defines a **vendor-neutral default profile for a US Letter feature-film screenplay**. It is intended to help Straft Studio produce clean, readable, conventional screenplay PDFs. It is not a request to copy Final Draft, StudioBinder, or any other application's quirks, and it does not claim that every measurement below is legally or universally mandated by the film industry.
 
 Screenplays vary by country, production, genre, broadcaster, and use. The defaults below represent common US feature-screenplay practice. If a production explicitly requires a house style, that profile can override optional choices while retaining the engine's correctness guarantees.
 
@@ -93,7 +93,7 @@ The following grid is a **recommended default for a conventional US feature scre
 | Scene heading to the first action line | Recommended 24 pt | One blank-line separation after the heading |
 | Shot heading to its description | Normally 24 pt or the profile's matching heading rule | Heading stays visually attached to its description |
 
-**Important:** a scene-heading gap of 36 pt is a conventional target, not a universal law. The StudioBinder sample exhibited 36 pt in the transitions inspected, while OpenFrame showed 24 pt. That is a useful reference comparison, but the decision should be encoded as a single consistent profile rule, not as a special-case patch for those three pages.
+**Important:** a scene-heading gap of 36 pt is a conventional target, not a universal law. The StudioBinder sample exhibited 36 pt in the transitions inspected, while Straft Studio showed 24 pt. That is a useful reference comparison, but the decision should be encoded as a single consistent profile rule, not as a special-case patch for those three pages.
 
 ### Spacing-engine requirements
 
@@ -159,7 +159,7 @@ After pagination, validate at minimum:
 
 ## 7. Page numbers, headers, scene numbers and title page
 
-These contain legitimate profile-specific choices, so OpenFrame should not impose one behavior on every kind of screenplay.
+These contain legitimate profile-specific choices, so Straft Studio should not impose one behavior on every kind of screenplay.
 
 ### Clean submission/spec screenplay
 
@@ -184,7 +184,7 @@ These contain legitimate profile-specific choices, so OpenFrame should not impos
 - No collision, clipping, overlap or text outside the safe area. Never use long runs of spaces as a substitute for columns.
 - Title-page typography and alignment can be a house-style choice, but legibility and correct content flow are invariants.
 
-### Known title-page defect in the current OpenFrame export — explicitly investigate and fix
+### Known title-page defect in the current Straft Studio export — explicitly investigate and fix
 
 The reviewed `LOW TIDE RADIO - Second Draft` PDF has a visible collision in the lower title-page information area: the copyright text (`Copyright 2026 Kayal Pictures. All rights reserved.`) runs into the adjacent representation text (`Representation: Lighthouse Talent, Mumbai`). In the extracted/rendered output, the collision is visible as `AllRepresentation: Lighthouse`. Treat this as a confirmed defect to reproduce and fix, not merely a general checklist item.
 

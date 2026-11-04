@@ -7,7 +7,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const css = readFileSync(join(__dirname, "openframe.css"), "utf8");
+const css = readFileSync(join(__dirname, "straft.css"), "utf8");
 const rule = (selector: string) => {
   const at = css.indexOf(`${selector}{`);
   expect(at, `no rule for ${selector}`).toBeGreaterThanOrEqual(0);

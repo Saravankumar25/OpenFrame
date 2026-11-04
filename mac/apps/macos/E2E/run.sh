@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
-# Runs the end-to-end scenarios against a real OpenFrame Studio app: the release .app (or the app
+# Runs the end-to-end scenarios against a real Straft Studio app: the release .app (or the app
 # inside the mounted .dmg). Each scenario gets its own empty data folder; scenarios that restart
 # the app launch it again on the same folder, and "hold" phases end with SIGKILL (a crash).
 #
-# Usage: apps/macos/E2E/run.sh <OpenFrame Studio.app | executable> [name-filter]
-# OPENFRAME_E2E_SHARD=k/n runs only every n-th scenario starting at the k-th (1-based), so n runners
+# Usage: apps/macos/E2E/run.sh <Straft Studio.app | executable> [name-filter]
+# STRAFT_E2E_SHARD=k/n runs only every n-th scenario starting at the k-th (1-based), so n runners
 # can share one machine; each scenario still has its own data folder and its own app process.
-# OPENFRAME_E2E_FRESH_HOME=1 runs each scenario as a brand-new Mac user would: an empty home folder
+# STRAFT_E2E_FRESH_HOME=1 runs each scenario as a brand-new Mac user would: an empty home folder
 # (HOME and CFFIXED_USER_HOME) and the app's real data locations, with no test data folder.
-# Needs: the driver library (swift build --product OpenFrameE2EDriver -c release).
+# Needs: the driver library (swift build --product StraftE2EDriver -c release).
 # Output: release-out/e2e/<timestamp>/ with one folder per scenario, results.tsv and summary.md.
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -16,7 +16,7 @@ MACOS="$(cd "$HERE/.." && pwd)"
 ROOT="$(cd "$MACOS/../.." && pwd)"
 APP="${1:?usage: run.sh <app or executable> [filter]}"
 FILTER="${2:-}"
-WORK="$(mktemp -d "${TMPDIR:-/tmp}/openframe-e2e.XXXXXX")"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/straft-e2e.XXXXXX")"
 trap 'rm -rf "$WORK"; [[ -n "${TEST_ID:-}" ]] && defaults delete "$TEST_ID" >/dev/null 2>&1; true' EXIT
 if [[ -d "$APP" ]]; then
   # The release app has the hardened runtime, which refuses an injected library. Test a private
@@ -31,8 +31,8 @@ if [[ -d "$APP" ]]; then
   ditto "$APP" "$WORK/app/$(basename "$APP")"
   APP_UNDER_TEST="$WORK/app/$(basename "$APP")"
   PLIST="$APP_UNDER_TEST/Contents/Info.plist"
-  # OPENFRAME_E2E_ID_SUFFIX keeps runners that are started separately (not as shards of one run) apart.
-  TEST_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST").e2e${OPENFRAME_E2E_ID_SUFFIX:-}$(echo "${OPENFRAME_E2E_SHARD:-1/1}" | cut -d/ -f1)"
+  # STRAFT_E2E_ID_SUFFIX keeps runners that are started separately (not as shards of one run) apart.
+  TEST_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST").e2e${STRAFT_E2E_ID_SUFFIX:-}$(echo "${STRAFT_E2E_SHARD:-1/1}" | cut -d/ -f1)"
   /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $TEST_ID" "$PLIST"
   codesign --force --sign - --timestamp=none "$APP_UNDER_TEST" >/dev/null 2>&1
   defaults delete "$TEST_ID" >/dev/null 2>&1 || true
@@ -41,19 +41,19 @@ else
   EXE="$APP"
 fi
 [[ -x "$EXE" ]] || { echo "not an executable: $EXE" >&2; exit 2; }
-DRIVER="${OPENFRAME_E2E_DRIVER:-}"
+DRIVER="${STRAFT_E2E_DRIVER:-}"
 if [[ -z "$DRIVER" ]]; then
-  for c in "$MACOS/.build/release/libOpenFrameE2EDriver.dylib" "$MACOS/.build/debug/libOpenFrameE2EDriver.dylib"; do
+  for c in "$MACOS/.build/release/libStraftE2EDriver.dylib" "$MACOS/.build/debug/libStraftE2EDriver.dylib"; do
     [[ -f "$c" ]] && { DRIVER="$c"; break; }
   done
 fi
-[[ -f "$DRIVER" ]] || { echo "build the driver first: swift build --product OpenFrameE2EDriver -c release" >&2; exit 2; }
-export OPENFRAME_E2E_FIXTURES="$ROOT/tests/fixtures"
+[[ -f "$DRIVER" ]] || { echo "build the driver first: swift build --product StraftE2EDriver -c release" >&2; exit 2; }
+export STRAFT_E2E_FIXTURES="$ROOT/tests/fixtures"
 
-RUN="${OPENFRAME_E2E_RUN_DIR:-$ROOT/release-out/e2e/$(date +%Y%m%d-%H%M%S)}"
+RUN="${STRAFT_E2E_RUN_DIR:-$ROOT/release-out/e2e/$(date +%Y%m%d-%H%M%S)}"
 mkdir -p "$RUN"
 # The scenario list comes from the driver itself.
-OPENFRAME_DATA_ROOT="$WORK/list-data" OPENFRAME_E2E_SCENARIO=__list__ OPENFRAME_E2E_OUT="$WORK/list" \
+STRAFT_DATA_ROOT="$WORK/list-data" STRAFT_E2E_SCENARIO=__list__ STRAFT_E2E_OUT="$WORK/list" \
   DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >/dev/null 2>&1 &
 LISTPID=$!
 # The driver writes the list and ends the app at once; an app that ignored the driver is stopped.
@@ -67,9 +67,9 @@ pass=0; fail=0; skip=0
 # A development build (bundle-dev-app.sh) honours the debug-only test switches; a release build
 # ignores them on purpose, so the scenarios that need one are skipped there, never failed.
 DEV_BUILD=false
-[[ -n "${PLIST:-}" ]] && [[ "$(/usr/libexec/PlistBuddy -c 'Print :OpenFrameDevelopmentBuild' "$PLIST" 2>/dev/null)" == true ]] && DEV_BUILD=true
+[[ -n "${PLIST:-}" ]] && [[ "$(/usr/libexec/PlistBuddy -c 'Print :StraftDevelopmentBuild' "$PLIST" 2>/dev/null)" == true ]] && DEV_BUILD=true
 SHARD_K=1; SHARD_N=1
-if [[ -n "${OPENFRAME_E2E_SHARD:-}" ]]; then SHARD_K="${OPENFRAME_E2E_SHARD%/*}"; SHARD_N="${OPENFRAME_E2E_SHARD#*/}"; fi
+if [[ -n "${STRAFT_E2E_SHARD:-}" ]]; then SHARD_K="${STRAFT_E2E_SHARD%/*}"; SHARD_N="${STRAFT_E2E_SHARD#*/}"; fi
 INDEX=0
 while IFS=$'\t' read -r name phases timeout ends; do
   [[ -n "$FILTER" && "$name" != *"$FILTER"* ]] && continue
@@ -78,7 +78,7 @@ while IFS=$'\t' read -r name phases timeout ends; do
   INDEX=$((INDEX + 1))
   (( (INDEX - SHARD_K) % SHARD_N == 0 )) || continue
   if [[ ( "$name" == 71-storage/first-start* || "$name" == zz-capture/*first-start* ) && "$DEV_BUILD" != true ]]; then
-    printf "%s\tskip\t0\tneeds a development build (OPENFRAME_LIBRARY_SETUP is debug only)\n" "$name" >> "$RUN/results.tsv"
+    printf "%s\tskip\t0\tneeds a development build (STRAFT_LIBRARY_SETUP is debug only)\n" "$name" >> "$RUN/results.tsv"
     skip=$((skip + 1)); echo "SKIP  $name (needs a development build)"; continue
   fi
   # The store screens run over a scripted App Store, which exists in a development build only.
@@ -98,16 +98,16 @@ while IFS=$'\t' read -r name phases timeout ends; do
   IFS=',' read -r -a endlist <<< "$ends"
   for ((p = 1; p <= phases; p++)); do
     end="${endlist[$((p - 1))]}"
-    if [[ "${OPENFRAME_E2E_FRESH_HOME:-}" == 1 ]]; then
+    if [[ "${STRAFT_E2E_FRESH_HOME:-}" == 1 ]]; then
       mkdir -p "$DATA/home/Documents" "$DATA/home/Library"
-      HOME="$DATA/home" CFFIXED_USER_HOME="$DATA/home" OPENFRAME_E2E_WORK="$WORK" OPENFRAME_E2E_SCENARIO="$name" \
-        OPENFRAME_E2E_PHASE="$p" OPENFRAME_E2E_OUT="$OUT" DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >"$OUT/app-$p.log" 2>&1 &
+      HOME="$DATA/home" CFFIXED_USER_HOME="$DATA/home" STRAFT_E2E_WORK="$WORK" STRAFT_E2E_SCENARIO="$name" \
+        STRAFT_E2E_PHASE="$p" STRAFT_E2E_OUT="$OUT" DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >"$OUT/app-$p.log" 2>&1 &
     else
       # The first-start scenarios (and the capture tour's library setup) begin like a new computer whose
       # library is not chosen yet.
       LIB=""; [[ "$name" == 71-storage/first-start* || "$name" == zz-capture/*first-start* ]] && LIB=1
-      OPENFRAME_DATA_ROOT="$DATA" OPENFRAME_LIBRARY_SETUP="$LIB" OPENFRAME_TEST_STORE="$STORE" OPENFRAME_E2E_WORK="$WORK" OPENFRAME_E2E_SCENARIO="$name" \
-        OPENFRAME_E2E_PHASE="$p" OPENFRAME_E2E_OUT="$OUT" DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >"$OUT/app-$p.log" 2>&1 &
+      STRAFT_DATA_ROOT="$DATA" STRAFT_LIBRARY_SETUP="$LIB" STRAFT_TEST_STORE="$STORE" STRAFT_E2E_WORK="$WORK" STRAFT_E2E_SCENARIO="$name" \
+        STRAFT_E2E_PHASE="$p" STRAFT_E2E_OUT="$OUT" DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >"$OUT/app-$p.log" 2>&1 &
     fi
     pid=$!
     limit=$(( ${timeout%.*} + 60 )); t=0

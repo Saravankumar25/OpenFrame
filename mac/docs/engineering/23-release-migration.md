@@ -4,30 +4,30 @@
 
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned.
 > Source: `persistence/src/migrate.rs`, `application/src/{schema.rs,store.rs}`, `project-format`,
-> `openframe-domain` version constants. Related: 11-physical-database.md §7, ADR-0002, ADR-0003.
+> `straft-domain` version constants. Related: 11-physical-database.md §7, ADR-0002, ADR-0003.
 
 ## 1. Version identifiers
 
 | Identifier | Where | Current | Changes when |
 |---|---|---|---|
 | App version (SemVer) | `Cargo.toml [workspace.package].version`, `package.json`, `apps/desktop/package.json`, `tauri.conf.json` | 0.1.0 | Every release. All four must match; `release-validate` checks this and the git tag `vX.Y.Z`. |
-| Project schema version | `PRAGMA user_version` = number of project migrations; mirrored in `openframe.json.schemaVersion` | 21 (`0001_core` to `0021_project_file_search_text`; 10 corrected from 9 on 2026-10-05, 11 added by the crash-safe AI changes item of the build plan, 12 to 14 by the Beat Board, screenplay engine and production depth areas, 15 by the shooting schedule area, 16 by the call sheets, budget, templates, samples and exports area, 17 by the Story page, 18 by the assistant's memory, 19 by the Story page formatting, 20 by the section-scoped assistant, 21 by the words of small copied text files) | A migration is appended |
-| Project format version | `PROJECT_FORMAT_VERSION`, `openframe.json.formatVersion` | 1 | Folder layout or manifest changes incompatibly |
+| Project schema version | `PRAGMA user_version` = number of project migrations; mirrored in `straft.json.schemaVersion` | 21 (`0001_core` to `0021_project_file_search_text`; 10 corrected from 9 on 2026-10-05, 11 added by the crash-safe AI changes item of the build plan, 12 to 14 by the Beat Board, screenplay engine and production depth areas, 15 by the shooting schedule area, 16 by the call sheets, budget, templates, samples and exports area, 17 by the Story page, 18 by the assistant's memory, 19 by the Story page formatting, 20 by the section-scoped assistant, 21 by the words of small copied text files) | A migration is appended |
+| Project format version | `PROJECT_FORMAT_VERSION`, `straft.json.formatVersion` | 1 | Folder layout or manifest changes incompatibly |
 | Package format version | `PACKAGE_FORMAT_VERSION` (oldest read: `OLDEST_PACKAGE_FORMAT_VERSION`) | 2 | Package container or manifest changes; add a `format-N` fixture folder |
-| AI compatibility version | `AI_COMPATIBILITY_VERSION`, `openframe.json.aiCompatibilityVersion` | 1 | AI tool or Change Set schemas change incompatibly |
+| AI compatibility version | `AI_COMPATIBILITY_VERSION`, `straft.json.aiCompatibilityVersion` | 1 | AI tool or Change Set schemas change incompatibly |
 | Global vault / app DB schema | `user_version` of `vault.sqlite` / `app.sqlite` | 3 / 1 (global corrected from 2 on 2026-10-05: `0001_core`, `0002_idea_vault`, `0003_performance`) | A migration is appended |
 
 ## 2. Compatibility policy
 
 - **Forward (old app, new project): refused safely.** A project with a newer `formatVersion` or schema is **never
-  modified**. The message is "This project was saved by a newer version of OpenFrame. Update OpenFrame to open it.
+  modified**. The message is "This project was saved by a newer version of Straft Studio. Update Straft Studio to open it.
   The project has not been changed." (`project_format.too_new`) ✅. Read-only opening of newer projects is not
   supported in the first release.
 - **Backward (new app, old project): always supported.** Every shipped schema version must open and migrate in every
   later release. There are no "too old" cut-offs without an ADR.
 - **Packages:** an app reads packages with `formatVersion ≤` its own. Newer packages are refused with guidance to
   update. Packages written by the app always carry the current version. Each format has committed fixtures
-  (`crates/openframe-application/tests/fixtures/packages/format-N/`); a backup fixture holds the database at the
+  (`crates/straft-application/tests/fixtures/packages/format-N/`); a backup fixture holds the database at the
   schema it was written with, so restoring it also exercises every later migration.
 - **Downgrade** after migration is not supported. The pre-migration safety copy in `backups/` is the rollback path,
   and it opens in the old version.
@@ -64,7 +64,7 @@ content, and recents can be rebuilt by opening projects.
    **Enforcement (build plan: migration policy, 2026-10-05).**
    - `migrations/frozen.json` records the SHA-256 (LF-normalised) of every migration file and a `frozen` flag.
    - `scripts/check-migrations.mjs` (part of `npm run check:governance`, blocking in CI) fails when numbering in any
-     set is not `1..N` without gaps or duplicates, when `crates/openframe-application/src/schema.rs` does not embed
+     set is not `1..N` without gaps or duplicates, when `crates/straft-application/src/schema.rs` does not embed
      exactly the files on disk in order, or when a recorded file is deleted. While `frozen` is `false` an edited
      file is a warning; once `frozen` is `true` it is an error.
    - The pull request that adds a migration runs `node scripts/check-migrations.mjs --record` and commits the
@@ -91,7 +91,7 @@ content, and recents can be rebuilt by opening projects.
 7. **Tests:** every new migration adds a fixture database at the previous version (📋 `tests/fixtures/schema-vN.sqlite`)
    and a test that opens, migrates, verifies content and verifies that the safety backup exists.
    Failure paths (full drive, read-only file, newer schema, damaged database, unwritable safety backup) are covered
-   by `crates/openframe-application/tests/migration_failures.rs`, and an interrupted migration by `forced_kill.rs`.
+   by `crates/straft-application/tests/migration_failures.rs`, and an interrupted migration by `forced_kill.rs`.
 
 ## 5. Release process
 
@@ -125,7 +125,7 @@ embedding model download on the user's click straight from Hugging Face at the c
 size and SHA-256. There is no model host and no signing key. The items below are the release gates. Item 1 is enforced by `scripts/release-validate.mjs` (check 6) and by every package build; the rest are manual.
 
 1. **AI build inputs.** The runtime and model files pinned in `packaging/ai/ai-assets.lock.json` (path, bytes,
-   SHA-256, licence) must be present for the build (`.ai-assets/`, or `OPENFRAME_AI_ASSETS_DIR` on a build machine or
+   SHA-256, licence) must be present for the build (`.ai-assets/`, or `STRAFT_AI_ASSETS_DIR` on a build machine or
    runner). `scripts/prepare-ai-assets.mjs` verifies them and stages them; `npm run build`, `npm run bundle`,
    `build-msix.mjs`, the E2E test build and the release workflow fail closed when a file is missing or altered. The
    CI runners do not have these files yet, so the release jobs stop at this check until they do.

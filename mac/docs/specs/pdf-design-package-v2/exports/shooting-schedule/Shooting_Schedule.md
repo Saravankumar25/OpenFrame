@@ -4,12 +4,12 @@
 |---|---|
 | Export | Shooting Schedule — `schedule.export_schedule` |
 | Variant | PDF, **portrait US Letter (v2, user decision; v1 was landscape)**, "Entire schedule", unscheduled scenes on, scene notes off (the state captured in `Shooting_Schedule.pdf`) |
-| Status | **Design reference — not integrated; not validated against OpenFrame's Rust renderer** |
+| Status | **Design reference — not integrated; not validated against Straft Studio's Rust renderer** |
 | Repo commit | `2f5a045416bd2125801329533fc47f986ccc8174` (`main`) |
 | Date | 2026-10-23 |
 | Files | `Shooting_Schedule.html` / `.pdf` (13 pages; v1 landscape 14) · `stress-test/Shooting_Schedule_STRESS_TEST.html` / `.pdf` (10 pages) · generator `tools/build/scheduling/` |
 | Baseline | `exports/Shooting Schedule - full schedule.pdf` (15 pages, **landscape**, same Low Tide Radio data) |
-| Package | `OpenFrame_PDF_Design_Package_v2/` (all paths in this file are relative to it) |
+| Package | `Straft_PDF_Design_Package_v2/` (all paths in this file are relative to it) |
 
 ---
 
@@ -78,7 +78,7 @@ The Shooting Schedule is the printed stripboard of the whole shoot: every shooti
 | Item | Value |
 |---|---|
 | Op | `schedule.export_schedule` |
-| Builder | `windows/crates/openframe-application/src/modules/exports/schedule.rs::export` (args `ExportScheduleArgs`) |
+| Builder | `windows/crates/straft-application/src/modules/exports/schedule.rs::export` (args `ExportScheduleArgs`) |
 | Data | `schedule::board::{Board, DayRow, StripRow, MarkerRow, Item}`, `Board::strip_dto`, `day_summary`, `day_timeline`, `call_sheet_brief`, `revised_at`; `timeline::ScheduleDayTimeline`; `source::ScheduleCastRef/ScheduleLocRef` |
 | Renderer blocks | `Document::new(..).footer(footer(project, document))` (v1/current: `.landscape(true)`; v2: portrait, call dropped), `Masthead` (+ `Side::Badge`), `Metrics`, `Banner` (`keep_next = 110.0`), `Block::Text`, `StyledTable` (`boxed`, `continued`) with `Row.fill/stripe`, `Cell`/`CellItem::{Tile, Chips, Text}`, `Legend`, `Section` |
 | UI | `features/export/buttons.tsx::ScheduleExportButton` mounted in `workspaces/production/tabs/schedule.tsx` and `workspaces/call-sheets/shared/ScheduleViews.tsx` |
@@ -175,7 +175,7 @@ The user looked at the landscape strips scaled onto a portrait page and found th
 * Strips: row fill + 3 pt left stripe per class (E/B above); 0.5 pt `--of-line-strong` row separators; table outer hairline; bottom corners radius 4 pt. Scene tile white with hairline border, 8.4 pt bold. Breaks: fill `#f1f3f6`, stripe `--of-faint`, white chip.
 * **Status treatments**: Changed = amber chip + text "Changed in the script"; New = blue chip "New in the script"; Removed = red chip "Removed from the script" + heading suffix "(NO LONGER IN THE SCRIPT)"; over target = amber pill with text; Manual pages = text tag. None depends on colour alone.
 * **Grayscale**: yellow, green and blue strips become near-identical greys (viewed in `--gray` thumbnails). The distinction therefore lives in the INT/EXT and DAY/NIGHT chips on every strip, plus the legend lists the text code next to each swatch. A scheduler reading a B/W print can still tell every strip type.
-* Footer: shared system (logo PNG 17 pt high lockup, "Created using OpenFrame", "Page X of Y"). **Implementation requirement**: the Rust renderer must embed the PNG logo (it currently redraws a vector mark and prints "<Project> · Shooting Schedule · Page X / N").
+* Footer: shared system (logo PNG 17 pt high lockup, "Created using Straft Studio", "Page X of Y"). **Implementation requirement**: the Rust renderer must embed the PNG logo (it currently redraws a vector mark and prints "<Project> · Shooting Schedule · Page X / N").
 * **Running header decision: YES** — `LOW TIDE RADIO · SHOOTING SCHEDULE · REVISED 19 OCT 2026`, top-right, 6.8 pt, no rule, no logo, on every page. Reason: a 13-page document that is pinned and handed out page by page; every page then names the production and the revision (stale copies are common on set). The revision is the schedule's `revised_at`. Shown on page 1 too (page 1 also has the masthead). It sits in the 46 pt top margin box (24 pt padding-top, 6.8 pt text); `verify_pdf.py --header` finds it on all 13 pages and no content collides with it.
 
 ## G. Dynamic behaviour
@@ -217,7 +217,7 @@ The user looked at the landscape strips scaled onto a portrait page and found th
 - [ ] Column widths at 520 pt: Scene 38, Type 48, Start 38, Cast 124, Pages 36, Est. 40, heading = remainder (196 pt with all columns); order Scene, Type, Start, Heading & synopsis, Cast, Pages, Est.
 - [ ] No text in the content area smaller than 6.4 pt; chips and labels at least 6.6 pt except the "MANUAL" tag (6.4); body and cell text at least 8.0 pt.
 - [ ] The running header sits inside the top margin and does not touch content on any page.
-- [ ] Every page has the PNG logo lockup, "Created using OpenFrame" and "Page X of Y" with the true total; running header text present on every page.
+- [ ] Every page has the PNG logo lockup, "Created using Straft Studio" and "Page X of Y" with the true total; running header text present on every page.
 - [ ] Each day prints band "Shoot Day N" + uppercase weekday · date; off days "Off day" with "No shooting".
 - [ ] Facts band wording equals the source: "N scenes, M other items · arranged in production order", "<pages> pages total", "<HH:MM> crew call", "wrap about HH:MM (target HH:MM)", "over the 11h target" or "past the target wrap", "Call sheet: <status>"; omitted parts leave no separator.
 - [ ] Strip fill/stripe follow the four classes; INT/EXT counts as exterior; every strip also shows the INT/EXT and DAY/NIGHT chips (grayscale thumbnails remain distinguishable).

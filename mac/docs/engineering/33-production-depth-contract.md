@@ -6,7 +6,7 @@
 
 ## 1. Beat Board card (Beat Board and Idea Vault area)
 
-Status: **built** (2026-10-07, branch `area/09-story-board`). Tests: `crates/openframe-application/tests/story_cards.rs`.
+Status: **built** (2026-10-07, branch `area/09-story-board`). Tests: `crates/straft-application/tests/story_cards.rs`.
 
 Has: `story_scene_card.short_description`, `color`; `story_attachment`.
 Added: `long_description` (canonical, searchable, AI-readable) in project migration `0012_story_card_and_vault_research.sql`.
@@ -180,23 +180,23 @@ lines that have an Actual) are derived at read time (`modules/schedule/budget.rs
 
 Has: template engine with scopes and 7 built-ins. Add per the owner decision "Template list": three screenplay templates, indie call sheet, simple
 Beat Board, shot list, moodboard, lightweight budget. Use creates an independent copy. Samples: four
-OpenFrame-authored scripts used as onboarding assets and fixtures; no third-party text.
+Straft Studio-authored scripts used as onboarding assets and fixtures; no third-party text.
 
 **Built (area 15, 2026-10-08).** The eight built-ins live in `modules/notes/templates.rs` (Feature Film Screenplay,
 Short Film Screenplay, Episodic / Series, Simple Beat Board, Indie Call Sheet, Shot List, Moodboard, Lightweight
 Budget). `templates.copy` copies a template; `templates.apply` creates the document a template describes through the
 owning module's operations, all or nothing, as one undo step. Nothing refers back to the template. The four samples
-are compiled into the app (`openframe-import-export/src/samples.rs`), listed by `screenplay.samples` and opened through
+are compiled into the app (`straft-import-export/src/samples.rs`), listed by `screenplay.samples` and opened through
 the regular import preview (`screenplay.import_preview` with `sample`); `tests/samples.rs` uses them as fixtures.
 
 ## 8. Branding (Call sheets, budget, templates, samples and exports area)
 
-Screenplay outputs clean. Production outputs carry a small logo and "Created using OpenFrame"; spreadsheets
+Screenplay outputs clean. Production outputs carry a small logo and "Created using Straft Studio"; spreadsheets
 use workbook metadata or first-sheet footer. User-owned source files are never modified for branding. Packages
 and backups carry a branded manifest or README, not edited user files.
 
 **Built (area 15, 2026-10-08).** `modules/exports/mod.rs::deliver` brands every production export in one place: PDFs
-print the OpenFrame mark and the brand line at the bottom of each page, workbooks name OpenFrame Studio in their document properties and the first sheet's footer, plain text ends
+print the Straft Studio mark and the brand line at the bottom of each page, workbooks name Straft Studio in their document properties and the first sheet's footer, plain text ends
 with the line. CSV stays pure data (no added row) so it imports cleanly elsewhere. Screenplay exports
 (`screenplay.export`) never pass through `deliver` and stay unbranded. Sides are pages of the script and carry no
 mark and no line either (owner, 2026-10-27). Package and backup manifests belong to the

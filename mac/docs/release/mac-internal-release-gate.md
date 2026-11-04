@@ -19,7 +19,7 @@ image is therefore authorised; signing, notarisation and the stores are Chapter 
 
 | Id | Check | Pass means | Status | Evidence |
 |---|---|---|---|---|
-| G1 | One build | The disk image was built once from a recorded commit, with the team gate on; SHA-256, version, commit, date and size recorded | Pass | Commit 5355dc7, clean tree, team gate on, `release-out/mac/OpenFrame-Studio-0.1.0-internal-5355dc7.dmg`, 34,894,221 bytes, SHA-256 `e4f009226a00ff838596e6ebf0c3bfce301538d54b3ffd30e4ffbfecce7645ad` |
+| G1 | One build | The disk image was built once from a recorded commit, with the team gate on; SHA-256, version, commit, date and size recorded | Pass | Commit 5355dc7, clean tree, team gate on, `release-out/mac/Straft-Studio-0.1.0-internal-5355dc7.dmg`, 34,894,221 bytes, SHA-256 `e4f009226a00ff838596e6ebf0c3bfce301538d54b3ffd30e4ffbfecce7645ad` |
 | G2 | Tested as shipped | The end-to-end suite drove the app copied out of exactly that disk image | Pass | The suite ran on the app copied out of the 5355dc7 image (executable SHA-256 70177e94...; the runner re-signs a private copy without the hardened runtime to inject its driver and prints both hashes), `release-out/e2e/final-5355dc7/summary.md` |
 | G3 | SBOM | CycloneDX for the Rust core and the AI engine files next to the image | Pass | CycloneDX SBOM and a manifest with every file hash next to the image |
 | G4 | Size | Image size recorded | Pass | 34.9 MB image (the app with the Metal engine; models download after install) |
@@ -68,7 +68,7 @@ Recorded from the final run on the 5355dc7 image (`release-out/e2e/final-5355dc7
   and the sidebar both forced open macOS lays the sidebar over the content; the maximised case lost the key window on
   this locked screen). The window stays inside the screen in every case.
 - **AI (specs 01-13, 72, 76, 78):** the journey's first AI step, the panel remembering open or closed after a relaunch,
-  "Remove OpenFrame AI" confirmation, and the altered-engine copy check. Answers, Change Sets apply, reject and undo,
+  "Remove Straft AI" confirmation, and the altered-engine copy check. Answers, Change Sets apply, reject and undo,
   the download, offline use and crash-safe apply pass.
 - **Relaunch and timing (specs 04, 21, 25, 31, 41, 42):** six scenarios that relaunch the app or wait on a field under
   a load of four parallel runners did not finish in time; no crash report was written for any of them.

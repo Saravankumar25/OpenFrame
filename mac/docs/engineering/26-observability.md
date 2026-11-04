@@ -2,7 +2,7 @@
 
 > **Status legend:** ✅ implemented · 📋 planned · ⛔ blocked on an open decision.
 > Source: `apps/desktop/src-tauri/src/lib.rs` (`init_logging`, `of_invoke` timing),
-> `crates/openframe-security/src/lib.rs` (`redact`), `openframe-application` (`tracing` calls).
+> `crates/straft-security/src/lib.rs` (`redact`), `straft-application` (`tracing` calls).
 
 ## 1. Principles
 
@@ -21,11 +21,11 @@
 
 | Property | Value |
 |---|---|
-| Location | `%LOCALAPPDATA%\OpenFrame\logs\openframe.YYYY-MM-DD.log` |
+| Location | `%LOCALAPPDATA%\Straft\logs\straft.YYYY-MM-DD.log` |
 | Format | JSON lines (`tracing-subscriber` JSON formatter): `timestamp`, `level`, `target`, `fields`, `message` |
 | Rotation / retention | Daily rotation, **14 files** kept (`tracing-appender` rolling builder) |
 | Writer | Non-blocking background writer. The guard is held for the process lifetime and flushed on exit. |
-| Level control | `OPENFRAME_LOG` env var, `EnvFilter` syntax, default `info` (e.g. `OPENFRAME_LOG=debug`, `info,openframe_application=debug`) |
+| Level control | `STRAFT_LOG` env var, `EnvFilter` syntax, default `info` (e.g. `STRAFT_LOG=debug`, `info,straft_application=debug`) |
 | Open from the app | `of_reveal_path { kind: "logs" }` reveals the folder in Explorer |
 
 **What is logged (info):** startup with app version; operations that **failed** (`op`, `code`, `ms`); operations
@@ -58,7 +58,7 @@ The Security spec leaves crash-report consent unspecified (digest §26 item 6), 
 collection service as an open decision. Until both are decided:
 
 - **No crash report is ever transmitted.** Native crashes (outside Rust panics) are handled by Windows Error
-  Reporting as for any app. OpenFrame does not configure WER upload.
+  Reporting as for any app. Straft Studio does not configure WER upload.
 - If adopted later: off by default; explicit per-install consent in settings with a preview of exactly what is sent;
   a minidump/stack trace only, with no project content and no file paths beyond redacted forms; a random per-install
   id that can be reset; documented retention. This needs an ADR and a privacy review first.

@@ -1,9 +1,9 @@
-# OpenFrame Studio launch readiness register
+# Straft Studio launch readiness register
 
 > **Current decisions (2026-10-15).** Chapter 3 material; read it when the Chapter 3 plan is written. Rows that assume bundled AI models, a processor-only engine, a Tauri Mac shell or a team password are replaced by [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md), [ADR-0029](../adr/ADR-0029-gpu-acceleration.md), [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) and [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md); the team password gate itself was removed on 2026-10-27 (owner decision).
 
 > **What this is.** The register of operations, legal, commerce, security, support and release requirements for taking
-> OpenFrame Studio from codebase to a launched, supportable product. Product feature state lives in the
+> Straft Studio from codebase to a launched, supportable product. Product feature state lives in the
 > [feature status document](../implementation/feature-status.md). Build order and the Store gate live in the
 > [build plan](../implementation/masterplan.md). Build plan items cite rows of this register by key (for example `COMM-001`).
 >
@@ -18,13 +18,13 @@
 > The version of this register from before the restructure is kept at
 > launch-register-before-restructure.
 
-**Purpose:** the single execution control document for taking OpenFrame Studio from codebase to a commercially launchable, secure, supportable and maintainable desktop product under the umbrella company.
+**Purpose:** the single execution control document for taking Straft Studio from codebase to a commercially launchable, secure, supportable and maintainable desktop product under the umbrella company.
 
 **How the register is organised:** every requirement appears once, in the requirement register. Reusable quality gates are defined once and referenced by name. Operational runbooks and final audits do not restate every requirement.
 
 **A checkbox is never evidence.** An item is complete only when its required state and objective evidence exist.
 
-**Baseline:** `Saravankumar25/OpenFrame` / `main` / `d30b5889ab5edf9f69d60f8e6d600cb11d4921a0`. The supplied completion plan recommends a dependency-aware strategy that preserves the durable core and reconciles old and new requirements by module.
+**Baseline:** `Saravankumar25/StraftStudio` / `main` / `d30b5889ab5edf9f69d60f8e6d600cb11d4921a0`. The supplied completion plan recommends a dependency-aware strategy that preserves the durable core and reconciles old and new requirements by module.
 
 ---
 
@@ -691,7 +691,7 @@ This section is specific to the screenplay product. It does not repeat the gener
 - [ ] Title-page information is preserved where supported.
 - [ ] Revisions are preserved where supported.
 - [ ] Unknown constructs never silently become unrelated content.
-- [ ] Exported FDX can be re-imported into OpenFrame for round-trip verification.
+- [ ] Exported FDX can be re-imported into Straft Studio for round-trip verification.
 - [ ] Representative fixtures cover dialogue-heavy, action-heavy, multilingual, revised, numbered, custom-element and long-dialogue scripts.
 
 ## Fountain / DOCX / PDF
@@ -702,10 +702,10 @@ This section is specific to the screenplay product. It does not repeat the gener
 - [ ] Original PDF source remains untouched during import.
 
 ## Screenplay output branding
-- [ ] Screenplay PDF has no unwanted OpenFrame branding.
-- [ ] FDX has no unwanted OpenFrame branding.
-- [ ] Fountain has no unwanted OpenFrame branding.
-- [ ] Screenplay DOCX has no unwanted OpenFrame branding.
+- [ ] Screenplay PDF has no unwanted Straft Studio branding.
+- [ ] FDX has no unwanted Straft Studio branding.
+- [ ] Fountain has no unwanted Straft Studio branding.
+- [ ] Screenplay DOCX has no unwanted Straft Studio branding.
 
 ---
 
@@ -799,7 +799,7 @@ The supplied production-reference material indicates that a useful indie call sh
 - [ ] The product does not imply full studio accounting capabilities it does not provide.
 
 ## Production-output branding
-- [ ] Call-sheet PDF may use subtle OpenFrame branding according to the approved export policy.
+- [ ] Call-sheet PDF may use subtle Straft Studio branding according to the approved export policy.
 - [ ] Schedule PDF/spreadsheet may use subtle branding according to the approved export policy.
 - [ ] Breakdown/production/DOOD/budget reports follow the same approved branding policy.
 - [ ] Branding never modifies customer-owned source files merely to add product identity.
@@ -808,7 +808,7 @@ The supplied production-reference material indicates that a useful indie call sh
 
 # Appearance and theme acceptance
 
-The revised specification treats the theme system as an **application appearance layer**, not a content-system rewrite. The current OpenFrame appearance remains the factory/default appearance.
+The revised specification treats the theme system as an **application appearance layer**, not a content-system rewrite. The current Straft Studio appearance remains the factory/default appearance.
 
 ## Theme contract
 - [ ] Theme changes appearance only.
@@ -819,7 +819,7 @@ The revised specification treats the theme system as an **application appearance
 - [ ] Theme does not change exports.
 - [ ] Theme does not change shortcuts or permissions.
 - [ ] Theme does not change file paths or project identity.
-- [ ] A user who never visits Appearance Settings sees the canonical OpenFrame default.
+- [ ] A user who never visits Appearance Settings sees the canonical Straft Studio default.
 
 ## Mode / theme separation
 - [ ] Mode supports Light.
@@ -827,7 +827,7 @@ The revised specification treats the theme system as an **application appearance
 - [ ] Mode supports System.
 - [ ] Theme and Mode are separate settings.
 - [ ] System mode follows OS appearance changes without restart where supported.
-- [ ] Invalid stored theme data falls back safely to OpenFrame Default.
+- [ ] Invalid stored theme data falls back safely to Straft Default.
 
 ## Semantic tokens
 - [ ] Background.
@@ -846,7 +846,7 @@ The revised specification treats the theme system as an **application appearance
 - [ ] New themes do not require screen-by-screen component edits.
 
 ## Built-in theme registry
-- [ ] OpenFrame Default.
+- [ ] Straft Default.
 - [ ] Graphite.
 - [ ] Deep Navy.
 - [ ] Teal & Ember.

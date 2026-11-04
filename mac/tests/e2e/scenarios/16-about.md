@@ -15,7 +15,7 @@ Before: an empty data folder of its own. The app is the internal test build.
 1. Do the first launch: type 'E2E Tester' as the name, click Continue, click Create Project, type 'Quiet Pier' as the title, click Create.
 2. Ask the core for the app version. Check: it starts with three numbers, like "1.2.3".
 3. Open the project menu and choose Project settings.
-4. Check: the About card shows "About OpenFrame Studio".
+4. Check: the About card shows "About Straft Studio".
 5. Check: the About card shows "Version " followed by the same version.
 6. Check: the About card shows "Internal build, not for sale."
 7. Check: the About card shows no price.
@@ -26,7 +26,7 @@ Before: an empty data folder of its own. The app is the internal test build.
 
 1. Set the licence to Microsoft Store, trial active, 7 days left.
 2. Open the project menu and choose Project settings.
-3. Check: the About card shows "About OpenFrame Studio" and a version.
+3. Check: the About card shows "About Straft Studio" and a version.
 4. Check: the About card does not show "Internal build".
 5. Check: the About card shows no price.
 6. Check: the screen is quiet.

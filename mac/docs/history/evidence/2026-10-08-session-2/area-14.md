@@ -56,7 +56,7 @@ Hidden: `schedule.set_dood_override` (manual knowledge about holds, travel and f
 
 ## 4. Commands run
 
-All Rust commands ran with `CARGO_TARGET_DIR=C:\OpenFrame\.build-cache\target-area14` and `RUSTC_WRAPPER=sccache`
+All Rust commands ran with `CARGO_TARGET_DIR=C:\Straft\.build-cache\target-area14` and `RUSTC_WRAPPER=sccache`
 (the lead's build folder change of 2026-10-08). Earlier runs against the shared `target` folder are discarded:
 cargo reused crates and test binaries compiled from other worktrees, which produced false failures and could
 produce false passes.
@@ -69,9 +69,9 @@ Code under test: commit `020e9f0` (this file is committed after it). Rust comman
 | `cargo fmt --all -- --check` | PASS |
 | `cargo clippy --workspace --all-targets -- -D warnings` (also inside `npm run lint`) | PASS |
 | `cargo test --workspace --no-fail-fast -- --test-threads=4` | 1902 passed, 3 failed, 9 ignored (91 test binaries); the 3 failures are below |
-| `cargo test -p openframe-application --test failure_injection -- --test-threads=1` (rerun alone) | PASS, 16 passed |
-| `cargo test -p openframe-application --test forced_kill -- --test-threads=1` (rerun alone) | PASS, 5 passed, 1 ignored |
-| `cargo test -p openframe-ai --test soak_sidecar -- --test-threads=1` (rerun alone) | FAIL, 2 passed, 1 failed (see below) |
+| `cargo test -p straft-application --test failure_injection -- --test-threads=1` (rerun alone) | PASS, 16 passed |
+| `cargo test -p straft-application --test forced_kill -- --test-threads=1` (rerun alone) | PASS, 5 passed, 1 ignored |
+| `cargo test -p straft-ai --test soak_sidecar -- --test-threads=1` (rerun alone) | FAIL, 2 passed, 1 failed (see below) |
 | `npm run typecheck` | PASS |
 | `npm run lint` (clippy and `eslint --max-warnings 0`) | PASS |
 | `npm run test:web` | PASS, 46 files, 502 tests |
@@ -96,7 +96,7 @@ schedule:
   worktree's run held the same drive letter. It passes when rerun alone.
 - `forced_kill::m1_03_forced_kill_during_migration_leaves_a_consistent_database` failed with "the migration worker
   completed no cycle in 700 ms" while the machine was swapping. It passes when rerun alone.
-- `soak_sidecar::m1_08_sidecar_crash_restart_and_cancel_loop` (crate `openframe-ai`, unchanged by this branch)
+- `soak_sidecar::m1_08_sidecar_crash_restart_and_cancel_loop` (crate `straft-ai`, unchanged by this branch)
   counts processes by the test binary's image name across the whole machine. Other worktrees run a binary with
   the same name at the same time, so the count moves (expected 3, found 1). Result: FAIL here; it needs a quiet
   machine to confirm, and its process count should be scoped to the test's own children (a separate fix).

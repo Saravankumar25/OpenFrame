@@ -117,7 +117,7 @@ describe("home", () => {
       assert.equal(list.length, 2, `projects after relaunch: ${list}`);
       assert.ok(list.includes("Open Harbour Lights Redux, Feature Film, Writing"), `renamed project missing: ${list}`);
       await openProject(browser, "Harbour Lights Redux");
-      await browser.waitUntil(async () => (await browser.execute(() => document.title)) === "Harbour Lights Redux - OpenFrame Studio", { timeout: 10_000 });
+      await browser.waitUntil(async () => (await browser.execute(() => document.title)) === "Harbour Lights Redux - Straft Studio", { timeout: 10_000 });
       assert.equal(await statusChip(), "Status: Writing. Change status");
       await assertQuiet(browser, "reopened project home");
       await closeProject(browser);

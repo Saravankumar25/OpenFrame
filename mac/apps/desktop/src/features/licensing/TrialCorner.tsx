@@ -39,7 +39,7 @@ export function TrialCorner() {
       const message = await buyFullVersion(client);
       if (message) toast.info(message);
     } catch (e) {
-      toast.error(failureText(e, "OpenFrame could not start the purchase right now. Everything keeps working."));
+      toast.error(failureText(e, "Straft Studio could not start the purchase right now. Everything keeps working."));
     } finally {
       setBusy(false);
     }

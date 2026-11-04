@@ -48,7 +48,7 @@ function toOpError(op: string, raw: unknown): OpError {
   }
   return new OpError(op, {
     code: "internal.unexpected",
-    message: "Something went wrong inside OpenFrame. Your project was not changed.",
+    message: "Something went wrong inside Straft Studio. Your project was not changed.",
     detail: raw instanceof Error ? raw.message : String(raw),
     retryable: false,
   });

@@ -2,31 +2,31 @@
 # Captures every screen of the real Mac app, in the default theme in Light mode and in Dark mode, and builds the
 # MacHTML pages from the pictures and the accessibility trees.
 #
-# Usage: apps/macos/E2E/capture.sh <OpenFrame Studio.app | executable> [MacHTML output folder]
+# Usage: apps/macos/E2E/capture.sh <Straft Studio.app | executable> [MacHTML output folder]
 # Step 1 runs the capture tour (the zz-capture scenarios of the end-to-end driver) twice against the app, once per
-# appearance, with run.sh, or with run-parallel.sh when OPENFRAME_E2E_PARALLEL is set (that many runners side by side;
+# appearance, with run.sh, or with run-parallel.sh when STRAFT_E2E_PARALLEL is set (that many runners side by side;
 # the run folder then holds shard-k folders). Each scenario starts by setting Settings, Appearance, Mode, then writes a
 # picture and an accessibility list per screen.
 # Step 2 builds MacHTML/light, MacHTML/dark, index.html and README.md (scripts/mac-html/build-mac-html.mjs).
 # Step 3 renders every page in WebKit, compares it with its picture and looks for every label and value of the tree in
 # the page (scripts/mac-html/check-pages.swift); the tables go at the end of README.md.
-# OPENFRAME_CAPTURE_SKIP_RUN=1 with OPENFRAME_CAPTURE_DIR=<an earlier capture folder holding light/ and dark/> only
+# STRAFT_CAPTURE_SKIP_RUN=1 with STRAFT_CAPTURE_DIR=<an earlier capture folder holding light/ and dark/> only
 # rebuilds and checks the pages.
-# Needs: the driver library (swift build --product OpenFrameE2EDriver), node and the Swift compiler.
+# Needs: the driver library (swift build --product StraftE2EDriver), node and the Swift compiler.
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="${OPENFRAME_ROOT:-$(cd "$HERE/../../.." && pwd)}"
+ROOT="${STRAFT_ROOT:-$(cd "$HERE/../../.." && pwd)}"
 APP="${1:?usage: capture.sh <app or executable> [MacHTML folder]}"
 OUT="${2:-$ROOT/MacHTML}"
-BASE="${OPENFRAME_CAPTURE_DIR:-$ROOT/release-out/capture/$(date +%Y%m%d-%H%M%S)}"
+BASE="${STRAFT_CAPTURE_DIR:-$ROOT/release-out/capture/$(date +%Y%m%d-%H%M%S)}"
 RUNNER="$HERE/run.sh"
-[[ -n "${OPENFRAME_E2E_PARALLEL:-}" ]] && RUNNER="$HERE/run-parallel.sh"
+[[ -n "${STRAFT_E2E_PARALLEL:-}" ]] && RUNNER="$HERE/run-parallel.sh"
 for MODE in light dark; do
-  [[ "${OPENFRAME_CAPTURE_SKIP_RUN:-}" == 1 ]] && continue
-  export OPENFRAME_CAPTURE_MODE="$MODE"
-  export OPENFRAME_E2E_RUN_DIR="$BASE/$MODE"
-  mkdir -p "$OPENFRAME_E2E_RUN_DIR"
-  echo "Capturing the $MODE pass into $OPENFRAME_E2E_RUN_DIR with $(basename "$RUNNER")"
+  [[ "${STRAFT_CAPTURE_SKIP_RUN:-}" == 1 ]] && continue
+  export STRAFT_CAPTURE_MODE="$MODE"
+  export STRAFT_E2E_RUN_DIR="$BASE/$MODE"
+  mkdir -p "$STRAFT_E2E_RUN_DIR"
+  echo "Capturing the $MODE pass into $STRAFT_E2E_RUN_DIR with $(basename "$RUNNER")"
   "$RUNNER" "$APP" "zz-capture/" || echo "Some tour scenarios failed in the $MODE pass; the pages that were captured are still built."
 done
 COMMIT="$(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"

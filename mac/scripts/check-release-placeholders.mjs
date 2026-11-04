@@ -20,7 +20,7 @@ export const PLACEHOLDER = /REPLACE_WITH_[A-Z0-9_]+/g;
 /** Text files of the store build. Directories are walked; `exts` limits what is read in them. */
 export const SCANNED = [
   { dir: "apps/macos/packaging", exts: [".entitlements", ".plist", ".json", ".xcprivacy", ".storekit"] },
-  { dir: "apps/macos/Sources/OpenFrameUI/Store", exts: [".swift"] },
+  { dir: "apps/macos/Sources/StraftUI/Store", exts: [".swift"] },
   { file: ".github/workflows/release.yml" },
   { file: "packaging/msix/store.config.json", windows: true },
 ];

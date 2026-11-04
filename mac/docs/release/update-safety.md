@@ -1,6 +1,6 @@
 # Update safety on the Mac App Store
 
-Owner package 05, section B (`OpenFrame_Release_Package/05_UPDATE_SAFETY_AND_STANDARDS.md`). The question: when a new version
+Owner package 05, section B (`Straft_Release_Package/05_UPDATE_SAFETY_AND_STANDARDS.md`). The question: when a new version
 reaches the Mac App Store and a person updates, does the app stay intact and does their data stay intact? Status as of
 2026-11-03. "Gate" means a script or test that fails the build; "manual" means a written step a person runs.
 
@@ -14,7 +14,7 @@ reaches the Mac App Store and a person updates, does the app stay intact and doe
 | U6 Update while the app runs | The store closes the app; the close keeps every edit | Done in the core; Mac end to end test in progress | `applicationShouldTerminate` answers `.terminateLater`, runs `flushAll`, then `close_current` (checkpoint, marker cleared). `forced_kill.rs` `m1_03_*` proves a kill during a save loses no committed edit and offers recovery. A Mac end to end variant is being added separately |
 | U7 AI engine and models | Update never removes downloaded models or breaks the AI | Done in code; real signed build not yet run | The engine ships in the app. Models live under app data (`models/`). Free space is checked before a download (`model_download.rs`, `free_bytes`). Downloads resume (`fetch.rs`, test `an_interrupted_download_resumes_where_it_stopped`). No code deletes models on update: `sweep_sets` removes only inactive sets. The store build checks the engine by code signature (`code_signature.rs`, `engines.rs` tests) |
 | U8 Derived data never blocks opening | A changed search index never delays opening a project | Done | `project.rs` `start_search_rebuild`: the rebuild runs on a background thread after open. `SEARCH_INDEX_VERSION` (kept per project in `sys_settings`) triggers a rebuild when the indexer changes without a migration. Test `the_search_index_rebuilds_after_open_when_the_indexer_version_changes`. The thread emits the module event `search` / `indexed` when it ends |
-| U9 Uninstall wording | People know to back up the root folder | Done | `LicenceRules.dataPoints` tells the person to back up the root folder, and before deleting OpenFrame Studio from the Mac. Nothing is promised about the container after deletion |
+| U9 Uninstall wording | People know to back up the root folder | Done | `LicenceRules.dataPoints` tells the person to back up the root folder, and before deleting Straft Studio from the Mac. Nothing is promised about the container after deletion |
 | U10 Staged rollout | A bad update reaches few people first | Owner step | Turn on phased release in App Store Connect if it is offered for the Mac. A store update cannot be downgraded: a bad update is fixed forward. Keep `check-migrations` and the update simulation as release gates |
 | U11 No time bombs | Nothing expires because of a build date or a year | Done | Scan of 2026-11-03 found no behaviour that depends on the build date, install date or a fixed year |
 
@@ -25,7 +25,7 @@ Run before each submission, on a clean Mac (or a new user account), with build N
 1. Install build N. Open it, finish the first-run steps (library folder, name). Note the folder chosen.
 2. Create a project with real content: a screenplay with a few scenes, two story characters, a budget line, a note, one
    attached file. Change the appearance. Close one project and keep a second one open.
-3. Download the AI models (Settings, OpenFrame AI) and ask one question. Confirm it answers.
+3. Download the AI models (Settings, Straft AI) and ask one question. Confirm it answers.
 4. Let the trial run, or buy with a StoreKit test account. Note the licence state on the About screen.
 5. Quit the app while a project is open and an edit was typed a second ago.
 6. Install build N+1 over build N (TestFlight update, or the Mac App Store update). Do not delete anything.
@@ -42,11 +42,11 @@ Run before each submission, on a clean Mac (or a new user account), with build N
 2026-11-03, internal builds on the owner's M1: `apps/macos/E2E/update-check.sh` from build 183 (commit of 2026-10-28) to the installed build
 225 (`a46790ac`), 4 of 4: Story page text, saved text after a kill, Command-Q with a sheet open, every piece of work after a kill. The same
 install on the owner's real data: `app.sqlite` went from version 9 to 11, integrity check ok, 2 of 2 recents and their folders kept, models
-kept, process up, no warnings or errors logged. The bundle identifier changed from `studio.openframe.mac` to `app.openframestudio.studio`,
-so preferences macOS keeps per identifier start fresh once. The manual run above on a store build has not been done.
+kept, process up, no warnings or errors logged. The bundle identifier differed between those two builds (internal builds before the
+rename of 2026-11-04 used an earlier one; ADR-0042), so preferences macOS keeps per identifier started fresh once. The manual run above on a store build has not been done.
 
 ## Adding a release fixture
 
 After a release ships, copy `generate_release_1_fixture` to `generate_release_N_fixture`, run it once on that release's build,
 commit `tests/fixtures/release-N/`, and add a test that opens it. Never change an older fixture. The README in
-`crates/openframe-application/tests/fixtures/release-1/` explains the layout.
+`crates/straft-application/tests/fixtures/release-1/` explains the layout.
