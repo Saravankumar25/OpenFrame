@@ -7,6 +7,7 @@ import fs from 'node:fs'; import path from 'node:path'; import sharp from 'sharp
 import { chromium } from 'playwright'; import { pathToFileURL } from 'node:url';
 import { SIMS, SIM_AREA, panelCss, settingsCss, TOKENS } from './sim-mac-screens.mjs';
 import { FREE_SIMS, freeCss, ACCENT } from './sim-mac-free.mjs';
+import { rebrand, rebrandDeep } from '../src/lib/brand.mjs'; // product name as on the website (the base pages are already renamed)
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const SHOTS = path.join(ROOT, '.cache', 'shots'), PAGES = path.join(SHOTS, 'pages', 'mac'), MANIFEST = path.join(SHOTS, 'manifest.json');
@@ -88,7 +89,7 @@ async function build(page, sim, theme) {
   fs.writeFileSync(path.join(dir, `${name}.css`), fs.readFileSync(path.join(dir, `${stem}.css`), 'utf8').replace(re, newPng));
   html = html.replace(`href="${stem}.css"`, `href="${name}.css"`).replace(/<title>.*?<\/title>/, `<title>${sim.title.replace(/&/g, '&amp;')}</title>`);
   html = html.replace('</head>', `<style>${css}</style></head>`).replace(/<\/div><\/div><\/body>/, `${body}</div></div></body>`);
-  fs.writeFileSync(path.join(dir, `${name}.html`), html);
+  fs.writeFileSync(path.join(dir, `${name}.html`), rebrand(html));
 }
 
 const browser = await chromium.launch();
@@ -100,7 +101,7 @@ for (const sim of [...SIMS, ...FREE_SIMS.map((f) => ({ ...f, kind: 'free' }))]) 
   const base = byName.get(sim.base), mf = manifest.mac[sim.base];
   if (!mf) throw new Error(`no manifest entry for ${sim.base}`);
   manifest.mac[sim.name] = { ...mf, file: `sim-${sim.name}.html`, focus: 'panel', sidebar: 'kept', sim: true };
-  records.push({ n: String(++n), name: sim.name, file: `sim-${sim.name}.html`, title: sim.title, area: sim.kind === 'free' ? base.area : SIM_AREA, picture: `assets/sim-${sim.name}.png`, width: base.width, height: base.height, texts: sim.texts, sim: true });
+  records.push({ n: String(++n), name: sim.name, file: `sim-${sim.name}.html`, title: rebrand(sim.title), area: sim.kind === 'free' ? base.area : SIM_AREA, picture: `assets/sim-${sim.name}.png`, width: base.width, height: base.height, texts: rebrandDeep(sim.texts), sim: true });
 }
 await browser.close();
 fs.writeFileSync(MANIFEST + '.tmp', JSON.stringify(manifest, null, 1)); fs.renameSync(MANIFEST + '.tmp', MANIFEST);
