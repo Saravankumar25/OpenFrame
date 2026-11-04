@@ -175,8 +175,8 @@ test('security headers: HSTS without preload, strict CSP with the boot hash and 
   const dir = (n) => csp.split('; ').find((d) => d.startsWith(n + ' ')) ?? '';
   const boot = crypto.createHash('sha256').update(BOOT).digest('base64');
   assert.ok(dir('script-src').includes(`'sha256-${boot}'`), 'boot script hash');
-  assert.equal(dir('script-src'), `script-src 'self' 'sha256-${boot}' https://static.cloudflareinsights.com`);
-  assert.equal(dir('connect-src'), "connect-src 'self' https://cloudflareinsights.com");
+  assert.equal(dir('script-src'), `script-src 'self' 'sha256-${boot}'`);
+  assert.equal(dir('connect-src'), "connect-src 'self'");
   for (const d of ["default-src 'self'", "style-src 'self'", "frame-src 'self'", "frame-ancestors 'none'", "object-src 'none'", "base-uri 'self'", "form-action 'none'", 'upgrade-insecure-requests']) assert.ok(csp.split('; ').includes(d), d);
   assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval|\*|http:/);
   assert.equal(get('X-Content-Type-Options'), 'nosniff');
