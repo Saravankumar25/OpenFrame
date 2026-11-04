@@ -1593,6 +1593,8 @@ The assistant should not rely on model memory when an authoritative application 
 
 ### 42.4 Scope selector
 
+> **Superseded for the Mac app (ADR-0041, 2026-11-03).** The assistant has no Scope selector there and no Whole Project: the person picks up to 3 sections before asking. The Windows tree follows; until then the text below describes Windows.
+
 Supported scopes include:
 
 - Current selection

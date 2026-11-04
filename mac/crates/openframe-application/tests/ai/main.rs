@@ -17,6 +17,7 @@ mod ai_power;
 mod ai_real_model;
 mod ai_retrieval;
 mod ai_retrieval_perf;
+mod ai_sections;
 mod ai_stale_proposals;
 mod ai_tool_coverage;
 mod ai_toolbox;

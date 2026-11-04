@@ -1,0 +1,10 @@
+{
+  "$comment": "Names that must never change after the first App Store release (package file 05, U3). A new bundle id or access group is a different app with an empty container and no purchases. scripts/tests/store-identity.test.mjs fails when the code drifts from this file. The Team ID lives in the placeholders of GuardKeychain.swift and the store entitlements, not here.",
+  "bundleId": "app.openframestudio.studio",
+  "trialProductId": "app.openframestudio.studio.trial7",
+  "lifetimeProductId": "app.openframestudio.studio.lifetime",
+  "keychainGroupSuffix": "app.openframestudio.studio",
+  "keychainService": "app.openframestudio.studio.trial-guard",
+  "dataRootName": "OpenFrame",
+  "lastUploadedBuild": 0
+}

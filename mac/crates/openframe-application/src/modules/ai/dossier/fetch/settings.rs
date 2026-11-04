@@ -5,9 +5,10 @@
 use openframe_domain::AppResult;
 
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
-use crate::modules::ai::dossier::words::clip;
+use crate::modules::ai::dossier::words::{Msg, clip};
 use crate::modules::ai::dossier::{Fact, P_HIGH, P_MID};
 use crate::modules::ai::index::Resolved;
+use crate::modules::ai::knowledge;
 use crate::modules::ai::turn::TurnRead;
 use crate::modules::appearance::{AppearanceMode, state, theme};
 
@@ -18,8 +19,10 @@ pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
 fn fetch(ctx: &FetchCtx<'_>, _read: &TurnRead, _r: &Resolved) -> AppResult<Vec<Fact>> {
     let m = &ctx.m;
     let mut out = Vec::new();
-    let project_words = m.any(&[
-        "project",
+    // The row opens on a word for one of its own fields, or when the product guide has nothing on the
+    // question. "Is my project sent anywhere" is for the guide, and this row holds nothing that answers it.
+    let typed = Msg::new(&ctx.message);
+    let project_words = typed.any(&[
         "title",
         "status",
         "logline",
@@ -27,11 +30,11 @@ fn fetch(ctx: &FetchCtx<'_>, _read: &TurnRead, _r: &Resolved) -> AppResult<Vec<F
         "language",
         "creator",
         "type",
+        "project name",
+        "project settings",
         "members",
-        "roles",
-        "settings",
         "who is on the project",
-    ]);
+    ]) || knowledge::relevant(&ctx.message, 1).is_empty();
     if project_words {
         let row: Option<(String, String, String, String, String, String, String)> = ctx
             .conn

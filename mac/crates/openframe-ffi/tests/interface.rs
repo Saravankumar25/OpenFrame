@@ -46,12 +46,11 @@ fn start(root: &std::path::Path, rec: &Recorder) -> Arc<CoreHandle> {
             isolated_data_root: Some(root.to_string_lossy().into_owned()),
             ai_bundle_dir: None,
             write_logs: false,
-            test_store_response_key_hex: None,
+            test_store_channel: false,
             test_library_setup: false,
             test_ai_deterministic: false,
         },
         Box::new(rec.clone()),
-        None,
         None,
     )
     .expect("core starts on a test folder")

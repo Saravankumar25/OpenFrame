@@ -7,29 +7,28 @@
 //! it came from. Code decides what exists: a thing the project does not hold is listed in
 //! `missing` as a plain statement, never left for the model to guess.
 //!
-//! Order of work:
+//! Only the sections the person picked are read (ADR-0041). Order of work, in `leaves.rs`:
 //!
-//! 1. **Plan** (`registry.rs`): from the answer group and the domains of the read, which fetchers
-//!    run. A fetcher is one entry of the [`FETCHERS`] table: its domain, the answer groups it
-//!    serves, its token cap and the function that reads. Adding an area is one entry.
-//! 2. **Guards** run on the plan (what a fetcher may ask for: `FetchCtx::contacts`) and again on the
-//!    facts (`guard.rs`). A guard cannot be undone by a later step: other people's private notes
-//!    are dropped, contact data only stays for people who may see it, text that carries an
-//!    instruction is marked as data, and a file system path never reaches the facts.
-//! 3. **Fetch**, each fetcher cut to its own cap. When nothing came back for the asked thing, one
-//!    wider round runs (full-text search over the project), then the gap goes to `missing`.
-//! 4. **Cap**: about 1,500 tokens for one-sentence, short and brief answers and 2,500 for a
-//!    paragraph. The lowest priority facts go first; a fact that carries a required value never
-//!    goes.
+//! 1. **The fetchers of the picked leaves** run, and only the kinds of fact each leaf admits pass.
+//!    Nothing is added on the strength of the message's words.
+//! 2. **Guards** run on what a fetcher may ask for (`FetchCtx::contacts`) and again on the facts
+//!    (`guard.rs`). A guard cannot be undone by a later step: other people's private notes are
+//!    dropped, contact data only stays for people who may see it, text that carries an instruction is
+//!    marked as data, and a file system path never reaches the facts.
+//! 3. **Text** found by the search inside each leaf comes in at the lowest priority.
+//! 4. **Cap**: about 1,500 tokens for one-sentence, short and brief answers and 2,500 for a paragraph
+//!    or a long answer, split across the leaves by weight. The lowest priority facts go first; a fact
+//!    that carries a required value never goes.
 //!
 //! Nothing here writes, prompts or checks: the answer stage (`answer`) puts the dossier into the
 //! writer and checks the written answer against it.
 
+mod asked;
 mod ctx;
-mod fetch;
+pub(super) mod fetch;
 pub(crate) mod guard;
+mod leaves;
 mod names;
-mod registry;
 #[cfg(test)]
 mod tests;
 mod words;
@@ -42,17 +41,27 @@ use serde::{Deserialize, Serialize};
 
 use super::index::{EntityIndex, Focus, Resolved};
 use super::queries;
-use super::turn::{self, Group, LengthClass, TurnRead};
+use super::turn::{Group, LengthClass, TurnRead};
 use crate::core::AppCore;
 
 pub use ctx::FetchCtx;
-pub use registry::{FETCHERS, Fetcher};
+pub use leaves::{LeafRead, LeafTokens, OutsideName, probe, split_budget};
+
+/// One way of reading the project.
+pub type FetchFn = fn(&FetchCtx<'_>, &TurnRead, &Resolved) -> Vec<Fact>;
 
 /// How much a fact matters when the dossier is over its cap. A fact with a required value is never
 /// cut whatever its priority.
 pub const P_HIGH: u8 = 80;
+/// A row the words of the question picked: the project holds what is asked, so "could not find" is wrong.
+pub const P_PICKED: u8 = P_HIGH + 5;
 pub const P_MID: u8 = 50;
 pub const P_LOW: u8 = 20;
+
+/// Chat and change requests need no facts; the rest read the project.
+pub fn wants_facts(group: Group) -> bool {
+    !matches!(group, Group::Chat | Group::Change)
+}
 
 /// The kind that carries a statement code has decided ("no character called Marcus"); `build` moves
 /// these to [`Dossier::missing`].
@@ -190,6 +199,10 @@ pub struct Dossier {
     /// What the message names once the scene on screen, the focus and the default screenplay are
     /// counted in. `resolved.ambiguous` is the one question left when nothing settles it.
     pub resolved: Resolved,
+    /// Names the message holds that no picked section can answer about, for the pointer.
+    pub outside: Vec<OutsideName>,
+    /// How many tokens each picked section took, for the trace.
+    pub leaf_tokens: Vec<LeafTokens>,
 }
 
 /// What the trace keeps: numbers only, never the text.
@@ -233,6 +246,7 @@ impl Dossier {
 }
 
 /// The input of the stage.
+#[derive(Clone, Copy)]
 pub struct Input<'a> {
     pub conn: &'a Connection,
     pub actor: &'a Actor,
@@ -242,20 +256,19 @@ pub struct Input<'a> {
     pub message: &'a str,
     pub read: &'a TurnRead,
     pub resolved: &'a Resolved,
-    /// The scene the person has selected in the app, when one is: the scene "it" and "this" mean when
-    /// the message names no other.
-    pub selected_scene: Option<&'a str>,
     /// What the conversation is about once this message is part of it. A correction that names
     /// nothing ("I asked you to explain, not open") is about this.
     pub focus: Option<&'a Focus>,
     /// The person's previous message, which a correction repeats the question of.
     pub previous_message: Option<&'a str>,
+    /// The sections the person picked, and what the text search found in them.
+    pub sections: &'a LeafRead<'a>,
 }
 
 /// The most a dossier may hold, in tokens.
 pub fn cap_tokens(class: LengthClass) -> usize {
     match class {
-        LengthClass::Paragraph => 2_500,
+        LengthClass::Paragraph | LengthClass::Narrative | LengthClass::Story => 2_500,
         _ => 1_500,
     }
 }
@@ -270,96 +283,7 @@ pub fn try_build(input: &Input<'_>) -> Option<Dossier> {
 /// Build the dossier of one message. Never fails and never blocks: a fetcher that cannot read its
 /// tables adds nothing and logs a warning.
 pub fn build(input: &Input<'_>) -> Dossier {
-    let ctx = FetchCtx::new(input);
-    let (resolved, mut facts) = names::effective(&ctx, input);
-    // The names may have grown (the scene on screen, the focus): so do the domains.
-    let mut read = input.read.clone();
-    for d in turn::domains_for(&ctx.message, &resolved, read.answer_type) {
-        if !read.domains.contains(&d) {
-            read.domains.push(d);
-        }
-    }
-    let read = &read;
-    if registry::wants_facts(read.group) {
-        for f in registry::plan(read, &resolved, &ctx.message) {
-            let mut got = (f.run)(&ctx, read, &resolved);
-            trim(&mut got, f.cap_tokens);
-            facts.extend(got);
-        }
-        // The project's bare title is orientation, not an answer: "what happens at the bus stop"
-        // with nothing else found still searches the text.
-        let orientation =
-            |f: &Fact| f.kind == "Assumed" || (f.kind == "Project" && f.field("logline").is_none());
-        let nothing = !facts.iter().any(|f| !f.is_missing() && !orientation(f))
-            && !facts.iter().any(Fact::is_missing);
-        // One wider round when the plan found nothing for the asked thing: full-text search of the
-        // project. After that the gap is stated, not guessed.
-        if nothing && read.group != Group::Help {
-            facts.extend(fetch::passages(&ctx, fetch::WIDE));
-        } else if read.group == Group::Facts
-            && matches!(
-                read.answer_type,
-                turn::AnswerType::Lookup | turn::AnswerType::List | turn::AnswerType::Count
-            )
-            && !facts
-                .iter()
-                .any(|f| !f.requires.is_empty() || f.is_missing())
-        {
-            // A detail question ("how much does Babu offer Anjali") is answered by the text; no
-            // fetched fact carries a value to state, so the best matching passages go in.
-            facts.extend(fetch::passages(&ctx, 3));
-        }
-    }
-    finish(&ctx, input, &resolved, facts)
-}
-
-fn finish(
-    ctx: &FetchCtx<'_>,
-    input: &Input<'_>,
-    resolved: &Resolved,
-    mut facts: Vec<Fact>,
-) -> Dossier {
-    let mut missing: Vec<String> = resolved.not_found.clone();
-    let notes_on_guard = guard::apply(&ctx.guard, &mut facts, &mut missing);
-    let (gaps, mut facts): (Vec<Fact>, Vec<Fact>) = facts.into_iter().partition(Fact::is_missing);
-    for g in gaps {
-        if let Some(s) = g.sentence
-            && !missing.contains(&s)
-        {
-            missing.push(s);
-        }
-    }
-    dedupe(&mut facts);
-    if !facts.iter().any(|f| !f.is_missing())
-        && missing.is_empty()
-        && registry::wants_facts(input.read.group)
-    {
-        missing.push(queries::could_not_find(
-            &format!(
-                "anything that matches \u{201C}{}\u{201D}",
-                words::clip(ctx.message.trim(), 80)
-            ),
-            queries::EVERYWHERE,
-        ));
-    }
-    trim(&mut facts, cap_tokens(input.read.length_class));
-    let mut required: Vec<String> = Vec::new();
-    for f in &facts {
-        for r in &f.requires {
-            if !required.contains(r) {
-                required.push(r.clone());
-            }
-        }
-    }
-    let tokens_estimate = facts.iter().map(Fact::tokens).sum();
-    Dossier {
-        facts,
-        required,
-        missing,
-        notes_on_guard,
-        tokens_estimate,
-        resolved: resolved.clone(),
-    }
+    leaves::build(input, input.sections)
 }
 
 /// The same line twice adds nothing; its required values are kept.

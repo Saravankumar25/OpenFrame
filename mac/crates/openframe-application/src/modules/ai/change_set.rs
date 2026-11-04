@@ -35,15 +35,13 @@ use ts_rs::TS;
 
 use super::catalog;
 use super::records::{ai_meta, set_result_status};
-use super::scope::{self, AiScopeArgs, AiScopeKind};
+use super::scope::ResolvedScope;
 use super::toolbox;
 use super::tools::ToolCtx;
 use super::types::*;
 use crate::core::AppCore;
 use crate::registry::OpKind;
 use crate::store::{MutationMeta, Store, Tx};
-
-pub const STALE_MESSAGE: &str = "The project changed after this suggestion was prepared. Review is required before applying it.";
 
 /// Most parts one composite Change Set may combine.
 pub const MAX_PARTS: usize = 6;
@@ -68,7 +66,7 @@ pub fn require_human(actor: &Actor) -> AppResult<()> {
         ActorOrigin::Local => Ok(()),
         _ => Err(AppError::new(
             "permission.denied",
-            "Only you can review proposed changes, from the AI Assistant panel.",
+            "Only you can review proposed changes, from OpenFrame AI panel.",
         )
         .with_detail("change set review requires a local user action")),
     }
@@ -223,7 +221,7 @@ pub fn insert(
 /// Create a standalone Change Set (no AI request). Used by callers that build
 /// proposals programmatically; the AI orchestrator uses `insert` inside its own transaction.
 pub fn create(core: &AppCore, actor: &Actor, d: &ChangeSetDraft) -> AppResult<ChangeSetDto> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     let s = core.project()?;
     let id = s
         .store
@@ -915,7 +913,7 @@ pub mod fault {
 /// Rejecting leaves project content unchanged (AI-AC-008).
 pub fn reject(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto> {
     require_human(actor)?;
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     let s = core.project()?;
     let row = s.store.read(|c| load_row(c, actor, id))?;
     if !matches!(row.state.as_str(), "Pending" | "Stale" | "Conflict") {
@@ -943,7 +941,7 @@ pub fn reject(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto
 /// explicit review. Re-checking never applies anything.
 pub fn recheck(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto> {
     require_human(actor)?;
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     let s = core.project()?;
     let row = s.store.read(|c| load_row(c, actor, id))?;
     if !matches!(row.state.as_str(), "Pending" | "Stale" | "Conflict") {
@@ -954,19 +952,7 @@ pub fn recheck(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDt
     }
     let sources = stored_sources(&row.source);
     let rebuilt: AppResult<Vec<ChangeSetDraft>> = s.store.read(|c| {
-        // Proposal builders take no scope-specific context; a neutral scope is enough.
-        let scope = scope::resolve(
-            c,
-            actor,
-            &AiScopeArgs {
-                kind: AiScopeKind::WholeProject,
-                draft_id: None,
-                scene_id: None,
-                selection: Vec::new(),
-                shooting_day_id: None,
-                call_sheet_id: None,
-            },
-        )?;
+        let scope = ResolvedScope::on_current_draft(c)?;
         let ctx = ToolCtx {
             core,
             conn: c,

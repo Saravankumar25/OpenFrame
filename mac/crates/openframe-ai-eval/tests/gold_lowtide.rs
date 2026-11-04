@@ -12,12 +12,22 @@ const SAMPLES: &[&str] = &[
     "example-scene",
     "fdx-interchange-test",
 ];
-const LENGTH_CLASSES: &[&str] = &["one_sentence", "short", "paragraph", "brief"];
+const LENGTH_CLASSES: &[&str] = &[
+    "one_sentence",
+    "short",
+    "paragraph",
+    "brief",
+    "narrative",
+    "story",
+];
 const ANSWER_TYPES: &[&str] = &[
     "lookup",
     "list",
     "count",
     "explain",
+    "describe",
+    "brief",
+    "story",
     "relation",
     "compare",
     "brainstorm",
@@ -113,6 +123,67 @@ fn gold_folder_loads_and_the_lowtide_bench_is_well_formed() {
 }
 
 #[test]
+fn the_section_bench_is_well_formed_and_every_leaf_is_a_real_one() {
+    use openframe_application::modules::ai::sections::leaf;
+    use openframe_application::modules::ai::turn::AnswerType;
+
+    let cases: Vec<_> = load_cases(&gold())
+        .unwrap()
+        .into_iter()
+        .filter(|c| c.id.starts_with("sec-"))
+        .collect();
+    assert!(cases.len() >= 390, "only {} section cases", cases.len());
+    let mut negatives = 0;
+    let mut quiet = 0;
+    for c in &cases {
+        let e = &c.expect;
+        assert_eq!(c.kind, "conversation", "{}", c.id);
+        assert!(fixture::is_fixture(&c.project), "{}", c.id);
+        let picks = c
+            .sections
+            .as_ref()
+            .unwrap_or_else(|| panic!("{}: no sections", c.id));
+        assert!(
+            (1..=3).contains(&picks.len()),
+            "{}: {} picks",
+            c.id,
+            picks.len()
+        );
+        for p in picks {
+            assert!(leaf(&p.leaf).is_some(), "{}: unknown leaf {}", c.id, p.leaf);
+        }
+        let at = e
+            .answer_type
+            .as_deref()
+            .unwrap_or_else(|| panic!("{}: no type", c.id));
+        assert!(ANSWER_TYPES.contains(&at), "{}: answer_type {at}", c.id);
+        assert!(
+            AnswerType::parse(at).is_some(),
+            "{}: the core lacks {at}",
+            c.id
+        );
+        let lc = e
+            .length_class
+            .as_deref()
+            .unwrap_or_else(|| panic!("{}: no class", c.id));
+        assert!(LENGTH_CLASSES.contains(&lc), "{}: length_class {lc}", c.id);
+        if let Some(want) = &e.pointer {
+            negatives += 1;
+            let target = leaf(want).unwrap_or_else(|| panic!("{}: unknown leaf {want}", c.id));
+            assert!(
+                !picks.iter().any(|p| p.leaf == target.id),
+                "{}: points at a leaf it picked",
+                c.id
+            );
+            assert!(!e.no_pointer, "{}: pointer and no_pointer", c.id);
+        }
+        quiet += usize::from(e.no_pointer);
+    }
+    assert_eq!(negatives, 60);
+    assert_eq!(quiet, 10);
+}
+
+#[test]
 fn lowtide_required_facts_come_from_the_fixture_files() {
     let dir = fixture::fixtures_dir().join(fixture::LOW_TIDE);
     let corpus: String = [
@@ -149,6 +220,7 @@ fn new_gold_files_use_no_em_dash() {
     for f in [
         "conversation.lowtide.en.jsonl",
         "tools.lowtide.en.jsonl",
+        "sections.lowtide.en.jsonl",
         "README.md",
     ] {
         let text = std::fs::read_to_string(gold().join(f)).unwrap();

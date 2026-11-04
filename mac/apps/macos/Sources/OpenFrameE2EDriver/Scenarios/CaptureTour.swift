@@ -451,7 +451,7 @@ extension UI {
         for id in ["drawer-close", "note-close", "task-close", "file-close", "story-inspector-close", "inspector-close", "moodboard-inspector-close", "panel-inspector-close", "shot-inspector-close", "export-close", "callsheet-refresh-cancel"] {
             if exists(id: id), let e = query(id: id).first(where: { $0.role == "AXButton" }) { _ = e.performPress(); await idle(0.4) }
         }
-        for w in NSApp.windows where w.isVisible && w.sheetParent == nil && (w.title == "Settings" || ["General", "Appearance", "Offline AI", "Diagnostics", "About OpenFrame Studio"].contains(w.title)) { w.close() }
+        for w in NSApp.windows where w.isVisible && w.sheetParent == nil && (w.title == "Settings" || ["General", "Appearance", "OpenFrame AI", "Diagnostics", "About OpenFrame Studio"].contains(w.title)) { w.close() }
         await idle(0.3)
     }
 

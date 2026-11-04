@@ -51,7 +51,7 @@ fn say(env: &TestEnv, text: &str, conversation: &str) -> Value {
     let asked = env.core.dispatch(
         &env.core.local_actor(),
         "ai.ask",
-        json!({ "text": text, "scope": { "kind": "WholeProject" }, "conversationId": conversation }),
+        json!({ "text": text, "conversationId": conversation }),
     );
     asked.unwrap_or_else(|_| json!({}))
 }

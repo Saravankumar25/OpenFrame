@@ -4,7 +4,7 @@
 //!
 //! The stores own the 7-day trial: the Microsoft Store through its licence (a fake
 //! `StoreLicenceSource` here, the real `GetAppLicenseAsync` needs the Partner Center identity),
-//! the Mac through StoreKit and the licensing server (a fake StoreKit bridge here). The Windows
+//! the Mac through StoreKit, counted offline (a fake StoreKit bridge here). The Windows
 //! installer is an internal build that is never sold. In either store build an ended trial or a
 //! refund locks every project operation in Rust until a purchase or a restore; nothing is
 //! deleted.
@@ -338,9 +338,9 @@ fn plat_009_the_microsoft_store_trial_comes_from_the_store_licence() {
         json!({ "state": "trialActive", "days_left": 2 })
     );
     assert_eq!(
-        core.entitlement.lease(),
+        core.entitlement.next_check(),
         None,
-        "no lease: the Store tells us"
+        "no timer: the Store tells us"
     );
 }
 
@@ -511,7 +511,8 @@ fn plat_014_mac_channel_without_the_store_bridge_needs_an_online_check_and_keeps
             ..AppConfig::isolated(dir.path())
         })
     };
-    let core = mac_core();
+    // Made earlier, by a build that could edit.
+    let core = internal_core(dir.path());
     let path = make_project(&core, "Harbour Lights", "Meena waits at the pier");
     stop(core);
 
@@ -553,9 +554,10 @@ fn lifetime_tx(id: &str, revoked: bool) -> openframe_entitlement::mac::VerifiedT
         original_transaction_id: id.to_string(),
         app_transaction_id: None,
         purchase_date_ms: 1_800_000_000_000,
+        original_purchase_date_ms: 1_800_000_000_000,
+        signed_date_ms: 1_800_000_000_000,
         revocation_date_ms: revoked.then_some(1_800_100_000_000),
         environment: StoreEnvironment::Production,
-        signed_jws: "aGVhZA.Ym9keQ.c2ln".to_string(),
     }
 }
 
@@ -603,25 +605,33 @@ impl openframe_entitlement::mac::StoreKitBridge for FakeBridge {
     fn environment(&self) -> openframe_entitlement::mac::StoreEnvironment {
         openframe_entitlement::mac::StoreEnvironment::Production
     }
-    fn product_info(
+    fn load_products(
         &self,
-        _product_id: &str,
-    ) -> Result<openframe_entitlement::mac::ProductInfo, openframe_entitlement::mac::BridgeError>
+    ) -> Result<openframe_entitlement::mac::StoreProducts, openframe_entitlement::mac::BridgeError>
     {
-        Err(openframe_entitlement::mac::BridgeError::ProductNotFound)
+        Ok(openframe_entitlement::mac::StoreProducts {
+            lifetime_display_price: "{test price}".to_string(),
+        })
+    }
+    fn load_guard(&self) -> Result<Option<String>, openframe_entitlement::mac::BridgeError> {
+        Ok(None)
+    }
+    fn save_guard(
+        &self,
+        _record_json: &str,
+    ) -> Result<(), openframe_entitlement::mac::BridgeError> {
+        Ok(())
     }
 }
 
 fn mac_core_with(root: &Path, bridge: &FakeBridge) -> Arc<AppCore> {
-    use openframe_entitlement::mac::{InstantClock, MacInputs, NoNonces, UnavailableServer};
+    use openframe_entitlement::mac::{InstantClock, MacInputs, SystemWallClock};
     start(AppConfig {
         channel: Channel::MacAppStore,
         mac_inputs: Some(MacInputs {
             bridge: Box::new(bridge.clone()),
-            server: Box::new(UnavailableServer),
-            nonces: Box::new(NoNonces),
             clock: Box::new(InstantClock::new()),
-            response_key: None,
+            wall: Box::new(SystemWallClock),
         }),
         ..AppConfig::isolated(root)
     })
@@ -653,6 +663,20 @@ fn plat_014_a_mac_refund_locks_open_edit_and_export_in_rust_and_a_purchase_unloc
         )["notice"],
         json!({ "kind": "locked" })
     );
+    // Until the shell says it has saved what was pending, its last saves still go through.
+    assert!(
+        core.dispatch(&core.local_actor(), "project.current", json!({}))
+            .is_ok(),
+        "the flush window is open"
+    );
+    // A real save too: the text the editors still hold reaches the disk (package file 02, section 6).
+    let saved = core.dispatch(
+        &core.local_actor(),
+        "story.page.save",
+        json!({ "text": "typed just before the lock", "expectedRev": 0 }),
+    );
+    assert!(saved.is_ok(), "the last save goes through: {saved:?}");
+    call(&core, "entitlement.lock_ready", json!({}));
     assert_locked(&core, &path);
     // "Restore purchase" finds nothing new: still locked.
     call(&core, "entitlement.restore_purchase", json!({}));
@@ -668,8 +692,8 @@ fn plat_014_a_mac_refund_locks_open_edit_and_export_in_rust_and_a_purchase_unloc
 
 #[test]
 fn plat_014_a_mac_trial_that_ended_locks_open_edit_and_export_and_a_restore_unlocks() {
-    // The licensing server that dates the trial is not part of this test (the Mac module's own
-    // tests cover its verdict); the state is set by hand, which the lock treats the same way.
+    // The Mac module's own tests cover how the trial is counted; the state is set by hand, which
+    // the lock treats the same way.
     let dir = tempfile::tempdir().unwrap();
     let core = start(AppConfig {
         entitlement_debug_controls: true,
@@ -677,7 +701,7 @@ fn plat_014_a_mac_trial_that_ended_locks_open_edit_and_export_and_a_restore_unlo
     });
     let card = "Ira counts the lanterns";
     let path = make_project(&core, "Lantern Night", card);
-    for state in ["trialEnded", "revoked"] {
+    for state in ["trialEnded", "revoked", "clockChanged"] {
         call(
             &core,
             "entitlement.debug_set",
@@ -705,11 +729,41 @@ fn plat_014_a_mac_trial_that_ended_locks_open_edit_and_export_and_a_restore_unlo
         json!({ "channel": "macAppStore", "state": { "state": "purchased" } }),
     );
     open_read_export(&core, dir.path(), &path, card);
-    // A failed online check never locks opening or exporting (ADR-0018 decision 6).
+    // A failed online check never locks opening or exporting (ADR-0018 decision 6), but on the Mac
+    // changes wait for it, and so does a new project. The Microsoft Store is not gated this way.
+    for state in ["needsOnlineCheck", "trialNotStarted"] {
+        call(
+            &core,
+            "entitlement.debug_set",
+            json!({ "channel": "macAppStore", "state": { "state": state } }),
+        );
+        open_read_export(&core, dir.path(), &path, card);
+        let who = core.local_actor();
+        let edit = core.dispatch(
+            &who,
+            "story.page.save",
+            json!({ "text": "x", "expectedRev": 0 }),
+        );
+        assert_eq!(
+            edit.unwrap_err().code_str(),
+            "permission.licence_required",
+            "{state}"
+        );
+        let new = core.dispatch(
+            &who,
+            "project.create",
+            json!({ "title": "Waits", "projectType": "Feature Film" }),
+        );
+        assert_eq!(
+            new.unwrap_err().code_str(),
+            "permission.licence_required",
+            "{state}"
+        );
+    }
     call(
         &core,
         "entitlement.debug_set",
-        json!({ "channel": "macAppStore", "state": { "state": "needsOnlineCheck" } }),
+        json!({ "channel": "microsoftStore", "state": { "state": "needsOnlineCheck" } }),
     );
     open_read_export(&core, dir.path(), &path, card);
 }
@@ -731,15 +785,18 @@ fn plat_014_with_the_store_bridge_startup_asks_nothing_and_the_background_check_
     );
     let core = mac_core_with(dir.path(), &bridge);
 
-    // Startup runs on the main thread: StoreKit and the server are not asked there.
+    // Startup runs on the main thread: StoreKit is not asked there.
     assert_eq!(bridge.asked.load(Ordering::SeqCst), 0);
     let s = status(&core);
     assert_eq!(s["state"], json!({ "state": "needsOnlineCheck" }));
     assert_eq!(s["canEdit"], false);
     assert_eq!(s["limitation"], Value::Null, "the adapter is not built yet");
     assert_eq!(
-        core.entitlement.lease(),
-        Some(std::time::Duration::from_secs(15 * 60)),
+        core.entitlement.next_check(),
+        Some((
+            std::time::Duration::from_secs(15 * 60),
+            RevalidateReason::Timer
+        )),
         "a check that has not answered is retried soon"
     );
 
@@ -750,10 +807,7 @@ fn plat_014_with_the_store_bridge_startup_asks_nothing_and_the_background_check_
     let s = status(&core);
     assert_eq!(s["state"], json!({ "state": "purchased" }));
     assert_eq!(s["canEdit"], true);
-    assert_eq!(
-        core.entitlement.lease(),
-        Some(std::time::Duration::from_secs(24 * 60 * 60))
-    );
+    assert_eq!(core.entitlement.next_check(), None, "a buyer has no timer");
 
     // A StoreKit change and "Restore purchase" ask StoreKit again; nothing is cached as a grant.
     core.entitlement
@@ -763,9 +817,9 @@ fn plat_014_with_the_store_bridge_startup_asks_nothing_and_the_background_check_
     assert!(!trial_file(dir.path()).exists());
     stop(core);
 
-    // The Windows channels have no lease.
+    // The Windows channels have no timer.
     let windows = internal_core(dir.path());
-    assert_eq!(windows.entitlement.lease(), None);
+    assert_eq!(windows.entitlement.next_check(), None);
     stop(windows);
 }
 
@@ -816,7 +870,7 @@ fn plat_009_the_assistant_cannot_see_the_licence_operations() {
             .metadata(op)
             .unwrap_or_else(|| panic!("{op} registered"));
         assert!(
-            matches!(m.ai_exposure, AiExposure::Hidden(r) if r.contains("assistant")),
+            matches!(m.ai_exposure, AiExposure::Hidden(r) if r.contains("OpenFrame AI")),
             "{op} hidden"
         );
         assert_eq!(m.required_capability, None, "{op} is application level");

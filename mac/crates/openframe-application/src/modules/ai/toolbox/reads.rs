@@ -9,6 +9,7 @@ use openframe_domain::{Actor, AppError, AppResult};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
 
+use super::super::dossier::guard;
 use super::super::queries::{self, join_and};
 use super::super::scope::ResolvedScope;
 use super::super::tools::{ToolCtx, ToolOutput, like_pattern, nav_from_json, plural, scene_nav};
@@ -520,7 +521,9 @@ pub(super) fn found(c: &ToolCtx<'_>, e: &rv::Entity, reference: &str) -> AppResu
 pub fn retrieve_lexical(ctx: &ToolCtx<'_>, args: &Value) -> AppResult<ToolOutput> {
     let q = a_str(args, "query").ok_or_else(|| queries::ambiguous("What should I look for?"))?;
     let limit = a_limit(args, 8).min(24);
-    let hits = lexical_hits(ctx.conn, ctx.actor, &q, limit)?;
+    let mut hits = lexical_hits(ctx.conn, ctx.actor, &q, SEARCHED_WITHIN_PICKS.max(limit))?;
+    hits.retain(|h| ctx.scope.reads(&h.4));
+    hits.truncate(limit);
     let mut o = ToolOutput::exact(if hits.is_empty() {
         format!("Nothing in this project matches “{}”.", clip(&q, 80))
     } else {
@@ -535,9 +538,12 @@ pub fn retrieve_lexical(ctx: &ToolCtx<'_>, args: &Value) -> AppResult<ToolOutput
             if title.is_empty() {
                 etype.clone()
             } else {
-                title.clone()
+                guard::tool_text(ctx.actor, title)
             },
-            Some(format!("{context}: {}", clip(body, 240))),
+            Some(guard::tool_text(
+                ctx.actor,
+                &format!("{context}: {}", clip(body, 240)),
+            )),
             nav_from_json(nav),
         ));
         o.provenance.push(Provenance::new(
@@ -549,13 +555,16 @@ pub fn retrieve_lexical(ctx: &ToolCtx<'_>, args: &Value) -> AppResult<ToolOutput
             if title.is_empty() {
                 etype.clone()
             } else {
-                clip(title, 80)
+                guard::tool_text(ctx.actor, &clip(title, 80))
             },
         ));
     }
     o.structured = Some(json!({"route": "Lexical", "degraded": true, "indexState": "Unavailable"}));
     Ok(o.detail("Keyword retrieval (project context is still being prepared)."))
 }
+
+/// How many hits a search looks at when only the picked sections' hits will be kept.
+const SEARCHED_WITHIN_PICKS: usize = 48;
 
 /// (entity type, title, context, body, nav, entity id) of the best keyword matches visible to `actor`.
 pub(crate) fn lexical_hits(
@@ -606,18 +615,43 @@ pub fn retrieve_hybrid(
     scope: &ResolvedScope,
     args: &Value,
 ) -> AppResult<Option<ToolOutput>> {
-    use super::super::retrieval::{RetrieveRequest, retrieve};
+    use super::super::retrieval::{RetrievalRoute, RetrieveRequest, retrieve};
     let q = a_str(args, "query").ok_or_else(|| queries::ambiguous("What should I look for?"))?;
-    let packet = retrieve(
+    let limit = a_limit(args, 8).min(24);
+    let session = core.project()?;
+    let mut packet = retrieve(
         core,
+        &session,
         actor,
         &RetrieveRequest {
             query: q.clone(),
-            scope: Some(scope.clone()),
-            limit: a_limit(args, 8).min(24),
-            route: None,
+            draft: scope.draft.as_ref().map(|d| d.id.clone()),
+            limit: SEARCHED_WITHIN_PICKS,
+            route: RetrievalRoute::HybridGraph,
+            nav: None,
         },
     )?;
+    // Only what the picks hold is told, whichever way the search found it.
+    let keep: Vec<usize> = (0..packet.items.len())
+        .filter(|i| packet.sources.get(*i).is_some_and(|s| scope.reads(&s.nav)))
+        .take(limit)
+        .collect();
+    let pick = |n: usize| keep.contains(&n);
+    let mut n = 0;
+    packet.items.retain(|_| {
+        n += 1;
+        pick(n - 1)
+    });
+    let mut n = 0;
+    packet.sources.retain(|_| {
+        n += 1;
+        pick(n - 1)
+    });
+    let mut n = 0;
+    packet.provenance.retain(|_| {
+        n += 1;
+        pick(n - 1)
+    });
     let mut o = ToolOutput::exact(if packet.items.is_empty() {
         format!("Nothing in this project matches “{}”.", clip(&q, 80))
     } else {
@@ -629,15 +663,20 @@ pub fn retrieve_hybrid(
     });
     for (i, it) in packet.items.iter().enumerate() {
         let nav = packet.sources.get(i).and_then(|s| nav_from_json(&s.nav));
-        o.items
-            .push(item(it.source.clone(), Some(clip(&it.text, 240)), nav));
+        o.items.push(item(
+            guard::tool_text(actor, &it.source),
+            Some(guard::tool_text(actor, &clip(&it.text, 240))),
+            nav,
+        ));
     }
     o.provenance = packet.provenance.clone();
+    for p in &mut o.provenance {
+        p.label = guard::tool_text(actor, &p.label);
+    }
     if let Some(n) = &packet.notice {
         o = o.detail(n.clone());
     }
     o.structured = Some(json!({
-        "route": format!("{:?}", packet.route),
         "degraded": packet.degraded,
         "indexState": format!("{:?}", packet.index_state),
     }));
@@ -1173,7 +1212,7 @@ fn package_history(ctx: &ToolCtx<'_>, _: &Value) -> AppResult<ToolOutput> {
         ));
     }
     Ok(o.detail(
-        "Opening, reviewing and applying packages stays in Packages (the assistant can't do it).",
+        "Opening, reviewing and applying packages stays in Packages (OpenFrame AI can't do it).",
     )
     .prov("Scope", "Package history"))
 }

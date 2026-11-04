@@ -269,6 +269,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                             diff_text(l.planned - a),
                         )
                         .require(plain((l.planned - a).abs()));
+                    // "Was it over": the answer says which way it went, in the plain word.
+                    if m.any(&["over", "under"]) && a != l.planned {
+                        f = f.require(if a > l.planned { "over" } else { "under" });
+                    }
                 }
             }
             None => {
@@ -312,28 +316,37 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         let mut f = Fact::new("Budget total", &budget_id)
             .f("lines", lines.len().to_string())
             .prio(P_HIGH);
+        // "How many budget lines": the count alone is asked, not the amounts.
+        let lines_counted = t == AnswerType::Count && m.any(&["line", "lines"]);
+        let demand = |f: Fact, value: String| {
+            if lines_counted { f } else { f.require(value) }
+        };
+        if lines_counted {
+            f = f.require(lines.len().to_string());
+        }
         if asks_planned || all_three || hit.is_empty() {
-            f = f.f("planned total", mny(planned)).require(plain(planned));
+            f = demand(f.f("planned total", mny(planned)), plain(planned));
             if planned != sum {
                 f = f.f("planned in lines", mny(sum));
             }
         }
         if asks_actual || all_three || m.has("budget") {
-            f = f
-                .f("actual total", mny(actual))
-                .f(
+            f = demand(
+                f.f("actual total", mny(actual)).f(
                     "lines with an actual",
                     format!("{} of {}", with_actual.len(), lines.len()),
-                )
-                .require(plain(actual));
+                ),
+                plain(actual),
+            );
         }
         if asks_diff || all_three {
-            f = f
-                .f(
+            f = demand(
+                f.f(
                     "difference (planned minus actual, lines with an actual only)",
                     diff_text(planned_with_actual - actual),
-                )
-                .require(plain((planned_with_actual - actual).abs()));
+                ),
+                plain((planned_with_actual - actual).abs()),
+            );
         }
         out.push(f);
     }

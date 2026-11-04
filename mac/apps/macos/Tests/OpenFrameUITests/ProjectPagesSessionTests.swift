@@ -184,12 +184,14 @@ struct ProjectPagesTextTests {
 
     @Test func dayWordsFollowTheWindowsWording() {
         let now = Date()
+        // Calendar days, not 86,400 seconds: the words count days, and a clock change makes one day longer.
+        let back = { (days: Int) in Calendar.current.date(byAdding: .day, value: -days, to: now)! }
         #expect(PageText.dayWord(ms: ms(now), now: now) == "Today")
-        #expect(PageText.dayWord(ms: ms(now.addingTimeInterval(-86_400)), now: now) == "Yesterday")
-        #expect(PageText.dayWord(ms: ms(now.addingTimeInterval(-3 * 86_400)), now: now) == "3 days ago")
+        #expect(PageText.dayWord(ms: ms(back(1)), now: now) == "Yesterday")
+        #expect(PageText.dayWord(ms: ms(back(3)), now: now) == "3 days ago")
         #expect(PageText.dayWord(ms: ms(now.addingTimeInterval(-40 * 86_400)), now: now).contains(String(Calendar.current.component(.year, from: now.addingTimeInterval(-40 * 86_400)))))
         #expect(PageText.dayAndTime(ms: ms(now), now: now).hasPrefix("Today "))
-        #expect(PageText.dayAndTime(ms: ms(now.addingTimeInterval(-86_400)), now: now).hasPrefix("Yesterday "))
+        #expect(PageText.dayAndTime(ms: ms(back(1)), now: now).hasPrefix("Yesterday "))
     }
 
     @Test func aNoteIsNamedByItsTitleThenItsFirstLine() {

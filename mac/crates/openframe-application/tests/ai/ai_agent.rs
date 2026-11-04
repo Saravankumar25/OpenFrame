@@ -10,7 +10,7 @@ use std::sync::{Arc, Mutex};
 
 use openframe_ai::{ChatRequest, InferenceProvider};
 use openframe_application::MutationMeta;
-use openframe_application::modules::ai::scope::{self, AiScopeArgs, AiScopeKind};
+use openframe_application::modules::ai::scope::ResolvedScope;
 use openframe_application::modules::ai::{
     self, ChangeSetDraft, OpCall, PreviewRow, change_set, toolbox,
 };
@@ -76,12 +76,8 @@ fn attach(env: &TestEnv) -> Arc<ScriptedModel> {
     m
 }
 
-fn whole() -> Value {
-    json!({ "kind": "WholeProject" })
-}
-
 fn ask(env: &TestEnv, text: &str) -> Value {
-    env.ok("ai.ask", json!({ "text": text, "scope": whole() }))
+    env.ok("ai.ask", json!({ "text": text }))
 }
 
 fn count(env: &TestEnv, sql: &str) -> i64 {
@@ -173,25 +169,12 @@ fn seed_screenplay(env: &TestEnv) -> Vec<String> {
     scenes
 }
 
-fn whole_scope(env: &TestEnv, actor: &Actor) -> scope::ResolvedScope {
+fn whole_scope(env: &TestEnv, _actor: &Actor) -> ResolvedScope {
     env.core
         .project()
         .unwrap()
         .store
-        .read(|c| {
-            scope::resolve(
-                c,
-                actor,
-                &AiScopeArgs {
-                    kind: AiScopeKind::WholeProject,
-                    draft_id: None,
-                    scene_id: None,
-                    selection: Vec::new(),
-                    shooting_day_id: None,
-                    call_sheet_id: None,
-                },
-            )
-        })
+        .read(ResolvedScope::on_current_draft)
         .unwrap()
 }
 
@@ -399,7 +382,7 @@ fn default_step_limit_is_four_and_the_hard_limit_twelve() {
     let before = m.calls();
     let x = env.ok(
         "ai.ask",
-        json!({ "text": "Change the headings after another search", "scope": whole(), "maxSteps": 99 }),
+        json!({ "text": "Change the headings after another search", "maxSteps": 99 }),
     );
     assert_eq!(m.calls() - before, 12, "never more than the hard limit");
     assert!(
@@ -442,7 +425,7 @@ fn a_model_failure_mid_run_keeps_what_was_found() {
     assert!(
         texts(&r["details"])
             .iter()
-            .any(|d| d.starts_with("Offline AI stopped before finishing"))
+            .any(|d| d.starts_with("OpenFrame AI stopped before finishing"))
     );
     assert_eq!(r["steps"].as_array().unwrap().len(), 1);
 }
@@ -509,7 +492,7 @@ fn history_is_bounded_to_recent_turns() {
         m.reply("There are 3 scenes.");
         env.ok(
             "ai.ask",
-            json!({ "text": format!("How many scenes are in script number {i}?"), "scope": whole(), "conversationId": conv }),
+            json!({ "text": format!("How many scenes are in script number {i}?"), "conversationId": conv }),
         );
     }
     let last = m.request(m.calls() - 1).messages[1].content.clone();
@@ -798,11 +781,7 @@ fn acceptance_is_refused_for_anything_but_a_local_user_action() {
     }
     // No recursive agent runs on behalf of an applied Change Set either.
     let e = env
-        .call_as(
-            &ai_actor,
-            "ai.ask",
-            json!({ "text": "hi", "scope": whole() }),
-        )
+        .call_as(&ai_actor, "ai.ask", json!({ "text": "hi" }))
         .unwrap_err();
     assert_eq!(e.code.0, "permission.denied");
     assert_eq!(
@@ -852,7 +831,7 @@ fn a_change_set_can_never_contain_an_assistant_operation() {
                 },
                 OpCall {
                     op: "ai.ask".into(),
-                    args: json!({ "text": "x", "scope": whole() }),
+                    args: json!({ "text": "x" }),
                     label: "Ask".into(),
                 },
             ],
@@ -1035,7 +1014,7 @@ fn a_viewer_asking_for_a_change_gets_a_denial_and_no_change_set() {
         .call_as(
             &viewer,
             "ai.ask",
-            json!({ "text": "Set up a task about the train, after a search", "scope": whole() }),
+            json!({ "text": "Set up a task about the train, after a search" }),
         )
         .unwrap();
     assert_eq!(x["result"]["kind"], "Denied");
@@ -1082,10 +1061,7 @@ fn the_ai_log_and_report_hold_no_prompt_or_project_text() {
     for _ in 0..3 {
         m.reply("SECRETREPLY-2K8 is the answer.");
     }
-    ask(
-        &env,
-        "Which scene mentions SECRETSCENE-91Q or SECRETASK-7M3?",
-    );
+    ask(&env, "Which scene mentions SECRETSCENE-91Q?");
     // And a change request whose first step searched the project.
     m.step(
         "search_project",

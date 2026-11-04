@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!-- OpenFrame Studio privacy manifest. Readiness review: docs/release/mac-app-store-readiness.md.
-     No tracking and no tracking domains. Network use: the model download the person starts
-     (ADR-0026, Hugging Face) and, in the store build only, the trial check with OpenFrame's licence
-     server (docs/engineering/38-mac-app-store-trial.md).
-     Collected data: the licence server receives Apple's purchase records for OpenFrame and keeps
-     one log line per check with Apple's original transaction ids (services/licence-server,
-     src/http.rs), so purchase history is declared, for app functionality only. If the server stops
-     keeping those ids, this entry and the App Store Connect privacy answers can say "no data".
+     No tracking, no tracking domains and no collected data. The app is offline: its only network
+     use is the model download the person starts (ADR-0026, Hugging Face) and the App Store's own
+     calls. There is no licence server, no account and no analytics (ADR-0040).
      Required-reason APIs, each checked against the code:
      - file timestamps: show and sort the person's own files (std metadata, SQLite).
      - free disk space: refuse a save, move or download that cannot fit (statvfs in
@@ -19,16 +15,7 @@
 <dict>
 	<key>NSPrivacyTracking</key><false/>
 	<key>NSPrivacyTrackingDomains</key><array/>
-	<key>NSPrivacyCollectedDataTypes</key>
-	<array>
-		<dict>
-			<key>NSPrivacyCollectedDataType</key><string>NSPrivacyCollectedDataTypePurchaseHistory</string>
-			<key>NSPrivacyCollectedDataTypeLinked</key><true/>
-			<key>NSPrivacyCollectedDataTypeTracking</key><false/>
-			<key>NSPrivacyCollectedDataTypePurposes</key>
-			<array><string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string></array>
-		</dict>
-	</array>
+	<key>NSPrivacyCollectedDataTypes</key><array/>
 	<key>NSPrivacyAccessedAPITypes</key>
 	<array>
 		<dict>

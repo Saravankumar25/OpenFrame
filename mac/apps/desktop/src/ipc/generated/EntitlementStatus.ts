@@ -21,4 +21,15 @@ trialDays: number,
 /**
  * Whether the state permits editing. Nothing is locked on it yet.
  */
-canEdit: boolean, };
+canEdit: boolean, 
+/**
+ * The moment a running trial ends, Unix milliseconds UTC, for the reminder's end line. The
+ * shell formats it in local time. Serialised as a number in JSON.
+ */
+trialEndsAtMs: number | null, 
+/**
+ * The full version's price as the store formats it for this person (Mac only, read at run
+ * time, Apple Guideline 3.1.1). `None` until the store's products loaded, and always on
+ * Windows, which shows no price.
+ */
+lifetimePrice: string | null, };

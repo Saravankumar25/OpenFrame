@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Info.plist of the Mac App Store build. apps/macos/scripts/build-release-app.sh --store fills
+     __VERSION__ (the workspace version in Cargo.toml) and __BUILD__ (rises with every upload).
+     REPLACE_WITH_APP_CATEGORY: the owner picks the category in App Store Connect
+     (public.app-category.productivity or public.app-category.video). Never change the bundle
+     identifier after the first release: a new one is a different app with an empty container.
+     ITSAppUsesNonExemptEncryption is false: the app uses Apple's system HTTPS and no encryption of
+     its own (docs/release/mac-app-store-readiness.md). -->
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key><string>OpenFrame Studio</string>
+	<key>CFBundleDisplayName</key><string>OpenFrame Studio</string>
+	<key>CFBundleIdentifier</key><string>app.openframestudio.studio</string>
+	<key>CFBundleExecutable</key><string>OpenFrameStudio</string>
+	<key>CFBundleIconFile</key><string>AppIcon</string>
+	<key>CFBundlePackageType</key><string>APPL</string>
+	<key>CFBundleShortVersionString</key><string>__VERSION__</string>
+	<key>CFBundleVersion</key><string>__BUILD__</string>
+	<key>LSMinimumSystemVersion</key><string>14.0</string>
+	<key>LSArchitecturePriority</key><array><string>arm64</string></array>
+	<key>LSRequiresNativeExecution</key><true/>
+	<key>LSApplicationCategoryType</key><string>REPLACE_WITH_APP_CATEGORY</string>
+	<key>ITSAppUsesNonExemptEncryption</key><false/>
+	<key>NSHighResolutionCapable</key><true/>
+	<key>NSHumanReadableCopyright</key><string>Copyright 2026 Vighnajith Advisories Private Limited</string>
+	<key>NSMicrophoneUsageDescription</key><string>OpenFrame Studio records voice notes into your Idea Vault only when you press Record.</string>
+	<key>NSSupportsAutomaticTermination</key><false/>
+	<key>NSSupportsSuddenTermination</key><false/>
+</dict>
+</plist>

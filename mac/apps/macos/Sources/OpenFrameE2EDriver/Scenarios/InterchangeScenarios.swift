@@ -191,7 +191,7 @@ fileprivate extension UI {
 
     /// Closes the Settings window the way a person does (Command+W).
     func closeAISettings() async throws {
-        for w in NSApp.windows where w.isVisible && ["General", "Appearance", "Offline AI", "Diagnostics"].contains(w.title) { w.performClose(nil) }
+        for w in NSApp.windows where w.isVisible && ["General", "Appearance", "OpenFrame AI", "Diagnostics"].contains(w.title) { w.performClose(nil) }
         await idle(0.3)
     }
 
@@ -953,6 +953,28 @@ extension UI {
 
     func scopeLine() -> String { textOf(id: "ai-scope-line") }
 
+    /// Pick these sections in the assistant (ADR-0041): open the list, press each row that is not
+    /// picked yet, close the list. The chip of each section shows afterwards.
+    func pickSections(_ leaves: [String]) async throws {
+        _ = try await wait(id: "ai-section-picker", timeout: 20, "the section picker")
+        if !exists(id: "ai-section-list") { try await press(id: "ai-section-picker") }
+        _ = try await wait(id: "ai-section-list", timeout: 10, "the section list")
+        for leaf in leaves where !exists(id: "ai-section-chip-\(leaf)") {
+            try await press(id: "ai-section-row-\(leaf)")
+        }
+        try await press(id: "ai-section-done")
+        try await waitGone(id: "ai-section-list", timeout: 8)
+        for leaf in leaves {
+            _ = try await wait(id: "ai-section-chip-\(leaf)", timeout: 8, "the chip of \(leaf)")
+        }
+    }
+
+    /// A question needs a section. A scenario that is not about the picker reads the screenplay.
+    func ensureSection() async throws {
+        let picked = all().contains { $0.identifier.hasPrefix("ai-section-chip-") && !$0.identifier.hasPrefix("ai-section-chip-remove-") }
+        if !picked { try await pickSections(["screenplay/scenes"]) }
+    }
+
     /// "Reopen the assistant here": close it if open, open it, wait for the scope line.
     func reopenAssistantHere() async throws {
         try await closeAssistant()
@@ -992,11 +1014,11 @@ extension UI {
         if assistantOpen() { return }
         await idle(0.8)
         try await keyToSheet("j", code: 38, [.command])
-        _ = try await wait(id: "ai-panel", timeout: 12, "the AI Assistant panel after Command+J")
+        _ = try await wait(id: "ai-panel", timeout: 12, "OpenFrame AI panel after Command+J")
     }
 
     func closeAssistant() async throws {
-        if assistantOpen() { try await tap(label: "Close AI Assistant", role: "AXButton") }
+        if assistantOpen() { try await tap(label: "Close OpenFrame AI", role: "AXButton") }
         try await waitGone(id: "ai-panel", timeout: 10)
     }
 
@@ -1021,6 +1043,7 @@ extension UI {
     @discardableResult
     func ask(_ q: String, timeout: Double = 240) async throws -> String {
         try await openAssistant()
+        try await ensureSection()
         let before = query(id: "ai-question").count
         let input = try await wait(id: "ai-input", timeout: 60, "an enabled Ask box")
         let deadline0 = Date().addingTimeInterval(60)
@@ -1059,6 +1082,7 @@ extension UI {
         let deadline = Date().addingTimeInterval(5)
         while !exists(id: "ai-input"), Date() < deadline { await idle(0.3) }
         guard let input = query(id: "ai-input").first, input.isEnabled else { return }
+        try await ensureSection()
         try await focusByClick(input)
         try await type(q, into: "ai-input")
         try await enter()
@@ -1111,7 +1135,7 @@ extension Scenarios {
         Scenario("72-ai-assistant/settings-shows-installed-parts-and-remove", timeout: 600) { ui, _, ctx in
             let f = Findings()
             try await aiStart(ui, ctx)
-            try await ui.openSettings(tab: "Offline AI")
+            try await ui.openSettings(tab: "OpenFrame AI")
             try await ui.waitText("OpenFrame AI runs on this computer after a one-time download", timeout: 20)
             let details = try await ui.wait(label: "Technical details", timeout: 15)
             ui.log("technical details element: \(details) subrole \(ui.subrole(details))")
@@ -1119,13 +1143,13 @@ extension Scenarios {
             try await ui.idle(1.0)
             ui.log(ui.all().filter { $0.identifier.hasPrefix("settings-ai") || $0.role.contains("Disclosure") }.map(\.description).joined(separator: "\n"))
             let rows = ui.query(id: "settings-ai-component")
-            f.check(rows.count == 4, "the table of Offline AI components has exactly four rows, has \(rows.count)")
+            f.check(rows.count == 4, "the table of OpenFrame AI components has exactly four rows, has \(rows.count)")
             f.check(rows.contains { $0.text.contains("Gemma-Terms-of-Use") }, "one row names Gemma-Terms-of-Use")
             let hashed = rows.filter { r in r.text.split(whereSeparator: { !$0.isHexDigit }).contains { $0.count == 64 } }
             f.check(hashed.count == rows.count && !rows.isEmpty, "every row shows a 64-character SHA-256 hash: \(rows.map(\.text))")
             f.check(ui.screenText().contains("read-only"), "the technical details say read-only")
             f.check(ui.exists(label: "Remove OpenFrame AI…"), "the button Remove OpenFrame AI… is shown")
-            for name in ["Download OpenFrame AI", "Download Offline AI", "Update Offline AI"] {
+            for name in ["Download OpenFrame AI", "Update OpenFrame AI"] {
                 f.check(!ui.exists(label: name), "there is no button \"\(name)\"")
             }
             try await ui.closeAISettings()
@@ -1136,12 +1160,12 @@ extension Scenarios {
             try await aiStart(ui, ctx)
             try await ui.go("Screenplay")
             try await ui.openAssistant()
-            try await ui.choose(from: "ai-scope", ["Current Screenplay"])
+            try await ui.pickSections(["screenplay/scenes"])
             let kind = try await ui.ask("How many scenes are in the script?")
             f.check(kind == "answer", "the result is an Answer, is \(kind)")
             // A plain answer: no "Exact" badge or step list in the conversation (OpenFrameAI.docx 4.1).
             f.check(ui.query(id: "ai-confidence").isEmpty && ui.query(id: "ai-steps").isEmpty, "the answer carries no badge or step list")
-            f.check(ui.lastAnswerText().contains("3"), "the answer contains 3: \(ui.lastAnswerText())")
+            f.check(ui.lastAnswerText().contains("3") || ui.lastAnswerText().contains("three"), "the answer contains 3: \(ui.lastAnswerText())")
             f.check(ui.query(id: "ai-source").isEmpty, "its sources stay closed until asked for")
             try await ui.openLastSources()
             f.check(ui.query(id: "ai-source").count >= 1, "See sources lists at least one source")
@@ -1152,7 +1176,7 @@ extension Scenarios {
             let f = Findings()
             try await aiStart(ui, ctx)
             try await ui.openAssistant()
-            try await ui.choose(from: "ai-scope", ["Whole Project"])
+            try await ui.pickSections(["screenplay/scenes"])
             let kind = try await ui.ask("Which scene happens at the bus stop?")
             f.check(kind == "answer" || kind == "navigate", "the result is an Answer or a Navigate, is \(kind)")
             try await ui.openLastSources()
@@ -1179,7 +1203,7 @@ extension Scenarios {
             try await aiStart(ui, ctx)
             try await ui.go("Screenplay")
             try await ui.openAssistant()
-            try await ui.choose(from: "ai-scope", ["Current Screenplay"])
+            try await ui.pickSections(["screenplay/scenes"])
             let kind = try await ui.ask("How many scenes are in the script?")
             f.check(kind == "answer", "the result is an Answer, is \(kind)")
             let engines = ui.engines()
@@ -1205,8 +1229,8 @@ extension Scenarios {
             try await aiStart(ui, ctx)
             try await ui.ask("How many scenes are in the script?")
             try await ui.waitEngines(running: true, timeout: 30)
-            try await ui.choose(from: "ai-settings-menu", ["Stop Offline AI"])
-            try await ui.waitText("Offline AI stopped", timeout: 15)
+            try await ui.choose(from: "ai-settings-menu", ["Stop OpenFrame AI"])
+            try await ui.waitText("OpenFrame AI stopped", timeout: 15)
             try await ui.waitEngines(running: false, timeout: 30)
             let kind = try await ui.ask("How many scenes are in the script?")
             f.check(kind == "answer", "the result is an Answer, is \(kind)")
@@ -1236,41 +1260,42 @@ extension Scenarios {
             case 1:
                 try await aiStart(ui, ctx, install: false)
                 try await ui.openAssistant()
-                try ui.expect(ui.assistantOpen(), "the AI Assistant is open")
+                try ui.expect(ui.assistantOpen(), "OpenFrame AI is open")
             case 2:
                 try await ui.startApp(ctx)
                 try await ui.openProject("Night Bus")
-                try await ui.wait(id: "ai-panel", timeout: 20, "the AI Assistant opens again after the window loads again")
-                try await ui.tap(label: "Close AI Assistant", role: "AXButton")
+                try await ui.wait(id: "ai-panel", timeout: 20, "OpenFrame AI opens again after the window loads again")
+                try await ui.tap(label: "Close OpenFrame AI", role: "AXButton")
                 try await ui.waitGone(id: "ai-panel", timeout: 10)
             default:
                 try await ui.startApp(ctx)
                 try await ui.openProject("Night Bus")
                 try await ui.idle(2)
-                try ui.expect(!ui.assistantOpen(), "the AI Assistant stays closed")
+                try ui.expect(!ui.assistantOpen(), "OpenFrame AI stays closed")
             }
         },
-        Scenario("73-ai-workspaces/assistant-takes-the-scope-of-each-workspace", timeout: 600) { ui, _, ctx in
+        Scenario("73-ai-workspaces/no-section-is-picked-in-any-workspace", timeout: 600) { ui, _, ctx in
             let f = Findings()
             try await aiStart(ui, ctx)
-            let checks: [(String, [String])] = [
-                ("Project Home", ["Using: Whole Project"]), ("Idea Vault", ["Using: Whole Project"]), ("Story", ["Using: Beat Board"]),
-                ("Breakdown", ["Using: Production Workspace"]), ("Schedule", ["Using: Production Workspace"]),
-                ("Call Sheets", ["Using: Production Workspace"]), ("Screenplay", ["Using: Current Scene", "Using: Current Screenplay"]),
-                ("Notes and Tasks", ["Using: Whole Project"]),
-            ]
-            for (ws, expected) in checks {
+            for ws in ["Project Home", "Idea Vault", "Story", "Breakdown", "Schedule", "Call Sheets", "Screenplay", "Notes and Tasks"] {
                 try await ui.go(ws)
                 try await ui.reopenAssistantHere()
-                f.check(expected.contains(ui.scopeLine()), "in \(ws) the scope line reads \(expected), reads \"\(ui.scopeLine())\"")
+                f.check(ui.scopeLine() == "Pick a section", "in \(ws) nothing is picked, the line reads \"\(ui.scopeLine())\"")
+                f.check(ui.query(id: "ai-send").first?.isEnabled == false, "in \(ws) Send waits for a section")
             }
+            try await ui.pickSections(["production/cast-crew", "production/budget"])
+            f.check(ui.scopeLine() == "Using: Cast & Crew + Budget", "the line names what is picked, reads \"\(ui.scopeLine())\"")
+            try await ui.press(id: "ai-section-chip-remove-production/budget")
+            f.check(!ui.exists(id: "ai-section-chip-production/budget"), "the chip's button removes the section")
+            try await ui.press(id: "ai-new-conversation")
+            f.check(ui.scopeLine() == "Pick a section", "a new conversation starts empty, reads \"\(ui.scopeLine())\"")
             try f.finish()
         },
         Scenario("73-ai-workspaces/keyboard-shortcut-opens-and-closes-the-assistant", timeout: 600) { ui, _, ctx in
             try await aiStart(ui, ctx, install: false)
             try await ui.closeAssistant()
             try await ui.keyToSheet("j", code: 38, [.command])
-            try await ui.wait(id: "ai-panel", timeout: 10, "the AI Assistant opens after Command+J")
+            try await ui.wait(id: "ai-panel", timeout: 10, "OpenFrame AI opens after Command+J")
             try await ui.keyToSheet("j", code: 38, [.command])
             try await ui.waitGone(id: "ai-panel", timeout: 10)
         },
@@ -1280,6 +1305,7 @@ extension Scenarios {
             try await ui.go("Story")
             try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
             try await ui.openAssistant()
+            try await ui.pickSections(["story/beat-board"])
             let kind = try await ui.ask("What is on the Beat Board?")
             f.check(isAnswered(kind), "the question was answered, result is \(kind)")
             f.check(ui.scopeLine() == "Using: Beat Board", "the scope line reads Using: Beat Board, reads \"\(ui.scopeLine())\"")
@@ -1290,7 +1316,7 @@ extension Scenarios {
             try await aiStart(ui, ctx)
             try await ui.go("Screenplay")
             try await ui.openAssistant()
-            try await ui.choose(from: "ai-scope", ["Current Screenplay"])
+            try await ui.pickSections(["screenplay/scenes"])
             let kind = try await ui.ask("Who speaks in this screenplay?")
             f.check(isAnswered(kind), "the question was answered, result is \(kind)")
             let a = ui.lastAnswerText().uppercased() + " " + ui.query(id: "ai-items").map(\.text).joined(separator: " ").uppercased()
@@ -1375,7 +1401,7 @@ extension Scenarios {
                 f.check(ui.screenText().contains("Download OpenFrame AI again"), "the panel shows Download OpenFrame AI again")
                 f.check(!ui.screenText().contains("Reinstall OpenFrame Studio to repair it"), "the panel does not show the reinstall message")
                 f.check(!ui.exists(id: "ai-input"), "the panel has no question box")
-                try await ui.openSettings(tab: "Offline AI")
+                try await ui.openSettings(tab: "OpenFrame AI")
                 try await ui.waitText("Needs a new download", timeout: 15)
                 try await ui.closeAISettings()
                 try await ui.goTasks()
@@ -1540,7 +1566,7 @@ extension Scenarios {
         Scenario("78-ai-download/remove-damaged-file-set-aside-pause-and-resume", timeout: 1800) { ui, _, ctx in
             let f = Findings()
             try await aiStart(ui, ctx)
-            try await ui.openSettings(tab: "Offline AI")
+            try await ui.openSettings(tab: "OpenFrame AI")
             try await ui.tap(id: "settings-ai-remove")
             try await ui.wait(id: "settings-ai-remove-confirm", timeout: 15)
             try await ui.pressAlertButton("Remove")

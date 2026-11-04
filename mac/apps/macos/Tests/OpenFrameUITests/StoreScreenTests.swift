@@ -56,7 +56,7 @@ struct StoreScreenTests {
         let screens: [(String, LicenceScreen)] = [
             ("reminder", .reminder(daysLeft: 2)), ("data-note", .dataNote), ("tutorial", .tutorial),
             ("welcome", .welcome), ("mac-first-launch", .macFirstLaunch), ("locked", .locked(revoked: false)),
-            ("locked-revoked", .locked(revoked: true)), ("check-needed", .checkNeeded),
+            ("locked-revoked", .locked(revoked: true)), ("clock-locked", .clockLocked), ("check-needed", .checkNeeded),
         ]
         for (name, screen) in screens {
             for scheme in [ColorScheme.light, .dark] {
@@ -98,7 +98,7 @@ struct StoreScreenTests {
         let root = try Fixture.root()
         defer { try? FileManager.default.removeItem(at: root) }
         let source = FakeStoreKitSource()
-        let runtime = StoreRuntime(source: source, server: FakeLicenceServer())
+        let runtime = StoreRuntime(source: source, keychain: FakeGuardKeychain())
         var options = CoreStartOptions(appVersion: "0.1.0-test", isolatedDataRoot: root, writeLogs: false)
         runtime.install(into: &options)
         let app = AppModel(options: options)

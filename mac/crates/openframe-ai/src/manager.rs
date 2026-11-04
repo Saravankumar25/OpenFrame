@@ -77,6 +77,8 @@ pub struct ManagerConfig {
     pub ready_timeout: Duration,
     /// Temperature 0 and a fixed seed (end-to-end tests only; `false` in the product).
     pub deterministic: bool,
+    /// Mac App Store build: the engine's code files are checked by code signature, not by hash.
+    pub engine_store_signed: bool,
     /// This computer's graphics adapters and Vulkan loader (the platform layer in the product).
     pub graphics: Arc<dyn Fn() -> GraphicsFacts + Send + Sync>,
 }
@@ -104,6 +106,7 @@ impl ManagerConfig {
             },
             ready_timeout: Duration::from_secs(600),
             deterministic: false,
+            engine_store_signed: false,
             graphics: Arc::new(placement::detect),
         })
     }
@@ -305,7 +308,8 @@ impl AiManager {
         let bundle = match &cfg.bundle_dir {
             Some(dir) => model_download::models_dir(&cfg.app_data_dir)
                 .installed(&version, &tier)
-                .and_then(|models| BundledAi::new(dir, cfg.lock.clone(), models)),
+                .and_then(|models| BundledAi::new(dir, cfg.lock.clone(), models))
+                .map(|b| b.with_store_signed(cfg.engine_store_signed)),
             None => Err(bundle::missing().with_detail("the app resources folder is unknown")),
         };
         match bundle.and_then(|b| b.check_present().map(|()| b)) {
@@ -331,7 +335,7 @@ impl AiManager {
                     tracing::warn!(
                         code = e.code_str(),
                         detail = e.detail.as_deref().unwrap_or(""),
-                        "the Offline AI is not usable"
+                        "OpenFrame AI is not usable"
                     );
                 }
                 let loaded = Loaded {
@@ -508,7 +512,7 @@ impl AiManager {
         tracing::error!(
             code = e.code_str(),
             detail = e.detail.as_deref().unwrap_or(""),
-            "the bundled Offline AI failed its check; AI stays off"
+            "the bundled OpenFrame AI failed its check; AI stays off"
         );
         *self.state.write() = (state_of(&e), Some(e.clone()));
         self.configure();
@@ -1264,7 +1268,7 @@ impl AiManager {
             }
             return Err(AppError::ai(
                 "remove_first",
-                "Remove OpenFrame AI in Settings, Offline AI, then download it again.",
+                "Remove OpenFrame AI in Settings, OpenFrame AI, then download it again.",
             )
             .with_detail("the active set of this version is damaged"));
         }

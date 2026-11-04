@@ -166,6 +166,44 @@ fn words(t: &str) -> usize {
     t.split_whitespace().count()
 }
 
+/// "and the actual", "and day 5", "was it over", "what about the props": a short follow-up that asks
+/// the last question again about something else.
+fn continues_the_last(m: &str) -> bool {
+    let m = m.trim_end_matches(['?', '.', '!']).trim();
+    let n = words(m);
+    (n <= 6 && re!(r"^(?:and|also|plus|or)\b").is_match(m))
+        || (n <= 6 && re!(r"^(?:what|how) about\b").is_match(m))
+        || (n <= 6
+            && re!(r"^(?:was|is|were|are)\s+(?:it|that|he|she|they|this)\b").is_match(m)
+            && !re!(r"\b(?:what|who|how|which|when|where|why)\b").is_match(m))
+}
+
+/// A count is asked, and nothing else is asked beside it: "how many shots and what happens" wants the
+/// story told too.
+pub(super) fn asks_a_count(m: &str) -> bool {
+    let counting = re!(r"\bhow many\b(?: times)?")
+        .find_iter(m)
+        .any(|f| !f.as_str().ends_with("times"))
+        || re!(r"\bnumber of\b|\bcount\b|\bcounting\b|\btotal (?:number|count)\b").is_match(m);
+    counting
+        && !re!(
+            r"(?:,|;|:|\band\b)\s*(?:then\s+)?(?:what|who|where|when|why|which|tell|describe|explain|summari[sz]e)\b|\b(?:what|who|where|when|why|which)\b[^?]*(?:,|\band\b)\s*how many\b"
+        )
+        .is_match(m)
+}
+
+/// A verb that asks for a screen or a thing to be opened.
+pub(super) fn asks_to_open(m: &str) -> bool {
+    re!(r"\b(?:open|go to|goto|take me|jump to|switch to|bring up|pull up|navigate|head to|show me)\b")
+        .is_match(m)
+}
+
+/// A word that asks about the story itself.
+pub(super) fn asks_about_the_story(m: &str) -> bool {
+    re!(r"\b(?:story|plot|film|movie|script|screenplay|why|about|ending|begin|beginning|arc|theme|happen\w*)\b")
+        .is_match(m)
+}
+
 pub(super) fn decide(text: &str, resolved: &Resolved, previous: Option<AnswerType>) -> Verdict {
     let m = clean(text);
     let men = Mentions::of(resolved);
@@ -197,6 +235,12 @@ pub(super) fn decide(text: &str, resolved: &Resolved, previous: Option<AnswerTyp
     }
     if repair {
         return previous.map_or(Verdict::Open { angry: angry(&m) }, Verdict::Inherit);
+    }
+    // A change is confirmed in its own words, never by a follow-up.
+    if continues_the_last(&m)
+        && let Some(p) = previous.filter(|p| *p != AnswerType::Change)
+    {
+        return Verdict::Inherit(p);
     }
     // A bare title or scene that answers the last question ("LOW TIDE RADIO", "the feature").
     if men.any()
@@ -241,21 +285,20 @@ fn request(m: &str) -> bool {
 /// The strong rules, in order. `m` is cleaned text.
 pub(super) fn strong(m: &str, men: Mentions) -> Option<AnswerType> {
     use AnswerType::*;
-    let counting = re!(r"\bhow many\b(?: times)?")
-        .find_iter(m)
-        .any(|f| !f.as_str().ends_with("times"));
+    let counting = asks_a_count(m);
     if !counting
+        && !re!(r"\bhow many\b").is_match(m)
         && re!(
-            r"\b(?:relationships?|related|relation|relations|bonds?|connected|connection|connections|rivalry|rivals|get along|know each other|ties|linked|friends or enemies)\b"
+            r"\b(?:relationships?|related|relation|relations|bonds?|connected|connection|connections|rivalry|rivals|get along|know each other|ties|linked|friends or enemies|each other|connects?|relates? to|have to do with|has to do with|link between)\b"
         )
         .is_match(m)
-        && !re!(r"\binternet\b").is_match(m)
+        // A connection to the internet, and a board linked to a scene, relate no people.
+        && !re!(r"\binternet\b|\bwithout (?:a |an )?(?:\w+ )?connection\b|\bwhich (?:scene|day|file|location)\b")
+            .is_match(m)
     {
         return Some(Relation);
     }
-    if counting
-        || re!(r"\bnumber of\b|\bcount\b|\bcounting\b|\btotal (?:number|count)\b").is_match(m)
-    {
+    if counting {
         return Some(Count);
     }
     if re!(
@@ -310,11 +353,14 @@ pub(super) fn strong(m: &str, men: Mentions) -> Option<AnswerType> {
         return Some(List);
     }
     if re!(
-        r"\bhow (?:do|can|could|should|would) (?:i|we) (?:export|import|print|save|share|invite|change|set|add|create|delete|undo|redo|find|open|use|turn|switch|install|update|back ?up|restore|rename|move|duplicate|sign|log|reset|download|connect|start|stop|attach|upload|enable|disable|get)\b|\bhow to\b|\bwhere (?:do|can|could|would) (?:i|we) (?:find|see|get|change|set|go|look)\b|\bwhere (?:is|are) the [\w ]{0,30}(?:button|menu|setting|settings|option|backups?)\b|\bwhere (?:are|is) (?:my|the) [\w ]{0,20}(?:kept|stored|saved)\b|\bcan (?:i|we) (?:use|import|export|work|share|print|change|set|invite|undo|turn|switch|download|install)\b|\bis there a way\b|\bwhat does the [\w ]{0,25} (?:button|screen|board|tab) do\b|\bwhat (?:is|are|does) the (?:beat board|story board|idea vault|parking lot|quick capture|production source|project roles)\b|\b(?:the ai|the assistant|openframe|this app|the app)\b[^.?!]*\b(?:internet|offline|privacy|private|upload\w*|sent|cloud|online)\b|\b(?:is|are) my (?:project|data|files|script)\b[^.?!]*\b(?:sent|uploaded|shared|private|safe)\b|\bdoes (?:the ai|the assistant|openframe|the app) need\b"
+        r"\bhow (?:do|can|could|should|would) (?:i|we) (?:export|import|print|save|share|invite|change|set|add|create|delete|undo|redo|find|open|use|turn|switch|install|update|back ?up|restore|rename|move|duplicate|sign|log|reset|download|connect|start|stop|attach|upload|enable|disable|get)\b|\bhow to\b|\bwhere (?:do|can|could|would) (?:i|we) (?:find|see|get|change|set|go|look)\b|\bwhere (?:is|are) the [\w ]{0,30}(?:button|menu|setting|settings|option|backups?)\b|\bwhere (?:are|is) (?:my|the) [\w ]{0,20}(?:kept|stored|saved)\b|\bcan (?:i|we) (?:use|import|export|work|share|print|change|set|invite|undo|turn|switch|download|install)\b|\bis there a way\b|\bwhat does the [\w ]{0,25} (?:button|screen|board|tab) do\b|\bwhat (?:is|are|does) the (?:beat board|story board|idea vault|parking lot|quick capture|production source|project roles)\b|\b(?:the ai|OpenFrame AI|openframe|this app|the app)\b[^.?!]*\b(?:internet|offline|privacy|private|upload\w*|sent|send|cloud|online|connection|download\w*)\b|\bget the ai\b|\bproject sent\b|\b(?:is|are) my (?:project|data|files|script)\b[^.?!]*\b(?:sent|uploaded|shared|private|safe)\b|\bdoes (?:the ai|OpenFrame AI|openframe|the app) need\b"
     )
     .is_match(m)
     {
         return Some(Help);
+    }
+    if let Some(t) = conversational(m, men) {
+        return Some(t);
     }
     if re!(concat!(
         pre!(),
@@ -322,14 +368,15 @@ pub(super) fn strong(m: &str, men: Mentions) -> Option<AnswerType> {
     ))
     .is_match(m)
         || re!(
-            r"\bexplain\w*\b|\bexplanation\b|\bgist of\b|\bsummary of\b|\boverview of\b|\bwhat happens\b|\bwhat(?:'s| is) (?:going on|happening)\b|\bwhat(?:'s| is| are) (?:the )?[\w' ]{1,30} like\b|\b(?:in brief|briefly)\b[^.?!]*\b(?:story|acts?|plot)\b"
+            r"\bexplain\w*\b|\bexplanation\b|\bgist of\b|\bsummary of\b|\boverview of\b|\bwhat happens\b|\bwhat(?:'s| is) (?:going on|happening)\b|\bwhat(?:'s| is) (?:scene \d+|this scene|that scene) about\b|\bwhat(?:'s| is| are) (?:the )?[\w' ]{1,30} like\b|\b(?:in brief|briefly)\b[^.?!]*\b(?:story|acts?|plot)\b"
         )
         .is_match(m)
     {
         return Some(Explain);
     }
-    if re!(r"\b(?:what|who)(?:'s| is) (?:in|on)\b|\bwho are (?:the|all|those|these|they)\b|\bwhat (?:are|were) (?:all )?the \w{3,}s\b").is_match(m)
+    if re!(r"\b(?:what|who)(?:'s| is) (?:in|on)\b|\bwho are (?:the|all|those|these|they)\b|\bwhat (?:are|were) (?:all )?the \w{3,}s\b|\bwhat (?:kinds?|sorts?|types?) of\b").is_match(m)
         || plural_after_which(m)
+        || plural_after_what(m)
     {
         return Some(List);
     }
@@ -375,6 +422,54 @@ pub(super) fn strong(m: &str, men: Mentions) -> Option<AnswerType> {
     None
 }
 
+/// The long conversational answers (ADR-0041 decision 6): a brief of a scene, a description of a thing
+/// the message names, and the story. A question about the story with no name in it reads only these
+/// words: "why is the budget over" is not a question about the story.
+fn conversational(m: &str, men: Mentions) -> Option<AnswerType> {
+    use AnswerType::*;
+    if re!(
+        r"\bbrief(?:ing)?\s+(?:me|us|scene|the)\b|\b(?:a|quick|short)\s+brief(?:ing)?\s+(?:of|on|for)\b|\b(?:quick|short)\s+brief\b|\bsummari[sz]e\b[^.?!]*\bscene\b|\bwhat goes on in\b|\bwhat happens in (?:this|that|the) scene\b[^.?!]*\b(?:short|quick)\b"
+    )
+    .is_match(m)
+    {
+        return Some(Brief);
+    }
+    if re!(
+        r"\bwhat(?:'s| is) (?:this|the) (?:film|movie|story|script|screenplay) about\b|\b(?:explain|tell me|summari[sz]e|recap|walk me through|talk me through)\b[^.?!]*\b(?:story|plot)\b|\b(?:explain|summari[sz]e|recap)\b[^.?!]*\bact\b|\bhow does (?:the|this) (?:story|film|movie|script|screenplay) (?:end|begin|start)\b|\bwhat (?:role|part|place)\b[^.?!]*\bin the (?:story|film|plot)\b|\bwhat happened in \d{4}\b"
+    )
+    .is_match(m)
+    {
+        return Some(Story);
+    }
+    if men.other
+        && re!(r"^\W*why (?:does|did|do|is|was|are|were|would)\b|\bwhat does [^.?!]{1,40} want\b|\bwhat happened to\b")
+            .is_match(m)
+    {
+        return Some(Story);
+    }
+    let names_a_thing = men.other || men.scene || re!(r"\b(?:character|location)\b").is_match(m);
+    if names_a_thing
+        && re!(r"\bdescribe\b|\btell me (?:more )?about\b|\bwhat (?:kind|sort) of person\b")
+            .is_match(m)
+    {
+        return Some(Describe);
+    }
+    None
+}
+
+/// "what shots are planned", "what props does it need": a plural noun right after "what" asks for
+/// several.
+fn plural_after_what(m: &str) -> bool {
+    re!(r"\bwhat\s+(\w{3,}s)\s+(?:are|were|do|does|did|have|has|will|can)\b")
+        .captures_iter(m)
+        .any(|c| {
+            !matches!(
+                &c[1],
+                "does" | "was" | "has" | "this" | "is" | "his" | "its"
+            )
+        })
+}
+
 /// "which budget lines", "which locations are": a plural noun right after "which" asks for several.
 fn plural_after_which(m: &str) -> bool {
     re!(r"\bwhich\s+(?:\w+\s+){0,2}?(\w{3,}s)\b")
@@ -399,8 +494,13 @@ pub(super) fn default_type(text: &str) -> AnswerType {
 
 /// The length class of the answer: from the type, moved by words in the message.
 pub(super) fn length_class(text: &str, t: AnswerType) -> LengthClass {
-    let base = t.length_class();
     let m = text.to_lowercase();
+    // "What does the note say" is retold, which takes more than one sentence.
+    let base = if t == AnswerType::Lookup && re!(r"\bwhat (?:do|does)\b[^?]*\bsay\b").is_match(&m) {
+        LengthClass::Short
+    } else {
+        t.length_class()
+    };
     if re!(r"\b(?:one line|one-line|one liner|one-liner|one sentence|one-sentence|in a sentence|in a line|one word|just the number|tl;?dr)\b")
         .is_match(&m)
     {
@@ -410,8 +510,10 @@ pub(super) fn length_class(text: &str, t: AnswerType) -> LengthClass {
             LengthClass::OneSentence
         };
     }
-    let shorten = re!(
-        r"\b(?:briefly|in brief|brief|short answer|keep it short|shortly|quickly|quick answer|in a few words|concise|concisely|in short)\b"
+    // "Brief scene 4" asks for a brief; it does not ask for a short answer.
+    let shorten = t != AnswerType::Brief && re!(r"\bbrief\b").is_match(&m);
+    let shorten = shorten || re!(
+        r"\b(?:briefly|in brief|short answer|keep it short|shortly|quickly|quick answer|in a few words|concise|concisely|in short)\b"
     )
     .is_match(&m);
     let lengthen = re!(

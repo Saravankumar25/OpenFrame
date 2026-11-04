@@ -2,17 +2,19 @@
 //
 // `LiveStoreKitSource` is the only code that touches StoreKit. Everything above it
 // (`StoreKitBridgeImpl`) works on plain values, so the bridge rules (verified results only,
-// Apple's dates, the environment, the signed JWS) are tested with a fake source here, and the
+// Apple's dates, the environment) are tested with a fake source here, and the
 // real StoreKit purchase flow is tested in Xcode with StoreKit testing and
 // `packaging/OpenFrameStudio.storekit`.
 
+import AppKit
 import Foundation
 import StoreKit
 
-/// The zero-price non-consumable that starts the 7-day trial.
-public let trialProductID = "com.openframe.studio.trial7"
-/// The paid non-consumable that unlocks the app for good.
-public let lifetimeProductID = "com.openframe.studio.lifetime"
+/// The zero-price non-consumable that starts the 7-day trial. Never change this after the first
+/// release: a new id is a different product with no purchases.
+public let trialProductID = "app.openframestudio.studio.trial7"
+/// The paid non-consumable that unlocks the app for good. Never change this after the first release.
+public let lifetimeProductID = "app.openframestudio.studio.lifetime"
 
 /// Where a transaction was made. Test purchases and real purchases are never mixed.
 public enum StoreEnvironmentName: String, Sendable, Codable, Equatable {
@@ -39,27 +41,31 @@ public struct StoreTransactionRecord: Sendable, Equatable {
     public var appTransactionId: String?
     /// Apple's purchase date, never the Mac's clock.
     public var purchaseDate: Date
+    /// Apple's original purchase date of this transaction.
+    public var originalPurchaseDate: Date
+    /// When Apple signed this record. The real time is never earlier (the clock guard's floor).
+    public var signedDate: Date
     public var revocationDate: Date?
     public var environment: StoreEnvironmentName
     /// False for a transaction shared through Family Sharing (not used).
     public var boughtByThisAccount: Bool
-    /// The signed transaction exactly as StoreKit returned it.
-    public var signedJws: String
 
     public init(
         productId: String, transactionId: String, originalTransactionId: String,
-        appTransactionId: String? = nil, purchaseDate: Date, revocationDate: Date? = nil,
-        environment: StoreEnvironmentName, boughtByThisAccount: Bool = true, signedJws: String
+        appTransactionId: String? = nil, purchaseDate: Date, originalPurchaseDate: Date? = nil,
+        signedDate: Date? = nil, revocationDate: Date? = nil,
+        environment: StoreEnvironmentName, boughtByThisAccount: Bool = true
     ) {
         self.productId = productId
         self.transactionId = transactionId
         self.originalTransactionId = originalTransactionId
         self.appTransactionId = appTransactionId
         self.purchaseDate = purchaseDate
+        self.originalPurchaseDate = originalPurchaseDate ?? purchaseDate
+        self.signedDate = signedDate ?? purchaseDate
         self.revocationDate = revocationDate
         self.environment = environment
         self.boughtByThisAccount = boughtByThisAccount
-        self.signedJws = signedJws
     }
 }
 
@@ -68,12 +74,10 @@ public struct StoreTransactionRecord: Sendable, Equatable {
 public struct StoreAppRecord: Sendable, Equatable {
     public var appTransactionId: String?
     public var environment: StoreEnvironmentName
-    public var signedJws: String
 
-    public init(appTransactionId: String? = nil, environment: StoreEnvironmentName, signedJws: String) {
+    public init(appTransactionId: String? = nil, environment: StoreEnvironmentName) {
         self.appTransactionId = appTransactionId
         self.environment = environment
-        self.signedJws = signedJws
     }
 }
 
@@ -117,16 +121,20 @@ public enum StoreUpdate: Sendable, Equatable {
 }
 
 public protocol StoreKitSource: Sendable {
-    /// `Transaction.currentEntitlements`, every result.
+    /// `Transaction.currentEntitlements`, every result, and the latest record of a product when
+    /// that one is refunded (a refunded product is no longer an entitlement).
     func currentEntitlements() async throws -> [StoreVerification<StoreTransactionRecord>]
     /// `Product.purchase()` for one product.
     func purchase(productId: String) async throws -> StorePurchaseResult
     /// `AppTransaction.shared`.
     func appTransaction() async throws -> StoreVerification<StoreAppRecord>
-    /// `Product.displayPrice`, formatted for the storefront.
-    func displayPrice(productId: String) async throws -> String
-    /// `AppStore.sync()`.
-    func sync() async throws
+    /// `Product.products(for:)` for both products, and the lifetime product's `displayPrice`
+    /// (already formatted for the storefront). Throws unless both loaded: that is the signal that
+    /// the App Store is reachable. `currentEntitlements` does not fail offline.
+    func lifetimeDisplayPrice() async throws -> String
+    /// `AppStore.sync()` and a refreshed app record. Answers when Apple signed that record, for the
+    /// clock guard, when the store gave one.
+    func sync() async throws -> Date?
     /// `Transaction.updates` and `Storefront.updates`.
     func updates() -> AsyncStream<StoreUpdate>
 }
@@ -141,10 +149,12 @@ public struct LiveStoreKitSource: StoreKitSource {
     public func currentEntitlements() async throws -> [StoreVerification<StoreTransactionRecord>] {
         let appId = await Self.appTransactionId()
         var out: [StoreVerification<StoreTransactionRecord>] = []
+        var listed = Set<String>()
         for await result in Transaction.currentEntitlements {
             switch result {
             case let .verified(t):
-                if let record = Self.record(t, jws: result.jwsRepresentation, appTransactionId: appId) {
+                if let record = Self.record(t, appTransactionId: appId) {
+                    listed.insert(record.productId)
                     out.append(.verified(record))
                 } else {
                     out.append(.unverified)
@@ -152,6 +162,14 @@ public struct LiveStoreKitSource: StoreKitSource {
             case .unverified:
                 out.append(.unverified)
             }
+        }
+        // A refund drops the product from the list above. The latest record still names it, with
+        // its revocation date, and the core decides what that means.
+        for productId in [trialProductID, lifetimeProductID] where !listed.contains(productId) {
+            guard case let .verified(t)? = await Transaction.latest(for: productId), t.revocationDate != nil,
+                  let record = Self.record(t, appTransactionId: appId)
+            else { continue }
+            out.append(.verified(record))
         }
         return out
     }
@@ -170,14 +188,14 @@ public struct LiveStoreKitSource: StoreKitSource {
             throw Self.failure(error)
         }
         do {
-            switch try await product.purchase() {
+            switch try await Self.purchaseInWindow(product) {
             case let .success(result):
                 switch result {
                 case let .verified(t):
                     // Finishing tells StoreKit the transaction was received.
                     await t.finish()
                     let appId = await Self.appTransactionId()
-                    guard let record = Self.record(t, jws: result.jwsRepresentation, appTransactionId: appId) else {
+                    guard let record = Self.record(t, appTransactionId: appId) else {
                         return .success(.unverified)
                     }
                     return .success(.verified(record))
@@ -206,8 +224,7 @@ public struct LiveStoreKitSource: StoreKitSource {
                 var id: String?
                 if #available(macOS 15.4, *) { id = app.appTransactionID }
                 return .verified(StoreAppRecord(
-                    appTransactionId: id.flatMap { $0.isEmpty ? nil : $0 },
-                    environment: env, signedJws: result.jwsRepresentation
+                    appTransactionId: id.flatMap { $0.isEmpty ? nil : $0 }, environment: env
                 ))
             case .unverified:
                 return .unverified
@@ -219,10 +236,13 @@ public struct LiveStoreKitSource: StoreKitSource {
         }
     }
 
-    public func displayPrice(productId: String) async throws -> String {
+    public func lifetimeDisplayPrice() async throws -> String {
         do {
-            guard let product = try await Product.products(for: [productId]).first else { throw StoreFailure.productNotFound }
-            return product.displayPrice
+            let products = try await Product.products(for: [trialProductID, lifetimeProductID])
+            guard products.count == 2, let lifetime = products.first(where: { $0.id == lifetimeProductID }) else {
+                throw StoreFailure.productNotFound
+            }
+            return lifetime.displayPrice
         } catch let failure as StoreFailure {
             throw failure
         } catch {
@@ -230,8 +250,14 @@ public struct LiveStoreKitSource: StoreKitSource {
         }
     }
 
-    public func sync() async throws {
-        do { try await AppStore.sync() } catch { throw Self.failure(error) }
+    public func sync() async throws -> Date? {
+        do {
+            try await AppStore.sync()
+        } catch {
+            throw Self.failure(error)
+        }
+        guard let refreshed = try? await AppTransaction.refresh(), case let .verified(app) = refreshed else { return nil }
+        return app.signedDate
     }
 
     public func updates() -> AsyncStream<StoreUpdate> {
@@ -266,14 +292,24 @@ public struct LiveStoreKitSource: StoreKitSource {
         return app.appTransactionID.isEmpty ? nil : app.appTransactionID
     }
 
+    /// Apple's sheet over the app's window where the system offers that, otherwise plain `purchase`.
+    private static func purchaseInWindow(_ product: Product) async throws -> Product.PurchaseResult {
+        if #available(macOS 15.2, *) {
+            let window = await MainActor.run { NSApp.keyWindow ?? NSApp.mainWindow }
+            if let window { return try await product.purchase(confirmIn: window) }
+        }
+        return try await product.purchase()
+    }
+
     /// The transaction in the bridge's shape, or `nil` when its environment is not one of the
     /// three known ones.
-    private static func record(_ t: Transaction, jws: String, appTransactionId: String?) -> StoreTransactionRecord? {
+    private static func record(_ t: Transaction, appTransactionId: String?) -> StoreTransactionRecord? {
         guard let env = StoreEnvironmentName(storeKit: t.environment.rawValue) else { return nil }
         return StoreTransactionRecord(
             productId: t.productID, transactionId: String(t.id), originalTransactionId: String(t.originalID),
-            appTransactionId: appTransactionId, purchaseDate: t.purchaseDate, revocationDate: t.revocationDate,
-            environment: env, boughtByThisAccount: t.ownershipType == .purchased, signedJws: jws
+            appTransactionId: appTransactionId, purchaseDate: t.purchaseDate,
+            originalPurchaseDate: t.originalPurchaseDate, signedDate: t.signedDate, revocationDate: t.revocationDate,
+            environment: env, boughtByThisAccount: t.ownershipType == .purchased
         )
     }
 

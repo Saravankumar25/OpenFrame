@@ -8,7 +8,9 @@ use std::sync::Arc;
 
 use openframe_application::core::AppCore;
 use openframe_application::modules::ai::index::{self, EntityIndex, Focus};
+use openframe_application::modules::ai::sections::{self, SectionPick, Selection};
 use openframe_application::modules::ai::turn;
+use openframe_application::modules::schedule;
 use serde::Deserialize;
 use serde_json::{Value, json};
 
@@ -207,4 +209,84 @@ pub fn read_conv_resolved(
         reads.push((resolved, r, focus.clone()));
     }
     reads
+}
+
+/// The picks of a case: a scene ordinal and a day number become their ids. A case with none reads
+/// every section, as a request with no picks does under the evaluation switch.
+/// The longest of several screenplays, unless the request says a word only another title has.
+pub fn longest_unless_named(ix: &EntityIndex, request: &str) -> Option<String> {
+    if ix.screenplays.len() < 2 {
+        return None;
+    }
+    let longest = ix.screenplays.iter().max_by_key(|s| s.scene_count)?;
+    let lower = request.to_lowercase();
+    let words_of = |t: &str| -> Vec<String> {
+        t.to_lowercase()
+            .split_whitespace()
+            .map(str::to_string)
+            .collect()
+    };
+    let own = words_of(&longest.title);
+    let names_another = ix
+        .screenplays
+        .iter()
+        .filter(|s| s.id != longest.id)
+        .flat_map(|s| words_of(&s.title))
+        .any(|w| !own.contains(&w) && lower.split_whitespace().any(|x| x == w));
+    (!names_another).then(|| longest.id.clone())
+}
+
+pub fn picks_of(core: &AppCore, case: &Case, ix: &EntityIndex) -> Result<Selection, String> {
+    let session = core.project().map_err(|e| e.message)?;
+    let Some(list) = &case.sections else {
+        return session
+            .store
+            .read(sections::every_section)
+            .map_err(|e| e.message);
+    };
+    let mut picks = Vec::with_capacity(list.len());
+    for p in list {
+        let mut pick = SectionPick {
+            leaf: p.leaf.clone(),
+            ..SectionPick::default()
+        };
+        if let Some(n) = p.scene {
+            let sp = ix
+                .screenplays
+                .iter()
+                .max_by_key(|s| s.scene_count)
+                .ok_or_else(|| format!("case {}: no screenplay", case.id))?;
+            let scene = ix
+                .scene(&sp.id, n as u32)
+                .ok_or_else(|| format!("case {}: no scene {n}", case.id))?;
+            pick.scene_id = Some(scene.id.clone());
+        } else if p.leaf == "screenplay/scenes"
+            && let Some(sp) = longest_unless_named(ix, &case.request)
+        {
+            // A person with several screenplays chooses one in the picker, or is asked. A case that
+            // names none reads the feature, as a picked scene does above.
+            pick.screenplay_id = Some(sp);
+        }
+        if let Some(n) = p.day {
+            let id = session
+                .store
+                .read(|c| {
+                    let Some(s) = schedule::board::current_schedule(c)? else {
+                        return Ok(None);
+                    };
+                    Ok(schedule::board::load_days(c, &s.id)?
+                        .into_iter()
+                        .find(|d| d.number == Some(i64::from(n)))
+                        .map(|d| d.id))
+                })
+                .map_err(|e| e.message)?;
+            pick.shooting_day_id =
+                Some(id.ok_or_else(|| format!("case {}: no shoot day {n}", case.id))?);
+        }
+        picks.push(pick);
+    }
+    session
+        .store
+        .read(|c| sections::resolve_picks(c, &picks))
+        .map_err(|e| format!("case {}: {}", case.id, e.message))
 }

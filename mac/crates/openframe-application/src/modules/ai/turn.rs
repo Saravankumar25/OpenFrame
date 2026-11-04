@@ -1,8 +1,8 @@
 //! Reading the answer type of a message (spec `ai-conversational-harness`, section 5.3, slice S4).
 //!
-//! One stage with typed input and typed output. The turn reads two separate things: the kind of
-//! answer wanted (`AnswerType`) and where the facts live (`Domain`), and from the type it takes the
-//! length class of the answer. Order of reading, cheapest first, each step only when the one before
+//! One stage with typed input and typed output. The turn reads the kind of answer wanted
+//! (`AnswerType`), and from the type it takes the length class of the answer. Where the facts live is
+//! the person's choice (ADR-0041), never read from the message. Order of reading, cheapest first, each step only when the one before
 //! it was not sure:
 //!
 //! 1. Strong rules (`rules.rs`): "how many", relation and compare words, "open scene 4", explain
@@ -15,6 +15,9 @@
 //!    ships and the labelled example messages of `turn_examples.jsonl` vote.
 //! 5. Only when that vote is weak, one short model call with the closed list.
 //!
+//! A vote of step 4 or 5 is held to the words of the message (see `decide`), because the nearest
+//! example can share a shape without sharing the meaning.
+//!
 //! Without an embedder or an engine (tests, AI not installed) the stage ends with the rules and the
 //! previous type. It never panics and never blocks a request: the embedding step waits at most
 //! [`WAIT`], and a late result still fills the example cache for the next message.
@@ -22,7 +25,7 @@
 //! The stage decides nothing about the answer yet: the read is stored in the conversation focus and
 //! in the AI trace, where the evaluation measures it.
 
-mod domains;
+mod hints;
 mod model;
 mod neighbour;
 mod rules;
@@ -39,12 +42,7 @@ use serde::{Deserialize, Serialize};
 
 use super::index::Resolved;
 
-pub use domains::Domain;
-
-/// The domains a message touches once its names are known: what the dossier fetches from.
-pub fn domains_for(message: &str, resolved: &Resolved, answer_type: AnswerType) -> Vec<Domain> {
-    domains::find(message, resolved, answer_type)
-}
+pub use hints::{LeafHint, leaf_hints};
 pub use neighbour::{LooRead, leave_one_out};
 
 /// How long a request waits for the embedding step. The first message after the app starts embeds
@@ -58,6 +56,12 @@ pub enum AnswerType {
     List,
     Count,
     Explain,
+    /// A character, a place or a scene as the project shows it.
+    Describe,
+    /// A scene or a sequence, for someone who has to act on it.
+    Brief,
+    /// What the story is, how it goes, why a thing in it happens.
+    Story,
     Relation,
     Compare,
     Brainstorm,
@@ -67,11 +71,14 @@ pub enum AnswerType {
     Chat,
 }
 
-pub const ANSWER_TYPES: [AnswerType; 11] = [
+pub const ANSWER_TYPES: [AnswerType; 14] = [
     AnswerType::Lookup,
     AnswerType::List,
     AnswerType::Count,
     AnswerType::Explain,
+    AnswerType::Describe,
+    AnswerType::Brief,
+    AnswerType::Story,
     AnswerType::Relation,
     AnswerType::Compare,
     AnswerType::Brainstorm,
@@ -88,6 +95,9 @@ impl AnswerType {
             AnswerType::List => "list",
             AnswerType::Count => "count",
             AnswerType::Explain => "explain",
+            AnswerType::Describe => "describe",
+            AnswerType::Brief => "brief",
+            AnswerType::Story => "story",
             AnswerType::Relation => "relation",
             AnswerType::Compare => "compare",
             AnswerType::Brainstorm => "brainstorm",
@@ -102,13 +112,17 @@ impl AnswerType {
         ANSWER_TYPES.into_iter().find(|t| t.code() == s.trim())
     }
 
-    /// The coarse group: it picks the fetch plan and the length class.
+    /// The coarse group: what the turn does with the message, and which facts it wants.
     pub fn group(self) -> Group {
         match self {
             AnswerType::Lookup | AnswerType::List | AnswerType::Count | AnswerType::Compare => {
                 Group::Facts
             }
-            AnswerType::Explain | AnswerType::Relation => Group::Narrative,
+            AnswerType::Explain
+            | AnswerType::Describe
+            | AnswerType::Brief
+            | AnswerType::Story
+            | AnswerType::Relation => Group::Narrative,
             AnswerType::Brainstorm => Group::Brainstorm,
             AnswerType::Navigate => Group::Navigate,
             AnswerType::Change => Group::Change,
@@ -123,12 +137,31 @@ impl AnswerType {
                 LengthClass::OneSentence
             }
             AnswerType::List | AnswerType::Compare => LengthClass::Short,
-            AnswerType::Explain
-            | AnswerType::Relation
-            | AnswerType::Brainstorm
-            | AnswerType::Help => LengthClass::Paragraph,
+            AnswerType::Explain | AnswerType::Brainstorm | AnswerType::Help => {
+                LengthClass::Paragraph
+            }
+            AnswerType::Describe | AnswerType::Brief | AnswerType::Relation => {
+                LengthClass::Narrative
+            }
+            AnswerType::Story => LengthClass::Story,
             AnswerType::Chat => LengthClass::Brief,
         }
+    }
+
+    /// The person wants something told, not one value: the fetchers read the whole record.
+    pub fn tells(self) -> bool {
+        matches!(
+            self,
+            AnswerType::Explain | AnswerType::Describe | AnswerType::Brief | AnswerType::Story
+        )
+    }
+
+    /// The long conversational answers of ADR-0041 decision 6, with their own writer policy.
+    pub fn conversational(self) -> bool {
+        matches!(
+            self,
+            AnswerType::Describe | AnswerType::Brief | AnswerType::Story | AnswerType::Relation
+        )
     }
 }
 
@@ -166,6 +199,10 @@ pub enum LengthClass {
     Short,
     Paragraph,
     Brief,
+    /// A description, a brief or a relationship: up to 250 words.
+    Narrative,
+    /// A story explanation: up to 350 words.
+    Story,
 }
 
 impl LengthClass {
@@ -175,6 +212,8 @@ impl LengthClass {
             LengthClass::Short => "short",
             LengthClass::Paragraph => "paragraph",
             LengthClass::Brief => "brief",
+            LengthClass::Narrative => "narrative",
+            LengthClass::Story => "story",
         }
     }
 
@@ -185,6 +224,8 @@ impl LengthClass {
             LengthClass::Short => (1, 80),
             LengthClass::Paragraph => (40, 200),
             LengthClass::Brief => (1, 40),
+            LengthClass::Narrative => (15, 250),
+            LengthClass::Story => (40, 350),
         }
     }
 
@@ -193,15 +234,18 @@ impl LengthClass {
         match self {
             LengthClass::Paragraph => LengthClass::Short,
             LengthClass::Short => LengthClass::OneSentence,
+            LengthClass::Narrative | LengthClass::Story => LengthClass::Short,
             other => other,
         }
     }
 
-    /// One class longer, up to a paragraph. A chat reply stays brief.
+    /// One class longer, up to a paragraph, or up to the story class for a long answer. A chat reply
+    /// stays brief.
     fn longer(self) -> Self {
         match self {
             LengthClass::OneSentence => LengthClass::Short,
             LengthClass::Short => LengthClass::Paragraph,
+            LengthClass::Narrative => LengthClass::Story,
             other => other,
         }
     }
@@ -240,22 +284,10 @@ impl ReadHow {
 pub struct TurnRead {
     pub answer_type: AnswerType,
     pub group: Group,
-    pub domains: Vec<Domain>,
     pub length_class: LengthClass,
     pub how: ReadHow,
     /// Share of the nearest examples that voted for the type, 0 to 1; 0 when no vote ran.
     pub vote: f32,
-}
-
-impl TurnRead {
-    /// The domains as one trace value: `budget,schedule`.
-    pub fn domain_codes(&self) -> String {
-        self.domains
-            .iter()
-            .map(|d| d.code())
-            .collect::<Vec<_>>()
-            .join(",")
-    }
 }
 
 /// The input of the stage.
@@ -300,7 +332,6 @@ pub fn read(input: &TurnInput<'_>, aids: &Aids<'_>) -> TurnRead {
     TurnRead {
         answer_type,
         group: answer_type.group(),
-        domains: domains::find(&message, input.resolved, answer_type),
         length_class: rules::length_class(&message, answer_type),
         how,
         vote,
@@ -314,10 +345,23 @@ fn decide(message: &str, input: &TurnInput<'_>, aids: &Aids<'_>) -> (AnswerType,
         rules::Verdict::Inherit(t) => (t, ReadHow::Repair, 0.0),
         rules::Verdict::Chat => (AnswerType::Chat, ReadHow::Rule, 0.0),
         rules::Verdict::Open { angry } => {
+            let lower = message.to_lowercase();
+            let english = super::answer::language_of(message).is_none();
             let guard = |t: AnswerType| {
                 // Anger is never a change or a count, whatever the neighbours say.
                 if angry && matches!(t, AnswerType::Change | AnswerType::Count) {
-                    AnswerType::Chat
+                    return AnswerType::Chat;
+                }
+                // A vote only goes as far as the words back it: a count needs a word for counting, a
+                // navigation an open verb, a story a word about the story. Rules read English only.
+                let backed = match t {
+                    AnswerType::Count => rules::asks_a_count(&lower),
+                    AnswerType::Navigate => rules::asks_to_open(&lower),
+                    AnswerType::Story => rules::asks_about_the_story(&lower),
+                    _ => true,
+                };
+                if english && !backed {
+                    AnswerType::Lookup
                 } else {
                     t
                 }

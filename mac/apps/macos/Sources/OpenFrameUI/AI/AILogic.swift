@@ -34,102 +34,140 @@ enum AIText {
     static let working = "Working on it on this computer\u{2026}"
     static let stopping = "Stopping\u{2026}"
     static let saveConversation = "Save conversation for review"
+    static let pickSection = "Pick a section"
+    static let chooseScreenplay = "Choose a screenplay"
+    static let sectionsAtMost = "You can pick 3 sections. Remove one to add another."
+    static let sectionsIntro = "Pick up to 3 sections. OpenFrame AI reads only these."
+    static let allScenes = "All scenes"
+    static let allDays = "All days"
+    static let allCallSheets = "All call sheets"
+    static let currentDraft = "Current draft"
+    static let noEpisodes = "This project has no episodes."
 }
 
-extension AiScopeKind {
-    var label: String {
-        switch self {
-        case .currentSelection: "Current Selection"
-        case .currentScene: "Current Scene"
-        case .currentScreenplay: "Current Screenplay"
-        case .specificDraft: "Specific Draft"
-        case .storyBoard: "Beat Board"
-        case .ideaVaultSelection: "Idea Vault Selection"
-        case .production: "Production Workspace"
-        case .shootingDay: "Shooting Day"
-        case .callSheet: "Call Sheet"
-        case .wholeProject: "Whole Project"
-        }
-    }
-}
-
-/// Where the person is, for the scope list (Windows: the route). Workspaces fill the optional
-/// ids when they know them (an open scene, selected cards); the assistant never guesses.
-struct AIScopeContext: Equatable {
-    var workspace: Workspace = .home
+/// One section the person picked, with the instance they chose under it. The core checks all of it.
+struct AISectionChoice: Equatable, Identifiable {
+    var leaf: String
+    var screenplayId: String?
     var draftId: String?
     var sceneId: String?
-    var selectionIds: [String] = []
     var shootingDayId: String?
     var callSheetId: String?
-}
+    var id: String { leaf }
 
-/// Shared place for workspaces to say what is open. The assistant reads it when it is asked.
-@MainActor
-@Observable
-final class AIScopeHints {
-    static let shared = AIScopeHints()
-    var draftId: String?
-    var sceneId: String?
-    var selectionIds: [String] = []
-    var shootingDayId: String?
-    var callSheetId: String?
-
-    func context(for workspace: Workspace) -> AIScopeContext {
-        AIScopeContext(
-            workspace: workspace,
-            draftId: workspace == .screenplay ? draftId : nil,
-            sceneId: workspace == .screenplay ? sceneId : nil,
-            selectionIds: selectionIds,
-            shootingDayId: workspace == .production || workspace == .callSheets ? shootingDayId : nil,
-            callSheetId: workspace == .callSheets ? callSheetId : nil)
+    var pick: AiSectionPick {
+        AiSectionPick(
+            leaf: leaf, screenplayId: screenplayId, draftId: draftId, sceneId: sceneId,
+            shootingDayId: shootingDayId, callSheetId: callSheetId)
     }
 }
 
 enum AILogic {
-    /// Scopes that make sense right now: a scope that needs a target is offered only when one exists.
-    static func scopeOptions(_ c: AIScopeContext) -> [AiScopeKind] {
-        var out: [AiScopeKind] = []
-        if !c.selectionIds.isEmpty { out.append(c.workspace == .ideaVault ? .ideaVaultSelection : .currentSelection) }
-        if c.sceneId != nil { out.append(.currentScene) }
-        out.append(.currentScreenplay)
-        if c.draftId != nil { out.append(.specificDraft) }
-        out.append(.storyBoard)
-        out.append(.production)
-        if c.shootingDayId != nil { out.append(.shootingDay) }
-        if c.callSheetId != nil { out.append(.callSheet) }
-        out.append(.wholeProject)
-        return out
+    // MARK: Sections
+
+    static let maxSections = 3
+
+    /// Add the leaf, or take it away when it is picked. At the cap nothing is added.
+    static func togglingSection(_ picks: [AISectionChoice], leaf: String) -> [AISectionChoice] {
+        if picks.contains(where: { $0.leaf == leaf }) { return picks.filter { $0.leaf != leaf } }
+        guard picks.count < maxSections else { return picks }
+        return picks + [AISectionChoice(leaf: leaf)]
     }
 
-    /// Scope inherited from where the person is (AI spec section 7.2); Whole Project otherwise.
-    static func defaultScope(_ c: AIScopeContext) -> AiScopeKind {
-        let options = scopeOptions(c)
-        if c.workspace == .screenplay, c.sceneId != nil { return .currentScene }
-        if options.contains(.ideaVaultSelection) { return .ideaVaultSelection }
-        if options.contains(.currentSelection), c.workspace != .screenplay { return .currentSelection }
-        if c.workspace == .callSheets, c.callSheetId != nil { return .callSheet }
-        switch c.workspace {
-        case .screenplay: return .currentScreenplay
-        case .story: return .storyBoard
-        case .breakdown, .production, .callSheets: return .production
-        default: return .wholeProject
+    /// What the Add button of a reply that names another section may do.
+    enum PointerAction: Equatable {
+        /// Add the section.
+        case add
+        /// Three sections are picked: one has to go first.
+        case full
+        /// The section is already picked (the person added it after the reply).
+        case picked
+    }
+
+    static func pointerAction(_ leaf: String, picks: [AISectionChoice]) -> PointerAction {
+        if picks.contains(where: { $0.leaf == leaf }) { return .picked }
+        return picks.count >= maxSections ? .full : .add
+    }
+
+    /// A row can be used when it is picked (to remove it), or when there is room and the project has it.
+    static func sectionRowEnabled(_ leaf: AiSectionLeaf, picks: [AISectionChoice]) -> Bool {
+        if picks.contains(where: { $0.leaf == leaf.id }) { return true }
+        return leaf.available && picks.count < maxSections
+    }
+
+    /// The words that say why a row cannot be used.
+    static func sectionRowNote(_ leaf: AiSectionLeaf, picks: [AISectionChoice]) -> String? {
+        if picks.contains(where: { $0.leaf == leaf.id }) { return nil }
+        if !leaf.available { return AIText.noEpisodes }
+        return picks.count >= maxSections ? AIText.sectionsAtMost : nil
+    }
+
+    static func leaf(_ id: String, in sections: AiSections?) -> AiSectionLeaf? {
+        sections?.branches.lazy.flatMap(\.leaves).first { $0.id == id }
+    }
+
+    /// The screenplays of the project, in the order of their drafts.
+    static func screenplays(_ sections: AiSections?) -> [AiSectionDraft] {
+        var seen = Set<String>()
+        return (sections?.drafts ?? []).filter { seen.insert($0.screenplayId).inserted }
+    }
+
+    static func drafts(_ sections: AiSections?, screenplay: String?) -> [AiSectionDraft] {
+        let all = sections?.drafts ?? []
+        guard let screenplay else { return screenplays(sections).count > 1 ? [] : all }
+        return all.filter { $0.screenplayId == screenplay }
+    }
+
+    /// The Scenes section needs a screenplay when the project holds more than one.
+    static func needsScreenplay(_ picks: [AISectionChoice], sections: AiSections?) -> Bool {
+        guard screenplays(sections).count > 1 else { return false }
+        return picks.contains { c in
+            leaf(c.leaf, in: sections)?.picker == .screenplay && c.screenplayId == nil && c.draftId == nil && c.sceneId == nil
         }
     }
 
-    /// Arguments for `ai.ask`: references only; the core resolves and budgets the actual context.
-    /// `fallbackDraftId` is the draft the Screenplay workspace has open when the hints name none.
-    static func scopeArgs(_ kind: AiScopeKind, _ c: AIScopeContext, fallbackDraftId: String? = nil) -> AiScopeArgs {
-        let selection: [AiSelectionRef] =
-            kind == .currentSelection || kind == .ideaVaultSelection ? c.selectionIds.map { AiSelectionRef(id: $0) } : []
-        let wantsDraft = kind == .specificDraft || kind == .currentScreenplay
-        return AiScopeArgs(
-            kind: kind,
-            draftId: wantsDraft ? (c.draftId ?? (c.workspace == .screenplay ? fallbackDraftId : nil)) : nil,
-            sceneId: kind == .currentScene ? c.sceneId : nil,
-            selection: selection,
-            shootingDayId: kind == .shootingDay ? c.shootingDayId : nil,
-            callSheetId: kind == .callSheet ? c.callSheetId : nil)
+    /// What stops a question, in the words the box shows; nil when it can go.
+    static func sendHint(_ picks: [AISectionChoice], sections: AiSections?) -> String? {
+        if picks.isEmpty { return AIText.pickSection }
+        return needsScreenplay(picks, sections: sections) ? AIText.chooseScreenplay : nil
+    }
+
+    /// A scene's short name: "Scene 4" out of "Scene 4: INT. HOUSE - DAY".
+    static func shortScene(_ label: String) -> String {
+        label.split(separator: ":", maxSplits: 1).first.map(String.init) ?? label
+    }
+
+    /// How a chip names a pick. The core builds the same words for the stored label.
+    static func sectionLabel(_ c: AISectionChoice, sections: AiSections?, scenes: [AiSectionInstance]) -> String {
+        let l = leaf(c.leaf, in: sections)
+        let title = l?.title ?? c.leaf
+        let scene = scenes.first { $0.id == c.sceneId }.map { shortScene($0.label) }
+        if l?.picker == .screenplay {
+            let draft = sections?.drafts.first { $0.id == c.draftId }
+                ?? sections?.drafts.first { $0.isCurrent && (c.screenplayId == nil || $0.screenplayId == c.screenplayId) }
+            let which = scene ?? "all scenes"
+            return draft.map { "\(title) (\($0.name), \(which))" } ?? "\(title) (\(which))"
+        }
+        if let id = c.callSheetId, let sheet = sections?.callSheets.first(where: { $0.id == id }) {
+            return "\(title) (\(sheet.label))"
+        }
+        if let id = c.shootingDayId, let day = sections?.days.first(where: { $0.id == id }) {
+            return "\(title) (\(shortDay(day.label)))"
+        }
+        if let scene { return "\(title) (\(scene))" }
+        return title
+    }
+
+    /// "Day 3" out of "Day 3 (2026-12-01)".
+    static func shortDay(_ label: String) -> String {
+        label.components(separatedBy: " (").first ?? label
+    }
+
+    /// The line under the picker before a question is asked.
+    static func usingLine(_ picks: [AISectionChoice], sections: AiSections?, scenes: [AiSectionInstance]) -> String {
+        guard !picks.isEmpty else { return AIText.pickSection }
+        let names = picks.map { sectionLabel($0, sections: sections, scenes: scenes) }
+        return "Using: \(names.joined(separator: " + "))"
     }
 
     // MARK: Panel mode
@@ -156,7 +194,7 @@ enum AILogic {
 
     static func runtimeLabel(_ state: String) -> String? {
         switch state {
-        case "Starting", "LoadingModel": "Getting Offline AI ready on this computer\u{2026}"
+        case "Starting", "LoadingModel": "Getting OpenFrame AI ready on this computer\u{2026}"
         case "Busy": "Working on a request\u{2026}"
         case "Stopping": "Stopping\u{2026}"
         default: nil
@@ -228,7 +266,7 @@ enum AILogic {
     static func confidenceLabel(_ c: AiConfidence?) -> String? {
         switch c {
         case .exact: "Exact \u{00B7} from project data"
-        case .inferred: "Inferred \u{00B7} written by Offline AI"
+        case .inferred: "Inferred \u{00B7} written by OpenFrame AI"
         case .unavailable: "Not available in project data"
         case nil: nil
         }

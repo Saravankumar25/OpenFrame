@@ -69,7 +69,7 @@ public struct SettingsView: View {
                 .tabItem { Label("Storage", systemImage: "externaldrive") }
                 .tag(SettingsTab.storage)
             AISettingsView()
-                .tabItem { Label("Offline AI", systemImage: "sparkles") }
+                .tabItem { Label("OpenFrame AI", systemImage: "sparkles") }
                 .tag(SettingsTab.ai)
             DiagnosticsSettingsView()
                 .tabItem { Label("Diagnostics", systemImage: "stethoscope") }

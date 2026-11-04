@@ -8,7 +8,6 @@
 mod asset_scope;
 mod close_gate;
 mod distribution;
-mod platform;
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -486,9 +485,6 @@ pub fn run() {
     config.ai_model_source =
         openframe_application::ModelSource::from_build(option_env!("OPENFRAME_TEST_MODEL_SOURCE"));
     config.ai_deterministic = ai_deterministic(!cfg!(debug_assertions), isolated_root.is_some());
-    // The Mac App Store build hands over the StoreKit bridge and the licence server client; the
-    // first check runs on a background thread after setup. Windows: none.
-    config.mac_inputs = platform::mac_inputs();
     // The Microsoft Store build's Store calls (GetAppLicenseAsync, RequestPurchaseAsync with the
     // window handle, and a refresh on OfflineLicensesChanged) need the Partner Center product
     // identity, which does not exist yet (ADR-0023). Until they are wired here as
@@ -561,7 +557,6 @@ pub fn run() {
                 tracing::info!("sleep and wake notifications are not available");
             }
             app.manage(PowerState(parking_lot::Mutex::new(power)));
-            platform::start_entitlement_checks(&core);
             // App start: Recently Deleted in the Global Idea Vault drops items older than 30 days.
             // Off the main thread.
             let start_core = core.clone();
@@ -587,7 +582,6 @@ pub fn run() {
         })
         .manage(close_gate::CloseGate::default())
         .on_window_event(|window, event| {
-            platform::on_window_event(event);
             // The close button, Alt+F4 and the system: hold the window until the page has stored
             // the text its editors still hold, or until it fails to answer (close_gate).
             if let tauri::WindowEvent::CloseRequested { api, .. } = event
@@ -632,7 +626,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![of_invoke, of_open_asset, of_reveal_path, of_open_url, of_close_window])
         .build(tauri::generate_context!())
         .expect("error while running OpenFrame Studio")
-        .run(|app, event| platform::on_run_event(app, &event));
+        .run(|_app, _event| {});
     drop(log_guard);
 }
 

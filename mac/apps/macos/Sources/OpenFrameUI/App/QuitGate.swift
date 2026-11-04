@@ -35,8 +35,14 @@ enum QuitGate {
         guard !quitting else { return }
         quitting = true
         defer { quitting = false }
+        AppDelegate.model?.licence.prepareForQuit()
         await closeSheets(windows: windows)
         terminate()
+        // Still here well past the cap on the quit: a sheet refused, or something cancelled it.
+        Task {
+            try? await Task.sleep(for: .seconds(10))
+            AppDelegate.model?.licence.quitDidNotHappen()
+        }
     }
 
     /// Asks every sheet to close as Escape does (SwiftUI updates its own state that way), waits

@@ -20,10 +20,10 @@ pricing, discounts, refunds, entitlement refresh and restore purchase. The two w
    unlocked. Each release file has its own adapter behind that interface:
    - Microsoft Store: the Store licence API (trial and purchase).
    - Mac App Store: StoreKit 2 with Apple's non-subscription trial model (owner decision 2026-10-06). A zero-price Non-Consumable
-     "7-day Trial" (`com.openframe.studio.trial7`) starts the trial and a paid Non-Consumable "Lifetime Access"
-     (`com.openframe.studio.lifetime`) unlocks the app. There is no auto-renewing subscription and Family Sharing is off. Only
+     "7-day Trial" (`app.openframestudio.studio.trial7`) starts the trial and a paid Non-Consumable "Lifetime Access"
+     (`app.openframestudio.studio.lifetime`) unlocks the app. There is no auto-renewing subscription and Family Sharing is off. Only
      cryptographically verified StoreKit 2 transactions count; the system clock, installation date, files, Keychain and frontend
-     state are never the source of truth. A small licensing server validates the Apple-signed trial transaction and computes
+     state are never the source of truth. **SUPERSEDED 2026-11-03 by [ADR-0040](ADR-0040-offline-mac-trial-no-licence-server.md): no server; the trial is counted offline with a Keychain clock guard (the "clock is never an input" rule is reversed too).** A small licensing server validates the Apple-signed trial transaction and computes
      `trialEndsAt` as Apple's purchase time plus 168 hours in server UTC. Lifetime comes only from the verified paid
      non-consumable in StoreKit `currentEntitlements`, restored across reinstall and new Macs with the same Apple Account, and a
      refund or revocation is honoured. Details: [38-mac-app-store-trial.md](../engineering/38-mac-app-store-trial.md).

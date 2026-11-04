@@ -148,12 +148,8 @@ struct HomeView: View {
             .safeAreaInset(edge: .bottom, spacing: 0) { statusLine }
             .toolbar {
                 ToolbarItem(placement: .navigation) {
-                    HStack(spacing: 6) {
-                        BrandMark(size: 20)
-                        Text("OpenFrame").font(.headline)
-                    }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel("OpenFrame Studio")
+                    BrandLogo(markSize: 22, wordSize: 15)
+                        .accessibilityLabel("OpenFrame Studio")
                 }
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button { showVault = true } label: { Label("Global Idea Vault", systemImage: "lightbulb").labelStyle(.titleAndIcon) }
@@ -162,7 +158,7 @@ struct HomeView: View {
                     // Settings with its name (owner change list item 6). On Home it holds the settings
                     // of this Mac; Command+Comma does the same.
                     Button { SettingsRouter.open() } label: { Label("Settings", systemImage: "gearshape").labelStyle(.titleAndIcon) }
-                        .help("Settings: appearance, keyboard shortcuts, Offline AI, about (Command+Comma)")
+                        .help("Settings: appearance, keyboard shortcuts, OpenFrame AI, about (Command+Comma)")
                         .accessibilityIdentifier("home-settings")
                     Button { SettingsRouter.open(tab: .general) } label: {
                         Label(profileName.isEmpty ? "Your Name" : profileName, systemImage: "person.crop.circle").labelStyle(.titleAndIcon)

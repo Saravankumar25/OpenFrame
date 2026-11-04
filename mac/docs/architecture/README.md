@@ -47,7 +47,7 @@ The diagram shows the Windows shell. On the Mac the top two boxes are replaced b
 Other crates: `openframe-domain` (shared types, errors, roles), `openframe-security` (path confinement, archive limits,
 redaction), `openframe-platform` (everything that differs between Windows and macOS), `openframe-entitlement` (trial
 and licence; the team password gate was removed on 2026-10-27), `openframe-project-format` (folder layout and the single-writer lock),
-`openframe-test-support` (test helpers). `services/licence-server` is a separate small server for the Mac store channel.
+`openframe-test-support` (test helpers).  The Mac store trial is counted offline (ADR-0040); there is no licence server.
 
 ## 2. What happens when a person types a letter
 

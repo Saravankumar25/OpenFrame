@@ -75,7 +75,7 @@ These are harness faults. A larger model on the same harness would still fail th
      from an explicit user statement or an answer the user confirms. Listed, editable and deletable in Settings. Only
      the owner of the memory reads it. ADR-0028 decision 8 governs what may be stored.
 
-5. **Answer type and domain, per turn.** Each turn gets two separate readings (the first spike showed that one mixed list
+5. **Answer type and domain, per turn.** *(SUPERSEDED 2026-11-03 by [ADR-0041](ADR-0041-section-scoped-assistant.md) for the domain: the person picks the sections and code no longer finds the domain from topic words. The answer type stays.)* Each turn gets two separate readings (the first spike showed that one mixed list
    of intents overlaps and misreads):
    - an *answer type*: lookup, list, count, explain, relation, compare, brainstorm, navigate, change (proposal only),
      help, chat (thanks, anger, small talk, a correction with no new question);
@@ -88,7 +88,7 @@ These are harness faults. A larger model on the same harness would still fail th
    override in words ("briefly", "in detail"). Code enforces the class; the model does not choose it. The owner dropped the
    Laya model on 2026-10-26, so no new classifier model is introduced here.
 
-6. **Progressive context, per turn.** The model is never given the whole project.
+6. **Progressive context, per turn.** *(SUPERSEDED 2026-11-03 by [ADR-0041](ADR-0041-section-scoped-assistant.md): the picked sections replace the Stage B plan, and Stage C is dropped because the person widens by adding a section. Stage A stays.)* The model is never given the whole project.
    - *Stage A (always):* policy, the request, the focus card, the long-term memory entries that match the request, the
      short-term turns, and a compact project map (counts and names per area).
    - *Stage B (by answer type and domain):* a fixed fetch plan, returned as one fact per line with field names and the
@@ -113,7 +113,7 @@ These are harness faults. A larger model on the same harness would still fail th
    text, user request. Scene text, notes, tool results and memory are data. The existing rule that only the text after
    "User request:" is an instruction stays.
 
-9. **Answer checks and fallback.** Deterministic checks run on every answer, whatever the lane:
+9. **Answer checks and fallback.** *(AMENDED 2026-11-03 by [ADR-0041](ADR-0041-section-scoped-assistant.md): narrative answers get higher word limits, 250 and 350, and the checks otherwise stay.)* Deterministic checks run on every answer, whatever the lane:
    - every name, number and scene reference in the answer must appear in the dossier;
    - every required fact of the fetch plan must appear in the answer (a wrong figure that exists elsewhere in the dossier
      passes the first check, as the spike showed);

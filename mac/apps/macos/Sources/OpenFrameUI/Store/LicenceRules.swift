@@ -1,7 +1,8 @@
 // Pure rules and fixed text for the trial, purchase and first-run safety screens (Windows:
-// features/licensing/rules.ts, owner mocks 182 to 198). The Rust core decides which screen is due
-// (`entitlement.notice`); these helpers only shape what is shown. No screen names a price, a
-// currency or a pricing model: the App Store's own purchase window does.
+// features/licensing/rules.ts, owner mocks 182 to 203). The Rust core decides which screen is due
+// (`entitlement.notice`); these helpers only shape what is shown. A price is never typed here. The
+// first-launch and lock screens show the one StoreKit supplies at run time, because Apple's
+// Guideline 3.1.1 asks for the later charge to be disclosed before a trial starts.
 
 import Foundation
 import OpenFrameCore
@@ -25,22 +26,72 @@ public enum LicenceRules {
         public var spoken: String
     }
 
+    /// The address "Contact us" opens in the browser. The app has no form and sends nothing.
+    public static let contactAddress = "https://openframestudio.app/contact/"
+    public static let contactLink = "Need help? Contact us"
+
     /// The corner chip, shown from trial day 1 until the purchase. `nil` in every other state.
     public static func trialChip(_ state: EntitlementState?) -> TrialChip? {
         guard case let .trialActive(days) = state else { return nil }
         let daysLeft = max(1, min(7, Int(days.rounded())))
         let ending = daysLeft <= lastDays
-        let label = daysLeft == 1 ? "Trial: 1 day left" : "Trial: \(daysLeft) days left"
+        let label = daysLeft == 1 ? "Trial ends in 1 day" : "Trial ends in \(daysLeft) days"
         let spoken = daysLeft == 1
-            ? "Free trial, last day. Your trial ends today."
-            : "Free trial, \(daysLeft) days left.\(ending ? " Your trial ends soon." : "")"
+            ? "Free trial, last day. Your trial ends within 24 hours."
+            : "Free trial. Ends in \(daysLeft) days.\(ending ? " Your trial ends soon." : "")"
         return TrialChip(daysLeft: daysLeft, ending: ending, label: label, spoken: spoken)
     }
 
-    /// Day 5 "ends in 3 days", day 6 "ends in 2 days", day 7 "ends today".
-    public static func reminderHeadline(_ daysLeft: Int) -> String {
-        daysLeft <= 1 ? "Your free trial ends today" : "Your free trial ends in \(daysLeft) days"
+    /// Day 5 "ends in 3 days", day 6 "ends in 2 days". On the last day "ends today" when the end
+    /// falls on today's local date, otherwise "ends tomorrow".
+    public static func reminderHeadline(
+        _ daysLeft: Int, endsAt: Date? = nil, now: Date = Date(), calendar: Calendar = .current
+    ) -> String {
+        guard daysLeft <= 1 else { return "Your free trial ends in \(daysLeft) days" }
+        if let endsAt, !calendar.isDate(endsAt, inSameDayAs: now) { return "Your free trial ends tomorrow" }
+        return "Your free trial ends today"
     }
+
+    /// The line with the real end moment, in the person's own time zone: "It ends on Thu 5 Nov at 9:42 PM."
+    public static func reminderEndLine(
+        _ endsAt: Date, calendar: Calendar = .current, locale: Locale = Locale(identifier: "en_US_POSIX")
+    ) -> String {
+        let day = DateFormatter()
+        day.calendar = calendar
+        day.timeZone = calendar.timeZone
+        day.locale = locale
+        day.dateFormat = "EEE d MMM"
+        let time = DateFormatter()
+        time.calendar = calendar
+        time.timeZone = calendar.timeZone
+        time.locale = locale
+        time.dateFormat = "h:mm a"
+        return "It ends on \(day.string(from: endsAt)) at \(time.string(from: endsAt))."
+    }
+
+    /// Mock 187, the free trial card. `price` is `Product.displayPrice`, read at run time.
+    public static func trialDisclosure(price: String) -> String {
+        "7 days. Everything included. No payment now. When the trial ends, OpenFrame Studio locks until you buy the full version. Your projects stay safe on this Mac. The full version is a one-time purchase of \(price)."
+    }
+
+    public static let buyCardText = "One-time purchase through the App Store. Pay once, use it for good."
+
+    /// Mock 190. The price line is left out until StoreKit has supplied a price.
+    public static func lockBody(revoked: Bool, price: String?) -> String {
+        if revoked {
+            return "The store no longer shows a purchase for this account, so OpenFrame Studio is locked. Your projects are still on this Mac. If this is a mistake, choose Restore purchase or contact us."
+        }
+        let buy = "Buy the full version to keep using OpenFrame Studio."
+        guard let price else { return buy }
+        return "\(buy) One-time purchase of \(price)."
+    }
+
+    public static let lockSafety = "Your projects are safe on this Mac. Buying unlocks them again exactly as you left them."
+
+    /// Mock 201.
+    public static let clockTitle = "Your Mac's clock looks wrong"
+    public static let clockBody = "OpenFrame Studio checks the date to count your free trial. Turn on Set time and date automatically in System Settings, then choose Check again."
+    public static let clockSafety = "Your projects are safe on this Mac. This screen clears by itself as soon as the clock is right."
 
     /// The store's name as the screens say it. The Mac build has one store.
     public static let storeName = "the App Store"
@@ -63,7 +114,8 @@ public enum LicenceRules {
         public var name: String
         public var short: String
         public var handle: String
-        /// `nil` until the owner sends the real addresses: such an account cannot be opened.
+        /// `nil` until the owner sends the real addresses: such an account cannot be opened, and a
+        /// release build does not show it.
         public var url: String?
         public var id: String { name }
     }
@@ -78,6 +130,18 @@ public enum LicenceRules {
         SocialLink(name: "Discord", short: "Dc", handle: "@openframestudio"),
         SocialLink(name: "Threads", short: "Th", handle: "@openframestudio"),
     ]
+
+    /// The rows the welcome popup shows. These handles are placeholders, so a release build shows
+    /// only rows with a real address; a debug or test build keeps them all for the mocks.
+    public static func visibleSocialLinks(release: Bool, links: [SocialLink] = socialLinks) -> [SocialLink] {
+        release ? links.filter { isFixedSocialURL($0.url) } : links
+    }
+
+    #if DEBUG
+    public static let isReleaseBuild = false
+    #else
+    public static let isReleaseBuild = true
+    #endif
 
     private static let socialHosts: Set<String> = [
         "www.instagram.com", "instagram.com", "www.youtube.com", "youtube.com", "x.com",
@@ -107,7 +171,7 @@ public enum LicenceRules {
         ("Never delete or rename the root folder by hand.",
          "Use OpenFrame to rename, archive or delete projects."),
         ("Backups inside OpenFrame are separate copies.",
-         "Create Backup saves a copy; still keep it off this computer."),
+         "Create Backup saves a copy; still keep it off this computer. Before you delete OpenFrame Studio from this Mac, back up your root folder."),
     ]
 
     public static let tutorialSteps = ["Where it lives", "Back up", "New laptop", "Check"]

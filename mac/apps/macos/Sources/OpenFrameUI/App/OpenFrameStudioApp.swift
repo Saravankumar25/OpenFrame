@@ -26,11 +26,30 @@ enum LaunchOptions {
             FileHandle.standardError.write(Data("OPENFRAME_DATA_ROOT must be an absolute folder; OpenFrame Studio stops.\n".utf8))
             exit(2)
         }
-        let ai = Bundle.main.resourceURL?.appendingPathComponent("ai", isDirectory: true)
+        // The store build keeps the engine in a code location (Contents/Helpers/ai).
+        let helpers = Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/ai", isDirectory: true)
+        let ai = FileManager.default.fileExists(atPath: helpers.path)
+            ? helpers : Bundle.main.resourceURL?.appendingPathComponent("ai", isDirectory: true)
         var options = CoreStartOptions(appVersion: AppVersion.current, isolatedDataRoot: root, aiBundleDir: ai, writeLogs: true)
         options.testLibrarySetup = env["OPENFRAME_LIBRARY_SETUP"] == "1"
         options.testAIDeterministic = env["OPENFRAME_AI_DETERMINISTIC"] == "1"
+        options.testStoreChannel = env["OPENFRAME_TEST_STORE"] == "1"
         return options
+    }
+
+    /// The App Store's calls. In a debug build the store scenarios use a scripted stand-in, and only
+    /// on a test folder.
+    static func storeRuntime(_ options: CoreStartOptions) -> StoreRuntime {
+        #if DEBUG
+        if options.testStoreChannel, let root = options.isolatedDataRoot {
+            let source = ScriptedStoreKitSource(file: root.appendingPathComponent("fake-store.json"))
+            return StoreRuntime(
+                source: source, keychain: FileGuardKeychain(file: root.appendingPathComponent("fake-keychain.json")),
+                clock: { source.now() }
+            )
+        }
+        #endif
+        return StoreRuntime()
     }
 }
 
@@ -105,13 +124,23 @@ public struct OpenFrameStudioApp: App {
     @State private var themes: ThemeStore
 
     public init() {
-        // The StoreKit bridge and the licensing server client go to the core; only the Mac App
-        // Store build uses them. The internal disk image build ignores them.
-        let runtime = StoreRuntime()
+        // The StoreKit bridge goes to the core; only the Mac App Store build uses it. The internal
+        // disk image build ignores it.
         var options = LaunchOptions.make()
+        let runtime = LaunchOptions.storeRuntime(options)
         runtime.install(into: &options)
         let model = AppModel(options: options)
         model.storeRuntime = runtime
+        #if DEBUG
+        if options.testStoreChannel, let root = options.isolatedDataRoot {
+            // The scenarios read what would have opened in the browser.
+            let opened = root.appendingPathComponent("opened-addresses.txt")
+            model.licence.openAddress = { url in
+                let before = (try? String(contentsOf: opened, encoding: .utf8)) ?? ""
+                try? (before + url.absoluteString + "\n").write(to: opened, atomically: true, encoding: .utf8)
+            }
+        }
+        #endif
         _model = State(initialValue: model)
         _themes = State(initialValue: ThemeStore())
         AppDelegate.model = model

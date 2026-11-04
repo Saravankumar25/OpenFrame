@@ -11,25 +11,25 @@ import Foundation
 extension Scenarios {
     static let captureAI: [Scenario] = [
         tour("11-ai", order: 11000) { ui, _ in
-            let area = "AI Assistant"
+            let area = "OpenFrame AI"
             try await ui.capNav("Project Home")
             await ui.step("ai closed on home") {
                 try await ui.aiClose()
-                await ui.capture("ai-closed-home", title: "Project Home, AI Assistant closed", area: area, from: "project-home", via: "ai-toggle")
+                await ui.capture("ai-closed-home", title: "Project Home, OpenFrame AI closed", area: area, from: "project-home", via: "ai-toggle")
             }
             await ui.step("ai panel") {
                 try await ui.aiOpen()
-                await ui.capture("ai-panel", title: "AI Assistant, not available in this build", area: area, from: "ai-closed-home", via: "ai-toggle")
+                await ui.capture("ai-panel", title: "OpenFrame AI, not available in this build", area: area, from: "ai-closed-home", via: "ai-toggle")
             }
-            await ui.capMenu(id: "ai-settings-menu", name: "ai-settings-menu", title: "AI Assistant, settings menu", area: area, from: "ai-panel")
+            await ui.capMenu(id: "ai-settings-menu", name: "ai-settings-menu", title: "OpenFrame AI, settings menu", area: area, from: "ai-panel")
             await ui.step("ai offline settings") {
-                try await ui.capMenuButton(id: "ai-settings-menu", item: "Offline AI settings")
+                try await ui.capMenuButton(id: "ai-settings-menu", item: "OpenFrame AI settings")
                 _ = try await ui.wait(id: "settings-ai", timeout: 10)
                 ui.aiFrontSettings()
                 await ui.idle(1.5)
-                await ui.capture("ai-offline-ai-settings", title: "Settings, Offline AI, opened from the assistant", area: area, from: "ai-settings-menu", via: "ai-open-settings")
+                await ui.capture("ai-offline-ai-settings", title: "Settings, OpenFrame AI, opened from OpenFrame AI", area: area, from: "ai-settings-menu", via: "ai-open-settings")
                 if ui.aiScrollToEnd() {
-                    await ui.capture("ai-offline-ai-settings-details", title: "Settings, Offline AI, technical details and AI health", area: area, from: "ai-offline-ai-settings", via: "scroll")
+                    await ui.capture("ai-offline-ai-settings-details", title: "Settings, OpenFrame AI, technical details and AI health", area: area, from: "ai-offline-ai-settings", via: "scroll")
                 }
                 await ui.capRecover()
                 ui.aiFrontMain()
@@ -39,34 +39,34 @@ extension Scenarios {
                     try await ui.capNav(w)
                     await ui.idle(0.8)
                     try await ui.aiOpen()
-                    await ui.capture("ai-panel-\(ui.slug(w))", title: "AI Assistant open in \(w)", area: area, from: "ai-panel", via: "sidebar")
+                    await ui.capture("ai-panel-\(ui.slug(w))", title: "OpenFrame AI open in \(w)", area: area, from: "ai-panel", via: "sidebar")
                 }
             }
             await ui.step("ai resize wider") {
                 try await ui.capNav("Screenplay")
                 try await ui.aiOpen()
                 try await ui.aiResize(steps: 14)
-                await ui.capture("ai-panel-wide", title: "AI Assistant dragged to its widest", area: area, from: "ai-panel-screenplay", via: "ai-resize")
+                await ui.capture("ai-panel-wide", title: "OpenFrame AI dragged to its widest", area: area, from: "ai-panel-screenplay", via: "ai-resize")
             }
             await ui.step("ai resize narrower") {
                 try await ui.aiResize(steps: -24)
-                await ui.capture("ai-panel-narrow", title: "AI Assistant dragged to its narrowest", area: area, from: "ai-panel-wide", via: "ai-resize")
+                await ui.capture("ai-panel-narrow", title: "OpenFrame AI dragged to its narrowest", area: area, from: "ai-panel-wide", via: "ai-resize")
                 try await ui.aiResize(steps: 3)
             }
             await ui.step("ai closed with close button") {
                 try await ui.capAct(id: "ai-close")
                 try await ui.waitGone(id: "ai-panel", timeout: 8)
-                await ui.capture("ai-closed-screenplay", title: "Screenplay, AI Assistant closed with Close", area: area, from: "ai-panel-screenplay", via: "ai-close")
+                await ui.capture("ai-closed-screenplay", title: "Screenplay, OpenFrame AI closed with Close", area: area, from: "ai-panel-screenplay", via: "ai-close")
             }
             await ui.step("ai closed in breakdown") {
                 try await ui.capNav("Breakdown")
-                await ui.capture("ai-closed-breakdown", title: "Breakdown, AI Assistant closed", area: area, from: "ai-closed-screenplay", via: "sidebar")
+                await ui.capture("ai-closed-breakdown", title: "Breakdown, OpenFrame AI closed", area: area, from: "ai-closed-screenplay", via: "sidebar")
             }
             await ui.step("ai sidebar hidden") {
                 try await ui.aiOpen()
                 try await ui.menu(["View", "Hide Sidebar"])
                 await ui.idle(0.8)
-                await ui.capture("ai-panel-sidebar-hidden", title: "AI Assistant open, sidebar hidden", area: area, from: "ai-panel-breakdown", via: "menu-view")
+                await ui.capture("ai-panel-sidebar-hidden", title: "OpenFrame AI open, sidebar hidden", area: area, from: "ai-panel-breakdown", via: "menu-view")
                 try await ui.menu(["View", "Show Sidebar"])
                 await ui.idle(0.6)
             }
@@ -75,7 +75,7 @@ extension Scenarios {
                 ui.capBigWindow(width: 1000)
                 await ui.idle(0.8)
                 try await ui.aiOpen()
-                await ui.capture("ai-panel-narrow-window", title: "AI Assistant in a narrow window, sidebar folded away", area: area, from: "ai-closed-breakdown", via: "ai-toggle")
+                await ui.capture("ai-panel-narrow-window", title: "OpenFrame AI in a narrow window, sidebar folded away", area: area, from: "ai-closed-breakdown", via: "ai-toggle")
                 ui.capBigWindow()
                 await ui.idle(0.4)
                 if ui.menuItemEnabled(["View", "Show Sidebar"]) { try? await ui.menu(["View", "Show Sidebar"]) }
@@ -303,7 +303,7 @@ fileprivate extension UI {
         if aiPanelOpen { return }
         // Command+J, as the toolbar button's own shortcut: the toolbar item does not take an accessibility press.
         try await shortcut("j", code: 38)
-        _ = try await wait(id: "ai-panel", timeout: 10, "the AI Assistant panel")
+        _ = try await wait(id: "ai-panel", timeout: 10, "OpenFrame AI panel")
         await idle(1.2)
     }
 
@@ -317,7 +317,7 @@ fileprivate extension UI {
 
     /// Widens (positive) or narrows (negative) the panel through its resize handle, 24 points a step.
     func aiResize(steps: Int) async throws {
-        let e = try await wait(id: "ai-resize", timeout: 6, "the AI Assistant resize handle")
+        let e = try await wait(id: "ai-resize", timeout: 6, "OpenFrame AI resize handle")
         let sel = steps > 0 ? "accessibilityPerformIncrement" : "accessibilityPerformDecrement"
         for _ in 0..<abs(steps) {
             let fresh = query(id: "ai-resize").first ?? e
@@ -346,7 +346,7 @@ fileprivate extension UI {
 
     /// Brings the Settings window to the front and makes it key, so the picture is of it.
     func aiFrontSettings() {
-        let names = ["Settings", "General", "Appearance", "Offline AI", "Diagnostics"]
+        let names = ["Settings", "General", "Appearance", "OpenFrame AI", "Diagnostics"]
         if let w = NSApp.windows.first(where: { $0.isVisible && names.contains($0.title) }) {
             NSApp.activate(ignoringOtherApps: true)
             w.makeKeyAndOrderFront(nil)

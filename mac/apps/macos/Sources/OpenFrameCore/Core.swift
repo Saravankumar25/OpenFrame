@@ -45,14 +45,12 @@ public struct CoreStartOptions: Sendable {
     /// `Contents/Resources/ai` inside the app bundle.
     public var aiBundleDir: URL?
     public var writeLogs: Bool
-    /// The Mac App Store build's StoreKit 2 object. The core uses it in the store channel only;
+    /// The Mac App Store build's StoreKit 2 and Keychain object. The core uses it in the store channel only;
     /// the internal disk image build ignores it.
     public var storeKit: (any StoreKitCallbacks)?
-    /// The Mac App Store build's client for the licensing server (store channel only).
-    public var licenceServer: (any LicenceServerCallbacks)?
-    /// The store screen tests: run as the store channel with this licence response public key
-    /// (64 hex characters). Honoured by the core only in a debug build on a test folder.
-    public var testStoreResponseKeyHex: String?
+    /// The store screen tests: run as the store channel. Honoured by the core only in a debug build
+    /// on a test folder.
+    public var testStoreChannel = false
     /// The first-start library setup tests: the test folder starts like a new computer. Honoured
     /// by the core only in a debug build on a test folder.
     public var testLibrarySetup = false
@@ -131,14 +129,14 @@ public final class Core: CoreInvoking, @unchecked Sendable {
             isolatedDataRoot: options.isolatedDataRoot?.path,
             aiBundleDir: options.aiBundleDir?.path,
             writeLogs: options.writeLogs,
-            testStoreResponseKeyHex: options.testStoreResponseKeyHex,
+            testStoreChannel: options.testStoreChannel,
             testLibrarySetup: options.testLibrarySetup,
             testAiDeterministic: options.testAIDeterministic
         )
         return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
                 do {
-                    let handle = try CoreHandle.start(config: config, listener: hub, storekit: options.storeKit, licenceServer: options.licenceServer)
+                    let handle = try CoreHandle.start(config: config, listener: hub, storekit: options.storeKit)
                     continuation.resume(returning: Core(handle: handle, hub: hub))
                 } catch {
                     continuation.resume(throwing: CoreFailure(error))

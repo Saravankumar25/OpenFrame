@@ -288,7 +288,7 @@ struct ContactField: View {
             }
         } else {
             BufferedField(id: id, label: label, value: value, disabled: !canEdit,
-                          hint: "Private: visible to Owners and Editors only. Never shared with the assistant or put in exports.",
+                          hint: "Private: visible to Owners and Editors only. Never shared with OpenFrame AI or put in exports.",
                           onCommit: onCommit)
         }
     }

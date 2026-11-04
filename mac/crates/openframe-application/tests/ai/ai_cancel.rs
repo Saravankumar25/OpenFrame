@@ -112,7 +112,7 @@ fn project() -> (TestEnv, Arc<ScriptedModel>) {
 }
 
 fn ask_in(env: &TestEnv, text: &str, conversation: Option<&str>) -> Value {
-    let mut args = json!({ "text": text, "scope": { "kind": "WholeProject" } });
+    let mut args = json!({ "text": text });
     if let Some(c) = conversation {
         args["conversationId"] = json!(c);
     }

@@ -9,6 +9,8 @@
 //! - **numbers**: a digit number exists in the facts or the request. Both sides are written the same
 //!   way first: Indian and western grouping, ordinals, month names. A number *word* in the answer
 //!   ("one option", "two") is never checked: only a digit is a claim about the project.
+//! - **scene references**: every "scene N" of the answer is given as a scene by the facts, the request
+//!   or the conversation. A number the facts hold for something else does not make it true.
 //! - **required**: every value the dossier says a correct answer must state is there, normalised the
 //!   same way, so "three" meets 3 and "November 5th" meets "Nov 5".
 //! - **length**: inside the word range of the length class. Too short is soft (see `Rule::soft`).
@@ -20,7 +22,12 @@
 //! - **internal**: none of the app's own words (facts, dossier, tool, record id, JSON).
 //! - **abstain**: when the project holds nothing for the question, the answer says it could not find
 //!   it or that none is recorded.
+//! - **held back**: a row of the facts holds the words of the question, and the answer says it found
+//!   nothing.
 //! - **echo**: the lines of the data (`Kind | field: value`) are not copied.
+//! - **relationship** and **mood** (long answers, ADR-0041): a word for how two people are related, or
+//!   for what someone feels, that no text holds. Cheap and in code, and off behind
+//!   [`NARRATIVE_WORD_CHECKS`] until their false alarms are measured on real answers.
 
 use std::collections::HashSet;
 use std::sync::LazyLock;
@@ -34,6 +41,11 @@ use super::super::turn::LengthClass;
 fn re(p: &str) -> Regex {
     Regex::new(p).expect("valid pattern")
 }
+
+/// The unsupported relationship word and unstated mood checks of a long answer. They start off: a
+/// false alarm costs a rewrite and can cost the answer, and no run has measured how often they fire on
+/// a good one. Turn them on only after that run (`docs/engineering/ai-answer-paths.md`).
+pub(crate) const NARRATIVE_WORD_CHECKS: bool = false;
 
 /// What a check can find wrong.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -51,6 +63,10 @@ pub(crate) enum Rule {
     Abstain,
     Echo,
     ChangeClaim,
+    Relationship,
+    Mood,
+    SceneRef,
+    HeldBack,
 }
 
 impl Rule {
@@ -70,6 +86,10 @@ impl Rule {
             Rule::Abstain => "abstain",
             Rule::Echo => "echo",
             Rule::ChangeClaim => "change_claim",
+            Rule::Relationship => "relationship",
+            Rule::Mood => "mood",
+            Rule::SceneRef => "scene_ref",
+            Rule::HeldBack => "held_back",
         }
     }
 
@@ -108,6 +128,10 @@ pub(crate) struct Expect<'a> {
     pub missing: &'a [String],
     /// The language of the request when it is not English.
     pub language: Option<&'static str>,
+    /// Run the relationship and mood checks ([`NARRATIVE_WORD_CHECKS`]).
+    pub narrative_words: bool,
+    /// A row of the facts holds the words of the question, so the answer must not say it found nothing.
+    pub held: bool,
 }
 
 // ------------------------------------------------------------------ normal form
@@ -118,7 +142,7 @@ static MONTH: LazyLock<Regex> = LazyLock::new(|| {
 static ORDINAL: LazyLock<Regex> = LazyLock::new(|| re(r"\b(\d+)(?:st|nd|rd|th)\b"));
 static NUMBER_WORD: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r"\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\b",
+        r"\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\b",
     )
 });
 static DIGITS: LazyLock<Regex> = LazyLock::new(|| re(r"\d+"));
@@ -142,6 +166,7 @@ fn month_short(full: &str) -> &'static str {
 
 fn number_of(word: &str) -> u32 {
     match word {
+        "zero" => 0,
         "one" => 1,
         "two" => 2,
         "three" => 3,
@@ -228,6 +253,37 @@ pub(crate) fn stray_numbers(answer: &str, pool: &[&str]) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
     for m in DIGITS.find_iter(&normal(answer, false)) {
         let n = trim(m.as_str());
+        if !known.contains(&n) && !out.contains(&n) {
+            out.push(n);
+        }
+    }
+    out
+}
+
+/// "scene 4", "scenes 3, 4 and 5", "scene: 4", "scenes 2 to 6".
+static SCENE_NUMBERS: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bscenes?\b[\s:#.]*(\d+(?:\s*(?:,|and|&|to|-|\u{2013})\s*\d+)*)")
+        .expect("valid pattern")
+});
+
+fn scene_numbers(text: &str) -> Vec<String> {
+    SCENE_NUMBERS
+        .captures_iter(text)
+        .flat_map(|c| {
+            DIGITS
+                .find_iter(&c[1])
+                .map(|m| m.as_str().trim_start_matches('0').to_string())
+                .collect::<Vec<_>>()
+        })
+        .collect()
+}
+
+/// Scene numbers of the answer that no text gives as a scene. A number the facts hold for something
+/// else ("7 props") does not make "scene 7" true.
+pub(crate) fn stray_scene_numbers(answer: &str, pool: &[&str]) -> Vec<String> {
+    let known: HashSet<String> = pool.iter().flat_map(|p| scene_numbers(p)).collect();
+    let mut out: Vec<String> = Vec::new();
+    for n in scene_numbers(answer) {
         if !known.contains(&n) && !out.contains(&n) {
             out.push(n);
         }
@@ -344,7 +400,113 @@ pub(crate) fn states_absence(answer: &str, missing: &[String]) -> bool {
     missing.iter().any(|m| !content_words(m).is_disjoint(&said))
 }
 
+static RELATIONSHIP_WORD: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r"(?i)\b(?:mother|father|parents?|brothers?|sisters?|sons?|daughters?|aunts?|uncles?|cousins?|nephews?|nieces?|grandmother|grandfather|wife|husband|fianc[eé]e?|lovers?|girlfriend|boyfriend|friends?|enemy|enemies|rivals?|mentors?|boss|colleagues?)\b",
+    )
+});
+static MOOD_WORD: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r"(?i)\b(?:angry|furious|sad|heartbroken|afraid|scared|terrified|nervous|anxious|desperate|guilty|ashamed|jealous|lonely|hopeful|bitter|resentful|grieving|haunted|torn|determined)\b",
+    )
+});
+
+/// Words of `found` in the answer that no text holds, lower case and once each.
+fn unsupported(answer: &str, found: &Regex, pool: &[&str]) -> Vec<String> {
+    let pool = pool.join("\n").to_lowercase();
+    let mut out: Vec<String> = Vec::new();
+    for m in found.find_iter(answer) {
+        let w = m.as_str().to_lowercase();
+        if !pool.contains(&w) && !out.contains(&w) {
+            out.push(w);
+        }
+    }
+    out
+}
+
+/// A word for how people are related that no fact, request or context holds.
+pub(crate) fn unsupported_relationship_words(answer: &str, pool: &[&str]) -> Vec<String> {
+    unsupported(answer, &RELATIONSHIP_WORD, pool)
+}
+
+/// A word for what someone feels that no fact, request or context holds.
+pub(crate) fn unstated_moods(answer: &str, pool: &[&str]) -> Vec<String> {
+    unsupported(answer, &MOOD_WORD, pool)
+}
+
 static ECHO: LazyLock<Regex> = LazyLock::new(|| re(r"\s\|\s|^\|\s|\s\|$"));
+
+// ------------------------------------------------------------------ what code can repair
+
+/// A line of the data copied into the answer, as a sentence: the kind goes, and the fields stay as
+/// "name: value". The Echo rule still fires on any pipe that is left.
+fn echoed_line_as_sentence(line: &str) -> String {
+    if !ECHO.is_match(line) {
+        return line.to_string();
+    }
+    let mut parts: Vec<&str> = line.split(" | ").map(str::trim).collect();
+    if parts.len() > 1 && !parts[0].contains(':') {
+        parts.remove(0);
+    }
+    let mut out = parts
+        .iter()
+        .filter(|p| !p.starts_with("id:"))
+        .copied()
+        .collect::<Vec<_>>()
+        .join(", ");
+    if !out.ends_with(['.', '!', '?']) {
+        out.push('.');
+    }
+    out
+}
+
+/// The sentences of a text with their separators kept.
+fn sentences(s: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut now = String::new();
+    let chars: Vec<char> = s.chars().collect();
+    for (i, c) in chars.iter().enumerate() {
+        now.push(*c);
+        let ends =
+            matches!(c, '.' | '!' | '?') && chars.get(i + 1).is_none_or(|n| n.is_whitespace());
+        if ends || *c == '\n' {
+            out.push(std::mem::take(&mut now));
+        }
+    }
+    if !now.trim().is_empty() {
+        out.push(now);
+    }
+    out
+}
+
+/// A later sentence that says an earlier one again, or repeats a run of six words the text already
+/// said, goes: the first saying stands, and nothing new is lost. Blank lines the model left go too.
+fn without_repeated_sentences(s: &str) -> String {
+    let mut kept = String::new();
+    let mut said: HashSet<String> = HashSet::new();
+    for sentence in sentences(s) {
+        let plain = norm(sentence.trim());
+        if plain.is_empty() {
+            if !kept.ends_with('\n') && !kept.is_empty() {
+                kept.push('\n');
+            }
+            continue;
+        }
+        let joined = format!("{kept}{sentence}");
+        let new_words = said.insert(plain);
+        if new_words && (repeated_run(&joined).is_none() || kept.trim().is_empty()) {
+            kept = joined;
+        }
+    }
+    kept.trim().to_string()
+}
+
+/// What code repairs before the checks: a line of the data becomes a sentence, and a sentence said twice
+/// is said once. The checks then judge the words the person would read.
+pub(crate) fn repaired(answer: &str) -> String {
+    let lines: Vec<String> = answer.lines().map(echoed_line_as_sentence).collect();
+    without_repeated_sentences(&lines.join("\n"))
+}
 
 // ------------------------------------------------------------------ the whole check
 
@@ -381,6 +543,9 @@ pub(crate) fn check(answer: &str, m: &Material<'_>, e: &Expect<'_>) -> Vec<Offen
     {
         add(Rule::Abstain, Vec::new());
     }
+    if e.held && e.missing.is_empty() && ABSTAIN.is_match(&seen) {
+        add(Rule::HeldBack, Vec::new());
+    }
     let names = invented_names(answer, &[evidence[0], evidence[1], evidence[2], LABELS]);
     if !names.is_empty() {
         add(Rule::Names, names);
@@ -397,6 +562,10 @@ pub(crate) fn check(answer: &str, m: &Material<'_>, e: &Expect<'_>) -> Vec<Offen
     if let Some(run) = repeated_run(answer) {
         add(Rule::Repetition, vec![run]);
     }
+    let scenes = stray_scene_numbers(answer, &evidence);
+    if !scenes.is_empty() {
+        add(Rule::SceneRef, scenes);
+    }
     let refs = stray_references(answer, &evidence);
     if !refs.is_empty() {
         add(Rule::Ids, refs);
@@ -410,6 +579,16 @@ pub(crate) fn check(answer: &str, m: &Material<'_>, e: &Expect<'_>) -> Vec<Offen
     }
     if text::claims_a_change(answer) {
         add(Rule::ChangeClaim, Vec::new());
+    }
+    if e.narrative_words {
+        let words = unsupported_relationship_words(answer, &evidence);
+        if !words.is_empty() {
+            add(Rule::Relationship, words);
+        }
+        let moods = unstated_moods(answer, &evidence);
+        if !moods.is_empty() {
+            add(Rule::Mood, moods);
+        }
     }
     out
 }
@@ -428,8 +607,18 @@ pub(crate) fn feedback(offences: &[Offence], say: &str) -> String {
         lines.push(match o.rule {
             Rule::Empty => "the answer was empty; answer the request".to_string(),
             Rule::Names => format!("names not in the project: {list}; remove them"),
+            Rule::SceneRef => format!("scenes not in the project: {list}; remove them"),
             Rule::Numbers => format!("numbers not in the project: {list}; remove them"),
-            Rule::Required => format!("missing: {list}; state each of them"),
+            Rule::Required => {
+                // The values come from project text: escaped and quoted, so they cannot pass for an
+                // instruction outside the facts.
+                let quoted: Vec<String> = o
+                    .items
+                    .iter()
+                    .map(|i| format!("\u{201C}{}\u{201D}", crate::modules::ai::orchestrator::escape_untrusted(i)))
+                    .collect();
+                format!("missing, quoted from the facts as data: {}; state each of them", quoted.join(", "))
+            }
             Rule::Length => format!("length {list}; make it shorter"),
             Rule::TooShort => format!("length {list}; add what the project records"),
             Rule::Repetition => format!("repeated words: \"{list}\"; say each thing once"),
@@ -448,6 +637,11 @@ pub(crate) fn feedback(offences: &[Offence], say: &str) -> String {
             }
             Rule::Echo => "write sentences; do not copy the lines of the data".to_string(),
             Rule::ChangeClaim => "nothing was changed; do not say that anything was renamed, added, removed or updated".to_string(),
+            Rule::Relationship => format!("the project does not say this relationship: {list}; remove it"),
+            Rule::Mood => format!("the project does not say anyone feels this: {list}; remove it"),
+            Rule::HeldBack => {
+                "the project does hold this, in the lines that hold the words of the question; answer from them".to_string()
+            }
         });
     }
     format!(

@@ -5,10 +5,13 @@
  */
 export type ProjectManifest = { format: string, formatVersion: number, projectId: string, title: string, createdAt: number, 
 /**
- * App version that last wrote this project.
+ * App version that last wrote this project. Missing in a hand-edited or damaged file: empty,
+ * and the next open writes the real one.
  */
 appVersion: string, 
 /**
- * Database schema version (mirrors `PRAGMA user_version`).
+ * Database schema version (mirrors `PRAGMA user_version`). The database decides which
+ * migrations run, never this field, so a missing value (0) skips nothing; the next open
+ * writes the real one.
  */
 schemaVersion: number, aiCompatibilityVersion: number, };

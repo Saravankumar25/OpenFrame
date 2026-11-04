@@ -24,8 +24,10 @@ pub struct Case {
     pub project: String,
     #[serde(default)]
     pub setup: Vec<SetupOp>,
+    /// The sections the case picks (ADR-0041), resolved by the harness to ids and sent as
+    /// `AskArgs.sections`. A case without it reads every section, through the same path.
     #[serde(default)]
-    pub scope: Option<Value>,
+    pub sections: Option<Vec<CaseSection>>,
     pub request: String,
     /// Conversation cases: earlier requests, sent first in the same conversation; their answers
     /// are ignored.
@@ -35,6 +37,18 @@ pub struct Case {
     pub review: Option<String>,
     #[serde(default)]
     pub expect: Expect,
+}
+
+/// One section of a case: the leaf, and which scene or shoot day when the case narrows to one.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct CaseSection {
+    pub leaf: String,
+    /// The scene's place in the case's draft (1-based).
+    #[serde(default)]
+    pub scene: Option<usize>,
+    /// The shoot day number.
+    #[serde(default)]
+    pub day: Option<u32>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -108,6 +122,13 @@ pub struct Expect {
     /// The answer type the turn must read (spec 5.3), scored exactly and by group from the trace.
     #[serde(default)]
     pub answer_type: Option<String>,
+    /// The leaf the out-of-section pointer must name (ADR-0041).
+    #[serde(default)]
+    pub pointer: Option<String>,
+    /// The pointer must not fire. Every case with sections and no `pointer` counts the same way in
+    /// the summary; this flag marks the cases written to catch a word that used to collide.
+    #[serde(default)]
+    pub no_pointer: bool,
     // Parsed and reported as not counted: the build cannot measure them yet.
     // shortcut: needs the answer's source record ids in the Observation, added by spec slice S3.
     #[serde(default)]
@@ -127,6 +148,8 @@ pub const LENGTH_CLASSES: &[(&str, usize, usize)] = &[
     ("short", 1, 80),
     ("paragraph", 40, 200),
     ("brief", 1, 40),
+    ("narrative", 15, 250),
+    ("story", 40, 350),
 ];
 
 /// Words an answer must not use to describe the app's inside (`no_internal_words`). Matched at the
@@ -316,6 +339,9 @@ pub struct Observation {
     /// report. The engine figures are added by the runner.
     #[serde(default)]
     pub timing: Option<latency::CaseTiming>,
+    /// The leaf the reply pointed at (`result.pointer.leaf`).
+    #[serde(default)]
+    pub pointer: Option<String>,
 }
 
 /// What the answer-type stage (spec slice S4) recorded for one request: codes and a number only.
@@ -323,8 +349,6 @@ pub struct Observation {
 pub struct TurnObs {
     pub answer_type: String,
     pub group: String,
-    /// Comma separated domain codes.
-    pub domains: String,
     pub length_class: String,
     /// `rule`, `repair`, `neighbour`, `model` or `fallback`.
     pub how: String,
@@ -335,17 +359,16 @@ pub struct TurnObs {
 /// row comes from a database made before the turn columns existed.
 pub fn turn_from_trace(c: &rusqlite::Connection, request_id: &str) -> Option<TurnObs> {
     c.query_row(
-        "SELECT answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote
+        "SELECT answer_type, answer_group, length_class, turn_how, turn_vote
          FROM sys_ai_trace WHERE request_id = ?1",
         [request_id],
         |r| {
             Ok(TurnObs {
                 answer_type: r.get(0)?,
                 group: r.get(1)?,
-                domains: r.get(2)?,
-                length_class: r.get(3)?,
-                how: r.get(4)?,
-                vote: r.get(5)?,
+                length_class: r.get(2)?,
+                how: r.get(3)?,
+                vote: r.get(4)?,
             })
         },
     )
@@ -433,6 +456,70 @@ pub struct Score {
     pub engine_mb: u64,
     /// The answer path and fallback of the request.
     pub route: Option<Route>,
+    /// A case with sections: what the pointer should name (`None`: it should stay quiet) and what it
+    /// named. Outer `None`: the case picks no sections, so the pointer does not apply.
+    #[serde(default)]
+    pub pointer: Option<PointerCheck>,
+}
+
+/// What the pointer should have named and what it named.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct PointerCheck {
+    pub want: Option<String>,
+    pub got: Option<String>,
+}
+
+/// The pointer's numbers (design section 6): precision, recall and the false-pointer rate.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct PointerMetrics {
+    /// Cases that expect a pointer.
+    pub expected: usize,
+    /// Cases where it fired.
+    pub fired: usize,
+    /// Cases where it named the expected leaf.
+    pub correct: usize,
+    /// Cases that expect no pointer.
+    pub quiet_cases: usize,
+    /// Of those, the ones where it fired.
+    pub false_fired: usize,
+}
+
+impl PointerMetrics {
+    pub fn add(&mut self, c: &PointerCheck) {
+        self.expected += usize::from(c.want.is_some());
+        self.quiet_cases += usize::from(c.want.is_none());
+        self.fired += usize::from(c.got.is_some());
+        self.correct += usize::from(c.want.is_some() && c.want == c.got);
+        self.false_fired += usize::from(c.want.is_none() && c.got.is_some());
+    }
+
+    /// Of the times it fired, how often it named the right leaf.
+    pub fn precision(&self) -> Option<f64> {
+        (self.fired > 0).then(|| 100.0 * self.correct as f64 / self.fired as f64)
+    }
+
+    /// Of the times it should have fired, how often it named the right leaf.
+    pub fn recall(&self) -> Option<f64> {
+        (self.expected > 0).then(|| 100.0 * self.correct as f64 / self.expected as f64)
+    }
+
+    /// Of the cases that fit the pick, how often it fired anyway.
+    pub fn false_rate(&self) -> Option<f64> {
+        (self.quiet_cases > 0).then(|| 100.0 * self.false_fired as f64 / self.quiet_cases as f64)
+    }
+
+    /// One table row: precision, recall, false-pointer rate.
+    pub fn table(&self) -> String {
+        let n = |v: Option<f64>, a: usize, b: usize| {
+            v.map_or_else(|| "none".to_string(), |p| format!("{p:.1}% ({a}/{b})"))
+        };
+        format!(
+            "| Pointer precision | Pointer recall | False-pointer rate |\n|---|---|---|\n| {} | {} | {} |\n",
+            n(self.precision(), self.correct, self.fired),
+            n(self.recall(), self.correct, self.expected),
+            n(self.false_rate(), self.false_fired, self.quiet_cases),
+        )
+    }
 }
 
 pub fn score(case: &Case, o: &Observation) -> Score {
@@ -451,6 +538,12 @@ pub fn score(case: &Case, o: &Observation) -> Score {
         return s;
     }
     let e = &case.expect;
+    if case.sections.is_some() {
+        s.pointer = Some(PointerCheck {
+            want: e.pointer.clone(),
+            got: o.pointer.clone(),
+        });
+    }
     if case.kind == "retrieval" {
         let k = e.k.unwrap_or(5);
         s.rank = o
@@ -583,10 +676,19 @@ fn conversation_scores(case: &Case, o: &Observation, s: &mut Score) {
     }
     if let Some(class) = &e.length_class {
         let n = checks::word_count(&o.answer);
+        // A long narrative case writes its own limits; they are wider than the class names.
+        let narrative = matches!(
+            e.answer_type.as_deref(),
+            Some("describe" | "brief" | "story" | "relation")
+        );
         s.length_class_ok = Some(
-            LENGTH_CLASSES
-                .iter()
-                .any(|(c, lo, hi)| c == class && (*lo..=*hi).contains(&n)),
+            if narrative && (e.max_words.is_some() || e.min_words.is_some()) {
+                e.max_words.is_none_or(|m| n <= m) && e.min_words.is_none_or(|m| n >= m)
+            } else {
+                LENGTH_CLASSES
+                    .iter()
+                    .any(|(c, lo, hi)| c == class && (*lo..=*hi).contains(&n))
+            },
         );
     }
     if e.no_reask {
@@ -842,6 +944,9 @@ pub struct Summary {
     /// Cases by kind and the fallback they used (`none` when no fallback): kind, then fallback, then
     /// number of cases.
     pub fallback_mix: BTreeMap<String, BTreeMap<String, usize>>,
+    /// The out-of-section pointer over the cases that pick sections.
+    #[serde(default)]
+    pub pointer: PointerMetrics,
 }
 
 pub fn summarize(scores: &[Score]) -> Summary {
@@ -849,6 +954,9 @@ pub fn summarize(scores: &[Score]) -> Summary {
     let mut en_tool = Group::default();
     let mut en_action = Group::default();
     for x in scores {
+        if let Some(c) = &x.pointer {
+            s.pointer.add(c);
+        }
         s.overall.add(x);
         s.by_kind.entry(x.kind.clone()).or_default().add(x);
         s.by_lang.entry(x.lang.clone()).or_default().add(x);
@@ -1112,6 +1220,10 @@ pub fn markdown(title: &str, s: &Summary, meta: &[(String, String)]) -> String {
     }
     if s.conversation.cases > 0 {
         out.push_str(&conversation_section(s));
+        if s.pointer.expected + s.pointer.quiet_cases > 0 {
+            out.push_str("\n## Out-of-section pointer (ADR-0041)\n\n");
+            out.push_str(&s.pointer.table());
+        }
     }
     out.push_str("\nWriting quality is scored separately against each case's rubric at development time (ADR-0028 decision 9); this table covers only the deterministic measures.\n");
     out
@@ -1523,6 +1635,88 @@ mod tests {
     }
 
     #[test]
+    fn the_pointer_is_scored_only_on_a_case_with_sections() {
+        let run = |sections: bool, expect: Value, got: Option<&str>| {
+            let mut case = serde_json::json!({
+                "id": "sec-neg-001", "kind": "conversation", "lang": "en", "project": "p",
+                "request": "Who plays Mariamma?", "expect": expect });
+            if sections {
+                case["sections"] = serde_json::json!([{ "leaf": "production/budget" }]);
+            }
+            let case: Case = serde_json::from_value(case).unwrap();
+            let o = Observation {
+                pointer: got.map(str::to_string),
+                ..Observation::default()
+            };
+            score(&case, &o).pointer
+        };
+        let hit = run(
+            true,
+            json!({ "pointer": "production/cast-crew" }),
+            Some("production/cast-crew"),
+        );
+        assert_eq!(hit.as_ref().unwrap().want, hit.as_ref().unwrap().got);
+        assert!(run(false, json!({}), None).is_none());
+    }
+
+    #[test]
+    fn pointer_metrics_count_precision_recall_and_false_pointers() {
+        let check = |want: Option<&str>, got: Option<&str>| PointerCheck {
+            want: want.map(str::to_string),
+            got: got.map(str::to_string),
+        };
+        let mut m = PointerMetrics::default();
+        for c in [
+            check(Some("a"), Some("a")),
+            check(Some("a"), Some("b")),
+            check(Some("a"), None),
+            check(None, None),
+            check(None, None),
+            check(None, None),
+            check(None, Some("c")),
+        ] {
+            m.add(&c);
+        }
+        assert_eq!(m.correct, 1);
+        assert_eq!(m.fired, 3);
+        assert_eq!(m.expected, 3);
+        assert_eq!(m.quiet_cases, 4);
+        assert_eq!(m.false_fired, 1);
+        assert!((m.precision().unwrap() - 100.0 / 3.0).abs() < 0.01);
+        assert!((m.recall().unwrap() - 100.0 / 3.0).abs() < 0.01);
+        assert!((m.false_rate().unwrap() - 25.0).abs() < 0.01);
+        assert!(m.table().contains("25.0% (1/4)"));
+    }
+
+    #[test]
+    fn a_case_with_its_own_word_limits_is_held_to_those_not_to_the_class() {
+        let case = |expect: Value| {
+            let c: Case = serde_json::from_value(serde_json::json!({
+                "id": "sec-narr-char-001", "kind": "conversation", "lang": "en", "project": "p",
+                "request": "Describe Anjali.", "expect": expect }))
+            .unwrap();
+            c
+        };
+        let long = "word ".repeat(230);
+        let o = Observation {
+            answer: long,
+            ..Observation::default()
+        };
+        let by_class = score(
+            &case(json!({ "length_class": "paragraph", "answer_type": "describe" })),
+            &o,
+        );
+        assert_eq!(by_class.length_class_ok, Some(false));
+        let own = score(
+            &case(
+                json!({ "length_class": "paragraph", "answer_type": "describe", "min_words": 25, "max_words": 250 }),
+            ),
+            &o,
+        );
+        assert_eq!(own.length_class_ok, Some(true));
+    }
+
+    #[test]
     fn abstain_names_need_the_wording_and_a_place() {
         let c = json!({ "abstain_names": ["scenes", "characters"] });
         assert_eq!(
@@ -1669,23 +1863,17 @@ mod tests {
         c.execute_batch(
             "ALTER TABLE sys_ai_trace ADD COLUMN answer_type TEXT NOT NULL DEFAULT '';
              ALTER TABLE sys_ai_trace ADD COLUMN answer_group TEXT NOT NULL DEFAULT '';
-             ALTER TABLE sys_ai_trace ADD COLUMN turn_domains TEXT NOT NULL DEFAULT '';
              ALTER TABLE sys_ai_trace ADD COLUMN length_class TEXT NOT NULL DEFAULT '';
              ALTER TABLE sys_ai_trace ADD COLUMN turn_how TEXT NOT NULL DEFAULT '';
              ALTER TABLE sys_ai_trace ADD COLUMN turn_vote REAL NOT NULL DEFAULT 0;
-             INSERT INTO sys_ai_trace VALUES ('r1', 'chat', 'count', 'facts', 'budget,schedule', 'one_sentence', 'neighbour', 0.6);",
+             INSERT INTO sys_ai_trace VALUES ('r1', 'chat', 'count', 'facts', 'one_sentence', 'neighbour', 0.6);",
         )
         .unwrap();
         assert_eq!(turn_from_trace(&c, "r0"), None, "a row without a read");
         let t = turn_from_trace(&c, "r1").unwrap();
         assert_eq!(
-            (
-                t.answer_type.as_str(),
-                t.group.as_str(),
-                t.domains.as_str(),
-                t.how.as_str()
-            ),
-            ("count", "facts", "budget,schedule", "neighbour")
+            (t.answer_type.as_str(), t.group.as_str(), t.how.as_str()),
+            ("count", "facts", "neighbour")
         );
         assert!((t.vote - 0.6).abs() < 1e-9);
         assert_eq!(turn_from_trace(&c, "missing"), None);
@@ -1695,7 +1883,7 @@ mod tests {
     fn the_length_classes_are_the_ones_the_turn_stage_uses() {
         use openframe_application::modules::ai::turn::LengthClass::*;
         for (name, lo, hi) in LENGTH_CLASSES {
-            let class = [OneSentence, Short, Paragraph, Brief]
+            let class = [OneSentence, Short, Paragraph, Brief, Narrative, Story]
                 .into_iter()
                 .find(|c| c.code() == *name)
                 .unwrap_or_else(|| panic!("{name} is not a class of the turn stage"));

@@ -48,6 +48,7 @@ impl AiService {
         )
         .map(|mut c| {
             c.deterministic = config.ai_deterministic;
+            c.engine_store_signed = config.ai_engine_store_signed;
             c
         })
         .and_then(AiManager::new);
@@ -62,7 +63,7 @@ impl AiService {
             Err(e) => {
                 tracing::error!(
                     code = e.code_str(),
-                    "Offline AI could not initialise; the rest of OpenFrame is unaffected"
+                    "OpenFrame AI could not initialise; the rest of OpenFrame is unaffected"
                 );
                 Self::with_manager(None, Some(e), events)
             }

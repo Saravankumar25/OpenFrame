@@ -9,10 +9,10 @@ import OpenFrameCore
 import SwiftUI
 
 enum AssistantMemoryText {
-    static let title = "Assistant memory"
-    static let empty = "Nothing is remembered yet. The assistant keeps a fact or preference only when you state it outright, or confirm one of its answers."
-    static let hint = "Saved on this Mac, in this project, for you only, and only when you state a fact or confirm an answer. Delete an entry and the assistant forgets it."
-    static let noProject = "Open a project to see what the assistant remembers in it."
+    static let title = "OpenFrame AI memory"
+    static let empty = "Nothing is remembered yet. OpenFrame AI keeps a fact or preference only when you state it outright, or confirm one of its answers."
+    static let hint = "Saved on this Mac, in this project, for you only, and only when you state a fact or confirm an answer. Delete an entry and OpenFrame AI forgets it."
+    static let noProject = "Open a project to see what OpenFrame AI remembers in it."
     static let forgotten = "Forgotten."
 
     static func deleteLabel(_ e: AiMemoryEntry) -> String { "Delete: \(e.text)" }

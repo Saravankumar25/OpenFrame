@@ -1,6 +1,6 @@
-// What the Mac App Store build hands to the core: the StoreKit 2 bridge, the licensing server
-// client and the listener for `Transaction.updates`. The internal disk image build gets the same
-// objects and the core ignores them (the channel comes from the build), so they are never called.
+// What the Mac App Store build hands to the core: the StoreKit 2 and Keychain bridge and the listener
+// for `Transaction.updates`. The internal disk image build gets the same objects and the core ignores
+// them (the channel comes from the build), so they are never called.
 
 import Foundation
 import OpenFrameCore
@@ -8,20 +8,20 @@ import OpenFrameCore
 public final class StoreRuntime: @unchecked Sendable {
     public let source: StoreKitSource
     public let bridge: StoreKitBridgeImpl
-    public let server: LicenceServerCallbacks
     private let lock = NSLock()
     private var listener: Task<Void, Never>?
 
-    public init(source: StoreKitSource = LiveStoreKitSource(), server: LicenceServerCallbacks = HTTPLicenceServer()) {
+    public init(
+        source: StoreKitSource = LiveStoreKitSource(), keychain: GuardKeychain = LiveGuardKeychain(),
+        clock: @escaping @Sendable () -> Date = { Date() }
+    ) {
         self.source = source
-        self.bridge = StoreKitBridgeImpl(source: source)
-        self.server = server
+        self.bridge = StoreKitBridgeImpl(source: source, keychain: keychain, clock: clock)
     }
 
-    /// Hand the bridge and the server client to the core.
+    /// Hand the bridge to the core.
     public func install(into options: inout CoreStartOptions) {
         options.storeKit = bridge
-        options.licenceServer = server
     }
 
     /// Watch `Transaction.updates` and the storefront: each change asks the core for a new check

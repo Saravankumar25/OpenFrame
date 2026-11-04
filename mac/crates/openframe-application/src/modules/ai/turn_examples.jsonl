@@ -273,3 +273,75 @@
 {"t":"chat","l":"zh","m":"谢谢你"}
 {"t":"chat","l":"ja","m":"ありがとうございます"}
 {"t":"chat","l":"ko","m":"고마워요"}
+{"t": "describe", "l": "en", "m": "describe the ferry captain"}
+{"t": "describe", "l": "en", "m": "describe the old pharmacist to me"}
+{"t": "describe", "l": "en", "m": "tell me about the ferry captain"}
+{"t": "describe", "l": "en", "m": "what is the lighthouse keeper like as a person"}
+{"t": "describe", "l": "en", "m": "how would you describe the night nurse"}
+{"t": "describe", "l": "en", "m": "describe the market square location"}
+{"t": "describe", "l": "en", "m": "give me a description of the night nurse"}
+{"t": "describe", "l": "en", "m": "who is the pharmacist, describe her"}
+{"t": "brief", "l": "en", "m": "brief me on the market scene"}
+{"t": "brief", "l": "en", "m": "brief scene 20 for the director"}
+{"t": "brief", "l": "en", "m": "give me a quick brief of the rooftop scene"}
+{"t": "brief", "l": "en", "m": "a short brief of scene 14 for the assistant director"}
+{"t": "brief", "l": "en", "m": "what is going on in scene 22, in a brief"}
+{"t": "brief", "l": "en", "m": "brief the department heads on the chase sequence"}
+{"t": "brief", "l": "en", "m": "summarise what goes on in the ferry scene"}
+{"t": "brief", "l": "en", "m": "prepare a scene by scene brief of the finale"}
+{"t": "story", "l": "en", "m": "what is the movie about"}
+{"t": "story", "l": "en", "m": "what is this story about"}
+{"t": "story", "l": "en", "m": "tell me the plot in plain words"}
+{"t": "story", "l": "en", "m": "explain how the story goes from start to finish"}
+{"t": "story", "l": "en", "m": "why does the captain sell the ferry"}
+{"t": "story", "l": "en", "m": "what does the pharmacist want in the end"}
+{"t": "story", "l": "en", "m": "what happened to the old ferry in the story"}
+{"t": "story", "l": "en", "m": "how does the movie end"}
+{"t": "story", "l": "en", "m": "explain the second act to me"}
+{"t": "story", "l": "en", "m": "what part does the lighthouse play in the plot"}
+{"t": "describe", "l": "hi", "m": "नाविक कप्तान के बारे में बताओ वह कैसा है"}
+{"t": "describe", "l": "te", "m": "ఆ పడవ కెప్టెన్ గురించి వివరించు"}
+{"t": "describe", "l": "ta", "m": "அந்த படகு கேப்டனை விவரி"}
+{"t": "describe", "l": "kn", "m": "ಆ ದೋಣಿ ಕ್ಯಾಪ್ಟನ್ ಬಗ್ಗೆ ವಿವರಿಸು"}
+{"t": "describe", "l": "ml", "m": "ആ ബോട്ട് ക്യാപ്റ്റനെ വിവരിക്കൂ"}
+{"t": "describe", "l": "es", "m": "describe al capitán del ferry"}
+{"t": "describe", "l": "fr", "m": "décris le capitaine du ferry"}
+{"t": "describe", "l": "de", "m": "beschreibe den Kapitän der Fähre"}
+{"t": "describe", "l": "zh", "m": "描述一下渡轮船长这个角色"}
+{"t": "describe", "l": "ja", "m": "フェリーの船長について描写して"}
+{"t": "describe", "l": "ko", "m": "페리 선장을 묘사해 줘"}
+{"t": "brief", "l": "hi", "m": "बाज़ार वाले दृश्य की ब्रीफ़िंग दो"}
+{"t": "brief", "l": "te", "m": "మార్కెట్ సన్నివేశం గురించి బ్రీఫ్ ఇవ్వు"}
+{"t": "brief", "l": "ta", "m": "சந்தை காட்சியைப் பற்றி சுருக்கமாக விளக்கம் கொடு"}
+{"t": "brief", "l": "kn", "m": "ಮಾರುಕಟ್ಟೆ ದೃಶ್ಯದ ಬ್ರೀಫ್ ಕೊಡು"}
+{"t": "brief", "l": "ml", "m": "മാർക്കറ്റ് രംഗത്തെക്കുറിച്ച് ബ്രീഫ് ചെയ്യൂ"}
+{"t": "brief", "l": "es", "m": "dame un informe de la escena del mercado"}
+{"t": "brief", "l": "fr", "m": "fais-moi un briefing sur la scène du marché"}
+{"t": "brief", "l": "de", "m": "gib mir ein Briefing zur Marktszene"}
+{"t": "brief", "l": "zh", "m": "给我简报一下市场那场戏"}
+{"t": "brief", "l": "ja", "m": "市場のシーンのブリーフをください"}
+{"t": "brief", "l": "ko", "m": "시장 장면을 브리핑해 줘"}
+{"t": "story", "l": "hi", "m": "यह फ़िल्म किस बारे में है"}
+{"t": "story", "l": "te", "m": "ఈ సినిమా దేని గురించి"}
+{"t": "story", "l": "ta", "m": "இந்தப் படம் எதைப் பற்றியது"}
+{"t": "story", "l": "kn", "m": "ಈ ಸಿನಿಮಾ ಯಾವುದರ ಬಗ್ಗೆ"}
+{"t": "story", "l": "ml", "m": "ഈ സിനിമ എന്തിനെക്കുറിച്ചാണ്"}
+{"t": "story", "l": "es", "m": "de qué trata esta película"}
+{"t": "story", "l": "fr", "m": "de quoi parle ce film"}
+{"t": "story", "l": "de", "m": "worum geht es in diesem Film"}
+{"t": "story", "l": "zh", "m": "这部电影讲的是什么"}
+{"t": "story", "l": "ja", "m": "この映画は何についての話ですか"}
+{"t": "story", "l": "ko", "m": "이 영화는 무슨 이야기야"}
+{"t": "describe", "l": "en", "m": "describe the harbour cafe owner"}
+{"t": "brief", "l": "en", "m": "brief the crew on scene 9"}
+{"t": "story", "l": "en", "m": "why did the ferry stop running"}
+{"t":"lookup","l":"en","m":"what is the final beat on the board"}
+{"t":"lookup","l":"en","m":"how long do we hold for room tone"}
+{"t":"lookup","l":"en","m":"what is the rain limit for the crane"}
+{"t":"lookup","l":"en","m":"what does she want"}
+{"t":"lookup","l":"en","m":"how wide is the bridge"}
+{"t":"list","l":"en","m":"what kinds of items did i keep"}
+{"t":"list","l":"en","m":"what setups are planned here"}
+{"t":"list","l":"en","m":"which sheets are done"}
+{"t":"help","l":"en","m":"where in settings do i find the model"}
+{"t":"help","l":"en","m":"can the assistant run with no connection"}

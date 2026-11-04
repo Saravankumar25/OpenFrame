@@ -6,6 +6,15 @@
 > built yet. Where a number comes from a run, the run is named; where it is a proposal, it says so. The first spike
 > (section 12) already changed the design in four places; those are marked "spike".
 
+> **SUPERSEDED in part by [ADR-0041](../adr/ADR-0041-section-scoped-assistant.md) (2026-11-03).** Domain found by topic words as the router (section 5.3, domain part), Stage B and Stage C (ADR-0037 decisions 5 and 6, and section 5.4's plan by answer type and domain) and scope kinds for questions are SUPERSEDED: the person picks up to 3 sections, an out-of-section question gets a code-built pointer, and narrative answers get new types and limits. Marked in place below; the text stays as history.
+>
+> **Section-scoped assistant (ADR-0041, 2026-11-03).** The person picks up to 3 leaves before asking. Slices R1 to R6 are built:
+> the leaf registry `modules/ai/sections.rs` and its coverage tests, the `sections` field of `ai.ask`, the operation `ai.sections`,
+> the Mac picker, the dossier by leaves with search held to the picks, memory and focus held to the picks, the pointer (`modules/ai/pointer.rs`), the
+> types describe, brief and story with their writer policy and briefing fetcher, and the agent's tool list by section (`toolbox/homes.rs`). Slice R7 deleted what they replaced: the scope, the domain table, the fetcher
+> table and its plan, the wide passages round and the retrieval router. Sections 5.3 domain words and 5.4 plan below are history. A
+> request with no picks under `AppConfig.ai_eval_all_sections` reads every section through the same path. The design is `OpenFrame_Release_Package/ai-reharness.md`.
+
 ## 1. What the owner asked for (2026-10-26)
 
 - The assistant is a chat assistant for the whole platform, not a router. It answers any question about any part of the
@@ -176,6 +185,8 @@ Built in slice S6 (`modules/ai/memory/`, stage `memory::prepare`, typed input `m
 
 ### 5.3 Read the answer type (rules, nearest neighbours, one short model call)
 
+> SUPERSEDED in part (ADR-0041): the **domain** reading below no longer routes questions. Only the answer type is kept.
+
 Spike: with one list of 12 intents, the model got 20 of 28 right, and half of its misses were overlap between the
 *topic* (budget, schedule) and the *kind of answer* (a count, a lookup). Spike S1b then showed that rules tuned on a
 word list fail on new wording (53% on held-out messages) and that a 1B model confuses close labels. So the turn reads two
@@ -229,7 +240,7 @@ Rules that guard the read:
 
 **What is stored.** The answer type goes into the conversation focus (`focus.answerType` in `ai_request.scope_json`),
 so the next message can be a correction of it. The whole read goes into the AI trace (`sys_ai_trace`, app migration 0008:
-`answer_type`, `answer_group`, `turn_domains`, `length_class`, `turn_how`, `turn_vote`, `turn_ms`; codes and numbers only,
+`answer_type`, `answer_group`, `length_class`, `turn_how`, `turn_vote`, `turn_ms`; codes and numbers only,
 never the message). S4 changes no lane, prompt, writing or check: what the assistant answers is as before. The model call
 of step 6 runs before the request and is not counted in the request's engine numbers.
 
@@ -311,6 +322,8 @@ stand-in embedder that places each example on its own axis and a scripted model 
 
 ### 5.4 Fetch the dossier (code)
 
+> SUPERSEDED in part (ADR-0041): the plan by answer type and domain (Stage B) and the extra round (Stage C) are replaced by fetchers of the picked sections. See `docs/engineering/ai-answer-paths.md`.
+
 Built in slice S5 as `modules/ai/dossier/`. One stage with typed input (`dossier::Input`: the connection, the person, the
 index, the message, the `TurnRead` and the `Resolved`) and typed output (`Dossier`: the facts, the values a correct answer
 must state, the statements about what is missing, how many times a guard acted, the size in tokens). It never fails and
@@ -329,7 +342,7 @@ plays", the number for a count, planned and actual and difference for a budget l
 them), the relationship word for two named characters, the name of every person who speaks in a fetched scene, the phone
 and email of a contact question. `Dossier::required` is their union. The checker of section 5.6 requires them.
 
-**The registry.** One table, `FETCHERS` in `dossier/registry.rs`, with one entry per domain: the answer groups it serves,
+**The registry.** SUPERSEDED by the leaf registry (`sections.rs`, ADR-0041); the table below is history. One table with one entry per domain: the answer groups it serves,
 its token cap, what it reads, and the function `fn(&FetchCtx, &TurnRead, &Resolved) -> Vec<Fact>`. Adding an area is one
 entry and its test. The fetchers do not call the read tools of `toolbox/reads*.rs`, because those return text for the
 model; they use the same lower layers (`queries::scenes`, `character_cues`, `scene_text`, `schedule::board`,

@@ -216,7 +216,6 @@ fn an_answer_in_flight_when_the_computer_sleeps_is_finished_not_lost() {
                 "ai.ask",
                 json!({
                     "text": "Explain what happens in scene 4",
-                    "scope": { "kind": "WholeProject" },
                     "conversationId": "conv-sleep",
                 }),
             )

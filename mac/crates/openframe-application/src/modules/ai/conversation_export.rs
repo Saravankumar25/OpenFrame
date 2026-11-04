@@ -29,7 +29,7 @@ pub struct AiConversationExportArgs {
 
 fn nothing_to_save() -> AppError {
     AppError::invalid_input(
-        "There is no conversation to save yet. Ask the assistant something first.",
+        "There is no conversation to save yet. Ask OpenFrame AI something first.",
     )
 }
 
@@ -40,7 +40,7 @@ pub fn export_conversation(
     actor: &Actor,
     a: AiConversationExportArgs,
 ) -> AppResult<AiReportResult> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     if !orchestrator::valid_conversation_id(&a.conversation_id) {
         return Err(nothing_to_save());
     }

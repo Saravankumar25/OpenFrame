@@ -29,9 +29,9 @@ impl Env {
             .dispatch(&self.core.local_actor(), op, args)
             .unwrap_or_else(|e| panic!("{op} failed: {e:?}"))
     }
-    fn ask(&self, text: &str, scope: Value) -> Value {
+    fn ask(&self, text: &str, sections: Value) -> Value {
         let t = Instant::now();
-        let x = self.ok("ai.ask", json!({ "text": text, "scope": scope }));
+        let x = self.ok("ai.ask", json!({ "text": text, "sections": sections }));
         let r = &x["result"];
         println!(
             "\n> {text}\n  {:.1}s kind={} confidence={} steps={:?}\n  {}\n  sources: {}",
@@ -67,6 +67,7 @@ fn env() -> Option<Env> {
         ai_bundle_dir: Some(bundle.into()),
         ai_model_source: Some(source),
         ai_deterministic: true,
+        ai_eval_all_sections: true,
         ..AppConfig::isolated(dir.path())
     };
     let core = AppCore::new(config, Arc::new(RecordingSink::default())).unwrap();
@@ -138,7 +139,7 @@ fn real_model_answers_retrieves_proposes_applies_and_undoes() {
     // Exact count from project data.
     let x = env.ask(
         "How many scenes are in the script?",
-        json!({ "kind": "CurrentScreenplay" }),
+        json!([{ "leaf": "screenplay/scenes" }]),
     );
     assert_eq!(x["result"]["kind"], "Answer", "{x}");
     assert!(
@@ -147,10 +148,7 @@ fn real_model_answers_retrieves_proposes_applies_and_undoes() {
     );
 
     // Grounded in the project: the answer names its sources.
-    let x = env.ask(
-        "Which scene happens at the bus stop?",
-        json!({ "kind": "WholeProject" }),
-    );
+    let x = env.ask("Which scene happens at the bus stop?", json!([]));
     assert!(
         matches!(x["result"]["kind"].as_str(), Some("Answer" | "Navigate")),
         "{x}"
@@ -162,10 +160,7 @@ fn real_model_answers_retrieves_proposes_applies_and_undoes() {
 
     // A proposal changes nothing until it is applied; apply, then undo.
     let before = tasks(&env);
-    let x = env.ask(
-        "Create a task to scout the railway station.",
-        json!({ "kind": "WholeProject" }),
-    );
+    let x = env.ask("Create a task to scout the railway station.", json!([]));
     assert_eq!(x["result"]["kind"], "Proposal", "{x}");
     let cs = x["result"]["changeSet"]["id"].as_str().unwrap().to_string();
     assert_eq!(tasks(&env), before, "nothing changes before Apply");
@@ -186,7 +181,7 @@ fn real_model_answers_retrieves_proposes_applies_and_undoes() {
     // Reject leaves the project unchanged.
     let x = env.ask(
         "Create a task to book the bus for the night shoot.",
-        json!({ "kind": "WholeProject" }),
+        json!([]),
     );
     assert_eq!(x["result"]["kind"], "Proposal", "{x}");
     let cs = x["result"]["changeSet"]["id"].as_str().unwrap().to_string();
@@ -203,10 +198,7 @@ fn real_model_proposal_whose_target_changed_is_stale_and_never_applied() {
     };
     seed(&env);
     let task = env.ok("tasks.create", json!({ "title": "Confirm pier permit" }))["id"].clone();
-    let x = env.ask(
-        "Mark the task Confirm pier permit as done.",
-        json!({ "kind": "WholeProject" }),
-    );
+    let x = env.ask("Mark the task Confirm pier permit as done.", json!([]));
     assert_eq!(x["result"]["kind"], "Proposal", "{x}");
     let cs = x["result"]["changeSet"]["id"].as_str().unwrap().to_string();
     // The user completes the task by hand before applying the proposal.

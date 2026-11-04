@@ -21,7 +21,6 @@ public struct RootView: View {
             .overlay(alignment: .top) { paletteOverlay }
             .licenceScreens(model.licence)
             .trialCorner(model.licence)
-            .task(id: showsProject) { await model.licence.setProjectOpen(showsProject) }
             .onReceive(NotificationCenter.default.publisher(for: .openFrameShowSearch)) { _ in openPalette() }
             .onReceive(NotificationCenter.default.publisher(for: .openFrameShowAbout)) { _ in openWindow(id: "about") }
             .onReceive(NotificationCenter.default.publisher(for: .openFrameShowShortcuts)) { _ in

@@ -1,7 +1,8 @@
 // About OpenFrame Studio (Windows: workspaces/settings/About.tsx, scenario 16-about): the app
-// version, the core version, the build channel and the licence notice. An internal team build says
-// plainly that it is not for sale. There is no price and no Buy button anywhere in it.
+// version, the core version, the build channel, the publisher and the licence notice. An internal
+// team build says plainly that it is not for sale. There is no price and no Buy button anywhere in it.
 
+import AppKit
 import SwiftUI
 import OpenFrameCore
 
@@ -37,18 +38,78 @@ struct AboutInfo: Equatable {
     }
 }
 
+/// The notices the app ships with: the publisher, the third-party licence list and the AI engine and
+/// model notices (Gemma terms and its prohibited use notice, llama.cpp).
+enum LicenceNotices {
+    static let publisher = """
+    OpenFrame Studio
+    Copyright 2026 Vighnajith Advisories Private Limited
+    12/1, Ground Floor, 22nd Main Road, Bengaluru, Karnataka 560078, India
+    """
+
+    /// The files that travel in the app bundle, as they stand in the given folders.
+    static func text(resources: URL?, engine: URL?) -> String {
+        var parts = [publisher]
+        if let list = resources?.appendingPathComponent("THIRD_PARTY_LICENSES.md"),
+           let body = try? String(contentsOf: list, encoding: .utf8) {
+            parts.append(body)
+        }
+        let notices = engine?.appendingPathComponent("notices", isDirectory: true)
+        let names = notices.flatMap { try? FileManager.default.contentsOfDirectory(at: $0, includingPropertiesForKeys: nil) } ?? []
+        for file in names.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
+            if let body = try? String(contentsOf: file, encoding: .utf8) {
+                parts.append("\(file.lastPathComponent)\n\(body)")
+            }
+        }
+        return parts.joined(separator: "\n\n")
+    }
+
+    static func forThisApp() -> String {
+        let helpers = Bundle.main.bundleURL.appendingPathComponent("Contents/Helpers/ai", isDirectory: true)
+        let engine = FileManager.default.fileExists(atPath: helpers.path)
+            ? helpers : Bundle.main.resourceURL?.appendingPathComponent("ai", isDirectory: true)
+        return text(resources: Bundle.main.resourceURL, engine: engine)
+    }
+}
+
+private struct LicencesSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.ofTheme) private var theme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Licences").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
+            ScrollView {
+                Text(LicenceNotices.forThisApp())
+                    .font(.caption.monospaced())
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .accessibilityIdentifier("about-licences-text")
+            HStack {
+                Spacer()
+                Button("Done") { dismiss() }.keyboardShortcut(.defaultAction).accessibilityIdentifier("about-licences-done")
+            }
+        }
+        .padding(20)
+        .frame(width: 560, height: 480)
+        .background(theme["bg"])
+    }
+}
+
 struct AboutView: View {
     @Environment(AppModel.self) private var app
     @Environment(\.ofTheme) private var theme
     @State private var about: AboutInfo?
+    @State private var showLicences = false
 
     init(preset: AboutInfo? = nil) { _about = State(initialValue: preset) }
 
     var body: some View {
         VStack(spacing: 10) {
-            BrandMark(size: 64)
+            BrandLogo(markSize: 40, wordSize: 28)
             Text("OpenFrame Studio")
-                .font(.system(size: 22, weight: .semibold))
+                .font(.system(size: 15, weight: .semibold))
             if let about {
                 Text("Version \(about.appVersion)")
                     .accessibilityIdentifier("about-version")
@@ -75,11 +136,29 @@ struct AboutView: View {
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 8)
+            Text("Copyright 2026 Vighnajith Advisories Private Limited")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("about-publisher")
+            HStack(spacing: 14) {
+                Button("Contact us") {
+                    if let url = URL(string: LicenceRules.contactAddress) { NSWorkspace.shared.open(url) }
+                }
+                .accessibilityHint("Opens the contact page in your browser")
+                .accessibilityIdentifier("about-contact")
+                Button("Licences") { showLicences = true }
+                    .accessibilityIdentifier("about-licences")
+            }
+            .buttonStyle(.link)
+            .controlSize(.small)
         }
         .padding(28)
         .frame(width: 340)
         .background(theme["bg"])
         .task { about = await AboutInfo.load(app: app) }
+        .themedSheet(isPresented: $showLicences) { LicencesSheet() }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("about-window")
     }

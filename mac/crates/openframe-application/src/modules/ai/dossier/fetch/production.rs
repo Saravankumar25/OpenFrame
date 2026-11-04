@@ -5,13 +5,57 @@ use openframe_domain::AppResult;
 use serde_json::Value;
 
 use super::{files, schedule};
+use crate::modules::ai::dossier::asked::{self, best_rows, names_row, row_words};
 use crate::modules::ai::dossier::ctx::{FetchCtx, SceneRef, safe};
-use crate::modules::ai::dossier::words::{clip, date_of};
-use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
+use crate::modules::ai::dossier::guard;
+use crate::modules::ai::dossier::words::{clip, date_is, date_of, dates_in};
+use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID, P_PICKED};
 use crate::modules::ai::index::Resolved;
 use crate::modules::ai::queries;
 use crate::modules::ai::turn::{AnswerType, TurnRead};
 use crate::modules::production::availability::{self as av, AvailabilityOwner};
+
+/// Words that only name the location list.
+const LOCATION_WORDS: &[&str] = &[
+    "location",
+    "locations",
+    "place",
+    "places",
+    "status",
+    "confirmed",
+    "shortlisted",
+    "idea",
+    "rejected",
+    "backup",
+    "shoot",
+    "shot",
+    "set",
+];
+/// Words that only name the task list.
+const TASK_WORDS: &[&str] = &[
+    "task",
+    "tasks",
+    "todo",
+    "due",
+    "date",
+    "deadline",
+    "overdue",
+    "open",
+    "done",
+    "pending",
+    "outstanding",
+    "finished",
+    "completed",
+    "left",
+    "first",
+    "earliest",
+    "soon",
+    "march",
+    "february",
+    "april",
+];
+/// Rows of the location list or the task list one question can demand by its words.
+const ROWS_PICKED: usize = 3;
 
 pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
     safe("production", || fetch(ctx, read, r))
@@ -89,18 +133,33 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     ]);
     let asks_contact = m.any(&["contact", "phone", "email", "reach", "emergency"]);
     let asks_avail = m.any(&["available", "availability", "free", "unavailable"]);
+    let days = schedule::named_days(ctx, r);
+    // The scenes of a day the question names, when no scene is named: where the day is shot.
+    let of_days = if scenes.is_empty() && (asks_loc || asks_where) {
+        schedule::scenes_of_days(ctx, &days)?
+    } else {
+        Vec::new()
+    };
 
     // ---- where a scene is shot
     if !scenes.is_empty() && (asks_loc || asks_where) {
         for s in scenes.iter().take(4) {
             let (fact, ids) = scene_location(ctx, s, &all)?;
             out.extend(fact);
-            if asks_notes || asks_contact {
+            if asks_notes || asks_contact || asks_avail {
                 for l in all.iter().filter(|l| ids.contains(&l.id)) {
-                    out.push(location_card(ctx, l, asks_contact, asks_avail, true)?);
+                    let mut card = location_card(ctx, l, asks_contact, asks_avail, true)?;
+                    if asks_avail && let Some(w) = card.field("availability").map(str::to_string) {
+                        card = card.require(w);
+                    }
+                    out.push(card);
                 }
             }
         }
+    }
+    for s in of_days.iter().take(8) {
+        let (fact, _) = scene_location(ctx, s, &all)?;
+        out.extend(fact);
     }
 
     // ---- a named location
@@ -110,13 +169,24 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         }
     }
     if asks_contact && !ctx.guard.contacts && (!r.locations.is_empty() || m.stem("location")) {
-        out.push(Fact::missing(
-            "Contact details are not shown for your role.",
-        ));
+        out.push(Fact::missing(guard::NOT_FOR_YOUR_ROLE));
+    }
+    // "Is the beach confirmed", then "who is the contact": the place the last message picked by a word.
+    if asks_contact
+        && ctx.guard.contacts
+        && r.locations.is_empty()
+        && scenes.is_empty()
+        && of_days.is_empty()
+        && let Some(previous) = &ctx.previous
+    {
+        let names: Vec<String> = all.iter().map(|l| l.name.clone()).collect();
+        if let [i] = best_rows(&row_words(previous, LOCATION_WORDS), &names, 1)[..] {
+            out.push(location_card(ctx, &all[i], true, false, true)?);
+        }
     }
 
     // ---- the locations as a whole
-    if r.locations.is_empty() && scenes.is_empty() && m.stem("location") {
+    if r.locations.is_empty() && scenes.is_empty() && of_days.is_empty() && m.stem("location") {
         if all.is_empty() {
             // "Locations used in the script" are the scene headings' places (the Screenplay
             // fetcher); an empty Production list says nothing about them.
@@ -148,7 +218,8 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                     .f("what", format!("locations with status {status}"))
                     .f("value", n.to_string())
                     .prio(P_HIGH);
-                if t == AnswerType::Count && asked {
+                // A list by status says how many too, so a wrong total cannot stand beside it.
+                if asked && matches!(t, AnswerType::Count | AnswerType::List | AnswerType::Lookup) {
                     f = f.require(n.to_string());
                 }
                 out.push(f);
@@ -158,13 +229,37 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                     .into_iter()
                     .filter(|s| m.has(s))
                     .collect();
-            for l in &all {
-                let hit = wanted_status.iter().any(|s| l.status.to_lowercase() == *s);
+            // A word of the question in a row's name or notes picks it. A status then only
+            // describes the row; with no such word the status is the filter.
+            let words = row_words(&ctx.message, LOCATION_WORDS);
+            let texts: Vec<String> = all
+                .iter()
+                .map(|l| format!("{} {}", l.name, notes_text(&l.notes)))
+                .collect();
+            let picked = best_rows(&words, &texts, ROWS_PICKED);
+            for (i, l) in all.iter().enumerate() {
+                let by_status = wanted_status.iter().any(|s| l.status.to_lowercase() == *s);
+                let by_word = picked.contains(&i);
+                let hit = by_word || (picked.is_empty() && by_status);
                 let mut f = Fact::new("Location", &l.id)
                     .f("name", &l.name)
                     .f("status", &l.status)
-                    .prio(if hit { P_HIGH } else { P_MID });
-                if hit && matches!(t, AnswerType::List | AnswerType::Lookup) {
+                    .prio(if by_word {
+                        P_PICKED
+                    } else if hit {
+                        P_HIGH
+                    } else {
+                        P_MID
+                    });
+                if by_word {
+                    if !name_holds_a_word(&words, &l.name) {
+                        f = f.f("notes", notes_text(&l.notes));
+                    }
+                    f = f.require(&l.name);
+                    if asked::status_asked(&ctx.message) {
+                        f = f.require(&l.status);
+                    }
+                } else if hit && matches!(t, AnswerType::List | AnswerType::Lookup) {
                     f = f.require(&l.name);
                 }
                 out.push(f);
@@ -200,6 +295,11 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         )?);
     }
     Ok(out)
+}
+
+/// The words pick the row by its name, not by what its notes say.
+fn name_holds_a_word(words: &[String], name: &str) -> bool {
+    best_rows(words, std::slice::from_ref(&name.to_string()), 1) == [0]
 }
 
 fn status_asked(ctx: &FetchCtx<'_>) -> bool {
@@ -278,6 +378,12 @@ fn scene_location(
         if let Some(id) = loc {
             ids.push(id.clone());
         }
+        if let Some(st) = status
+            .as_ref()
+            .filter(|_| asked::status_asked(&ctx.message))
+        {
+            f = f.require(st);
+        }
         parts.push(match status {
             Some(s) => format!("{name} ({s})"),
             None => name.clone(),
@@ -332,12 +438,22 @@ fn tasks(
     let m = &ctx.m;
     let open = rows.iter().filter(|r| r.2 == "Open").count();
     let done = rows.len() - open;
+    let want_done = m.any(&["done", "finished", "completed"]);
+    let want_open = m.any(&["open", "pending", "outstanding", "left", "todo"]);
     if listed || t == AnswerType::Count {
+        let mut f = Fact::new("Count", "")
+            .f("what", "tasks in all")
+            .f("value", rows.len().to_string())
+            .prio(P_HIGH);
+        if t == AnswerType::Count && !want_open && !want_done {
+            f = f.require(rows.len().to_string());
+        }
+        out.push(f);
         let mut f = Fact::new("Count", "")
             .f("what", "open tasks")
             .f("value", open.to_string())
             .prio(P_HIGH);
-        if t == AnswerType::Count && !m.has("done") {
+        if t == AnswerType::Count && want_open {
             f = f.require(open.to_string());
         }
         out.push(f);
@@ -345,13 +461,11 @@ fn tasks(
             .f("what", "done tasks")
             .f("value", done.to_string())
             .prio(P_HIGH);
-        if t == AnswerType::Count && m.has("done") {
+        if t == AnswerType::Count && want_done {
             f = f.require(done.to_string());
         }
         out.push(f);
     }
-    let want_done = m.any(&["done", "finished", "completed"]);
-    let want_open = m.any(&["open", "pending", "outstanding", "left", "todo"]);
     let due_first = m.any(&[
         "due first",
         "first due",
@@ -360,18 +474,69 @@ fn tasks(
         "due soon",
         "due next",
     ]);
+    // What picks a row, strongest first: a date against its due date, "no due date", then the words
+    // of the question in its title or notes. A status word alone filters only when nothing else does.
+    let dates = dates_in(&ctx.message);
+    let by_date: Vec<usize> = (0..rows.len())
+        .filter(|i| {
+            rows[*i]
+                .3
+                .is_some_and(|d| dates.iter().any(|x| date_is(&date_of(d), *x)))
+        })
+        .collect();
+    let no_due = m.any(&[
+        "no due date",
+        "no due",
+        "no date",
+        "no deadline",
+        "without a due date",
+        "without a date",
+    ]);
+    let by_no_due: Vec<usize> = (0..rows.len())
+        .filter(|i| no_due && rows[*i].3.is_none())
+        .collect();
+    let words = row_words(&ctx.message, TASK_WORDS);
+    let texts: Vec<String> = rows.iter().map(|r| format!("{} {}", r.1, r.4)).collect();
+    let by_word = best_rows(&words, &texts, ROWS_PICKED);
+    let picked: Vec<usize> = if !by_date.is_empty() {
+        by_date
+    } else if !by_no_due.is_empty() {
+        by_no_due
+    } else {
+        by_word
+    };
     let mut first_open = true;
-    for (id, title, status, due, notes) in &rows {
-        let shown = (want_done && status == "Done")
-            || (want_open && status == "Open")
-            || (!want_done && !want_open);
+    for (i, (id, title, status, due, notes)) in rows.iter().enumerate() {
+        let hit = picked.contains(&i);
+        let shown = hit
+            || (picked.is_empty()
+                && ((want_done && status == "Done")
+                    || (want_open && status == "Open")
+                    || (!want_done && !want_open)));
         let mut f = Fact::new("Task", id)
             .f("title", title)
             .f("status", status)
             .f("due", due.map(date_of).unwrap_or_default())
             .f("notes", clip(notes, 200))
-            .prio(if shown { P_HIGH } else { P_LOW });
-        if shown && (want_done || want_open) && matches!(t, AnswerType::List | AnswerType::Lookup) {
+            .prio(if hit {
+                P_PICKED
+            } else if shown {
+                P_HIGH
+            } else {
+                P_LOW
+            });
+        if hit {
+            if !names_row(&ctx.message, title) {
+                f = f.require(title);
+            }
+            if asked::status_asked(&ctx.message) {
+                f = f.require(status);
+            }
+        } else if picked.is_empty()
+            && shown
+            && (want_done || want_open)
+            && matches!(t, AnswerType::List | AnswerType::Lookup)
+        {
             f = f.require(title);
         }
         if due_first && status == "Open" && due.is_some() && first_open {

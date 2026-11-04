@@ -1,10 +1,10 @@
 // Trial reminders, the store screens and the once-only screens after a purchase (Windows:
-// LicenceScreens.tsx, owner mocks 184 to 198). The core decides which screen is due; this host
+// LicenceScreens.tsx, owner mocks 184 to 203). The core decides which screen is due; this host
 // shows one at a time as a sheet over the window.
 //
 // Mandatory screens cannot be closed: no close button and Escape does nothing. They are the lock
-// after the trial or a refund (the core refuses every project operation underneath it, so the
-// screen is not the only gate), the Mac first launch, the data note and the tutorial. The
+// after the trial or a refund and the clock lock (the core refuses every project operation
+// underneath them, so the screen is not the only gate), the Mac first launch, the data note and the tutorial. The
 // "Checking your purchase" screen can be closed: a failed check keeps opening and exporting.
 // The internal disk image build shows none of these screens.
 
@@ -59,6 +59,7 @@ struct LicenceScreenView: View {
         case .welcome: WelcomeDialog(licence: licence)
         case .macFirstLaunch: MacFirstLaunchDialog(licence: licence)
         case let .locked(revoked): LockedDialog(revoked: revoked, licence: licence)
+        case .clockLocked: ClockDialog(licence: licence)
         case .checkNeeded: CheckDialog(licence: licence)
         }
     }
@@ -72,12 +73,15 @@ private struct Dialog<Body: View, Footer: View>: View {
     var subtitle: String?
     var width: CGFloat = 480
     var identifier = "licence-dialog"
+    /// The logo above the title, as on the first-launch, lock and clock screens.
+    var logo = false
     @ViewBuilder var content: Body
     @ViewBuilder var footer: Footer
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
+            if logo { BrandHeader() }
             VStack(spacing: PageSpacing.tight) {
                 Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
                 if let subtitle { Text(subtitle).font(.callout).foregroundStyle(.secondary) }
@@ -120,7 +124,21 @@ private struct Banner: View {
 
 private struct BrandHeader: View {
     var body: some View {
-        HStack { Spacer(); BrandMark(size: 48); Spacer() }
+        HStack { Spacer(); BrandLogo(markSize: 40, wordSize: 28); Spacer() }
+    }
+}
+
+/// "Need help? Contact us" on the first-launch, lock, clock and check screens. Opens the website's
+/// contact page. Opening a link is a shell action, so it works while the core has locked the app.
+private struct ContactLink: View {
+    let licence: LicenceModel
+
+    var body: some View {
+        Button(LicenceRules.contactLink) { licence.openContact() }
+            .buttonStyle(.link)
+            .controlSize(.small)
+            .accessibilityHint("Opens the contact page in your browser")
+            .accessibilityIdentifier("licence-contact")
     }
 }
 
@@ -140,8 +158,15 @@ struct ReminderDialog: View {
     var body: some View {
         Dialog(title: "Trial reminder") {
             BrandHeader()
-            Text(LicenceRules.reminderHeadline(daysLeft)).font(.title2.weight(.semibold)).frame(maxWidth: .infinity)
-            Text("Buy the full version to keep using OpenFrame Studio.").frame(maxWidth: .infinity)
+            Text(LicenceRules.reminderHeadline(daysLeft, endsAt: licence.trialEndsAt))
+                .font(.title2.weight(.semibold)).frame(maxWidth: .infinity)
+                .accessibilityIdentifier("licence-reminder-headline")
+            if let end = licence.trialEndsAt {
+                Text(LicenceRules.reminderEndLine(end)).frame(maxWidth: .infinity)
+                    .accessibilityIdentifier("licence-reminder-end")
+            }
+            Text("Buy the full version to keep using OpenFrame Studio. Pay once, own forever. No subscription.")
+                .multilineTextAlignment(.center).frame(maxWidth: .infinity)
             Banner(tone: .info, text: "Your projects stay on your computer either way. Nothing is deleted when the trial ends.")
             StoreMessage(message: licence.message)
         } footer: {
@@ -348,8 +373,10 @@ struct WelcomeDialog: View {
             BrandHeader()
             Text("Thank you for backing independent filmmaking. Be a part of our community.")
                 .foregroundStyle(.secondary).frame(maxWidth: .infinity)
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 4), spacing: 12) {
-                ForEach(LicenceRules.socialLinks) { link in
+            let links = LicenceRules.visibleSocialLinks(release: LicenceRules.isReleaseBuild)
+            if !links.isEmpty {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 4), spacing: 12) {
+                ForEach(links) { link in
                     let openable = LicenceRules.isFixedSocialURL(link.url)
                     Button {
                         guard openable, let url = link.url else { return }
@@ -368,6 +395,7 @@ struct WelcomeDialog: View {
                     .accessibilityLabel(openable ? "\(link.name) \(link.handle), opens in your browser" : "\(link.name) \(link.handle)")
                     .accessibilityIdentifier("licence-social-\(link.name.lowercased())")
                 }
+                }
             }
         } footer: {
             Button("OK") { Task { await licence.record(.welcome) } }
@@ -381,29 +409,29 @@ struct WelcomeDialog: View {
 
 struct MacFirstLaunchDialog: View {
     let licence: LicenceModel
+    @Environment(\.ofTheme) private var theme
 
     var body: some View {
-        Dialog(title: "Welcome to OpenFrame Studio", subtitle: "How would you like to begin?", width: 560) {
-            BrandHeader()
+        Dialog(title: "Welcome to OpenFrame Studio", subtitle: "How would you like to begin?", width: 600, logo: true) {
             HStack(alignment: .top, spacing: 12) {
-                card(
-                    "Free trial", "7 days. Everything included. No credit card.", id: "licence-start-trial"
-                ) {
+                card("Free trial", LicenceRules.trialDisclosure(price: licence.lifetimePrice ?? "")) {
                     Button("Start free trial") { Task { await licence.startTrial() } }
-                        .disabled(licence.busy).accessibilityIdentifier("licence-start-trial")
+                        .disabled(!licence.canStartTrial).accessibilityIdentifier("licence-start-trial")
                 }
-                card(
-                    "Buy the full version", "Through the App Store, which shows you the details before you buy.", id: "licence-buy-card"
-                ) {
+                .accessibilityIdentifier("licence-trial-card")
+                card("Buy the full version", LicenceRules.buyCardText) {
                     Button { Task { await licence.buy() } } label: { Label("Buy full version", systemImage: "bolt.fill") }
                         .buttonStyle(.ofProminent).disabled(licence.busy).accessibilityIdentifier("licence-buy")
                 }
+                .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(theme["accent"]))
+                .accessibilityIdentifier("licence-buy-card")
             }
-            HStack {
+            HStack(spacing: 16) {
                 Spacer()
                 Button { Task { await licence.restore() } } label: { Label("Restore purchase", systemImage: "arrow.clockwise") }
                     .buttonStyle(.borderless).controlSize(.small).disabled(licence.busy)
                     .accessibilityIdentifier("licence-restore")
+                ContactLink(licence: licence)
                 Spacer()
             }
             StoreMessage(message: licence.message)
@@ -412,7 +440,7 @@ struct MacFirstLaunchDialog: View {
         }
     }
 
-    private func card<Action: View>(_ title: String, _ text: String, id: String, @ViewBuilder action: () -> Action) -> some View {
+    private func card<Action: View>(_ title: String, _ text: String, @ViewBuilder action: () -> Action) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title).font(.headline)
             Text(text).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
@@ -425,19 +453,18 @@ struct MacFirstLaunchDialog: View {
     }
 }
 
-/// The lock after the trial or a refund: only Buy and Restore, and it cannot be closed.
+/// The lock after the trial or a refund: Buy, Restore and Contact us, and it cannot be closed.
 struct LockedDialog: View {
     let revoked: Bool
     let licence: LicenceModel
 
     var body: some View {
-        Dialog(title: revoked ? "Your purchase is no longer active" : "Your free trial has ended") {
-            BrandHeader()
-            Text(revoked
-                ? "The App Store reports that this purchase was refunded or revoked. Buy the full version to open your projects again."
-                : "Buy the full version to open your projects again.")
+        Dialog(title: revoked ? "Your purchase is no longer active" : "Your free trial has ended", logo: true) {
+            Text(LicenceRules.lockBody(revoked: revoked, price: licence.lifetimePrice))
                 .multilineTextAlignment(.center).frame(maxWidth: .infinity)
-            Banner(tone: .info, text: "Your projects are safe on this Mac. Nothing is deleted. Buying or restoring opens them again exactly as you left them.")
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("licence-lock-body")
+            if !revoked { Banner(tone: .info, text: LicenceRules.lockSafety) }
             StoreMessage(message: licence.message)
         } footer: {
             VStack(spacing: 8) {
@@ -447,6 +474,31 @@ struct LockedDialog: View {
                 Button { Task { await licence.restore() } } label: { Label("Restore purchase", systemImage: "arrow.clockwise") }
                     .buttonStyle(.borderless).controlSize(.small).disabled(licence.busy)
                     .accessibilityIdentifier("licence-restore")
+                ContactLink(licence: licence)
+            }
+            .frame(maxWidth: .infinity)
+        }
+    }
+}
+
+/// The Mac's clock is behind a date the app already trusted (mock 201). It cannot be closed. The core
+/// looks at the clock every 5 seconds, so this clears by itself as soon as the clock is right.
+struct ClockDialog: View {
+    let licence: LicenceModel
+
+    var body: some View {
+        Dialog(title: LicenceRules.clockTitle, logo: true) {
+            Text(LicenceRules.clockBody)
+                .multilineTextAlignment(.center).frame(maxWidth: .infinity)
+                .fixedSize(horizontal: false, vertical: true)
+            Banner(tone: .info, text: LicenceRules.clockSafety)
+            StoreMessage(message: licence.message)
+        } footer: {
+            VStack(spacing: 8) {
+                Button("Check again") { Task { await licence.restore() } }
+                    .buttonStyle(.ofProminent).controlSize(.large).keyboardShortcut(.defaultAction)
+                    .disabled(licence.busy).accessibilityIdentifier("licence-check-again")
+                ContactLink(licence: licence)
             }
             .frame(maxWidth: .infinity)
         }
@@ -468,8 +520,9 @@ struct CheckDialog: View {
                     text: "We could not reach the App Store. Connect to the internet to check your purchase. If you bought before, your purchase will be restored as soon as the check succeeds."
                 )
             }
-            Banner(tone: .info, text: "Your projects stay open and can be exported. Nothing is deleted.")
+            Banner(tone: .info, text: "Your projects can be opened and exported. Changes wait until the check succeeds. Nothing is deleted.")
             StoreMessage(message: licence.message)
+            HStack { Spacer(); ContactLink(licence: licence); Spacer() }
         } footer: {
             Button("Not now") { licence.closeCheck() }
                 .keyboardShortcut(.cancelAction).disabled(licence.busy).accessibilityIdentifier("licence-not-now")

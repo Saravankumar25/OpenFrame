@@ -4,9 +4,11 @@
 //! checks (ADR-0028):
 //!
 //! ```text
-//! request ─► permission (UseAi) ─► scope ─► S3 resolve + focus ─► S4 answer type ─► S5 dossier
-//!         ─► S6 memory ─► AI Request (Running)
+//! request ─► permission (UseAi) ─► picks ─► S3 resolve + focus ─► S4 answer type
+//!         ─► text search and S5 dossier of the picks ─► pointer ─► S6 memory ─► AI Request (Running)
+//!   no section picked                                    ─► one fixed sentence, nothing else runs
 //!   refusal (licence, payment, activation)               ─► one fixed sentence
+//!   a question or a thing that lives outside the picks   ─► the pointer's sentence
 //!   one question left unsettled by the names             ─► that question (Clarify)
 //!   navigate  ─► `action::navigate`: the navigation tool, a sentence built by code
 //!   change    ─► `action::change`: a Change Set proposal, exactly as before
@@ -21,6 +23,8 @@
 //! user's own words are an instruction. Mutations are proposals the user must explicitly apply from
 //! the review card (acceptance is not a tool and is refused for anything but a local user action).
 
+use std::sync::Arc;
+
 use openframe_ai::InferenceProvider;
 use openframe_domain::auth::ActorOrigin;
 use openframe_domain::{Actor, AppError, AppResult, Capability, new_id};
@@ -34,15 +38,18 @@ use super::answer::{self, Answered, Shown};
 use super::dossier::{self, Dossier, Fact};
 use super::index::{self, EntityIndex, Focus, Resolved};
 use super::memory::{self, TurnMemory};
+use super::pointer::{self, Pointer, Verdict};
 use super::queries;
 use super::records::{self, NewRequest, NewResult, NewStep, RequestOutcome, ai_meta};
-use super::scope::{self, AiScopeArgs, ResolvedScope};
+use super::retrieval;
+use super::scope::ResolvedScope;
+use super::sections::{self, SectionPick, SectionsTrace, Selection};
 use super::service::service;
 use super::tools::ToolOutput;
 use super::turn::{self, AnswerType, Group, TurnRead};
 use super::types::*;
 use super::{cancel, change_set, commands, trace};
-use crate::core::AppCore;
+use crate::core::{AppCore, ProjectSession};
 use crate::events::AppEvent;
 
 #[derive(Debug, Deserialize, TS)]
@@ -51,13 +58,16 @@ use crate::events::AppEvent;
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AskArgs {
     pub text: String,
-    pub scope: AiScopeArgs,
     #[serde(default)]
     pub conversation_id: Option<String>,
     /// Step budget for a change request (default 4; never more than 12).
     #[serde(default)]
     #[ts(optional)]
     pub max_steps: Option<u32>,
+    /// The sections to read, 1 to 3 (ADR-0041). The person picks them; with none the core answers
+    /// with a fixed sentence and runs no model.
+    #[serde(default)]
+    pub sections: Vec<SectionPick>,
 }
 
 pub const MAX_REQUEST_CHARS: usize = 2_000;
@@ -70,6 +80,8 @@ pub const FINAL_TOOL: &str = "final_answer";
 pub const TOOL_CATALOG_CHARS: usize = 7_000;
 pub const FINAL_TEXT_CHARS: usize = 1_200;
 const MAX_LINKED_SOURCES: usize = 6;
+/// What a request with no section is stored as.
+const NO_SECTION_LABEL: &str = "Using: no section";
 
 /// The path a turn took, written to the trace (`lane` column) and to the result.
 pub(super) mod path {
@@ -165,6 +177,8 @@ pub(super) struct Outcome {
     pub written: Option<Written>,
     /// The facts the answer rests on, shown behind the sources button.
     pub sources: Vec<Fact>,
+    /// The section the reply points at (ADR-0041).
+    pub pointer: Option<Pointer>,
 }
 
 impl Outcome {
@@ -183,6 +197,7 @@ impl Outcome {
             path,
             written: None,
             sources: Vec::new(),
+            pointer: None,
         }
     }
 }
@@ -265,7 +280,7 @@ fn is_stopped(o: &ToolOutput) -> bool {
 /// A request row that was opened and not closed. If the request ends by any road but `persist`
 /// (an error, a panic), the row is closed as Failed so none stays Running.
 struct Unfinished<'a> {
-    core: &'a AppCore,
+    session: &'a ProjectSession,
     actor: &'a Actor,
     id: &'a str,
     open: bool,
@@ -282,8 +297,10 @@ impl Drop for Unfinished<'_> {
         if !self.open {
             return;
         }
-        if let Ok(s) = self.core.project() {
-            let _ = s.store.mutate(self.actor, ai_meta("ai.ask"), |tx| {
+        let _ = self
+            .session
+            .store
+            .mutate(self.actor, ai_meta("ai.ask"), |tx| {
                 records::finish_request(
                     tx,
                     self.id,
@@ -297,7 +314,6 @@ impl Drop for Unfinished<'_> {
                     },
                 )
             });
-        }
     }
 }
 
@@ -419,7 +435,7 @@ fn link_facts(c: &Connection, actor: &Actor, facts: &[Fact]) -> AppResult<Vec<Pr
 /// An exact command is a hint to the answer type read: "Leave a comment on the draft: tighten act
 /// two." and "Jump to the call sheets." name their tool outright, whatever verb they start with.
 /// Chat (anger, thanks) is never promoted.
-fn hinted(mut read: TurnRead, text: &str) -> TurnRead {
+pub fn hinted(mut read: TurnRead, text: &str) -> TurnRead {
     let to = if commands::change_command(text, |_| true).is_some() {
         AnswerType::Change
     } else if commands::navigation_call(text, |_| true).is_some() {
@@ -442,6 +458,7 @@ fn hinted(mut read: TurnRead, text: &str) -> TurnRead {
 /// What a turn knows when it starts running.
 struct Turn<'a> {
     core: &'a AppCore,
+    session: &'a Arc<ProjectSession>,
     actor: &'a Actor,
     scope: &'a ResolvedScope,
     model: &'a dyn InferenceProvider,
@@ -459,6 +476,10 @@ struct Turn<'a> {
     max_steps: usize,
     ids: &'a Ids<'a>,
     started: std::time::Instant,
+    /// The sections the person picked.
+    selection: &'a Selection,
+    /// What code decided about the sections before the writer runs.
+    verdict: &'a Verdict,
 }
 
 /// A fixed answer: a refusal or a question. No model, no sources.
@@ -473,6 +494,13 @@ fn model_failed(e: &AppError) -> Outcome {
     let (o, status) = from_tool_error(e);
     let mut out = Outcome::of(o, status, path::WRITE);
     out.error_code = Some(e.code_str().to_string());
+    out
+}
+
+/// A reply that names the section to add, with no model.
+fn pointed(p: Pointer) -> Outcome {
+    let mut out = fixed(AiResultKind::Answer, p.sentence());
+    out.pointer = Some(p);
     out
 }
 
@@ -503,6 +531,7 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
     }
     let cx = action::Cx {
         core: t.core,
+        session: t.session,
         actor: t.actor,
         scope: t.scope,
         model: t.model,
@@ -513,6 +542,10 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
     };
     match t.read.group {
         Group::Navigate => {
+            // What is opened must live in the picks; the pointer names where it lives instead.
+            if let Verdict::Point(p) = t.verdict {
+                return pointed(*p);
+            }
             let named = t.resolved.cloned().unwrap_or_default();
             if let Some(q) = t.question {
                 return fixed(AiResultKind::Clarify, q.text.clone());
@@ -522,6 +555,9 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
             return out;
         }
         Group::Change => {
+            if let Some(p) = pointer::for_change(t.core, t.actor, t.scope, t.text) {
+                return pointed(p);
+            }
             let mut out = action::change(&cx);
             out.path = path::CHANGE;
             return out;
@@ -533,6 +569,11 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
         && let Some(q) = t.question
     {
         return fixed(AiResultKind::Clarify, q.text.clone());
+    }
+    match t.verdict {
+        Verdict::Point(p) => return pointed(*p),
+        Verdict::NotFound(text) => return fixed(AiResultKind::Answer, text.clone()),
+        Verdict::Write | Verdict::Partial(_) => {}
     }
     if t.read.group != Group::Chat && t.dossier.is_none() {
         let e = AppError::ai(
@@ -552,6 +593,8 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
         memory: t.memory,
         index: t.index,
         focus: t.focus,
+        sections: t.selection,
+        partial: matches!(t.verdict, Verdict::Partial(_)),
         started: t.started,
         stopped: &stopped,
         progress: &progress,
@@ -565,7 +608,7 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
     } else {
         let mut o = ToolOutput::of_kind(AiResultKind::Answer, answered.text.clone());
         o.confidence = Some(match answered.shown {
-            Shown::Written | Shown::WrittenSoft => Confidence::Inferred,
+            Shown::Written | Shown::WrittenSoft | Shown::WrittenAdded => Confidence::Inferred,
             Shown::LastResort => Confidence::Exact,
             Shown::Abstained | Shown::Stopped => Confidence::Unavailable,
         });
@@ -573,11 +616,18 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
     };
     if answered.shown == Shown::Abstained && t.read.group != Group::Chat {
         o.details.push(
-            "The assistant could not write a reliable answer, so this is what the project holds."
+            "OpenFrame AI could not write a reliable answer, so this is what the project holds."
                 .into(),
         );
     }
     let mut out = Outcome::of(o, AiResultStatus::Informational, path::WRITE);
+    // The part that fits the picks is answered; the rest gets the sentence, built by code.
+    if let Verdict::Partial(p) = t.verdict
+        && answered.shown != Shown::Stopped
+    {
+        out.output.content = format!("{} {}", out.output.content.trim_end(), p.sentence());
+        out.pointer = Some(*p);
+    }
     out.model_ran = true;
     out.sources = answered.sources.clone();
     out.written = Some(Written {
@@ -619,6 +669,7 @@ fn stage_log(
             "shown": match a.shown {
                 Shown::Written => "written",
                 Shown::WrittenSoft => "written_soft",
+                Shown::WrittenAdded => "written_added",
                 Shown::LastResort => "last_resort",
                 Shown::Abstained => "abstained",
                 Shown::Stopped => "stopped",
@@ -636,13 +687,81 @@ fn stage_log(
     log
 }
 
+/// A request with no section: one fixed sentence, stored like any other answer. No model runs.
+fn ask_without_section(
+    core: &AppCore,
+    actor: &Actor,
+    text: &str,
+    conversation: Option<String>,
+) -> AppResult<AiExchange> {
+    let s = core.project()?;
+    let conversation = conversation
+        .filter(|c| valid_conversation_id(c))
+        .unwrap_or_else(new_id);
+    let request_id = new_id();
+    let project_id = s.project_id();
+    let started = std::time::Instant::now();
+    s.store.mutate(actor, ai_meta("ai.ask"), |tx| {
+        records::insert_request(
+            tx,
+            &NewRequest {
+                id: &request_id,
+                project_id: Some(project_id.clone()),
+                conversation_id: &conversation,
+                scope_json: &json!({ "sections": [] }),
+                scope_label: NO_SECTION_LABEL,
+                text,
+                model_reference: None,
+            },
+        )
+    })?;
+    let trace_row = SectionsTrace {
+        retrieval: "none".to_string(),
+        ..SectionsTrace::default()
+    };
+    let outcome = fixed(AiResultKind::Answer, sections::PICK_A_SECTION);
+    let stages = json!({ "path": path::FIXED, "sections": sections::stage_json(&trace_row) });
+    persist(&s, actor, &request_id, outcome, &stages)?;
+    trace::record(
+        core,
+        &trace::TraceRow {
+            request_id: &request_id,
+            project_id: Some(&project_id),
+            model_reference: None,
+            context_tokens: None,
+            tools_offered: 0,
+            tools_chosen: Vec::new(),
+            steps: 0,
+            sources: 0,
+            usage: None,
+            total_ms: started.elapsed().as_millis() as u64,
+            passes: 0,
+            checks_failed: Vec::new(),
+            result_kind: "Answer",
+            error_code: None,
+            proposed: false,
+            path: path::FIXED,
+            fallback: "",
+            cancelled: false,
+            turn: None,
+            turn_ms: 0,
+            dossier: None,
+            dossier_ms: 0,
+            sections: Some(trace_row.clone()),
+        },
+    );
+    s.store
+        .read(|c| records::load_exchange(c, actor, &request_id))?
+        .ok_or_else(|| AppError::internal("OpenFrame AI exchange not recorded"))
+}
+
 /// Handle one assistant request end to end.
 pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use OpenFrame AI")?;
     // The assistant never runs on behalf of an applied Change Set (no recursive agents).
     if matches!(actor.origin, ActorOrigin::Ai { .. }) {
         return Err(AppError::permission_denied(
-            "start an assistant request from a proposal",
+            "start an OpenFrame AI request from a proposal",
         ));
     }
     let text = args.text.trim().to_string();
@@ -658,20 +777,32 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         .max_steps
         .map_or(DEFAULT_MAX_STEPS, |n| (n as usize).clamp(1, HARD_MAX_STEPS));
     let s = core.project()?;
+    // The person is the router (ADR-0041). Picks are checked first: a bad pick runs nothing.
+    let selection = if !args.sections.is_empty() {
+        s.store
+            .read(|c| sections::resolve_picks(c, &args.sections))?
+    } else if core.config.ai_eval_all_sections {
+        s.store.read(sections::every_section)?
+    } else {
+        return ask_without_section(core, actor, &text, args.conversation_id);
+    };
     let svc = service(core);
     let model = svc.model().ok_or_else(|| svc.unavailable_reason())?;
-    let mut scope = s.store.read(|c| scope::resolve(c, actor, &args.scope))?;
+    let mut scope = s
+        .store
+        .read(|c| ResolvedScope::of_selection(c, &selection))?;
     let conversation = args
         .conversation_id
         .filter(|c| valid_conversation_id(c))
         .unwrap_or_else(new_id);
     // Which screenplay, scene and people does the message name (index S3)? With several screenplays
-    // the scope has no draft, and every tool would ask "which one do you mean". The resolver settles
-    // it from the title, the conversation focus, the scene number or the current draft, and asks
-    // only when none of them can. What the message named becomes the focus for the next one.
+    // and none picked the scope has no draft, and every tool would ask "which one do you mean". The
+    // resolver settles it from the title, the conversation focus, the scene number or the current
+    // draft, and asks only when none of them can. What the message named becomes the focus for the
+    // next one.
     let reading = index::read_message(&s, &actor.user_id, &conversation, &text);
     if let Some(id) = reading.as_ref().and_then(|r| r.resolved.screenplay_id()) {
-        // A screenplay the message names wins over the one the panel was opened on.
+        // A screenplay the message names wins over the current draft.
         let named = reading
             .as_ref()
             .and_then(|r| r.resolved.screenplays.first())
@@ -682,7 +813,10 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
                 )
             });
         let differs = scope.draft.as_ref().is_none_or(|d| d.screenplay_id != id);
+        // A draft the person picked is not overruled by a title in the message.
+        let picked = selection.draft().is_some();
         if differs
+            && !picked
             && (scope.draft.is_none() || named)
             && let Some(draft) = s.store.read(|c| index::draft_for_screenplay(c, id))?
         {
@@ -716,14 +850,26 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     // The facts this answer is written from (slice S5), and the names as the stage completed them.
     let dossier_started = std::time::Instant::now();
     let project_ix = reading.as_ref().and_then(|_| index::project_index(&s).ok());
-    let dossier = reading.as_ref().and_then(|r| {
+    // Text inside the picked sections. It opens the store itself, so it runs before the fetch stage.
+    let retrieved = matches!(
+        turn_read.group,
+        Group::Facts | Group::Narrative | Group::Brainstorm
+    )
+    .then(|| sections::retrieve(core, &s, actor, &selection, &text));
+    let leaf_read = dossier::LeafRead {
+        selection: &selection,
+        passages: retrieved
+            .as_ref()
+            .map_or(&[][..], |r| r.passages.as_slice()),
+    };
+    let built = reading.as_ref().and_then(|r| {
         let ix = project_ix.as_ref()?;
         if matches!(turn_read.group, Group::Chat | Group::Change) {
             return None;
         }
         s.store
             .read(|c| {
-                Ok(dossier::try_build(&dossier::Input {
+                let input = dossier::Input {
                     conn: c,
                     actor,
                     index: ix,
@@ -731,14 +877,24 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
                     message: &text,
                     read: &turn_read,
                     resolved: &r.resolved,
-                    selected_scene: scope.scene.as_ref().map(|s| s.id.as_str()),
                     focus: Some(&r.focus_after),
                     previous_message: r.previous_message.as_deref(),
-                }))
+                    sections: &leaf_read,
+                };
+                let d = dossier::try_build(&input);
+                // Permission comes first inside: a pointer never reveals what the person may not read.
+                let verdict = d.as_ref().map_or(Verdict::Write, |d| {
+                    pointer::try_decide(&input, &selection, d)
+                });
+                Ok(d.map(|d| (d, verdict)))
             })
             .ok()
             .flatten()
     });
+    let (dossier, verdict) = match built {
+        Some((d, v)) => (Some(d), v),
+        None => (None, Verdict::Write),
+    };
     let dossier_ms = dossier_started.elapsed().as_millis() as u64;
     let dossier_summary = dossier.as_ref().map(Dossier::summary);
     // The screenplay the request will read is the one the conversation is about from now on, and
@@ -766,6 +922,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             focus: &focus_after,
             entity_ids: &memory_ids,
             names: project_ix.as_deref(),
+            sections: &selection,
         })
     })?;
     let scope_json = memory::counts_in(
@@ -779,7 +936,6 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
                 id: &request_id,
                 project_id: Some(project_id.clone()),
                 conversation_id: &conversation,
-                scope_kind: scope.kind.as_str(),
                 scope_json: &scope_json,
                 scope_label: &scope.label,
                 text: &text,
@@ -788,7 +944,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         )
     })?;
     let mut unfinished = Unfinished {
-        core,
+        session: &s,
         actor,
         id: &request_id,
         open: true,
@@ -803,24 +959,19 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         request: &request_id,
         running: &running,
     };
-    // What the message names once the dossier completed it (the scene on screen, the one screenplay
-    // that has the data); the resolver's own answer when there is no dossier.
+    // What the message names once the dossier completed it (the one screenplay that has the data);
+    // the resolver's own answer when there is no dossier.
     let named = dossier
         .as_ref()
         .map(|d| d.resolved.clone())
         .or_else(|| resolved_now.clone());
-    // The resolver asks when nothing settles which screenplay or person is meant. A scene number that
-    // fits several screenplays is settled by the one with the production data (an `Assumed` fact,
-    // which the answer says out loud); a question with no scene number is asked, not guessed.
-    let settled = dossier.as_ref().is_some_and(|d| {
-        !d.resolved.scenes.is_empty() && d.facts.iter().any(|f| f.kind == "Assumed")
-    });
-    let question = resolved_now
-        .as_ref()
-        .and_then(|r| r.ambiguous.as_ref())
-        .filter(|_| !settled);
+    // The resolver asks when nothing settles which screenplay or person is meant; a scene number that
+    // fits several screenplays is settled by the one with the production data, which the answer says
+    // out loud. Asked, not guessed.
+    let question = dossier.as_ref().and_then(|d| d.resolved.ambiguous.as_ref());
     let mut outcome = run_turn(&Turn {
         core,
+        session: &s,
         actor,
         scope: &scope,
         model: &*model,
@@ -836,8 +987,20 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         max_steps,
         ids: &ids,
         started,
+        selection: &selection,
+        verdict: &verdict,
     });
     put_path(&mut outcome.output, outcome.path);
+    if let Some(p) = &outcome.pointer {
+        put_pointer(&mut outcome.output, p);
+    }
+    // Full text stood in for the hybrid search: the answer says the context is still being prepared.
+    if retrieved.as_ref().is_some_and(|r| r.degraded) && outcome.written.is_some() {
+        outcome
+            .output
+            .details
+            .push(retrieval::PREPARING_NOTICE.to_string());
+    }
     if matches!(
         outcome.output.kind,
         AiResultKind::Answer | AiResultKind::Proposal | AiResultKind::Navigate
@@ -864,7 +1027,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     };
     let usage = model.take_usage();
     let cached = usage.map_or(0, |u| u.cached_tokens);
-    let stages = stage_log(
+    let mut stages = stage_log(
         &turn_read,
         turn_ms,
         dossier_summary.as_ref(),
@@ -872,6 +1035,22 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         &outcome,
         cached,
     );
+    let sections_trace = SectionsTrace {
+        leaves: selection.codes().iter().map(|c| (*c).to_string()).collect(),
+        tokens: dossier.as_ref().map_or_else(Vec::new, |d| {
+            d.leaf_tokens.iter().map(|l| l.tokens).collect()
+        }),
+        instances: selection.picks.iter().filter(|p| p.narrowed()).count(),
+        retrieval: retrieved
+            .as_ref()
+            .map_or("none", sections::Retrieved::path_code)
+            .to_string(),
+        degraded: retrieved.as_ref().is_some_and(|r| r.degraded),
+        outside: dossier.as_ref().map_or(0, |d| d.outside.len()),
+        pointer: outcome.pointer.map(|p| p.leaf.id.to_string()),
+        pointer_trigger: outcome.pointer.map(|p| p.trigger.to_string()),
+    };
+    stages["sections"] = sections::stage_json(&sections_trace);
     let trace_row = (
         outcome
             .steps
@@ -888,7 +1067,7 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             .as_ref()
             .map_or("", |w| w.answered.shown.fallback_code()),
     );
-    persist(core, actor, &request_id, outcome, &stages)?;
+    persist(&s, actor, &request_id, outcome, &stages)?;
     unfinished.close();
     // What the person stated outright or confirmed is remembered (spec 5.7).
     memory::remember(&s, actor, &request_id, &text, &turn_memory, &memory_ids);
@@ -898,7 +1077,6 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         &trace::TraceRow {
             request_id: &request_id,
             project_id: Some(&project_id),
-            scope_kind: scope.kind.as_str(),
             model_reference: Some(&model_ref),
             context_tokens: Some(model.capabilities().context_tokens),
             tools_offered: 0,
@@ -919,11 +1097,12 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             turn_ms,
             dossier: dossier_summary,
             dossier_ms,
+            sections: Some(sections_trace),
         },
     );
     s.store
         .read(|c| records::load_exchange(c, actor, &request_id))?
-        .ok_or_else(|| AppError::internal("assistant exchange not recorded"))
+        .ok_or_else(|| AppError::internal("OpenFrame AI exchange not recorded"))
 }
 
 /// Record the path in the result's structured data, where the screen reads it.
@@ -935,14 +1114,22 @@ fn put_path(out: &mut ToolOutput, path: &str) {
     out.structured = Some(data);
 }
 
+/// The section the reply points at, in the structured data the screens read.
+fn put_pointer(out: &mut ToolOutput, p: &Pointer) {
+    let mut data = out.structured.take().unwrap_or_else(|| json!({}));
+    if let Value::Object(m) = &mut data {
+        m.insert("pointer".into(), p.structured());
+    }
+    out.structured = Some(data);
+}
+
 fn persist(
-    core: &AppCore,
+    s: &ProjectSession,
     actor: &Actor,
     request_id: &str,
     o: Outcome,
     stages: &Value,
 ) -> AppResult<()> {
-    let s = core.project()?;
     let result_id = new_id();
     let request_status = if o.status == AiResultStatus::Failed {
         "Failed"
@@ -1046,7 +1233,6 @@ mod tests {
         let read = TurnRead {
             answer_type: AnswerType::Lookup,
             group: Group::Facts,
-            domains: Vec::new(),
             length_class: turn::LengthClass::OneSentence,
             how: turn::ReadHow::Rule,
             vote: 0.0,

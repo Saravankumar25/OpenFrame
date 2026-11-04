@@ -10,27 +10,27 @@
       "internalID" : "6F3A1C20",
       "localizations" : [
         {
-          "description" : "Try every feature of OpenFrame Studio for 7 days. No payment.",
+          "description" : "Use every feature of OpenFrame Studio for 7 days.",
           "displayName" : "7-day Trial",
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.openframe.studio.trial7",
+      "productID" : "app.openframestudio.studio.trial7",
       "referenceName" : "7-day Trial",
       "type" : "NonConsumable"
     },
     {
-      "displayPrice" : "89.00",
+      "displayPrice" : "9999.00",
       "familyShareable" : false,
       "internalID" : "6F3A1C21",
       "localizations" : [
         {
-          "description" : "Unlock OpenFrame Studio for good. One payment, no subscription.",
+          "description" : "Unlock OpenFrame Studio for good. TEST VALUE: the real price is set in App Store Connect.",
           "displayName" : "Lifetime Access",
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.openframe.studio.lifetime",
+      "productID" : "app.openframestudio.studio.lifetime",
       "referenceName" : "Lifetime Access",
       "type" : "NonConsumable"
     }

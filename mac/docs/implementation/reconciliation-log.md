@@ -6,6 +6,13 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-11-03: gold cases name sections instead of a scope (slice R7)
+
+The field `scope` is gone from the assistant, so the gold cases moved with it. A case that held `{"kind":"scene","scene":N}` now picks
+Screenplay > Scenes and Breakdown narrowed to scene N, plus Story > Characters. A case that held `{"kind":"project"}` or an act now
+has no `sections` and reads every section under `AppConfig.ai_eval_all_sections`. The approved requests and expected results are
+unchanged; `gold/REVIEW.md` keeps its "(scope: scene N)" wording as the approved description.
+
 ## 2026-10-28: Finished and superseded documents moved to history (owner order)
 
 Owner order: older decisions and finished documents go to `docs/history/`; the current folders hold only documents about

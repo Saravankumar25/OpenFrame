@@ -99,7 +99,7 @@ ends with a full stop and has no em dash. A test checks both.
 | Start | At first launch. The trial record is created the first time `load_and_observe` runs and finds no record. |
 | Credit card | None. The trial needs no payment detail and no network. |
 | Counting | In whole 24-hour days from the start time, not calendar days. The days left are rounded up: 6.5 days left shows as 7, the last partial day shows as 1. At exactly 7 days the trial has ended. |
-| Offline | The trial counts without a network, because the count uses only the local clock and the local record. A purchase also keeps working offline in the installer channel, because the licence file is checked with a public key and no network call (section 6). |
+| Offline | The trial runs offline after the first online start (ADR-0040). |
 | Clock turned back | The latest time the record has seen wins (`lastSeenMs`, which never decreases). Turning the clock back gives no days back. A clock set earlier than the start time shows the full 7 days, because no time has passed yet. |
 | Clock turned forward | Time moves on and the days count. A large jump forward ends the trial, and the user can only undo that by deleting the record. The code accepts this on purpose: a forward jump that was ignored would give an unlimited trial. |
 | Record edited, or not a record | The record is replaced by one that has already ended, never by a fresh trial. The user keeps opening and exporting. A purchase still unlocks the app, because the purchase answer comes from the channel and not from this file. |
@@ -114,22 +114,22 @@ section 4 starts, counts or extends a Mac trial. The owner decided the Mac metho
 
 | Rule | What happens |
 |---|---|
-| Products | Apple's non-subscription trial model. A zero-price Non-Consumable "7-day Trial" (`com.openframe.studio.trial7`) and a separate paid Non-Consumable "Lifetime Access" (`com.openframe.studio.lifetime`). No auto-renewing subscription. Family Sharing is off. |
+| Products | Apple's non-subscription trial model. A zero-price Non-Consumable "7-day Trial" (`app.openframestudio.studio.trial7`) and a separate paid Non-Consumable "Lifetime Access" (`app.openframestudio.studio.lifetime`). No auto-renewing subscription. Family Sharing is off. |
 | Before the trial | The app shows the 7-day length and offers the trial, the purchase and restore. It names no price (ADR-0023); Apple's sheet shows it. The trial begins only after the verified free StoreKit transaction succeeds. |
 | Source of truth | Only cryptographically verified StoreKit 2 transactions are authoritative. The installation date, the system clock, the time zone, UserDefaults, SQLite, files, Keychain and frontend state are never the source of truth. Local state is a cache. |
-| Trial state | Built from the verified trial transaction: product id, Apple transaction id and the Apple-recorded purchase date. The trial starts at that transaction's `purchaseDate` (or its own earlier `originalPurchaseDate`), never at `AppTransaction.originalPurchaseDate`. Apple's `appTransactionID` only links the Apple Account to the app and is optional, because Apple provides it on macOS 15.4 and later only; the server requires every `appTransactionID` present in one request to match. |
-| Expiry | Server-authoritative. A small licensing server validates the Apple-signed transaction and computes `trialEndsAt` as the Apple purchase time plus 168 hours in server UTC. Apple private keys and server secrets never live in the app. |
-| During the trial | The app needs a successful online validation at launch. It receives the remaining seconds and a lease (6 hours by default, never more than the seconds left) and counts down with monotonic elapsed time in the session, not the wall clock. A validation is good for `min(lease, remaining)` of monotonic time. |
-| Revalidation | The shell calls `revalidate` at launch, after the Mac wakes or the window returns after a long idle, when StoreKit reports a change (`Transaction.updates` or an account change), and when the lease runs out. If the server cannot be reached, the current countdown continues until its lease ends, then editing locks (NeedsOnlineCheck, "check again") until a check succeeds. A successful check takes the server's seconds left (Apple purchase date plus 168 hours minus server time) and never adds to them, so no sequence of leases, sleeps and relaunches gives more than 168 hours of use. A revocation StoreKit reports locks at once. |
-| Validation fails | The app fails safe with a connectivity message: editing locks, opening and exporting stay. It never restarts or extends the trial. |
+| Trial state | Built from the verified trial transaction: product id, Apple transaction id and the Apple-recorded purchase date. The trial starts at that transaction's `purchaseDate` (or its own earlier `originalPurchaseDate`), never at `AppTransaction.originalPurchaseDate`. Apple's `appTransactionID` only links the Apple Account to the app and is optional, because Apple provides it on macOS 15.4 and later only. |
+| Expiry | Counted on the Mac (ADR-0040, which supersedes the server design). The end is the verified Apple purchase time plus 168 hours. A Keychain clock guard stops clock tricks; the system clock is an input, guarded by a high water mark. No server exists. |
+| During the trial | The trial works offline after the first online start. The guard record keeps the start and the high water mark; a session monotonic clock notices a wall clock moved back while the app runs. |
+| Revalidation | The shell re-reads StoreKit at launch, on coming to the front, on `Transaction.updates` and every 5 minutes during a trial. A clock behind the trusted floor locks with ClockChanged until it is right. A revocation StoreKit reports locks at once. |
+| Store does not answer | An empty answer proves nothing. A buyer stays unlocked and a known trial goes on from the guard's start; anything else shows "check online". It never restarts or extends the trial. |
 | After expiry | The whole app locks: opening, editing and exporting wait for a purchase or a restore (owner decision 2026-10-07, ADR-0022). The lock screen offers only **Buy full version** and **Restore purchase** and cannot be closed; the core refuses every project operation underneath it. Nothing is deleted. |
-| Lifetime | Comes only from the verified paid non-consumable in StoreKit `currentEntitlements`. It is restored automatically after a reinstall or on a new Mac with the same Apple Account, and it works offline. A revalidation never takes it away because the server cannot be reached. A refund or revocation that StoreKit reports is honoured. |
+| Lifetime | Comes only from the verified paid non-consumable in StoreKit `currentEntitlements`. It is restored automatically after a reinstall or on a new Mac with the same Apple Account, and it works offline. A missing network never takes it away. A refund or revocation that StoreKit reports is honoured. |
 | Enforcement | Central in the Rust core. UI paywalls are presentation only. Sandbox or TestFlight and production stay separated. |
-| Offline | The trial needs the launch check and a new check whenever the lease runs out. This is the one exception to the offline rule (ADR-0018, decisions 4 and 6). |
+| Offline | The trial runs offline after the first online start (ADR-0040). |
 
 Threats the Mac tests cover: clock rollback or forward, time zone changes, reinstall, deleted app data or Keychain, backup or VM
 rollback, copied state, network blocking, a repeated trial purchase, another Mac with the same Apple Account, transaction or JWS
-tampering, App Store sign-out, the app kept open past expiry, lease expiry, revalidation with the server unreachable, an
+tampering, App Store sign-out, the app kept open past expiry, a Keychain item deleted, an
 interrupted or deferred purchase, restore, refund or revocation, and corrupt or unverified transactions. What the design cannot
 prevent (a different Apple Account gets a new trial; no device fingerprinting) is in section 9 of
 [38-mac-app-store-trial.md](38-mac-app-store-trial.md).
@@ -257,7 +257,7 @@ Limits that follow from the code:
 | Channel | Adapter | State today |
 |---|---|---|
 | Microsoft Store (`.msix`) | `MicrosoftStoreAdapter` over `StoreLicenceSource` | **Mapping, lock and purchase path built and tested with a fake source; not connected to the Store.** `channel_state` and `restore_channel_state` read the Store licence and map it with `store_licence_state` (section 3). `buy_full_version` runs the Store's purchase dialog. Without a source (`MicrosoftStoreAdapter::unavailable`, every build today) the state is NeedsOnlineCheck with the limitation "The Microsoft Store connection is not available in this build." and Buy returns that message. The real `GetAppLicenseAsync`, `RequestPurchaseAsync` and `OfflineLicensesChanged` calls in the Windows shell need the Partner Center product identity (owner task). |
-| Mac App Store (`.pkg`) | `mac::MacAppStoreAdapter` | **Built and tested with fakes; not connected to Apple.** The policy and the adapter are in `crates/openframe-entitlement/src/mac/`, tested against a fake StoreKit bridge and a fake licensing server; design and test list in [38-mac-app-store-trial.md](38-mac-app-store-trial.md). Without the shell's `MacInputs` (every build today) `for_channel` builds it over `UnavailableBridge` and `UnavailableServer`: NeedsOnlineCheck with "The App Store connection is not available in this build.", nothing granted, nothing cached. That is a gap in the build, not a user state. |
+| Mac App Store (`.pkg`) | `mac::MacAppStoreAdapter` | **Built and tested with fakes; not connected to Apple.** The policy and the adapter are in `crates/openframe-entitlement/src/mac/`, tested against a fake StoreKit bridge; design and test list in [38-mac-app-store-trial.md](38-mac-app-store-trial.md). Without the shell's `MacInputs` (every build today) `for_channel` builds it over `UnavailableBridge`: NeedsOnlineCheck with "The App Store connection is not available in this build.", nothing granted, nothing cached. That is a gap in the build, not a user state. |
 | Internal builds (`.exe`, `.dmg`) | none | **Internal build** (ADR-0023, ADR-0024). `for_channel` returns no adapter and the core sets InternalBuild without asking anything. There is no team password gate (removed 2026-10-27, section 11). |
 
 `for_channel` builds the adapter from the channel, the app data folder, optional `MacInputs` and an optional
@@ -278,8 +278,8 @@ and the screen operations (section 10), and refuses every operation during the s
 - Microsoft Store: the real `StoreLicenceSource` in the Windows shell (`GetAppLicenseAsync`, `RequestPurchaseAsync` with the window
   handle) and the `OfflineLicensesChanged` subscription that calls `refresh`, after the owner reserves the product in Partner
   Center; the Partner Center trial set to 7 days.
-- Mac App Store: the real StoreKit 2 bridge in Swift, the HTTPS licensing server client and the system nonce source, handed to the
-  core as `MacInputs`; the shell's calls to `revalidate`; the licensing server's deployment and its response keys; a check against
+- Mac App Store: the real StoreKit 2 bridge in Swift, handed to the
+  core as `MacInputs`; the shell's calls to `revalidate`; the App Store sandbox run of the trial; a check against
   Apple's current review rules before submission.
 - Tests that are still missing: an end-to-end run in each store against the real store.
 

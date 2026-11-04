@@ -347,7 +347,7 @@ pub fn read_message(
         Err(e) => {
             tracing::warn!(
                 code = e.code_str(),
-                "the assistant's project index could not be read"
+                "OpenFrame AI's project index could not be read"
             );
             None
         }

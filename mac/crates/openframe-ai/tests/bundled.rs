@@ -404,6 +404,7 @@ impl Fixture {
             embedding_supervisor: sup,
             ready_timeout: Duration::from_secs(30),
             deterministic: false,
+            engine_store_signed: false,
             // No graphics card unless a scenario gives one (with_card).
             graphics: Arc::new(GraphicsFacts::default),
         }

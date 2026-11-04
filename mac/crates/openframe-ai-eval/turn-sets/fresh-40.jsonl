@@ -1,7 +1,7 @@
 {"id":"fresh-01","msg":"so what actually goes on in the harbour office scene with the clerk and babu","prev":"","want":"explain"}
 {"id":"fresh-02","msg":"sum up act 3 for me real quick","prev":"","want":"explain"}
-{"id":"fresh-03","msg":"why does Jose cut the net","prev":"","want":"explain"}
-{"id":"fresh-04","msg":"describe Rosily","prev":"","want":"explain"}
+{"id":"fresh-03","msg":"why does Jose cut the net","prev":"","want":"story"}
+{"id":"fresh-04","msg":"describe Rosily","prev":"","want":"describe"}
 {"id":"fresh-05","msg":"is babu related to anyone in the family","prev":"","want":"relation"}
 {"id":"fresh-06","msg":"how do sudheesh and anjali know each other","prev":"","want":"relation"}
 {"id":"fresh-07","msg":"whats between jose and varghese","prev":"","want":"relation"}

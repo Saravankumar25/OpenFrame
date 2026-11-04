@@ -1,90 +1,13 @@
 // Pure view logic for the AI Assistant panel (FSD §42; UX §3.40; mockups 174–181).
 // No project truth lives here: everything shown comes from `ai.*` operations.
 
-import { useOpenDraft, type Route, type WorkspaceId } from "../app/stores";
+import type { Route, WorkspaceId } from "../app/stores";
 import type { AiChangeSetDto } from "../ipc/generated/AiChangeSetDto";
 import type { AiConfidence } from "../ipc/generated/AiConfidence";
 import type { AiNavTarget } from "../ipc/generated/AiNavTarget";
 import type { AiProvenance } from "../ipc/generated/AiProvenance";
 import type { AiStepDto } from "../ipc/generated/AiStepDto";
-import type { AiScopeArgs } from "../ipc/generated/AiScopeArgs";
-import type { AiScopeKind } from "../ipc/generated/AiScopeKind";
 import type { AiStatusDto } from "../ipc/generated/AiStatusDto";
-
-export const SCOPE_LABELS: Record<AiScopeKind, string> = {
-  CurrentSelection: "Current Selection",
-  CurrentScene: "Current Scene",
-  CurrentScreenplay: "Current Screenplay",
-  SpecificDraft: "Specific Draft",
-  StoryBoard: "Beat Board",
-  IdeaVaultSelection: "Idea Vault Selection",
-  Production: "Production Workspace",
-  ShootingDay: "Shooting Day",
-  CallSheet: "Call Sheet",
-  WholeProject: "Whole Project",
-};
-
-/** Route params that identify selected objects (search / Continue / AI navigation targets). */
-const SELECTION_PARAMS = ["cardId", "sceneCardId", "itemId", "vaultItemId", "characterId", "fileId", "beatId"];
-
-function selectionIds(route: Route): string[] {
-  const p = route.params ?? {};
-  return SELECTION_PARAMS.map((k) => p[k]).filter((v): v is string => typeof v === "string" && v.length > 0);
-}
-
-/** Scopes that make sense right now (a scope that needs a target is offered only when one exists). */
-export function scopeOptions(route: Route): AiScopeKind[] {
-  const p = route.params ?? {};
-  const out: AiScopeKind[] = [];
-  const sel = selectionIds(route);
-  if (sel.length > 0) out.push(route.workspace === "vault" ? "IdeaVaultSelection" : "CurrentSelection");
-  if (p.sceneId) out.push("CurrentScene");
-  out.push("CurrentScreenplay");
-  if (p.draftId) out.push("SpecificDraft");
-  out.push("StoryBoard", "Production");
-  if (p.shootingDayId) out.push("ShootingDay");
-  if (p.callSheetId) out.push("CallSheet");
-  out.push("WholeProject");
-  return out;
-}
-
-const WORKSPACE_DEFAULT: Partial<Record<WorkspaceId, AiScopeKind>> = {
-  screenplay: "CurrentScreenplay",
-  story: "StoryBoard",
-  breakdown: "Production",
-  production: "Production",
-  callsheets: "Production",
-};
-
-/** Scope inherited from where the user is (AI spec §7.2); Whole Project otherwise. */
-export function defaultScope(route: Route): AiScopeKind {
-  const opts = scopeOptions(route);
-  const p = route.params ?? {};
-  if (route.workspace === "screenplay" && p.sceneId) return "CurrentScene";
-  if (opts.includes("IdeaVaultSelection")) return "IdeaVaultSelection";
-  if (opts.includes("CurrentSelection") && route.workspace !== "screenplay") return "CurrentSelection";
-  if (route.workspace === "callsheets" && p.callSheetId) return "CallSheet";
-  return WORKSPACE_DEFAULT[route.workspace] ?? "WholeProject";
-}
-
-/** Arguments for `ai.ask` (references only; Rust resolves and budgets the actual context). */
-export function scopeArgs(kind: AiScopeKind, route: Route): AiScopeArgs {
-  const p = route.params ?? {};
-  const selection = kind === "CurrentSelection" || kind === "IdeaVaultSelection" ? selectionIds(route).map((id) => ({ id })) : [];
-  return {
-    kind,
-    // The draft open in the Screenplay workspace when the route names none
-    // (a project may hold several screenplays; nothing is guessed).
-    draftId:
-      kind === "SpecificDraft" || kind === "CurrentScreenplay"
-        ? p.draftId ?? (route.workspace === "screenplay" ? useOpenDraft.getState().draftId : null) ?? null
-        : null,
-    sceneId: kind === "CurrentScene" ? p.sceneId ?? null : null,
-    selection,
-    shootingDayId: kind === "ShootingDay" ? p.shootingDayId ?? null : null,
-    callSheetId: kind === "CallSheet" ? p.callSheetId ?? null : null,
-  };
-}
 
 const KNOWN_WORKSPACES: WorkspaceId[] = [
   "home", "vault", "story", "screenplay", "breakdown", "production", "callsheets", "files", "trash", "activity", "notes", "settings",

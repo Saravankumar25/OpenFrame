@@ -108,7 +108,7 @@ extension Scenarios {
         }
     }
 
-    @MainActor static let assistantPlace = A11yPlace(name: "AI Assistant panel", scope: .assistantPanel) { ui in
+    @MainActor static let assistantPlace = A11yPlace(name: "OpenFrame AI panel", scope: .assistantPanel) { ui in
         await ui.a11yCloseExtras()
         try await ui.go("Screenplay")
         try await ui.a11yOpenAssistant()
@@ -124,7 +124,7 @@ extension Scenarios {
             + [workspace("Screenplay"), workspace("Breakdown")]
             + productionTitles.map(productionTab)
             + [workspace("Call Sheets"), workspace("Files"), assistantPlace]
-            + ["General", "Appearance", "Keyboard Shortcuts", "Storage", "Offline AI", "Diagnostics"].map(settingsTab)
+            + ["General", "Appearance", "Keyboard Shortcuts", "Storage", "OpenFrame AI", "Diagnostics"].map(settingsTab)
     }
 
     /// The keyboard walk covers the eight workspaces (Story on its Beat Board, Production on Overview).
@@ -183,7 +183,7 @@ extension UI {
 
     func a11yIsSettings(_ w: NSWindow) -> Bool {
         w.identifier?.rawValue.contains("Settings") == true || w.identifier?.rawValue.contains("settings") == true
-            || ["Settings", "General", "Appearance", "Keyboard Shortcuts", "Storage", "Offline AI", "Diagnostics"].contains(w.title)
+            || ["Settings", "General", "Appearance", "Keyboard Shortcuts", "Storage", "OpenFrame AI", "Diagnostics"].contains(w.title)
             || w.title.hasSuffix("Settings")
     }
 
@@ -198,7 +198,7 @@ extension UI {
             await idle(0.4)
         }
         if exists(id: "ai-panel") {
-            try? await a11yPress(label: "Close AI Assistant", role: "AXButton", timeout: 5)
+            try? await a11yPress(label: "Close OpenFrame AI", role: "AXButton", timeout: 5)
             try? await waitGone(id: "ai-panel", timeout: 8)
         }
         if let main = a11yMainWindow() {
@@ -231,9 +231,9 @@ extension UI {
             try await shortcut("j", code: 38)
             let deadline = Date().addingTimeInterval(4)
             while Date() < deadline, !exists(id: "ai-panel") { await idle(0.2) }
-            if !exists(id: "ai-panel") { log("Command+J try \(attempt): no AI Assistant panel yet (key window \(NSApp.keyWindow?.title ?? "none"))") }
+            if !exists(id: "ai-panel") { log("Command+J try \(attempt): no OpenFrame AI panel yet (key window \(NSApp.keyWindow?.title ?? "none"))") }
         }
-        try await wait(id: "ai-panel", timeout: 5, "the AI Assistant panel after Command+J")
+        try await wait(id: "ai-panel", timeout: 5, "OpenFrame AI panel after Command+J")
     }
 
     /// Presses a control: the accessibility press, else a click posted to the event queue. The

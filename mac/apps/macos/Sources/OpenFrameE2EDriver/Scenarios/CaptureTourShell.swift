@@ -79,7 +79,7 @@ extension Scenarios {
                 try await ui.capNav("Project Home")
                 try await ui.shortcut("j", code: 38)
                 await ui.idle(1.5)
-                await ui.capture("project-home-ai-panel", title: "Project Home with the AI Assistant open", area: "AI Assistant", from: "project-home", via: "ai-toggle")
+                await ui.capture("project-home-ai-panel", title: "Project Home with OpenFrame AI open", area: "OpenFrame AI", from: "project-home", via: "ai-toggle")
                 try await ui.shortcut("j", code: 38)
                 await ui.idle(0.8)
             }

@@ -23,7 +23,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <dict>
 	<key>CFBundleName</key><string>OpenFrame Studio</string>
 	<key>CFBundleDisplayName</key><string>OpenFrame Studio</string>
-	<key>CFBundleIdentifier</key><string>studio.openframe.mac.dev</string>
+	<key>CFBundleIdentifier</key><string>app.openframestudio.studio.dev</string>
 	<key>CFBundleExecutable</key><string>OpenFrameStudio</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
 	<key>CFBundleShortVersionString</key><string>${VERSION}</string>

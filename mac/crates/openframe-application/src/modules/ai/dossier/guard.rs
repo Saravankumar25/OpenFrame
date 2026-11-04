@@ -18,6 +18,19 @@ use regex::Regex;
 use super::Fact;
 use crate::modules::production::privacy::may_see_contacts;
 
+/// Text a tool hands back, for a person who may or may not see contact data: a phone number or an email
+/// typed into a note is hidden the way it is on the question path.
+pub fn tool_text(actor: &Actor, text: &str) -> String {
+    if may_see_contacts(actor) {
+        text.to_string()
+    } else {
+        hide_contacts(text).0
+    }
+}
+
+/// What the person is told when contact data was left out.
+pub const NOT_FOR_YOUR_ROLE: &str = "Contact details are not shown for your role.";
+
 /// What the plan may ask for.
 #[derive(Debug, Clone)]
 pub struct Guard {
@@ -170,8 +183,12 @@ pub fn apply(g: &Guard, facts: &mut Vec<Fact>, missing: &mut Vec<String>) -> usi
                 }
             }
             if hidden {
-                // A required value that holds contact data goes with it.
-                f.requires.retain(|r| !hide_contacts(r).1);
+                // A required value that holds contact data goes with it, and so does one cut from a
+                // sentence with the contact in it: only what the hidden fields still hold may be asked for.
+                let fields = std::mem::take(&mut f.fields);
+                f.requires
+                    .retain(|r| !hide_contacts(r).1 && fields.iter().any(|(_, v)| v.contains(r.as_str())));
+                f.fields = fields;
                 hid_contact = true;
                 acted += 1;
             }
@@ -192,6 +209,10 @@ pub fn apply(g: &Guard, facts: &mut Vec<Fact>, missing: &mut Vec<String>) -> usi
             }
         }
         acted += usize::from(path_seen);
+        // A required value is named to the writer outside the facts, so one that holds a path or reads
+        // like an instruction is never demanded.
+        f.requires
+            .retain(|r| !strip_paths(r).1 && !looks_like_instruction(r));
         let instruction = f
             .fields
             .iter()
@@ -203,7 +224,7 @@ pub fn apply(g: &Guard, facts: &mut Vec<Fact>, missing: &mut Vec<String>) -> usi
         }
     }
     if hid_contact {
-        let s = "Contact details are not shown for your role.".to_string();
+        let s = NOT_FOR_YOUR_ROLE.to_string();
         if !missing.contains(&s) {
             missing.push(s);
         }

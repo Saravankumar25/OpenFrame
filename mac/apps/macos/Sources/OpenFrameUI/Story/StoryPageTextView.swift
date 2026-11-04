@@ -25,6 +25,11 @@ struct StoryPageTools: Equatable {
 }
 
 final class StoryPageTextView: NSTextView {
+    override func shouldChangeText(in affectedCharRange: NSRange, replacementString: String?) -> Bool {
+        if LicenceGate.editingWaits { return false }
+        return super.shouldChangeText(in: affectedCharRange, replacementString: replacementString)
+    }
+
     /// Called after every change of the text or its formatting.
     var onChange: ((NSAttributedString) -> Void)?
     /// Called when what the toolbar shows changes.

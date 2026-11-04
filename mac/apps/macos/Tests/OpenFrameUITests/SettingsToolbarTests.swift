@@ -81,7 +81,7 @@ struct SettingsToolbarTests {
 
         let labels = visibleToolbarLabels(window)
         #expect(labels.contains("Settings"), "visible: \(labels)")
-        #expect(labels.contains("Assistant"), "visible: \(labels)")
+        #expect(labels.contains("OpenFrame AI"), "visible: \(labels)")
         let all = (window.toolbar?.items ?? []).map(\.label)
         #expect(Set(all).isSubset(of: Set(labels).union([""])), "folded into overflow: \(Set(all).subtracting(labels))")
         let item = try #require(window.toolbar?.items.first { $0.label == "Settings" })

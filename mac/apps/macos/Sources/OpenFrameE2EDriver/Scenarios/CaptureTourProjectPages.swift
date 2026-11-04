@@ -517,7 +517,7 @@ extension Scenarios {
             await ui.pagesCap("pages-settings-saved", title: "Project Settings, changes saved", area: area, from: "pages-settings-general-edited", via: "project-settings-save")
         }
         var last = "pages-settings-general"
-        for (tab, slug) in [("Writing", "writing"), ("Keyboard shortcuts", "shortcuts"), ("Offline AI", "offline-ai"), ("Advanced", "advanced"), ("Appearance", "appearance")] {
+        for (tab, slug) in [("Writing", "writing"), ("Keyboard shortcuts", "shortcuts"), ("OpenFrame AI", "offline-ai"), ("Advanced", "advanced"), ("Appearance", "appearance")] {
             await ui.step("settings tab \(tab)") {
                 try await ui.pagesSegment("project-settings-tabs", tab)
                 await ui.idle(0.6)

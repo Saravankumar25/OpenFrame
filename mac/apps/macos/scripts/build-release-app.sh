@@ -7,9 +7,16 @@
 #   3. OpenFrame Studio.app: executable, resources, the AI engine (when fetched), Info.plist,
 #      privacy manifest and icon, signed ad hoc (internal build: no Developer ID, not notarised).
 #
-# Usage: apps/macos/scripts/build-release-app.sh
-# Output: release-out/mac/OpenFrame Studio.app
+# With --store it builds the Mac App Store app instead (`cfg(openframe_store)`, sandbox, the owner's
+# Apple Distribution identity) and then the installer package for upload. That path fails closed
+# while a REPLACE_WITH_ placeholder remains, while a signing identity is missing, or when the build
+# number did not rise. Its upload step lives in .github/workflows/release.yml.
+#
+# Usage: apps/macos/scripts/build-release-app.sh [--store]
+# Output: release-out/mac/OpenFrame Studio.app, and with --store release-out/mac-store/OpenFrame-Studio.pkg
 set -euo pipefail
+STORE=0
+[[ "${1:-}" == "--store" ]] && STORE=1
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MACOS="$(cd "$HERE/.." && pwd)"
 ROOT="$(cd "$MACOS/../.." && pwd)"
@@ -26,11 +33,25 @@ export CARGO_INCREMENTAL=0
 # prepare in advance.
 STAGE="$(getconf DARWIN_USER_TEMP_DIR)openframe-release-stage/macos"
 OUT="$ROOT/release-out/mac"
+if [[ "$STORE" == 1 ]]; then OUT="$ROOT/release-out/mac-store"; fi
 APP="$OUT/OpenFrame Studio.app"
 VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' "$ROOT/Cargo.toml" | head -1)"
 COMMIT="$(git -C "$ROOT" rev-parse --short HEAD)"
 # The store accepts at most three numbers in CFBundleVersion: the build number is the commit count.
 BUILD="$(git -C "$ROOT" rev-list --count HEAD)"
+
+if [[ "$STORE" == 1 ]]; then
+  echo "== 0. Store gates"
+  # Fails while any store-only value is still a placeholder, and when the build number did not rise.
+  node "$ROOT/scripts/check-release-placeholders.mjs" --mac
+  node "$ROOT/scripts/check-release-placeholders.mjs" --build-number "$BUILD"
+  [[ -d "$ROOT/.build-cache/ai-runtime/macos-arm64" ]] || { echo "the AI engine is missing: run packaging/ai/fetch-macos-runtime.sh" >&2; exit 1; }
+  : "${MAC_APPLICATION_IDENTITY:?the Apple Distribution certificate name is required}"
+  : "${MAC_INSTALLER_IDENTITY:?the Mac Installer Distribution certificate name is required}"
+  : "${MAC_PROVISIONING_PROFILE:?the path of the provisioning profile is required}"
+  # `cfg(openframe_store)`: the store channel, with no internal build path compiled in.
+  export OPENFRAME_DISTRIBUTION=store
+fi
 
 echo "== 1. Rust core (release)"
 cd "$ROOT"
@@ -63,7 +84,7 @@ rm -rf "$GEN_DIR"
 cd "$STAGE"
 SWIFT_FLAGS=(-c release -Xswiftc -file-prefix-map -Xswiftc "$STAGE=openframe")
 swift build "${SWIFT_FLAGS[@]}" --product OpenFrameStudio
-swift build "${SWIFT_FLAGS[@]}" --product OpenFrameE2EDriver
+if [[ "$STORE" == 0 ]]; then swift build "${SWIFT_FLAGS[@]}" --product OpenFrameE2EDriver; fi
 BIN="$(swift build "${SWIFT_FLAGS[@]}" --product OpenFrameStudio --show-bin-path)"
 
 echo "== 3. App bundle"
@@ -73,12 +94,46 @@ cp "$BIN/OpenFrameStudio" "$APP/Contents/MacOS/OpenFrameStudio"
 strip -x "$APP/Contents/MacOS/OpenFrameStudio" 2>/dev/null || true
 for b in "$BIN"/*.bundle; do [[ -e "$b" ]] && cp -R "$b" "$APP/Contents/Resources/"; done
 cp "$MACOS/packaging/PrivacyInfo.xcprivacy" "$APP/Contents/Resources/PrivacyInfo.xcprivacy"
+# The third-party notices the About window's Licences sheet shows.
+cp "$ROOT/THIRD_PARTY_LICENSES.md" "$APP/Contents/Resources/THIRD_PARTY_LICENSES.md"
 [[ -f "$MACOS/packaging/AppIcon.icns" ]] && cp "$MACOS/packaging/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 # The offline AI engine (llama.cpp with Metal), when packaging/ai has fetched it (ADR-0026).
 if [[ -d "$ROOT/.build-cache/ai-runtime/macos-arm64" ]]; then
   mkdir -p "$APP/Contents/Resources/ai"
   cp -R "$ROOT/.build-cache/ai-runtime/macos-arm64/." "$APP/Contents/Resources/ai/"
 fi
+if [[ "$STORE" == 1 ]]; then
+  sed -e "s/__VERSION__/${VERSION}/" -e "s/__BUILD__/${BUILD}/" "$MACOS/packaging/Info-store.plist" > "$APP/Contents/Info.plist"
+  plutil -lint "$APP/Contents/Info.plist" >/dev/null
+  cp "$MAC_PROVISIONING_PROFILE" "$APP/Contents/embedded.provisionprofile"
+  # Apple wants code in a code location, so the engine moves to Contents/Helpers/ai. The helper runs
+  # sandboxed through inherit and listens on 127.0.0.1 only. Everything is signed inside out, with one
+  # identity so library validation passes. Signing changes the bytes, so the store build's core checks
+  # program files by code signature and only the other files by hash (docs/release/mac-app-store-readiness.md).
+  if [[ -d "$APP/Contents/Resources/ai" ]]; then
+    mkdir -p "$APP/Contents/Helpers"
+    mv "$APP/Contents/Resources/ai" "$APP/Contents/Helpers/ai"
+  fi
+  while IFS= read -r -d '' library; do
+    codesign --force --sign "$MAC_APPLICATION_IDENTITY" --timestamp --options runtime "$library"
+  done < <(find "$APP/Contents/Helpers/ai" -type f -name '*.dylib' -print0 2>/dev/null)
+  while IFS= read -r -d '' helper; do
+    codesign --force --sign "$MAC_APPLICATION_IDENTITY" --timestamp --options runtime \
+      --entitlements "$MACOS/packaging/llama-server-store.entitlements" "$helper"
+  done < <(find "$APP/Contents/Helpers/ai" -type f -name 'llama-server' -print0 2>/dev/null)
+  codesign --force --sign "$MAC_APPLICATION_IDENTITY" --timestamp --options runtime \
+    --entitlements "$MACOS/packaging/OpenFrameStudio-store.entitlements" "$APP"
+  codesign --verify --deep --strict "$APP"
+  echo "== 4. Secret and personal-path scan of the bundle"
+  node "$ROOT/scripts/scan-installer.mjs" "$APP"
+  echo "== 5. Installer package"
+  productbuild --component "$APP" /Applications --sign "$MAC_INSTALLER_IDENTITY" "$OUT/OpenFrame-Studio.pkg"
+  echo "== Done"
+  echo "$OUT/OpenFrame-Studio.pkg"
+  echo "version $VERSION, build $BUILD, commit $COMMIT"
+  exit 0
+fi
+
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -86,7 +141,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <dict>
 	<key>CFBundleName</key><string>OpenFrame Studio</string>
 	<key>CFBundleDisplayName</key><string>OpenFrame Studio</string>
-	<key>CFBundleIdentifier</key><string>studio.openframe.mac</string>
+	<key>CFBundleIdentifier</key><string>app.openframestudio.studio</string>
 	<key>CFBundleExecutable</key><string>OpenFrameStudio</string>
 	<key>CFBundleIconFile</key><string>AppIcon</string>
 	<key>CFBundlePackageType</key><string>APPL</string>

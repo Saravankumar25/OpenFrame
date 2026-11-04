@@ -8,7 +8,7 @@
 //! identity and explicit references, search coverage and the migration from schema 13.
 
 use openframe_application::MutationMeta;
-use openframe_application::modules::ai::scope::{self, AiScopeArgs, AiScopeKind};
+use openframe_application::modules::ai::scope::ResolvedScope;
 use openframe_application::modules::ai::toolbox::{self, ToolStep};
 use openframe_domain::{Capability, Role, new_id, now_ms};
 use openframe_test_support::TestEnv;
@@ -921,20 +921,7 @@ fn contact_data_is_hidden_by_role_from_the_assistant_and_from_exports() {
             .project()
             .unwrap()
             .store
-            .read(|c| {
-                scope::resolve(
-                    c,
-                    actor,
-                    &AiScopeArgs {
-                        kind: AiScopeKind::WholeProject,
-                        draft_id: None,
-                        scene_id: None,
-                        selection: Vec::new(),
-                        shooting_day_id: None,
-                        call_sheet_id: None,
-                    },
-                )
-            })
+            .read(ResolvedScope::on_current_draft)
             .unwrap();
         let step = toolbox::run_tool_unlocked(&env.core, actor, &scope, "who to call", tool, args)
             .unwrap();

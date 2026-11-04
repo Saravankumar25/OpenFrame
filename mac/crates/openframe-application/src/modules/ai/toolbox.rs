@@ -23,6 +23,7 @@
 //! `Store::read`. `run_tool_unlocked` takes the lock itself and is the entry
 //! point that can also reach the hybrid retrieval service (contract C2).
 
+pub mod homes;
 pub mod reads;
 mod reads_production;
 pub mod resolve;
@@ -118,7 +119,7 @@ fn lookup(name: &str) -> Option<Tool> {
 fn unknown(name: &str) -> AppError {
     AppError::ai(
         "unknown_tool",
-        "That isn't something the assistant can do yet.",
+        "That isn't something OpenFrame AI can do yet.",
     )
     .with_detail(format!("tool {}", queries::truncate_chars(name, 64)))
 }
@@ -236,8 +237,9 @@ fn def_retrieve() -> ToolDef {
 
 /// The tools this actor may use in this scope: reads need View, proposals need
 /// the proposal's capability plus ApplyChangeSet and every operation exposed.
+/// With sections picked, only the tools homed in them (ADR-0041 decision 7).
 /// Never contains a Change Set review action (accept / apply / reject / recheck).
-pub fn tools_for(core: &AppCore, actor: &Actor, _scope: &ResolvedScope) -> Vec<ToolDef> {
+pub fn tools_for(core: &AppCore, actor: &Actor, scope: &ResolvedScope) -> Vec<ToolDef> {
     let mut out = Vec::new();
     if actor.can(Capability::View) {
         out.extend(tools::TOOLS.iter().map(def_legacy));
@@ -249,7 +251,44 @@ pub fn tools_for(core: &AppCore, actor: &Actor, _scope: &ResolvedScope) -> Vec<T
             out.push(def_proposal(p));
         }
     }
+    out.retain(|t| homes::offered(&t.name, &scope.sections));
     out
+}
+
+/// The section a change request needs when no tool of the picks fits it: the tool whose name shares
+/// the most words with the request lives elsewhere and none of the picks' tools does as well. `None`
+/// leaves the request to the step loop, which says what it can do. Words only: no model decides this.
+pub fn home_of_change(
+    core: &AppCore,
+    actor: &Actor,
+    scope: &ResolvedScope,
+    request: &str,
+) -> Option<&'static str> {
+    let want = words(request);
+    let score = |t: &ToolDef| {
+        words(&t.name.replace('_', " "))
+            .iter()
+            .filter(|w| want.contains(w) && w.as_str() != "propose")
+            .count()
+    };
+    let every_section = ResolvedScope {
+        sections: ResolvedScope::every_section().sections,
+        ..scope.clone()
+    };
+    let all = tools_for(core, actor, &every_section);
+    let best = all.iter().filter(|t| t.mutating).max_by_key(|t| score(t))?;
+    let top = score(best);
+    if top == 0 {
+        return None;
+    }
+    let inside = all
+        .iter()
+        .filter(|t| t.mutating && score(t) == top)
+        .any(|t| homes::offered(&t.name, &scope.sections));
+    if inside {
+        return None;
+    }
+    homes::missing_leaf(&best.name, &scope.sections)
 }
 
 /// Words that signal the user wants something changed.
@@ -372,7 +411,6 @@ pub fn tools_for_request(
                 .iter()
                 .zip(&bonus)
                 .any(|(t, b)| t.mutating && *b >= SEMANTIC_TOP_BONUS));
-    let scope_words = words(scope.kind.label());
     let mut scored: Vec<(i64, usize, &ToolDef)> = all
         .iter()
         .enumerate()
@@ -386,11 +424,6 @@ pub fn tools_for_request(
                 if name_words.contains(w) {
                     score += 3;
                 } else if desc_words.contains(w) {
-                    score += 1;
-                }
-            }
-            for w in &scope_words {
-                if name_words.contains(w) || desc_words.contains(w) {
                     score += 1;
                 }
             }
@@ -598,6 +631,10 @@ pub fn run_tool(
     args: &Value,
 ) -> AppResult<ToolStep> {
     let tool = lookup(name).ok_or_else(|| unknown(name))?;
+    // The offered list is not the boundary: a tool outside the picks does not run.
+    if !homes::offered(name, &ctx.scope.sections) {
+        return Err(unknown(name));
+    }
     let args = normalize(args)?;
     match tool {
         Tool::Proposal(p) => rebuild_proposal(core, ctx, p.tool, &args).map(ToolStep::Proposal),
@@ -629,6 +666,9 @@ pub fn run_tool_unlocked(
     name: &str,
     args: &Value,
 ) -> AppResult<ToolStep> {
+    if !homes::offered(name, &scope.sections) {
+        return Err(unknown(name));
+    }
     if name == RETRIEVE_TOOL {
         let args = normalize(args)?;
         schema::validate(RETRIEVE_TOOL, &retrieve_schema(), &args)?;

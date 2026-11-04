@@ -9,10 +9,11 @@ use openframe_domain::AppResult;
 use regex::Regex;
 
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
-use crate::modules::ai::dossier::words::{Msg, clip};
+use crate::modules::ai::dossier::guard;
+use crate::modules::ai::dossier::words::{Msg, clip, date_within, dates_in};
 use crate::modules::ai::dossier::{Fact, P_HIGH, P_MID};
-use crate::modules::ai::index::{Resolved, normalize};
-use crate::modules::ai::turn::{AnswerType, Domain, Group, TurnRead};
+use crate::modules::ai::index::{Kind, Resolved, normalize};
+use crate::modules::ai::turn::{AnswerType, Group, TurnRead, leaf_hints};
 use crate::modules::production::availability::{self as av, AvailabilityOwner};
 
 static EMAIL: LazyLock<Regex> =
@@ -45,6 +46,21 @@ const JOBS: &[&str] = &[
 pub fn asks_crew_job(m: &Msg) -> bool {
     JOBS.iter().any(|j| m.has(j)) || m.stem("crew")
 }
+
+/// Words that ask who plays a part.
+const CAST_WORDS: &[&str] = &[
+    "plays",
+    "play",
+    "played",
+    "playing",
+    "actor",
+    "actors",
+    "actress",
+    "cast",
+    "performer",
+    "portrays",
+    "who is playing",
+];
 
 /// Other names of a crew job.
 const JOB_ALIASES: &[(&str, &[&str])] = &[
@@ -135,6 +151,49 @@ fn windows(ctx: &FetchCtx<'_>, owner: AvailabilityOwner, id: &str) -> AppResult<
     })
 }
 
+/// The windows of someone a date of the question falls in, as the screen writes them. Empty when the
+/// question names no date or they are free on it.
+fn windows_on_date(ctx: &FetchCtx<'_>, owner: AvailabilityOwner, id: &str) -> AppResult<String> {
+    let dates = dates_in(&ctx.message);
+    if dates.is_empty() {
+        return Ok(String::new());
+    }
+    let w = av::windows_for(ctx.conn, owner, id)?;
+    let on: Vec<_> = w
+        .into_iter()
+        .filter(|x| {
+            dates
+                .iter()
+                .any(|d| date_within(&x.start_date, &x.end_date, *d))
+        })
+        .collect();
+    Ok(if on.is_empty() {
+        String::new()
+    } else {
+        av::summary(&on)
+    })
+}
+
+/// A name with nothing else asked: no other kind of record is named, and no word of the message
+/// speaks of anything but the story, the script or the people.
+fn nothing_else_asked(message: &str, r: &Resolved) -> bool {
+    let other_record = !r.locations.is_empty()
+        || !r.days.is_empty()
+        || !r.budget_lines.is_empty()
+        || !r.files.is_empty()
+        || r.others
+            .iter()
+            .any(|(k, _)| matches!(k, Kind::VaultItem | Kind::CallSheet));
+    !other_record
+        && leaf_hints(message).iter().all(|h| {
+            h.leaves.iter().all(|l| {
+                l.starts_with("story/")
+                    || l.starts_with("screenplay/")
+                    || *l == "production/cast-crew"
+            })
+        })
+}
+
 fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fact>> {
     let m = &ctx.m;
     let t = read.answer_type;
@@ -166,36 +225,19 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         "date",
         "off",
     ]);
-    let asks_cast = m.any(&[
-        "plays",
-        "play",
-        "played",
-        "playing",
-        "actor",
-        "actors",
-        "actress",
-        "cast",
-        "performer",
-        "portrays",
-        "who is playing",
-    ]);
+    let asks_cast = m.any(CAST_WORDS);
     let asks_crew_role = asks_crew_job(m);
     // A name with nothing else asked, in words the topic list does not know: who plays it.
     let implicit_cast = t == AnswerType::Lookup
         && !r.characters.is_empty()
         && !asks_crew_role
-        && read
-            .domains
-            .iter()
-            .all(|d| matches!(d, Domain::Story | Domain::Screenplay | Domain::People));
+        && nothing_else_asked(&ctx.message, r);
     let mut out: Vec<Fact> = Vec::new();
     let cast = cast_rows(ctx)?;
     let crew = crew_rows(ctx)?;
 
     if asks_contact && !ctx.guard.contacts {
-        out.push(Fact::missing(
-            "Contact details are not shown for your role.",
-        ));
+        out.push(Fact::missing(guard::NOT_FOR_YOUR_ROLE));
     }
 
     // ---- cast
@@ -248,6 +290,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
             );
             f = f.f("availability note", clip(&c.notes, 160));
             f = f.require(&c.actor);
+            f = f.require(windows_on_date(ctx, AvailabilityOwner::Cast, &c.id)?);
         }
         if asks_contact && ctx.guard.contacts {
             f = with_contact(f, &c.contact);
@@ -255,10 +298,13 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         out.push(f);
     }
     // The whole cast, when a list of it is asked for.
+    let typed = Msg::new(&ctx.message);
+    let crew_only = typed.stem("crew") && !typed.any(CAST_WORDS);
+    let whole_avail = asks_avail && !dates_in(&ctx.message).is_empty();
     if r.persons.is_empty()
         && r.characters.is_empty()
-        && asks_cast
-        && !asks_crew_role
+        && (asks_cast || whole_avail)
+        && !crew_only
         && !m.any(&[
             "problem",
             "problems",
@@ -269,10 +315,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
             "issue",
             "issues",
         ])
-        && matches!(
-            t,
-            AnswerType::List | AnswerType::Lookup | AnswerType::Count | AnswerType::Explain
-        )
+        && (t.tells() || matches!(t, AnswerType::List | AnswerType::Lookup | AnswerType::Count))
     {
         if cast.is_empty() {
             out.push(Fact::absent("any cast", "Cast and Crew"));
@@ -285,12 +328,22 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
             );
         } else {
             for c in cast.iter().take(40) {
-                out.push(
-                    Fact::new("Cast", &c.id)
-                        .f("role", &c.role)
-                        .f("actor", &c.actor)
-                        .prio(P_MID),
-                );
+                // A date in the question keeps the windows it falls in, and those people are the
+                // answer.
+                let on_date = if whole_avail {
+                    windows_on_date(ctx, AvailabilityOwner::Cast, &c.id)?
+                } else {
+                    String::new()
+                };
+                let mut f = Fact::new("Cast", &c.id)
+                    .f("role", &c.role)
+                    .f("actor", &c.actor)
+                    .f("availability", &on_date)
+                    .prio(if on_date.is_empty() { P_MID } else { P_HIGH });
+                if !on_date.is_empty() {
+                    f = f.require(&c.actor);
+                }
+                out.push(f);
             }
         }
     }
@@ -329,11 +382,22 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 | AnswerType::Count
                 | AnswerType::Compare
                 | AnswerType::Explain
+                | AnswerType::Describe
+                | AnswerType::Brief
+                | AnswerType::Story
         )
         && r.persons.is_empty()
     {
         if crew.is_empty() {
             out.push(Fact::absent("any crew", "Cast and Crew"));
+        } else if t == AnswerType::Count && m.stem("crew") && !job_asked {
+            out.push(
+                Fact::new("Count", "")
+                    .f("what", "crew members")
+                    .f("value", crew.len().to_string())
+                    .require(crew.len().to_string())
+                    .prio(P_HIGH),
+            );
         } else if m.stem("crew") && !job_asked {
             for c in crew.iter().take(40) {
                 out.push(
@@ -344,7 +408,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                         .prio(P_MID),
                 );
             }
-        } else if r.characters.is_empty() && !asks_cast {
+        } else if r.characters.is_empty() && !Msg::new(&ctx.message).any(CAST_WORDS) {
             let job = JOBS
                 .iter()
                 .filter(|j| m.has(j))

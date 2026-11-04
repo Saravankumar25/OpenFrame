@@ -306,6 +306,12 @@ const SIGNS: &[&str] = &[
     "spot on",
     "that s it",
 ];
+/// Words that may stand around them. Anything else is something the message says of its own, and a
+/// message that says something is not an agreement with the last answer.
+const AROUND: &[&str] = &[
+    "s", "is", "on", "spot", "please", "ok", "okay", "and", "the", "answer", "you", "are",
+    "thanks", "thank", "good", "yes", "true", "for", "later",
+];
 const DENIALS: &[&str] = &[
     "not",
     "wrong",
@@ -329,6 +335,12 @@ pub fn is_confirmation(message: &str) -> bool {
         return false;
     }
     if words.iter().any(|w| DENIALS.contains(w)) {
+        return false;
+    }
+    if !words
+        .iter()
+        .all(|w| OPENERS.contains(w) || SIGNS.contains(w) || AROUND.contains(w))
+    {
         return false;
     }
     let padded = format!(" {n} ");
