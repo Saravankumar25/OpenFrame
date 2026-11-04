@@ -1050,7 +1050,7 @@ fn a_long_answer_keeps_three_passes_and_shows_a_passing_first_pass_at_once() {
 
 #[test]
 fn the_relationship_and_mood_checks_work_and_start_off() {
-    assert!(!check::NARRATIVE_WORD_CHECKS, "off until measured");
+    const { assert!(!check::NARRATIVE_WORD_CHECKS, "off until measured") };
     let m = Material {
         facts: "Mariamma is aunt of Anjali. | note: She raised Anjali.",
         request: "How are they related?",

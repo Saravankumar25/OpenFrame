@@ -140,7 +140,7 @@ fn the_long_answer_types_are_read_by_rules_and_names() {
         plain("describe the mood of the harbour").answer_type,
         Explain
     );
-    assert_eq!(plain("why is the budget over").answer_type == Story, false);
+    assert_ne!(plain("why is the budget over").answer_type, Story);
     assert_ne!(plain("explain scene 4, keep it brief").answer_type, Brief);
 }
 

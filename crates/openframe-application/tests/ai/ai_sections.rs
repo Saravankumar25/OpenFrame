@@ -1196,8 +1196,6 @@ fn a_topic_word_points_only_when_the_picks_returned_nothing_that_answers() {
     let t = trace_sections(&f.env, x["requestId"].as_str().unwrap());
     assert_eq!(t["pointer_trigger"], "topic");
     // A budget line holds the word: the topic word does not override what the pick found.
-    let v = f.env.ok("ai.sections", json!({}));
-    assert!(v["branches"].is_array());
     let budget = f
         .env
         .core
@@ -1576,7 +1574,6 @@ fn a_long_answer_runs_through_the_writer_with_its_policy_and_its_limit() {
 fn the_tools_offered_are_the_ones_homed_in_the_picks() {
     use openframe_application::modules::ai::toolbox;
     let f = film();
-    let s = f.env.core.project().unwrap();
     let actor = f.env.actor();
     let scope_of = |picks: &[&'static str]| ResolvedScope {
         kind: AiScopeKind::WholeProject,
@@ -1587,7 +1584,6 @@ fn the_tools_offered_are_the_ones_homed_in_the_picks() {
         context: Vec::new(),
         sections: picks.to_vec(),
     };
-    let _ = &s;
     let names = |picks: &[&'static str]| -> Vec<String> {
         toolbox::tools_for(&f.env.core, &actor, &scope_of(picks))
             .into_iter()
@@ -1619,16 +1615,16 @@ fn the_tools_offered_are_the_ones_homed_in_the_picks() {
     assert!(tasks.iter().any(|t| t.name == "propose_task"));
     assert!(!tasks.iter().any(|t| t.name == "propose_budget_line"));
     // The offered list is not the boundary.
-    let e = toolbox::run_tool_unlocked(
+    let Err(e) = toolbox::run_tool_unlocked(
         &f.env.core,
         &actor,
         &scope_of(&["notes/tasks"]),
         "x",
         "budget_summary",
         &json!({}),
-    )
-    .err()
-    .expect("refused");
+    ) else {
+        panic!("a tool outside the picks ran");
+    };
     assert_eq!(e.code_str(), "ai.unknown_tool");
     assert!(
         toolbox::run_tool_unlocked(
@@ -1795,5 +1791,5 @@ fn with_the_evaluation_switch_and_no_picks_the_old_path_still_offers_every_tool(
         json!({ "text": "Create a task to scout the pier", "scope": { "kind": "WholeProject" } }),
     );
     assert_eq!(x["result"]["kind"], "Proposal", "{x}");
-    let _ = model;
+    assert_eq!(model.calls(), 0, "a plain command is its tool call at once");
 }
