@@ -7,7 +7,7 @@
 
 ## Dashboard (update every session from `npm run plan:status`)
 
-**Overall: 133 of 307 boxes (43.3%).** **Current goal** (boxes without the "Later: store publishing" tag): **132 of 224 (58.9%)**. Numbers unchanged on 2026-11-03 (MacHTML recapture and three Mac UI fixes; no box ticked). Last changed 2026-10-27 after the Mac sync with Windows.
+**Overall: 133 of 307 boxes (43.3%).** **Current goal** (boxes without the "Later: store publishing" tag): **132 of 224 (58.9%)**. Numbers unchanged on 2026-11-04 (the rename to Straft Studio; no box ticked). Last changed 2026-10-27 after the Mac sync with Windows.
 
 | # | Area | Done |
 |---|---|---|
@@ -56,6 +56,17 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ```
 
 ## Entries
+
+### 2026-11-04, Product renamed to Straft Studio
+- **Areas and items worked:** the owner's rename task, outside the plan boxes.
+- **Done:** every tracked text file and path renamed by a tested mapping. Old data carries over: app data copy, moved models, renamed library and project folders, stored paths, Mac preferences, theme id, old package formats readable, earlier migration checksums accepted. Logo: `packaging/brand/` holds the vector and a 3840 x 983 version, export logo replaced. Word manuals, design PDFs, gold outputs and hostile fixtures regenerated or repainted. MacHTML recaptured from `53d30d0b` with only the name changed. Same rename on the `windows/` tree in its own pull request.
+- **Evidence:** Swift 810 of 810. Rust 2912 passed before the last folder rename change, then the 24 `rename_migration` tests after it. Desktop types and vitest 734 of 734. Headless first start on a copy of real data, including a held project and a simulated crash. MacHTML 758 of 758 in each mode against its pictures; text search and OCR of all 1516 pictures found no old name.
+- **Features moved:** none.
+- **Docs updated:** ADR-0042, its register row, owner decisions, reconciliation log, handoff, store placeholders.
+- **Decisions made or needed:** see the handoff.
+- **Blocked / risks:** nothing ran on Windows. A real first launch of the installed Mac app was not done, to leave the owner's real data untouched until the owner chooses.
+- **Next:** see the handoff.
+- **Checks run:** `check-links`, `check:writing`, store identity, feature status OK. Governance test 88 fails, and did before the rename (`99-store` has no spec). `npm run verify` and AI eval not run.
 
 ### 2026-11-04, Release package pushed to `mac/` on GitHub
 - **Areas and items worked:** the owner's instruction to push from `Saravankumar25`.

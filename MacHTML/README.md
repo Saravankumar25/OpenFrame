@@ -1,6 +1,6 @@
 # MacHTML: every screen of Straft Studio for the Mac
 
-760 screens in 27 areas, each captured from the real app in Light mode (`light/`) and in Dark mode
+758 screens in 27 areas, each captured from the real app in Light mode (`light/`) and in Dark mode
 (`dark/`). Open `index.html`. Page `NNN-name.html` is the same screen in both folders.
 
 ## What MacHTML is, and how it differs from WindowsHTML
@@ -32,9 +32,12 @@ is no DOM to save. MacHTML is built from two things captured at the same moment 
   other mode and to the index.
 - No page holds a script, and nothing is loaded from the network. The Light and Dark switch on the index and the HTML only
   switch are plain CSS.
-- Commit of the app these came from: `53d30d0b`, captured on 2026-10-28 from the development build.
-- Theme: Screening Room, the default Mac theme, in Light and in Dark. The window is the full visible screen, frontmost
-  and active for every picture.
+- Commit of the app these came from: `53d30d0b`. The only change from that commit is the product name. Captured on 2026-11-04 from the development build.
+- Theme: Screening Room, the default Mac theme, in Light and in Dark. The window is the full width of the 1280 point display, 630 points
+  high, frontmost and active for every picture.
+- Known faults, drawn by the app at this width and kept as captured: in screens with the scene navigator or a right
+  inspector open, the navigator slides under the sidebar and the inspector is cut at the window edge. Sheets show square
+  wedges behind their rounded corners. Page 350 has a menu cut at the bottom, and 433 shows a loading spinner.
 
 ## Window size
 
@@ -64,7 +67,7 @@ without running the app:
 
 ## Count
 
-760 screens, 1520 pages (Light and Dark).
+758 screens, 1516 pages (Light and Dark).
 
 ## Verification: pages against the pictures
 
@@ -160,7 +163,6 @@ are not compared). The check also looks for every non-empty label and value of t
 | screenplay-tools-import-screenplay | 0.000% | 0 | pass |
 | screenplay-tools-export-screenplay | 0.000% | 0 | pass |
 | screenplay-draft-menu | 0.000% | 0 | pass |
-| screenplay-draft-example-short-imported | 0.000% | 0 | pass |
 | screenplay-draft-new-draft | 0.000% | 0 | pass |
 | screenplay-draft-manage-drafts | 0.000% | 0 | pass |
 | screenplay-element-picker | 0.000% | 0 | pass |
@@ -689,7 +691,6 @@ are not compared). The check also looks for every non-empty label and value of t
 | pages-files-grid | 0.000% | 0 | pass |
 | pages-files-grid-selected | 0.000% | 0 | pass |
 | pages-files-context-menu | 0.000% | 0 | pass |
-| pages-files-more-menu | 0.000% | 0 | pass |
 | pages-files-selected | 0.000% | 0 | pass |
 | pages-files-details-notes | 0.000% | 0 | pass |
 | pages-files-moved | 0.000% | 0 | pass |
@@ -839,7 +840,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | home-cover-photo | 0.000% | 0 | pass |
 | home-found-on-this-mac | 0.000% | 0 | pass |
 
-760 of 760 pages pass (a page fails above 0.50% differing pixels, channel difference over 24, or with any HTML miss); 0 HTML misses in all.
+758 of 758 pages pass (a page fails above 0.50% differing pixels, channel difference over 24, or with any HTML miss); 0 HTML misses in all.
 
 ### dark: every page passed
 
@@ -927,7 +928,6 @@ are not compared). The check also looks for every non-empty label and value of t
 | screenplay-tools-import-screenplay | 0.000% | 0 | pass |
 | screenplay-tools-export-screenplay | 0.000% | 0 | pass |
 | screenplay-draft-menu | 0.000% | 0 | pass |
-| screenplay-draft-example-short-imported | 0.000% | 0 | pass |
 | screenplay-draft-new-draft | 0.000% | 0 | pass |
 | screenplay-draft-manage-drafts | 0.000% | 0 | pass |
 | screenplay-element-picker | 0.000% | 0 | pass |
@@ -963,7 +963,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | screenplay-empty-export | 0.000% | 0 | pass |
 | screenplay-empty-suggestions | 0.000% | 0 | pass |
 | screenplay-empty-first-scene | 0.000% | 0 | pass |
-| screenplay-find-bar | 0.012% | 0 | pass (differences between 1163,123 and 1176,136 points) |
+| screenplay-find-bar | 0.011% | 0 | pass (differences between 1163,123 and 1176,136 points) |
 | screenplay-find-results | 0.011% | 0 | pass (differences between 1163,123 and 1176,136 points) |
 | screenplay-find-no-results | 0.011% | 0 | pass (differences between 1163,123 and 1176,136 points) |
 | screenplay-replace-filled | 0.000% | 0 | pass |
@@ -1456,7 +1456,6 @@ are not compared). The check also looks for every non-empty label and value of t
 | pages-files-grid | 0.000% | 0 | pass |
 | pages-files-grid-selected | 0.000% | 0 | pass |
 | pages-files-context-menu | 0.000% | 0 | pass |
-| pages-files-more-menu | 0.000% | 0 | pass |
 | pages-files-selected | 0.000% | 0 | pass |
 | pages-files-details-notes | 0.000% | 0 | pass |
 | pages-files-moved | 0.000% | 0 | pass |
@@ -1606,4 +1605,4 @@ are not compared). The check also looks for every non-empty label and value of t
 | home-cover-photo | 0.000% | 0 | pass |
 | home-found-on-this-mac | 0.000% | 0 | pass |
 
-760 of 760 pages pass (a page fails above 0.50% differing pixels, channel difference over 24, or with any HTML miss); 0 HTML misses in all.
+758 of 758 pages pass (a page fails above 0.50% differing pixels, channel difference over 24, or with any HTML miss); 0 HTML misses in all.

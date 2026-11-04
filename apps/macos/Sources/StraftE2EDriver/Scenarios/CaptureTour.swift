@@ -156,7 +156,9 @@ extension UI {
             shadow.shadowColor = NSColor.black.withAlphaComponent(0.35)
             NSGraphicsContext.saveGraphicsState()
             shadow.set()
-            rep.draw(in: r)
+            // Source over, with the sheet picture's own alpha: a plain draw(in:) copies the transparent corners
+            // onto the canvas, and they then show as square wedges instead of the window behind.
+            rep.draw(in: r, from: .zero, operation: .sourceOver, fraction: 1, respectFlipped: false, hints: nil)
             NSGraphicsContext.restoreGraphicsState()
             elements.append(contentsOf: captureElements(o, origin: primary, kind: "sheet"))
         }

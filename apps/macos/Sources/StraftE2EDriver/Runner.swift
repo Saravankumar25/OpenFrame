@@ -8,6 +8,7 @@
 
 import AppKit
 import Foundation
+import ObjectiveC
 
 /// How a phase ends. The runner checks the matching exit.
 enum PhaseEnd: String {
@@ -42,10 +43,28 @@ struct Context {
     var work: URL { URL(fileURLWithPath: env["STRAFT_E2E_WORK"] ?? NSTemporaryDirectory()) }
 }
 
+/// The capture tour's window takes the screen's visible frame, and at 1280 points wide the panes do not fit. With
+/// STRAFT_CAPTURE_SIZE=1440x900 this process sees a visible frame of that size below the menu bar, so the tour and the
+/// app's own window fit both accept it. The window server pictures the whole window even where it runs past the display.
+/// No system setting and no app code changes.
+private func forceVisibleSize(_ env: [String: String]) {
+    guard let parts = env["STRAFT_CAPTURE_SIZE"]?.split(separator: "x").compactMap({ Double($0) }), parts.count == 2,
+          let method = class_getInstanceMethod(NSScreen.self, #selector(getter: NSScreen.visibleFrame)) else { return }
+    typealias Getter = @convention(c) (NSScreen, Selector) -> NSRect
+    let original = unsafeBitCast(method_getImplementation(method), to: Getter.self)
+    let selector = #selector(getter: NSScreen.visibleFrame)
+    let replacement: @convention(block) (NSScreen) -> NSRect = { screen in
+        let real = original(screen, selector)
+        return NSRect(x: real.minX, y: real.maxY - parts[1], width: parts[0], height: parts[1])
+    }
+    method_setImplementation(method, imp_implementationWithBlock(replacement))
+}
+
 @_cdecl("straft_e2e_start")
 public func straft_e2e_start() {
     let env = ProcessInfo.processInfo.environment
     guard let name = env["STRAFT_E2E_SCENARIO"], let out = env["STRAFT_E2E_OUT"] else { return }
+    forceVisibleSize(env)
     let phase = Int(env["STRAFT_E2E_PHASE"] ?? "1") ?? 1
     let outDir = URL(fileURLWithPath: out, isDirectory: true)
     try? FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
