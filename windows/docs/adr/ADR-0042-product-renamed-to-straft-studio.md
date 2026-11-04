@@ -4,8 +4,8 @@
 - **Date:** 2026-11-04
 - **Amends:** every earlier ADR and document that names the product, an identifier, a data folder or a file extension. Their
   decisions stay as written; only the names changed, in place, in the same change.
-- **Unchanged:** the website domain `openframestudio.app` and the Instagram account name (open for the owner), and the
-  package extensions beginning `.of` (see Consequences).
+- **Unchanged:** the package extensions beginning `.of` (see Consequences). The official website domain is `straftstudio.com`
+  and the placeholder social handle is `@straftstudio` (owner decision 2026-11-04).
 
 ## Context
 
@@ -44,7 +44,7 @@ so the window to do this closes at the first release.
   build next to it and remove the old one when they are ready.
 - On the Mac, settings the system keeps per application come across. The Keychain trial guard starts fresh, because no store
   build ever shipped, so no customer loses a trial day.
-- The domain stays for now. Moving it needs a purchase and a redirect and is the owner's call.
+- The website moved in text to `straftstudio.com`. Connecting that domain in Cloudflare is a manual owner action.
 - The package extensions `.ofproject`, `.ofbackup` and the other `.of*` ones do not spell the old name, and changing them
   would break files people already hold. They stay. Whether to change them is open for the owner in
   [owner-decisions.md](../implementation/owner-decisions.md).

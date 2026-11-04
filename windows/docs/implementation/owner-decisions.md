@@ -126,7 +126,7 @@ The "Recommendation" column is advice, not a decision. "Blocks" names the phase 
 
 | Decision | Blocks | Recommendation | Record |
 |---|---|---|---|
-| Package extensions `.ofproject`, `.ofbackup` and the other `.of*` ones, and the website domain | Chapter 3, website | Keep the extensions (changing them breaks files people hold); decide the domain with the website plan | [ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md) |
+| Package extensions `.ofproject`, `.ofbackup` and the other `.of*` ones | Chapter 3 | Keep the extensions (changing them breaks files people hold). The website domain is decided: `straftstudio.com` (owner, 2026-11-04) | [ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md) |
 | Price, currency, what the trial unlocks | Chapter 3, website | Owner, 2026-10-08: decided later. Nothing touches pricing until then | [ADR-0018](../adr/ADR-0018-distribution-licensing-commerce.md) |
 | Final prices (3,000 or 2,999 rupees) | Chapter 3 | Confirm; check which prices each store allows | [Chapter 3](../roadmap/chapter-3-commercial-distribution.md) |
 | Refund rules | Chapter 3 | Follow each store's own rules | ADR-0018 |
