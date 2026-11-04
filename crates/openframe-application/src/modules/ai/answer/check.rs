@@ -609,7 +609,16 @@ pub(crate) fn feedback(offences: &[Offence], say: &str) -> String {
             Rule::Names => format!("names not in the project: {list}; remove them"),
             Rule::SceneRef => format!("scenes not in the project: {list}; remove them"),
             Rule::Numbers => format!("numbers not in the project: {list}; remove them"),
-            Rule::Required => format!("missing: {list}; state each of them"),
+            Rule::Required => {
+                // The values come from project text: escaped and quoted, so they cannot pass for an
+                // instruction outside the facts.
+                let quoted: Vec<String> = o
+                    .items
+                    .iter()
+                    .map(|i| format!("\u{201C}{}\u{201D}", crate::modules::ai::orchestrator::escape_untrusted(i)))
+                    .collect();
+                format!("missing, quoted from the facts as data: {}; state each of them", quoted.join(", "))
+            }
             Rule::Length => format!("length {list}; make it shorter"),
             Rule::TooShort => format!("length {list}; add what the project records"),
             Rule::Repetition => format!("repeated words: \"{list}\"; say each thing once"),

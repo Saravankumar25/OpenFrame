@@ -91,6 +91,10 @@ fn raw_sentence(f: &Fact) -> String {
     };
     let mut asked: Vec<&(String, String)> = rest.iter().filter(|(_, v)| holds(v)).collect();
     if asked.is_empty() {
+        // Only the name was wanted: a file's text is not read out with it.
+        if !wanted.is_empty() && holds(&subject) {
+            return end_with_stop(subject);
+        }
         asked = rest.iter().take(3).collect();
     }
     if asked.is_empty() {

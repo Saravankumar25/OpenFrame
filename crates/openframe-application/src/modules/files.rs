@@ -372,7 +372,11 @@ fn add(core: &AppCore, actor: &Actor, args: AddFilesArgs) -> AppResult<Vec<Proje
                     ingest_file(tx, &path)?
                 };
                 let id = add_file_record(tx, &asset, args.folder_id.as_deref(), None)?;
-                if !link {
+                // A picked link is copied, but where it points may be anything, so its words stay out.
+                let picked_a_link = std::fs::symlink_metadata(&path)
+                    .map(|m| m.file_type().is_symlink())
+                    .unwrap_or(true);
+                if !link && !picked_a_link {
                     store_search_text(tx, &id, &asset)?;
                 }
                 ids.push(id);
@@ -741,6 +745,14 @@ fn purge_file(tx: &Tx<'_>, row: &DeletedItemRow) -> AppResult<()> {
     )?;
     tx.conn()
         .execute("DELETE FROM project_file WHERE id=?1", [&row.object_id])?;
+    // Permanent deletion really removes the words: the undo log keeps full row images, search_text
+    // included, and it travels in backups (the same rule as notes).
+    if openframe_domain::ids::is_valid_id(&row.object_id) {
+        tx.conn().execute(
+            "DELETE FROM sys_undo WHERE instr(changes_json, ?1) > 0",
+            [&row.object_id],
+        )?;
+    }
     purge_asset_if_unreferenced(tx, &asset_id)
 }
 

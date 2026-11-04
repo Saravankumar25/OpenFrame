@@ -2493,6 +2493,58 @@ fn only_the_count_of_a_filter_is_demanded_for_shots() {
 }
 
 #[test]
+fn the_words_of_a_file_leave_the_project_when_it_is_deleted_for_good() {
+    let f = film();
+    let path = f
+        .env
+        .write_file("mast-notes.txt", b"The mast is 42 metres of steel lattice.");
+    let added = f.env.ok("files.add", json!({ "paths": [path] }));
+    let id = added[0]["id"].as_str().unwrap().to_string();
+    let words_in = |table: &str, column: &str| -> i64 {
+        let s = f.env.core.project().unwrap();
+        s.store
+            .read(|c| {
+                Ok(c.query_row(
+                    &format!("SELECT count(*) FROM {table} WHERE instr({column}, '42 metres') > 0"),
+                    [],
+                    |r| r.get(0),
+                )?)
+            })
+            .unwrap()
+    };
+    f.env.ok("files.delete", json!({ "id": id }));
+    let trash = f.env.ok("trash.list", json!({}));
+    let item = trash
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|t| t["objectId"] == id.as_str() || t["id"] == id.as_str())
+        .or_else(|| trash.as_array().unwrap().first())
+        .unwrap()
+        .clone();
+    f.env.ok("trash.purge", json!({ "id": item["id"] }));
+    assert_eq!(words_in("sys_undo", "changes_json"), 0, "the undo log forgets them");
+    assert_eq!(words_in("search_doc", "body"), 0, "search forgets them");
+}
+
+#[test]
+#[cfg(unix)]
+fn a_picked_link_is_copied_but_its_words_stay_out_of_search() {
+    let f = film();
+    let target = f.env.write_file("secret-notes.txt", b"The mast is 42 metres of steel lattice.");
+    let link = std::path::Path::new(&target).with_file_name("picked.txt");
+    std::os::unix::fs::symlink(&target, &link).unwrap();
+    f.env.ok("files.add", json!({ "paths": [link] }));
+    let d = facts_for(
+        &f.env,
+        "How tall is the mast?",
+        &[pick("files/files")],
+        AnswerType::Lookup,
+    );
+    assert!(!d.render().contains("42 metres"), "{}", d.render());
+}
+
+#[test]
 fn the_words_of_a_small_text_file_are_read_from_the_index_and_the_file_is_not_opened() {
     let f = film();
     let path = f

@@ -28,6 +28,20 @@ fn viewer() -> Guard {
 }
 
 #[test]
+fn a_required_value_cut_from_a_sentence_with_a_contact_goes_with_the_contact() {
+    let mut facts = vec![
+        Fact::new("File", "f1")
+            .f("text", "Write to anna@gmail.com about the permit.")
+            .require("Write to anna@gmail")
+            .require("about the permit"),
+    ];
+    let mut missing = Vec::new();
+    guard::apply(&viewer(), &mut facts, &mut missing);
+    assert!(facts[0].field("text").unwrap().contains("[contact hidden]"));
+    assert_eq!(facts[0].requires, vec!["about the permit"]);
+}
+
+#[test]
 fn a_fact_renders_on_one_line_with_field_names_and_the_record_id() {
     let f = Fact::new("Cast", "c1")
         .f("role", "Young Anjali")

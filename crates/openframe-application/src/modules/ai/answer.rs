@@ -399,6 +399,8 @@ fn keep_best_attempt(
         .filter(|(t, o)| {
             !t.trim().is_empty()
                 && !states_nothing_found(t)
+                // "There is no harbour permit" beside the permit's own sentence would contradict it.
+                && !check::states_absence(t, &missing_of(o))
                 && o.iter()
                     .all(|x| x.rule.soft() || x.rule == check::Rule::Required)
         })
