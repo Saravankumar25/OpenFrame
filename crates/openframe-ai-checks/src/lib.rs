@@ -395,6 +395,13 @@ const ALLOWED: &[&str] = &[
 /// Common English words that start a sentence and are not names. Compared in lower case, and only
 /// for the first word of a sentence.
 const SENTENCE_STARTERS: &[&str] = &[
+    "people",
+    "they've",
+    "they're",
+    "we've",
+    "we're",
+    "you've",
+    "you're",
     "firstly",
     "secondly",
     "thirdly",

@@ -40,7 +40,7 @@ const WHERE_WORDS: &[&str] = &[
 /// "What is on Day 4", "what was planned", "which scenes are on it": the question asks what a named
 /// day holds, not one of its times.
 static ASKS_THE_DAY: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"\b(?:what(?:s| is| are| was| were)? (?:on|planned|scheduled|happening|shooting)|scheduled|planned|(?:which|what) scenes?|scenes? (?:are|is|on)|how many scenes)\b")
+    Regex::new(r"\b(?:what(?:s| is| are| was| were)? (?:on|planned|scheduled|happening|shooting)|scheduled|planned|(?:which|what) scenes?|scenes? (?:are|is|on))\b")
         .expect("valid pattern")
 });
 
@@ -453,12 +453,18 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         {
             f = f.require(c);
         }
-        let about_the_day = ASKS_THE_DAY.is_match(&Msg::new(&ctx.message).norm);
+        let typed = Msg::new(&ctx.message);
+        let about_the_day = ASKS_THE_DAY.is_match(&typed.norm);
+        let counted = t == AnswerType::Count || typed.has("how many");
+        f = f.f("scene count", shown.len().to_string());
         let named_by_word = named_days(ctx, r).is_empty() && scenes.is_empty();
         if named_by_word {
             f = f.require(format!("Day {n}"));
         }
-        if about_the_day || m.stem("scene") {
+        // "How many scenes" states the number; the list of them is only reading.
+        if counted && typed.stem("scene") {
+            f = f.require(shown.len().to_string());
+        } else if about_the_day || m.stem("scene") {
             for (n, _) in &shown {
                 f = f.require(n.to_string());
             }

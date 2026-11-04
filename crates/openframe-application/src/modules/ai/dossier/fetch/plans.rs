@@ -281,7 +281,7 @@ pub fn day_out_of_days(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec
                     .iter()
                     .filter(|d| {
                         row.cells.iter().any(|c| {
-                            c.day_id == d.id && worked_code(&c.code)
+                            c.day_id == d.id && dood::is_work(&c.code)
                         })
                     })
                     .map(|d| d.short_label.clone())
@@ -297,7 +297,7 @@ pub fn day_out_of_days(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec
                         .iter()
                         .find(|c| c.day_id == d.id)
                         .map_or("", |c| c.code.as_str());
-                    let works = worked_code(code);
+                    let works = dood::is_work(code);
                     f = f.f(
                         &format!("works on {}", d.short_label),
                         if works { "yes" } else { "no" },
@@ -335,13 +335,6 @@ pub fn day_out_of_days(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec
         }
         Ok(out)
     })
-}
-
-/// A cell code that means the person works that day: start, work, finish and the like, not a hold, a
-/// travel day or an empty cell.
-fn worked_code(code: &str) -> bool {
-    let c = code.trim().to_uppercase();
-    !c.is_empty() && !c.starts_with('H') && !c.starts_with('T') && c != "-"
 }
 
 /// The number in a day label: "Day 9" to 9.

@@ -41,7 +41,7 @@ use openframe_application::core::{AppConfig, AppCore};
 use openframe_application::events::RecordingSink;
 use openframe_application::modules::ai::scope::ResolvedScope;
 use openframe_application::modules::ai::{
-    intelligence, orchestrator, retrieval, sections, toolbox,
+    index, intelligence, orchestrator, retrieval, sections, toolbox,
 };
 use openframe_application::modules::schedule;
 use openframe_domain::AppResult;
@@ -578,6 +578,13 @@ fn section_args(core: &AppCore, case: &Case, p: &Project) -> Result<Option<Value
                 .get(n.saturating_sub(1))
                 .ok_or_else(|| format!("case {}: no scene {n}", case.id))?;
             arg["sceneId"] = json!(id);
+        } else if pick.leaf == "screenplay/scenes" {
+            // A person with several screenplays chooses one in the picker, or is asked.
+            let session = core.project().map_err(|e| e.message)?;
+            let ix = index::project_index(&session).map_err(|e| e.message)?;
+            if let Some(id) = openframe_ai_eval::turn::longest_unless_named(&ix, &case.request) {
+                arg["screenplayId"] = json!(id);
+            }
         }
         if let Some(n) = pick.day {
             let session = core.project().map_err(|e| e.message)?;

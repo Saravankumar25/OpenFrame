@@ -2767,3 +2767,15 @@ fn was_it_over_demands_the_plain_word_for_which_way_it_went() {
     );
     assert!(d.iter().any(|v| v == "over"), "{d:?}");
 }
+
+#[test]
+fn how_many_scenes_on_a_named_day_demands_the_number_not_the_list() {
+    let f = film();
+    let d = demanded(
+        &f.env,
+        "How many scenes are planned for Day 2?",
+        "production/schedule",
+        AnswerType::Count,
+    );
+    assert_eq!(d, vec!["1"]);
+}

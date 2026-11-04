@@ -214,7 +214,7 @@ pub fn read_conv_resolved(
 /// The picks of a case: a scene ordinal and a day number become their ids. A case with none reads
 /// every section, as a request with no picks does under the evaluation switch.
 /// The longest of several screenplays, unless the request says a word only another title has.
-fn longest_unless_named(ix: &EntityIndex, request: &str) -> Option<String> {
+pub fn longest_unless_named(ix: &EntityIndex, request: &str) -> Option<String> {
     if ix.screenplays.len() < 2 {
         return None;
     }

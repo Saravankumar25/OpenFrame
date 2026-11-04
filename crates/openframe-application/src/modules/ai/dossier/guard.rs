@@ -205,6 +205,10 @@ pub fn apply(g: &Guard, facts: &mut Vec<Fact>, missing: &mut Vec<String>) -> usi
             }
         }
         acted += usize::from(path_seen);
+        // A required value is named to the writer outside the facts, so one that holds a path or reads
+        // like an instruction is never demanded.
+        f.requires
+            .retain(|r| !strip_paths(r).1 && !looks_like_instruction(r));
         let instruction = f
             .fields
             .iter()

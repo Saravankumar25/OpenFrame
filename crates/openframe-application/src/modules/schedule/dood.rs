@@ -53,7 +53,7 @@ pub const CODES: [(&str, &str); 10] = [
     ("-", "Not working"),
 ];
 
-fn is_work(code: &str) -> bool {
+pub(crate) fn is_work(code: &str) -> bool {
     matches!(code, "SW" | "W" | "WF" | "SWF")
 }
 

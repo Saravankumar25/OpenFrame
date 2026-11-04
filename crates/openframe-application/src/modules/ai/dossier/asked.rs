@@ -64,6 +64,22 @@ const ROW_FILLER: &[&str] = &[
     "next",
     "now",
     "there",
+    "only",
+    "just",
+    "ever",
+    "also",
+    "really",
+    "very",
+    "more",
+    "most",
+    "less",
+    "other",
+    "same",
+    "each",
+    "every",
+    "much",
+    "many",
+    "here",
 ];
 
 /// The words of a question that can pick a row: its content words without the filler and without the
@@ -175,6 +191,14 @@ mod tests {
         assert!(best_rows(&s(&["boat"]), &rows, 2).is_empty());
         assert!(best_rows(&s(&["car"]), &rows, 3).is_empty());
         assert!(best_rows(&[], &rows, 3).is_empty());
+    }
+
+    #[test]
+    fn a_common_word_picks_no_row() {
+        assert_eq!(
+            row_words("Which locations are still only an idea?", &["location", "idea"]),
+            Vec::<String>::new()
+        );
     }
 
     #[test]
