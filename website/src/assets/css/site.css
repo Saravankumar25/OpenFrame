@@ -63,7 +63,6 @@ section.tint{background:var(--cream)}
 .menu .chev{width:12px;height:12px;transition:transform .2s}
 .menu li.open .chev{transform:rotate(180deg)}
 .nav-cta{display:flex;gap:10px;align-items:center}
-.menu-tg{flex:none;display:none;background:none;border:1px solid var(--line2);border-radius:10px;width:44px;height:44px;cursor:pointer}
 .mega{position:absolute;top:100%;left:0;padding-top:12px;visibility:hidden;opacity:0;transform:translateY(8px);transition:opacity .18s,transform .18s var(--ease),visibility .18s;z-index:60}
 li.open>.mega{visibility:visible;opacity:1;transform:none}
 .mega-in{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:26px 26px 18px;width:min(1060px,calc(100vw - 40px));display:grid;grid-template-columns:repeat(4,1fr);gap:8px 26px}
@@ -244,15 +243,8 @@ footer.site-f .f-pub a{color:#cfcdc4;overflow-wrap:anywhere;text-decoration:unde
 
 /* responsive */
 @media (max-width:1020px){
-  .menu,.nav-cta .btn-ghost{display:none}
-  .menu-tg{display:block;margin-left:auto}
+  .nav-cta .btn-ghost{display:none}
   .nav-cta{margin-left:auto}
-  .menu-tg+.nav-cta{margin-left:0}
-  .menu.open-m{display:flex;position:fixed;top:var(--nav-h);left:0;right:0;height:calc(100vh - var(--nav-h));height:calc(100dvh - var(--nav-h));background:var(--surface);flex-direction:column;padding:14px 20px 90px;margin:0;overflow:auto;gap:0}
-  .menu.open-m>li>a,.menu.open-m>li>button{width:100%;justify-content:space-between;font-size:19px;padding:16px 8px;border-bottom:1px solid var(--line);border-radius:0}
-  .menu.open-m .mega{position:static;visibility:visible;opacity:1;transform:none;padding:0;display:none}
-  .menu.open-m li.open>.mega{display:block}
-  .menu.open-m .mega-in{width:100%;box-shadow:none;border:0;padding:6px 0 10px;grid-template-columns:1fr}
   .manifesto,.split,.trio{grid-template-columns:1fr}
   .grid3,.promise-row{grid-template-columns:1fr 1fr}
   .trust ul{grid-template-columns:repeat(2,1fr)}
@@ -262,7 +254,6 @@ footer.site-f .f-pub a{color:#cfcdc4;overflow-wrap:anywhere;text-decoration:unde
   .merge-stats{grid-template-columns:1fr}
 }
 @media (max-width:640px){
-  :root{--nav-h:61px}
   body{font-size:16px}
   section{padding:72px 0}
   .grid3,.promise-row{grid-template-columns:1fr}

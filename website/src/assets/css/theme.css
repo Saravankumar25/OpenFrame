@@ -208,40 +208,21 @@ svg.defs{position:absolute;width:0;height:0;overflow:hidden}
 .seg button:hover{color:var(--ink)}
 .seg button[aria-pressed=true]{background:var(--solid);color:var(--on-solid)}
 .seg button:focus-visible{outline:2px solid var(--accent-d);outline-offset:1px}
-.menu-ctls{display:none}
 @media (max-width:1240px){.nav-cta .btn-ghost{display:none}.ctl-ic{display:none}}
-@media (max-width:1020px){
-  .ctls.nav-ctls{display:none}
-  .menu.open-m .menu-ctls{display:flex;flex-wrap:wrap;gap:10px;padding:16px 8px 6px}
-  .menu-ctls .ctl-ic{display:inline-grid}
-}
-@media (max-width:640px){.site-h .wrap.nav{padding:0 10px 0 14px}}
-@media (max-width:1020px){.menu.open-m{padding:8px 20px 16px}}
-/* clearer group icons; tidy phone menu */
+/* clearer group icons */
 .ctl-ic{color:var(--ink2);opacity:.75}
-.ctl-name{display:none}
-@media (max-width:1020px){
-  .menu.open-m{padding:10px 18px 18px}
-  .menu.open-m .menu-ctls{flex-direction:column;align-items:stretch;gap:12px;padding:16px 4px 4px}
-  .menu-ctls .ctl{justify-content:space-between}
-  .menu-ctls .ctl-name{display:block;flex:1;font-size:15px;font-weight:600;color:var(--ink);margin-left:8px}
-  .menu-ctls .seg button{padding:7px 14px}
-}
 /* nav: sections on the left, the three toggles on the right (owner spec 2026-10-31: no buttons in the bar) */
 .site-h .menu{flex:1}
 .ctls.nav-ctls{margin-left:auto;gap:12px}
 @media (max-width:1240px){.ctl-ic{display:inline-grid}}
 @media (max-width:1120px) and (min-width:1021px){.ctl-ic{display:none}.ctls.nav-ctls{gap:6px}}
-@media (max-width:1020px){.menu-tg{margin-left:auto}}
 /* nav: one primary action, current section marked, bar tightens on scroll */
 .nav-get{flex:none;margin-left:4px}
 .menu>li>button.is-current,.menu>li>a[aria-current]{background:var(--tint);color:var(--ink)}
 @media (max-width:1180px){.nav-get{padding:10px 14px}}
-@media (max-width:640px){.nav-get{display:none}}
 /* store buttons: both marks the same size and colour as the label */
 .btn svg.logo{width:20px;height:20px;flex:none;fill:currentColor}
 .btn-sm svg.logo{width:17px;height:17px}
-@media (max-width:1020px){.nav-get{margin-left:auto}.menu-tg{margin-left:8px}}
 /* founder profiles */
 .founders{align-items:stretch}
 .founder{padding:32px}
@@ -249,7 +230,6 @@ svg.defs{position:absolute;width:0;height:0;overflow:hidden}
 .founder h4{margin:22px 0 4px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .founder .ticks{margin-top:12px;gap:12px}
 .founder .ticks li{font-size:15.5px;line-height:1.5}
-@media (max-width:640px){.menu-tg{margin-left:auto}}
 /* ticks: one outlined check everywhere (a thin ring with a drawn check in the brand colour), never a filled badge */
 :root{--tick:#a34d2d;--tick-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a34d2d' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6.5 12.5l3.6 3.6L17.5 8.6'/%3E%3C/svg%3E")}
 :root[data-theme=dark]{--tick:#d97757;--tick-img:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d97757' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6.5 12.5l3.6 3.6L17.5 8.6'/%3E%3C/svg%3E")}
@@ -337,6 +317,9 @@ h3{font-weight:560;letter-spacing:-.018em}
 .price-one .pcard h2{margin-top:34px}
 .price-one .price{margin:26px 0 0}
 .price-one .price-note{margin-top:20px}
+.price-one .ticks{margin-top:24px}
+.dl-price{margin-top:22px}
+.dl-price .pr{justify-content:center}
 @media (max-width:640px){.price-one .region-tg{position:static;margin-bottom:18px}.price-one .pcard h2{margin-top:0}}
 /* control icons: solid ink and a heavier stroke so they read on white, the glass bar and dark alike */
 .ctl-ic{color:var(--ink);opacity:1}
@@ -353,33 +336,37 @@ h3{font-weight:560;letter-spacing:-.018em}
 .name-link:hover{color:inherit;text-decoration:none}
 .name-link:focus-visible{outline:2px solid var(--accent-d);outline-offset:3px;border-radius:4px}
 
-/* nav fit with About Us: the full bar from 1320px, a compact bar from 1100px, the drawer menu below 1100px */
+/* nav fit: the full bar from 1320px, a compact bar from 1240px, and two rows below that: logo, search and Get Straft on top,
+   then every section and toggle in a row that scrolls sideways when it does not fit. There is no menu button and no sidebar.
+   The sections sit in a static row, so an open panel is placed against the fixed header and the scrolling row never clips it. */
 .menu>li>a,.menu>li>button{padding:10px 10px}
-@media (max-width:1319px){.nav-get{display:none}.ctl-ic{display:none}}
-@media (min-width:1100px) and (max-width:1319px){
+@media (max-width:1319px){.ctl-ic{display:none}}
+@media (min-width:1240px) and (max-width:1319px){
   .site-h .wrap.nav{gap:10px;padding:0 12px 0 16px}
   .menu>li>a,.menu>li>button{padding:10px 8px;font-size:15px}
   .seg button{padding:5px 8px}
   .ctls.nav-ctls{gap:8px}
 }
-@media (max-width:1099px){
-  .menu{display:none}
-  .menu-tg{display:block;margin-left:8px}
-  .ctls.nav-ctls{display:none}
-  .menu.open-m{display:flex;position:fixed;top:var(--nav-h);left:0;right:0;height:auto;max-height:calc(100dvh - var(--nav-h));background:var(--surface);border:0;border-bottom:1px solid var(--line);border-radius:0;flex-direction:column;padding:10px 18px 18px;margin:0;overflow:auto;gap:0}
-  .menu.open-m>li>a,.menu.open-m>li>button{width:100%;justify-content:space-between;font-size:19px;padding:16px 8px;border-bottom:1px solid var(--line);border-radius:0}
-  .menu.open-m .mega{position:static;visibility:visible;opacity:1;transform:none;padding:0;display:none}
-  .menu.open-m li.open>.mega{display:block}
-  .menu.open-m .mega-in{width:100%;box-shadow:none;border:0;padding:6px 0 10px;grid-template-columns:1fr}
-  .menu.open-m .menu-ctls{display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:16px 4px 4px}
-  .menu-ctls .ctl-ic{display:inline-grid}
-  .menu-ctls .ctl{justify-content:space-between}
-  .menu-ctls .ctl-name{display:block;flex:1;font-size:15px;font-weight:600;color:var(--ink);margin-left:8px}
-  .menu-ctls .seg button{padding:7px 14px}
+.nav-row{display:contents}
+@media (max-width:1239px){
+  :root{--nav-h:101px}
+  .site-h .wrap.nav{height:auto;flex-wrap:wrap;gap:0;padding:0 14px}
+  .brand{height:52px}
+  .srch-btn{margin-left:auto}
+  .nav-get{margin-left:8px;padding:9px 14px}
+  .nav-row{display:flex;order:1;flex:0 0 calc(100% + 28px);align-items:center;gap:10px;height:48px;margin:0 -14px;padding:0 14px;border-top:1px solid var(--line);overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none}
+  .nav-row::-webkit-scrollbar{display:none}
+  .nav-row::after{content:"";position:sticky;right:0;flex:none;align-self:stretch;width:28px;margin-left:-28px;background:linear-gradient(to right,transparent,var(--bg));pointer-events:none}
+  .site-h .menu{flex:none;gap:2px;margin:0}
+  .menu>li{position:static}
+  .menu>li>a,.menu>li>button{min-height:44px;padding:10px;font-size:15px}
+  .ctls.nav-ctls{flex:none;margin:0 14px 0 auto;gap:10px}
+  .mega{left:0;right:0;max-height:calc(100dvh - var(--nav-h));overflow-y:auto;overscroll-behavior:contain;padding-top:0}
+  .mega-in,.mega.small .mega-in{width:auto;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));border-width:0 0 1px;border-radius:0 0 18px 18px;padding:14px 18px}
+  .mega-foot{flex-wrap:wrap;gap:6px 16px}
 }
-@media (max-width:1099px) and (min-width:480px){.nav-get{display:inline-flex}}
 /* the Features dropdown opens under the whole bar, so even hidden it never reaches past the screen edge */
-@media (min-width:1100px){
+@media (min-width:1240px){
   .menu>li.has-mega:first-child{position:static}
   .menu>li.has-mega:first-child>.mega{left:0;right:0;padding-top:14px}
   .menu>li.has-mega:first-child .mega-in{width:min(1180px,100% - 40px);margin-inline:auto}
@@ -411,20 +398,6 @@ code{font:.92em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:
 @media (max-width:980px){.tcards{grid-template-columns:1fr 1fr}}
 @media (max-width:640px){.tcards{grid-template-columns:1fr}}
 
-/* ===== menu drawer: close glyph, page behind it locked and dimmed, primary action inside it on small phones ===== */
-.menu-tg>span{display:grid;place-items:center}
-.menu-tg svg{width:22px;height:22px}
-.menu-tg .tg-close,.menu-tg[aria-expanded=true] .tg-open{display:none}
-.menu-tg[aria-expanded=true] .tg-close{display:grid}
-.menu-get{display:none}
-html.menu-lock{overflow:hidden}
-@media (max-width:1099px){
-  html.menu-lock body::after{content:"";position:fixed;inset:0;z-index:40;background:rgba(28,27,26,.5)}
-}
-@media (max-width:479px){
-  .menu.open-m .menu-get{display:block;order:-1;padding:6px 0 10px}
-  .menu.open-m>li.menu-get>a{justify-content:center;border:2px solid transparent;border-radius:12px;padding:16px 26px;font-size:17px;width:100%}
-}
 
 /* ===== store button message: a small bubble beside the button, placed by script, no layout shift ===== */
 .store-msg{position:absolute;z-index:120;left:0;top:0;max-width:min(300px,calc(100vw - 16px));padding:10px 14px;border-radius:10px;background:var(--solid);color:var(--on-solid);font:600 14.5px/1.35 var(--font);box-shadow:var(--shadow);text-align:center;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .15s}
@@ -447,11 +420,7 @@ html.menu-lock{overflow:hidden}
 /* three promises (the offline claim already has its own card above) */
 .promise-row{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:760px){.promise-row{grid-template-columns:minmax(0,1fr)}}
-/* the primary action stays in the bar from 1240px; below that the bar is full (the pricing link and every page's call to action band lead on) */
-@media (min-width:1240px) and (max-width:1319px){.nav-get{display:inline-flex;padding:9px 14px}}
-/* the drawer's primary action keeps the primary button look (the drawer's own link rules would flatten it) */
-.menu.open-m .menu-get a.btn-primary{background:var(--accent);color:var(--on-accent)}
-.menu.open-m .menu-get a.btn-primary:hover{background:var(--accent-d)}
+@media (min-width:1240px) and (max-width:1319px){.nav-get{padding:9px 14px}}
 /* phone widths: cards and large buttons give the long store labels more room */
 @media (max-width:640px){
   .btn-lg{padding:16px 20px;font-size:16px}

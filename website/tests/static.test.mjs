@@ -70,9 +70,12 @@ test('launch prices: rupees for India, euros for Europe, US dollars for the USA 
   assert.match(s, /data-price-us><s>US\$149<\/s> <b>US\$89<\/b></);
   assert.match(s, /class="launch">Launch Price</);
   const card = s.slice(s.indexOf('<div class="pcard win'), s.indexOf('class="price-note'));
-  assert.doesNotMatch(card, /<ul|class="ticks"|class="badge"|class="price-sub"/, 'the card holds only the name, the prices and the store buttons');
+  assert.doesNotMatch(card, /class="badge"|class="price-sub"/, 'the card holds the name, the prices, the features and the store buttons');
+  assert.equal(card.match(/<li>/g)?.length, 8, 'the card lists the eight feature groups');
+  assert.match(card, /Straft AI, with no running cost/);
   assert.match(card, /data-store="win"[\s\S]*data-store="mac"/);
   assert.match(s, /<div class="region-tg"[^>]*>[\s\S]*data-region-set="in"[^>]*>India<[\s\S]*data-region-set="eu"[^>]*>Europe<[\s\S]*data-region-set="world"[^>]*>USA and others</);
+  assert.match(read(path.join(DIST, 'download', 'index.html')), /class="price dl-price"[\s\S]*₹3,999/, 'the download page shows the price the pop-up leaves out');
   assert.doesNotMatch(s, /<select/);
   for (const v of html.values()) assert.doesNotMatch(v, /89 euros|3,000 rupees|Outside India/);
 });

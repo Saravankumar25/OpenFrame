@@ -300,9 +300,9 @@ test('header and palette fit at every width: no overflow, no overlap', { skip: S
         const r = await page.evaluate(() => {
           const vis = (e) => e && getComputedStyle(e).display !== 'none' && e.getBoundingClientRect().width > 0;
           const nav = document.querySelector('.site-h .nav'), nb = nav.getBoundingClientRect();
-          const items = ['.brand', '.menu', '.nav-ctls', '.srch-btn', '.nav-get', '.menu-tg'].map((s) => document.querySelector(s)).filter(vis).map((e) => ({ n: e.className.split(' ')[0], ...e.getBoundingClientRect().toJSON() }));
+          const items = ['.brand', '.menu', '.nav-ctls', '.srch-btn', '.nav-get'].map((s) => document.querySelector(s)).filter(vis).map((e) => ({ n: e.className.split(' ')[0], ...e.getBoundingClientRect().toJSON() }));
           const overlaps = [];
-          items.forEach((a, i) => items.slice(i + 1).forEach((b) => { if (a.left < b.right - 0.5 && b.left < a.right - 0.5) overlaps.push(a.n + '/' + b.n); }));
+          items.forEach((a, i) => items.slice(i + 1).forEach((b) => { if (a.left < b.right - 0.5 && b.left < a.right - 0.5 && a.top < b.bottom - 0.5 && b.top < a.bottom - 0.5) overlaps.push(a.n + '/' + b.n); }));
           const btn = items.find((x) => x.n === 'srch-btn');
           return { page: document.documentElement.scrollWidth - innerWidth, navOver: nav.scrollWidth - nav.clientWidth, overlaps, btn: !!btn, inside: btn ? btn.left >= nb.left && btn.right <= nb.right : false, k: vis(document.querySelector('.srch-k')) };
         });
@@ -318,14 +318,6 @@ test('header and palette fit at every width: no overflow, no overlap', { skip: S
       const d = await page.evaluate(() => { const b = document.querySelector('.srch-dlg').getBoundingClientRect(); return { over: document.documentElement.scrollWidth - innerWidth, l: b.left, r: b.right, w: innerWidth, bodyOver: document.querySelector('.srch-body').scrollWidth - document.querySelector('.srch-body').clientWidth }; });
       assert.ok(d.over <= 0 && d.l >= 0 && d.r <= d.w && d.bodyOver <= 0, `${w}px palette: ${JSON.stringify(d)}`);
       await page.keyboard.press('Escape');
-      if (w <= 1099) {
-        await page.click('#menutg');
-        const o = await page.evaluate(() => ({ over: document.documentElement.scrollWidth - innerWidth, menu: !!document.querySelector('#menu.open-m'), s: document.querySelector('.srch-btn').getBoundingClientRect().right <= innerWidth }));
-        assert.ok(o.menu && o.over <= 0 && o.s, `${w}px drawer ${JSON.stringify(o)}`);
-        await page.click('.srch-btn');
-        assert.equal(await dialogOpen(page), true, 'opening search closes the drawer first');
-        assert.equal(await page.evaluate(() => !!document.querySelector('#menu.open-m')), false);
-      }
     }, { viewport: { width: w, height: 800 } });
   }
 });

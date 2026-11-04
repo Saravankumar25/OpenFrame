@@ -10,7 +10,6 @@ export const ICON = {
   cross: s('<path d="M6 6l12 12M18 6L6 18"/>'),
   arrow: s('<path d="M5 12h14M13 6l6 6-6 6"/>'),
   chev: s('<path d="M6 9l6 6 6-6"/>'),
-  menu: s('<path d="M3 6h18M3 12h18M3 18h18"/>'),
   play: s('<path d="M8 5.5v13l11-6.5z" fill="currentColor" stroke="none"/>'),
   pause: s('<path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor" stroke="none"/>'),
   prev: s('<path d="M15 6l-6 6 6 6"/>'),
