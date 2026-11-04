@@ -63,7 +63,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Evidence:** GitGuardian passed, the only check that ran on the pull request. `git diff` between `mac/` on main and local HEAD is empty outside `release/`; no change outside `mac/`. A scan of the pushed tree found no key files, access tokens or private keys.
 - **Features moved:** none.
 - **Docs updated:** handoff, this log.
-- **Decisions made or needed:** owner: the repository shows as public against `CLAUDE.md`, and six tracked files hold this Mac's user name.
+- **Decisions made or needed:** owner decided the repository stays public (`owner-decisions.md`, `CLAUDE.md`). Still open: whether to clean six tracked files that hold this Mac's user name.
 - **Blocked / risks:** the macOS build workflows in `mac/.github/workflows/` do not run from that folder, so GitHub built and tested nothing; the evidence is the local runs in the entry below. The entry below is left as written: its refused push is now resolved.
 - **Next:** the owner's store steps, the spot check, the Windows port.
 - **Checks run:** no code changed; `npm run verify` not run.

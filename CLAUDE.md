@@ -101,7 +101,7 @@ building the app. For each finished, verified slice of work:
    `.gitignore` covers build output, dependencies, temporary files, environment files and secrets, and no `.env`, key,
    password, token, certificate or signing key is tracked.
 Never run destructive git operations (force push, hard reset, branch deletion of unmerged work) without the owner's say.
-The repository stays private. **Never build an installer or a release executable (`npm run build`, `npm run bundle`, `tauri build`, `.msix`,
+The repository is public (owner decision 2026-11-04), so nothing that must stay secret goes into it. **Never build an installer or a release executable (`npm run build`, `npm run bundle`, `tauri build`, `.msix`,
 `.dmg`) until the owner says so in that conversation.**
 
 ### While working
