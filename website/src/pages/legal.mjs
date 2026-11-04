@@ -229,16 +229,16 @@ ${ph('discontinuation', 'What happens if the product is withdrawn, counsel to wo
   });
 
   // ---------- Notices
-  const FONT_LIST = [['Inter', 'OFL-Inter.txt', 'body text'], ['Newsreader', 'OFL-Newsreader.txt', 'page titles'], ['Sora', 'OFL-Sora.txt', 'headings']];
+  const FONT_LIST = [['Inter', 'OFL-Inter.txt', 'body text'], ['Manrope', 'OFL-Manrope.txt', 'wordmark'], ['Newsreader', 'OFL-Newsreader.txt', 'page titles'], ['Sora', 'OFL-Sora.txt', 'headings']];
   const licence = (f) => fs.readFileSync(path.join(FONTS, f), 'utf8').trim();
   const notices = page({
     path: '/legal/notices/',
     title: 'Notices | Straft Studio',
-    description: 'Licences for the three fonts this website uses, published in full, and where to find the notices for the Straft Studio app itself.',
+    description: 'Licences for the four fonts this website uses, published in full, and where to find the notices for the Straft Studio app itself.',
     breadcrumbs: crumb('Notices', '/legal/notices/'),
     body: doc('Notices', 'Notices.', 'The licences for the work of others that this website uses.', html`
 <h2>Website fonts</h2>
-<p>This website uses three fonts, served from this site and not from anyone else’s. Each is licensed under the SIL Open Font License, Version 1.1. The full licence text for each font is below, and also as a plain text file.</p>
+<p>This website uses four fonts, served from this site and not from anyone else’s. Each is licensed under the SIL Open Font License, Version 1.1. The full licence text for each font is below, and also as a plain text file.</p>
 <ul>${FONT_LIST.map(([n, f, u]) => html`<li><b>${n}</b> (${u}): <a href="/assets/fonts/${f}">${f}</a></li>`)}</ul>
 ${FONT_LIST.map(([n, f]) => html`<details class="lic"><summary>${n}: SIL Open Font License 1.1</summary><pre class="lic-text">${licence(f)}</pre></details>`)}
 
