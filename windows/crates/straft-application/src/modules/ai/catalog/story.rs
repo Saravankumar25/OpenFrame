@@ -3,9 +3,9 @@
 //! Build Screenplay / Apply Order (which only ever create or reorder through the
 //! Story module's own rules).
 
-use straft_domain::{AppError, AppResult, Capability};
 use rusqlite::{OptionalExtension, params};
 use serde_json::{Value, json};
+use straft_domain::{AppError, AppResult, Capability};
 
 use super::super::queries;
 use super::super::toolbox::resolve::{self as rv, Found};
@@ -1113,7 +1113,7 @@ fn update_card(ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResul
     {
         return Err(AppError::ai(
             "too_long",
-            "This card's long description is too long for the assistant to rewrite safely. Edit it in the card instead.",
+            "This card's long description is too long for Straft AI to rewrite safely. Edit it in the card instead.",
         ));
     }
     let mut d = Draft::new(spec, args, "Proposed Scene Card edit");

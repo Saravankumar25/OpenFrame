@@ -17,10 +17,10 @@ mod short;
 #[cfg(test)]
 mod tests;
 
-use straft_domain::{Actor, AppResult, Capability};
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppResult, Capability};
 use ts_rs::TS;
 
 use crate::core::{AppCore, ProjectSession};
@@ -76,10 +76,7 @@ pub fn prepare(i: &Input<'_>) -> AppResult<TurnMemory> {
     let conversation = short::load(i.conn, i.actor, i.conversation, i.focus, i.names)?;
     let entries =
         long::retrieve(i.conn, &i.actor.user_id, i.message, i.entity_ids).unwrap_or_else(|e| {
-            tracing::warn!(
-                code = e.code_str(),
-                "the assistant's memory could not be read"
-            );
+            tracing::warn!(code = e.code_str(), "Straft AI's memory could not be read");
             Vec::new()
         });
     Ok(TurnMemory {
@@ -192,7 +189,7 @@ pub struct AiMemoryDeleteDto {
 }
 
 fn memory_list(core: &AppCore, actor: &Actor, _: super::AiEmptyArgs) -> AppResult<AiMemoryListDto> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use Straft AI")?;
     let s = core.project()?;
     Ok(AiMemoryListDto {
         entries: s.store.read(|c| long::list(c, &actor.user_id))?,

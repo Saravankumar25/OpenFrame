@@ -8,17 +8,17 @@
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
+use rusqlite::params;
+use serde_json::{Value, json};
 use straft_ai::{ChatRequest, InferenceProvider};
 use straft_application::MutationMeta;
-use straft_application::modules::ai::scope::{self, AiScopeArgs, AiScopeKind};
+use straft_application::modules::ai::scope;
 use straft_application::modules::ai::{
     self, ChangeSetDraft, OpCall, PreviewRow, change_set, toolbox,
 };
 use straft_domain::auth::ActorOrigin;
 use straft_domain::{Actor, AppError, AppResult, Capability, Role, new_id, now_ms};
 use straft_test_support::TestEnv;
-use rusqlite::params;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ fixtures
 
@@ -54,7 +54,7 @@ impl InferenceProvider for ScriptedModel {
         self.replies.lock().unwrap().pop_front().unwrap_or_else(|| {
             Err(AppError::ai(
                 "unavailable",
-                "AI is currently unavailable. Straft Studio's core workflows continue to work normally.",
+                "AI is currently unavailable. Straft's core workflows continue to work normally.",
             ))
         })
     }
@@ -76,12 +76,34 @@ fn attach(env: &TestEnv) -> Arc<ScriptedModel> {
     m
 }
 
+/// The sections these tests pick: the tools the model is scripted to name must be homed in a picked
+/// section (spec 3.9, round R6). The screenplay and the tasks always, a scene card or a character
+/// when the request is about one. Three at most.
+fn picks(text: &str) -> Value {
+    let t = text.to_lowercase();
+    let mut leaves = vec!["screenplay/scenes", "notes-tasks/tasks"];
+    for (word, leaf) in [
+        ("scene card", "story/beat-board"),
+        ("rename", "story/characters"),
+    ] {
+        if t.contains(word) {
+            leaves.push(leaf);
+        }
+    }
+    json!(
+        leaves
+            .iter()
+            .map(|l| json!({ "leaf": l }))
+            .collect::<Vec<_>>()
+    )
+}
+
 fn whole() -> Value {
-    json!({ "kind": "WholeProject" })
+    picks("")
 }
 
 fn ask(env: &TestEnv, text: &str) -> Value {
-    env.ok("ai.ask", json!({ "text": text, "scope": whole() }))
+    env.ok("ai.ask", json!({ "text": text, "sections": picks(text) }))
 }
 
 fn count(env: &TestEnv, sql: &str) -> i64 {
@@ -173,25 +195,12 @@ fn seed_screenplay(env: &TestEnv) -> Vec<String> {
     scenes
 }
 
-fn whole_scope(env: &TestEnv, actor: &Actor) -> scope::ResolvedScope {
+fn whole_scope(env: &TestEnv, _actor: &Actor) -> scope::ResolvedScope {
     env.core
         .project()
         .unwrap()
         .store
-        .read(|c| {
-            scope::resolve(
-                c,
-                actor,
-                &AiScopeArgs {
-                    kind: AiScopeKind::WholeProject,
-                    draft_id: None,
-                    scene_id: None,
-                    selection: Vec::new(),
-                    shooting_day_id: None,
-                    call_sheet_id: None,
-                },
-            )
-        })
+        .read(scope::whole)
         .unwrap()
 }
 
@@ -399,7 +408,7 @@ fn default_step_limit_is_four_and_the_hard_limit_twelve() {
     let before = m.calls();
     let x = env.ok(
         "ai.ask",
-        json!({ "text": "Change the headings after another search", "scope": whole(), "maxSteps": 99 }),
+        json!({ "text": "Change the headings after another search", "sections": whole(), "maxSteps": 99 }),
     );
     assert_eq!(m.calls() - before, 12, "never more than the hard limit");
     assert!(
@@ -442,7 +451,7 @@ fn a_model_failure_mid_run_keeps_what_was_found() {
     assert!(
         texts(&r["details"])
             .iter()
-            .any(|d| d.starts_with("Offline AI stopped before finishing"))
+            .any(|d| d.starts_with("Straft AI stopped before finishing"))
     );
     assert_eq!(r["steps"].as_array().unwrap().len(), 1);
 }
@@ -509,7 +518,7 @@ fn history_is_bounded_to_recent_turns() {
         m.reply("There are 3 scenes.");
         env.ok(
             "ai.ask",
-            json!({ "text": format!("How many scenes are in script number {i}?"), "scope": whole(), "conversationId": conv }),
+            json!({ "text": format!("How many scenes are in script number {i}?"), "sections": whole(), "conversationId": conv }),
         );
     }
     let last = m.request(m.calls() - 1).messages[1].content.clone();
@@ -801,7 +810,7 @@ fn acceptance_is_refused_for_anything_but_a_local_user_action() {
         .call_as(
             &ai_actor,
             "ai.ask",
-            json!({ "text": "hi", "scope": whole() }),
+            json!({ "text": "hi", "sections": whole() }),
         )
         .unwrap_err();
     assert_eq!(e.code.0, "permission.denied");
@@ -852,7 +861,7 @@ fn a_change_set_can_never_contain_an_assistant_operation() {
                 },
                 OpCall {
                     op: "ai.ask".into(),
-                    args: json!({ "text": "x", "scope": whole() }),
+                    args: json!({ "text": "x", "sections": whole() }),
                     label: "Ask".into(),
                 },
             ],
@@ -871,7 +880,7 @@ fn a_change_set_can_never_contain_an_assistant_operation() {
     assert_eq!(r["state"], "Failed");
     assert_eq!(
         r["errorMessage"],
-        "This proposal contains a change Straft Studio can't apply. Nothing was changed."
+        "This proposal contains a change Straft can't apply. Nothing was changed."
     );
     assert_eq!(
         env.ok("ai.change_set.get", json!({ "id": inner.id }))["state"],
@@ -1035,7 +1044,7 @@ fn a_viewer_asking_for_a_change_gets_a_denial_and_no_change_set() {
         .call_as(
             &viewer,
             "ai.ask",
-            json!({ "text": "Set up a task about the train, after a search", "scope": whole() }),
+            json!({ "text": "Set up a task about the train, after a search", "sections": whole() }),
         )
         .unwrap();
     assert_eq!(x["result"]["kind"], "Denied");

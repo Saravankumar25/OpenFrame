@@ -25,17 +25,17 @@
 //! Change Set is applied) — and a Change Set can never contain an `ai.*`
 //! operation, so acceptance can't be nested or chained.
 
-use straft_domain::auth::ActorOrigin;
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::undo::{self, RowChange};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::Deserialize;
 use serde_json::{Value, json};
+use straft_domain::auth::ActorOrigin;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::undo::{self, RowChange};
 use ts_rs::TS;
 
 use super::catalog;
 use super::records::{ai_meta, set_result_status};
-use super::scope::{self, AiScopeArgs, AiScopeKind};
+use super::scope;
 use super::toolbox;
 use super::tools::ToolCtx;
 use super::types::*;
@@ -68,7 +68,7 @@ pub fn require_human(actor: &Actor) -> AppResult<()> {
         ActorOrigin::Local => Ok(()),
         _ => Err(AppError::new(
             "permission.denied",
-            "Only you can review proposed changes, from the AI Assistant panel.",
+            "Only you can review proposed changes, from Straft AI.",
         )
         .with_detail("change set review requires a local user action")),
     }
@@ -223,7 +223,7 @@ pub fn insert(
 /// Create a standalone Change Set (no AI request). Used by callers that build
 /// proposals programmatically; the AI orchestrator uses `insert` inside its own transaction.
 pub fn create(core: &AppCore, actor: &Actor, d: &ChangeSetDraft) -> AppResult<ChangeSetDto> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use Straft AI")?;
     let s = core.project()?;
     let id = s
         .store
@@ -549,7 +549,7 @@ pub fn accept_with(
             || !registered
             || carries_file_argument(core, &op.op, &op.args)
         {
-            let msg = "This proposal contains a change Straft Studio can't apply. Nothing was changed.";
+            let msg = "This proposal contains a change Straft can't apply. Nothing was changed.";
             update_state(
                 store,
                 actor,
@@ -733,10 +733,10 @@ fn close_journal(tx: &Tx<'_>, change_set_id: &str, state: &str) -> AppResult<()>
 }
 
 /// Shown on a Change Set whose interrupted apply was fully compensated on open.
-pub const RECOVERED_MESSAGE: &str = "Straft Studio closed before these changes finished applying. The partial changes were undone, so nothing from this proposal remains.";
+pub const RECOVERED_MESSAGE: &str = "Straft closed before these changes finished applying. The partial changes were undone, so nothing from this proposal remains.";
 /// Shown when an interrupted apply could not be fully compensated (an undo conflict, or the
 /// undo history was cleared by duplicating, restoring or importing the project).
-pub const RECOVERY_INCOMPLETE_MESSAGE: &str = "Straft Studio closed before these changes finished applying, and some of them could not be undone automatically. Review them with Undo or in Recently Deleted.";
+pub const RECOVERY_INCOMPLETE_MESSAGE: &str = "Straft closed before these changes finished applying, and some of them could not be undone automatically. Review them with Undo or in Recently Deleted.";
 
 /// Paths that clear the undo history of a project copy (duplicate, backup scrub, package
 /// restore) call this in the same transaction: an apply still `applying` can no longer be
@@ -915,7 +915,7 @@ pub mod fault {
 /// Rejecting leaves project content unchanged (AI-AC-008).
 pub fn reject(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto> {
     require_human(actor)?;
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use Straft AI")?;
     let s = core.project()?;
     let row = s.store.read(|c| load_row(c, actor, id))?;
     if !matches!(row.state.as_str(), "Pending" | "Stale" | "Conflict") {
@@ -943,7 +943,7 @@ pub fn reject(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto
 /// explicit review. Re-checking never applies anything.
 pub fn recheck(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto> {
     require_human(actor)?;
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use Straft AI")?;
     let s = core.project()?;
     let row = s.store.read(|c| load_row(c, actor, id))?;
     if !matches!(row.state.as_str(), "Pending" | "Stale" | "Conflict") {
@@ -955,18 +955,7 @@ pub fn recheck(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDt
     let sources = stored_sources(&row.source);
     let rebuilt: AppResult<Vec<ChangeSetDraft>> = s.store.read(|c| {
         // Proposal builders take no scope-specific context; a neutral scope is enough.
-        let scope = scope::resolve(
-            c,
-            actor,
-            &AiScopeArgs {
-                kind: AiScopeKind::WholeProject,
-                draft_id: None,
-                scene_id: None,
-                selection: Vec::new(),
-                shooting_day_id: None,
-                call_sheet_id: None,
-            },
-        )?;
+        let scope = scope::whole(c)?;
         let ctx = ToolCtx {
             core,
             conn: c,

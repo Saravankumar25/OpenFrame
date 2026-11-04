@@ -28,7 +28,7 @@ export function GlobalSettingsDialog({ open, onClose }: { open: boolean; onClose
       open={open}
       onOpenChange={(v) => !v && onClose()}
       title="Settings"
-      sub="These settings apply to Straft Studio on this computer. Open a project to change its own settings."
+      sub="These settings apply to Straft on this computer. Open a project to change its own settings."
       size="xl"
       dismissible={!recording}
       footer={<Button variant="primary" onClick={onClose} disabled={recording}>Done</Button>}

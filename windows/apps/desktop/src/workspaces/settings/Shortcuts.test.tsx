@@ -147,9 +147,9 @@ describe("Settings > Keyboard shortcuts", () => {
   it("removes one key and restores the default for one command", async () => {
     const user = userEvent.setup();
     render(<ShortcutsSettings />);
-    await user.click(screen.getByRole("button", { name: "Remove Ctrl+J from Open or close the assistant" }));
+    await user.click(screen.getByRole("button", { name: "Remove Ctrl+J from Open or close Straft AI" }));
     expect(calls[0].args).toEqual({ changes: [{ commandId: "app.assistant", keys: [] }] });
-    await user.click(screen.getByRole("button", { name: "Restore the default for Open or close the assistant" }));
+    await user.click(screen.getByRole("button", { name: "Restore the default for Open or close Straft AI" }));
     expect(calls[1].args).toEqual({ changes: [{ commandId: "app.assistant", keys: null }] });
     expect(useShortcuts.getState().overrides).toEqual({});
   });
@@ -159,7 +159,7 @@ describe("Settings > Keyboard shortcuts", () => {
     useShortcuts.getState().set({ ...stored });
     const user = userEvent.setup();
     render(<ShortcutsSettings />);
-    await user.click(screen.getByRole("button", { name: "Restore the default for Open or close the assistant" }));
+    await user.click(screen.getByRole("button", { name: "Restore the default for Open or close Straft AI" }));
     expect(await screen.findByText("Restore the default?")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Restore and move" }));
     expect(calls[0].args).toEqual({

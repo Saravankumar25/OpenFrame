@@ -5,6 +5,9 @@
 import type { Channel } from "../../ipc/generated/Channel";
 import type { EntitlementState } from "../../ipc/generated/EntitlementState";
 
+/** The one contact address (ADR-0039 item 11). Opened in the browser; the app sends nothing. */
+export const CONTACT_URL = "https://straftstudio.com/contact/";
+
 /** Trial reminders and the amber chip start when this many days or fewer are left (days 5 to 7). */
 export const LAST_DAYS = 3;
 
@@ -27,18 +30,29 @@ export function trialChip(state: EntitlementState | undefined): TrialChip | null
   if (!state || state.state !== "trialActive") return null;
   const daysLeft = Math.max(1, Math.min(7, state.days_left));
   const ending = daysLeft <= LAST_DAYS;
-  const label = daysLeft === 1 ? "Trial: 1 day left" : `Trial: ${daysLeft} days left`;
+  const label = daysLeft === 1 ? "Trial ends in 1 day" : `Trial ends in ${daysLeft} days`;
   const spoken =
     daysLeft === 1
-      ? "Free trial, last day. Your trial ends today."
-      : `Free trial, ${daysLeft} days left.${ending ? " Your trial ends soon." : ""}`;
+      ? "Free trial, last day. Your trial ends within 24 hours."
+      : `Free trial. Ends in ${daysLeft} days.${ending ? " Your trial ends soon." : ""}`;
   return { daysLeft, ending, label, spoken };
 }
 
-/** The reminder headline: day 5 "ends in 3 days", day 6 "ends in 2 days", day 7 "ends today". */
-export function reminderHeadline(daysLeft: number): string {
-  if (daysLeft <= 1) return "Your free trial ends today";
-  return `Your free trial ends in ${daysLeft} days`;
+/** The reminder headline: 3 or 2 days left "ends in N days"; on the last day "ends today" when the
+ * end moment is on today's local date, otherwise "ends tomorrow". */
+export function reminderHeadline(daysLeft: number, endsAtMs?: number | null, now: Date = new Date()): string {
+  if (daysLeft > 1) return `Your free trial ends in ${daysLeft} days`;
+  const later = endsAtMs != null && localDay(new Date(endsAtMs)) !== localDay(now);
+  return later ? "Your free trial ends tomorrow" : "Your free trial ends today";
+}
+
+/** "It ends on Thu 5 Nov at 9:42 PM." in local time, built from parts so the shape does not depend
+ * on the system language. `null` when the core gave no end moment. */
+export function trialEndLine(endsAtMs: number | null | undefined): string | null {
+  if (endsAtMs == null) return null;
+  const parts = new Intl.DateTimeFormat("en-US", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", hour12: true }).formatToParts(new Date(endsAtMs));
+  const p = (t: string) => parts.find((x) => x.type === t)?.value ?? "";
+  return `It ends on ${p("weekday")} ${p("day")} ${p("month")} at ${p("hour")}:${p("minute")} ${p("dayPeriod")}.`;
 }
 
 /** The store's name as the screens say it: "the App Store" on the Mac, "the Microsoft Store" on
@@ -92,6 +106,12 @@ export const SOCIAL_LINKS: readonly SocialLink[] = [
   { name: "Discord", short: "Dc", handle: "@straftstudio", url: null },
   { name: "Threads", short: "Th", handle: "@straftstudio", url: null },
 ];
+
+/** A release build hides the rows that have no address yet (ADR-0039 item 12); a debug build shows
+ * them all, so the mocks and tests still work. */
+export function visibleSocialLinks(links: readonly SocialLink[], debugBuild: boolean): readonly SocialLink[] {
+  return debugBuild ? links : links.filter((l) => isFixedSocialUrl(l.url));
+}
 
 /** The only sites a welcome link may open. */
 const SOCIAL_HOSTS = new Set([

@@ -16,12 +16,12 @@ pub mod undo;
 use std::path::Path;
 use std::time::Duration;
 
-use straft_domain::{AppError, AppResult};
 use rusqlite::{Connection, OpenFlags};
+use straft_domain::{AppError, AppResult};
 
 pub use rusqlite;
 
-/// Open (or create) a database with Straft Studio's durability policy.
+/// Open (or create) a database with Straft's durability policy.
 pub fn open_connection(path: &Path, create: bool) -> AppResult<Connection> {
     let mut flags = OpenFlags::SQLITE_OPEN_READ_WRITE
         | OpenFlags::SQLITE_OPEN_NO_MUTEX
@@ -32,7 +32,7 @@ pub fn open_connection(path: &Path, create: bool) -> AppResult<Connection> {
     let conn = open_sqlite(path, flags)?;
     // On Windows SQLite quietly falls back to a read-only handle when the file can't be
     // opened for writing (read-only attribute, or another program holding it without write
-    // sharing). Straft Studio asked to write, so a read-only handle would only fail later on the
+    // sharing). Straft asked to write, so a read-only handle would only fail later on the
     // first change. Refuse here with the reason instead.
     if conn.is_readonly("main")? {
         drop(conn);
@@ -42,7 +42,7 @@ pub fn open_connection(path: &Path, create: bool) -> AppResult<Connection> {
         return Err(if read_only_attribute {
             AppError::new(
                 "storage.access_denied",
-                "This file is marked read-only, so Straft Studio can't save to it. Clear the read-only setting in the file's properties, or copy it to a folder you can write to, then try again. Nothing was changed.",
+                "This file is marked read-only, so Straft can't save to it. Clear the read-only setting in the file's properties, or copy it to a folder you can write to, then try again. Nothing was changed.",
             )
             .with_detail("database file has the read-only attribute")
         } else {
@@ -92,7 +92,7 @@ fn apply_pragmas(conn: &Connection) -> AppResult<()> {
          PRAGMA trusted_schema=OFF;
          PRAGMA cache_size=-16000;",
     )?;
-    // Straft Studio never attaches databases. With the limit at 0, SQL that reached a
+    // Straft never attaches databases. With the limit at 0, SQL that reached a
     // connection from a received project's schema can't `ATTACH 'C:\…\x'` to create
     // files elsewhere on disk (Security review 2026-09-30, PKG-03).
     conn.set_limit(rusqlite::limits::Limit::SQLITE_LIMIT_ATTACHED, 0)?;
@@ -112,9 +112,9 @@ fn squash(s: &str) -> String {
 
 /// Schema screening for databases that may come from someone else (received project or
 /// backup packages, project folders copied from elsewhere). A project database is data,
-/// but SQLite also stores *code* in it (triggers, views) that runs inside Straft Studio's
+/// but SQLite also stores *code* in it (triggers, views) that runs inside Straft's
 /// connection. Every schema object must have a plain identifier name, and every trigger
-/// and view must be one Straft Studio's own migrations create (compared ignoring whitespace).
+/// and view must be one Straft's own migrations create (compared ignoring whitespace).
 /// Returns the problems found (empty = acceptable).
 pub fn untrusted_schema_problems(
     conn: &Connection,
@@ -180,7 +180,9 @@ const SNAPSHOT_WAIT: Duration = Duration::from_secs(30);
 pub fn snapshot_database(source: &Path, dest: &Path) -> AppResult<()> {
     let from = open_sqlite(
         source,
-        OpenFlags::SQLITE_OPEN_READ_ONLY | OpenFlags::SQLITE_OPEN_NO_MUTEX | OpenFlags::SQLITE_OPEN_URI,
+        OpenFlags::SQLITE_OPEN_READ_ONLY
+            | OpenFlags::SQLITE_OPEN_NO_MUTEX
+            | OpenFlags::SQLITE_OPEN_URI,
     )?;
     from.busy_timeout(Duration::from_secs(5))?;
     let mut to = open_sqlite(dest, OpenFlags::default())?;
@@ -315,10 +317,16 @@ mod tests {
         let dest = dir.path().join("copy.sqlite");
         snapshot_database(&crashed, &dest).unwrap();
 
-        assert_eq!(std::fs::read(side(&crashed, "-wal")).unwrap(), log, "not folded");
+        assert_eq!(
+            std::fs::read(side(&crashed, "-wal")).unwrap(),
+            log,
+            "not folded"
+        );
         assert_eq!(std::fs::read(&crashed).unwrap(), main, "not written");
         let copy = open_connection(&dest, false).unwrap();
-        let n: i64 = copy.query_row("SELECT count(*) FROM t", [], |r| r.get(0)).unwrap();
+        let n: i64 = copy
+            .query_row("SELECT count(*) FROM t", [], |r| r.get(0))
+            .unwrap();
         assert_eq!(n, 1, "the row only in the log came along");
     }
 
@@ -375,9 +383,7 @@ mod tests {
             .unwrap()
             .flatten()
             .map(|e| e.file_name().to_string_lossy().into_owned())
-            .filter(|n| {
-                n.contains(straft_platform::atomic::TEMP_SUFFIX) || n.ends_with(".partial")
-            })
+            .filter(|n| n.contains(straft_platform::atomic::TEMP_SUFFIX) || n.ends_with(".partial"))
             .collect();
         assert!(left.is_empty(), "staging files left behind: {left:?}");
     }

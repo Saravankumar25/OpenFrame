@@ -7,31 +7,16 @@
 //! test then dispatches every proposed operation through the normal registry
 //! (exactly what an approved Change Set does) to prove the operations are valid.
 
-use straft_application::modules::ai::scope::{self, AiScopeArgs, AiScopeKind, ResolvedScope};
+use serde_json::{Value, json};
+use straft_application::modules::ai::scope::{self, ResolvedScope};
 use straft_application::modules::ai::toolbox::{self, ToolStep};
 use straft_application::modules::ai::{ChangeSetDraft, catalog, change_set};
 use straft_domain::{Actor, AppError, Role};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
-fn whole(env: &TestEnv, actor: &Actor) -> ResolvedScope {
+fn whole(env: &TestEnv, _actor: &Actor) -> ResolvedScope {
     let s = env.core.project().unwrap();
-    s.store
-        .read(|c| {
-            scope::resolve(
-                c,
-                actor,
-                &AiScopeArgs {
-                    kind: AiScopeKind::WholeProject,
-                    draft_id: None,
-                    scene_id: None,
-                    selection: Vec::new(),
-                    shooting_day_id: None,
-                    call_sheet_id: None,
-                },
-            )
-        })
-        .unwrap()
+    s.store.read(scope::whole).unwrap()
 }
 
 fn run_as(env: &TestEnv, actor: &Actor, tool: &str, args: Value) -> Result<ToolStep, AppError> {
@@ -1969,4 +1954,64 @@ fn app_appearance_and_app_settings_answer_from_app_level_data() {
         out.contains("app.quick_capture") && out.contains("Mod+Shift+K"),
         "{out}"
     );
+}
+
+fn read_picked(env: &TestEnv, leaf: &str, tool: &str, args: Value) -> String {
+    let pick = serde_json::from_value(json!({ "leaf": leaf })).unwrap();
+    let s = env.core.project().unwrap();
+    let scope = s.store.read(|c| scope::from_picks(c, &[pick])).unwrap();
+    match toolbox::run_tool_unlocked(&env.core, &env.actor(), &scope, "ravi", tool, &args) {
+        Ok(ToolStep::Output(o)) => {
+            let mut s = o.content.clone();
+            for it in &o.items {
+                s.push_str(&format!(
+                    "\n- {} {}",
+                    it.label,
+                    it.detail.clone().unwrap_or_default()
+                ));
+            }
+            s
+        }
+        other => panic!("{tool}: {other:?}"),
+    }
+}
+
+#[test]
+fn search_and_retrieval_under_picks_read_only_the_picked_sections() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    fixture(&env);
+    env.ok(
+        "notes.create",
+        json!({ "title": "Ravi zebrafish memo", "body": "Ravi costs too much zebrafish" }),
+    );
+    for tool_args in [
+        ("search_project", json!({ "text": "Ravi" })),
+        ("retrieve_context", json!({ "query": "Ravi" })),
+    ] {
+        let (tool, args) = tool_args;
+        let chars = read_picked(&env, "story/characters", tool, args.clone());
+        assert!(
+            !chars.to_lowercase().contains("zebrafish"),
+            "{tool}: {chars}"
+        );
+        let notes = read_picked(&env, "notes-tasks/notes", tool, args);
+        assert!(
+            notes.to_lowercase().contains("zebrafish"),
+            "{tool}: {notes}"
+        );
+    }
+    // A category shortcut does not count a section that was not picked.
+    let out = read_picked(
+        &env,
+        "notes-tasks/notes",
+        "search_project",
+        json!({ "text": "all scenes" }),
+    );
+    let counted = read_picked(
+        &env,
+        "screenplay/scenes",
+        "search_project",
+        json!({ "text": "all scenes" }),
+    );
+    assert_ne!(out, counted, "the notes pick must not run the scene count");
 }

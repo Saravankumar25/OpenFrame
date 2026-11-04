@@ -12,12 +12,13 @@ The work has three chapters (owner decision 2026-10-09; `docs/product/vision-and
    `docs/roadmap/chapter-1b-mac-phases.md`). Windows first: finish and prove the Windows app, build the internal `.exe`,
    the team tests it by hand. Then the Mac: a SwiftUI shell over the same Rust core, the internal `.dmg`, team testing.
    Builds are unsigned, ask the team password (minimum 8 characters, ADR-0030) and download the AI after install
-   (ADR-0026). **This is the only chapter in progress.**
+   (ADR-0026).
 2. **Website.** Purchased domain and company email, faithful recreations of the real screens. Its implementation plan is
    written when Chapter 1 closes.
-3. **Commercial distribution.** Microsoft Store and Mac App Store, 7-day trial, paid activation (target 3,000 rupees,
-   89 dollars, 89 euros), signing and notarization. Its implementation plan is written when Chapter 2 closes. No
-   Chapter 2 or Chapter 3 code is written in Chapter 1.
+3. **Commercial distribution.** Microsoft Store and Mac App Store, 7-day trial, paid activation (launch price 3,999 rupees,
+   89 dollars, 89 euros), signing and notarization. **Started by the owner on 2026-11-03** (ADR-0039); the work list is
+   `docs/release/package-2026-11-03/`, which overrides older decisions where they differ. No licence server, no device
+   binding, no analytics, no accounts.
 
 Decisions behind this: `docs/adr/` (register in `docs/adr/README.md`) and `docs/implementation/owner-decisions.md`.
 
@@ -77,7 +78,7 @@ process control, settings, imports and anything that touches payment or licence 
 
 ### Writing standard (permanent)
 The product is **Straft Studio** and its assistant is **Straft AI** (ADR-0042). Use no other name in text, code or file
-names; the only kept legacy names are the website domain and the Instagram account. No em dashes and no AI-sounding
+names; the only kept legacy names are the `.of*` package extensions and what `straft-platform::legacy_names` reads. No em dashes and no AI-sounding
 writing anywhere: app screens, errors, exports, installers, listings, website, manual, documents, code comments, commit
 and pull request text. Rules and banned phrases: `docs/engineering/35-writing-standard.md`.
 `npm run check:writing` is a ratchet that fails when a count goes up. When you touch a file, fix its hits.

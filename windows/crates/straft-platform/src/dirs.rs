@@ -28,7 +28,7 @@ pub fn documents_dir() -> Option<PathBuf> {
     directories::UserDirs::new().and_then(|u| u.document_dir().map(|d| d.to_path_buf()))
 }
 
-/// `Documents/Straft Studio`: the root for user-visible Straft Studio content.
+/// `Documents/Straft Studio`: the root for user-visible content.
 pub fn user_content_dir() -> Option<PathBuf> {
     documents_dir().map(|d| d.join(USER_FOLDER))
 }
@@ -56,7 +56,7 @@ pub fn legacy_roaming_data_dir() -> Option<PathBuf> {
     directories::BaseDirs::new().map(|b| b.data_dir().join(legacy_names::PRODUCT_NAME))
 }
 
-/// The operating system's per-user local data folder without the Straft Studio suffix
+/// The operating system's per-user local data folder without the Straft suffix
 /// (`%LOCALAPPDATA%` on Windows, `~/Library/Application Support` on macOS). The desktop shell uses
 /// it to find the package-private data folder of an MSIX install.
 pub fn base_data_dir() -> Option<PathBuf> {
@@ -109,9 +109,8 @@ mod tests {
     #[cfg(target_os = "macos")]
     #[test]
     fn mac_app_bundle_resources_are_in_contents_resources() {
-        let exe = std::path::Path::new(
-            "/Applications/Straft Studio.app/Contents/MacOS/straft-desktop",
-        );
+        let exe =
+            std::path::Path::new("/Applications/Straft Studio.app/Contents/MacOS/straft-desktop");
         assert_eq!(
             resources_dir_for(exe).unwrap(),
             std::path::Path::new("/Applications/Straft Studio.app/Contents/Resources")

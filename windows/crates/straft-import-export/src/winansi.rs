@@ -1,7 +1,7 @@
 //! WinAnsi (Windows-1252) encoding for the PDF base-14 fonts, plus Helvetica
 //! glyph widths for report layout.
 //!
-//! Straft Studio's PDFs use the standard base-14 fonts (Courier, Helvetica) so no
+//! Straft's PDFs use the standard base-14 fonts (Courier, Helvetica) so no
 //! font files are embedded. Those fonts only cover the WinAnsi character set.
 //! **Limitation:** text outside WinAnsi (e.g. Devanagari, Tamil, CJK, Arabic)
 //! cannot be drawn with them; such characters are replaced with `?` and the

@@ -11,10 +11,10 @@
 //! Today every role holds View (ADR-0009), so "a user without View reads nothing" is enforced by the
 //! same check: a role added without View is refused on every read by the first test.
 
+use serde_json::json;
 use straft_application::registry::OpKind;
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::json;
 
 const ROLES: [Role; 5] = [
     Role::Owner,
@@ -29,7 +29,7 @@ const ROLES: [Role; 5] = [
 /// Reviewed 2026-10-16: `ai.health` reads the numbers-only AI trace in app data and
 /// `ai.download.status` the download state and free space, never the open project; the reviewer workspace (`packages.review_*`) reads packages kept in the app
 /// data folder, and `packages.inspect_package` reads a file the user picked, not the open project.
-/// Reviewed 2026-10-27: `storage.info` and `project.discover` read the places Straft Studio keeps things and the
+/// Reviewed 2026-10-27: `storage.info` and `project.discover` read the places Straft keeps things and the
 /// project folders found there, never project content. `vault.inspect` reads a vault file the
 /// user picked, not the open project. `library.status` and `library.inspect` read where the library is and
 /// count what a folder the user picked holds, never project content.

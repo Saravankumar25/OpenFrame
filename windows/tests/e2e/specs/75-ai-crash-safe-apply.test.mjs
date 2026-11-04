@@ -12,7 +12,7 @@ import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { launchApp, sleep, stepper, waitForText } from "../lib/app.mjs";
 import { firstLaunchProject, xq } from "../lib/flows.mjs";
-import { appProcesses, ask, enginesFromBuild, goToTasks, killApp, openAssistant, openTaskTitles, proposal, proposalButton, results } from "../lib/ai.mjs";
+import { appProcesses, ask, enginesFromBuild, goToTasks, killApp, openAssistant, openTaskTitles, pickSections, proposal, proposalButton, results } from "../lib/ai.mjs";
 
 let browser;
 const step = stepper(() => browser, "ai-crash");
@@ -48,6 +48,7 @@ describe("AI work survives a crash", () => {
     await step("kill-apply", async () => {
       await firstLaunchProject(browser, "Night Bus");
       await openAssistant(browser);
+      await pickSections(browser, ["Tasks"]);
       const r = await ask(browser, "Create a task to scout the railway station.");
       assert.equal(r.kind, "Proposal", `${r.kind}: ${r.text}`);
       const card = await proposal(browser);
@@ -72,7 +73,8 @@ describe("AI work survives a crash", () => {
   test("killed while the engine answers: no engine is left running, and AI works after relaunch", async () => {
     await step("kill-engine", async () => {
       await openAssistant(browser);
-      const box = await browser.$('//aside[@aria-label="AI Assistant"]//textarea[@aria-label="Ask or command"]');
+      await pickSections(browser, ["Scenes"]);
+      const box = await browser.$('//aside[@aria-label="Straft AI"]//textarea[@aria-label="Ask or command"]');
       await box.waitForEnabled({ timeout: 30_000 });
       await box.setValue("What happens at the railway station?");
       await browser.keys("Enter");

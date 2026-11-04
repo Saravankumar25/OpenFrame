@@ -41,6 +41,7 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, mpsc};
 use std::time::{Duration, Instant};
 
+use serde_json::{Value, json};
 use straft_ai::{ChatRequest, InferenceProvider};
 use straft_application::events::{AppEvent, EventSink, SaveStatus};
 use straft_application::modules::ai as ai_module;
@@ -51,7 +52,6 @@ use straft_domain::{AppError, AppResult, new_id};
 use straft_search::Embedder;
 use straft_test_support::embedder::ConceptEmbedder;
 use straft_test_support::stress::Rng;
-use serde_json::{Value, json};
 
 const SECS_ENV: &str = "STRAFT_SOAK_SECS";
 /// No single operation may take longer than this (a stuck lock fails the run).
@@ -124,7 +124,7 @@ impl InferenceProvider for CancellingModel {
         } else {
             AppError::ai(
                 "unavailable",
-                "AI is currently unavailable. Straft Studio's core workflows continue to work normally.",
+                "AI is currently unavailable. Straft's core workflows continue to work normally.",
             )
         })
     }
@@ -984,7 +984,7 @@ fn phase_ai_cancel(s: &Arc<Soak>, budget: Duration) -> CancelReport {
             .store(rng.below(30) as u64, Ordering::SeqCst);
         match s.call(
             "ai.ask",
-            json!({ "text": "How many scenes are in the script?", "scope": { "kind": "WholeProject" } }),
+            json!({ "text": "How many scenes are in the script?", "sections": [{ "leaf": "screenplay/scenes" }] }),
         ) {
             Ok(v) => assert!(
                 v["result"]["kind"].is_string(),

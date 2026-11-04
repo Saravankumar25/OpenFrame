@@ -10,7 +10,7 @@
 **Document type:** UX/UI Specification Document
 **Product:** Straft Studio
 **Primary platform:** Windows + macOS desktop application
-**Operating model:** Local-first, offline-capable, user-owned project files; optional internet-assisted AI; optional local-network collaboration; no mandatory Straft Studio cloud.
+**Operating model:** Local-first, offline-capable, user-owned project files; optional internet-assisted AI; optional local-network collaboration; no mandatory Straft cloud.
 **Target users:** Independent filmmakers, writer-directors, small production teams, student filmmakers, short-film makers, regional-language filmmakers, and small episodic teams.
 **Source documents:**
 - `Straft_Studio_Mega_PRD_Aligned_Updated.md`
@@ -57,7 +57,7 @@ No standalone notification center, enterprise administration center, accounting 
 Contextual status indicators are allowed where the FSD requires them, for example a stale production-source banner or a call sheet marked as needing refresh. These are status communication elements, not a separate notification product.
 
 ## 0.3 Plain-language design
-Straft Studio should use ordinary language wherever possible:
+Straft should use ordinary language wherever possible:
 
 - **Beat Board** instead of structural-analysis terminology.
 - **Scene Cards** instead of abstract story-unit terminology.
@@ -84,7 +84,7 @@ Recommended desktop composition:
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────────┐
-│ Straft Studio   Project Name ▾     Global Search     Undo Redo   Status   User │
+│ Straft   Project Name ▾     Global Search     Undo Redo   Status   User │
 ├──────────────────────┬─────────────────────────────────────────────────────┤
 │ Home                 │                                                     │
 │ Idea Vault           │                                                     │
@@ -275,7 +275,7 @@ Home is the application-level starting point before a project is open. It helps 
 > **Which project should I continue or open?**
 
 ## Entry points
-- Launching Straft Studio
+- Launching Straft
 - Closing a project
 - Returning from Project Home
 
@@ -1384,7 +1384,7 @@ Production can select the locked/revised draft as source.
 Safe existing-script import.
 
 ## Primary question
-> **What existing script do I want to bring into Straft Studio?**
+> **What existing script do I want to bring into Straft?**
 
 ## Entry points
 - Project Home > Import
@@ -2551,7 +2551,7 @@ The interface should state that this is a planning estimate, not formal accounti
 - Editing
 
 ## Empty state
-Empty state: `Use a simple estimate for planning. Formal accounting is outside Straft Studio.`
+Empty state: `Use a simple estimate for planning. Formal accounting is outside Straft.`
 
 ## Errors and recovery
 Reject invalid negative amounts and malformed values. Preserve existing valid lines if one entry fails.
@@ -2962,7 +2962,7 @@ No participants is a valid session state; host can continue or end.
 Failure to start session never blocks solo local work.
 
 ## Cross-module connections
-No project data is published to Straft Studio cloud.
+No project data is published to Straft cloud.
 
 # 67. Local Network Collaboration — Participant
 
@@ -3142,7 +3142,7 @@ The AI assistant is an optional system-wide natural-language assistant and comma
 
 ## Primary question
 
-> **What do I want Straft Studio to find, explain, prepare, or help me do?**
+> **What do I want Straft to find, explain, prepare, or help me do?**
 
 ## Entry points
 
@@ -3216,7 +3216,7 @@ For project-changing requests:
 3. Prepare exact Change Set.
 4. Show preview.
 5. Require explicit acceptance.
-6. Apply through the normal Straft Studio action.
+6. Apply through the normal Straft action.
 7. Expose undo/activity as applicable.
 
 The AI must never silently rewrite screenplay/story/production/schedule data.
@@ -3235,7 +3235,7 @@ Examples:
 
 > `Rename Ravi to Raghav across structured references.`
 
-The command layer routes to existing Straft Studio capabilities rather than creating a separate action system.
+The command layer routes to existing Straft capabilities rather than creating a separate action system.
 
 ## Batch and rename preview
 
@@ -4459,7 +4459,7 @@ When practical, preview should show the outgoing document close to how it will a
 Where revision information is included, use professional labels and avoid exposing internal data model language.
 
 ## 107.4 External communication
-Straft Studio creates the file; the user decides how to send it. The application does not need a mail/messaging subsystem to accomplish the workflow.
+Straft creates the file; the user decides how to send it. The application does not need a mail/messaging subsystem to accomplish the workflow.
 
 # 108. UX Rules for Project Integrity
 

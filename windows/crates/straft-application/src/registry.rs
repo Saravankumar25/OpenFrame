@@ -8,11 +8,11 @@
 use std::collections::HashMap;
 use std::sync::{Arc, OnceLock};
 
-use straft_domain::{Actor, AppError, AppResult, Capability};
 use rusqlite::Connection;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
+use straft_domain::{Actor, AppError, AppResult, Capability};
 
 use crate::core::AppCore;
 use crate::store::{DeletedItemRow, Tx};
@@ -37,6 +37,28 @@ pub struct OpEntry {
     /// shorten with `short_type_name`).
     pub arg_type: &'static str,
     pub result_type: &'static str,
+}
+
+impl OpEntry {
+    /// Whether this operation changes a project: a command that needs a project capability other
+    /// than View, Export, CreatePackage (backups) or UseAi. Application-level commands (no
+    /// capability: settings, open, close, create) and every query do not.
+    pub fn changes_project(&self) -> bool {
+        self.kind == OpKind::Command
+            && self
+                .meta
+                .as_ref()
+                .and_then(|m| m.required_capability)
+                .is_some_and(|c| {
+                    !matches!(
+                        c,
+                        Capability::View
+                            | Capability::Export
+                            | Capability::CreatePackage
+                            | Capability::UseAi
+                    )
+                })
+    }
 }
 
 // ------------------------------------------------------------ operation metadata
@@ -121,7 +143,7 @@ pub struct OperationMetadata {
     pub required_capability: Option<Capability>,
     /// Removes or overwrites user content (even if recoverable).
     pub destructive: bool,
-    /// Cannot be undone from Straft Studio (no undo step, no Recently Deleted entry).
+    /// Cannot be undone from Straft (no undo step, no Recently Deleted entry).
     pub irreversible: bool,
     /// The product UI asks for an extra destructive confirmation beyond the action
     /// itself; that confirmation still applies after Change Set approval (spec §7).
@@ -495,6 +517,9 @@ impl Registry {
         // The Mac lock (ADR-0022): after the trial or a refund on the Mac App Store build, only the
         // lock screen's own operations run. Every caller reaches handlers through here.
         core.entitlement.check_operation(name)?;
+        // Editing is locked while the purchase cannot be checked (package file 02): commands that
+        // need a project capability other than viewing, exporting or asking the assistant.
+        core.entitlement.check_edit(name, entry.changes_project())?;
         // Defence in depth (Windows phase W3): the capability an operation declares is checked
         // here for every caller, before its arguments are read. Handlers keep their own checks.
         // The Global Idea Vault is the local person's own store, whatever their role in the open

@@ -115,7 +115,7 @@ export async function createProject(browser, title, { type, first = false } = {}
 
 /**
  * Wait for Application Home itself. The words "Your projects" are not enough: other screens can
- * show them (the Offline AI damaged-bundle message ends "Your projects were not changed."), and a
+ * show them (the Straft AI damaged-bundle message ends "Your projects were not changed."), and a
  * spec that moves on while the project is still closing ends the app in the middle of the close.
  */
 export async function waitForHome(browser, timeout = 15_000) {

@@ -345,7 +345,7 @@ fn runtime_that_cannot_start_fails_cleanly_without_restart_loops() {
     let status = sup.status();
     assert_eq!(
         status.last_error.as_deref(),
-        Some("Offline AI could not start on this computer.")
+        Some("Straft AI could not start on this computer.")
     );
     assert_eq!(
         states
@@ -493,7 +493,7 @@ fn m1_10_sidecar_port_retries_are_bounded_and_reset_on_an_explicit_start() {
     assert_eq!(sup.state(), RuntimeState::Failed);
     assert_eq!(
         sup.status().last_error.as_deref(),
-        Some("Offline AI could not start on this computer.")
+        Some("Straft AI could not start on this computer.")
     );
     assert_eq!(
         launcher.launches().len(),

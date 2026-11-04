@@ -1,4 +1,4 @@
-// Helpers for the Offline AI specs (72..78): drive the AI Assistant panel the way a user does and
+// Helpers for the Straft AI specs (72..78): drive the Straft AI panel the way a user does and
 // inspect the real app and engine processes. The app under test carries the engine and finds the
 // real models in its app data, installed by run.mjs as a finished download leaves them (ADR-0026).
 // It runs with deterministic sampling (STRAFT_AI_DETERMINISTIC=1, set by run.mjs: temperature 0,
@@ -40,22 +40,22 @@ export const NIGHT_BUS = [
 /** Generous: model load on first use plus a multi-step answer on a laptop processor. */
 export const ANSWER_TIMEOUT = 240_000;
 
-const panel = '//aside[@aria-label="AI Assistant"]';
+const panel = '//aside[@aria-label="Straft AI"]';
 
-/** Open the AI Assistant panel from the header (the one entry point in every workspace). */
+/** Open the Straft AI panel from the header (the one entry point in every workspace). */
 export async function openAssistant(browser) {
   const open = await browser.$(panel);
   if (await open.isExisting()) return;
-  await click(browser, "Assistant");
+  await click(browser, "Straft AI");
   await (await browser.$(panel)).waitForDisplayed({ timeout: 10_000 });
 }
 
 export async function closeAssistant(browser) {
-  if (await (await browser.$(panel)).isExisting()) await click(browser, "Close AI Assistant");
+  if (await (await browser.$(panel)).isExisting()) await click(browser, "Close Straft AI");
 }
 
 /**
- * How the page and the docked AI Assistant share the window (owner decision 2026-10-08: the panel
+ * How the page and the docked Straft AI share the window (owner decision 2026-10-08: the panel
  * docks beside the page). Returns the page and panel edges and every visible control of the page
  * that ends past the page's right edge without a horizontal scroll area that could bring it into
  * view. With the panel docked, `overlap` is 0 and `hidden` is empty at every supported window size.
@@ -63,7 +63,7 @@ export async function closeAssistant(browser) {
 export async function dockedLayout(browser) {
   return browser.execute(() => {
     const main = document.querySelector("main.main");
-    const aside = document.querySelector('aside[aria-label="AI Assistant"]');
+    const aside = document.querySelector('aside[aria-label="Straft AI"]');
     const mr = main.getBoundingClientRect();
     const ar = aside ? aside.getBoundingClientRect() : null;
     const scrollsSideways = (el) => {
@@ -96,24 +96,59 @@ export async function dockedLayout(browser) {
 
 /** The panel's visible text. */
 export async function panelText(browser) {
-  return browser.execute(() => document.querySelector('aside[aria-label="AI Assistant"]')?.innerText ?? "");
+  return browser.execute(() => document.querySelector('aside[aria-label="Straft AI"]')?.innerText ?? "");
 }
 
-/** The "Using: <scope>" line and the selected scope. */
-export async function scopeInfo(browser) {
+/**
+ * What the panel shows about the sections: the "Using: ..." line of the newest answer (built by the
+ * core from the sections it really read), the chips of the sections picked now, and the hint under
+ * Send ("Pick a section" while nothing is picked).
+ */
+export async function sectionsInfo(browser) {
   return browser.execute(() => {
-    const aside = document.querySelector('aside[aria-label="AI Assistant"]');
-    const using = [...(aside?.querySelectorAll(".xs.muted") ?? [])].map((e) => e.textContent ?? "").find((t) => t.startsWith("Using: ")) ?? "";
-    const select = aside?.querySelector("#ai-scope");
-    const selected = select ? (select.textContent ?? "").trim() : "";
-    return { using, selected };
+    const aside = document.querySelector('aside[aria-label="Straft AI"]');
+    const usings = [...(aside?.querySelectorAll(".ai-using") ?? [])].map((e) => e.textContent ?? "");
+    const chips = [...(aside?.querySelectorAll('ul[aria-label="Chosen sections"] .ai-pick-chip > span:first-child') ?? [])].map((e) => (e.textContent ?? "").trim());
+    const hint = (aside?.querySelector("#ai-send-hint")?.textContent ?? "").trim();
+    return { using: usings[usings.length - 1] ?? "", chips, hint };
   });
 }
+
+/**
+ * Pick exactly these sections, by the names the tree shows ("Scenes", "Cast & Crew", "Budget" ...),
+ * as a person does: take away what is picked, open the list, tick each one, close it. Nothing is
+ * picked for the person, so a spec that asks must pick first.
+ */
+export async function pickSections(browser, names) {
+  await openAssistant(browser);
+  for (;;) {
+    const remove = await browser.$(`${panel}//ul[@aria-label="Chosen sections"]//button[starts-with(@aria-label,"Remove ")]`);
+    if (!(await remove.isExisting())) break;
+    await remove.click();
+  }
+  const toggle = await browser.$(`${panel}//button[normalize-space(.)="Choose sections" or normalize-space(.)="Change sections"]`);
+  await toggle.waitForClickable({ timeout: 15_000 });
+  await toggle.click();
+  for (const name of names) {
+    const row = await browser.$(`${panel}//*[@aria-label="Sections"]//label[.//span[normalize-space(.)="${name}"]]`);
+    await row.waitForClickable({ timeout: 10_000, timeoutMsg: `no section called "${name}" in the list` });
+    await row.click();
+  }
+  const done = await browser.$(`${panel}//button[normalize-space(.)="Done"]`);
+  await done.click();
+  await browser.waitUntil(async () => (await sectionsInfo(browser)).chips.length === names.length, {
+    timeout: 10_000,
+    timeoutMsg: `the chips do not show the ${names.length} sections picked`,
+  });
+}
+
+/** The sections a spec asks under unless it picked its own: the screenplay. */
+export const DEFAULT_SECTIONS = ["Scenes"];
 
 /** All assistant results in the conversation, oldest first. */
 export async function results(browser) {
   return browser.execute(() =>
-    [...document.querySelectorAll('aside[aria-label="AI Assistant"] .msg.a[data-kind]')].map((m) => ({
+    [...document.querySelectorAll('aside[aria-label="Straft AI"] .msg.a[data-kind]')].map((m) => ({
       kind: m.getAttribute("data-kind"),
       text: m.innerText,
       // The chips sit behind the closed "See sources" disclosure; they are in the page all the same.
@@ -125,6 +160,8 @@ export async function results(browser) {
 /** Type a question into the panel and send it (Enter), without waiting for the answer. */
 export async function send(browser, text) {
   await openAssistant(browser);
+  // Send stays off until a section is picked, so a spec that picked none asks under the screenplay.
+  if ((await sectionsInfo(browser)).chips.length === 0) await pickSections(browser, DEFAULT_SECTIONS);
   const box = await browser.$(`${panel}//textarea[@aria-label="Ask or command"]`);
   await box.waitForEnabled({ timeout: 30_000 });
   await box.click();
@@ -133,7 +170,7 @@ export async function send(browser, text) {
 }
 
 /**
- * Ask the assistant through the panel (type, Enter) and wait for the new result. Returns it as
+ * Ask Straft AI through the panel (type, Enter) and wait for the new result. Returns it as
  * { kind, text, sources }.
  */
 export async function ask(browser, text, { timeout = ANSWER_TIMEOUT } = {}) {
@@ -144,7 +181,7 @@ export async function ask(browser, text, { timeout = ANSWER_TIMEOUT } = {}) {
   // can arrive after `before` was counted, and its last result belongs to an earlier question.
   const answered = () =>
     browser.execute((q) => {
-      const aside = document.querySelector('aside[aria-label="AI Assistant"]');
+      const aside = document.querySelector('aside[aria-label="Straft AI"]');
       if (!aside || aside.querySelector('.msg.a.muted[role="status"]')) return false;
       const all = [...aside.querySelectorAll(".msg.a[data-kind]")];
       const asked = all[all.length - 1]?.previousElementSibling;
@@ -162,7 +199,7 @@ export async function ask(browser, text, { timeout = ANSWER_TIMEOUT } = {}) {
 /** The newest "Proposed Changes" card: its text and the buttons it offers. */
 export async function proposal(browser) {
   return browser.execute(() => {
-    const cards = [...document.querySelectorAll('aside[aria-label="AI Assistant"] section[aria-label="Proposed Changes"]')];
+    const cards = [...document.querySelectorAll('aside[aria-label="Straft AI"] section[aria-label="Proposed Changes"]')];
     const card = cards[cards.length - 1];
     if (!card) return null;
     let n = card.nextElementSibling;
@@ -195,7 +232,7 @@ export async function openTaskTitles(browser) {
   );
 }
 
-/** Open Notes & Tasks and wait for the Tasks section. The assistant panel lies over the right of
+/** Open Notes & Tasks and wait for the Tasks section. Straft AI panel lies over the right of
  * the page, where the Tasks column and its buttons are, so it is closed first, as a person would. */
 export async function goToTasks(browser) {
   await closeAssistant(browser);
@@ -214,7 +251,7 @@ function ps(script) {
   });
 }
 
-/** The app under test and the Offline AI engines it started: [{ pid, parent, name, path, commandLine }]. */
+/** The app under test and the Straft AI engines it started: [{ pid, parent, name, path, commandLine }]. */
 export function appProcesses() {
   const app = process.env.E2E_APP;
   const out = ps(

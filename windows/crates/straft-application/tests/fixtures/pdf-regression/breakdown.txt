@@ -58,7 +58,7 @@
 66,167 6.9 LOCATION / SET
 147,163 8.2 Old Railway Station
 435,768 6.8 BLACK RAIN · BREAKDOWN REPORT
-46,24 6.8 Created using Straft Studio
+46,24 6.8 Created using Straft
 528,24 7.4 Page 1 of 2
 == page 2 612x792
 46,726 6.8 PART 2
@@ -123,5 +123,5 @@
 335,321 8.4 1
 554,319 9.6 1
 435,768 6.8 BLACK RAIN · BREAKDOWN REPORT
-46,24 6.8 Created using Straft Studio
+46,24 6.8 Created using Straft
 528,24 7.4 Page 2 of 2

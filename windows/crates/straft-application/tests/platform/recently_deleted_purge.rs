@@ -6,12 +6,12 @@
 //! interrupted by a failing drive and by its own per-run limit, and against live items, which it
 //! must never touch.
 
+use serde_json::{Value, json};
 use straft_application::modules::retention::{self, MAX_PER_RUN, PurgeReport, RETENTION_DAYS};
 use straft_application::store::fault::{CommitFault, fail_commits};
 use straft_application::{AppCore, Store};
 use straft_domain::now_ms;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const DAY: i64 = 24 * 60 * 60 * 1000;
 

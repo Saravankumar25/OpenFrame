@@ -25,8 +25,8 @@
 use std::collections::HashSet;
 use std::sync::LazyLock;
 
-use straft_ai_checks as checks;
 use regex::Regex;
+use straft_ai_checks as checks;
 
 use super::super::text;
 use super::super::turn::LengthClass;
@@ -51,6 +51,9 @@ pub(crate) enum Rule {
     Abstain,
     Echo,
     ChangeClaim,
+    List,
+    Relationship,
+    Mood,
 }
 
 impl Rule {
@@ -70,14 +73,17 @@ impl Rule {
             Rule::Abstain => "abstain",
             Rule::Echo => "echo",
             Rule::ChangeClaim => "change_claim",
+            Rule::List => "list",
+            Rule::Relationship => "relationship",
+            Rule::Mood => "mood",
         }
     }
 
-    /// A soft offence says nothing wrong: the answer is too long or too thin. After the last pass such
+    /// A soft offence says nothing wrong: the answer is too long, too thin or short paragraphs that read as a list. After the last pass such
     /// an answer is still shown (cut to the limit when it is too long), because the alternative is a
     /// fallback sentence that tells the person less.
     pub(crate) fn soft(self) -> bool {
-        matches!(self, Rule::Length | Rule::TooShort)
+        matches!(self, Rule::Length | Rule::TooShort | Rule::List)
     }
 }
 
@@ -108,6 +114,126 @@ pub(crate) struct Expect<'a> {
     pub missing: &'a [String],
     /// The language of the request when it is not English.
     pub language: Option<&'static str>,
+    /// The answer is plain paragraphs: a list is an offence. Only a scene-by-scene briefing is
+    /// allowed to be one (spec 3.7).
+    pub no_list: bool,
+    /// A narrative answer (describe, brief, story explanation, relationship): the checks of
+    /// [`STRICT_NARRATIVE_CHECKS`] apply to it.
+    pub narrative: bool,
+}
+
+/// The unsupported-relationship-word and unstated-mood checks of ADR-0035. Off until their false
+/// positives are measured on the section-scoped cases and found under 5 percent (spec 3.7). The
+/// measure is `crates/straft-ai-eval/tests/sections_narrative_checks.rs`.
+pub(crate) const STRICT_NARRATIVE_CHECKS: bool = false;
+
+/// Words that state how two people are related.
+const RELATION_WORDS: &[&str] = &[
+    "brother",
+    "sister",
+    "mother",
+    "father",
+    "son",
+    "daughter",
+    "wife",
+    "husband",
+    "uncle",
+    "aunt",
+    "cousin",
+    "nephew",
+    "niece",
+    "grandmother",
+    "grandfather",
+    "grandson",
+    "granddaughter",
+    "friend",
+    "enemy",
+    "rival",
+    "lover",
+    "partner",
+    "boss",
+    "mentor",
+    "stepfather",
+    "stepmother",
+    "fiancé",
+    "fiancee",
+    "ex-husband",
+    "ex-wife",
+    "sibling",
+    "twin",
+];
+
+/// Words that state a feeling.
+const MOOD_WORDS: &[&str] = &[
+    "angry",
+    "anger",
+    "sad",
+    "sadness",
+    "afraid",
+    "fear",
+    "scared",
+    "terrified",
+    "grief",
+    "grieving",
+    "guilt",
+    "guilty",
+    "ashamed",
+    "jealous",
+    "jealousy",
+    "anxious",
+    "nervous",
+    "resentful",
+    "resentment",
+    "hopeful",
+    "lonely",
+    "heartbroken",
+    "desperate",
+    "bitter",
+    "furious",
+    "devastated",
+    "proud",
+    "relieved",
+    "regret",
+    "regrets",
+    "haunted",
+    "betrayed",
+    "heartbreak",
+];
+
+fn words_of(text: &str) -> HashSet<String> {
+    WORDS
+        .find_iter(&text.to_lowercase())
+        .map(|m| m.as_str().to_string())
+        .collect()
+}
+
+/// Words from `list` the answer uses that no evidence text uses (the plural counts as the word).
+fn unsupported(answer: &str, evidence: &[&str], list: &[&str]) -> Vec<String> {
+    let said = words_of(answer);
+    let known: HashSet<String> = evidence.iter().flat_map(|e| words_of(e)).collect();
+    let has = |w: &str, set: &HashSet<String>| set.contains(w) || set.contains(&format!("{w}s"));
+    list.iter()
+        .filter(|w| has(w, &said) && !has(w, &known))
+        .map(|w| (*w).to_string())
+        .collect()
+}
+
+/// Relationship words in the answer that the project never states (a relationship is stated only
+/// from a relationship record).
+pub(crate) fn unsupported_relations(answer: &str, evidence: &[&str]) -> Vec<String> {
+    unsupported(answer, evidence, RELATION_WORDS)
+}
+
+/// Feelings in the answer that the project never states.
+pub(crate) fn unstated_moods(answer: &str, evidence: &[&str]) -> Vec<String> {
+    unsupported(answer, evidence, MOOD_WORDS)
+}
+
+/// The answer reads as a list: three or more lines, three of them short. Line breaks inside a
+/// paragraph answer do not happen (the writer is asked for paragraphs), so a short run of lines is a list.
+pub(crate) fn list_shaped(answer: &str) -> bool {
+    let lines: Vec<&str> = answer.lines().filter(|l| !l.trim().is_empty()).collect();
+    lines.len() >= 3 && lines.iter().filter(|l| checks::word_count(l) <= 20).count() >= 3
 }
 
 // ------------------------------------------------------------------ normal form
@@ -411,6 +537,19 @@ pub(crate) fn check(answer: &str, m: &Material<'_>, e: &Expect<'_>) -> Vec<Offen
     if text::claims_a_change(answer) {
         add(Rule::ChangeClaim, Vec::new());
     }
+    if e.no_list && list_shaped(answer) {
+        add(Rule::List, Vec::new());
+    }
+    if STRICT_NARRATIVE_CHECKS && e.narrative {
+        let relations = unsupported_relations(answer, &evidence);
+        if !relations.is_empty() {
+            add(Rule::Relationship, relations);
+        }
+        let moods = unstated_moods(answer, &evidence);
+        if !moods.is_empty() {
+            add(Rule::Mood, moods);
+        }
+    }
     out
 }
 
@@ -448,6 +587,13 @@ pub(crate) fn feedback(offences: &[Offence], say: &str) -> String {
             }
             Rule::Echo => "write sentences; do not copy the lines of the data".to_string(),
             Rule::ChangeClaim => "nothing was changed; do not say that anything was renamed, added, removed or updated".to_string(),
+            Rule::List => "write plain paragraphs, not a list".to_string(),
+            Rule::Relationship => format!(
+                "the project does not say these: {list}; say how people are related only when a relationship line says so"
+            ),
+            Rule::Mood => format!(
+                "the project does not state these feelings: {list}; remove them"
+            ),
         });
     }
     format!(

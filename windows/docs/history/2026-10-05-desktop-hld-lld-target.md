@@ -8,7 +8,7 @@
 > lineage rules). The bounded-context view and dependency directions are enforced by CONTRIBUTING §2 and the architecture lint (build plan: architecture lint).
 > Platform sections follow ADR-0017 (Accepted 2026-10-06: Windows 11 only, Apple silicon only, three release files from one codebase). The repository additions it lists (`crates/straft-platform` and so on) belong to the "Platform adapter layer for Windows and Mac" area of the build plan, which is on the release path.
 
-**Baseline reviewed:** Straft Studio `main`, HEAD
+**Baseline reviewed:** Straft `main`, HEAD
 `d30b5889ab5edf9f69d60f8e6d600cb11d4921a0`\
 **Primary architecture:** Tauri v2 + React/TypeScript + Rust + SQLite\
 **Target platforms:** Windows and macOS\
@@ -20,14 +20,14 @@ data, commands, undo/redo, AI, project files, or user workflows.
 
 ## 1. Executive architecture decision
 
-Straft Studio should remain a **single-process desktop application with a
+Straft should remain a **single-process desktop application with a
 strongly isolated webview UI and a Rust application core**.
 
 The target architecture is:
 
 ``` text
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         STRAFT STUDIO DESKTOP                            │
+│                         STRAFT DESKTOP                            │
 │                                                                     │
 │  React / TypeScript UI                                              │
 │  ├─ Shell / navigation / workspaces                                 │
@@ -135,7 +135,7 @@ architectures.
 
 # 3. HLD: bounded contexts
 
-Straft Studio should be treated as several bounded contexts connected
+Straft should be treated as several bounded contexts connected
 through explicit contracts.
 
 ## 3.1 Project context

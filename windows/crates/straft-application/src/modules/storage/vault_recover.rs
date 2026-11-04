@@ -1,15 +1,15 @@
 //! What a folder picked for "Locate Existing Vault" holds, read before anything changes: a vault,
-//! the folder around a vault (the Straft Studio folder that holds "Global Idea Vault"), a project, or
+//! the folder around a vault (the Straft folder that holds "Global Idea Vault"), a project, or
 //! nothing. The counts come from the vault database opened read-only, so the person sees what
 //! they are about to connect and an empty or wrong vault is never connected by accident.
 
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use straft_domain::{Actor, AppError, AppResult};
-use straft_project_format as pf;
 use rusqlite::OpenFlags;
 use serde::Serialize;
+use straft_domain::{Actor, AppError, AppResult};
+use straft_project_format as pf;
 use ts_rs::TS;
 
 use super::library;
@@ -39,7 +39,7 @@ pub enum VaultFolderKind {
     Vault,
     /// A folder inside it holds `vault.sqlite`.
     ParentOfVault,
-    /// A Straft Studio project, not a vault.
+    /// A Straft project, not a vault.
     Project,
     /// No vault here.
     Nothing,
@@ -58,7 +58,7 @@ pub struct VaultFolderInspection {
     pub files_present: u32,
     /// Files those ideas use that are not in the vault folder.
     pub files_missing: u32,
-    /// This is the vault Straft Studio uses now.
+    /// This is the vault Straft uses now.
     pub active: bool,
 }
 
@@ -128,7 +128,7 @@ fn count(vault: &Path) -> AppResult<(u32, u32, u32)> {
     let not_a_vault = |e: rusqlite::Error| {
         AppError::new(
             "storage.not_a_vault",
-            "That folder has a vault file Straft Studio can't read. It may be damaged or from a newer version of Straft Studio.",
+            "That folder has a vault file Straft can't read. It may be damaged or from a newer version of Straft.",
         )
         .with_detail(e.to_string())
     };

@@ -1,4 +1,4 @@
-// Straft Studio design system: thin, accessible React components over the UX mock
+// Straft design system: thin, accessible React components over the UX mock
 // CSS vocabulary (straft.css). Radix provides focus management for
 // dialogs/menus; visuals come from the tokens.
 
@@ -93,15 +93,16 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
   },
 );
 
-export function Select<T extends string>({ value, onChange, options, id, ariaLabel }: {
+export function Select<T extends string>({ value, onChange, options, id, ariaLabel, disabled }: {
   value: T;
   onChange: (v: T) => void;
   options: readonly { value: T; label: string }[];
   id?: string;
   ariaLabel?: string;
+  disabled?: boolean;
 }) {
   return (
-    <select id={id} aria-label={ariaLabel} className="select" value={value} onChange={(e) => onChange(e.target.value as T)}>
+    <select id={id} aria-label={ariaLabel} className="select" value={value} disabled={disabled} onChange={(e) => onChange(e.target.value as T)}>
       {options.map((o) => (
         <option key={o.value} value={o.value}>
           {o.label}

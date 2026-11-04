@@ -7,7 +7,7 @@
 
 | If you want to know | Read |
 |---|---|
-| What Straft Studio is, who it is for, the three chapters | [product/vision-and-scope.md](product/vision-and-scope.md) |
+| What Straft is, who it is for, the three chapters | [product/vision-and-scope.md](product/vision-and-scope.md) |
 | What to do next | [roadmap/README.md](roadmap/README.md), then the page for the chapter |
 | How it is built, in simple words | [architecture/README.md](architecture/README.md), then the full [report](reports/2026-10-09-project-retrospection-and-audit.md) |
 | What works and how well it is proved | [implementation/feature-status.md](implementation/feature-status.md) |

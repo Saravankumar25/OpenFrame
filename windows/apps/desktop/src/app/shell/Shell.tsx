@@ -44,6 +44,9 @@ import { OpenRecoveryDialog, RecoveryOffer, useRecoveryState } from "./RecoveryD
 import { LiveSaveErrorBanner, LiveSaveErrorDialog, guardedLeave, retrySave, useLiveSaveState } from "./SaveStatus";
 import { BrandLogo } from "../../theme/BrandLogo";
 
+/** Status bar names for route ids whose capitalised form is not the label a person sees. */
+const SUB_LABELS: Record<string, string> = { "offline-ai": "Straft AI", general: "Project settings", shortcuts: "Keyboard shortcuts" };
+
 const aiPanelModules = import.meta.glob<{ default: ComponentType<{ onClose: () => void }> }>("../../ai/AiPanel.tsx", { eager: true });
 const AiPanel = Object.values(aiPanelModules)[0]?.default;
 
@@ -217,7 +220,7 @@ export function Shell() {
             </Suspense>
           </ErrorBoundary>
         </main>
-        {/* The AI Assistant docks beside the page (owner decision 2026-10-08): opening it narrows
+        {/* The Straft AI docks beside the page (owner decision 2026-10-08): opening it narrows
             the page instead of covering it, and closing gives the space back. It follows the page
             in the keyboard focus order. */}
         {aiOpen && !focusMode && AiPanel && <AiPanel onClose={() => setAiOpen(false)} />}
@@ -351,7 +354,7 @@ function TopBar({ project, undoScope }: { project: ProjectSummary | null; undoSc
         <button className="iconbtn" aria-label="Forward" title="Forward (Alt+Right)" disabled={!canForward} onClick={() => navigate(useNav.getState().forward)}>
           <ArrowRight size={16} />
         </button>
-        <button className={`iconbtn${aiOpen ? " on" : ""}`} aria-label="Assistant" aria-pressed={aiOpen} title={withKey("Assistant", keys.assistant)} onClick={() => setAiOpen(!aiOpen)}>
+        <button className={`iconbtn${aiOpen ? " on" : ""}`} aria-label="Straft AI" aria-pressed={aiOpen} title={withKey("Straft AI", keys.assistant)} onClick={() => setAiOpen(!aiOpen)}>
           <Sparkles size={16} />
         </button>
         {/* Settings replaces the old shortcuts button (owner item 6): project and global tabs here. */}
@@ -386,7 +389,7 @@ function StatusBar({ project, onOpenRecovery }: { project: ProjectSummary | null
   const crumb =
     route.workspace === "home" && project
       ? [project.title, project.projectType, project.status].join(" · ")
-      : def.label + (route.sub ? ` · ${route.sub.charAt(0).toUpperCase()}${route.sub.slice(1)}` : "");
+      : def.label + (route.sub ? ` · ${SUB_LABELS[route.sub] ?? `${route.sub.charAt(0).toUpperCase()}${route.sub.slice(1)}`}` : "");
   const right = save?.status === "Error" ? "Offline · Local save failed" : "Offline · Local Project Saved";
 
   // Escape or a click elsewhere closes the panel and returns focus to its button.

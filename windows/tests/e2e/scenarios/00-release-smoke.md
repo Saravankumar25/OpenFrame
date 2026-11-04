@@ -27,12 +27,12 @@ Before: an empty data folder of its own. The app starts for the first time. This
 4. Click Screenplay in the Workspaces navigation.
 5. Check: a line of the screenplay ends with "The driver waits one more minute."
 
-## The Offline AI answers from the project, and nothing leaves this computer
+## The Straft AI answers from the project, and nothing leaves this computer
 
 1. Ask 'Which scenes take place at night?'
 2. Check: the answer has text.
 3. Check: the result is not of kind Failed or Unavailable.
-4. Check: at least one Offline AI engine ran for the answer.
+4. Check: at least one Straft AI engine ran for the answer.
 5. Check: no process of the app, its engines or its web view holds a connection to an address outside this computer.
 6. Check: every socket these processes listen on is on 127.0.0.1 or ::1 only.
 

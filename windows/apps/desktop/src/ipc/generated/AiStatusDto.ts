@@ -7,7 +7,7 @@ export type AiStatusDto = {
  */
 available: boolean, 
 /**
- * Header chip: "AI Ready" or "Off".
+ * Header chip: "Ready" or "Off".
  */
 mode: string, 
 /**

@@ -1,4 +1,4 @@
-/* Straft Studio design reference — screen-only preview helpers.
+/* Straft design reference — screen-only preview helpers.
    Builds a toolbar (never printed) with one checkbox per optional section
    (elements carrying data-toggle="Label") and a Print / Save as PDF button.
    Nothing here affects the printed document. */
@@ -7,7 +7,7 @@
   bar.className = "preview-bar no-print";
   var name = (document.querySelector('meta[name="of-doc"]') || {}).content || document.title;
   var strong = document.createElement("strong");
-  strong.textContent = "Straft Studio design reference · " + name;
+  strong.textContent = "Straft design reference · " + name;
   bar.appendChild(strong);
   var groups = {};
   Array.prototype.forEach.call(document.querySelectorAll("[data-toggle]"), function (el) {
@@ -39,7 +39,7 @@
     var logo = (document.querySelector('meta[name="of-logo"]') || {}).content || "../../00_SYSTEM/assets/straft-logo.png";
     var f = document.createElement("div");
     f.className = "screen-footer-sample";
-    f.innerHTML = '<div><img src="' + logo + '" alt="Straft Studio"><div>Created using Straft Studio</div></div>' +
+    f.innerHTML = '<div><img src="' + logo + '" alt="Straft Studio"><div>Created using Straft</div></div>' +
       '<div>Page X of Y — added on every printed page</div>';
     doc.appendChild(f);
   }

@@ -12,10 +12,10 @@
 //! refused; a stored formatting that does not match (an older build saved plain text over it) is
 //! ignored on read, so the text is never lost or garbled.
 
-use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
-use straft_import_export::prose::{self, ProseLine};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
+use straft_import_export::prose::{self, ProseLine};
 use ts_rs::TS;
 
 use crate::core::AppCore;

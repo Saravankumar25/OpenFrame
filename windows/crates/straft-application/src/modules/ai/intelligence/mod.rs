@@ -13,7 +13,7 @@
 //!                               retrieval::ContextPacket (contract C2)
 //! ```
 //!
-//! Everything here is derived and disposable. Straft Studio works without it; when
+//! Everything here is derived and disposable. Straft works without it; when
 //! it is missing, stale or failing, retrieval degrades to FTS + SQL tools.
 //!
 //! Activation is lazy: the per-project worker starts at project open when the
@@ -78,8 +78,8 @@ mod ai_embedder {
 use std::sync::Arc;
 use std::time::Duration;
 
-use straft_search::{Embedder, QueryEmbeddingCache};
 use parking_lot::{Mutex, RwLock};
+use straft_search::{Embedder, QueryEmbeddingCache};
 
 pub use indexer::{IndexSettings, IndexSnapshot, ProjectIndex};
 

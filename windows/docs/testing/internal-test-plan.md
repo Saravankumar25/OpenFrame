@@ -8,7 +8,7 @@
 > the non-English languages ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)).
 
 > Written 2026-10-09. This is the plan for the first real-world test of the internal Windows `.exe` and macOS `.dmg`. The
-> testers are working writers, screenwriters and production people, not developers. They install Straft Studio on their own
+> testers are working writers, screenwriters and production people, not developers. They install Straft on their own
 > computers and use it as their main tool for 2 to 3 days. Nothing here starts before the owner says the installers may be
 > built and gives the invitation list.
 
@@ -43,7 +43,7 @@ warn on first run. Testers are told this in advance and given the steps below.
 
 ## 4. Rules for testers
 
-- Keep your own copy of anything important. Straft Studio saves continuously and keeps recovery points, but this is a test
+- Keep your own copy of anything important. Straft saves continuously and keeps recovery points, but this is a test
   build. Use Create Backup before large changes and keep the backup file somewhere else.
 - Work on real tasks, but start with a copy of a script, not the only copy.
 - Do not send us your script. If you want to show a problem, describe it or use a sample script.

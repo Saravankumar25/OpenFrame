@@ -14,7 +14,7 @@
   Frame, Neon Reel, Location Scout, Desert Dune, Colorist Neutral, Silver Screen, High Contrast.
 - **Import theme:** a `.json` file or pasted text, checked and previewed in Light and Dark before anything is saved.
 - **My Themes:** apply, rename, export, delete. Deleting the active theme applies Straft Default at once.
-- **Logo:** the film-frame mark and the "Straft Studio" wordmark follow the theme (section 8).
+- **Logo:** the film-frame mark and the "Straft Studio" wordmark are one fixed lockup that themes never recolour (section 8).
 - Where: Settings > Appearance (project menu > Appearance, or the Settings tabs) and Home > Appearance (palette icon).
 
 ## 2. Files
@@ -66,7 +66,7 @@ Operations (application level, hidden from the assistant, no undo step because t
 person, never package changes or the assistant): `appearance.get`, `appearance.set_mode`, `appearance.set_theme`,
 `appearance.check_theme` (reads the file the user picked or pasted text, saves nothing), `appearance.import_theme`
 (reads and checks the source again), `appearance.rename_theme`, `appearance.export_theme` (writes where the user
-chose, never inside Straft Studio's own folders, atomic write), `appearance.delete_theme` (destructive, confirmed).
+chose, never inside Straft's own folders, atomic write), `appearance.delete_theme` (destructive, confirmed).
 My Themes holds at most 100 themes.
 
 ## 5. Validation (Rust)
@@ -153,11 +153,11 @@ labelled orange stays orange in every theme.
 
 ## 8. Logo
 
-Owner request 2026-10-07 (mocks section 5). `BrandLogo` renders the film-frame mark (24 by 24 grid, stroke 1.6, round
-caps and joins) and the wordmark "Straft Studio" ("Straft" weight 700, "Studio" weight 300, letter spacing -0.02em, on one
-line). The gradient stops are `--lg1`, `--lg2`, `--lg3`: Straft Default and Studio Amber use the website stops
-`#ff5d6c`, `#ff9a3d`, `#ffc23d`; every other theme derives them from its accent (`oklch(from var(--accent) ...)`).
-There is no separate logo setting. Each mark has its own gradient id (`useId`). Shown on Home, the project top bar,
+Owner request 2026-10-07 (mocks section 5); lockup replaced 2026-11-04 with the Straft rename. `BrandLogo` renders one
+fixed lockup taken from `straft-logo-manrope.svg`: the film-frame mark (24 by 24 grid, stroke 1.6, round caps and joins)
+in a fixed gradient (`#FF5E6C`, `#FF9A45`, `#FFC13D`), the word "Straft" in Manrope bold in the current text colour,
+and the word "Studio" in Manrope light in `#FF9A45`. Themes never recolour the logo; the `lg1` to `lg3` theme values no
+longer drive it. There is no separate logo setting. Each mark has its own gradient id (`useId`). Shown on Home, the project top bar,
 the start-up screen and the theme preview cards. The window title bar uses the app icon; the app has no About box yet.
 
 App icons: `apps/desktop/src-tauri/icons/source.svg` (the mark in the default gradient on the dark sidebar colour).

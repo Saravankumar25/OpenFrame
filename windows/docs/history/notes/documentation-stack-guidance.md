@@ -12,7 +12,7 @@ They can get you very far, but each answers a different question:
 
 The biggest missing piece is usually the exact **behavioral contract between product, design, and engineering**.
 
-For Straft Studio, I would use the following document set.
+For Straft, I would use the following document set.
 
 # The complete documentation stack
 
@@ -41,7 +41,7 @@ You already have this.
 
 It should answer:
 
-> What is Straft Studio?
+> What is Straft?
 
 > Who is it for?
 
@@ -233,7 +233,7 @@ It implements the behavior defined by the FSD.
 
 # 5. Data / Domain Model Specification
 
-This is extremely important for Straft Studio.
+This is extremely important for Straft.
 
 Your application is fundamentally a network of relationships.
 
@@ -377,21 +377,21 @@ You already want:
 
 The specification needs exact behavior for:
 
-### FDX → Straft Studio
+### FDX → Straft
 
 What information is preserved?
 
-### PDF → Straft Studio
+### PDF → Straft
 
 How does parsing work?
 
 What if the PDF isn't properly formatted?
 
-### Straft Studio → FDX
+### Straft → FDX
 
-What happens to unsupported Straft Studio features?
+What happens to unsupported Straft features?
 
-### Straft Studio → PDF
+### Straft → PDF
 
 What exact screenplay formatting is produced?
 
@@ -535,11 +535,11 @@ That needs to be crystal clear.
 
 This is often forgotten.
 
-Suppose Straft Studio 1.0 creates:
+Suppose Straft 1.0 creates:
 
 > `Project A`
 
-Then Straft Studio 2.0 changes the project format.
+Then Straft 2.0 changes the project format.
 
 What happens?
 
@@ -548,7 +548,7 @@ You need rules for:
 ```text
 Project v1
  ↓
-Straft Studio v2
+Straft v2
  ↓
 Migration
  ↓
@@ -654,7 +654,7 @@ What you **can** achieve is:
 
 > **100% planned product coverage before development begins.**
 
-For Straft Studio I'd define that as:
+For Straft I'd define that as:
 
 ### Product coverage
 
@@ -698,34 +698,34 @@ Once those are covered, your engineering team can make implementation decisions 
 
 ---
 
-# For Straft Studio specifically, I'd recommend this final package
+# For Straft specifically, I'd recommend this final package
 
-**01 — Straft Studio Product PRD**
+**01 — Straft Product PRD**
 You already have this.
 
-**02 — Straft Studio Functional Specification**
+**02 — Straft Functional Specification**
 This is the next document I'd create.
 
-**03 — Straft Studio UX/UI Specification**
+**03 — Straft UX/UI Specification**
 Screen-by-screen behavior and visual interaction.
 
-**04 — Straft Studio Domain & Data Specification**
+**04 — Straft Domain & Data Specification**
 Every object and relationship.
 
-**05 — Straft Studio Offline & Collaboration Specification**
+**05 — Straft Offline & Collaboration Specification**
 Especially important because you've chosen local-first.
 
-**06 — Straft Studio Import/Export Specification**
+**06 — Straft Import/Export Specification**
 
 **07 — Straft AI Specification**
 
-**08 — Straft Studio QA & Acceptance Specification**
+**08 — Straft QA & Acceptance Specification**
 
-**09 — Straft Studio Security & Privacy Specification**
+**09 — Straft Security & Privacy Specification**
 
-**10 — Straft Studio Release & Migration Specification**
+**10 — Straft Release & Migration Specification**
 
-**11 — Straft Studio ESD / Technical Architecture**
+**11 — Straft ESD / Technical Architecture**
 
 **12 — README + CONTRIBUTING + DEVELOPMENT GUIDE**
 

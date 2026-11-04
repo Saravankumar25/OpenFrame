@@ -1,4 +1,4 @@
-# Offline AI assistant with the bundled model
+# Straft AI assistant with the bundled model
 
 Spec: `tests/e2e/specs/72-ai-assistant.test.mjs`
 
@@ -6,34 +6,34 @@ Tags: `@e2e-data-root: own`
 
 Before: an empty data folder of its own. The app carries the real bundled model and runs with fixed AI sampling (temperature 0, fixed seed), so the checks are about the kind of result and its effects, never the wording. The app starts for the first time.
 
-"Import the Night Bus screenplay" and "Ask Q" are shared steps in the README of this folder. A result has a kind (Answer, Navigate, Clarify, Proposal, Suggestion). "Its sources" are the source chips under it. "The engines" are the Offline AI engine processes the app started. "The chat engine" is the engine that is not the embedding engine.
+"Import the Night Bus screenplay" and "Ask Q" are shared steps in the README of this folder. A result has a kind (Answer, Navigate, Clarify, Proposal, Suggestion). "Its sources" are the source chips under it. "The engines" are the Straft AI engine processes the app started. "The chat engine" is the engine that is not the embedding engine.
 
 ## AI is ready on first launch: no download, no setup, no model names
 
 1. Do the first launch: type 'E2E Tester' as the name, click Continue, click Create Project, type 'Night Bus' as the title, click Create.
 2. Import the Night Bus screenplay.
-3. Click Assistant.
-4. Check: the AI Assistant panel shows its Ask or command box.
-5. Check: the screen shows "AI Ready".
-6. Check: no visible text says "download", "install offline AI", "gemma", "gguf", "llama", "q8_0" or "embedding".
+3. Click Straft AI.
+4. Check: the Straft AI panel shows its Ask or command box.
+5. Check: the screen shows "Ready".
+6. Check: no visible text says "download", "install Straft AI", "gemma", "gguf", "llama", "q8_0" or "embedding".
 7. Check: the chat engine is not running yet (it starts on the first question).
 
-## Settings, Offline AI shows the installed parts and Remove, and offers no download while installed
+## Settings, Straft AI shows the installed parts and Remove, and offers no download while installed
 
-1. Click Offline AI settings, then choose Offline AI settings.
-2. Check: the "Offline AI" section shows "Straft AI runs on this computer after a one-time download".
+1. Click Straft AI settings, then choose Straft AI settings.
+2. Check: the "Straft AI" section shows "Straft AI runs on this computer after a one-time download".
 3. Open the "Technical details" section.
-4. Check: the table "Offline AI components" has exactly four rows (the engine and the three models).
+4. Check: the table "Straft AI components" has exactly four rows (the engine and the three models).
 5. Check: one row names "Gemma-Terms-of-Use".
 6. Check: every row shows a 64-character SHA-256 hash.
 7. Check: the technical details say "read-only".
 8. Check: the button "Remove Straft AI…" is shown, and there is no button "Download Straft AI", "Download Offline
-   AI" or "Update Offline AI".
+   AI" or "Update Straft AI".
 
 ## An exact answer comes from project data, with sources
 
-1. Click Screenplay in the Workspaces navigation. Open the AI Assistant if it is closed.
-2. Choose Current Screenplay in the scope list.
+1. Click Screenplay in the Workspaces navigation. Open the Straft AI if it is closed.
+2. Pick sections "Scenes".
 3. Ask 'How many scenes are in the script?'
 4. Check: the result is an Answer.
 5. Check: the answer states the number 3, as "3" or "three". (Code counts the scenes and checks that the written
@@ -43,7 +43,7 @@ Before: an empty data folder of its own. The app carries the real bundled model 
 
 ## A meaning question is answered from project context it looked up
 
-1. Choose Whole Project in the scope list.
+1. Pick sections "Scenes".
 2. Ask 'What happens at the bus stop?'
 3. Check: the result is an Answer or a Navigate.
 4. Check: one of its sources names "BUS STOP".
@@ -54,7 +54,7 @@ Before: an empty data folder of its own. The app carries the real bundled model 
 
 ## A navigation command opens the place it names
 
-1. Click Home in the Workspaces navigation. Open the AI Assistant if it is closed.
+1. Click Home in the Workspaces navigation. Open the Straft AI if it is closed.
 2. Ask 'Open Scene 2.'
 3. Check: the result is a Navigate.
 4. Check: the Screenplay workspace opens.
@@ -65,16 +65,16 @@ Before: an empty data folder of its own. The app carries the real bundled model 
 2. Check: every engine runs from the bundled AI folder next to the app.
 3. Check: every engine was started to listen on 127.0.0.1 only and in offline mode.
 4. Check: no engine has an API key on its command line.
-5. Choose Current Screenplay in the scope list.
+5. Pick sections "Scenes".
 6. Ask 'How many scenes are in the script?'
 7. Check: the result is an Answer.
 8. Check: no process of the app or its engines holds a connection to an address outside this computer, and none listens on an outside address.
 
-## Stop Offline AI frees the engines; the next question starts them again
+## Stop Straft AI frees the engines; the next question starts them again
 
-1. Open the AI Assistant if it is closed.
-2. Click Offline AI settings, then choose Stop Offline AI.
-3. Check: the screen shows "Offline AI stopped".
+1. Open the Straft AI if it is closed.
+2. Click Straft AI settings, then choose Stop Straft AI.
+3. Check: the screen shows "Straft AI stopped".
 4. Check: within 30 seconds no engine is running.
 5. Ask 'How many scenes are in the script?'
 6. Check: the result is an Answer.
@@ -86,18 +86,18 @@ Before: an empty data folder of its own. The app carries the real bundled model 
 2. Open the project menu and choose Close project.
 3. Quit the app and start it again on the same data.
 4. Click the project row "Open Night Bus". Check: no recovery question shows.
-5. Open the AI Assistant.
+5. Open the Straft AI.
 6. Check: the panel shows at least as many results as before.
-7. Check: the panel shows "AI Ready".
+7. Check: the panel shows "Ready".
 
 ## The docked panel remembers whether it was open when the window loads again
 
-1. Check: the AI Assistant is open.
+1. Check: the Straft AI is open.
 2. Reload the window and wait for the Workspaces navigation.
-3. Check: the AI Assistant opens again.
-4. Click Close AI Assistant.
+3. Check: the Straft AI opens again.
+4. Click Close Straft AI.
 5. Reload the window and wait for the Workspaces navigation.
-6. Check: the AI Assistant stays closed.
+6. Check: the Straft AI stays closed.
 
 ## Notes
 

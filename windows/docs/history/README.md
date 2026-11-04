@@ -4,6 +4,8 @@
 > historical, and why. Nothing in this folder is a requirement. Where an archived text and a living document disagree,
 > the living document wins ([documentation map](../README.md)). The files in this folder are not edited; mistakes in them
 > are recorded in the [reconciliation log](../implementation/reconciliation-log.md).
+> One exception: on 2026-11-04 the product rename rewrote the old product name inside these files on the owner's
+> instruction; see the [reconciliation log](../implementation/reconciliation-log.md).
 > Files moved here on 2026-10-24, 2026-10-26 and 2026-10-27 carry one added line at the top ("Superseded by ..."); nothing else in them changed.
 
 ## 1. In this folder

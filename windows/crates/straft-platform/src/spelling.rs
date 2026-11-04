@@ -1,6 +1,6 @@
 //! Spelling dictionaries that come with the operating system (build plan item "Proofing").
 //!
-//! Straft Studio ships no dictionary files of its own. It asks the operating system which spelling
+//! Straft ships no dictionary files of its own. It asks the operating system which spelling
 //! languages are installed and checks text against them, so no licence question arises and
 //! nothing is downloaded.
 //!

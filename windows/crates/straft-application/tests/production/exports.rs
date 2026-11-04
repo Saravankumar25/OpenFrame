@@ -12,9 +12,9 @@ use std::io::Read as _;
 use std::path::{Path, PathBuf};
 
 use base64::Engine as _;
+use serde_json::{Value, json};
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ fixtures
 
@@ -855,7 +855,7 @@ fn daily_view_export_prints_what_the_daily_view_screen_shows() {
         "SCENE ORDER",
         "Basement water pumped from 05:00.",
         "MEAL BREAK at 20:30 (45m)",
-        "Created using Straft Studio",
+        "Created using Straft",
     ] {
         assert!(text.contains(want), "missing {want}: {text}");
     }
@@ -1050,7 +1050,7 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
         "Rain expected",
         "DRAFT · NOT FINAL",
         "NEEDS INPUT",
-        "Created using Straft Studio",
+        "Created using Straft",
     ] {
         assert!(text.contains(want), "missing {want}: {text}");
     }
@@ -1248,7 +1248,7 @@ fn budget_report_exports_planned_actual_and_difference() {
         "55,000",
         "-5,000",
         "Catering",
-        "Created using Straft Studio",
+        "Created using Straft",
     ] {
         assert!(text.contains(want), "missing {want}: {text}");
     }
@@ -1272,7 +1272,7 @@ fn budget_report_exports_planned_actual_and_difference() {
         "an empty Actual stays empty: {c}"
     );
     assert!(
-        !c.contains("Straft Studio"),
+        !c.contains("Straft"),
         "CSV stays pure data with no brand row"
     );
     let x = dest(&env, "budget.xlsx");
@@ -1282,10 +1282,7 @@ fn budget_report_exports_planned_actual_and_difference() {
     );
     let (sheets, body) = xlsx(&x);
     assert_eq!(sheets, vec!["Line items", "Categories", "Summary"]);
-    assert!(
-        body.contains("Created using Straft Studio"),
-        "first sheet footer"
-    );
+    assert!(body.contains("Created using Straft"), "first sheet footer");
     let none = TestEnv::with_project("No Budget", "Short Film");
     assert_eq!(
         none.err(
@@ -1859,14 +1856,14 @@ fn tree_bytes(dir: &Path) -> Vec<(String, Vec<u8>)> {
     out
 }
 
-/// Production depth spec §43 (masterplan box "Subtle Straft Studio branding"): every non-screenplay
-/// export carries "Created using Straft Studio" (PDF on every page, XLSX in the document
+/// Production depth spec §43 (masterplan box "Subtle Straft branding"): every non-screenplay
+/// export carries "Created using Straft" (PDF on every page, XLSX in the document
 /// properties and the first sheet's footer, plain text as its last line; CSV stays pure data),
 /// screenplay files and sides (pages of the script, owner 2026-10-27) carry none, and the user's own files (the picked image, the managed assets)
 /// are only read. One assertion per export, named in the failure message.
 #[test]
 fn every_production_export_is_branded_and_user_files_are_never_modified() {
-    const BRAND: &str = "Created using Straft Studio";
+    const BRAND: &str = "Created using Straft";
     let env = production_env();
     seed_story(&env);
     let day = seed_schedule(&env);
@@ -2003,10 +2000,7 @@ fn every_production_export_is_branded_and_user_files_are_never_modified() {
         "schedule.export_schedule",
         json!({ "format": "csv", "path": csv }),
     );
-    assert!(
-        !csv_text(&csv).contains("Straft Studio"),
-        "CSV gained a brand row"
-    );
+    assert!(!csv_text(&csv).contains("Straft"), "CSV gained a brand row");
     // Screenplay files carry no branding (a screenplay written in its own project).
     let writer = TestEnv::with_project("Clean Script", "Feature Film");
     let sp = writer.ok(

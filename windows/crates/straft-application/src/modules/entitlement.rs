@@ -6,7 +6,7 @@
 //! state is Unknown.
 //!
 //! **Channels (owner decisions 2026-10-07, ADR-0022 and ADR-0023).** Both stores own the 7-day
-//! trial and decide the whole state ([`ChannelAdapter::channel_state`]); Straft Studio keeps no trial
+//! trial and decide the whole state ([`ChannelAdapter::channel_state`]); Straft keeps no trial
 //! timer of its own. The Microsoft Store answers through `GetAppLicenseAsync` behind
 //! [`straft_entitlement::adapters::StoreLicenceSource`] (supplied by the Windows shell as
 //! [`AppConfig::microsoft_store`]), checked at startup, on "Restore purchase" and when the shell
@@ -32,34 +32,37 @@
 //! [`crate::registry::Registry::dispatch`], the one path every operation takes (the interface, the
 //! assistant's change sets and package imports), so the webview cannot get around it. The
 //! projects stay on disk untouched. The internal installer build never locks, and
-//! NeedsOnlineCheck never locks (ADR-0018 decision 6). Editing alone is not yet gated in the
-//! other states (NeedsOnlineCheck, TrialNotStarted): the status reports whether editing would be
-//! allowed (`can_edit`), and gating it per operation is the open plan item "Enforce
-//! Permission::Edit in the Rust operation path".
+//! NeedsOnlineCheck never locks the app (ADR-0018 decision 6). It locks editing alone, as does
+//! TrialNotStarted: [`EntitlementService::check_edit`] runs in the same dispatch path and refuses
+//! the operations that change a project, while opening, exporting, closing, app settings and
+//! `entitlement.*` keep working. The status reports the same answer as `can_edit`.
 //!
 //! The trial, purchase and first-run safety screens (owner mocks 182 to 198) are driven from here:
 //! `entitlement.notice` says which screen is due ([`straft_entitlement::notices::due`]),
 //! `entitlement.record_notice` remembers a reminder day or a finished screen in
 //! `entitlement/notices.json`, `entitlement.buy` hands off to the store's own purchase window
-//! (Apple's payment sheet or the Microsoft Store purchase dialog, which show the price; Straft Studio
+//! (Apple's payment sheet or the Microsoft Store purchase dialog, which show the price; Straft
 //! never names a price, ADR-0023) and `entitlement.start_trial` starts the Mac trial. The notice record is held in memory too, so a
 //! disk that cannot be written never traps the user on a mandatory screen.
 
 use std::path::PathBuf;
 use std::sync::OnceLock;
-use std::time::Duration;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::time::{Duration, Instant};
 
+use parking_lot::Mutex;
+use serde::{Deserialize, Serialize};
 use straft_domain::auth::ActorOrigin;
 use straft_domain::{Actor, AppError, AppResult, now_ms};
-use straft_entitlement::adapters::{self, StoreLicenceSource};
+use straft_entitlement::adapters::{self, StoreLicenceSource, StoreMemory};
 use straft_entitlement::mac::{MacInputs, RevalidateReason};
-use straft_entitlement::notices::{self, CalendarDay, Notice, NoticeRecord, NoticeStore};
+use straft_entitlement::notices::{
+    self, CalendarDay, LastState, Notice, NoticeRecord, NoticeStore,
+};
 use straft_entitlement::team_gate::{TeamGate, UnlockAnswer};
 use straft_entitlement::{
     Channel, ChannelAdapter, EntitlementState, Permission, PurchaseFailure, TRIAL_DAYS,
 };
-use parking_lot::Mutex;
-use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::core::{AppConfig, AppCore};
@@ -99,10 +102,19 @@ pub fn register(r: &mut Registry) {
         .fs(Fs::ProjectStorage)
         .hidden(HIDDEN_REASON),
     );
-    // Hands over to the channel's own purchase. No payment detail passes through Straft Studio.
+    // Hands over to the channel's own purchase. No payment detail passes through Straft.
     r.command("entitlement.buy", buy).meta(
         M::app_command(
             "Buy the full version through the store's own purchase window: Apple's payment sheet on the Mac, the Microsoft Store purchase dialog on Windows. The internal installer build never sells.",
+        )
+        .fs(Fs::ProjectStorage)
+        .hidden(HIDDEN_REASON),
+    );
+    // The lock screen has stored what the editors held: fold the write-ahead logs into the
+    // database files and end the flush window (ADR-0039 item 9).
+    r.command("entitlement.lock_ready", lock_ready).meta(
+        M::app_command(
+            "The lock screen has saved what the editors held: write the open project and the vault to their files and end the short window in which saving is still allowed.",
         )
         .fs(Fs::ProjectStorage)
         .hidden(HIDDEN_REASON),
@@ -159,6 +171,11 @@ pub struct EntitlementStatusArgs {}
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct RestorePurchaseArgs {}
 
+#[derive(Debug, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LockReadyArgs {}
+
 /// What Settings shows about the licence.
 #[derive(Debug, Clone, Serialize, TS)]
 #[ts(export)]
@@ -172,8 +189,14 @@ pub struct EntitlementStatus {
     pub limitation: Option<String>,
     /// Length of the free trial in days.
     pub trial_days: u32,
-    /// Whether the state permits editing. Nothing is locked on it yet.
+    /// Whether the state permits editing; when false, operations that change a project are
+    /// refused in Rust ([`EntitlementService::check_edit`]).
     pub can_edit: bool,
+    /// When the running trial ends, in milliseconds since 1970: the time the store last reported
+    /// plus now. `null` outside a trial. The shell formats it in local time; the core never reads
+    /// the time zone (ADR-0039 item 7).
+    #[ts(type = "number | null")]
+    pub trial_ends_at_ms: Option<i64>,
 }
 
 #[derive(Debug, Deserialize, TS)]
@@ -273,6 +296,10 @@ pub struct DebugSetArgs {
     /// Forget the reminder day and the three first-run flags.
     #[serde(default)]
     pub reset_notices: bool,
+    /// The end moment of the trial to report, milliseconds since 1970.
+    #[serde(default)]
+    #[ts(type = "number | null")]
+    pub trial_ends_at_ms: Option<i64>,
 }
 
 /// The licence status and the screen due now.
@@ -285,6 +312,9 @@ pub struct EntitlementNotice {
     /// The one folder to back up (`AppConfig::data_root`), shown on the data note and in the
     /// tutorial. "Show in File Explorer" reveals it through the shell, never from this text.
     pub data_root: String,
+    /// True in a debug build. A release build hides the social rows that have no address yet
+    /// (ADR-0039 item 12).
+    pub debug_build: bool,
 }
 
 /// Where "Buy full version" took the user.
@@ -322,8 +352,22 @@ const fn state_name(state: EntitlementState) -> &'static str {
         EntitlementState::NeedsOnlineCheck => "needsOnlineCheck",
         EntitlementState::TrialNotStarted => "trialNotStarted",
         EntitlementState::InternalBuild => "internalBuild",
+        EntitlementState::ClockChanged => "clockChanged",
     }
 }
+
+/// What the page shows from the licence, for deciding whether to tell it something changed: the
+/// state (with its days left) and the day the trial ends.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct ChangeMarker {
+    channel: Channel,
+    state: EntitlementState,
+    ends_on_day: Option<i64>,
+}
+
+/// How long operations still pass after the app locks while it is running, so the lock screen
+/// can store what the editors hold (ADR-0039 item 9).
+pub const LOCK_FLUSH_WINDOW: Duration = Duration::from_secs(20);
 
 /// The entitlement state owned by [`AppCore`].
 pub struct EntitlementService {
@@ -343,15 +387,45 @@ pub struct EntitlementService {
     /// only to read or store the answer, so [`Self::status`] never waits for a store or the
     /// network.
     checking: Mutex<()>,
+    /// Held while a store purchase window is open, so a second "Buy" never opens a second window.
+    /// The check lock is not held: reads must keep running while the person decides, or a trial that ends
+    /// meanwhile would go unseen.
+    buying: Mutex<()>,
+    /// The first check runs on the shell's worker after startup (the stores block), so the page
+    /// may already hold typed text when it finds a lock.
+    deferred: bool,
     /// The reminder day and the three first-run flags, kept in memory and saved to
     /// `entitlement/notices.json` after each change.
     notices: Mutex<NoticeRecord>,
     notice_store: NoticeStore,
     /// `entitlement.debug_set` only (never set in a release build): the channel and state to
     /// report instead of the real ones.
-    forced: Mutex<Option<(Channel, EntitlementState)>>,
+    /// The third part is the trial end moment to report.
+    forced: Mutex<Option<(Channel, EntitlementState, Option<i64>)>>,
+    /// Until this moment operations still pass although the state locks (see
+    /// [`LOCK_FLUSH_WINDOW`]). Set when a running app moves from not locked to locked.
+    flush_until: Mutex<Option<Instant>>,
+    /// Length of the flush window in milliseconds; a test makes it short.
+    flush_window_ms: AtomicU64,
+    /// The window passed an operation and said so in the log (once per window).
+    flush_logged: AtomicBool,
+    /// The first check has finished. When that check runs inside `start` (before any page), a lock
+    /// found by it is a lock at launch and opens no window.
+    first_check_done: AtomicBool,
+    /// `AppConfig::debug_build`.
+    debug_build: bool,
     /// The internal builds' team password gate (ADR-0024). `None` in store packages.
     team_gate: Option<TeamGate>,
+}
+
+/// The lock an earlier run saved: an ended trial or a revoked purchase. Nothing else is trusted
+/// from the file to start with; the Store's first answer decides the rest.
+fn saved_lock(record: &NoticeRecord) -> Option<EntitlementState> {
+    match record.last_state {
+        Some(LastState::Ended) => Some(EntitlementState::TrialEnded),
+        Some(LastState::Revoked) => Some(EntitlementState::Revoked),
+        _ => None,
+    }
 }
 
 /// Plain words when a store build cannot reach its store from this build (no store connection
@@ -362,6 +436,10 @@ const fn store_not_connected(channel: Channel) -> &'static str {
         _ => "The App Store connection is not available in this build.",
     }
 }
+
+/// A second "Buy" while the store's window is already open.
+const PURCHASE_WINDOW_OPEN: &str =
+    "The purchase window is already open. Finish or close it, then try again.";
 
 /// "Buy full version" on the internal installer build, which is never sold (ADR-0023). The
 /// interface hides the button there; this answers a call that gets through anyway.
@@ -379,7 +457,12 @@ impl EntitlementService {
         mac_inputs: Option<MacInputs>,
         microsoft_store: Option<Box<dyn StoreLicenceSource>>,
     ) -> Self {
-        let deferred = config.channel == Channel::MacAppStore && mac_inputs.is_some();
+        // Both stores block while they answer and startup runs on the main thread, so the shell
+        // runs the first read on a worker (`AppCore::refresh_entitlement`). Until it answers the
+        // Mac says NeedsOnlineCheck and the Microsoft Store says Unknown, which shows nothing.
+        let mac_deferred = config.channel == Channel::MacAppStore && mac_inputs.is_some();
+        let deferred = mac_deferred
+            || (config.channel == Channel::MicrosoftStore && microsoft_store.is_some());
         let notice_store = NoticeStore::in_app_data(&config.app_data_dir);
         let notices = notice_store.load().record;
         let service = Self {
@@ -388,22 +471,33 @@ impl EntitlementService {
             adapter: OnceLock::new(),
             mac_inputs: Mutex::new(mac_inputs),
             microsoft_store: Mutex::new(microsoft_store),
-            state: Mutex::new(if deferred {
+            // A lock saved by an earlier run holds from the first moment, so a Store that hangs for
+            // 40 seconds at launch cannot let the app open unlocked (ADR-0039 item 5).
+            state: Mutex::new(if mac_deferred {
                 EntitlementState::NeedsOnlineCheck
+            } else if deferred {
+                saved_lock(&notices).unwrap_or(EntitlementState::Unknown)
             } else {
                 EntitlementState::Unknown
             }),
             checking: Mutex::new(()),
+            buying: Mutex::new(()),
+            deferred,
             notices: Mutex::new(notices),
             notice_store,
             forced: Mutex::new(None),
+            flush_until: Mutex::new(None),
+            flush_window_ms: AtomicU64::new(duration_ms(LOCK_FLUSH_WINDOW)),
+            flush_logged: AtomicBool::new(false),
+            first_check_done: AtomicBool::new(false),
+            debug_build: config.debug_build,
             team_gate: config
                 .team_password_hash
                 .as_ref()
                 .map(|hash| TeamGate::new(hash.clone(), &config.app_data_dir, now_ms())),
         };
         if deferred {
-            tracing::info!("the App Store check runs in the background after startup");
+            tracing::info!("the store check runs in the background after startup");
         } else {
             service.refresh();
         }
@@ -416,7 +510,11 @@ impl EntitlementService {
             .get_or_init(|| {
                 let mac = self.mac_inputs.lock().take();
                 let store = self.microsoft_store.lock().take();
-                adapters::for_channel(self.channel, &self.app_data_dir, mac, store)
+                let built = adapters::for_channel(self.channel, &self.app_data_dir, mac, store);
+                if let Some(adapter) = &built {
+                    adapter.seed_memory(StoreMemory::from_record(&self.notices.lock()));
+                }
+                built
             })
             .as_deref()
     }
@@ -424,7 +522,7 @@ impl EntitlementService {
     /// The last computed state.
     pub fn state(&self) -> EntitlementState {
         match *self.forced.lock() {
-            Some((_, state)) => state,
+            Some((_, state, _)) => state,
             None => *self.state.lock(),
         }
     }
@@ -432,7 +530,7 @@ impl EntitlementService {
     /// The release channel (or the one `entitlement.debug_set` chose).
     pub fn channel(&self) -> Channel {
         match *self.forced.lock() {
-            Some((channel, _)) => channel,
+            Some((channel, _, _)) => channel,
             None => self.channel,
         }
     }
@@ -481,6 +579,7 @@ impl EntitlementService {
             EntitlementState::NeedsOnlineCheck | EntitlementState::Unknown => 15 * MINUTE,
             EntitlementState::Purchased => 24 * 60 * MINUTE,
             EntitlementState::TrialEnded
+            | EntitlementState::ClockChanged
             | EntitlementState::TrialNotStarted
             | EntitlementState::Revoked
             | EntitlementState::InternalBuild => 6 * 60 * MINUTE,
@@ -490,9 +589,11 @@ impl EntitlementService {
 
     fn evaluate(&self, check: Check) -> EntitlementState {
         let _serial = self.checking.lock();
-        if let Some((_, forced)) = *self.forced.lock() {
+        if let Some((_, forced, _)) = *self.forced.lock() {
             return forced;
         }
+        let was_locked = self.locks_the_app();
+        let first = !self.first_check_done.swap(true, Ordering::SeqCst);
         if self.channel == Channel::DirectInstaller {
             // The internal build is never sold and asks nothing (ADR-0023).
             *self.state.lock() = EntitlementState::InternalBuild;
@@ -502,7 +603,7 @@ impl EntitlementService {
             let Some(adapter) = self.adapter() else {
                 return EntitlementState::Unknown;
             };
-            // The store decides the whole state; Straft Studio keeps no trial timer of its own.
+            // The store decides the whole state; Straft keeps no trial timer of its own.
             let channel_state = match check {
                 Check::Launch => adapter.channel_state(),
                 Check::Restore | Check::Revalidate => adapter.restore_channel_state(),
@@ -514,7 +615,69 @@ impl EntitlementService {
             EntitlementState::Unknown
         });
         *self.state.lock() = computed;
+        self.remember_store();
+        self.note_transition(was_locked, !first || self.deferred);
         computed
+    }
+
+    /// Keep what the adapter learned from the Store (the last good answer) in the notice record,
+    /// saved only when it changed. A failed save is logged; the memory still holds in this run.
+    fn remember_store(&self) {
+        let Some(memory) = self
+            .adapter
+            .get()
+            .and_then(|a| a.as_deref())
+            .and_then(|a| a.memory())
+        else {
+            return;
+        };
+        let mut record = self.notices.lock();
+        if memory.write_to(&mut record)
+            && let Err(e) = self.notice_store.write(&record)
+        {
+            tracing::warn!(kind = ?e.kind(), "the licence memory could not be saved");
+        }
+    }
+
+    /// The state just changed. When a running app went from not locked to locked, open the flush
+    /// window (ADR-0039 item 9); a lock found by the first check, or one that cleared, leaves none.
+    fn note_transition(&self, was_locked: bool, check_done_before: bool) {
+        let mut until = self.flush_until.lock();
+        if !self.locks_the_app() {
+            *until = None;
+        } else if !was_locked && check_done_before {
+            let window = Duration::from_millis(self.flush_window_ms.load(Ordering::SeqCst));
+            *until = Some(Instant::now() + window);
+            self.flush_logged.store(false, Ordering::SeqCst);
+            tracing::info!("the app locked while running; saving stays open for a short while");
+        }
+    }
+
+    /// True while the flush window lets operations through although the state locks.
+    pub fn flush_window_open(&self) -> bool {
+        self.flush_until.lock().is_some_and(|t| Instant::now() < t)
+    }
+
+    /// End the flush window now (the lock screen has stored everything).
+    pub fn end_flush_window(&self) {
+        *self.flush_until.lock() = None;
+    }
+
+    /// Make the flush window short or long. Tests only.
+    #[doc(hidden)]
+    pub fn set_flush_window_for_tests(&self, window: Duration) {
+        self.flush_window_ms
+            .store(duration_ms(window), Ordering::SeqCst);
+    }
+
+    /// What the page shows, to compare before and after a check.
+    pub(crate) fn change_marker(&self) -> ChangeMarker {
+        let status = self.status();
+        ChangeMarker {
+            channel: status.channel,
+            state: status.state,
+            ends_on_day: status.trial_ends_at_ms.map(|ms| ms.div_euclid(86_400_000)),
+        }
     }
 
     /// The Settings view of the current state. Never waits for a check that is running.
@@ -534,6 +697,15 @@ impl EntitlementService {
             },
             trial_days: TRIAL_DAYS,
             can_edit: state.permits(self.channel(), Permission::Edit),
+            trial_ends_at_ms: match *self.forced.lock() {
+                Some((_, _, ends)) => ends,
+                None if matches!(state, EntitlementState::TrialActive { .. }) => self
+                    .adapter
+                    .get()
+                    .and_then(|a| a.as_deref())
+                    .and_then(|a| a.trial_ends_at_ms()),
+                None => None,
+            },
         }
     }
 }
@@ -553,7 +725,8 @@ pub const TEAM_GATE_ALLOWED: &[&str] = &["team_gate.status", "team_gate.unlock",
 pub const TEAM_GATE_LOCKED_MESSAGE: &str = "Enter the team password to open Straft Studio.";
 
 /// Plain words for an operation refused by the Mac lock.
-pub const LOCKED_MESSAGE: &str = "Buy Straft Studio or restore your purchase to open your projects again. Nothing is deleted.";
+pub const LOCKED_MESSAGE: &str =
+    "Buy Straft Studio or restore your purchase to open your projects again. Nothing is deleted.";
 
 impl EntitlementService {
     /// True while the whole app waits for a purchase or a restore (the Mac lock, ADR-0022).
@@ -578,12 +751,50 @@ impl EntitlementService {
         {
             return Ok(());
         }
+        if self.flush_window_open() {
+            if !self.flush_logged.swap(true, Ordering::SeqCst) {
+                tracing::info!(op, "an operation passed the lock's flush window");
+            }
+            return Ok(());
+        }
         Err(AppError::new("permission.licence_required", LOCKED_MESSAGE)
             .with_detail(format!("{op} refused: {}", state_name(self.state()))))
     }
 }
 
+/// Plain words for an edit refused while the purchase could not be checked.
+pub const EDIT_NEEDS_CHECK_MESSAGE: &str = "Straft could not check your purchase, so editing is paused. You can still open your projects and export them. Connect to the internet, then try again.";
+
+/// Plain words for an edit refused before the free trial has started.
+pub const EDIT_NEEDS_TRIAL_MESSAGE: &str =
+    "Start your free trial to edit. You can still open your projects and export them.";
+
 impl EntitlementService {
+    /// Editing is locked in NeedsOnlineCheck and TrialNotStarted (`Permission::Edit`, package
+    /// file 02): refuse an operation that changes a project (`changes_project`, decided by the
+    /// registry from its metadata). Opening, exporting, closing and the app's own settings pass.
+    /// A full lock is [`Self::check_operation`]'s job and its flush window must not be cut short
+    /// here, so a locked app passes this check.
+    pub fn check_edit(&self, op: &str, changes_project: bool) -> AppResult<()> {
+        if !changes_project
+            || self.locks_the_app()
+            || self.state().permits(self.channel(), Permission::Edit)
+        {
+            return Ok(());
+        }
+        let message = if self.state() == EntitlementState::TrialNotStarted {
+            EDIT_NEEDS_TRIAL_MESSAGE
+        } else {
+            EDIT_NEEDS_CHECK_MESSAGE
+        };
+        Err(
+            AppError::new("permission.licence_required", message).with_detail(format!(
+                "{op} refused: editing locked in {}",
+                state_name(self.state())
+            )),
+        )
+    }
+
     /// True while an internal build waits for the team password. Always false in store packages.
     pub fn team_gate_locked(&self) -> bool {
         self.team_gate.as_ref().is_some_and(|g| !g.is_unlocked())
@@ -736,7 +947,12 @@ impl EntitlementService {
                 Some(store_not_connected(self.channel()).to_string()),
             );
         }
-        let _serial = self.checking.lock();
+        // One purchase window at a time. `checking` is not held while the store's window is open:
+        // reads go on, so a trial that ends meanwhile is seen. It is taken only to store the answer.
+        let Some(_window) = self.buying.try_lock() else {
+            return (BuyRoute::Store, Some(PURCHASE_WINDOW_OPEN.to_string()));
+        };
+        let was_locked = self.locks_the_app();
         let answer = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             self.adapter().and_then(run)
         }))
@@ -746,9 +962,12 @@ impl EntitlementService {
                 message: "The purchase did not finish. Try again later.",
             }))
         });
+        let _serial = self.checking.lock();
         match answer {
             Some(Ok(state)) => {
                 *self.state.lock() = state;
+                self.remember_store();
+                self.note_transition(was_locked, self.first_check_done.load(Ordering::SeqCst));
                 tracing::info!(
                     state = state_name(state),
                     "purchase or trial start finished"
@@ -764,8 +983,18 @@ impl EntitlementService {
     }
 
     /// `entitlement.debug_set` only: report `channel` and `state` until the app closes.
-    fn force(&self, channel: Channel, state: EntitlementState, reset_notices: bool) {
-        *self.forced.lock() = Some((channel, state));
+    fn force(
+        &self,
+        channel: Channel,
+        state: EntitlementState,
+        trial_ends_at_ms: Option<i64>,
+        reset_notices: bool,
+    ) {
+        let was_locked = self.locks_the_app();
+        *self.forced.lock() = Some((channel, state, trial_ends_at_ms));
+        // A hand-set state counts as a running app, also for the first call.
+        self.first_check_done.store(true, Ordering::SeqCst);
+        self.note_transition(was_locked, true);
         if reset_notices {
             let mut record = self.notices.lock();
             *record = NoticeRecord::default();
@@ -825,6 +1054,7 @@ fn notice_view(core: &AppCore, today: Option<&CalendarDay>) -> EntitlementNotice
         status: core.entitlement.status(),
         notice: core.entitlement.notice(today),
         data_root: core.data_root().to_string_lossy().into_owned(),
+        debug_build: core.entitlement.debug_build,
     }
 }
 
@@ -857,7 +1087,9 @@ fn buy(core: &AppCore, actor: &Actor, _args: BuyArgs) -> AppResult<BuyOutcome> {
         actor,
         "Only the person using this computer can buy Straft Studio.",
     )?;
+    let before = core.entitlement.change_marker();
     let (route, message) = core.entitlement.buy();
+    core.announce_entitlement_change(before);
     Ok(BuyOutcome {
         route,
         status: core.entitlement.status(),
@@ -870,7 +1102,9 @@ fn start_trial(core: &AppCore, actor: &Actor, _args: StartTrialArgs) -> AppResul
         actor,
         "Only the person using this computer can start the free trial.",
     )?;
+    let before = core.entitlement.change_marker();
     let (route, message) = core.entitlement.start_trial();
+    core.announce_entitlement_change(before);
     Ok(BuyOutcome {
         route,
         status: core.entitlement.status(),
@@ -880,9 +1114,26 @@ fn start_trial(core: &AppCore, actor: &Actor, _args: StartTrialArgs) -> AppResul
 
 fn debug_set(core: &AppCore, actor: &Actor, args: DebugSetArgs) -> AppResult<EntitlementStatus> {
     require_local(actor, "Only the person using this computer can do this.")?;
-    core.entitlement
-        .force(args.channel, args.state, args.reset_notices);
+    core.entitlement.force(
+        args.channel,
+        args.state,
+        args.trial_ends_at_ms,
+        args.reset_notices,
+    );
+    core.emit_entitlement_changed();
     Ok(core.entitlement.status())
+}
+
+fn lock_ready(core: &AppCore, actor: &Actor, _args: LockReadyArgs) -> AppResult<()> {
+    require_local(actor, "Only the person using this computer can do this.")?;
+    core.checkpoint_open_stores("lock");
+    core.entitlement.end_flush_window();
+    Ok(())
+}
+
+/// Milliseconds of `d`, capped.
+fn duration_ms(d: Duration) -> u64 {
+    u64::try_from(d.as_millis()).unwrap_or(u64::MAX)
 }
 
 /// Whole seconds, rounded up, for a wait in milliseconds.
@@ -946,6 +1197,8 @@ fn restore_purchase(
             "Only the person using this computer can restore a purchase.",
         ));
     }
+    let before = core.entitlement.change_marker();
     core.entitlement.restore_purchase();
+    core.announce_entitlement_change(before);
     Ok(core.entitlement.status())
 }

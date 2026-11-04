@@ -2,7 +2,7 @@
 
 Permanent policy for every developer and every Claude agent working in `C:\Straft`. Amended 2026-10-09: root causes and the final rules are in sections 7 and 8. It exists because the repository once grew to about 273 GB: roughly 211 GB in `.claude\worktrees` and 60 GB in `target\`, almost all of it duplicated Rust `target/` and `node_modules` trees left behind by temporary agent worktrees. Removing only the reproducible artifacts recovered about 205 GB. This must not happen again.
 
-Straft Studio does not use Docker. Do not add it for storage reasons.
+Straft does not use Docker. Do not add it for storage reasons.
 
 ## What is permanent and what is not
 
@@ -65,7 +65,7 @@ When a task is integrated into the canonical codebase:
 3. Run `git worktree prune`.
 4. Delete the `target/`, `node_modules` and cache output that belonged to the completed work.
 5. Keep active worktrees that still hold unique work.
-6. Confirm Straft Studio still builds and runs locally.
+6. Confirm Straft still builds and runs locally.
 7. Report briefly what was removed and about how much space came back.
 
 ## 7. Root causes, measured on 2026-10-09
@@ -79,7 +79,7 @@ Why the folders grew, from the files themselves (no deletion was done to find ou
 | One huge application crate | `straft-application` is 150,000 of 195,000 lines of Rust (77 percent); a change to it rebuilds and relinks every test | Slow small changes |
 | 632 locked packages and dependencies built at optimisation level 2 in the development profile | `Cargo.lock`; `[profile.dev.package."*"] opt-level = 2` | Slower first builds, larger libraries (5.8 GB) |
 | A target folder per worktree | Oct 7: 273 GB (211 GB in worktrees, 60 GB in `target`). Oct 8: each worktree target 29 to 41 GB, up to 100 GB approved | Hundreds of gigabytes within a day |
-| Worktrees outside git's list | 39 folders under `.claude/worktrees` (4.2 GB, one holds a 2.7 GB model copy); their `.git` files point to `C:/dev/Straft Studio`, which does not exist; `git worktree list` shows only `main` | Orphan source copies git cannot manage |
+| Worktrees outside git's list | 39 folders under `.claude/worktrees` (4.2 GB, one holds a 2.7 GB model copy); their `.git` files point to `C:/dev/Straft`, which does not exist; `git worktree list` shows only `main` | Orphan source copies git cannot manage |
 | Memory pressure | 15.4 GB of memory and 18 logical cores; `CARGO_BUILD_JOBS` unset; five parallel builds left 0.4 GB free; on 2026-10-05 a Windows service held 39 GB and builds failed with "memory allocation failed" | Swapping, hours-long builds |
 | sccache not proved | `sccache --show-stats` shows 0 requests on 2026-10-09; the queue script already passes flags so the cache can hit | Unknown cache benefit |
 | Parallel agents | 31 `worktree-agent-*` branches from 2026-09-30, 37 more merged and deleted on 2026-10-09; many "restore LF" commits | Disk, merge work and Windows line-ending churn |

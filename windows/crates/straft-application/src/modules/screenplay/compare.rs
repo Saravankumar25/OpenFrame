@@ -7,10 +7,10 @@
 
 use std::collections::{BTreeMap, HashMap};
 
-use straft_domain::enums::ElementType;
-use straft_domain::{Actor, AppError, AppResult, Capability};
 use serde::{Deserialize, Serialize};
 use similar::{Algorithm, ChangeTag, DiffOp, TextDiff, capture_diff_slices};
+use straft_domain::enums::ElementType;
+use straft_domain::{Actor, AppError, AppResult, Capability};
 use ts_rs::TS;
 
 use super::{ScreenplayDraftRef, ScreenplaySceneDto, load_draft, load_scenes};

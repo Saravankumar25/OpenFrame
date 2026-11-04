@@ -6,11 +6,11 @@
 use std::path::Path;
 use std::sync::Arc;
 
+use serde::Deserialize;
+use serde_json::{Value, json};
 use straft_application::core::AppCore;
 use straft_application::modules::ai::index::{self, EntityIndex, Focus};
 use straft_application::modules::ai::turn;
-use serde::Deserialize;
-use serde_json::{Value, json};
 
 use crate::{Case, fixture, is_proposal_tool};
 
@@ -60,13 +60,23 @@ fn tool_label(c: &Case) -> Option<turn::AnswerType> {
 pub fn from_cases(cases: &[Case]) -> Vec<Conv> {
     let mut out = Vec::new();
     for c in cases.iter().filter(|c| c.kind != "retrieval") {
+        // The narrative types of round R5 sit in `new_answer_type`; they win over the old label.
         let want = c
             .expect
-            .answer_type
+            .new_answer_type
             .as_deref()
+            .or(c.expect.answer_type.as_deref())
             .and_then(parse_type)
             .or_else(|| tool_label(c));
-        let (set, family) = if c.id.starts_with("conv-lt-") {
+        let (set, family) = if c.id.starts_with("sec-") {
+            // sec-<s|x>-<leaf with hyphens, or pair, triple, neg, conv, turn>-NNN
+            let parts: Vec<&str> = c.id.split('-').collect();
+            let family = parts
+                .get(2..parts.len().saturating_sub(1))
+                .unwrap_or(&[])
+                .join("-");
+            ("section-scoped".to_string(), family)
+        } else if c.id.starts_with("conv-lt-") {
             let family = c.id.split('-').nth(2).unwrap_or("").to_string();
             ("lowtide conversation".to_string(), family)
         } else if c.id.starts_with("tool-lt-") {

@@ -70,7 +70,7 @@ reasons are in [development-storage-policy.md](../development-storage-policy.md)
 
 - The invented demo project "Night Bus" is created by `01-journey.test.mjs` and reused by the restart, visual and
   reachability specs.
-- Four Straft Studio-owned sample scripts live in `templates/samples/` and are compiled into the app.
+- Four Straft-owned sample scripts live in `templates/samples/` and are compiled into the app.
 - The 13-class Final Draft fixture suite is in `tests/fixtures/fdx-suite/`.
 - Never use a real person's script in tests or screenshots.
 

@@ -2,11 +2,11 @@
 //! Tests go through the public operation registry, like the UI does. Screenplay
 //! scenes are seeded directly as fixtures (the screenplay module owns their ops).
 
+use rusqlite::{Connection, params};
+use serde_json::{Value, json};
 use straft_application::MutationMeta;
 use straft_domain::{Capability, Role, new_id, now_ms};
 use straft_test_support::TestEnv;
-use rusqlite::{Connection, params};
-use serde_json::{Value, json};
 
 /// 1×1 transparent PNG.
 const PNG_B64: &str = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";

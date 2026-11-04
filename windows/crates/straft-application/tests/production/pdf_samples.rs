@@ -11,8 +11,8 @@
 
 use std::path::{Path, PathBuf};
 
-use straft_test_support::TestEnv;
 use serde_json::{Value, json};
+use straft_test_support::TestEnv;
 
 fn out_dir() -> PathBuf {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))

@@ -6,7 +6,7 @@
 // input", change the schedule and review the update, finalize (a frozen snapshot), start a new
 // revision; budget Planned and Actual; a call sheet made from the Indie Call Sheet template;
 // sides (pages of the script, no brand), a production report, the moodboard, storyboard sheet and
-// shot list exports with the Straft Studio brand line; notes and tasks; then quit, relaunch and find everything again.
+// shot list exports with the Straft brand line; notes and tasks; then quit, relaunch and find everything again.
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
@@ -33,7 +33,7 @@ import {
 
 const PROJECT = "Lost Property Unit";
 const OUT = mkdtempSync(join(tmpdir(), "straft-e2e-callsheets-"));
-const BRAND = "Created using Straft Studio";
+const BRAND = "Created using Straft";
 
 let browser;
 const step = stepper(() => browser, "callsheets");

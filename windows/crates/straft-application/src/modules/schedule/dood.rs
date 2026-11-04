@@ -10,9 +10,9 @@
 
 use std::collections::{HashMap, HashSet};
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use ts_rs::TS;
 
 use super::board::{Board, DayRow, current_schedule, load_schedule};
@@ -53,7 +53,7 @@ pub const CODES: [(&str, &str); 10] = [
     ("-", "Not working"),
 ];
 
-fn is_work(code: &str) -> bool {
+pub(crate) fn is_work(code: &str) -> bool {
     matches!(code, "SW" | "W" | "WF" | "SWF")
 }
 

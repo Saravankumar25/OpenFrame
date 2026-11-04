@@ -15,9 +15,9 @@
 //! rewrites screenplay text; Build Screenplay only ever creates a NEW
 //! screenplay or a NEW draft, and "Apply order" is an explicit, confirmed action.
 
-use straft_domain::{AppError, AppResult};
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
+use straft_domain::{AppError, AppResult};
 use ts_rs::TS;
 
 use crate::registry::Registry;

@@ -1,9 +1,9 @@
 //! Story workspace acceptance tests (FSD §7–14, §18, §25, §89–91; FSD-STORY-001..030),
 //! driven through the public operation registry like the UI.
 
+use serde_json::{Value, json};
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ helpers
 

@@ -78,7 +78,7 @@ Specs run through the real operations the dialogs call when the native Save or O
 | PDF import with preview and safe failure | 152 | 1 | needs-test | `63` re-imports FDX, Fountain, DOCX, TXT but not the PDF it just wrote. Add `pdf` to that loop, plus a scanned-style PDF refusal |
 | TXT and pasted text import | 153 | 1 | covered-L3 | `63` TXT round trip; `01` "import pasted Fountain from the quick actions menu" |
 | Import report exact; export failure leaves source | 154 | 1 | needs-test | `63` asserts scene counts. Add a damaged file to `63` and assert the project is unchanged (as `70` does for a damaged backup) |
-| Screenplay outputs carry no branding | 155 | 1 | needs-test | `41` asserts the PDF has no "Straft Studio". Add the same assert for FDX, DOCX, Fountain and TXT in `63` |
+| Screenplay outputs carry no branding | 155 | 1 | needs-test | `41` asserts the PDF has no "Straft". Add the same assert for FDX, DOCX, Fountain and TXT in `63` |
 | PDF visual regression | 156 | 1 | needs-test | Rust goldens (`pdf_golden.rs`, `pdf_regression.rs`). Release proof is the owner's choice (last section) |
 | Script change reconciliation, Needs Review | 168 | 1 | needs-test | No spec edits the source script after a breakdown. Add to `50`: change a heading, see Needs Review, nothing deleted |
 | Large-project performance | 172 | 1 | needs-test | `97` proves start and project open on the 36-scene example. Filters: run `npm run perf` once on the final commit and file the output (no new code) |

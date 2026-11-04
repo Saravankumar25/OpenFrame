@@ -1,13 +1,13 @@
 // @e2e-data-root: own
 // @e2e-needs-test-host: "Download again" fetches from the local model host and the spec reads its request log
 //
-// The Offline AI files when they are missing or damaged (ADR-0026 decisions 5 and 7; Windows phase
+// The Straft AI files when they are missing or damaged (ADR-0026 decisions 5 and 7; Windows phase
 // W8). The models were downloaded (run.mjs installs the set the way a finished download leaves it);
 // the engine is in the app. Release-capable: no test switch. A model file is removed or changed in
 // this spec's own app data; the engine is changed in this spec's own copy of the build (the
 // executable and its `ai/` folder, launched in place of the build).
 //
-// Covers: a missing model file turns AI off and offers the download again, and the rest of Straft Studio
+// Covers: a missing model file turns AI off and offers the download again, and the rest of Straft
 // works; "Download again" restores it from the host; an altered model of the right size is caught
 // by the hash check before any engine starts; an altered engine library is caught before launch
 // and asks for a reinstall, never a download.
@@ -30,7 +30,7 @@ const BUILD_APP = process.env.E2E_APP;
 
 const DOWNLOAD_AGAIN = /A Straft AI file is missing or damaged/;
 const REINSTALL = /Reinstall Straft Studio to repair it/;
-const panel = '//aside[@aria-label="AI Assistant"]';
+const panel = '//aside[@aria-label="Straft AI"]';
 const engines = () => appProcesses().filter((p) => p.name.toLowerCase() === "llama-server.exe");
 
 /** Send a question when the panel still offers the question box (the check may already have run). */
@@ -50,7 +50,7 @@ async function restartWith(change, app = BUILD_APP) {
   await openProject(browser, "Night Bus");
 }
 
-describe("Offline AI files: missing, damaged, whole again", () => {
+describe("Straft AI files: missing, damaged, whole again", () => {
   before(async () => {
     alterFile(modelFile("chat"), { remove: true });
     browser = await launchApp();
@@ -60,7 +60,7 @@ describe("Offline AI files: missing, damaged, whole again", () => {
     await browser?.deleteSession().catch(() => undefined);
   });
 
-  test("a missing model file turns AI off and offers the download again; the rest of Straft Studio works", async () => {
+  test("a missing model file turns AI off and offers the download again; the rest of Straft works", async () => {
     await step("missing", async () => {
       await firstLaunchProject(browser, "Night Bus");
       await openAssistant(browser);
@@ -70,10 +70,10 @@ describe("Offline AI files: missing, damaged, whole again", () => {
       assert.doesNotMatch(text, REINSTALL, "a model problem never asks for a reinstall");
       assert.equal(await (await browser.$(`${panel}//textarea`)).isExisting(), false, "no question box while AI is off");
       // Settings says the same.
-      await click(browser, "Offline AI settings");
-      await menuItem(browser, "Offline AI settings");
+      await click(browser, "Straft AI settings");
+      await menuItem(browser, "Straft AI settings");
       await waitForText(browser, "Needs a new download");
-      // The rest of Straft Studio is unaffected.
+      // The rest of Straft is unaffected.
       await goToTasks(browser);
       await click(browser, "New Task");
       const t = await browser.$("#te-title");

@@ -9,11 +9,11 @@
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
+use serde_json::{Value, json};
 use straft_ai::{ChatRequest, InferenceProvider};
 use straft_application::modules::ai;
 use straft_domain::{AppError, AppResult, Role};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const SHORT: &[u8] = include_bytes!("../../../../templates/samples/Example-Short.fountain");
 
@@ -141,18 +141,54 @@ fn world() -> (TestEnv, Arc<Scripted>) {
     (env, m)
 }
 
+/// The sections a person would pick for a question. These tests are about the conversation, the
+/// prompt and the checks, so a few word rules stand in for the person (at most three).
+fn sections_for(text: &str) -> Value {
+    let t = text.to_lowercase();
+    let has = |w: &[&str]| w.iter().any(|x| t.contains(x));
+    let leaves: &[&str] = if has(&["plays", "phone", "free", "contact", "reached"]) {
+        &["production/cast-crew"]
+    } else if has(&["planned", "budget"]) {
+        &["production/budget", "screenplay/scenes"]
+    } else if has(&["wardrobe", "breakdown"]) {
+        &["screenplay/scenes", "breakdown/breakdown"]
+    } else if has(&["suggest improvements", "better"]) {
+        &["screenplay/scenes", "notes-tasks/notes", "story/characters"]
+    } else if has(&["note", "permit"]) {
+        &[
+            "notes-tasks/notes",
+            "notes-tasks/tasks",
+            "screenplay/scenes",
+        ]
+    } else {
+        &["screenplay/scenes"]
+    };
+    json!(
+        leaves
+            .iter()
+            .map(|l| json!({ "leaf": l }))
+            .collect::<Vec<_>>()
+    )
+}
+
 fn ask_in(env: &TestEnv, text: &str, conversation: &str) -> Value {
     env.ok(
         "ai.ask",
-        json!({ "text": text, "scope": { "kind": "WholeProject" }, "conversationId": conversation }),
+        json!({ "text": text, "sections": sections_for(text), "conversationId": conversation }),
     )
 }
 
 fn ask(env: &TestEnv, text: &str) -> Value {
     env.ok(
         "ai.ask",
-        json!({ "text": text, "scope": { "kind": "WholeProject" } }),
+        json!({ "text": text, "sections": sections_for(text) }),
     )
+}
+
+/// The same question under the sections the caller names.
+fn ask_with(env: &TestEnv, text: &str, leaves: &[&str]) -> Value {
+    let sections: Vec<Value> = leaves.iter().map(|l| json!({ "leaf": l })).collect();
+    env.ok("ai.ask", json!({ "text": text, "sections": sections }))
 }
 
 fn content(x: &Value) -> String {
@@ -351,7 +387,11 @@ fn a_change_message_gives_a_proposal_that_changes_nothing_until_applied() {
             })
             .unwrap()
     };
-    let x = ask(&env, "Create a task to scout Central Station.");
+    let x = ask_with(
+        &env,
+        "Create a task to scout Central Station.",
+        &["notes-tasks/tasks"],
+    );
     assert_eq!(x["result"]["kind"], "Proposal", "{x}");
     assert_eq!(m.calls(), 0, "a plain command is its tool call");
     assert_eq!(trace(&env, &x).0, "change");
@@ -422,7 +462,7 @@ fn a_viewer_gets_no_contact_in_the_prompt_or_the_answer_and_an_owner_does() {
         .call_as(
             &viewer,
             "ai.ask",
-            json!({ "text": "What is Maya Rao's phone number?", "scope": { "kind": "WholeProject" } }),
+            json!({ "text": "What is Maya Rao's phone number?", "sections": sections_for("phone") }),
         )
         .unwrap();
     assert!(!content(&x).contains("90000"), "{}", content(&x));
@@ -456,18 +496,29 @@ fn a_viewer_gets_no_contact_in_the_prompt_or_the_answer_and_an_owner_does() {
 #[test]
 fn the_start_of_the_prompt_is_the_same_bytes_on_every_turn() {
     let (env, m) = world();
+    let picks = [
+        "story/characters",
+        "production/cast-crew",
+        "production/budget",
+    ];
     m.reply("Maya Rao plays Anna.");
-    ask(&env, "Who plays Anna?");
+    ask_with(&env, "Who plays Anna?", &picks);
     m.reply("Lead cast, planned: 40,00,000.");
-    ask(&env, "How much is planned for lead cast?");
+    ask_with(&env, "How much is planned for lead cast?", &picks);
     let first = m.request(0).messages[0].content.clone();
     let second = m.request(1).messages[0].content.clone();
     assert_eq!(
         first, second,
-        "policy and project map do not change between turns"
+        "policy and the section line do not change between turns under the same picks"
     );
-    assert!(first.contains("\u{201C}Lost Property\u{201D} (10 scenes)"));
-    assert!(first.contains("\u{201C}Night Shift\u{201D} (10 scenes)"));
+    // The model is told which sections the facts come from, and nothing else about the project.
+    assert!(first.contains(
+        "the person chose to read Story > Characters, Production > Cast & Crew and Production > Budget."
+    ));
+    assert!(
+        !first.contains("Lost Property"),
+        "no screenplay list in the prompt"
+    );
 }
 
 #[test]
@@ -596,7 +647,270 @@ fn the_breakdown_suggestion_command_still_starts_its_tool() {
         &json!({ "items": [{ "category": "Props", "name": "Bench", "evidence": "Kiran sits on a bench" }] })
             .to_string(),
     );
-    let x = ask_in(&env, "Suggest breakdown elements for scene 2.", "c-bd");
+    let x = env.ok(
+        "ai.ask",
+        json!({ "text": "Suggest breakdown elements for scene 2.", "conversationId": "c-bd",
+                "sections": [{ "leaf": "screenplay/scenes" }, { "leaf": "breakdown/breakdown" }] }),
+    );
     assert_eq!(x["result"]["kind"], "Suggestion", "{x}");
     assert_eq!(x["result"]["items"].as_array().unwrap().len(), 1);
+}
+
+// ------------------------------------------------------------------ the pointer (R4)
+
+/// The leaf the AI trace kept as the pointer of a request (empty when the answer did not point).
+fn pointer_in_trace(env: &TestEnv, x: &Value) -> String {
+    let id = x["requestId"].as_str().unwrap().to_string();
+    env.core
+        .with_app_db(|c| {
+            Ok(c.query_row(
+                "SELECT pointer FROM sys_ai_trace WHERE request_id = ?1",
+                [&id],
+                |r| r.get(0),
+            )?)
+        })
+        .unwrap()
+}
+
+#[test]
+fn a_name_in_a_section_that_was_not_picked_is_pointed_to_with_no_model_and_no_fact() {
+    let (env, m) = world();
+    let x = ask_with(&env, "Who plays Anna?", &["production/budget"]);
+    assert_eq!(
+        content(&x),
+        "That is in Production > Cast & Crew. Add it to your selection and ask again."
+    );
+    assert_eq!(
+        x["result"]["pointer"],
+        json!({ "leaf": "production/cast-crew", "label": "Cast & Crew" })
+    );
+    assert_eq!(m.calls(), 0, "the model is not asked");
+    assert!(!content(&x).contains("Maya") && !content(&x).contains("Rao"));
+    assert_eq!(pointer_in_trace(&env, &x), "production/cast-crew");
+    assert_eq!(trace(&env, &x).0, "fixed");
+    // A question that does not point leaves the trace column empty.
+    m.reply("The Camera is planned in the budget.");
+    let plain = ask_with(
+        &env,
+        "What is the Camera planned at?",
+        &["production/budget"],
+    );
+    assert!(plain["result"].get("pointer").is_none(), "{plain}");
+    assert_eq!(pointer_in_trace(&env, &plain), "");
+}
+
+#[test]
+fn at_three_sections_the_pointer_says_to_remove_one() {
+    let (env, m) = world();
+    let x = ask_with(
+        &env,
+        "Who plays Anna?",
+        &["production/budget", "files/files", "notes-tasks/tasks"],
+    );
+    assert_eq!(
+        content(&x),
+        "That is in Production > Cast & Crew. Remove a section and add this one, then ask again."
+    );
+    assert_eq!(m.calls(), 0);
+}
+
+#[test]
+fn part_of_the_question_that_fits_the_pick_is_answered_and_the_pointer_follows_it() {
+    let (env, m) = world();
+    m.times(3, "The Camera is planned in the budget.");
+    let x = ask_with(
+        &env,
+        "Who plays Anna, and what is the Camera planned at?",
+        &["production/budget"],
+    );
+    let c = content(&x);
+    assert!(
+        c.ends_with("That is in Production > Cast & Crew. Add it to your selection and ask again."),
+        "{c}"
+    );
+    assert!(
+        !c.contains("Maya Rao"),
+        "no fact from the section that was not picked: {c}"
+    );
+    assert_eq!(x["result"]["pointer"]["leaf"], "production/cast-crew");
+    assert!(m.calls() >= 1);
+    // The sentence is added by code after the checks: the writer never sees it or the cast.
+    let prompt = m.all_text();
+    assert!(!prompt.contains("That is in Production"), "{prompt}");
+    assert!(!prompt.contains("Maya Rao"), "{prompt}");
+}
+
+// ------------------------------------------------------------------ what the agent may run (R6)
+
+#[test]
+fn a_command_for_a_section_that_was_not_picked_points_there_and_changes_nothing() {
+    let (env, m) = world();
+    // The plain command names its tool outright; the task section is not picked.
+    let x = ask_with(
+        &env,
+        "Create a task to scout Central Station.",
+        &["production/budget"],
+    );
+    assert_eq!(x["result"]["kind"], "Answer", "{x}");
+    assert_eq!(
+        content(&x),
+        "That is in Notes & Tasks > Tasks. Add it to your selection and ask again."
+    );
+    assert_eq!(x["result"]["pointer"]["leaf"], "notes-tasks/tasks");
+    assert!(x["result"]["changeSet"].is_null(), "no Change Set: {x}");
+    assert_eq!(m.calls(), 0);
+    assert_eq!(pointer_in_trace(&env, &x), "notes-tasks/tasks");
+    // A model that names a tool outside the picks gets the same pointer, and the tool never runs.
+    m.step(
+        "propose_task",
+        json!({ "title": "Confirm the station permit" }),
+        true,
+    );
+    let y = ask_with(
+        &env,
+        "Set up a task about the station permit",
+        &["production/budget"],
+    );
+    assert_eq!(y["result"]["pointer"]["leaf"], "notes-tasks/tasks", "{y}");
+    assert!(y["result"]["changeSet"].is_null());
+    let offered = m.request(0).messages[0].content.clone();
+    assert!(
+        !offered.contains("propose_task"),
+        "a tool outside the pick is never offered: {offered}"
+    );
+}
+
+#[test]
+fn open_scene_resolves_inside_the_picked_sections_otherwise_the_pointer_fires() {
+    let (env, m) = world();
+    let x = ask_with(&env, "Open scene 4 of Night Shift", &["production/budget"]);
+    assert_eq!(x["result"]["kind"], "Answer", "{x}");
+    assert_eq!(
+        content(&x),
+        "That is in Screenplay > Scenes. Add it to your selection and ask again."
+    );
+    assert!(x["result"]["nav"].is_null());
+    assert_eq!(m.calls(), 0);
+    assert_eq!(x["result"]["pointer"]["leaf"], "screenplay/scenes");
+}
+
+#[test]
+fn suggest_breakdown_needs_breakdown_and_the_screenplay() {
+    let (env, m) = world();
+    let only_scenes = ask_with(
+        &env,
+        "Suggest breakdown elements for scene 2.",
+        &["screenplay/scenes"],
+    );
+    assert_eq!(
+        only_scenes["result"]["pointer"]["leaf"], "breakdown/breakdown",
+        "{only_scenes}"
+    );
+    let only_breakdown = ask_with(
+        &env,
+        "Suggest breakdown elements for scene 2.",
+        &["breakdown/breakdown"],
+    );
+    assert_eq!(
+        only_breakdown["result"]["pointer"]["leaf"], "screenplay/scenes",
+        "{only_breakdown}"
+    );
+    assert_eq!(m.calls(), 0);
+}
+
+#[test]
+fn a_story_day_is_pointed_to_the_timeline_with_no_model_call() {
+    let (env, m) = world();
+    let x = ask_with(
+        &env,
+        "What Story Day is scene 2 on?",
+        &["production/budget"],
+    );
+    assert_eq!(x["result"]["pointer"]["leaf"], "story/timeline", "{x}");
+    assert_eq!(m.calls(), 0);
+}
+
+// ------------------------------------------------------------------ narrative answers (R5)
+
+#[test]
+fn a_description_is_written_from_the_character_card_under_the_narrative_policy_and_the_long_class()
+{
+    let (env, m) = world();
+    let reply = "Anna is a courier who finds a bag. She is the lead of the film, and the project lists her \
+as a courier and nothing more. Ben is the porter. Maya Rao plays Anna. The project records no other detail about her, so \
+nothing here goes beyond what the project holds about the character and the person cast in the part.";
+    m.reply(reply);
+    let x = ask_with(
+        &env,
+        "Describe Anna.",
+        &["story/characters", "production/cast-crew"],
+    );
+    assert_eq!(content(&x), reply, "{x}");
+    let (path, fallback, passes, _) = trace(&env, &x);
+    assert_eq!((path.as_str(), fallback.as_str(), passes), ("write", "", 1));
+    let s = stages(&env, &x);
+    assert_eq!(s["turn"]["type"], "describe");
+    assert_eq!(s["turn"]["lengthClass"], "long250");
+    let req = m.request(0);
+    assert!(
+        req.messages[0]
+            .content
+            .contains("Give no motive, feeling or past that the facts do not state"),
+        "the narrative policy"
+    );
+    let user = &req.messages[1].content;
+    assert!(
+        user.contains("Character | name: Anna"),
+        "the character card: {user}"
+    );
+    assert!(
+        user.ends_with("Answer in two or three short paragraphs, at most 250 words."),
+        "{user}"
+    );
+    assert_eq!(req.max_tokens, 400);
+}
+
+#[test]
+fn a_narrative_answer_that_keeps_failing_the_checks_falls_back_to_what_the_project_holds() {
+    let (env, m) = world();
+    // The year is in no fact: the numbers check refuses it on every pass.
+    m.times(
+        3,
+        "Anna is secretly the daughter of the harbour master and has hidden it since 1999.",
+    );
+    let x = ask_with(&env, "Describe Anna.", &["story/characters"]);
+    let (path, fallback, passes, failed) = trace(&env, &x);
+    assert_eq!(
+        (path.as_str(), fallback.as_str(), passes),
+        ("write", "abstained", 3)
+    );
+    assert!(failed.contains("numbers"), "{failed}");
+    assert!(
+        !content(&x).contains("1999") && !content(&x).contains("daughter"),
+        "{}",
+        content(&x)
+    );
+    assert_eq!(m.calls(), 3);
+}
+
+#[test]
+fn a_list_is_asked_for_only_by_a_scene_by_scene_briefing() {
+    let (env, m) = world();
+    m.reply(
+        "Scene 1: the bag is found.\nScene 2: Anna asks the porter.\nScene 3: the bag is returned.",
+    );
+    ask_with(&env, "Brief me on Act Two.", &["screenplay/scenes"]);
+    let user = m.request(0).messages[1].content.clone();
+    assert!(
+        user.contains("write one short line for each scene"),
+        "{user}"
+    );
+    let before = m.calls();
+    m.reply("Anna finds a bag at the station and asks the porter about it. The porter, Ben, has seen it before. By the end of the scene the bag is back with the person it belongs to, and the courier carries on with her round.");
+    ask_with(&env, "Brief me on scene 3.", &["screenplay/scenes"]);
+    let user = m.request(before).messages[1].content.clone();
+    assert!(
+        !user.contains("write one short line for each scene"),
+        "{user}"
+    );
 }

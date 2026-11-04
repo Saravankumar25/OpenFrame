@@ -75,8 +75,8 @@
       "formatVersion": 1,
       "id": "straft-default",
       "name": "Straft Default",
-      "description": "The standard Straft Studio look.",
-      "author": "Straft Studio",
+      "description": "The standard Straft look.",
+      "author": "Straft",
       "seeds": { "neutralHue": 85, "neutralTint": 0.008, "accentHue": 62, "accentChroma": 0.15, "accentLightnessNudge": 6 },
       "overrides": {
         "light": {
@@ -125,7 +125,7 @@
       "id": "black-and-white",
       "name": "Black and White",
       "description": "Black text on white in Light mode, white text on black in Dark mode.",
-      "author": "Straft Studio",
+      "author": "Straft",
       "seeds": { "neutralHue": 0, "neutralTint": 0, "accentHue": 0, "accentChroma": 0, "accentLightnessNudge": 0 },
       "overrides": {
         "light": {
@@ -143,7 +143,7 @@
       }
     },
     {
-      "formatVersion": 1, "id": "studio-amber", "name": "Studio Amber", "description": "Warm and neutral. An all-day workhorse.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "studio-amber", "name": "Studio Amber", "description": "Warm and neutral. An all-day workhorse.", "author": "Straft",
       "seeds": { "neutralHue": 85, "neutralTint": 0.008, "accentHue": 62, "accentChroma": 0.15, "accentLightnessNudge": 6 },
       "overrides": {
         "light": { "accent-ink": "oklch(18% 0.02 62)", "lg1": "#ff5d6c", "lg2": "#ff9a3d", "lg3": "#ffc23d" },
@@ -151,31 +151,31 @@
       }
     },
     {
-      "formatVersion": 1, "id": "slate-noir", "name": "Slate Noir", "description": "Graphite and steel. The interface steps back so the story leads.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "slate-noir", "name": "Slate Noir", "description": "Graphite and steel. The interface steps back so the story leads.", "author": "Straft",
       "seeds": { "neutralHue": 265, "neutralTint": 0.008, "accentHue": 250, "accentChroma": 0.09, "accentLightnessNudge": 2 },
       "overrides": { "light": { "accent": "oklch(56% 0.09 250)" } }
     },
     {
-      "formatVersion": 1, "id": "midnight-reel", "name": "Midnight Reel", "description": "Deep navy for late editing nights.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "midnight-reel", "name": "Midnight Reel", "description": "Deep navy for late editing nights.", "author": "Straft",
       "seeds": { "neutralHue": 255, "neutralTint": 0.03, "accentHue": 238, "accentChroma": 0.15, "accentLightnessNudge": 0 },
       "overrides": { "light": { "accent": "oklch(55% 0.15 238)" } }
     },
     {
-      "formatVersion": 1, "id": "teal-orange", "name": "Teal & Orange", "description": "The blockbuster grade: cool surfaces, warm action.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "teal-orange", "name": "Teal & Orange", "description": "The blockbuster grade: cool surfaces, warm action.", "author": "Straft",
       "seeds": { "neutralHue": 205, "neutralTint": 0.026, "accentHue": 48, "accentChroma": 0.17, "accentLightnessNudge": 8 },
       "overrides": { "light": { "accent-ink": "oklch(18% 0.02 48)", "accent-d": "#9d5528" } }
     },
     {
-      "formatVersion": 1, "id": "courier-cream", "name": "Courier & Cream", "description": "A parchment writing room with brick-red ink.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "courier-cream", "name": "Courier & Cream", "description": "A parchment writing room with brick-red ink.", "author": "Straft",
       "seeds": { "neutralHue": 92, "neutralTint": 0.022, "accentHue": 28, "accentChroma": 0.13, "accentLightnessNudge": 0 }
     },
     {
-      "formatVersion": 1, "id": "cutting-room", "name": "Cutting Room", "description": "Restful sage green for editors.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "cutting-room", "name": "Cutting Room", "description": "Restful sage green for editors.", "author": "Straft",
       "seeds": { "neutralHue": 155, "neutralTint": 0.016, "accentHue": 160, "accentChroma": 0.11, "accentLightnessNudge": 2 },
       "overrides": { "light": { "accent-ink": "oklch(18% 0.02 160)" } }
     },
     {
-      "formatVersion": 1, "id": "velvet-curtain", "name": "Velvet Curtain", "description": "Theatre burgundy and gold. Premiere night.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "velvet-curtain", "name": "Velvet Curtain", "description": "Theatre burgundy and gold. Premiere night.", "author": "Straft",
       "seeds": { "neutralHue": 12, "neutralTint": 0.028, "accentHue": 85, "accentChroma": 0.13, "accentLightnessNudge": 14 },
       "overrides": {
         "light": { "accent-ink": "oklch(20% 0.04 40)", "accent-d": "#8b652b" },
@@ -183,39 +183,39 @@
       }
     },
     {
-      "formatVersion": 1, "id": "sunset-boulevard", "name": "Sunset Boulevard", "description": "Golden-hour rose and coral for development and pitching.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "sunset-boulevard", "name": "Sunset Boulevard", "description": "Golden-hour rose and coral for development and pitching.", "author": "Straft",
       "seeds": { "neutralHue": 35, "neutralTint": 0.03, "accentHue": 14, "accentChroma": 0.19, "accentLightnessNudge": 4 },
       "overrides": { "light": { "accent": "oklch(59% 0.19 14)" } }
     },
     {
-      "formatVersion": 1, "id": "arctic-frame", "name": "Arctic Frame", "description": "Crisp daylight for schedules and budgets.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "arctic-frame", "name": "Arctic Frame", "description": "Crisp daylight for schedules and budgets.", "author": "Straft",
       "seeds": { "neutralHue": 235, "neutralTint": 0.012, "accentHue": 250, "accentChroma": 0.16, "accentLightnessNudge": 0 }
     },
     {
-      "formatVersion": 1, "id": "neon-reel", "name": "Neon Reel", "description": "Violet night with magenta. Science fiction energy.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "neon-reel", "name": "Neon Reel", "description": "Violet night with magenta. Science fiction energy.", "author": "Straft",
       "seeds": { "neutralHue": 300, "neutralTint": 0.036, "accentHue": 333, "accentChroma": 0.23, "accentLightnessNudge": 4 },
       "overrides": { "light": { "accent": "oklch(59% 0.23 333)" } }
     },
     {
-      "formatVersion": 1, "id": "location-scout", "name": "Location Scout", "description": "Earthy olive. Grounded and calm.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "location-scout", "name": "Location Scout", "description": "Earthy olive. Grounded and calm.", "author": "Straft",
       "seeds": { "neutralHue": 125, "neutralTint": 0.02, "accentHue": 130, "accentChroma": 0.12, "accentLightnessNudge": 3 },
       "overrides": { "light": { "accent-ink": "oklch(18% 0.02 130)" } }
     },
     {
-      "formatVersion": 1, "id": "desert-dune", "name": "Desert Dune", "description": "Sand and rust, soft on the eyes.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "desert-dune", "name": "Desert Dune", "description": "Sand and rust, soft on the eyes.", "author": "Straft",
       "seeds": { "neutralHue": 70, "neutralTint": 0.036, "accentHue": 45, "accentChroma": 0.13, "accentLightnessNudge": 0 }
     },
     {
-      "formatVersion": 1, "id": "colorist-neutral", "name": "Colorist Neutral", "description": "True grey. No colour cast around your images.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "colorist-neutral", "name": "Colorist Neutral", "description": "True grey. No colour cast around your images.", "author": "Straft",
       "seeds": { "neutralHue": 0, "neutralTint": 0, "accentHue": 250, "accentChroma": 0.05, "accentLightnessNudge": 2 },
       "overrides": { "light": { "accent": "oklch(56% 0.05 250)" } }
     },
     {
-      "formatVersion": 1, "id": "silver-screen", "name": "Silver Screen", "description": "Pure black and white for full focus.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "silver-screen", "name": "Silver Screen", "description": "Pure black and white for full focus.", "author": "Straft",
       "seeds": { "neutralHue": 0, "neutralTint": 0, "accentHue": 0, "accentChroma": 0, "accentLightnessNudge": -4 }
     },
     {
-      "formatVersion": 1, "id": "high-contrast", "name": "High Contrast", "description": "Hard black and white edges with a signal-yellow accent.", "author": "Straft Studio",
+      "formatVersion": 1, "id": "high-contrast", "name": "High Contrast", "description": "Hard black and white edges with a signal-yellow accent.", "author": "Straft",
       "seeds": { "neutralHue": 0, "neutralTint": 0, "accentHue": 95, "accentChroma": 0.17, "accentLightnessNudge": 16 },
       "overrides": {
         "light": {

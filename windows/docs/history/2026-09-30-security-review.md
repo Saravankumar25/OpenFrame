@@ -7,7 +7,7 @@ frontend, dependencies and secrets.
 **Method:** manual code review across all crates and the frontend, with focused sweeps per area, then a fix and a
 regression test for every finding. The full findings table is in
 [`20-security-threat-model.md` §5](20-security-threat-model.md#5-internal-review-2026-09-30-findings).
-**Model:** Straft Studio is a local-first single-user app with no listening sockets. The review treats the **webview as
+**Model:** Straft is a local-first single-user app with no listening sockets. The review treats the **webview as
 untrusted** (threat T1). **Imported documents and received packages are treated as hostile**, because they come from
 other people. A local attacker running as the same Windows user is out of scope (§1 of the threat model).
 
@@ -29,12 +29,12 @@ other people. A local attacker running as the same Windows user is out of scope 
 
 | ID | What an attacker could do | Fix |
 |---|---|---|
-| PKG-01 | A received project package makes Straft Studio connect to `\\attacker\share` when it is only inspected (NTLM hash leak), or launch an executable disguised as a picture when the user clicks "Open" | Linked paths are only touched when they are on a local disk; executable types are revealed in Explorer instead of launched; links to network shares are refused |
+| PKG-01 | A received project package makes Straft connect to `\\attacker\share` when it is only inspected (NTLM hash leak), or launch an executable disguised as a picture when the user clicks "Open" | Linked paths are only touched when they are on a local disk; executable types are revealed in Explorer instead of launched; links to network shares are refused |
 | PKG-03 | A received project database runs its own triggers/views, or injects SQL through a crafted table name, including `ATTACH` to drop files anywhere | Schema screening on open and on import; `trusted_schema=OFF`; `SQLITE_LIMIT_ATTACHED=0`; identifiers always quoted |
 | AI-03 | `ai.remove_model("C:")` recursively deletes the process's current directory | Ids must be safe single components directly under `models/` |
 | REL-01 | Public releases would trust the development manifest-signing key | The release gate requires a distinct `STRAFT_MANIFEST_PUBLIC_KEY`; the workflow passes it; an untrusted embedded manifest is never used. *(Superseded 2026-10-08: no manifest or key exists since ADR-0025; the bundled files are pinned in a lock compiled into the app.)* |
 | PARSE-01 | One DOCX/FDX tag with millions of attributes hangs the import | quick-xml 0.42 (RUSTSEC-2026-0194/0195); O(n²) duplicate check off; ≤ 128 attributes per element |
-| PARSE-02 | A small PDF crashes the app: a decompression bomb, `[[[[…` stack overflow, or content amplification | lopdf 0.45 (RUSTSEC-2026-0187) with a per-stream decompression limit; pre-flight nesting/inflation limits; Straft Studio-controlled page-content decompression with a budget; large-stack parse thread |
+| PARSE-02 | A small PDF crashes the app: a decompression bomb, `[[[[…` stack overflow, or content amplification | lopdf 0.45 (RUSTSEC-2026-0187) with a per-stream decompression limit; pre-flight nesting/inflation limits; Straft-controlled page-content decompression with a budget; large-stack parse thread |
 
 ### Accepted risks (justification)
 

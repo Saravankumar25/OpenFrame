@@ -11,9 +11,10 @@ use std::sync::LazyLock;
 use regex::Regex;
 
 use super::ctx::FetchCtx;
-use super::{Fact, Input, P_HIGH};
-use crate::modules::ai::index::{Hit, How, Resolved, SceneHit};
+use super::{Elsewhere, Fact, Input, P_HIGH};
+use crate::modules::ai::index::{Hit, How, Kind, Resolved, SceneHit};
 use crate::modules::ai::queries;
+use crate::modules::ai::sections::{self, Leaf, SectionPick};
 use crate::modules::ai::turn::{Domain, ReadHow};
 
 static SCENE_N: LazyLock<Regex> =
@@ -185,6 +186,128 @@ pub fn effective(ctx: &FetchCtx<'_>, input: &Input<'_>) -> (Resolved, Vec<Fact>)
         }
     }
     (r, notes)
+}
+
+/// The draft a Screenplay pick chose is the one that screenplay is read from.
+pub fn pin_drafts(ctx: &FetchCtx<'_>, picks: &[SectionPick]) {
+    for p in picks {
+        if let Some(id) = &p.draft_id
+            && let Ok(Some(d)) = queries::draft_by_id(ctx.conn, id)
+        {
+            ctx.pin_draft(d);
+        }
+    }
+}
+
+/// Keep only the names homed in a picked leaf (spec 12.1). A name homed in another leaf is not
+/// fetched; it is returned aside, for the pointer to name the leaf. A scene, a shooting day and a
+/// screenplay are addresses that many leaves read by (breakdown, sides, the schedule), not content
+/// of one leaf, so they stay.
+pub fn restrict(mut r: Resolved, picked: &[&'static Leaf]) -> (Resolved, Vec<Elsewhere>) {
+    let mut aside: Vec<Elsewhere> = Vec::new();
+    let held = |k: Kind| sections::name_served(picked, k);
+    let mut drop = |list: &mut Vec<Hit>, kind: Kind| {
+        if held(kind) {
+            return;
+        }
+        if let Some(home) = sections::home_of_name_kind(kind) {
+            for h in list.drain(..) {
+                aside.push(Elsewhere {
+                    leaf: home.id,
+                    kind,
+                    name: h.name,
+                });
+            }
+        }
+    };
+    drop(&mut r.characters, Kind::Character);
+    drop(&mut r.persons, Kind::Person);
+    drop(&mut r.locations, Kind::Location);
+    drop(&mut r.acts, Kind::Act);
+    drop(&mut r.files, Kind::File);
+    drop(&mut r.budget_lines, Kind::BudgetLine);
+    let mut kept = Vec::new();
+    for (kind, hit) in std::mem::take(&mut r.others) {
+        if held(kind) {
+            kept.push((kind, hit));
+        } else if let Some(home) = sections::home_of_name_kind(kind) {
+            aside.push(Elsewhere {
+                leaf: home.id,
+                kind,
+                name: hit.name,
+            });
+        }
+    }
+    r.others = kept;
+    (r, aside)
+}
+
+/// Apply the instance picks: a screenplay, a scene, a shooting day or a call sheet the person chose
+/// stands for what the message did not name. What the message names wins, because it is more
+/// specific than the picker.
+pub fn narrow(ctx: &FetchCtx<'_>, mut r: Resolved, picks: &[SectionPick]) -> Resolved {
+    let ix = ctx.index;
+    for p in picks {
+        let screenplay = p.screenplay_id.clone().or_else(|| {
+            p.draft_id
+                .as_deref()
+                .and_then(|id| queries::draft_by_id(ctx.conn, id).ok().flatten())
+                .map(|d| d.screenplay_id)
+        });
+        if r.screenplays.is_empty()
+            && let Some(sp) = screenplay.as_deref().and_then(|id| ix.screenplay(id))
+        {
+            r.screenplays.push(Hit {
+                id: sp.id.clone(),
+                name: sp.title.clone(),
+                how: How::Focus,
+            });
+        }
+        if r.scenes.is_empty()
+            && let Some(e) = p.scene_id.as_deref().and_then(|id| ix.entity(id))
+            && let Some(sp) = e.screenplay_id.as_deref()
+            && let Some(n) = e.ordinal
+        {
+            r.scenes.push(SceneHit {
+                screenplay_id: sp.to_string(),
+                ordinal: n,
+                scene_id: Some(e.id.clone()),
+                heading: Some(e.name.clone()),
+                how: How::Focus,
+            });
+            if r.screenplays.is_empty()
+                && let Some(info) = ix.screenplay(sp)
+            {
+                r.screenplays.push(Hit {
+                    id: info.id.clone(),
+                    name: info.title.clone(),
+                    how: How::Focus,
+                });
+            }
+        }
+        // A call sheet stands for its shooting day.
+        let day = p.shooting_day_id.clone().or_else(|| {
+            p.call_sheet_id.as_deref().and_then(|id| {
+                ctx.conn
+                    .query_row(
+                        "SELECT shoot_day_id FROM call_sheet WHERE id = ?1 AND deleted_at IS NULL",
+                        [id],
+                        |row| row.get::<_, String>(0),
+                    )
+                    .ok()
+            })
+        });
+        if r.days.is_empty()
+            && let Some(e) = day.as_deref().and_then(|id| ix.entity(id))
+        {
+            r.days.push(Hit {
+                id: e.id.clone(),
+                name: e.name.clone(),
+                how: How::Focus,
+            });
+        }
+    }
+    r
 }
 
 /// The screenplay of the active Production Source, else the longest one with a current draft.

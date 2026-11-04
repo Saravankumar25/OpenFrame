@@ -1,15 +1,15 @@
 //! Story page export (Story > Story tab): the writer's free text as plain text, PDF or Word.
 //!
-//! The page is a manuscript, so none of these files carries the Straft Studio brand line (see
+//! The page is a manuscript, so none of these files carries the Straft brand line (see
 //! `Output::unbranded`). TXT is the text exactly as written with Windows line endings (without
 //! formatting). PDF and DOCX print the heading "Story" and then every line of the page as it was
 //! written, with its bold, italic, underline, highlight and sizes; blank lines keep their height.
 //! An empty page gives a valid document that holds only the heading.
 
+use serde::Deserialize;
 use straft_domain::{Actor, AppResult};
 use straft_import_export::docx::prose_lines_to_bytes;
 use straft_import_export::report::{Block, Document};
-use serde::Deserialize;
 use ts_rs::TS;
 
 use super::{Fmt, Job, Output, deliver, destination, footer, plural, require_export, subtitle};

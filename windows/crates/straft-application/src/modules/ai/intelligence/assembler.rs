@@ -13,8 +13,8 @@
 
 use std::collections::HashSet;
 
-use straft_domain::{Actor, AppResult};
 use serde_json::json;
+use straft_domain::{Actor, AppResult};
 
 use super::documents::{self, Built};
 use super::retriever::{Gathered, RankedHit, query_terms};
@@ -23,6 +23,9 @@ use crate::modules::ai::knowledge;
 use crate::modules::ai::retrieval::{ContextSource, RetrievalRoute, RetrieveRequest};
 use crate::modules::ai::scope::ContextItem;
 use crate::modules::ai::types::Provenance;
+
+/// The most characters of the picked scene that retrieval puts first.
+const SCOPE_SCENE_CHARS: usize = 2_500;
 
 /// Total characters of project text in one packet (≈1.5k tokens for Gemma 3 1B).
 pub const CONTEXT_CHARS: usize = 6_000;
@@ -111,29 +114,34 @@ pub fn assemble(
     let mut seen: HashSet<String> = HashSet::new();
     let mut seen_text: HashSet<String> = HashSet::new();
 
-    // 1. The user's explicit scope (already resolved and budgeted by scope.rs).
+    // 1. The scene the person picked comes first, read from the screenplay; it and the selection count
+    // as already seen.
     if let Some(scope) = &req.scope {
-        for item in &scope.context {
-            let src = ContextSource {
-                entity_type: "scope".into(),
-                entity_id: String::new(),
-                module: scope.kind.label().into(),
-                nav: serde_json::Value::Null,
-                via: "scope".into(),
-                relation: None,
-            };
-            if out.push(
-                item.source.clone(),
-                item.text.clone(),
-                Provenance::new("Scope", item.source.clone()),
-                src,
-                ITEM_CHARS * 2,
-            ) {
-                seen_text.insert(item.text.trim().to_string());
-            }
-        }
         if let Some(s) = &scope.scene {
             seen.insert(format!("screenplay_scene:{}", s.id));
+            let text = session
+                .store
+                .read(|c| crate::modules::ai::queries::scene_text(c, &s.id, SCOPE_SCENE_CHARS))
+                .unwrap_or_default();
+            if !text.trim().is_empty() {
+                let src = ContextSource {
+                    entity_type: "scope".into(),
+                    entity_id: String::new(),
+                    module: "Scene".into(),
+                    nav: serde_json::Value::Null,
+                    via: "scope".into(),
+                    relation: None,
+                };
+                if out.push(
+                    s.label(),
+                    text.clone(),
+                    Provenance::new("Scope", s.label()),
+                    src,
+                    ITEM_CHARS * 2,
+                ) {
+                    seen_text.insert(text.trim().to_string());
+                }
+            }
         }
         for id in &scope.selection {
             seen.insert(format!("*:{id}"));

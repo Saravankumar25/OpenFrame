@@ -24,7 +24,7 @@ import { hostRequests, pins, steerHost } from "../lib/model-host.mjs";
 
 let browser;
 const step = stepper(() => browser, "ai-download");
-const panel = '//aside[@aria-label="AI Assistant"]';
+const panel = '//aside[@aria-label="Straft AI"]';
 
 // The pinned set: the chat and embedding files at their Hugging Face paths on the test host.
 const { files } = pins();
@@ -113,8 +113,8 @@ describe("download Straft AI after install", () => {
   test("Remove takes the AI away; a damaged file is set aside; Pause and Resume continue the download", async () => {
     await step("remove-damaged-pause", async () => {
       steerHost({});
-      await click(browser, "Offline AI settings");
-      await menuItem(browser, "Offline AI settings");
+      await click(browser, "Straft AI settings");
+      await menuItem(browser, "Straft AI settings");
       await click(browser, "Remove Straft AI…");
       await click(browser, "Remove");
       await waitForText(browser, "Straft AI was removed.");
@@ -142,7 +142,7 @@ describe("download Straft AI after install", () => {
       await waitForCard(/Paused at/);
       steerHost({});
       await click(browser, "Resume download");
-      await waitForText(browser, "AI Ready", ANSWER_TIMEOUT);
+      await waitForText(browser, "Ready", ANSWER_TIMEOUT);
       const chat = hostRequests()
         .slice(mark)
         .filter((r) => r.path === CHAT && r.from > 0);

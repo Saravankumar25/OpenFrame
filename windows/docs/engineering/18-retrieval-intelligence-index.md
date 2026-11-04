@@ -198,7 +198,7 @@ update) has a different model id, so the stored vectors are dropped and re-embed
 Generated fixture: 240 scenes × 12 elements, 40 characters, 60 locations, 300 catalog items, 720 breakdown elements,
 30 shooting days, 240 cards, 150 notes/tasks/ideas (`tests/ai_retrieval_perf.rs`, test embedder dim 384).
 
-Measured 2026-09-30 on the development machine (Windows 11, debug test profile: Straft Studio crates at opt-level 0,
+Measured 2026-09-30 on the development machine (Windows 11, debug test profile: Straft crates at opt-level 0,
 dependencies at opt-level 2 — release builds are faster). Index: 1,302 documents, 1,302 chunks, 1,063 graph nodes,
 2,839 edges.
 

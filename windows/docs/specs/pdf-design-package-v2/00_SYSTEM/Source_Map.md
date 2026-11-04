@@ -8,7 +8,7 @@ All identifiers below were read from the repository at the commit named here. An
 |---|---|
 | Repository | `https://github.com/Saravankumar25/StraftStudio` |
 | Branch inspected | `main` |
-| **Commit used as source of truth** | `2f5a045416bd2125801329533fc47f986ccc8174` — "Add website/: Straft Studio public website (live at straft-studio.pages.dev)" (committed 2026-10-21; still the tip of `main` when checked with `git ls-remote` on 2026-10-23) |
+| **Commit used as source of truth** | `2f5a045416bd2125801329533fc47f986ccc8174` — "Add website/: Straft Studio public website (live at its pages.dev address)" (committed 2026-10-21; still the tip of `main` when checked with `git ls-remote` on 2026-10-23) |
 | Working checkout | **None supplied**: the working directory (`export changes/`) is not a git repository and contains no application source. The repository was therefore cloned read-only (blobless, sparse: `windows/crates/**`, `windows/apps/desktop/src/**`, `mac/crates/…/exports`, selected docs) into a scratch folder outside the package. No application file was modified, committed or pushed. |
 | Earlier audit pack (supplied) | pinned to `324cd963240b6c563c93ad065b239b1e6d5e31c2` (2026-10-20) |
 | Commits between audit and `main` | 43 (`git rev-list --count 324cd96..2f5a045`), mostly WindowsHTML/MacHTML captures, Mac work and the website. |
@@ -24,7 +24,7 @@ All identifiers below were read from the repository at the commit named here. An
 | `windows/crates/straft-import-export/src/report.rs`, `report/design*.rs` | **No change** since the audit (not in the diff stat) | The renderer description in the audit pack remains valid. |
 | `breakdown.rs`, `budget.rs`, `callsheet.rs`, `dood.rs`, `reports.rs`, `schedule.rs`, `sides.rs`, `style.rs`, `visual.rs` | unchanged | — |
 
-Not compared: the `mac/` tree (separate Rust crates exist: `mac/crates/straft-application/src/modules/exports/{daily.rs,…}` and `mac/crates/straft-import-export/src/report*`). The supplied PDFs match the **Windows** renderer (Helvetica base-14, navy/orange design blocks, `Created using Straft Studio` footer), so Windows is the authority; any Mac port is an open question.
+Not compared: the `mac/` tree (separate Rust crates exist: `mac/crates/straft-application/src/modules/exports/{daily.rs,…}` and `mac/crates/straft-import-export/src/report*`). The supplied PDFs match the **Windows** renderer (Helvetica base-14, navy/orange design blocks, `Created using Straft` footer), so Windows is the authority; any Mac port is an open question.
 
 ## 2. The export inventory (from `exports/mod.rs` header table + UI)
 

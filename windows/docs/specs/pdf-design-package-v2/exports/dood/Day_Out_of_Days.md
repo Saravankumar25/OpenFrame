@@ -4,7 +4,7 @@
 |---|---|
 | Export | Day Out of Days — op `schedule.export_dood` (PDF · XLSX · CSV; this spec covers the PDF) |
 | Variant | Landscape matrix, one trio: `Day_Out_of_Days.html/.pdf/.md` + `stress-test/Day_Out_of_Days_STRESS_TEST.html/.pdf`. Industry vs Simple code style are `data-toggle` variants in the same HTML |
-| Status | Design reference — not integrated; not validated against Straft Studio's Rust renderer |
+| Status | Design reference — not integrated; not validated against Straft's Rust renderer |
 | Repo commit | `2f5a045416bd2125801329533fc47f986ccc8174` (`main`, Windows tree) |
 | Date | 2026-10-23 |
 | Generator | `tools/build/matrix-finance/build_dood.py` + `dood_lib.py` (ports `derive_codes`, `CODES` and the label/count rules from the Rust source; the primary sample is checked against the 17 totals rows of the supplied PDF) |
@@ -152,7 +152,7 @@ Sorting: cast order and numbering exactly as the source (first work day, then ch
 
 ## F. Visual specification
 
-- **Page**: US Letter landscape 792×612 pt, margins 46 pt left/right/top, 66 pt bottom. Footer from the shared system (logo lockup 17 pt high, "Created using Straft Studio", "Page X of Y") — logo must be the embedded PNG, not the redrawn mark (implementation requirement).
+- **Page**: US Letter landscape 792×612 pt, margins 46 pt left/right/top, 66 pt bottom. Footer from the shared system (logo lockup 17 pt high, "Created using Straft", "Page X of Y") — logo must be the embedded PNG, not the redrawn mark (implementation requirement).
 - **Running header**: yes — `@top-right "LOW TIDE RADIO · DAY OUT OF DAYS"` (6.8 pt, no rule, no logo). Reason: a multi-page matrix printed loose needs page identity; verified present on every page (`verify_pdf.py --header`). Single-purpose document identity stays in the masthead.
 - **Type** (Helvetica): title 20 pt bold navy; eyebrow 7.6 pt tracked; facts 7.6 pt; stat values 13 pt bold navy / labels 6.6 pt tracked caps; table title 10 pt tracked caps; legend 7 pt (codes 7 pt bold); month band 6.8 pt bold tracked; header shoot no. 7.2 pt bold, date 10 pt bold, weekday 6.6 pt bold; cast 7.6 pt (actor bold navy); code cells 8.2 pt bold; counts 7.8 pt bold; totals 8 pt bold (Start/Finish 7.2 pt).
 - **Row height** 16 pt min (cast rows); count rows 13 pt; header 36 pt + month band 11 pt.

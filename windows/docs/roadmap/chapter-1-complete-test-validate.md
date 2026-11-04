@@ -1,4 +1,4 @@
-# Chapter 1: complete, test and validate Straft Studio on Windows and on the Mac
+# Chapter 1: complete, test and validate Straft on Windows and on the Mac
 
 > Rewritten 2026-10-15 after the owner's 25 decisions ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) to
 > [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). The earlier Chapter 1 plan (seven streams) is kept in
@@ -65,6 +65,6 @@ word to build (W4, W9, W10, M9, M10); the borrowed laptops (W7, W9); the team fo
 ## 6. What moves to later chapters
 
 - **Chapter 2:** the website, its domain and mailboxes, support pages, the Privacy Policy and Terms pages.
-- **Chapter 3:** store packaging, accounts, payment and trial, the licence server, signing and notarization, the updater,
+- **Chapter 3:** store packaging, accounts, payment and trial, the licence server (dropped, ADR-0039), signing and notarization, the updater,
   the end-user licence agreement, counsel review, "Report AI output", stronger protection for the team gate and encryption of
   projects at rest, and the first 90 days after launch. The 83 build plan boxes tagged "Later: store publishing" belong here.

@@ -1,5 +1,5 @@
-use straft_domain::Actor;
 use rusqlite::{Connection, params};
+use straft_domain::Actor;
 
 use super::long::{self, MAX_ENTRIES, RETRIEVE_COUNT, RETRIEVE_TOKENS, Saved};
 use super::rules::{Candidate, Kind, candidate};

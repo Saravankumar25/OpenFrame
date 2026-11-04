@@ -11,7 +11,7 @@
 > Draft for Partner Center > Store listings > English (United States). Field limits are Partner
 > Center's. Before submitting, check every claim against the build you upload. The Store rejects
 > listings that describe features the package doesn't have (policy 10.1). Lines marked **[AI]**
-> apply only when the build ships the local AI assistant. Remove them otherwise.
+> apply only when the build ships Straft AI. Remove them otherwise.
 
 ## Product name
 
@@ -26,8 +26,9 @@ Straft Studio is a filmmaking studio for Windows that keeps your whole project i
 from the first idea to the call sheet. It is local-first: no account, no subscription to a cloud
 service, and your projects stay on your computer.
 
-**[AI]** Straft Studio includes an optional AI writing and planning assistant that uses generative AI.
-The assistant runs entirely on your PC and is included with the app (nothing to download), and your
+**[AI]** Straft includes Straft AI, an optional writing and planning feature that uses generative AI.
+Straft AI runs entirely on your PC. The AI engine comes with the app; the AI models are downloaded once, after install,
+only when you click Download Straft AI (the app works fully without them), and your
 project content is never sent to a cloud AI service. AI suggestions are only suggestions. Nothing
 changes in your project until you review and apply it. To report inappropriate AI output, use
 [support link or e-mail].
@@ -51,8 +52,8 @@ send back their notes and changes, and you decide what to accept.
 Recently Deleted for everything you remove. Projects are ordinary folders in your Documents, so you
 can back them up any way you like, and uninstalling the app never deletes them.
 
-Requirements: Windows 11 on a 64-bit (x64) PC. Straft Studio uses
-the Microsoft Edge WebView2 Runtime, which is included with Windows 11. **[AI]** The included AI assistant adds about 1.1 GB to the installed app and works best with [N] GB of RAM or more.
+Requirements: Windows 11 on a 64-bit (x64) PC. Straft uses
+the Microsoft Edge WebView2 Runtime, which is included with Windows 11. **[AI]** The AI models are a one-time download after install, started by you, and need about [N] GB of free disk space. Straft AI works best with [N] GB of RAM or more.
 
 ## What's new in this version
 
@@ -70,7 +71,7 @@ First Microsoft Store release.
 8. Shooting schedule and call sheets with PDF export
 9. File-based review and exchange packages for collaborators
 10. Autosave, undo and redo, crash recovery and Recently Deleted
-11. **[AI]** Optional on-device AI assistant. Nothing is sent to the cloud.
+11. **[AI]** Optional on-device Straft AI. Nothing is sent to the cloud.
 
 ## Keywords (up to 7)
 
@@ -103,7 +104,7 @@ and don't add extra logos or marketing text.
 | 4 | Breakdown | Break scenes down into cast, props, wardrobe, locations and more. |
 | 5 | Schedule / call sheet | Schedule shooting days and produce call sheets. |
 | 6 | Home / project list | Your projects are folders on your PC. No account, no cloud required. |
-| 7 **[AI]** | AI assistant suggestion review | The optional AI assistant runs on your PC. You review every change. |
+| 7 **[AI]** | Straft AI suggestion review | The optional Straft AI runs on your PC. You review every change. |
 
 ## Store logos
 
@@ -120,5 +121,5 @@ and don't add extra logos or marketing text.
 - **Website / support contact:** [URLs]
 - **Product declarations:** check "This app depends on non-Microsoft drivers or NT services" =
   **No**. The rest per Partner Center defaults.
-- **System requirements:** x64. Minimum memory [N] GB. **[AI]** Recommended memory [N] GB for the
-  AI assistant.
+- **System requirements:** x64. Minimum memory [N] GB. **[AI]** Recommended memory [N] GB for
+  Straft AI.

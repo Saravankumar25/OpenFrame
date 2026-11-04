@@ -2,13 +2,13 @@
 //! Scene Hub (UX §3.11, mock 097), Beat Board reference panel (FSD §17.2,
 //! read-only), scene search indexing and recoverable scene deletion.
 
+use rusqlite::{Connection, OptionalExtension, params};
+use serde::{Deserialize, Serialize};
+use serde_json::{Value, json};
 use straft_domain::enums::DraftStatus;
 use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
 use straft_persistence::rows::{place_at, text, update_fields};
 use straft_persistence::undo::quote_ident;
-use rusqlite::{Connection, OptionalExtension, params};
-use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
 use ts_rs::TS;
 
 use super::{ScreenplayTitlePage, bump_seq, live_scene_ids, load_screenplay, scene_number};

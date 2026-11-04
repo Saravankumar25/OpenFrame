@@ -46,7 +46,7 @@ The software cannot be proven free of every bug. This definition is the standard
 
 ### 1a. Windows security standard (permanent, applies to every box)
 
-Straft Studio must meet the security bar of well-regarded professional Windows desktop applications, on every change and in every release.
+Straft must meet the security bar of well-regarded professional Windows desktop applications, on every change and in every release.
 
 - **Least privilege:** standard user, no elevation; Store capabilities limited to runFullTrust and internetClient, justified in writing.
 - **Binary hardening:** verify ASLR, DEP, control-flow guard and safe linker flags in release builds; no secrets or debug data in artifacts; no unsafe Rust without a written reason.
@@ -194,7 +194,7 @@ M9 corpus authoring, M12 domain and policy drafting.
 - [ ] M1.15 **[W1]** [CODE] Hostile-input corpus (normal, malformed, huge, nested, zip-slip, traversal, entity expansion, decompression bomb, symlink, case collision, Unicode path) kept permanently for FDX, Fountain, DOCX, PDF, ZIP, packages; fuzz harness for each parser.
 - [ ] M1.16 **[W1]** [CODE] Golden PDF image-compare harness (page count, margins, headings, dialogue, title page, numbers, continuation, revision marks, headers, no clipping) [XFER-010].
 - [ ] M1.17 **[W1]** [CODE] UI visual-regression harness using the M0.20 baseline.
-- [ ] M1.18 **[W1]** [CODE] Log redaction test (no screenplay text, notes, contacts, prompts, paths, keys) [CORE-014]. Amended by M0.28 (P13): release builds cap `STRAFT_LOG` at `info` for non-Straft Studio targets, the project lock path log is removed or redacted, and the test also covers the sidecar log.
+- [ ] M1.18 **[W1]** [CODE] Log redaction test (no screenplay text, notes, contacts, prompts, paths, keys) [CORE-014]. Amended by M0.28 (P13): release builds cap `STRAFT_LOG` at `info` for non-Straft targets, the project lock path log is removed or redacted, and the test also covers the sidecar log.
 - [ ] M1.19 **[W1]** [CODE] **Export diagnostics** bundle: user-initiated, inspectable, redacted [CORE-015, ADR-0021]. ADR-0021 Accepted 2026-10-05.
 - [ ] M1.20 **[W1]** [CODE] Performance budgets re-run and extended with budgets for features in M2 to M7 (typing latency, reflow, breakdown filters, schedule ops, call-sheet and PDF export) (doc 21).
 
@@ -238,7 +238,7 @@ M9 corpus authoring, M12 domain and policy drafting.
 - [ ] M2.15 **[W2]** [CODE] Dialogue continuation generated from structure; one split block distinct from two blocks [SCRIPT-011].
 - [ ] M2.16 **[W2]** [CODE] Embedded subset fonts and shaping for Telugu, Hindi, Tamil, Malayalam, Kannada, English and mixed text; deterministic golden output [SCRIPT-UNI-001, ADR-0016].
 - [ ] M2.17 **[W2]** [CODE] Multilingual round trip passes: type, save, reload, PDF, FDX, Fountain, DOCX, search, AI retrieval.
-- [ ] M2.18 **[W2]** [CODE] Screenplay outputs carry no Straft Studio branding (test) [XFER-009].
+- [ ] M2.18 **[W2]** [CODE] Screenplay outputs carry no Straft branding (test) [XFER-009].
 
 ### Interchange
 - [ ] M2.19 **[W2]** [CODE] FDX import: preview with counts and warnings; custom element preserve, map or review; scene numbers, title data, revisions; never flatten unknown constructs [XFER-001].
@@ -333,7 +333,7 @@ Contract: doc 33. Extend existing tables; do not replace them (reconciliation C1
 - [ ] M7.04 **[W3]** [CODE] Editing a call sheet never changes screenplay, breakdown or schedule (test).
 - [ ] M7.05 **[W3]** [CODE] Lightweight budget Planned and Actual, category totals, difference, report; migration keeps existing amounts as Planned [BUDGET-001].
 - [ ] M7.06 **[W3]** [CODE] Sides, production reports (6 types), moodboard, storyboard sheet, shot list exports [CALL-007, VIS-001 to 003].
-- [ ] M7.07 **[W3]** [CODE] Subtle Straft Studio branding on every non-screenplay export; spreadsheets via metadata or footer; user files never modified (test per export) [BRAND-001].
+- [ ] M7.07 **[W3]** [CODE] Subtle Straft branding on every non-screenplay export; spreadsheets via metadata or footer; user files never modified (test per export) [BRAND-001].
 - [ ] M7.08 **[W3]** [CODE] Call sheet, schedule, DOOD, breakdown, budget, sides PDFs have golden or image regression [CALL-006].
 - [ ] M7.09 **[W3]** [OWNER] D12 template inventory decided; D13 and X13 sample scripts written or commissioned.
 - [ ] M7.10 **[W3]** [CODE] Built-in templates per D12; Use creates an independent copy; later template edits never change existing documents (test) [TEMP-001, TEMP-002].

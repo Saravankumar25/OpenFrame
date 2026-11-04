@@ -1,7 +1,7 @@
 //! Platform boundary for Straft Studio (build plan area "Platform adapter layer for Windows and Mac").
 //!
 //! This crate is the only place outside the desktop shell (`apps/desktop/src-tauri`) that may
-//! know which operating system Straft Studio runs on. Feature code calls these functions and never
+//! know which operating system Straft runs on. Feature code calls these functions and never
 //! writes `cfg(windows)`, `cfg(target_os = ...)`, `std::os::windows`, `std::os::unix` or the
 //! `windows` and `libc` crates itself. The architecture lint (`scripts/architecture-lint.mjs`,
 //! rule R6) enforces that.

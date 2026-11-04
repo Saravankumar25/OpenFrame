@@ -1,13 +1,13 @@
-//! Long-lived Offline AI service held by `AppCore` (the bundled AI and its two engines,
-//! ADR-0025). Created lazily on the first `ai.*` operation; the rest of Straft Studio never depends
+//! Long-lived Straft AI service held by `AppCore` (the bundled AI and its two engines,
+//! ADR-0025). Created lazily on the first `ai.*` operation; the rest of Straft never depends
 //! on it (FSD-AI-001).
 
 use std::sync::Arc;
 
-use straft_ai::{AiManager, InferenceProvider, ManagerConfig};
-use straft_domain::{AppError, AppResult};
 use parking_lot::RwLock;
 use serde_json::json;
+use straft_ai::{AiManager, InferenceProvider, ManagerConfig};
+use straft_domain::{AppError, AppResult};
 
 use crate::core::{AppConfig, AppCore};
 use crate::events::{AppEvent, EventSink};
@@ -35,7 +35,7 @@ pub fn emit(events: &Arc<dyn EventSink>, name: &str, payload: serde_json::Value)
 fn unavailable() -> AppError {
     AppError::ai(
         "unavailable",
-        "AI is currently unavailable. Straft Studio's core workflows continue to work normally.",
+        "AI is currently unavailable. Straft's core workflows continue to work normally.",
     )
 }
 
@@ -62,7 +62,7 @@ impl AiService {
             Err(e) => {
                 tracing::error!(
                     code = e.code_str(),
-                    "Offline AI could not initialise; the rest of Straft Studio is unaffected"
+                    "Straft AI could not initialise; the rest of Straft is unaffected"
                 );
                 Self::with_manager(None, Some(e), events)
             }

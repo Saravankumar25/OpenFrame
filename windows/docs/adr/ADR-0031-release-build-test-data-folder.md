@@ -18,7 +18,7 @@ ways out: let the release build honour the test folder, use a separate Windows t
 
 1. The release build honours `STRAFT_DATA_ROOT=<absolute folder>` for **file locations only**: app data, projects, the
    Global Idea Vault and deleted projects (which go to `<folder>\recycle-bin` instead of the Recycle Bin). As in the debug
-   build, such a run does not take the single-instance lock, so it never hands over to the person's own Straft Studio.
+   build, such a run does not take the single-instance lock, so it never hands over to the person's own Straft.
 2. Every other test switch stays debug-only and is refused by the release build whatever the environment says:
    deterministic AI sampling (`STRAFT_AI_DETERMINISTIC`) and the hand-set licence state (`entitlement.debug_set`). A
    unit test in `lib.rs` holds this. (Amended 2026-10-16: the switch for another AI folder, `STRAFT_AI_BUNDLE_DIR`, was
@@ -29,6 +29,6 @@ ways out: let the release build honour the test folder, use a separate Windows t
 ## Consequences
 
 - The suite can drive the release executable without touching the tester's data.
-- Anyone who can set an environment variable for a person's session can point Straft Studio at another folder. That person
+- Anyone who can set an environment variable for a person's session can point Straft at another folder. That person
   can already read and write the same files directly, so no privilege boundary is crossed; the threat model records it.
 - Release specs that need a debug-only switch are listed in the release run with the reason they are skipped.

@@ -52,7 +52,7 @@ pub fn register(r: &mut Registry) {
         .hidden(h::USER_PATH),
     );
     r.query("screenplay.samples", import::samples).meta(
-        M::read("The sample scripts that ship with Straft Studio, for learning the app.")
+        M::read("The sample scripts that ship with Straft, for learning the app.")
             .hidden(h::UI_FLOW),
     );
     r.command("screenplay.import_apply", import::apply).meta(

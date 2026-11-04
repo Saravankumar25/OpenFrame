@@ -28,6 +28,21 @@
 #   MSIX_IDENTITY_NAME, MSIX_PUBLISHER, MSIX_PUBLISHER_DISPLAY_NAME   Partner Center > Product identity
 #   STORE_PRIVACY_POLICY_URL                                          hosted docs/store/privacy-policy.md
 #   RELEASE_CHANNELS   which channels a tag builds: "direct,store" (default), "direct" or "store"
+#
+# Store release guards (ADR-0039 items 14 to 17), all inside "release-validate.mjs --store":
+#   - scripts/check-release-placeholders.mjs: no placeholder token (the REPLACE_WITH_ prefix followed
+#     by a name) may remain in store.config.json (after the MSIX_* variables above are applied), the
+#     rendered manifest, this workflow or apps/desktop/src/features/licensing/rules.ts. Until the
+#     owner sets the three MSIX_* identity variables, or fills store.config.json, the Store gate
+#     fails closed. Debug, test and internal builds (build-msix.mjs --dev) never run it.
+#   - packaging/msix/submissions.json: the package version must be higher than lastSubmittedVersion,
+#     and the identity must equal firstSubmissionIdentity once that is set. The owner (or the session
+#     that submits) updates the file once per submission, in the same change.
+#   - The manifest declares internetClient and runFullTrust only. The package is x64 only; there is
+#     no msixbundle step because no ARM64 package is shipped (ADR-0039 item 17).
+#   - The Windows App Certification Kit needs an elevated prompt and a signed test copy of the
+#     package, so it is a documented manual step before upload, not a CI job:
+#     docs/release/store-submission-checklist.md.
 
 name: Release
 
@@ -392,6 +407,16 @@ jobs:
           MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
           STRAFT_AI_ASSETS_DIR: ${{ vars.STRAFT_AI_ASSETS_DIR }}
         run: node scripts/build-msix.mjs --store
+
+      # WACK (Windows App Certification Kit) is run by hand on the exact package before upload, see
+      # docs/release/store-submission-checklist.md. A hosted runner can run it once the package is
+      # signed with a throwaway certificate that the runner trusts; enable a step like this then:
+      #   - name: Windows App Certification Kit
+      #     shell: pwsh
+      #     run: |
+      #       $kit = 'C:\Program Files (x86)\Windows Kits\10\App Certification Kit'
+      #       & "$kit\appcert.exe" reset
+      #       & "$kit\appcert.exe" test -appxpackagepath "$PWD\target\msix\<signed test copy>.msix" -reportoutputpath "$PWD\target\msix\wack-report.xml"
 
       - name: Collect Store artifacts and checksums
         shell: pwsh

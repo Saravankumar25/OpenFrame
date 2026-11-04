@@ -1,10 +1,10 @@
 //! Vault search (FSD §5.9, FSD-IDEA-009): the vault_item search projection and
 //! vault-scoped ranking over the shared local full-text index.
 
-use straft_domain::AppResult;
-use straft_domain::enums::VaultItemType;
 use rusqlite::{Connection, OptionalExtension};
 use serde_json::json;
+use straft_domain::AppResult;
+use straft_domain::enums::VaultItemType;
 
 use super::model::{VaultItemDto, display_name};
 use crate::modules::search::fts_query;

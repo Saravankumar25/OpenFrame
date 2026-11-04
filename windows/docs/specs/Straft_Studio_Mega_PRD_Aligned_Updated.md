@@ -35,7 +35,7 @@ The engineering team may choose any implementation that satisfies the behavior a
 
 **P0 — Product identity / first production-ready release**
 
-A feature required for Straft Studio to deliver its core promise.
+A feature required for Straft to deliver its core promise.
 
 **P1 — Important second-level capability**
 
@@ -368,7 +368,7 @@ Recommended layout:
 
 ```text
 ┌──────────────────────────────────────────────────────────────┐
-│ Straft Studio   Project Name        Search       Help / User     │
+│ Straft   Project Name        Search       Help / User     │
 ├──────────────┬───────────────────────────────────────────────┤
 │              │                                               │
 │ Home         │                                               │
@@ -431,7 +431,7 @@ The user should never wonder:
 
 # 8. Project Lifecycle
 
-Straft Studio supports this practical lifecycle:
+Straft supports this practical lifecycle:
 
 ```text
 IDEA
@@ -1164,7 +1164,7 @@ When the user clicks:
 
 > **Build Screenplay**
 
-Straft Studio creates a screenplay structure from the active Scene Cards.
+Straft creates a screenplay structure from the active Scene Cards.
 
 For each included card:
 
@@ -1442,7 +1442,7 @@ Import is a first-class workflow because many filmmakers will already have scrip
 
 StudioBinder currently supports PDF, Final Draft, Fountain and TXT imports as part of its screenplay-to-production workflow. citeturn489856search14turn311070search3
 
-Straft Studio extends this with DOCX and pasted text because the target audience includes beginners and independent filmmakers working with ordinary documents.
+Straft extends this with DOCX and pasted text because the target audience includes beginners and independent filmmakers working with ordinary documents.
 
 ---
 
@@ -1858,7 +1858,7 @@ Users may add custom categories only when necessary.
 
 # 61. Production Catalog
 
-Once an element is confirmed in a breakdown, Straft Studio can add it to the project catalog.
+Once an element is confirmed in a breakdown, Straft can add it to the project catalog.
 
 Example:
 
@@ -2145,7 +2145,7 @@ It displays:
 - optional cast indicators,
 - important breakdown indicators.
 
-Current Filmustage documentation demonstrates both stripboard and list views, drag-and-drop reordering, day breaks, location assignment and schedule export; Straft Studio should borrow the practical model while intentionally keeping its scheduling controls lighter. citeturn489856search2turn489856search3
+Current Filmustage documentation demonstrates both stripboard and list views, drag-and-drop reordering, day breaks, location assignment and schedule export; Straft should borrow the practical model while intentionally keeping its scheduling controls lighter. citeturn489856search2turn489856search3
 
 ---
 
@@ -2314,7 +2314,7 @@ The user selects:
 
 > Shoot Day 4 → Create Call Sheet
 
-Straft Studio pre-populates the document.
+Straft pre-populates the document.
 
 ---
 
@@ -2399,7 +2399,7 @@ Mobile viewing is supported by the exported document, not by requiring a mobile 
 
 The user does not want to maintain a cloud synchronization platform merely to enable collaboration.
 
-Straft Studio therefore uses a **local-first collaboration model**.
+Straft therefore uses a **local-first collaboration model**.
 
 This is a major product feature.
 
@@ -2421,7 +2421,7 @@ No internet required.
 
 For remote collaborators.
 
-A user exports a specific page or module as a Straft Studio Exchange Package.
+A user exports a specific page or module as a Straft Exchange Package.
 
 Examples:
 
@@ -2441,9 +2441,9 @@ The file can be sent by:
 - file-sharing service,
 - any normal file-transfer method.
 
-The receiving person imports it into Straft Studio.
+The receiving person imports it into Straft.
 
-No Straft Studio cloud account is required for exchanging a package.
+No Straft cloud account is required for exchanging a package.
 
 ---
 
@@ -2453,9 +2453,9 @@ No Straft Studio cloud account is required for exchanging a package.
 
 When several people are physically together or connected to the same private network, one machine may host a temporary collaboration session.
 
-Other Straft Studio desktop installations connect directly to that session.
+Other Straft desktop installations connect directly to that session.
 
-No Straft Studio cloud is required.
+No Straft cloud is required.
 
 The host machine controls the active shared project session.
 
@@ -2480,7 +2480,7 @@ Each exchange file should contain:
 - source version identifier,
 - export timestamp.
 
-The receiver imports the file into the corresponding Straft Studio page.
+The receiver imports the file into the corresponding Straft page.
 
 ---
 
@@ -2504,7 +2504,7 @@ Exports a file.
 
 Sends it through any communication method.
 
-Reviewer opens/imports it in Straft Studio.
+Reviewer opens/imports it in Straft.
 
 Reviewer can:
 
@@ -2552,7 +2552,7 @@ This protects against accidental loss.
 
 # 91. Page-Specific Exchange Packages
 
-Because the user proposed a different file format for different pages, Straft Studio should formalize that idea.
+Because the user proposed a different file format for different pages, Straft should formalize that idea.
 
 Examples:
 
@@ -2582,7 +2582,7 @@ Call-sheet review package.
 
 The exact file extensions may change, but the conceptual model should remain:
 
-> **Every major Straft Studio workspace can produce a portable, self-contained exchange package.**
+> **Every major Straft workspace can produce a portable, self-contained exchange package.**
 
 ---
 
@@ -2604,20 +2604,20 @@ The tradeoff is deliberate:
 
 Users can use email/WhatsApp/Drive/Dropbox/etc. themselves as the transportation layer.
 
-Straft Studio does not need to own that communication channel.
+Straft does not need to own that communication channel.
 
 ---
 
 # 93. AI Assistant
 
-The AI assistant is an optional **system-wide natural-language project assistant and command interface**. It should behave more like an Amazon Q-style assistant for Straft Studio than like a screenplay judge or autonomous filmmaker.
+The AI assistant is an optional **system-wide natural-language project assistant and command interface**. It should behave more like an Amazon Q-style assistant for Straft than like a screenplay judge or autonomous filmmaker.
 
 The assistant understands two kinds of authoritative context:
 
-- **Straft Studio knowledge:** how the application works, its terminology, permissions, source-of-truth rules, workflows and supported actions.
+- **Straft knowledge:** how the application works, its terminology, permissions, source-of-truth rules, workflows and supported actions.
 - **Project knowledge:** the user's accessible project data and supported relationships across the current project.
 
-The assistant is a control layer over existing Straft Studio capabilities. It is not a second project database and never becomes authoritative over user content.
+The assistant is a control layer over existing Straft capabilities. It is not a second project database and never becomes authoritative over user content.
 
 ---
 
@@ -2643,7 +2643,7 @@ The assistant may, when the user explicitly asks:
 - prepare structured project-wide rename/replace operations;
 - prepare supported batch operations;
 - explain stale production/schedule/call-sheet dependencies;
-- explain Straft Studio workflow behavior;
+- explain Straft workflow behavior;
 - and route supported natural-language requests to the same underlying application actions available through normal UI.
 
 The assistant should understand ordinary natural-language phrasing rather than requiring a fixed command syntax.
@@ -2656,7 +2656,7 @@ The assistant may also issue read-only, calculation, search and navigation comma
 
 > “Find every project file mentioning railway station.”
 
-These commands route to existing Straft Studio capabilities rather than creating a parallel application command system.
+These commands route to existing Straft capabilities rather than creating a parallel application command system.
 
 ---
 
@@ -2730,7 +2730,7 @@ User accepts
 ↓
 Validate again
 ↓
-Apply through normal Straft Studio action
+Apply through normal Straft action
 ↓
 Undo / Activity / Recovery
 ```
@@ -2748,7 +2748,7 @@ Arbitrary screenplay text is not changed by default.
 
 Batch operations must show affected counts, modules, exclusions, locked/unauthorized targets and conflicts before application.
 
-The assistant should be able to answer supported questions about Straft Studio itself using versioned product knowledge.
+The assistant should be able to answer supported questions about Straft itself using versioned product knowledge.
 
 AI is optional and core workflows must continue without it. A small local model, including a Qwen2.5-0.5B-class model, is a supported implementation target, but the model does not perform exact calculations, permission decisions, validation or direct project-storage writes.
 
@@ -2965,7 +2965,7 @@ Examples:
 - project folder,
 - network drive where supported by the OS.
 
-The application must not require a Straft Studio-hosted cloud folder.
+The application must not require a Straft-hosted cloud folder.
 
 ---
 
@@ -3161,7 +3161,7 @@ This allows the production side to remain stable even while the visible scene nu
 
 # 116. Scene Reordering Safety
 
-If a scene has already been used in production planning and the screenplay order changes, Straft Studio should not silently destroy schedule planning.
+If a scene has already been used in production planning and the screenplay order changes, Straft should not silently destroy schedule planning.
 
 It should display:
 
@@ -3312,7 +3312,7 @@ Users should be able to save their own layout preferences.
 
 Export is not secondary.
 
-The filmmaker must be able to leave Straft Studio without being trapped.
+The filmmaker must be able to leave Straft without being trapped.
 
 Supported exports:
 
@@ -3658,7 +3658,7 @@ The package can be returned without sharing the writer's private notes or entire
 
 # 139. Why This Matters
 
-This collaboration model makes Straft Studio useful to small teams without forcing them into a subscription cloud platform.
+This collaboration model makes Straft useful to small teams without forcing them into a subscription cloud platform.
 
 It also fits the product philosophy:
 
@@ -3809,7 +3809,7 @@ User chooses:
 
 > Shooting Draft 6.
 
-Straft Studio then creates or initializes:
+Straft then creates or initializes:
 
 - breakdown scenes,
 - production catalog,
@@ -3858,7 +3858,7 @@ This is a critical control point.
 
 # 150. Breakdown Reconciliation
 
-After a production source update, Straft Studio compares old and new script content.
+After a production source update, Straft compares old and new script content.
 
 Example:
 
@@ -3955,7 +3955,7 @@ This is a natural extension of the schedule/call-sheet workflow.
 
 # 156. Daily Production View
 
-Even though Straft Studio is pre-production focused, the user may reach the shooting stage.
+Even though Straft is pre-production focused, the user may reach the shooting stage.
 
 A simple daily screen can show:
 
@@ -4049,7 +4049,7 @@ A feature is rejected or postponed if it:
 1. Is rarely used by independent filmmakers.
 2. Requires the user to enter large amounts of metadata.
 3. Exists mainly to satisfy studio-scale edge cases.
-4. Duplicates a tool already used outside Straft Studio.
+4. Duplicates a tool already used outside Straft.
 5. Does not connect to story or practical pre-production.
 6. Adds significant interface complexity without comparable value.
 
@@ -4057,7 +4057,7 @@ A feature is rejected or postponed if it:
 
 # 161. The Four Core Jobs
 
-Straft Studio should be excellent at exactly four jobs.
+Straft should be excellent at exactly four jobs.
 
 ## Job 1 — Remember the film
 
@@ -4081,7 +4081,7 @@ Everything else supports these jobs.
 
 # 162. Primary User Journey — First Film
 
-A first-time filmmaker opens Straft Studio.
+A first-time filmmaker opens Straft.
 
 ### Step 1
 
@@ -4704,7 +4704,7 @@ But no single screen should show all of it by default.
 
 Instead, provide a clear Scene Hub and dedicated views.
 
-This is how Straft Studio stays powerful without looking complicated.
+This is how Straft stays powerful without looking complicated.
 
 ---
 
@@ -4759,7 +4759,7 @@ Simple Schedule
 Call Sheet
 ```
 
-That is a complete valid Straft Studio project.
+That is a complete valid Straft project.
 
 ---
 
@@ -4863,7 +4863,7 @@ PRD requirement IDs use `PRD-[MODULE]-NNN` and identify product-level capabiliti
 
 # 195. Feature Priority — P0
 
-| Priority | Straft Studio features |
+| Priority | Straft features |
 |---|---|
 | **P0** | Desktop Windows/macOS, local projects, global/project Idea Vault, media capture, collections, search, Beat Board, Acts, Sequences, Beats, Scene Cards, drag/drop, Parking Lot, screenplay editor, screenplay import/export, edit history, named drafts, draft comparison, comments, review packages, basic LAN collaboration, breakdown, breakdown suggestions, catalog, locations, cast/crew, shot lists, basic storyboards, moodboards, stripboard, basic schedule assistance, call sheets, project archive |
 | **P1** | Story timeline, script lock, production revision colors, Sides, better storyboard tools, advanced schedule conflicts, AI assistant, richer exchange controls, templates, lightweight tasks, Scene Hub, more export layouts, multi-monitor, Project Notes, Activity History, Daily Production View, Basic Production Reports, Lightweight Budget |
@@ -5072,12 +5072,12 @@ The Idea Vault passes acceptance when:
 8. AI never silently edits, deletes, archives, approves, locks or otherwise mutates project data.
 9. Any project-changing AI action produces an explicit preview before mutation.
 10. User can accept or reject a proposed mutation.
-11. Accepted AI mutations use normal Straft Studio actions and remain undoable where the underlying action is undoable.
+11. Accepted AI mutations use normal Straft actions and remain undoable where the underlying action is undoable.
 12. Batch mutations show affected counts and relevant exclusions/conflicts before application.
 13. Structured rename/replace distinguishes canonical/structured references from arbitrary screenplay text.
 14. AI respects the current user's permissions, locked states and private-note rules.
 15. Stale or conflicting Change Sets are revalidated before application.
-16. AI can answer supported questions about Straft Studio product behavior using current product knowledge.
+16. AI can answer supported questions about Straft product behavior using current product knowledge.
 17. External AI usage is clearly disclosed before project content is transmitted externally.
 18. Local AI may operate without internet when configured and supported.
 19. AI failure does not alter or corrupt local project data.
@@ -5125,7 +5125,7 @@ Then:
 
 > Build Screenplay.
 
-Straft Studio creates screenplay scenes in that order.
+Straft creates screenplay scenes in that order.
 
 The writer writes the actual screenplay.
 
@@ -5206,7 +5206,7 @@ Scene 1
 Scene 3
 Scene 5
 
-Straft Studio shows:
+Straft shows:
 
 > 3 scenes at same location.
 
@@ -5244,7 +5244,7 @@ The user clicks:
 
 > Create Call Sheet.
 
-Straft Studio generates:
+Straft generates:
 
 ```text
 BLACK RAIN
@@ -5367,31 +5367,31 @@ The product deliberately references established workflows rather than inventing 
 
 Current StudioBinder materials describe screenplay importing, script breakdown, tagging production elements, script synchronization, scheduling, shot lists, storyboards, moodboards, call sheets, script versions, comments and collaboration as connected workflows. citeturn489856search14turn311070search3turn311070search5turn311070search2
 
-Straft Studio adopts these as the practical baseline while narrowing the product around independent filmmakers and local-first use.
+Straft adopts these as the practical baseline while narrowing the product around independent filmmakers and local-first use.
 
 ## Celtx
 
 Current Celtx documentation connects beat sheets, storyboards, screenplay writing, breakdown, catalog, shot lists, schedule, cast/crew, sides and call sheets. citeturn489856search0turn489856search8
 
-Straft Studio adopts the useful flow while deliberately resisting broad production-suite expansion.
+Straft adopts the useful flow while deliberately resisting broad production-suite expansion.
 
 ## Filmustage
 
 Current Filmustage documentation shows modern stripboard/list scheduling, drag-and-drop scene ordering, day breaks, estimated shooting time, scheduling views, script panels and automatic breakdown/scheduling assistance. citeturn489856search1turn489856search2turn489856search3
 
-Straft Studio uses those practical patterns but keeps user control explicit and avoids heavy automation.
+Straft uses those practical patterns but keeps user control explicit and avoids heavy automation.
 
 ## DaVinci Resolve
 
 DaVinci Resolve documents both cloud collaboration and private/local Project Server collaboration, including simultaneous collaboration and locking behavior. citeturn311070search0turn311070search1
 
-This supports the feasibility of a local-network collaboration mode without making Straft Studio a cloud-first application.
+This supports the feasibility of a local-network collaboration mode without making Straft a cloud-first application.
 
 ---
 
 # 218. Competitive Product Boundary
 
-Straft Studio should not win by claiming:
+Straft should not win by claiming:
 
 > “We have more features than everybody.”
 
@@ -5410,7 +5410,7 @@ The competitive baseline is:
 - Schedule.
 - Call sheets.
 
-### Straft Studio advantage
+### Straft advantage
 
 - Better Idea Vault.
 - Better simple Beat Board.
@@ -5455,7 +5455,7 @@ And an experienced user can say:
 10. **Call sheets must derive from shooting days.**
 11. **The core application must work offline.**
 12. **Users must own their projects and be able to export them.**
-13. **Remote collaboration must not require Straft Studio cloud storage.**
+13. **Remote collaboration must not require Straft cloud storage.**
 14. **AI must remain optional and user-controlled.**
 15. **No enterprise feature may be added merely because a large studio might someday want it.**
 
@@ -5465,7 +5465,7 @@ And an experienced user can say:
 
 This is a critical requirement.
 
-Straft Studio may contain many capabilities internally, but the user should experience only a few concepts:
+Straft may contain many capabilities internally, but the user should experience only a few concepts:
 
 ```text
 Ideas
@@ -5527,7 +5527,7 @@ The product should always make it clear:
 
 > **This is your movie.**
 
-Straft Studio is the workspace.
+Straft is the workspace.
 
 It should never behave as though the project's information belongs to the platform.
 
@@ -5742,4 +5742,4 @@ The following public product documentation was reviewed while expanding this spe
 - Filmustage Help — Script Tab: https://help.filmustage.com/en/articles/11008507-what-is-the-script-tab
 - Blackmagic Design — DaVinci Resolve Collaboration: https://www.blackmagicdesign.com/products/davinciresolve/collaboration
 
-The product decisions in this PRD intentionally go beyond those references where needed to implement the Straft Studio vision: particularly the local-first model, exchange packages, the deliberately unstructured Idea Vault, the lightweight visual Beat Board, and the strict anti-feature-bloat boundary.
+The product decisions in this PRD intentionally go beyond those references where needed to implement the Straft vision: particularly the local-first model, exchange packages, the deliberately unstructured Idea Vault, the lightweight visual Beat Board, and the strict anti-feature-bloat boundary.

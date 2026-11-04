@@ -13,7 +13,7 @@
 | No partial writes | A failed write leaves no partial state | Transaction rollback; files created in the transaction are removed; purged files are deleted only after commit ✅ |
 | Recovery choice after a crash | After an abnormal exit, the user chooses: latest autosave or last confirmed save | Crash marker + `recovery/checkpoint.sqlite` ✅ |
 | Safe undo | Undo never overwrites later work | Stale check against full row images (ADR-0005) ✅ |
-| Safe upgrade | Upgrading Straft Studio never destroys a project | Verified safety backup before migration; atomic migration; too-new refused ✅ |
+| Safe upgrade | Upgrading Straft never destroys a project | Verified safety backup before migration; atomic migration; too-new refused ✅ |
 | Recoverable deletion | Deletion is recoverable until deliberately purged | `deleted_at` + `deleted_item`; purge is a separate Owner action ✅ |
 
 ## 2. Autosave ✅

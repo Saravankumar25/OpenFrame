@@ -11,7 +11,7 @@
 //! descendant, `Identity-H` encoding, an exact `W` width array, a `ToUnicode`
 //! map and the subset font file (compressed). Every printed line is wrapped in
 //! a marked-content span whose `ActualText` is the line's exact text, so copy,
-//! search, screen readers and Straft Studio's own PDF import get back every
+//! search, screen readers and Straft's own PDF import get back every
 //! character, including conjuncts, reordered vowel signs and zero-width
 //! joiners that no glyph-to-character map can describe. Indian scripts have no
 //! bold or italic face: bold lines are filled and stroked, italic lines are

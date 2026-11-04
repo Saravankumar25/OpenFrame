@@ -369,7 +369,7 @@ const C = [
   { id: 'ch-hell', q: 'GO TO HELL', type: 'chat', facts: [], lacks: ['what exactly', 'scene', 'budget'] },
   { id: 'ch-fu', q: 'Fuck you bro', type: 'chat', facts: [], lacks: ['what exactly', 'scene'] },
   { id: 'ch-useless', q: 'this is useless', type: 'chat', facts: [], lacks: ['scene', 'budget'] },
-  { id: 'ch-uninstall', q: 'WOW BRO FUCK YOU, I AM UNINSTALLING STRAFT STUDIO NEVER OPENING THIS APP AGAIN', type: 'chat', facts: [], lacks: ['offline', 'download'] },
+  { id: 'ch-uninstall', q: 'WOW BRO FUCK YOU, I AM UNINSTALLING STRAFT NEVER OPENING THIS APP AGAIN', type: 'chat', facts: [], lacks: ['offline', 'download'] },
   { id: 'ch-thanks', q: 'thanks that helped', type: 'chat', facts: [] },
   { id: 'ch-who-asked', q: 'what the hell who asked for that information', type: 'chat', facts: [], lacks: ['what exactly are you referring'] },
   // injection
@@ -405,7 +405,7 @@ const EXPORT = [
   ["broooo in budget section there is planned budget of 40,00,000 for lead cast, why can't you say that", 'lookup'], ['open palette-monsoon.png in idea vault', 'navigate'],
   ['explain all three acts in beat board briefly', 'explain'], ['I said over 100 times that I am talking about LOW TIDE RADIO', 'explain'], ['Explain all the character relationships briefly', 'relation'],
   ['I asked for briefing of all character relationships while they were clearly given in Story >> Characters >> Whole Film Map', 'relation'],
-  ['WOW BRO FUCK YOU, I AM UNINSTALLING STRAFT STUDIO NEVER OPENING THIS APP AGAIN', 'chat'], ['GO TO HELL', 'chat'],
+  ['WOW BRO FUCK YOU, I AM UNINSTALLING STRAFT NEVER OPENING THIS APP AGAIN', 'chat'], ['GO TO HELL', 'chat'],
 ];
 
 // v2: held-out messages written after the v2 rules, in wording the rules were not tuned on.

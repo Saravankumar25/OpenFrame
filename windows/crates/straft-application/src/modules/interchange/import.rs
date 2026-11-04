@@ -2,15 +2,15 @@
 
 use std::path::{Path, PathBuf};
 
+use parking_lot::Mutex;
+use rusqlite::{Connection, params};
+use serde::{Deserialize, Serialize};
 use straft_domain::enums::DraftStatus;
 use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use straft_import_export::{
     ConfidenceLevel, ElementKind, ImportOutcome, ScreenplayDoc, SourceFormat, WarningLevel,
     heuristics,
 };
-use parking_lot::Mutex;
-use rusqlite::{Connection, params};
-use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use super::InterchangeWarning;
@@ -467,7 +467,7 @@ fn build_preview(
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct InterchangeSamplesArgs {}
 
-/// A sample script that ships with the app (Straft Studio-owned, fictional).
+/// A sample script that ships with the app (Straft-owned, fictional).
 #[derive(Debug, Clone, Serialize, TS)]
 #[ts(export)]
 #[serde(rename_all = "camelCase")]

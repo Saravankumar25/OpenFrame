@@ -1,4 +1,4 @@
-// Settings > Storage: where Straft Studio keeps each kind of data on this computer, and the actions
+// Settings > Storage: where Straft keeps each kind of data on this computer, and the actions
 // that change a place (docs/engineering/40-storage-locations-and-recovery.md, ADR-0038).
 // Plain words keep the kinds apart: the library folder (the one to back up), the folder for new
 // projects, the Global Idea Vault, the open project and the app's own technical data.
@@ -49,7 +49,7 @@ export function StoragePanel() {
   return (
     <div style={{ maxWidth: 820 }}>
       <Place
-        title="Your Straft Studio library"
+        title="Your Straft library"
         path={s.libraryDir}
         note="Back up this folder. It holds library.json, which remembers who you are on this computer and where your work is, so a reinstall finds everything again. By default it also holds your projects and the Global Idea Vault."
       >
@@ -74,7 +74,7 @@ export function StoragePanel() {
       <Place
         title="App data"
         path={s.appDataDir}
-        note="Settings, the recent project list, the assistant's files and logs. Not your work: uninstalling may remove it, and your library stays."
+        note="Settings, the recent project list, Straft AI's files and logs. Not your work: uninstalling may remove it, and your library stays."
       >
         <Button size="sm" icon={<FolderOpen size={14} />} onClick={() => void revealLocation("appData").catch(reportError)}>Open Folder</Button>
       </Place>

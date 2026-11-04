@@ -273,7 +273,7 @@ Projects: **F** The Tower at Pedda Revu (36 scenes), **S** Lost Property (10), *
 | tool-en-046 | S | Search for 'returned to owner'. |  | tool search_project or find_scenes_mentioning. arguments {"text":"returned to owner"} |
 | tool-en-047 | F | Which drafts does this screenplay have? |  | tool list_drafts or draft_status |
 | tool-en-048 | F | What is the current draft called? |  | tool list_drafts or draft_status |
-| tool-en-049 | F | How do I lock a shooting draft in Straft Studio? |  | tool answer_product_question |
+| tool-en-049 | F | How do I lock a shooting draft in Straft? |  | tool answer_product_question |
 | tool-en-050 | F | What does the Production Source mean? |  | tool answer_product_question |
 | tool-en-051 | F | How does undo work for AI changes? |  | tool answer_product_question |
 | tool-en-052 | F | What is a Change Set? |  | tool answer_product_question |

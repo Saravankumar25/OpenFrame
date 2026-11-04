@@ -241,7 +241,7 @@ function npmInventory() {
   return out;
 }
 
-// ------------------------------------------------------------------ Offline AI components
+// ------------------------------------------------------------------ Straft AI components
 
 // Bundled in every package (ADR-0025), pinned with their hashes in packaging/ai/ai-assets.lock.json and
 // installed read-only next to the app. Listed so their notices ship with the product.
@@ -357,7 +357,7 @@ function render(rust, npm) {
   parts.push("");
   const ai = aiComponents();
   if (ai.length) {
-    parts.push("## Offline AI components (bundled in every package)");
+    parts.push("## Straft AI components (bundled in every package)");
     parts.push("");
     parts.push(
       "Part of every package (ADR-0025). The build checks each file against the SHA-256 hashes pinned in " +

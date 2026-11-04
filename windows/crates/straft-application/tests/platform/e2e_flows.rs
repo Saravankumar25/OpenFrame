@@ -11,11 +11,11 @@
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
+use serde_json::{Value, json};
 use straft_ai::{ChatRequest, InferenceProvider};
 use straft_application::modules::ai;
 use straft_domain::{AppError, AppResult};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 // ----------------------------------------------------------------- helpers
 
@@ -631,9 +631,7 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
     let env = TestEnv::with_project("Black Rain", "Feature Film");
     let fountain = env.write_file(
         "Black Rain.fountain",
-        include_bytes!(
-            "../../../straft-import-export/tests/fixtures/screenplay/sample.fountain"
-        ),
+        include_bytes!("../../../straft-import-export/tests/fixtures/screenplay/sample.fountain"),
     );
     let p = env.ok("screenplay.import_preview", json!({ "path": fountain }));
     assert_eq!(p["sourceFormat"], "fountain");
@@ -714,7 +712,7 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
     model.reply(&format!("The script has {} scenes.", sc.len()));
     let a = env.ok(
         "ai.ask",
-        json!({ "text": "How many scenes are in the script?", "scope": { "kind": "CurrentScreenplay" } }),
+        json!({ "text": "How many scenes are in the script?", "sections": [{ "leaf": "screenplay/scenes" }] }),
     );
     assert_eq!(a["result"]["kind"], "Answer", "{a}");
     assert_eq!(a["result"]["confidence"], "Inferred");
@@ -726,7 +724,7 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
     }
     let a = env.ok(
         "ai.ask",
-        json!({ "text": "How many scenes are in the script?", "scope": { "kind": "CurrentScreenplay" } }),
+        json!({ "text": "How many scenes are in the script?", "sections": [{ "leaf": "screenplay/scenes" }] }),
     );
     assert_eq!(a["result"]["confidence"], "Exact", "{a}");
     let content = a["result"]["content"].as_str().unwrap();
@@ -741,7 +739,7 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
     }
     let a = env.ok(
         "ai.ask",
-        json!({ "text": "Which scenes are not scheduled?", "scope": { "kind": "WholeProject" } }),
+        json!({ "text": "Which scenes are not scheduled?", "sections": [{ "leaf": "screenplay/scenes" }] }),
     );
     assert_eq!(a["result"]["kind"], "Answer", "{a}");
     // AI never mutated anything.

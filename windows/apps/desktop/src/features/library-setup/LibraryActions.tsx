@@ -1,4 +1,4 @@
-// Settings > Storage, "Your Straft Studio library": move the whole library, or connect another
+// Settings > Storage, "Your Straft library": move the whole library, or connect another
 // existing library (docs/engineering/40-storage-locations-and-recovery.md section 1). A move copies
 // and checks everything before switching and keeps the old folder until the new one works.
 
@@ -30,7 +30,7 @@ export function LibraryActions({ info }: { info: StorageInfo }) {
   const [found, setFound] = useState<LibraryInspection | null>(null);
 
   const move = async () => {
-    const dest = await openDialog({ directory: true, title: "Choose where your Straft Studio library should live" });
+    const dest = await openDialog({ directory: true, title: "Choose where your Straft library should live" });
     if (typeof dest !== "string") return;
     const target = joinPath(dest, folderName(info.libraryDir));
     const moves = [
@@ -40,7 +40,7 @@ export function LibraryActions({ info }: { info: StorageInfo }) {
       "anything else in the library folder",
     ].filter(Boolean);
     setAction({
-      title: "Move Your Straft Studio Library",
+      title: "Move Your Straft Library",
       confirm: (
         <>
           <p style={{ marginTop: 0 }}>
@@ -50,7 +50,7 @@ export function LibraryActions({ info }: { info: StorageInfo }) {
           </p>
           <p>This moves {moves.join(", ")}. New projects are then created in the Projects folder of the moved library.</p>
           <p style={{ marginBottom: 0 }}>
-            Everything is copied and checked first. The old folder is removed only after Straft Studio works from the new one. Projects you keep
+            Everything is copied and checked first. The old folder is removed only after Straft works from the new one. Projects you keep
             outside the library stay where they are.
           </p>
         </>
@@ -62,7 +62,7 @@ export function LibraryActions({ info }: { info: StorageInfo }) {
         return (
           <>
             Your library is now at {rep?.path ?? target}.
-            {rep?.sourceLeftAt && ` The old folder ${rep.sourceLeftAt} was kept because it still holds files Straft Studio did not copy. Delete it yourself when you no longer need them.`}
+            {rep?.sourceLeftAt && ` The old folder ${rep.sourceLeftAt} was kept because it still holds files Straft did not copy. Delete it yourself when you no longer need them.`}
           </>
         );
       },
@@ -71,7 +71,7 @@ export function LibraryActions({ info }: { info: StorageInfo }) {
   };
 
   const locate = async () => {
-    const dir = await openDialog({ directory: true, title: "Choose the folder of an existing Straft Studio library" });
+    const dir = await openDialog({ directory: true, title: "Choose the folder of an existing Straft library" });
     if (typeof dir !== "string") return;
     try {
       setFound(await call<LibraryInspection>("library.inspect", { dir }));
@@ -133,7 +133,7 @@ function ConnectLibraryDialog({ found, current, onClose }: { found: LibraryInspe
         {same && <p style={{ margin: 0 }}>This is the library you use now. Nothing to change.</p>}
         {root && !same && (
           <p style={{ margin: 0 }}>
-            Straft Studio will use this library from now on. Your current library at {current} is not moved or deleted, and you can connect it again
+            Straft will use this library from now on. Your current library at {current} is not moved or deleted, and you can connect it again
             later.
           </p>
         )}

@@ -1,5 +1,5 @@
 //! Cloud-synced folders (Windows phase W2). A project folder that OneDrive, Dropbox, Google Drive
-//! or iCloud Drive syncs while Straft Studio writes to it can be locked, replaced by an older copy or
+//! or iCloud Drive syncs while Straft writes to it can be locked, replaced by an older copy or
 //! split into conflict copies. This names the service that syncs a folder, so the app can warn in
 //! plain words and offer a folder on this computer instead. It never moves anything.
 //!
@@ -97,11 +97,11 @@ pub fn cloud_service_with(
     None
 }
 
-/// A projects folder on this computer that no service syncs: `<home>/Straft Studio Projects`, offered
+/// A projects folder on this computer that no service syncs: `<home>/Straft Projects`, offered
 /// when the default (inside Documents) is synced. `None` when the home folder is unknown or synced.
 pub fn local_projects_dir() -> Option<PathBuf> {
     let home = directories::BaseDirs::new()?.home_dir().to_path_buf();
-    let dir = home.join("Straft Studio Projects");
+    let dir = home.join("Straft Projects");
     cloud_service(&dir).is_none().then_some(dir)
 }
 
@@ -115,10 +115,7 @@ mod tests {
     fn documents_redirected_to_onedrive_is_found_through_the_environment() {
         let root = tempfile::tempdir().unwrap();
         let onedrive = root.path().join("Personal Cloud");
-        let projects = onedrive
-            .join("Documents")
-            .join("Straft Studio")
-            .join("Projects");
+        let projects = onedrive.join("Documents").join("Straft").join("Projects");
         let env = |name: &str| (name == "OneDrive").then(|| onedrive.clone().into_os_string());
         assert_eq!(
             cloud_service_with(&projects, env),
@@ -133,7 +130,10 @@ mod tests {
     fn a_fake_onedrive_root_and_the_other_services_are_found_by_name() {
         let root = tempfile::tempdir().unwrap();
         let cases = [
-            ("OneDrive/Documents/Straft Studio", Some(CloudService::OneDrive)),
+            (
+                "OneDrive/Documents/Straft Studio",
+                Some(CloudService::OneDrive),
+            ),
             (
                 "OneDrive - Contoso Films/Scripts",
                 Some(CloudService::OneDrive),
@@ -184,7 +184,7 @@ mod tests {
     #[test]
     fn the_local_alternative_is_not_synced() {
         if let Some(dir) = local_projects_dir() {
-            assert!(dir.ends_with("Straft Studio Projects"));
+            assert!(dir.ends_with("Straft Projects"));
             assert_eq!(cloud_service(&dir), None);
         }
     }

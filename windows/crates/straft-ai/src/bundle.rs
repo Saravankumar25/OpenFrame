@@ -1,4 +1,4 @@
-//! The Offline AI of this installation (ADR-0026).
+//! The Straft AI of this installation (ADR-0026).
 //!
 //! The package carries the engine: the llama.cpp server and the libraries it loads, pinned in the
 //! committed lock `packaging/ai/ai-assets.lock.json` by path, bytes and SHA-256 with its licence
@@ -22,9 +22,9 @@
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
 
-use straft_domain::{AppError, AppResult, now_ms};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use straft_domain::{AppError, AppResult, now_ms};
 
 use crate::engines::{EngineFiles, hash_file};
 
@@ -32,7 +32,7 @@ use crate::engines::{EngineFiles, hash_file};
 pub const LOCK_JSON: &str = include_str!("../../../packaging/ai/ai-assets.lock.json");
 /// Folder of the app resources that holds the bundled AI (`scripts/prepare-ai-assets.mjs`).
 pub const RESOURCE_FOLDER: &str = "ai";
-/// The single production Offline AI bundle (internal id; never shown in the normal UI).
+/// The single production Straft AI bundle (internal id; never shown in the normal UI).
 pub const BUNDLE_ID: &str = "straft-local-ai-v1";
 /// Format of the lock this build understands.
 pub const LOCK_VERSION: u32 = 1;
@@ -43,7 +43,7 @@ const MAX_FILES: usize = 200;
 pub fn missing() -> AppError {
     AppError::ai(
         "assets_missing",
-        "Offline AI is missing from this installation, so it can't start. Reinstall Straft Studio to repair it. Your projects were not changed.",
+        "Straft AI is missing from this installation, so it can't start. Reinstall Straft Studio to repair it. Your projects were not changed.",
     )
 }
 
@@ -51,7 +51,7 @@ pub fn missing() -> AppError {
 pub fn damaged() -> AppError {
     AppError::ai(
         "assets_damaged",
-        "Offline AI files in this installation were changed or damaged, so Straft Studio did not start them. Reinstall Straft Studio to repair it. Your projects were not changed.",
+        "Straft AI files in this installation were changed or damaged, so Straft did not start them. Reinstall Straft Studio to repair it. Your projects were not changed.",
     )
 }
 
@@ -59,7 +59,7 @@ pub fn damaged() -> AppError {
 pub fn not_installed() -> AppError {
     AppError::ai(
         "not_installed",
-        "Straft AI is not downloaded yet. Download it in Settings, Offline AI. Everything else in Straft Studio works without it.",
+        "Straft AI is not downloaded yet. Download it in Settings, Straft AI. Everything else in Straft works without it.",
     )
 }
 
@@ -67,7 +67,7 @@ pub fn not_installed() -> AppError {
 pub fn models_damaged() -> AppError {
     AppError::ai(
         "models_damaged",
-        "A Straft AI file is missing or damaged, so Straft Studio did not start it. Remove Straft AI and download it again in Settings, Offline AI. Your projects were not changed.",
+        "A Straft AI file is missing or damaged, so Straft did not start it. Remove Straft AI and download it again in Settings, Straft AI. Your projects were not changed.",
     )
 }
 
@@ -75,13 +75,12 @@ pub fn models_damaged() -> AppError {
 pub fn unsupported() -> AppError {
     AppError::ai(
         "unsupported",
-        "Offline AI isn't available for this kind of computer yet. Everything else in Straft Studio works normally.",
+        "Straft AI isn't available for this kind of computer yet. Everything else in Straft works normally.",
     )
 }
 
 fn invalid_lock(detail: impl Into<String>) -> AppError {
-    AppError::internal("the Offline AI lock compiled into this build is invalid")
-        .with_detail(detail)
+    AppError::internal("the Straft AI lock compiled into this build is invalid").with_detail(detail)
 }
 
 /// One pinned file: a single path component (or `a/b` inside the engine folder), size and hash.
@@ -179,7 +178,7 @@ pub struct ModelEntry {
     pub license_url: String,
     /// Context window the runtime is started with.
     pub context_tokens: u32,
-    /// Below this much memory Offline AI is not expected to work.
+    /// Below this much memory Straft AI is not expected to work.
     pub min_ram_bytes: u64,
     /// Memory for comfortable processor inference.
     pub recommended_ram_bytes: u64,
@@ -573,7 +572,7 @@ impl InstalledModels {
     }
 }
 
-/// The Offline AI of this installation: the engine in the read-only resource folder, the lock, and
+/// The Straft AI of this installation: the engine in the read-only resource folder, the lock, and
 /// the downloaded model set when there is one.
 #[derive(Debug, Clone)]
 pub struct BundledAi {
@@ -813,7 +812,7 @@ impl BundledAi {
             && let Err(e) = crate::store::write_json_atomic(record, &rec)
         {
             // The check passed; only the shortcut for the next start is lost.
-            tracing::warn!(code = e.code_str(), "could not record the Offline AI check");
+            tracing::warn!(code = e.code_str(), "could not record the Straft AI check");
         }
         Ok(())
     }

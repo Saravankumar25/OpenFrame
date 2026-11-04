@@ -221,7 +221,7 @@ fn collect_paras(
                 let mut text = String::new();
                 let mut page_break = false;
                 run_text(n, &mut text, &mut page_break);
-                // Trailing tab + asterisk is a Straft Studio revision mark, not text.
+                // Trailing tab + asterisk is a Straft revision mark, not text.
                 let text = text
                     .strip_suffix("\t*")
                     .map(|s| s.to_string())

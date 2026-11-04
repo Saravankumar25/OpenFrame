@@ -1,11 +1,11 @@
 // Layout geometry in the real app (UX brief 2026-10-20, sections 4 and 11): every workspace and
-// production tab, with the AI Assistant closed and open, at 1200x720 (the minimum), 1280x720 and 1920x1080.
+// production tab, with the Straft AI closed and open, at 1200x720 (the minimum), 1280x720 and 1920x1080.
 //
 // Runs in the shared journey data root after 95-reachability and reopens the demo project
 // "Night Bus". For each screen it measures, in the page itself:
 //   * page-level sideways scroll (the document must never scroll sideways; boards and tables scroll
 //     inside their own area);
-//   * overlap between the page, the left navigation and the docked AI Assistant (a docked panel
+//   * overlap between the page, the left navigation and the docked Straft AI (a docked panel
 //     narrows the page, it never covers it);
 //   * buttons, tabs and fields of the page that sit outside the window, are cut off by a container
 //     that cannot scroll, or are covered by another element (a modal dialog is not open here);
@@ -141,7 +141,7 @@ function probeOutlineScroll() {
   return { ok: /(auto|scroll)/.test(overflowY) && reached && lastVisible && toolbarStays, overflowY, scrollable, reached, lastVisible, toolbarStays };
 }
 
-/** Runs in the page on Settings > Offline AI with Technical details open: the cards keep usable widths, the component
+/** Runs in the page on Settings > Straft AI with Technical details open: the cards keep usable widths, the component
  * table stays inside its card and no card covers another. */
 function probeOfflineAi() {
   const cards = [...document.querySelectorAll("main section.card")].map((el) => ({ name: el.getAttribute("aria-label") || "card", r: el.getBoundingClientRect() }));
@@ -178,7 +178,7 @@ describe("layout geometry", () => {
     await browser?.deleteSession().catch(() => undefined);
   });
 
-  test("every workspace fits beside the navigation and the docked AI Assistant", async () => {
+  test("every workspace fits beside the navigation and the docked Straft AI", async () => {
     await step("open Night Bus", async () => {
       await browser.setWindowSize(1440, 900);
       await waitForText(browser, "Your projects");
@@ -214,7 +214,7 @@ describe("layout geometry", () => {
       report.push({ size: size.join("x"), ai, screen, ...m });
     };
     const setAi = async (open) => {
-      const btn = await browser.$('//header//button[@aria-label="Assistant"]');
+      const btn = await browser.$('//header//button[@aria-label="Straft AI"]');
       const pressed = (await btn.getAttribute("aria-pressed")) === "true";
       if (pressed !== open) await btn.click();
       await sleep(300);
@@ -242,10 +242,10 @@ describe("layout geometry", () => {
             }
           }
           await click(browser, "Settings", { within: "//header" });
-          for (const tab of ["Project settings", "Writing", "Keyboard shortcuts", "Templates", "Offline AI", "Advanced", "Appearance"]) {
+          for (const tab of ["Project settings", "Writing", "Keyboard shortcuts", "Templates", "Straft AI", "Advanced", "Appearance"]) {
             await click(browser, tab, { within: '//div[@aria-label="Settings"]' });
             await record(size, ai, `Settings · ${tab}`);
-            if (tab === "Offline AI") {
+            if (tab === "Straft AI") {
               const summary = await browser.$('//section[@aria-label="Technical details"]//summary');
               if (await summary.isExisting()) {
                 await summary.click();
@@ -262,7 +262,7 @@ describe("layout geometry", () => {
       (r) => r.pageOverflowX > 1 || r.overlapMainAi > 0 || r.overlapNavMain > 0 || r.findings.length > 0 || (r.outlineScroll && (!r.outlineScroll.ok || r.outlineScroll.keyboard === false)) || (r.offlineAi && !r.offlineAi.ok),
     );
     assert.deepEqual(
-      failures.map((r) => `${r.size} AI ${r.ai ? "open" : "closed"} ${r.screen}: x-overflow ${r.pageOverflowX}, AI overlap ${r.overlapMainAi}, ${r.findings.map((f) => `${f.kind} ${f.control}`).join("; ")}${r.outlineScroll && (!r.outlineScroll.ok || r.outlineScroll.keyboard === false) ? ` outline scroll ${JSON.stringify(r.outlineScroll)}` : ""}${r.offlineAi && !r.offlineAi.ok ? ` offline AI ${JSON.stringify(r.offlineAi)}` : ""}`),
+      failures.map((r) => `${r.size} AI ${r.ai ? "open" : "closed"} ${r.screen}: x-overflow ${r.pageOverflowX}, AI overlap ${r.overlapMainAi}, ${r.findings.map((f) => `${f.kind} ${f.control}`).join("; ")}${r.outlineScroll && (!r.outlineScroll.ok || r.outlineScroll.keyboard === false) ? ` outline scroll ${JSON.stringify(r.outlineScroll)}` : ""}${r.offlineAi && !r.offlineAi.ok ? ` Straft AI ${JSON.stringify(r.offlineAi)}` : ""}`),
       [],
     );
   });

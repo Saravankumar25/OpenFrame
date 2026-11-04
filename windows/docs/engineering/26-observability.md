@@ -58,7 +58,7 @@ The Security spec leaves crash-report consent unspecified (digest §26 item 6), 
 collection service as an open decision. Until both are decided:
 
 - **No crash report is ever transmitted.** Native crashes (outside Rust panics) are handled by Windows Error
-  Reporting as for any app. Straft Studio does not configure WER upload.
+  Reporting as for any app. Straft does not configure WER upload.
 - If adopted later: off by default; explicit per-install consent in settings with a preview of exactly what is sent;
   a minidump/stack trace only, with no project content and no file paths beyond redacted forms; a random per-install
   id that can be reset; documented retention. This needs an ADR and a privacy review first.

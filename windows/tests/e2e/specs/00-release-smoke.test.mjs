@@ -2,7 +2,7 @@
 //
 // Release smoke (Windows phase W4): the short check that runs first on every build, and the first
 // thing a release run proves on the hardened executable. Start, create a project, type in a
-// screenplay, close, start again, reopen and find the text, ask the Offline AI a question it can
+// screenplay, close, start again, reopen and find the text, ask the Straft AI a question it can
 // answer from the project, and check that the app, its AI engines and its web view hold no socket
 // outside this computer: the engines listen on 127.0.0.1 only. If this spec fails, the rest of a
 // release run is not worth reading.
@@ -56,14 +56,14 @@ describe("release smoke", () => {
     });
   });
 
-  test("the Offline AI answers from the project, and nothing leaves this computer", async () => {
+  test("the Straft AI answers from the project, and nothing leaves this computer", async () => {
     await step("ai-and-network", async () => {
       const answer = await ask(browser, "Which scenes take place at night?");
       assert.ok(answer.text.trim().length > 0, "the AI gave an empty answer");
       assert.ok(!["Failed", "Unavailable"].includes(answer.kind), `the AI did not answer (${answer.kind}): ${answer.text}`);
       const procs = [...appProcesses(), ...webViewProcesses()];
       const engines = procs.filter((p) => p.name.toLowerCase() === "llama-server.exe");
-      assert.ok(engines.length > 0, "no Offline AI engine ran for the answer");
+      assert.ok(engines.length > 0, "no Straft AI engine ran for the answer");
       const use = networkUse(procs.map((p) => p.pid));
       const outside = externalConnections(use);
       const listening = use.tcp.filter((c) => c.state === "Listen");

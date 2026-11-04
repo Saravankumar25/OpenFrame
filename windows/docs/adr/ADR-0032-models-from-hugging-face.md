@@ -22,7 +22,7 @@ commit and size, and redirect to Hugging Face's own download servers on `*.hf.co
 ## Decision
 
 1. **Source.** The app downloads each model from its Hugging Face `resolve` address at the commit revision pinned in the
-   lock. No server of Straft Studio's own, no storage bucket, no cloud backend, no Ollama.
+   lock. No server of Straft's own, no storage bucket, no cloud backend, no Ollama.
 2. **Trust.** The sizes and SHA-256 hashes compiled into the app (the lock) are the trust root. A file is used only when it
    matches them exactly. There is no signed list and no signing key: the app itself is the signed, shipped artifact (signing
    at Chapter 3).

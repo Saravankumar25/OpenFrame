@@ -177,27 +177,27 @@ Before: the shared journey data folder is empty. The app starts for the first ti
 9. Check: the card "Bus stop reunion in the rain" is back.
 10. Check: the screen is quiet.
 
-## The AI panel is ready with the bundled Offline AI, with no download and no setup
+## The AI panel is ready with the bundled Straft AI, with no download and no setup
 
-1. Click Assistant.
-2. Check: the AI Assistant panel shows its Ask or command box.
-3. Check: the screen shows "AI Ready".
-4. Check: no visible text names the model, format or runtime ("gemma", "gguf", "q4_k", "llama", "embedding") and nothing offers "download offline AI".
+1. Click Straft AI.
+2. Check: the Straft AI panel shows its Ask or command box.
+3. Check: the screen shows "Ready".
+4. Check: no visible text names the model, format or runtime ("gemma", "gguf", "q4_k", "llama", "embedding") and nothing offers "download Straft AI".
 5. Check: the screen is quiet.
 
 ## Every workspace and production tab works beside the docked AI panel
 
-1. Keep the AI Assistant open. Make the window 1200 by 720 pixels (the smallest supported size).
+1. Keep the Straft AI open. Make the window 1200 by 720 pixels (the smallest supported size).
 2. Check: the page is at most 1200 pixels wide.
 3. Visit each workspace in turn: Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets, Files. In each one:
    1. Check: the screen is quiet.
-   2. Check: the AI Assistant docks cleanly.
+   2. Check: the Straft AI docks cleanly.
 4. Click Production. Visit every tab in the Production navigation in turn. In each tab, do the same two checks.
 5. Click Story in the Workspaces navigation, click the Board tab, then click the Outline tab. Do the same two checks. Repeat for the Characters tab and the Timeline tab, each time clicking Story and the Board tab first.
 6. Open the project menu and choose Notes & Tasks. Do the same two checks. Repeat for Activity, Recently Deleted and Project settings.
 7. Note the width of the page and of the panel.
 8. Press Ctrl+J.
-9. Check: the AI Assistant closes.
+9. Check: the Straft AI closes.
 10. Check: the page is now as wide as the page and the panel were together.
 11. Check: the screen is quiet.
 

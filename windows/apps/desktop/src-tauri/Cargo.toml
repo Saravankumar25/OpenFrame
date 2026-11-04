@@ -13,9 +13,6 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
-# Reads `swift -print-target-info` on macOS to find the Swift runtime for the StoreKit bridge.
-# Already in the build tree through tauri-build.
-serde_json.workspace = true
 # Internal builds only (ADR-0024): Argon2id hash of STRAFT_TEAM_PASSWORD with a random salt.
 argon2.workspace = true
 getrandom.workspace = true
@@ -36,14 +33,18 @@ tracing-subscriber.workspace = true
 tracing-appender.workspace = true
 parking_lot.workspace = true
 
-# Mac App Store build only (platform/mac_inputs.rs): the licence server client over HTTPS (rustls,
-# blocking, used on the entitlement worker thread), request nonces from the system's secure random
-# generator, and the server's Ed25519 response key. Windows builds do not compile these.
-[target.'cfg(target_os = "macos")'.dependencies]
-reqwest = { workspace = true, features = ["blocking"] }
-rand.workspace = true
-hex.workspace = true
-ed25519-dalek.workspace = true
+# The Microsoft Store calls (platform/microsoft_store.rs): Windows.Services.Store over WinRT, the
+# window handle for the purchase dialog, and the local clock for the midnight check. The same
+# major version as crates/straft-platform, so the build tree holds one copy.
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.61", features = [
+    "Foundation",
+    "Services_Store",
+    "Win32_Foundation",
+    "Win32_System_SystemInformation",
+    "Win32_System_WinRT",
+    "Win32_UI_Shell",
+] }
 
 [dev-dependencies]
 tempfile.workspace = true

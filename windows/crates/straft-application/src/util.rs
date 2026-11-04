@@ -3,10 +3,10 @@
 
 use std::path::{Path, PathBuf};
 
-use straft_domain::{AppError, AppResult, new_id, now_ms};
-use straft_project_format::ProjectLayout;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::{AppError, AppResult, new_id, now_ms};
+use straft_project_format::ProjectLayout;
 use ts_rs::TS;
 
 use crate::core::AppCore;
@@ -91,7 +91,7 @@ pub fn require_id(value: &str, what: &str) -> AppResult<()> {
 
 // ------------------------------------------------------------------ assets
 
-/// Largest single file Straft Studio will copy into a project in one operation.
+/// Largest single file Straft will copy into a project in one operation.
 pub const MAX_MANAGED_FILE_BYTES: u64 = 8 << 30;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -187,7 +187,7 @@ pub fn load_assets_bulk<'a>(
 
 // ------------------------------------------------------------------ user-chosen paths
 
-/// Folders Straft Studio owns. User-chosen outputs are never written inside them
+/// Folders Straft owns. User-chosen outputs are never written inside them
 /// (Security review 2026-09-30, PATH-02/PATH-04).
 pub fn protected_roots(core: &AppCore) -> Vec<PathBuf> {
     let mut v = vec![core.config.app_data_dir.clone(), core.vault_dir()];
@@ -216,7 +216,7 @@ pub fn check_project_parent(core: &AppCore, dir: &Path) -> AppResult<()> {
     straft_security::validate_output_dir(dir, &refs)
 }
 
-/// Paths Straft Studio wrote for the user in this session (exports, packages, copies).
+/// Paths Straft wrote for the user in this session (exports, packages, copies).
 #[derive(Default)]
 struct OutputRegistry(parking_lot::Mutex<std::collections::HashSet<String>>);
 
@@ -234,7 +234,7 @@ pub fn remember_output(core: &AppCore, path: &Path) {
     }
 }
 
-/// True if `path` is a file (or its folder) that Straft Studio wrote for the user this session.
+/// True if `path` is a file (or its folder) that Straft wrote for the user this session.
 /// `of_reveal_path` only reveals such paths — never arbitrary locations from the webview.
 pub fn is_remembered_output(core: &AppCore, path: &Path) -> bool {
     let Some(reg) = core.existing_service::<OutputRegistry>() else {
@@ -447,9 +447,7 @@ pub fn ingest_file(tx: &Tx<'_>, source: &Path) -> AppResult<AssetInfo> {
     // Shared atomic replace: unique staging file in the shard folder, synced, then renamed; the
     // staging file is removed when the copy fails.
     let mut input = std::fs::File::open(source)?;
-    straft_platform::atomic::replace_with(&dest, |out| {
-        std::io::copy(&mut input, out).map(|_| ())
-    })?;
+    straft_platform::atomic::replace_with(&dest, |out| std::io::copy(&mut input, out).map(|_| ()))?;
     let sha = straft_security::sha256_file(&dest)?;
     let dims = image_dimensions(&dest, media_type);
     insert_asset(

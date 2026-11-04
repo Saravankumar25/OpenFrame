@@ -2,7 +2,7 @@
 //! layout shared by the preview and the PDF, keep-together rules, dialogue
 //! continuation, header and footer, title page wrapping, explicit page breaks,
 //! custom elements, Final Draft round trip of the new data, and screenplay
-//! files without Straft Studio branding (contract doc 32 §2.2 to §2.4; Screenplay
+//! files without Straft branding (contract doc 32 §2.2 to §2.4; Screenplay
 //! and Production Depth Specification §8, §9, §13 to §15, §17, §43).
 
 use std::io::Read;
@@ -792,13 +792,13 @@ fn screenplay_files_carry_no_straft_branding() {
         for t in texts {
             assert!(
                 !t.to_lowercase().contains("straft"),
-                "{format:?} names Straft Studio"
+                "{format:?} names Straft"
             );
         }
     }
     // The shared PDF writer still brands production documents.
     let pdf = pdf_export::write(&doc, &LayoutOptions::default()).bytes;
-    assert!(!String::from_utf8_lossy(&pdf).contains("Straft Studio"));
+    assert!(!String::from_utf8_lossy(&pdf).contains("Straft"));
 }
 
 #[test]

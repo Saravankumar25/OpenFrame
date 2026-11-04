@@ -49,7 +49,7 @@ function AppContent() {
   return (
     <>
       {current.data ? <Shell /> : <AppHome />}
-      <LicenceScreens projectOpen={!!current.data} />
+      <LicenceScreens />
       <Toaster />
     </>
   );

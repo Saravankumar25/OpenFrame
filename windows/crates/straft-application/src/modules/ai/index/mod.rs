@@ -22,8 +22,8 @@ mod tests;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use straft_domain::AppResult;
 use parking_lot::Mutex;
+use straft_domain::AppResult;
 
 pub use focus::{Focus, with_focus as focus_in};
 pub use resolve::{Hit, How, Question, Resolved, SceneHit, normalize, resolve, scene_not_found};
@@ -347,7 +347,7 @@ pub fn read_message(
         Err(e) => {
             tracing::warn!(
                 code = e.code_str(),
-                "the assistant's project index could not be read"
+                "Straft AI's project index could not be read"
             );
             None
         }

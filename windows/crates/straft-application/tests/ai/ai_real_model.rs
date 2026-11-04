@@ -14,9 +14,9 @@
 use std::sync::Arc;
 use std::time::Instant;
 
+use serde_json::{Value, json};
 use straft_application::core::{AppConfig, AppCore};
 use straft_application::events::RecordingSink;
-use serde_json::{Value, json};
 
 struct Env {
     _dir: tempfile::TempDir,
@@ -29,9 +29,9 @@ impl Env {
             .dispatch(&self.core.local_actor(), op, args)
             .unwrap_or_else(|e| panic!("{op} failed: {e:?}"))
     }
-    fn ask(&self, text: &str, scope: Value) -> Value {
+    fn ask(&self, text: &str, sections: Value) -> Value {
         let t = Instant::now();
-        let x = self.ok("ai.ask", json!({ "text": text, "scope": scope }));
+        let x = self.ok("ai.ask", json!({ "text": text, "sections": sections }));
         let r = &x["result"];
         println!(
             "\n> {text}\n  {:.1}s kind={} confidence={} steps={:?}\n  {}\n  sources: {}",
@@ -138,7 +138,7 @@ fn real_model_answers_retrieves_proposes_applies_and_undoes() {
     // Exact count from project data.
     let x = env.ask(
         "How many scenes are in the script?",
-        json!({ "kind": "CurrentScreenplay" }),
+        json!([{ "leaf": "screenplay/scenes" }]),
     );
     assert_eq!(x["result"]["kind"], "Answer", "{x}");
     assert!(
@@ -149,7 +149,7 @@ fn real_model_answers_retrieves_proposes_applies_and_undoes() {
     // Grounded in the project: the answer names its sources.
     let x = env.ask(
         "Which scene happens at the bus stop?",
-        json!({ "kind": "WholeProject" }),
+        json!([{ "leaf": "screenplay/scenes" }]),
     );
     assert!(
         matches!(x["result"]["kind"].as_str(), Some("Answer" | "Navigate")),
@@ -164,7 +164,7 @@ fn real_model_answers_retrieves_proposes_applies_and_undoes() {
     let before = tasks(&env);
     let x = env.ask(
         "Create a task to scout the railway station.",
-        json!({ "kind": "WholeProject" }),
+        json!([{ "leaf": "screenplay/scenes" }]),
     );
     assert_eq!(x["result"]["kind"], "Proposal", "{x}");
     let cs = x["result"]["changeSet"]["id"].as_str().unwrap().to_string();
@@ -186,7 +186,7 @@ fn real_model_answers_retrieves_proposes_applies_and_undoes() {
     // Reject leaves the project unchanged.
     let x = env.ask(
         "Create a task to book the bus for the night shoot.",
-        json!({ "kind": "WholeProject" }),
+        json!([{ "leaf": "screenplay/scenes" }]),
     );
     assert_eq!(x["result"]["kind"], "Proposal", "{x}");
     let cs = x["result"]["changeSet"]["id"].as_str().unwrap().to_string();
@@ -205,7 +205,7 @@ fn real_model_proposal_whose_target_changed_is_stale_and_never_applied() {
     let task = env.ok("tasks.create", json!({ "title": "Confirm pier permit" }))["id"].clone();
     let x = env.ask(
         "Mark the task Confirm pier permit as done.",
-        json!({ "kind": "WholeProject" }),
+        json!([{ "leaf": "screenplay/scenes" }]),
     );
     assert_eq!(x["result"]["kind"], "Proposal", "{x}");
     let cs = x["result"]["changeSet"]["id"].as_str().unwrap().to_string();

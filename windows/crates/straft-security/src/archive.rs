@@ -38,12 +38,12 @@ impl ArchiveLimits {
 fn rejected(detail: impl Into<String>) -> AppError {
     AppError::import(
         "unsafe_archive",
-        "This file isn't a valid Straft Studio package or document, so nothing was imported.",
+        "This file isn't a valid Straft package or document, so nothing was imported.",
     )
     .with_detail(detail)
 }
 
-/// Hard ceiling for any archive Straft Studio opens (the largest `max_entries` of all limit sets).
+/// Hard ceiling for any archive Straft opens (the largest `max_entries` of all limit sets).
 const ABSOLUTE_MAX_ENTRIES: u64 = ArchiveLimits::PACKAGE.max_entries as u64;
 /// Hard ceiling for the central directory (it is read fully into memory by `zip`).
 const ABSOLUTE_MAX_CENTRAL_DIR: u64 = 128 << 20;
@@ -114,7 +114,7 @@ fn open(path: &Path) -> AppResult<zip::ZipArchive<File>> {
     let zip = zip::ZipArchive::new(f).map_err(|e| rejected(e.to_string()))?;
     // `zip` keys entries by name and keeps only the last of two equal names, so its count
     // drops below the directory's. Readers disagree about which duplicate is real (one
-    // tool shows one document, Straft Studio imports another): refuse the archive.
+    // tool shows one document, Straft imports another): refuse the archive.
     if let Some((declared, _)) = declared_directory(path)?
         && declared != zip.len() as u64
     {

@@ -21,7 +21,7 @@ export function AiHealthCard() {
     let path: string | null;
     try {
       path = await saveDialog({
-        title: "Export AI report",
+        title: "Export Straft AI report",
         defaultPath: "straft-ai-report.json",
         filters: [{ name: "JSON file", extensions: ["json"] }],
       });
@@ -43,16 +43,16 @@ export function AiHealthCard() {
   };
 
   return (
-    <section className="card pad" style={{ width: 420, flex: "none" }} aria-label="AI health">
+    <section className="card pad" style={{ width: 420, flex: "none" }} aria-label="Straft AI health">
       <div className="h4" style={{ marginTop: 0 }}>
-        AI health
+        Straft AI health
       </div>
       {!h ? (
         <Skeleton h={80} />
       ) : h.requests === 0 ? (
-        <p className="sm muted">No requests yet. The figures appear after you use the AI Assistant.</p>
+        <p className="sm muted">No requests yet. The figures appear after you use Straft AI.</p>
       ) : (
-        <table className="tbl sm" aria-label="AI health figures">
+        <table className="tbl sm" aria-label="Straft AI health figures">
           <tbody>
             <tr>
               <th scope="row">Requests counted</th>
@@ -86,11 +86,11 @@ export function AiHealthCard() {
         </table>
       )}
       <p className="hint">
-        Only numbers are kept on this computer: no questions, answers or project text. Nothing is sent. Export AI report saves them to a file you
+        Only numbers are kept on this computer: no questions, answers or project text. Nothing is sent. Export Straft AI report saves them to a file you
         choose, to share if you want to.
       </p>
       <Button size="sm" disabled={busy} onClick={() => void exportReport()}>
-        {busy ? "Saving…" : "Export AI report"}
+        {busy ? "Saving…" : "Export Straft AI report"}
       </Button>
     </section>
   );

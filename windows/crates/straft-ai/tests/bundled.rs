@@ -1066,6 +1066,43 @@ fn the_check_is_recorded_and_a_replaced_file_is_checked_again() {
     );
 }
 
+fn damaged_small_records_never_stop_ai_and_are_kept_as_bad() {
+    // Update safety (package file 05, U4): the small records in app data are caches and
+    // preferences. A truncated or garbage copy reads as missing, the file is kept as `.bad`, and
+    // AI works from defaults.
+    for broken in [&b"{\"off\": tr"[..], b"\xff\xfe garbage"] {
+        let f = Fixture::new();
+        std::fs::create_dir_all(f.data.join("ai")).unwrap();
+        let files = [
+            f.data.join("ai").join("bundle-check.json"),
+            f.data.join("ai").join("graphics.json"),
+            f.data.join("engines.json"),
+        ];
+        for file in &files {
+            std::fs::write(file, broken).unwrap();
+        }
+        let m = f.manager();
+        assert!(
+            ask(&m).unwrap().starts_with("ready"),
+            "AI works from defaults"
+        );
+        assert!(
+            !m.graphics_off(),
+            "the graphics setting starts at Automatic"
+        );
+        for file in &files[..2] {
+            let mut bad = file.as_os_str().to_owned();
+            bad.push(".bad");
+            assert_eq!(
+                std::fs::read(&bad).unwrap(),
+                broken,
+                "{} kept as .bad",
+                file.display()
+            );
+        }
+    }
+}
+
 fn a_new_app_version_checks_everything_again() {
     let f = Fixture::new();
     let m = f.manager();
@@ -1344,6 +1381,10 @@ fn main() {
         (
             "the_check_is_recorded_and_a_replaced_file_is_checked_again",
             the_check_is_recorded_and_a_replaced_file_is_checked_again,
+        ),
+        (
+            "damaged_small_records_never_stop_ai_and_are_kept_as_bad",
+            damaged_small_records_never_stop_ai_and_are_kept_as_bad,
         ),
         (
             "a_new_app_version_checks_everything_again",

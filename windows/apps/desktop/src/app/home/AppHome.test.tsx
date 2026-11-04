@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { act } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
@@ -94,6 +94,24 @@ describe("Application Home", () => {
     expect(screen.queryByRole("button", { name: "Help" })).not.toBeInTheDocument();
   });
 
+  it("shows the trial chip and Buy full version in the top bar during the trial", async () => {
+    const notice = (state: object) => ({
+      status: { channel: "microsoftStore", state, summary: "", limitation: null, trialDays: 7, canEdit: true, trialEndsAtMs: null },
+      notice: { kind: "none" },
+      dataRoot: "C:\root",
+      debugBuild: false,
+    });
+    const { unmount } = setup({ "project.list_recent": [], "app.info": info(), "entitlement.notice": notice({ state: "trialActive", days_left: 5 }) });
+    const group = await screen.findByRole("group", { name: "Free trial" });
+    expect(within(group).getByText("Trial ends in 5 days")).toBeInTheDocument();
+    expect(within(group).getByRole("button", { name: "Buy full version" })).toBeInTheDocument();
+    unmount();
+    // A buyer sees neither.
+    setup({ "project.list_recent": [], "app.info": info(), "entitlement.notice": notice({ state: "purchased" }) });
+    await screen.findByText("No project open");
+    await waitFor(() => expect(screen.queryByRole("group", { name: "Free trial" })).not.toBeInTheDocument());
+  });
+
   it("offers Restore Backup or Package on an empty Home (a new computer) and on the project list", async () => {
     const user = userEvent.setup();
     setup({ "project.list_recent": [], "app.info": info(), "project.current": null });
@@ -148,6 +166,21 @@ describe("Application Home", () => {
     await user.type(field, "Rohan Das");
     await user.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() => expect(setName).toHaveBeenCalledWith({ displayName: "Rohan Das" }));
+  });
+
+  it("shows the trial chip in the top bar of the Global Idea Vault too", async () => {
+    const user = userEvent.setup();
+    const notice = {
+      status: { channel: "microsoftStore", state: { state: "trialActive", days_left: 5 }, summary: "", limitation: null, trialDays: 7, canEdit: true, trialEndsAtMs: null },
+      notice: { kind: "none" },
+      dataRoot: "C:\\root",
+      debugBuild: false,
+    };
+    setup({ "project.list_recent": [project({})], "app.info": info(), "entitlement.notice": notice });
+    await user.click(await screen.findByRole("button", { name: "Global Idea Vault" }));
+    expect(await screen.findByText("Vault workspace")).toBeInTheDocument();
+    const group = await screen.findByRole("group", { name: "Free trial" });
+    expect(within(group).getByText("Trial ends in 5 days")).toBeInTheDocument();
   });
 
   it("opens the Global Idea Vault with no project open, with global undo, and returns", async () => {

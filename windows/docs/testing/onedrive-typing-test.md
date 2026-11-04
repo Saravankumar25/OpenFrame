@@ -2,7 +2,7 @@
 
 > Windows phase W2 ([plan](../roadmap/chapter-1a-windows-phases.md), "Cloud-synced folders"). The owner runs this by hand
 > on a laptop whose Documents folder is backed up by OneDrive. It checks what automated tests cannot: the real OneDrive
-> client locking or replacing files while Straft Studio writes. Written 2026-10-16. Result goes in the progress log with the
+> client locking or replacing files while Straft writes. Written 2026-10-16. Result goes in the progress log with the
 > date, the laptop and the OneDrive version.
 
 ## Before you start

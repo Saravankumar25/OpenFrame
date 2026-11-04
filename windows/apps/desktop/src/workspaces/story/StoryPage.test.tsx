@@ -49,7 +49,7 @@ vi.mock("../../ipc/client", async () => {
           stored = { ...stored, rev: stored.rev + 1 };
           throw new OpError("conflict.stale", "This Story page was changed by someone else.");
         }
-        if (fail === "disk") throw new OpError("storage.write_failed", "Straft Studio could not save this change yet.");
+        if (fail === "disk") throw new OpError("storage.write_failed", "Straft could not save this change yet.");
         if (args.expectedRev !== stored.rev) throw new OpError("conflict.stale", "stale");
         stored = { text: args.text as string, format: (args.format as string | null) ?? null, rev: stored.rev + 1, updatedAt: 2 };
         return { rev: stored.rev, updatedAt: 2 };

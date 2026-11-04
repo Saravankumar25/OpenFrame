@@ -5,9 +5,9 @@
 
 use std::collections::BTreeMap;
 
-use straft_domain::AppResult;
 use rusqlite::{OptionalExtension, params};
 use serde_json::Value;
+use straft_domain::AppResult;
 
 use super::super::queries::{self, join_and};
 use super::super::tools::{ToolCtx, ToolOutput, like_pattern, plural, scene_nav};

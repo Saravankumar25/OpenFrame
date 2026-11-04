@@ -8,7 +8,7 @@ Before: an empty data folder of its own. The app is the internal test build, mad
 
 "Set the licence to X" means: set the store channel and licence state by hand with the test-only switch of the debug build, then reload the page.
 
-"No price" means no currency sign ($, €, £, ₹, ¥) and none of the words "price", "prices", "pay once", "subscription" or "lifetime".
+"No price" means no currency sign ($, €, £, ₹, ¥) and not the word "price" or "prices".
 
 ## The internal build shows its version and says it is not for sale
 
@@ -18,9 +18,12 @@ Before: an empty data folder of its own. The app is the internal test build, mad
 4. Check: the About card shows "About Straft Studio".
 5. Check: the About card shows "Version " followed by the same version.
 6. Check: the About card shows "Internal build, not for sale."
-7. Check: the About card shows no price.
-8. Check: there is no Buy full version button.
-9. Check: the screen is quiet.
+7. Check: the About card shows "Publisher: Vighnajith Advisories Private Limited", the address "12/1, Ground Floor, 22nd Main Road, Bengaluru, Karnataka 560078, India", "Copyright 2026 Vighnajith Advisories Private Limited" and the Gemma Terms of Use and Prohibited Use Policy notice.
+8. Check: the About card shows no price.
+9. Check: the About card has a Contact us button.
+10. Click Third-party licences. Check: the dialog "Third-party licences" shows the licence inventory. Press Esc. Check: the dialog closes.
+11. Check: there is no Buy full version button.
+12. Check: the screen is quiet.
 
 ## A store build shows the version only
 

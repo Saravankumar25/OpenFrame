@@ -23,6 +23,15 @@ pub const MEDIAN_BAR_MS: u64 = 15_000;
 /// Section 7.5: 95th percentile at most this many milliseconds.
 pub const P95_BAR_MS: u64 = 30_000;
 
+/// The bars of a length class (spec 12.6): the long classes get twice the time of the short ones.
+pub fn class_bars(class: &str) -> (u64, u64) {
+    if matches!(class, "long250" | "long350") {
+        (2 * MEDIAN_BAR_MS, 2 * P95_BAR_MS)
+    } else {
+        (MEDIAN_BAR_MS, P95_BAR_MS)
+    }
+}
+
 /// The times and engine figures of one case.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct CaseTiming {
@@ -249,14 +258,18 @@ pub fn markdown(r: &LatencyReport) -> String {
     ));
     if !r.by_length_class.is_empty() {
         s.push_str(
-            "\n| Length class | Questions | Median | 95th percentile |\n|---|---|---|---|\n",
+            "\nBars by length class (spec 12.6): short answers 15 s median and 30 s 95th percentile; the long classes (`long250`, `long350`) 30 s and 60 s, the ADR-0028 limit on a processor.\n\n| Length class | Questions | Median | 95th percentile | Bar (median, 95th) | Met |\n|---|---|---|---|---|---|\n",
         );
         for (k, v) in &r.by_length_class {
+            let (median_bar, p95_bar) = class_bars(k);
             s.push_str(&format!(
-                "| {k} | {} | {} | {} |\n",
+                "| {k} | {} | {} | {} | {}, {} | {} |\n",
                 v.n,
                 secs(v.median_ms),
-                secs(v.p95_ms)
+                secs(v.p95_ms),
+                secs(median_bar),
+                secs(p95_bar),
+                yes(v.median_ms <= median_bar && v.p95_ms <= p95_bar)
             ));
         }
     }

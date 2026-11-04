@@ -9,10 +9,10 @@
 use std::io::Read as _;
 use std::path::{Path, PathBuf};
 
+use serde_json::{Value, json};
 use straft_application::registry::{self, AiExposure, FsEffect, OpClass};
 use straft_domain::{Capability, Role};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const MARKERS: [&str; 12] = [
     "OFMARKERFOLDER7731",
@@ -133,7 +133,7 @@ fn seeded_env() -> TestEnv {
     // No model is installed in tests: the request fails, but it carries the prompt marker.
     let _ = env.call(
         "ai.ask",
-        json!({ "text": format!("{} {}", MARKERS[7], MARKERS[3]), "scope": { "kind": "WholeProject" } }),
+        json!({ "text": format!("{} {}", MARKERS[7], MARKERS[3]), "sections": [{ "leaf": "screenplay/scenes" }] }),
     );
     write_logs(&env);
     env
@@ -196,7 +196,7 @@ fn write_logs(env: &TestEnv) {
                     "OFMARKERKEY7731": "x", "nested": { "a": MARKERS[2] },
                     "kind": MARKERS[1], "code": MARKERS[6], "action": MARKERS[5] }),
         ),
-        // A message Straft Studio does not know (would be a bug in a log call site).
+        // A message Straft does not know (would be a bug in a log call site).
         line(
             "ERROR",
             "straft_application",
@@ -220,17 +220,9 @@ fn write_logs(env: &TestEnv) {
             "{{\"level\":\"INFO\",\"fields\":{{\"message\":\"{}\"}}}}",
             "x".repeat(20_000) + MARKERS[4]
         ),
-        line(
-            "NOTICE",
-            "straft_application",
-            json!({ "message": leak }),
-        ),
+        line("NOTICE", "straft_application", json!({ "message": leak })),
     ];
-    std::fs::write(
-        dir.join("straft.2026-10-05.log"),
-        lines.join("\n") + "\n",
-    )
-    .unwrap();
+    std::fs::write(dir.join("straft.2026-10-05.log"), lines.join("\n") + "\n").unwrap();
     // An older day and an unrelated file in the logs folder.
     std::fs::write(
         dir.join("straft.2026-10-04.log"),
@@ -387,7 +379,7 @@ fn core_015_preview_is_exactly_what_is_saved_and_the_manifest_lists_every_file()
         );
     }
     let suggested = preview["suggestedFileName"].as_str().unwrap();
-    assert!(suggested.starts_with("Straft Studio Diagnostics ") && suggested.ends_with(".zip"));
+    assert!(suggested.starts_with("Straft Diagnostics ") && suggested.ends_with(".zip"));
     assert!(preview["neverIncluded"].as_array().unwrap().len() >= 5);
 
     let r = env.ok(

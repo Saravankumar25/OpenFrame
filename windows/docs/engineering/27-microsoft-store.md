@@ -2,6 +2,8 @@
 
 > **Current decisions (2026-10-15).** Chapter 3 only; its implementation plan is written after Chapter 2. Statements here about bundling the AI models inside the package are replaced by [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (runtime in the package, models downloaded on a click). The runtime now includes a Vulkan build ([ADR-0029](../adr/ADR-0029-gpu-acceleration.md)).
 
+> **Release guards (2026-11-03, [ADR-0039](../adr/ADR-0039-store-release-licensing.md) items 14 to 17).** The manifest now declares `internetClient` and `runFullTrust`; placeholders and the submission record are checked by `release-validate --store`; the package is x64 only. See section 13. Manual walks: [windows-store-test](../release/windows-store-test.md), [update-simulation](../release/update-simulation.md), [store-submission-checklist](../release/store-submission-checklist.md).
+
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned · ⛔ blocked on the product owner.
 > Sources: `packaging/msix/*`, `scripts/build-msix.mjs`, `scripts/release-validate.mjs --store`,
 > `.github/workflows/release.yml` (jobs `validate-store`, `store`), `apps/desktop/src-tauri/build.rs`,
@@ -28,10 +30,12 @@ it doesn't remove the certificate blocker. It is not used.
 
 | Path | Purpose |
 |---|---|
-| `packaging/msix/AppxManifest.template.xml` | Manifest template: `Windows.Desktop` target, `MinVersion` from `packaging/msix/store.config.json` (owner decision of 2026-10-06: Windows 11 only, so `10.0.22000.0`; the file and the `build-msix.mjs` default still say `10.0.17763.0` until the Microsoft Store package area changes them), `MaxVersionTested 10.0.26100.0`, `EntryPoint="Windows.FullTrustApplication"`, capability `runFullTrust` only (`internetClient` removed 2026-10-08: nothing is downloaded since ADR-0025), visual elements, optional file-type association. |
-| `packaging/msix/store.config.json` | Partner Center identity (placeholders `REPLACE_…`), display name, description, privacy policy URL, OS versions, file-type association switch (off). Environment variables override it (`MSIX_IDENTITY_NAME`, `MSIX_PUBLISHER`, `MSIX_PUBLISHER_DISPLAY_NAME`, `MSIX_DISPLAY_NAME`, `STORE_PRIVACY_POLICY_URL`). |
+| `packaging/msix/AppxManifest.template.xml` | Manifest template: `Windows.Desktop` target, `MinVersion` from `packaging/msix/store.config.json` (owner decision of 2026-10-06: Windows 11 only, so `10.0.22000.0`; the file and the `build-msix.mjs` default still say `10.0.17763.0` until the Microsoft Store package area changes them), `MaxVersionTested 10.0.26100.0`, `EntryPoint="Windows.FullTrustApplication"`, capabilities `internetClient` and `runFullTrust` (~~`runFullTrust` only~~, superseded 2026-11-03: the AI model download needs `internetClient`, ADR-0039 item 16), visual elements, optional file-type association. |
+| `packaging/msix/store.config.json` | Partner Center identity (placeholders `REPLACE_WITH_…`, each with a note saying who supplies it), display name, description, privacy policy URL (`https://straftstudio.com/legal/privacy/`), support URL (`https://straftstudio.com/contact/`), OS versions, file-type association switch (off). Environment variables override it (`MSIX_IDENTITY_NAME`, `MSIX_PUBLISHER`, `MSIX_PUBLISHER_DISPLAY_NAME`, `MSIX_DISPLAY_NAME`, `STORE_PRIVACY_POLICY_URL`). |
 | `packaging/msix/Assets/*.png` | 77 visual assets generated from `apps/desktop/src-tauri/icons/source.png`: Square44x44 (app list), Square71x71, Square150x150, Square310x310, Wide310x150, StoreLogo and SplashScreen at scales 100/125/150/200/400, plus Square44x44 target sizes 16–256 (plated, `altform-unplated`, `altform-lightunplated`) for the taskbar and Start. Committed so they can be hand-tuned. Regenerate with `node scripts/build-msix.mjs --generate-assets`. |
 | `packaging/msix/generate-assets.ps1` | System.Drawing resizer used by `--generate-assets`. Tiles center the icon at 66% (splash 50%) on transparency. |
+| `packaging/msix/submissions.json` | What was sent to Partner Center: `firstSubmissionIdentity` and `lastSubmittedVersion` (both `null` until the first upload). Read by `release-validate --store`. Section 13. |
+| `scripts/check-release-placeholders.mjs` | Fails when a `REPLACE_WITH_` placeholder remains in the Store files. Section 13. |
 | `scripts/build-msix.mjs` | Stage → manifest → `makepri` (`resources.pri` maps the unqualified names in the manifest to the scale/target-size files) → `makeappx pack` → optional dev signing, bundle, loose registration. |
 | `docs/store/privacy-policy.md` | Privacy policy draft (host it, then configure its URL). |
 | `docs/store/listing.md` | Store listing text, features, keywords, screenshot plan. |
@@ -61,7 +65,7 @@ node scripts/build-msix.mjs --dev                               # target\msix\St
   out of the Store.
 - `--bundle` also writes a `.msixbundle`. That becomes useful once an ARM64 package exists. For
   x64 only, upload the `.msix` directly. `.msixupload` is only needed to ship symbol files, and
-  Straft Studio doesn't upload symbols.
+  Straft doesn't upload symbols.
 - **Local test signing:** `--dev` creates a self-signed code-signing certificate in memory, with a
   subject equal to the test publisher, and writes it only to `target/msix/dev-cert/` (gitignored,
   never committed). The script never imports it into a certificate store. To install the test package,
@@ -88,7 +92,7 @@ node scripts/build-msix.mjs --dev                               # target\msix\St
 | `DisplayName` | Must equal the name reserved in Partner Center (`Straft Studio`). |
 | Target | `Windows.Desktop`, `MinVersion 10.0.22000.0` (Windows 11 only, decided 2026-10-06; the current `store.config.json` still says `10.0.17763.0`), `MaxVersionTested 10.0.26100.0`, x64. No `uap10` attributes, because they need build 19041. |
 | Entry point | `Windows.FullTrustApplication`: a Desktop Bridge (packaged classic) app running `straft-desktop.exe` at medium integrity. |
-| Capabilities | `runFullTrust` (restricted, required for every packaged Win32 app; justification in §7). **No other capability.** `internetClient` was removed on 2026-10-08: it only described the former AI download (ADR-0025 bundles the AI), Store builds have no in-app updater, and links open in the user's browser. `release-validate --store` fails if the set changes. |
+| Capabilities | `internetClient` (general, for the AI model download the person starts with a click, ADR-0026 and ADR-0032) and `runFullTrust` (restricted, required for every packaged Win32 app; justification in §7). **No other capability.** The schema wants the general capability first, then the restricted one. ~~`internetClient` was removed on 2026-10-08 because the AI was bundled (ADR-0025).~~ Superseded 2026-11-03: ADR-0026 downloads the models after install, so the capability is back (ADR-0039 item 16). `release-validate --store` fails if the set differs. |
 | File-type association | Off (`fileTypeAssociations.enabled=false`). Projects are folders, so they can't be associated. Exchange packages (`.ofstory`, `.ofschedule`, `.ofshots`) can be associated once the app handles file activation. The switch generates `uap:FileTypeAssociation`. |
 | Languages | `en-US` (the first release is English only). |
 | WebView2 | Not declarable as a Store package dependency. See §5.5. |
@@ -115,7 +119,7 @@ deleted on uninstall. With the default path, "Open logs folder" would show an em
 folder.
 
 **Decision:** when the process has package identity, `AppConfig.app_data_dir` becomes
-`%LOCALAPPDATA%\Packages\<PackageFamilyName>\LocalState\Straft Studio`, the Win32 path of
+`%LOCALAPPDATA%\Packages\<PackageFamilyName>\LocalState\Straft`, the Win32 path of
 `ApplicationData.Current.LocalFolder`. It is a real, non-virtualized path, so the app, Explorer and
 child processes see the same files. It needs no extra capability (the alternative, disabling
 virtualization, needs the restricted `unvirtualizedResources` capability), and Windows removes it on
@@ -200,7 +204,7 @@ services" = No.
    - *Properties:* category **Photo & video** (alternative: Productivity), privacy policy URL,
      website, support contact, system requirements (x64; memory/disk for the AI assistant),
      product declarations.
-   - *Age ratings:* answer the IARC questionnaire honestly. Straft Studio has no violence, no sharing of
+   - *Age ratings:* answer the IARC questionnaire honestly. Straft has no violence, no sharing of
      user content with other users, no chat, no purchases and no location use. Content is written by
      the user and stays on the device. If the AI assistant ships, answer the generative-AI questions
      accordingly. The expected result is a general-audience rating, but the questionnaire decides.
@@ -227,6 +231,8 @@ services" = No.
 > the package and works only on this computer. It installs no drivers or services, requires no
 > administrator rights, collects no telemetry and doesn't require an account.
 
+`internetClient` is a general capability and needs no justification field, but the notes for certification should say what it is for: the app connects to the internet only when the person clicks Download Straft AI (the models come from Hugging Face), and when the person opens a web link in their own browser. No project content is sent.
+
 ## 8. Validation: Windows App Certification Kit (WACK)
 
 WACK ships with the Windows SDK (`C:\Program Files (x86)\Windows Kits\10\App Certification Kit\`).
@@ -249,9 +255,9 @@ images). If the binary analyzer flags Control Flow Guard, add `-C control-flow-g
 builds (📋 decide).
 
 Also check manually on the installed package (§3): launch from Start. The Start tile, taskbar and
-Alt+Tab icons must show the Straft Studio logo, not a placeholder. Create a project (it must appear under
+Alt+Tab icons must show the Straft logo, not a placeholder. Create a project (it must appear under
 `Documents\Straft Studio\Projects`), open the Global Idea Vault and add an image. Then check that
-`%LOCALAPPDATA%\Packages\<family>\LocalState\Straft Studio\logs` holds today's log in Explorer. Once
+`%LOCALAPPDATA%\Packages\<family>\LocalState\Straft\logs` holds today's log in Explorer. Once
 Help → Open logs folder exists (doc 26 §3), it must open that folder. Launch
 a second time: the running window must come to the front. Uninstall, then check that the projects
 remain and `…\Packages\<family>` is gone.
@@ -311,15 +317,15 @@ cleanup, and a WACK run (§8).
 Source: the 2026-10-02 Store readiness audit (`docs/audits/`) and the owner's certification notes (`docs/history/notes/`). Tracked in the
 build plan (areas: Project controls and baseline, AI assistant quality and hardening, Microsoft Store package, Final review and submission) and register Appendix F. Re-check Microsoft Store Policies and Partner Center requirements on the submission date.
 
-**Common first-submission failures, and the answer for Straft Studio**
+**Common first-submission failures, and the answer for Straft**
 
-| Risk | Straft Studio answer |
+| Risk | Straft answer |
 |---|---|
 | Missing or dead privacy policy URL | Required for every Win32 app. Hosted HTTPS page, no placeholders (build plan: Legal, privacy, website and support area). |
 | Crash on first launch on a clean machine | Clean-machine run on Windows 11 with no developer tools; WebView2 present and missing cases (build plan: clean-machine matrix, first-launch crash check). |
 | Age rating does not match content | Answer the IARC questionnaire for screenplay content that may include mature themes or violence (build plan: IARC questionnaire). |
 | Reviewer cannot get past the first screen | No account or login exists; say so in Notes for Certification and explain how to start and how to download and try the AI (build plan: Notes for Certification). |
-| Over-broad manifest capabilities | Only `runFullTrust`, justified in writing; `release-validate --store` fails if the set changes (build plan: MSIX manifest). |
+| Over-broad manifest capabilities | Only `internetClient` and `runFullTrust` (superseded 2026-11-03, was `runFullTrust` only), justified in writing; `release-validate --store` fails if the set changes (build plan: MSIX manifest). |
 | Listing describes features the build lacks | A feature appears only when its row in the feature status file is Release-ready (build plan: Store listing from the shipped build). |
 | Live generative AI without a way to report output | In-app Report AI output action and listing disclosure (build plan: Report AI output action, listing AI disclosure). |
 | Downloaded executable after install | No executable is downloaded: the runtime is in the package. The models are data, downloaded after a user click with a signed manifest and SHA-256 checks (ADR-0026). |
@@ -332,3 +338,35 @@ and model host not provisioned~~ (no longer needed, ADR-0025; needed again, ADR-
 
 **Checklist before upload:** WACK pass on the exact MSIX; clean Windows Sandbox or VM first launch; working privacy URL; support contact; at least one real uncropped
 screenshot; Notes for Certification filled; version higher than any previous submission; `release-validate --store` passes without bypass.
+
+## 13. Release guards and the first submission (added 2026-11-03)
+
+Decisions: [ADR-0039](../adr/ADR-0039-store-release-licensing.md) items 14 to 17. Owner package: `docs/release/package-2026-11-03/`.
+
+- **Placeholders fail a Store release.** `node scripts/check-release-placeholders.mjs` scans `packaging/msix/store.config.json` (judged
+  through `loadStoreConfig`, so the CI variables `MSIX_IDENTITY_NAME`, `MSIX_PUBLISHER` and `MSIX_PUBLISHER_DISPLAY_NAME` count as real
+  values), the rendered manifest, `.github/workflows/release.yml` and `apps/desktop/src/features/licensing/rules.ts` for a
+  `REPLACE_WITH_` token. It prints each hit and exits 1. `release-validate --store` runs it as the check "Release placeholders".
+  `build-msix.mjs --dev`, debug, test and internal builds never run it. The three identity placeholders in
+  `store.config.json` each carry a note saying that the owner supplies them and where.
+- **Version and identity record.** `packaging/msix/submissions.json` holds `firstSubmissionIdentity` and `lastSubmittedVersion`, both
+  `null` until the first upload. `release-validate --store` adds "Store version rises" (the package version is strictly higher than
+  the last submitted one, compared part by part, and its fourth part is 0) and "Store identity unchanged" (once set, the identity
+  name and publisher must equal the first submission). The owner, or the session that submits, updates the file once per
+  submission. Never change the identity after the first one: a different identity is a different app.
+- **Capabilities.** `internetClient` and `runFullTrust`, in that order in the manifest (general capability, then the restricted
+  one). See sections 4 and 7.
+- **ARM64 is not shipped now** (ADR-0039 item 17). `packaging/ai/ai-assets.lock.json` has no ARM64 engine and no ARM64 test PC is
+  known, so the manifest says `ProcessorArchitecture="x64"` and there is no `msixbundle` step in `release.yml`. The x64 package
+  runs on Windows 11 on ARM under emulation: confirm it in Partner Center's package validation on the first upload. A native
+  ARM64 package needs the Rust target `aarch64-pc-windows-msvc`, an ARM64 llama.cpp engine in the lock (CPU first), its own
+  manifest or one manifest per architecture, a bundle or two packages in one submission, and a smoke test on real ARM64
+  hardware. Ship it only after it has run there.
+- **WACK** stays a manual step before upload (section 8, and [store-submission-checklist](../release/store-submission-checklist.md)).
+  `release.yml` carries a commented step to enable once a trusted test certificate exists on a runner.
+- **Manual walks.** [windows-store-test](../release/windows-store-test.md) (a limited audience submission on a clean PC),
+  [update-simulation](../release/update-simulation.md) (install N, then N+1 over it; staged rollout; fix forward) and
+  [store-submission-checklist](../release/store-submission-checklist.md) (section C of package file 05 and the order of the owner's
+  steps).
+- **Open owner decision.** The publisher display name: `Vighnajith Advisories` or `Straft Studio` (needs a trademark check).
+  Not decided here.

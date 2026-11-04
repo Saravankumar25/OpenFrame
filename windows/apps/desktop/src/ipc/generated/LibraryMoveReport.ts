@@ -6,6 +6,6 @@ export type LibraryMoveReport = { path: string,
  */
 projectsMoved: number, vaultMoved: boolean, 
 /**
- * Set when the old folder still holds something Straft Studio did not copy.
+ * Set when the old folder still holds something Straft did not copy.
  */
 sourceLeftAt: string | null, };

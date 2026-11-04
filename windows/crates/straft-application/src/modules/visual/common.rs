@@ -5,10 +5,10 @@
 use std::path::PathBuf;
 
 use base64::Engine;
-use straft_domain::{AppError, AppResult};
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{Connection, OptionalExtension};
 use serde::Serialize;
+use straft_domain::{AppError, AppResult};
 use ts_rs::TS;
 
 use crate::store::Tx;
@@ -39,13 +39,13 @@ pub fn ingest_image_file(tx: &Tx<'_>, path: &str) -> AppResult<AssetInfo> {
         .to_string();
     if !is_displayable_image(crate::util::media_type_for(&name)) {
         return Err(AppError::invalid_input(
-            "That file isn't an image Straft Studio can show. Choose a PNG, JPEG, GIF, WebP, BMP or SVG image.",
+            "That file isn't an image Straft can show. Choose a PNG, JPEG, GIF, WebP, BMP or SVG image.",
         ));
     }
     ingest_file(tx, &p)
 }
 
-/// Store an image sent as base64 data (a sketch drawn in Straft Studio or a pasted image).
+/// Store an image sent as base64 data (a sketch drawn in Straft or a pasted image).
 pub fn ingest_image_data(tx: &Tx<'_>, data_base64: &str, file_name: &str) -> AppResult<AssetInfo> {
     let raw = data_base64
         .split_once(";base64,")

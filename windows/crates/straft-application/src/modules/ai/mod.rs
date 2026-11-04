@@ -1,4 +1,4 @@
-//! Offline AI Assistant (FSD §42, FSD-AI-001..027; AI spec; Local AI Runtime spec;
+//! Straft AI Assistant (FSD §42, FSD-AI-001..027; AI spec; Local AI Runtime spec;
 //! UX §3.40; mockups 174–181).
 //!
 //! Operations:
@@ -12,11 +12,11 @@
 //! - `ai.history`: the user's own conversation history;
 //! - `ai.memory_list`, `ai.memory_delete`: what the assistant remembers about the user (see `memory`).
 //!
-//! Straft Studio stays fully usable when the AI is not downloaded, missing or damaged: nothing else
+//! Straft stays fully usable when the AI is not downloaded, missing or damaged: nothing else
 //! depends on this module.
 
 mod action;
-mod answer;
+pub mod answer;
 mod cancel;
 pub mod catalog;
 pub mod change_set;
@@ -34,6 +34,7 @@ pub mod records;
 pub mod retrieval;
 mod sanitize;
 pub mod scope;
+pub mod sections;
 pub mod service;
 #[cfg(test)]
 mod test_script;
@@ -45,8 +46,8 @@ pub mod turn;
 pub mod types;
 mod typo;
 
-use straft_domain::{Actor, AppResult, Capability};
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppResult, Capability};
 use ts_rs::TS;
 
 use crate::core::AppCore;
@@ -113,7 +114,7 @@ pub fn register(r: &mut Registry) {
         );
     r.query("ai.diagnostics", diagnostics).meta(
         M::app_query(
-            "Offline AI technical details for Settings (versions, licences, hashes, paths).",
+            "Straft AI technical details for Settings (versions, licences, hashes, paths).",
         )
         .hidden(h::AI_RUNTIME),
     );
@@ -128,6 +129,13 @@ pub fn register(r: &mut Registry) {
         M::command(
             Capability::UseAi,
             "Stop the assistant request that is running in a conversation (nothing is changed).",
+        )
+        .hidden(h::AI_SELF),
+    );
+    r.query("ai.sections", sections::sections_query).meta(
+        M::query(
+            Capability::UseAi,
+            "The section tree the assistant panel offers: the sections of the project the person may read, with the screenplays, drafts, scenes, shooting days and call sheets to choose from.",
         )
         .hidden(h::AI_SELF),
     );
@@ -219,14 +227,14 @@ fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange> {
 }
 
 fn cancel_request(_core: &AppCore, actor: &Actor, args: AiCancelArgs) -> AppResult<AiCancelDto> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use Straft AI")?;
     Ok(AiCancelDto {
         stopping: cancel::stop(&actor.user_id, &args.conversation_id),
     })
 }
 
 fn history(core: &AppCore, actor: &Actor, args: AiHistoryArgs) -> AppResult<AiHistoryDto> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use Straft AI")?;
     let s = core.project()?;
     let limit = args.limit.unwrap_or(50).clamp(1, 200) as usize;
     s.store.read(|c| {

@@ -1,9 +1,9 @@
 //! End-to-end tests of the core pipeline through the public operation registry
 //! (the same path the UI, exchange-package imports and AI Change Sets use).
 
+use serde_json::json;
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::json;
 
 #[test]
 fn create_project_opens_at_empty_home() {

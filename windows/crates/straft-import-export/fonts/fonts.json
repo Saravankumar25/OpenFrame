@@ -1,5 +1,5 @@
 {
-  "about": "Fonts bundled into screenplay and document PDFs (ADR-0016). Each file ships unmodified under the SIL Open Font License 1.1 (licence text next to it) and is subset only inside the PDFs Straft Studio writes. The tests check every file against its SHA-256 here; replacing a font means updating this list in the same change.",
+  "about": "Fonts bundled into screenplay and document PDFs (ADR-0016). Each file ships unmodified under the SIL Open Font License 1.1 (licence text next to it) and is subset only inside the PDFs Straft writes. The tests check every file against its SHA-256 here; replacing a font means updating this list in the same change.",
   "fonts": [
     {
       "file": "CourierPrime-Bold.ttf",

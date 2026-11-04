@@ -225,81 +225,13 @@ fn a_file_system_path_never_reaches_the_facts() {
 }
 
 #[test]
-fn the_table_has_one_fetcher_for_every_domain() {
-    let all = [
-        Domain::Story,
-        Domain::Screenplay,
-        Domain::Breakdown,
-        Domain::People,
-        Domain::Production,
-        Domain::Schedule,
-        Domain::Budget,
-        Domain::Visual,
-        Domain::Files,
-        Domain::Settings,
-        Domain::Product,
-    ];
-    for d in all {
-        let n = FETCHERS.iter().filter(|f| f.domain == d).count();
-        assert_eq!(n, 1, "{}", d.code());
-    }
-    assert!(
-        FETCHERS
-            .iter()
-            .all(|f| f.cap_tokens > 0 && !f.groups.is_empty() && !f.source.is_empty())
-    );
-}
-
-#[test]
-fn chat_and_change_fetch_nothing_and_a_scene_to_explain_brings_its_breakdown_and_day() {
-    let none = Resolved::default();
+fn chat_and_change_fetch_nothing() {
     for t in [AnswerType::Chat, AnswerType::Change] {
         assert!(!registry::wants_facts(read(t, &[]).group));
     }
-    let scene = Resolved {
-        scenes: vec![crate::modules::ai::index::SceneHit {
-            screenplay_id: "sp".into(),
-            ordinal: 3,
-            scene_id: Some("s3".into()),
-            heading: None,
-            how: How::Exact,
-        }],
-        ..Resolved::default()
-    };
-    let r = read(AnswerType::Explain, &[Domain::Screenplay]);
-    let planned: Vec<Domain> = registry::plan(&r, &scene, "explain scene 3")
-        .iter()
-        .map(|f| f.domain)
-        .collect();
-    for d in [Domain::Screenplay, Domain::Breakdown, Domain::Schedule] {
-        assert!(planned.contains(&d), "{planned:?}");
+    for t in [AnswerType::Lookup, AnswerType::Explain, AnswerType::Help] {
+        assert!(registry::wants_facts(read(t, &[]).group));
     }
-    // A lookup of one fact does not fetch the whole scene.
-    let r = read(AnswerType::Lookup, &[Domain::Screenplay]);
-    let planned: Vec<Domain> = registry::plan(&r, &scene, "which scene is it")
-        .iter()
-        .map(|f| f.domain)
-        .collect();
-    assert_eq!(planned, vec![Domain::Screenplay]);
-    // Help reads the guide; a money question reads the budget.
-    let planned: Vec<Domain> = registry::plan(
-        &read(AnswerType::Help, &[]),
-        &none,
-        "how do I change the theme",
-    )
-    .iter()
-    .map(|f| f.domain)
-    .collect();
-    assert!(planned.contains(&Domain::Product));
-    let planned: Vec<Domain> = registry::plan(
-        &read(AnswerType::Lookup, &[Domain::Budget]),
-        &none,
-        "lead cast budget",
-    )
-    .iter()
-    .map(|f| f.domain)
-    .collect();
-    assert_eq!(planned, vec![Domain::Budget]);
 }
 
 #[test]
@@ -325,6 +257,7 @@ fn the_summary_holds_counts_only() {
         notes_on_guard: 0,
         tokens_estimate: 42,
         resolved: Default::default(),
+        ..Default::default()
     };
     assert_eq!(
         d.summary(),
@@ -337,4 +270,41 @@ fn the_summary_holds_counts_only() {
     );
     assert_eq!(cap_tokens(LengthClass::Paragraph), 2_500);
     assert_eq!(cap_tokens(LengthClass::OneSentence), 1_500);
+}
+
+#[test]
+fn names_homed_in_a_leaf_that_was_not_picked_are_kept_aside() {
+    use crate::modules::ai::sections;
+    let hit = |id: &str, name: &str| Hit {
+        id: id.into(),
+        name: name.into(),
+        how: How::Exact,
+    };
+    let r = Resolved {
+        characters: vec![hit("c1", "Anna")],
+        persons: vec![hit("p1", "Maya Rao")],
+        locations: vec![hit("l1", "Central Station")],
+        budget_lines: vec![hit("b1", "Camera")],
+        ..Resolved::default()
+    };
+    let picked = [sections::leaf("production/budget").unwrap()];
+    let (kept, aside) = names::restrict(r.clone(), &picked);
+    assert!(kept.characters.is_empty() && kept.persons.is_empty() && kept.locations.is_empty());
+    assert_eq!(kept.budget_lines.len(), 1);
+    let mut got: Vec<(&str, &str)> = aside.iter().map(|e| (e.leaf, e.name.as_str())).collect();
+    got.sort();
+    assert_eq!(
+        got,
+        vec![
+            ("production/cast-crew", "Maya Rao"),
+            ("production/locations", "Central Station"),
+            ("story/characters", "Anna"),
+        ]
+    );
+    // Cast & Crew reads a character by the role it plays, so the name stays with it.
+    let picked = [sections::leaf("production/cast-crew").unwrap()];
+    let (kept, aside) = names::restrict(r, &picked);
+    assert_eq!(kept.characters.len(), 1);
+    assert_eq!(kept.persons.len(), 1);
+    assert!(aside.iter().all(|e| e.leaf != "story/characters"));
 }

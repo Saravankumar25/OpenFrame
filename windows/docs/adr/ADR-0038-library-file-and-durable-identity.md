@@ -30,7 +30,7 @@ vanished from view although the projects were intact. The projects folder and th
 6. Amended 2026-10-27 (owner decision: "This is suggested default only, it should not automatically store
    directly"). The library folder is chosen by the person on the first start; `C:\Users\<name>\Straft Studio` (outside
    OneDrive) is only the suggestion. Nothing is created and no profile is saved before they confirm Use the default
-   location, Choose a new location or Locate existing Straft Studio data. Before that a new person's id lives in memory
+   location, Choose a new location or Locate existing Straft data. Before that a new person's id lives in memory
    only, so connecting an existing library takes over that library's identity. The choice is remembered in
    `app.sqlite` and in `%APPDATA%\Straft\library-pointer.json`, outside the disposable app data; a remembered
    library that is missing is asked for again, never recreated. Earlier installs with `Documents\Straft Studio` are asked

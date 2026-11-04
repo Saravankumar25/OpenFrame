@@ -101,11 +101,20 @@ pub(crate) fn drop_unfinished(text: String) -> String {
             '.', '!', '?', ')', '"', '”', '’', ':', '\u{3002}', '\u{0964}',
         ])
     };
-    if ends(last) || word_count(last) < 6 {
+    if ends(last) {
         return t.to_string();
     }
-    match last.rfind(['.', '!', '?']) {
-        Some(i) => format!("{}{}", &t[..last_start], &last[..=i]),
+    // The last full sentence of the line, found by character so the danda and the full-width stop
+    // (more than one byte) cut cleanly.
+    let stop = last
+        .char_indices()
+        .rfind(|(_, c)| matches!(c, '.' | '!' | '?' | '\u{0964}' | '\u{3002}'))
+        .map(|(i, c)| i + c.len_utf8());
+    match stop {
+        // A short tail on a new line is a cut-off start; the line before it stays.
+        _ if word_count(last) < 6 && last_start > 0 => t[..last_start].trim_end().to_string(),
+        _ if word_count(last) < 6 => t.to_string(),
+        Some(end) => format!("{}{}", &t[..last_start], &last[..end]),
         None if last_start > 0 => t[..last_start].trim_end().to_string(),
         None => t.to_string(),
     }
@@ -379,10 +388,18 @@ mod tests {
         // Nothing to cut back to on a one line reply: it stays.
         let one = "Ravi waits at the station for the late train".to_string();
         assert_eq!(drop_unfinished(one.clone()), one);
-        // A short last line is left alone.
+        // A short tail on a new line is a cut-off start: it goes, and the line before it stays.
         assert_eq!(
             drop_unfinished("Ravi waits.\nYes".to_string()),
-            "Ravi waits.\nYes"
+            "Ravi waits."
+        );
+        // A Hindi reply cut after the danda keeps its last full sentence (no panic on the
+        // multi-byte mark), and so does a full-width stop.
+        let hi = "रवि स्टेशन पर इंतज़ार करता है। फिर अर्जुन अंदर आता है और वह उससे कहता है कि".to_string();
+        assert_eq!(drop_unfinished(hi), "रवि स्टेशन पर इंतज़ार करता है।");
+        assert_eq!(
+            drop_unfinished("a b c d e f g h i j。k l m n o p q r".to_string()),
+            "a b c d e f g h i j。"
         );
     }
 

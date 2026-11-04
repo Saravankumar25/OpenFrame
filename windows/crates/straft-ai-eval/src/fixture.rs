@@ -7,6 +7,7 @@
 //! | `low-tide-two-screenplays` | A production-complete fictional film: two screenplays and every production area. |
 //! | `thin-project` | Only the teaser screenplay, to test honest abstention. |
 //! | `big-project` | 500 generated scenes and 5,000 generated notes, to time indexing and fetches. |
+//! | `low-tide-sections` | `low-tide-two-screenplays` plus Story Days, time notes and a Global Idea Vault (`low-tide-sections/extra.jsonl`), for the section-scoped set. |
 //!
 //! Everything is built through the real operations, so a fixture is exactly what a person could have
 //! made in the app. `gold/fixtures/low-tide-two-screenplays/FACTS.md` lists every fact a case may ask
@@ -23,14 +24,15 @@
 use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 
-use straft_application::core::AppCore;
-use straft_domain::Actor;
 use serde::Deserialize;
 use serde_json::{Value, json};
+use straft_application::core::AppCore;
+use straft_domain::Actor;
 
 pub const LOW_TIDE: &str = "low-tide-two-screenplays";
 pub const THIN: &str = "thin-project";
 pub const BIG: &str = "big-project";
+pub const LOW_TIDE_SECTIONS: &str = "low-tide-sections";
 
 /// Scenes and notes of `big-project`.
 pub const BIG_SCENES: usize = 500;
@@ -38,7 +40,7 @@ pub const BIG_NOTES: usize = 5_000;
 
 /// True when `name` is a fixture id rather than a sample script id.
 pub fn is_fixture(name: &str) -> bool {
-    [LOW_TIDE, THIN, BIG].contains(&name)
+    [LOW_TIDE, THIN, BIG, LOW_TIDE_SECTIONS].contains(&name)
 }
 
 /// The screenplay whose current draft a case reads: the feature of `low-tide-two-screenplays`,
@@ -58,7 +60,8 @@ pub fn fixtures_dir() -> PathBuf {
 /// Build the fixture into the open project of `core`.
 pub fn build(core: &AppCore, name: &str) -> Result<Built, String> {
     match name {
-        LOW_TIDE => low_tide(core),
+        LOW_TIDE => low_tide(core, false),
+        LOW_TIDE_SECTIONS => low_tide(core, true),
         THIN => thin(core),
         BIG => big(core),
         other => Err(format!("unknown fixture {other}")),
@@ -142,7 +145,8 @@ struct Run<'a> {
     dir: tempfile::TempDir,
 }
 
-fn low_tide(core: &AppCore) -> Result<Built, String> {
+/// `low-tide-two-screenplays`; with `sections`, the steps of `low-tide-sections/extra.jsonl` follow.
+fn low_tide(core: &AppCore, sections: bool) -> Result<Built, String> {
     let feature = import(core, &read_fixture(LOW_TIDE, "feature.fountain")?)?;
     let teaser = import(core, &read_fixture(LOW_TIDE, "teaser.fountain")?)?;
     let result = feature.built.clone();
@@ -158,24 +162,30 @@ fn low_tide(core: &AppCore) -> Result<Built, String> {
         files: BTreeMap::new(),
         dir: tempfile::tempdir().map_err(|e| e.to_string())?,
     };
-    let text = read_fixture(LOW_TIDE, "setup.jsonl")?;
+    let mut files = vec![(LOW_TIDE, "setup.jsonl")];
+    if sections {
+        files.push((LOW_TIDE_SECTIONS, "extra.jsonl"));
+    }
     let trace = std::env::var_os("FIXTURE_TRACE").is_some();
-    for (i, line) in text
-        .lines()
-        .enumerate()
-        .filter(|(_, l)| !l.trim().is_empty())
-    {
-        let step: Step =
-            serde_json::from_str(line).map_err(|e| format!("setup.jsonl:{}: {e}", i + 1))?;
-        let out = run
-            .step(&step)
-            .map_err(|e| format!("setup.jsonl:{} ({}): {e}", i + 1, step.op))?;
-        if trace {
-            let shown: String = out.to_string().chars().take(160).collect();
-            eprintln!("{} {} -> {shown}", i + 1, step.op);
-        }
-        if let Some(n) = &step.name {
-            run.refs.insert(n.clone(), out);
+    for (folder, file) in files {
+        let text = read_fixture(folder, file)?;
+        for (i, line) in text
+            .lines()
+            .enumerate()
+            .filter(|(_, l)| !l.trim().is_empty())
+        {
+            let step: Step =
+                serde_json::from_str(line).map_err(|e| format!("{file}:{}: {e}", i + 1))?;
+            let out = run
+                .step(&step)
+                .map_err(|e| format!("{file}:{} ({}): {e}", i + 1, step.op))?;
+            if trace {
+                let shown: String = out.to_string().chars().take(160).collect();
+                eprintln!("{} {} -> {shown}", i + 1, step.op);
+            }
+            if let Some(n) = &step.name {
+                run.refs.insert(n.clone(), out);
+            }
         }
     }
     Ok(result)
@@ -411,7 +421,7 @@ fn phrase(n: usize, words: usize) -> String {
 /// The Fountain text of `big-project`: `BIG_SCENES` scenes, deterministic.
 pub fn big_script() -> String {
     let mut t = String::from(
-        "Title: Generated Coast Drama\nCredit: Written by\nAuthor: Straft Studio evaluation fixture\n\n",
+        "Title: Generated Coast Drama\nCredit: Written by\nAuthor: Straft evaluation fixture\n\n",
     );
     for i in 0..BIG_SCENES {
         let io = if i % 3 == 0 { "EXT." } else { "INT." };

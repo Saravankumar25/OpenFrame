@@ -2,6 +2,6 @@
 
 export type LibraryCreateArgs = { 
 /**
- * The folder that will hold the new `Straft Studio` library folder.
+ * The folder that will hold the new `Straft` library folder.
  */
 parent: string, };

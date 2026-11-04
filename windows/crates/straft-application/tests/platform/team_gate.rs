@@ -4,12 +4,12 @@
 
 use std::sync::Arc;
 
+use serde_json::{Value, json};
 use straft_application::events::RecordingSink;
 use straft_application::modules::entitlement::{TEAM_GATE_ALLOWED, TeamGateUnlockArgs};
 use straft_application::{AppConfig, AppCore};
 use straft_domain::auth::ActorOrigin;
 use straft_entitlement::team_gate::hash_with_costs;
-use serde_json::{Value, json};
 
 const TEST_PASSWORD: &str = "test-only team password 42";
 
@@ -59,19 +59,14 @@ fn nothing_opens_before_the_right_password_and_everything_opens_after() {
     for (op, args) in GATED {
         let e = call(&core, op, serde_json::from_str(args).unwrap()).unwrap_err();
         assert_eq!(e.code.0, "permission.team_password_required", "{op}");
-        assert_eq!(
-            e.message,
-            "Enter the team password to open Straft Studio."
-        );
+        assert_eq!(e.message, "Enter the team password to open Straft Studio.");
     }
     // The theme still loads so the password screen looks like the app.
     assert!(TEAM_GATE_ALLOWED.contains(&"appearance.get"));
     call(&core, "appearance.get", json!({})).unwrap();
     // Nothing was created on disk for the Global Idea Vault before the password, and the start
     // work (here: removing what an interrupted move left) does not run either.
-    let leftover = dir
-        .path()
-        .join("global-vault.straft-staging-1793000000000");
+    let leftover = dir.path().join("global-vault.straft-staging-1793000000000");
     std::fs::create_dir_all(&leftover).unwrap();
     core.startup_maintenance();
     assert!(

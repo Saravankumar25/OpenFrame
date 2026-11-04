@@ -4,10 +4,10 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use serde_json::{Value, json};
 use straft_application::MutationMeta;
 use straft_domain::Capability;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 fn png_bytes() -> Vec<u8> {
     let mut png = b"\x89PNG\r\n\x1a\n\0\0\0\rIHDR".to_vec();

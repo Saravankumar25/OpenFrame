@@ -174,13 +174,13 @@ impl PdfBuilder {
         self.pages.len()
     }
 
-    /// Assemble the document with Straft Studio named as creator and producer
+    /// Assemble the document with Straft named as creator and producer
     /// (production documents and reports).
     pub fn finish(self, title: &str, author: Option<&str>) -> Vec<u8> {
         self.assemble(title, author, true)
     }
 
-    /// Assemble the document without any Straft Studio branding (screenplay files).
+    /// Assemble the document without any Straft branding (screenplay files).
     pub fn finish_unbranded(self, title: &str, author: Option<&str>) -> Vec<u8> {
         self.assemble(title, author, false)
     }

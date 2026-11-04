@@ -67,7 +67,7 @@
 510,314 8.8 1/8
 553,315 8.2 2h
 *,768 6.8 BLACK RAIN · SHOOTING SCHEDULE · REVISED <DATE>
-46,24 6.8 Created using Straft Studio
+46,24 6.8 Created using Straft
 528,24 7.4 Page 1 of 2
 == page 2 612x792
 56,727 13.0 Shoot Day 2
@@ -104,5 +104,5 @@
 469,533 7.4 Scenes not on a shooting day
 46,508 8.8 All source scenes are scheduled.
 *,768 6.8 BLACK RAIN · SHOOTING SCHEDULE · REVISED <DATE>
-46,24 6.8 Created using Straft Studio
+46,24 6.8 Created using Straft
 528,24 7.4 Page 2 of 2

@@ -1,6 +1,6 @@
 # Straft Studio — PDF Design System (v1.0 system; package v2)
 
-Status: **design reference for the coding assistant — not integrated into Straft Studio, not validated against the Rust renderer.**
+Status: **design reference for the coding assistant — not integrated into Straft, not validated against the Rust renderer.**
 Evidence base: repository `Saravankumar25/StraftStudio` `main` @ `2f5a045416bd2125801329533fc47f986ccc8174` (Windows tree), the 19 supplied PDF exports, and the earlier audit pack (older commit `324cd96…`, used only as a lead and re-verified).
 Visual companion: `Brand_and_Footer_Reference.html / .pdf`. Machine-readable tokens and components: `assets/straft-print.css`.
 
@@ -16,10 +16,10 @@ Visual companion: `Brand_and_Footer_Reference.html / .pdf`. Machine-readable tok
 
 | Rule | Value |
 |---|---|
-| Artwork | `assets/straft-logo.png`: the official logo for light paper, transparent background, **trimmed to its artwork bounds** (735 × 163 px). Dark-background master: `assets/straft-logo-original.png` (1406 × 360). No vector/SVG version of the lockup exists in the repository (the repo's `BrandLogo.tsx` is a UI re-creation of the mark + typed wordmark and the website favicon is the mark only), so these rasters are the only authoritative assets. |
+| Artwork | `assets/straft-logo.png` — the user-supplied official logo, **cropped only to its artwork bounds** (699 × 163 px). Unmodified original: `assets/straft-logo-original.png` (812 × 347). No vector/SVG version of the lockup exists in the repository (the repo's `BrandLogo.tsx` is a UI re-creation of the mark + typed wordmark and the website favicon is the mark only), so the supplied raster is the only authoritative asset. |
 | Use | Footer, bottom-left, every page of every production PDF in scope. Never in a header. Never redrawn, typeset, recoloured, stretched, cropped into the artwork. |
-| Size | 17 pt high × 76.7 pt wide (ratio 4.509 : 1). Minimum 14 pt high. |
-| Brand line | `Created using Straft Studio` (the constant `BRAND_LINE` in `report.rs`) 6.8 pt regular, slate `#566277`, directly under the logo, left edges aligned. |
+| Size | 17 pt high × 72.9 pt wide (ratio 4.289 : 1). Minimum 14 pt high. |
+| Brand line | `Created using Straft` (the constant `BRAND_LINE` in `report.rs`) 6.8 pt regular, slate `#566277`, directly under the logo, left edges aligned. |
 | Page number | `Page X of Y`, 7.4 pt regular ink, lower-right margin, same baseline as the brand line. X, Y = real page number / real page count. |
 | Position | Logo bottom edge 33 pt above the page bottom; brand-line baseline ≈ 22 pt above the bottom edge. No footer rule. No project/document string. |
 | Embedding | Embed once as a lossless image and reuse on every page. (`ReportImage::decode` converts to JPEG q85 — fine for photos, not for the wordmark; add a lossless path.) |

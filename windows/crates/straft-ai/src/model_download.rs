@@ -17,9 +17,9 @@
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use straft_domain::{AppError, AppResult};
 use parking_lot::Mutex;
 use serde::Serialize;
+use straft_domain::{AppError, AppResult};
 
 use crate::download::Tier;
 use crate::fetch::{self, ModelSource};

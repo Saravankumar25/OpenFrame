@@ -281,7 +281,7 @@ fn long_sheet(film: &Film) -> String {
             "key": "l1",
             "name": "Pozhikkara Lighthouse and Keeper's Cottage, Upper Gallery and Lamp Room Interiors",
             "address": "Lighthouse Road, Pozhikkara Headland, Near the Fishermen's Co-operative Society Building, Kollam District, Kerala 691302",
-            "meetingPoint": "Unit base at the car park; follow the red STRAFT STUDIO signs",
+            "meetingPoint": "Unit base at the car park; follow the red STRAFT signs",
             "access": long_text,
             "parking": "Forty cars at the Co-operative ground; overflow at the school playground 1.2 km away.",
             "hospital": "District Hospital Kollam, +91 474 2744100, 22 km",
@@ -421,7 +421,7 @@ pub(crate) fn check_furniture(runs: &[Run], pages: usize, header: &str, headings
             .map(|r| r.text.as_str())
             .collect();
         assert!(
-            foot.contains(&"Created using Straft Studio"),
+            foot.contains(&"Created using Straft"),
             "brand line on page {page}: {foot:?}"
         );
         assert!(

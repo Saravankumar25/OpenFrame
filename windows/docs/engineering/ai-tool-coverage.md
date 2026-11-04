@@ -25,9 +25,14 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
 - `tools_for_request` picks the core tools plus the request-relevant domain tools within a character
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
+- Section-scoped (ADR-0040, `modules/ai/sections/tools.rs`): every tool is homed in one section of the app (a read tool
+  on its leaf, a proposal tool by what it changes), or is a cross tool (search, retrieval, navigation), a loop tool, or
+  a page that is no section. A request offers the agent only the tools homed in the sections the person picked; a tool
+  outside them never runs even when the model names it (the reply points to the section instead); and
+  `suggest_breakdown` also needs the Screenplay. The coverage tests in `sections/tests.rs` fail when a tool has no home.
 
-- Registered operations: **523** (165 queries, 358 commands)
-- Exposed to the assistant through tools: **308**; not AI-accessible: **215**
+- Registered operations: **525** (166 queries, 359 commands)
+- Exposed to the assistant through tools: **308**; not AI-accessible: **217**
 - Tools: **254** (61 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -254,13 +259,14 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `screenplay.export`: Export a screenplay draft (PDF/FDX/Fountain/…) to a location the user picked. | query | Read | Export | W | `InterchangeScreenplayExportArgs` → `InterchangeScreenplayExportResult` | hidden | none |
 | `screenplay.import_apply`: Import a screenplay as a new screenplay or draft. | command | Mutate | Import | R | `InterchangeImportApplyArgs` → `InterchangeImportReport` | hidden | none |
 | `screenplay.import_preview`: Preview importing a screenplay file (FDX/Fountain/…) or pasted text. | query | Read | Import | R | `InterchangeImportPreviewArgs` → `InterchangeImportPreview` | hidden | none |
-| `screenplay.samples`: The sample scripts that ship with Straft Studio, for learning the app. | query | Read | View |  | `InterchangeSamplesArgs` → `Vec<InterchangeSample>` | hidden | none |
+| `screenplay.samples`: The sample scripts that ship with Straft, for learning the app. | query | Read | View |  | `InterchangeSamplesArgs` → `Vec<InterchangeSample>` | hidden | none |
 
 ### Licence and trial
 
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
 |---|---|---|---|---|---|---|---|
 | `entitlement.buy`: Buy the full version through the store's own purchase window: Apple's payment sheet on the Mac, the Microsoft Store purchase dialog on Windows. The internal installer build never sells. | command | Mutate | app level | P | `BuyArgs` → `BuyOutcome` | hidden | none |
+| `entitlement.lock_ready`: The lock screen has saved what the editors held: write the open project and the vault to their files and end the short window in which saving is still allowed. | command | Mutate | app level | P | `LockReadyArgs` → `()` | hidden | none |
 | `entitlement.notice`: Which trial reminder or first-run screen to show now: a reminder in the last 3 trial days, the data note, the file safety tutorial and the welcome after a purchase, or the store screens (the lock after the trial, the licence check, the Mac first launch). | query | Read | app level |  | `EntitlementNoticeArgs` → `EntitlementNotice` | hidden | none |
 | `entitlement.record_notice`: Remember that a trial reminder was shown today, or that the data note, the tutorial or the welcome was finished. | command | Mutate | app level | P | `RecordNoticeArgs` → `EntitlementNotice` | hidden | none |
 | `entitlement.restore_purchase`: Ask the release channel to restore a purchase, then check the licence and trial again. | command | Mutate | app level | P | `RestorePurchaseArgs` → `EntitlementStatus` | hidden | none |
@@ -279,7 +285,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `ai.change_set.get`: One prepared Change Set (proposal) of the requesting user. | query | Read | View |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
 | `ai.change_set.recheck`: Re-check a stale proposal against the current project. | command | Mutate | UseAi |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
 | `ai.change_set.reject`: Reject a proposal (project unchanged). | command | Mutate | UseAi |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
-| `ai.diagnostics`: Offline AI technical details for Settings (versions, licences, hashes, paths). | query | Read | app level |  | `AiEmptyArgs` → `AiDiagnosticsDto` | hidden | none |
+| `ai.diagnostics`: Straft AI technical details for Settings (versions, licences, hashes, paths). | query | Read | app level |  | `AiEmptyArgs` → `AiDiagnosticsDto` | hidden | none |
 | `ai.download.import`: Use a model file the person already has; it is copied and used only when it matches a pinned file. | command | Mutate | app level |  | `AiImportArgs` → `AiImportResult` | hidden | none |
 | `ai.download.pause`: Pause the Straft AI download; it resumes where it stopped. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 | `ai.download.remove`: Remove the downloaded Straft AI models; projects are not touched. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
@@ -294,6 +300,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `ai.index_status`: State of the derived project-context index (current, updating, rebuilding…). | query | Read | View |  | `AiIndexArgs` → `IndexStatusDto` | hidden | none |
 | `ai.memory_delete`: Make the assistant forget one of the user's remembered entries; the words are erased. | command | Mutate | UseAi | DI | `AiMemoryDeleteArgs` → `AiMemoryDeleteDto` | hidden | none |
 | `ai.memory_list`: What the assistant remembers about the user in this project (their own entries only). | query | Read | UseAi |  | `AiEmptyArgs` → `AiMemoryListDto` | hidden | none |
+| `ai.sections`: The section tree the assistant panel offers: the sections of the project the person may read, with the screenplays, drafts, scenes, shooting days and call sheets to choose from. | query | Read | UseAi |  | `AiSectionsArgs` → `AiSectionTreeDto` | hidden | none |
 | `ai.status`: Offline AI status: available, downloaded models check, engine state. | query | Read | app level |  | `AiEmptyArgs` → `AiStatusDto` | hidden | none |
 | `ai.stop_runtime`: Stop the local AI engine. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 
@@ -525,12 +532,12 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
 |---|---|---|---|---|---|---|---|
-| `library.connect`: Connect a Straft Studio library that already exists. | command | Mutate | app level | P | `LibraryDirArgs` → `LibraryStatus` | hidden | none |
-| `library.create_at`: Set up a new Straft Studio library in a folder the person picked. | command | Mutate | app level | P | `LibraryCreateArgs` → `LibraryStatus` | hidden | none |
-| `library.inspect`: What a folder holds: a Straft Studio library, a project, a vault, or nothing. | query | Read | app level | P | `LibraryDirArgs` → `LibraryInspection` | hidden | none |
-| `library.move`: Move the whole Straft Studio library to another folder. | command | Mutate | app level | DCL P | `MoveToFolderArgs` → `StorageTaskStarted` | hidden | none |
-| `library.status`: Whether the Straft Studio library is set up, and libraries found on this computer. | query | Read | app level | P | `Empty` → `LibraryStatus` | hidden | none |
-| `library.use_default`: Set up the Straft Studio library in the suggested folder. | command | Mutate | app level | P | `Empty` → `LibraryStatus` | hidden | none |
+| `library.connect`: Connect a Straft library that already exists. | command | Mutate | app level | P | `LibraryDirArgs` → `LibraryStatus` | hidden | none |
+| `library.create_at`: Set up a new Straft library in a folder the person picked. | command | Mutate | app level | P | `LibraryCreateArgs` → `LibraryStatus` | hidden | none |
+| `library.inspect`: What a folder holds: a Straft library, a project, a vault, or nothing. | query | Read | app level | P | `LibraryDirArgs` → `LibraryInspection` | hidden | none |
+| `library.move`: Move the whole Straft library to another folder. | command | Mutate | app level | DCL P | `MoveToFolderArgs` → `StorageTaskStarted` | hidden | none |
+| `library.status`: Whether the Straft library is set up, and libraries found on this computer. | query | Read | app level | P | `Empty` → `LibraryStatus` | hidden | none |
+| `library.use_default`: Set up the Straft library in the suggested folder. | command | Mutate | app level | P | `Empty` → `LibraryStatus` | hidden | none |
 | `project.adopt_orphan_notes`: The Owner takes over the private notes of one person who is no longer on the project. | command | Mutate | ManageProject |  | `AdoptOrphanNotesArgs` → `AdoptedNotes` | hidden | none |
 | `project.discover`: Projects in the projects folder that Recent Projects does not list. | query | Read | app level | P | `Empty` → `Vec<DiscoveredProject>` | hidden | none |
 | `project.move`: Move the open project to another folder, keeping everything in it. | command | Mutate | ManageProject | DCL P | `MoveToFolderArgs` → `StorageTaskStarted` | hidden | none |
@@ -719,7 +726,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Keystroke-level screenplay editor primitive (batched typing, element moves/splits); the assistant proposes scene-level changes instead.**
   `screenplay.apply_edits`, `screenplay.merge_scene`, `screenplay.move_element`, `screenplay.split_scene`
 - **Licence and free-trial status belong to the person at this computer and the release channel; the assistant never reads, restores or changes them.**
-  `entitlement.buy`, `entitlement.notice`, `entitlement.record_notice`, `entitlement.restore_purchase`, `entitlement.start_trial`, `entitlement.status`
+  `entitlement.buy`, `entitlement.lock_ready`, `entitlement.notice`, `entitlement.record_notice`, `entitlement.restore_purchase`, `entitlement.start_trial`, `entitlement.status`
 - **Manual visual arrangement (drag position, size, stacking order) with no content meaning; the user arranges directly.**
   `locations.move_photo`, `moodboard.arrange_item`, `moodboard.move_items`, `moodboard.reorder`, `moodboard.resize_item`
 - **Offline AI status and engine control belong to the user in Settings, not to the assistant itself.**
@@ -743,7 +750,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Support diagnostics are user-initiated only (ADR-0021): the user reviews the bundle and saves it to a location they pick; the assistant never gathers, exports or sends diagnostics.**
   `diagnostics.export_bundle`, `diagnostics.preview`
 - **The assistant's own entry point and conversation history; a tool calling it would recurse.**
-  `ai.ask`, `ai.cancel`, `ai.history`, `ai.memory_delete`, `ai.memory_list`
+  `ai.ask`, `ai.cancel`, `ai.history`, `ai.memory_delete`, `ai.memory_list`, `ai.sections`
 - **The team password of an internal build belongs to the person at this computer; the assistant never reads or types it.**
   `team_gate.status`, `team_gate.unlock`
 - **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so the assistant neither reads nor changes it.**

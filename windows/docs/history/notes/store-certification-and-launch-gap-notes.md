@@ -72,7 +72,7 @@ How you package your software changes the test criteria:
 * [ ] Uploaded at least one clear, un-cropped screenshot showing the actual in-app UI.
 * [ ] If using a trial, verified that the app functions properly when `StoreAppLicense.IsTrial` is active.BRAND / TRADEMARK
 Before launch:
-- [ ] Straft Studio name availability
+- [ ] Straft name availability
 - [ ] domain
 - [ ] social handles
 - [ ] logo ownership

@@ -10,22 +10,25 @@
 // so the screen is not the only gate), the Mac first launch, the data note and the tutorial. The
 // "Checking your purchase" screen can be closed: a failed check keeps opening and exporting
 // (ADR-0018 decision 6). The internal installer build shows none of these screens (ADR-0023).
-// No screen names a price, a currency or a pricing model: the store's own purchase window does.
+// No screen names a price or a currency: the store's own purchase window does. The lock stores
+// typed text first, then tells the core it may close its flush window (ADR-0039 item 9). Every
+// lock, check and first-launch screen offers "Need help? Contact us" (ADR-0039 item 11).
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { FolderOpen, Info, RefreshCw, TriangleAlert, Zap } from "lucide-react";
 import { Banner, Button, Checkbox, Dialog } from "../../design-system";
-import { call, openUrl, revealLocation } from "../../ipc/client";
+import { call, onAppEvent, openUrl, revealLocation } from "../../ipc/client";
 import { reportQuietly, useOp } from "../../ipc/query";
 import type { AppInfo } from "../../ipc/generated/AppInfo";
 import type { Channel } from "../../ipc/generated/Channel";
-import type { EntitlementState } from "../../ipc/generated/EntitlementState";
 import { toast } from "../../app/toast";
+import { flushPendingSaves } from "../../app/pendingSaves";
 import { BrandLogo } from "../../theme/BrandLogo";
 import {
   buyFullVersion,
   failureText,
+  openContact,
   recordNotice,
   refreshLicence,
   restorePurchase,
@@ -40,14 +43,16 @@ import {
   localDay,
   newLaptopInstallStep,
   reminderHeadline,
-  storeName,
   revealLabel,
+  storeName,
+  trialEndLine,
+  visibleSocialLinks,
   type SocialLink,
 } from "./rules";
 import "./licensing.css";
 
-const BUY_FAILED = "Straft Studio could not start the purchase right now. Everything keeps working.";
-const SAVE_FAILED = "Straft Studio could not save this step. Try again.";
+const BUY_FAILED = "Straft could not start the purchase right now. Everything keeps working.";
+const SAVE_FAILED = "Straft could not save this step. Try again.";
 
 /** Holds back the app's own keyboard shortcuts (Ctrl, Alt or Cmd combinations) while a mandatory
  * screen is open, so nothing opens on top of it or behind it. Copy, cut, paste and select all go
@@ -76,8 +81,18 @@ function Brand() {
   );
 }
 
-/** One screen at a time. `projectOpen` is false on Application Home. */
-export function LicenceScreens({ projectOpen }: { projectOpen: boolean }) {
+/** A text button that opens the contact page in the browser: no form, nothing sent. A shell
+ * action, so it works while the core has locked every project operation. */
+function ContactLink() {
+  return (
+    <Button variant="ghost" size="sm" onClick={openContact}>
+      Need help? Contact us
+    </Button>
+  );
+}
+
+/** One screen at a time, on Application Home and over a project. */
+export function LicenceScreens() {
   const q = useLicenceNotice();
   const client = useQueryClient();
   const info = useOp<AppInfo>("app.info", {}, []);
@@ -88,15 +103,33 @@ export function LicenceScreens({ projectOpen }: { projectOpen: boolean }) {
   const reopenCheck = useCheckScreen((s) => s.reopen);
   const notice = q.data?.notice;
   const today = localDay();
+  const trialActive = q.data?.status.state.state === "trialActive";
+
+  // The core says when the licence changed (the store refresh, a purchase made elsewhere, the lock
+  // falling or lifting): ask everything again so every query sees the new state.
+  useEffect(() => {
+    const un = onAppEvent((ev) => {
+      if (ev.type === "module" && ev.module === "entitlement" && ev.name === "changed") void client.invalidateQueries();
+    });
+    return () => {
+      void un.then((f) => f());
+    };
+  }, [client]);
 
   // A reminder is remembered as soon as it is shown, so it appears at most once that day even
-  // if Straft Studio closes while it is open. A failed save only means it may show once more, so it
+  // if Straft closes while it is open. A failed save only means it may show once more, so it
   // goes to the diagnostics and not on screen.
   useEffect(() => {
-    if (notice?.kind !== "reminder" || !projectOpen || reminder !== null || dismissedOn === today) return;
+    if (notice?.kind !== "reminder" || reminder !== null || dismissedOn === today) return;
     setReminder(notice.daysLeft);
     call("entitlement.record_notice", { notice: "reminder", today }).catch(reportQuietly);
-  }, [notice, projectOpen, reminder, dismissedOn, today]);
+  }, [notice, reminder, dismissedOn, today]);
+
+  // A purchase, the end of the trial or any other state closes the reminder at once. A refetch that
+  // says "none" (it was already shown today) must not close it, so only the state does.
+  useEffect(() => {
+    if (reminder !== null && q.data && !trialActive) setReminder(null);
+  }, [reminder, q.data, trialActive]);
 
   // A closed check screen stays closed only while the core still names it.
   useEffect(() => {
@@ -108,10 +141,11 @@ export function LicenceScreens({ projectOpen }: { projectOpen: boolean }) {
   const channel = q.data.status.channel;
   const dataRoot = q.data.dataRoot;
 
-  if (reminder !== null) {
+  if (reminder !== null && trialActive) {
     return (
       <ReminderDialog
         daysLeft={reminder}
+        endsAtMs={q.data.status.trialEndsAtMs}
         onClose={() => {
           setReminder(null);
           setDismissedOn(today);
@@ -126,11 +160,13 @@ export function LicenceScreens({ projectOpen }: { projectOpen: boolean }) {
     case "tutorial":
       return <TutorialDialog dataRoot={dataRoot} platform={platform} channel={channel} />;
     case "welcome":
-      return <WelcomeDialog />;
+      return <WelcomeDialog links={visibleSocialLinks(SOCIAL_LINKS, q.data.debugBuild)} />;
     case "macFirstLaunch":
       return <MacFirstLaunchDialog />;
     case "locked":
-      return <LockedDialog state={q.data.status.state} channel={channel} />;
+      return <LockedDialog reason={q.data.status.state.state === "revoked" ? "revoked" : "trialEnded"} channel={channel} />;
+    case "clockChanged":
+      return <LockedDialog reason="clockChanged" channel={channel} />;
     case "checkNeeded":
       return checkClosed ? null : <CheckDialog channel={channel} onClose={closeCheck} />;
     default:
@@ -140,7 +176,7 @@ export function LicenceScreens({ projectOpen }: { projectOpen: boolean }) {
 
 // ------------------------------------------------------------------ trial reminder (184, 185, 189)
 
-export function ReminderDialog({ daysLeft, onClose }: { daysLeft: number; onClose: () => void }) {
+export function ReminderDialog({ daysLeft, endsAtMs, onClose }: { daysLeft: number; endsAtMs?: number | null; onClose: () => void }) {
   const client = useQueryClient();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -157,6 +193,7 @@ export function ReminderDialog({ daysLeft, onClose }: { daysLeft: number; onClos
       setBusy(false);
     }
   };
+  const endLine = trialEndLine(endsAtMs);
   return (
     <Dialog
       open
@@ -173,8 +210,11 @@ export function ReminderDialog({ daysLeft, onClose }: { daysLeft: number; onClos
       }
     >
       <Brand />
-      <h3 style={{ margin: "10px 0 6px", textAlign: "center", fontSize: 19 }}>{reminderHeadline(daysLeft)}</h3>
-      <p style={{ textAlign: "center", margin: "0 0 8px" }}>Buy the full version to keep using Straft Studio.</p>
+      <h3 style={{ margin: "10px 0 6px", textAlign: "center", fontSize: 19 }}>{reminderHeadline(daysLeft, endsAtMs)}</h3>
+      {endLine && <p style={{ textAlign: "center", margin: "0 0 6px" }}>{endLine}</p>}
+      <p style={{ textAlign: "center", margin: "0 0 8px" }}>
+        Buy the full version to keep using Straft Studio. Pay once, own forever. No subscription.
+      </p>
       <Banner tone="info">
         <Info size={14} aria-hidden /> Your projects stay on your computer either way. Nothing is deleted when the trial ends.
       </Banner>
@@ -192,15 +232,15 @@ export function ReminderDialog({ daysLeft, onClose }: { daysLeft: number; onClos
 const DATA_POINTS: { title: string; body: string }[] = [
   {
     title: "Your projects live only on this computer.",
-    body: "Straft Studio has no cloud. We do not hold a copy, so we cannot recover your work if the computer is lost, stolen, damaged or reset.",
+    body: "Straft has no cloud. We do not hold a copy, so we cannot recover your work if the computer is lost, stolen, damaged or reset.",
   },
   {
     title: "Back up the whole root folder.",
-    body: "Pick the one folder where your Straft Studio projects are saved and copy it to Google Drive (or another cloud drive) and, if you can, to an external disk. Repeat it often.",
+    body: "Pick the one folder where your Straft projects are saved and copy it to Google Drive (or another cloud drive) and, if you can, to an external disk. Repeat it often.",
   },
   {
     title: "Moving to a new laptop is your job, too.",
-    body: "Copy that same root folder to the new computer, install Straft Studio, then use Open Project and pick the folder.",
+    body: "Copy that same root folder to the new computer, install Straft, then use Open Project and pick the folder.",
   },
   {
     title: "Keep at least two copies.",
@@ -208,13 +248,21 @@ const DATA_POINTS: { title: string; body: string }[] = [
   },
   {
     title: "Never delete or rename the root folder by hand.",
-    body: "Use Straft Studio to rename, archive or delete projects.",
+    body: "Use Straft to rename, archive or delete projects.",
   },
   {
-    title: "Backups inside Straft Studio are separate copies.",
+    title: "Backups inside Straft are separate copies.",
     body: "Create Backup saves a copy; still keep it off this computer.",
   },
 ];
+
+/** What uninstalling does (package file 05, U9). Windows removes the app's private data but not the
+ * projects; nothing is promised about the Mac container. */
+function uninstallNote(platform: string | undefined): string {
+  return platform === "macos"
+    ? "Back up your root folder."
+    : "Uninstalling Straft Studio removes its private data on this computer (settings and downloaded AI files), but not your projects in the root folder.";
+}
 
 /** True when the list is scrolled to its end (or is short enough to show whole). */
 function atEnd(el: HTMLElement): boolean {
@@ -223,7 +271,7 @@ function atEnd(el: HTMLElement): boolean {
 
 function RootFolder({ dataRoot, platform, heading }: { dataRoot: string; platform?: string; heading: string }) {
   const reveal = () =>
-    void revealLocation("dataRoot").catch((e: unknown) => toast.error(failureText(e, "Straft Studio couldn't open that folder.")));
+    void revealLocation("dataRoot").catch((e: unknown) => toast.error(failureText(e, "Straft couldn't open that folder.")));
   return (
     <div className="card pad" style={{ marginTop: 10 }}>
       <div className="h4">{heading}</div>
@@ -309,6 +357,7 @@ export function DataNoteDialog({ dataRoot, platform }: { dataRoot: string; platf
           ))}
         </ol>
       </div>
+      <p className="sm muted" style={{ margin: "10px 0 0" }}>{uninstallNote(platform)}</p>
       <RootFolder dataRoot={dataRoot} platform={platform} heading="Your root folder" />
       <div style={{ marginTop: 10 }}>
         <Checkbox
@@ -392,7 +441,7 @@ export function TutorialDialog({ dataRoot, platform, channel }: { dataRoot: stri
           <li>Repeat after every working session, or turn on automatic sync.</li>
         </ol>
         <Banner tone="info">
-          <Info size={14} aria-hidden /> Close Straft Studio (or Create Backup) before copying so files are complete. An external drive works as well as Google Drive.
+          <Info size={14} aria-hidden /> Close Straft (or Create Backup) before copying so files are complete. An external drive works as well as Google Drive.
         </Banner>
       </>
     );
@@ -403,10 +452,10 @@ export function TutorialDialog({ dataRoot, platform, channel }: { dataRoot: stri
           <li>On the old laptop copy the whole root folder to a USB disk or Google Drive.</li>
           <li>{newLaptopInstallStep(channel)}</li>
           <li>Copy the folder to the new laptop.</li>
-          <li>Open Straft Studio, choose Open Project, and pick the project inside the folder.</li>
+          <li>Open Straft, choose Open Project, and pick the project inside the folder.</li>
         </ol>
         <Banner tone="warn">
-          <TriangleAlert size={14} aria-hidden /> Linked external files (for example a reference photo on another drive) must be copied too. Straft Studio lists missing ones after opening.
+          <TriangleAlert size={14} aria-hidden /> Linked external files (for example a reference photo on another drive) must be copied too. Straft lists missing ones after opening.
         </Banner>
       </>
     );
@@ -486,7 +535,7 @@ export function WelcomeDialog({ links = SOCIAL_LINKS }: { links?: readonly Socia
   };
   const open = (link: SocialLink) => {
     if (!isFixedSocialUrl(link.url)) return;
-    void openUrl(link.url).catch((e: unknown) => toast.error(failureText(e, "Straft Studio couldn't open that link.")));
+    void openUrl(link.url).catch((e: unknown) => toast.error(failureText(e, "Straft couldn't open that link.")));
   };
   return (
     <Dialog
@@ -503,9 +552,10 @@ export function WelcomeDialog({ links = SOCIAL_LINKS }: { links?: readonly Socia
       <div style={{ textAlign: "center" }}>
         <Brand />
         <p className="muted" style={{ margin: "8px 0 12px" }}>
-          Thank you for backing independent filmmaking. Be a part of our community.
+          Thank you for backing independent filmmaking.{links.length > 0 && " Be a part of our community."}
         </p>
       </div>
+      {links.length > 0 && (
       <ul className="grid g4" aria-label="Our community" style={{ gap: 12, listStyle: "none", padding: 0, margin: 0 }}>
         {links.map((l) => {
           const content = (
@@ -528,6 +578,7 @@ export function WelcomeDialog({ links = SOCIAL_LINKS }: { links?: readonly Socia
           );
         })}
       </ul>
+      )}
     </Dialog>
   );
 }
@@ -592,47 +643,86 @@ export function MacFirstLaunchDialog() {
         <Button variant="ghost" size="sm" icon={<RefreshCw size={13} aria-hidden />} disabled={busy} onClick={() => void run(restore)}>
           Restore purchase
         </Button>
+        <ContactLink />
       </div>
       <StoreMessage message={message} />
     </Dialog>
   );
 }
 
-/** The lock after the trial or a refund in either store (ADR-0022, ADR-0023): only Buy and
- * Restore, and it cannot be closed. The core refuses every project operation while it shows. */
-export function LockedDialog({ state, channel }: { state: EntitlementState; channel: Channel }) {
+export type LockReason = "trialEnded" | "revoked" | "clockChanged";
+
+/** The lock after the trial or a refund in either store (ADR-0022, ADR-0023), and the Mac clock
+ * lock: only Buy, Check again (Restore purchase on the Mac) and the contact link, and it cannot be
+ * closed. The core refuses every project operation while it shows. As it opens it stores what the
+ * editors hold, then tells the core it may close its short flush window (ADR-0039 item 9). */
+export function LockedDialog({ reason, channel }: { reason: LockReason; channel: Channel }) {
   const { busy, message, run } = useStoreAction();
+  const sent = useRef(false);
+  const [unsaved, setUnsaved] = useState(false);
   useHoldShortcuts(true);
-  const revoked = state.state === "revoked";
-  const store = storeName(channel);
-  const where = channel === "macAppStore" ? "this Mac" : "this computer";
+  useEffect(() => {
+    if (sent.current) return;
+    sent.current = true;
+    // The core is told either way; a failed save is said in plain words on the screen.
+    void flushPendingSaves()
+      .then((saved) => !saved && setUnsaved(true))
+      .catch(() => setUnsaved(true))
+      .finally(() => call("entitlement.lock_ready").catch(reportQuietly));
+  }, []);
+  const mac = channel === "macAppStore";
+  const where = mac ? "this Mac" : "this computer";
+  const clock = reason === "clockChanged";
+  const again = mac && !clock ? "Restore purchase" : "Check again";
+  const title = {
+    trialEnded: "Your free trial has ended",
+    revoked: "Your purchase is no longer active",
+    clockChanged: "Your Mac's clock looks wrong",
+  }[reason];
+  const body = {
+    trialEnded: "Buy the full version to keep using Straft Studio.",
+    revoked: "The store no longer shows a purchase for this account, so Straft Studio is locked.",
+    clockChanged:
+      "Straft Studio checks the date to count your free trial. Turn on Set time and date automatically in System Settings, then choose Check again. Your projects are safe.",
+  }[reason];
+  const banner = {
+    trialEnded: `Your projects are safe on ${where}. Buying unlocks them again exactly as you left them.`,
+    revoked: `Your projects are still on ${where}. If this is a mistake, choose ${again} or contact us.`,
+    clockChanged: null,
+  }[reason];
   return (
     <Dialog
       open
       onOpenChange={() => undefined}
       dismissible={false}
-      title={revoked ? "Your purchase is no longer active" : "Your free trial has ended"}
+      title={title}
       size="md"
       footer={
         <div className="col" style={{ alignItems: "center", gap: 8, width: "100%" }}>
-          <Button variant="primary" icon={<Zap size={14} aria-hidden />} disabled={busy} onClick={() => void run(buyHere)}>
-            Buy full version
+          {!clock && (
+            <Button variant="primary" icon={<Zap size={14} aria-hidden />} disabled={busy} onClick={() => void run(buyHere)}>
+              Buy full version
+            </Button>
+          )}
+          <Button variant={clock ? "primary" : "ghost"} size={clock ? "md" : "sm"} icon={<RefreshCw size={13} aria-hidden />} disabled={busy} onClick={() => void run(restore)}>
+            {again}
           </Button>
-          <Button variant="ghost" size="sm" icon={<RefreshCw size={13} aria-hidden />} disabled={busy} onClick={() => void run(restore)}>
-            Restore purchase
-          </Button>
+          <ContactLink />
         </div>
       }
     >
       <Brand />
-      <p style={{ margin: "0 0 8px", textAlign: "center" }}>
-        {revoked
-          ? `${store.charAt(0).toUpperCase()}${store.slice(1)} reports that this purchase was refunded or revoked. Buy the full version to open your projects again.`
-          : "Buy the full version to open your projects again."}
-      </p>
-      <Banner tone="info">
-        <Info size={14} aria-hidden /> Your projects are safe on {where}. Nothing is deleted. Buying or restoring opens them again exactly as you left them.
-      </Banner>
+      <p style={{ margin: "0 0 8px", textAlign: "center" }}>{body}</p>
+      {banner && (
+        <Banner tone="info">
+          <Info size={14} aria-hidden /> {banner}
+        </Banner>
+      )}
+      {unsaved && (
+        <div style={{ marginTop: 8 }}>
+          <Banner tone="warn">Some of your latest typing could not be saved. Your projects are safe up to your last saved change.</Banner>
+        </div>
+      )}
       <StoreMessage message={message} />
     </Dialog>
   );
@@ -651,11 +741,14 @@ export function CheckDialog({ channel, onClose }: { channel: Channel; onClose: (
       sub={busy ? `Talking to ${store}…` : undefined}
       size="md"
       footer={
-        <>
-          <Button disabled={busy} onClick={onClose}>Not now</Button>
-          <Button disabled={busy} onClick={() => void run(buyHere)}>Buy full version</Button>
-          <Button variant="primary" disabled={busy} onClick={() => void run(restore)}>Try again</Button>
-        </>
+        <div className="col" style={{ alignItems: "center", gap: 8, width: "100%" }}>
+          <div className="row" style={{ justifyContent: "center" }}>
+            <Button disabled={busy} onClick={onClose}>Not now</Button>
+            <Button disabled={busy} onClick={() => void run(buyHere)}>Buy full version</Button>
+            <Button variant="primary" disabled={busy} onClick={() => void run(restore)}>Try again</Button>
+          </div>
+          <ContactLink />
+        </div>
       }
     >
       {busy ? (

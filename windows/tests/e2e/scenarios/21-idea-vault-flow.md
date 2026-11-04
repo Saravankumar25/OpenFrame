@@ -38,7 +38,7 @@ Before: an empty data folder of its own. The app starts for the first time, with
 10. Check: the card no longer shows "Needs Expert".
 11. Double-click the card "Police procedure".
 12. Check: the research flag field in the drawer is set to Checked.
-13. Check: the screen shows "Straft Studio never marks research as true just because you imported it."
+13. Check: the screen shows "Straft never marks research as true just because you imported it."
 14. Click Close in the drawer. Check: the drawer closes.
 15. Check: the screen is quiet.
 

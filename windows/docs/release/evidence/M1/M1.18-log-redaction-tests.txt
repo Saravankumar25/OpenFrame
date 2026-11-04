@@ -3,7 +3,7 @@ Date: 2026-10-05. Machine: Windows 11 Home 10.0.26200. Working tree on master (u
 
 Changes
 - apps/desktop/src-tauri/src/lib.rs: init_logging now builds the filter with log_filter_directives().
-  Release builds: Straft Studio targets (straft*) may go up to trace; every other target is capped at info;
+  Release builds: Straft targets (straft*) may go up to trace; every other target is capped at info;
   span and field filters are dropped; tauri::protocol::asset (its refusal message contains the requested path)
   is always off. Development builds use STRAFT_LOG as written. log_subscriber() is shared by the app and the test.
 - crates/straft-project-format/src/lib.rs: the project lock no longer logs its path (the path holds the project
@@ -15,7 +15,7 @@ Tests
 - straft-desktop (lib): real_operations_never_write_content_to_the_log
   Real operations through AppCore::dispatch (project.create under a marker folder, screenplay.apply_edits,
   notes.create, crew.create/update with an e-mail, search.query, ai.ask, failing project.open and notes.create,
-  close and reopen) with the production JSON subscriber and Straft Studio targets at trace. Asserts that none of
+  close and reopen) with the production JSON subscriber and Straft targets at trace. Asserts that none of
   9 markers (folder, title, scene, screenplay text, note, person, e-mail, prompt, key) nor the project path
   (plain or JSON-escaped) is in the log; positive control: "project lock released" is captured.
   Without the fix (lock path log restored): FAILED "log contains OFMARKERFOLDER7731". With the fix: ok.

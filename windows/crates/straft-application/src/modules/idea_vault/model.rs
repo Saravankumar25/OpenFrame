@@ -3,11 +3,11 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use straft_domain::enums::VaultItemType;
-use straft_domain::{Actor, AppError, AppResult};
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{Connection, OptionalExtension, params_from_iter};
 use serde::{Deserialize, Serialize};
+use straft_domain::enums::VaultItemType;
+use straft_domain::{Actor, AppError, AppResult};
 use ts_rs::TS;
 
 use super::read_vault;
@@ -55,7 +55,7 @@ pub struct VaultItemDto {
 }
 
 /// Verification flag on a research source (FSD 107.5): Unchecked, Checked or Needs Expert Check.
-/// Only the user sets it; Straft Studio never marks research as true on its own (FSD 107.6).
+/// Only the user sets it; Straft never marks research as true on its own (FSD 107.6).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
 #[ts(export)]
 #[serde(rename_all = "camelCase")]

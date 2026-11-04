@@ -1,4 +1,4 @@
-//! Straft Studio import/export engine (Import/Export spec; FSD §19, §20, §60,
+//! Straft import/export engine (Import/Export spec; FSD §19, §20, §60,
 //! §117, §122–123; FSD-SCRIPT-038..050).
 //!
 //! A pure library: no database, no application state. The application layer
@@ -37,8 +37,8 @@ pub mod xml;
 
 use std::path::{Path, PathBuf};
 
-use straft_domain::{AppError, AppResult};
 use serde::Serialize;
+use straft_domain::{AppError, AppResult};
 
 pub use heuristics::{Confidence, ConfidenceLevel};
 pub use layout::{Layout, LayoutOptions, PageSetup, Paper};

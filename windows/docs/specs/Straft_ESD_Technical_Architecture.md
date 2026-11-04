@@ -13,7 +13,7 @@
     **Document class:** Implementation / engineering specification  
     **Baseline:** Windows 11 production architecture, v1  
     **Generated:** 29 September 2026  
-    **Purpose:** Define the production-grade implementation architecture for the local-first Straft Studio desktop application.
+    **Purpose:** Define the production-grade implementation architecture for the local-first Straft desktop application.
 
 
 > **Status note (2026-10-05).** LAN collaboration text in this document is superseded by ADR-0007 (no listener, no
@@ -24,7 +24,7 @@
 
 ## Authority and non-conflict rule
 
-This engineering document implements the approved Straft Studio specifications. It does **not** redefine product behavior.
+This engineering document implements the approved Straft specifications. It does **not** redefine product behavior.
 
 Implementation precedence is:
 
@@ -50,9 +50,9 @@ These decisions were explicitly approved for the first implementation baseline:
 | Core/business logic | Rust owns domain rules; React is presentation/input |
 | Local persistence | SQLite + filesystem assets |
 | Project UX | One `.straft` project concept; internal files are implementation detail |
-| Offline AI | One-click **Download Offline AI**; Straft Studio installs runtime/model |
+| Offline AI | One-click **Download Offline AI**; Straft installs runtime/model |
 | Model selection | One profile, no choice: Gemma 3 1B Instruct + BGE small English embeddings (ADR-0013; the earlier Qwen profiles are superseded) |
-| Model distribution | Straft Studio-controlled public model distribution endpoint/CDN |
+| Model distribution | Straft-controlled public model distribution endpoint/CDN |
 | AI providers | **Local AI only** for v1; no cloud AI provider integration |
 | Accounts | No account required |
 | Telemetry | Off by default; optional anonymous diagnostics/crash reports with explicit consent |
@@ -68,7 +68,7 @@ These decisions were explicitly approved for the first implementation baseline:
 
 ## 1. Architectural goals
 
-Straft Studio must feel like one fast native desktop tool even though the UI is web-rendered. The architecture optimizes for:
+Straft must feel like one fast native desktop tool even though the UI is web-rendered. The architecture optimizes for:
 
 - local-first operation;
 - fast startup and low idle resource use;
@@ -86,7 +86,7 @@ Straft Studio must feel like one fast native desktop tool even though the UI is 
 |---|---|---|
 | Desktop container | Tauri v2 | Native Rust backend, OS webview, smaller distribution than bundling Chromium. Windows only since ADR-0027; the Mac shell is SwiftUI over the same Rust core. |
 | Frontend | React + TypeScript + Vite | Mature desktop-style interactive UI and fast iteration |
-| Styling | Tailwind CSS + Straft Studio design tokens | Consistent design system; no business logic in styling |
+| Styling | Tailwind CSS + Straft design tokens | Consistent design system; no business logic in styling |
 | UI primitives | Radix UI or equivalent accessible primitives | Menus/dialogs/focus behavior |
 | Local UI state | Zustand | Small view/session state only |
 | Backend/query state | TanStack Query | Async IPC cache/invalidation; not canonical data |
@@ -100,7 +100,7 @@ Straft Studio must feel like one fast native desktop tool even though the UI is 
 | DB access | SQLx | Explicit SQL, migrations and typed mapping |
 | Full-text search | SQLite FTS5 | Local index without separate search server |
 | Files | Native filesystem | Media/assets stay outside SQLite blobs |
-| AI runtime | Straft Studio-managed `llama.cpp` sidecar | No Ollama/user setup |
+| AI runtime | Straft-managed `llama.cpp` sidecar | No Ollama/user setup |
 | AI model family | Gemma 3 1B Instruct GGUF (Q8_0) + BGE small English v1.5 GGUF, pinned in the lock at Hugging Face commits (ADR-0032) | One tested profile; a new app version can move it to new pins |
 | Networking later | Rust WebSocket + mDNS discovery | Host-owned LAN sessions |
 | PDF/doc output | Deterministic local document renderers | Offline professional exports |
@@ -134,7 +134,7 @@ Straft Studio must feel like one fast native desktop tool even though the UI is 
                 │ lifecycle-managed loopback/stdio boundary
                 ▼
 ┌──────────────────────────────────────────────────────────────────────┐
-│ Optional Straft Studio local-AI sidecar                                 │
+│ Optional Straft local-AI sidecar                                 │
 │ `llama.cpp` chat (Gemma 3 1B) + embedding (BGE small) sidecars      │
 │ No project filesystem authority                                      │
 │ No direct SQLite authority                                           │
@@ -278,15 +278,15 @@ Each background operation exposes:
 SQLite stores metadata and references. Binary media normally lives in project-managed filesystem storage.
 
 Asset ingestion modes:
-- **managed copy** — Straft Studio copies into project assets;
-- **external reference** — Straft Studio records a path/reference and availability metadata;
+- **managed copy** — Straft copies into project assets;
+- **external reference** — Straft records a path/reference and availability metadata;
 - **generated artifact** — thumbnails/previews/cache, always rebuildable.
 
 No code may assume an external path remains available.
 
 ## 10. AI architecture
 
-Local AI is an optional interpretation layer over deterministic Straft Studio capabilities.
+Local AI is an optional interpretation layer over deterministic Straft capabilities.
 
 ```text
 User request
@@ -297,7 +297,7 @@ local model
   ↓
 validated structured intent/tool request
   ↓
-Straft Studio tool registry
+Straft tool registry
   ↓
 query OR proposed Change Set
   ↓

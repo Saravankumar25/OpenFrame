@@ -10,10 +10,11 @@
 //!   ever deleted.
 
 use std::collections::HashMap;
+use std::path::Path;
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use ts_rs::TS;
 
 use super::breakdown::{insert_state_if_missing, scene_statuses};
@@ -642,7 +643,12 @@ fn overview(
     actor.require(Capability::View, "view production")?;
     let s = core.project()?;
     let root = s.layout.root().to_path_buf();
-    s.store.read(|c| {
+    s.store.read(|c| overview_read(c, &root))
+}
+
+/// The Production overview read. The screen and the assistant's Overview section both call it.
+pub(crate) fn overview_read(c: &Connection, root: &Path) -> AppResult<ProductionOverview> {
+    {
         let info = source_info(c)?;
         let active = active_source(c)?;
         let scenes = SourceScenes::load(c, active.as_ref().map(|a| a.draft_id.as_str()))?;
@@ -660,7 +666,9 @@ fn overview(
             let mut stmt = c.prepare(&format!(
                 "SELECT scene_id FROM breakdown_element WHERE deleted_at IS NULL AND archived = 0 AND confirmation_state IN {PRODUCTION_STATES}"
             ))?;
-            let ids: Vec<String> = stmt.query_map([], |r| r.get(0))?.collect::<Result<_, _>>()?;
+            let ids: Vec<String> = stmt
+                .query_map([], |r| r.get(0))?
+                .collect::<Result<_, _>>()?;
             ids.iter().filter(|id| scenes.get(id).is_none()).count() as i64
         };
         let (location_count, unresolved_locations): (i64, i64) = c.query_row(
@@ -668,9 +676,12 @@ fn overview(
             [],
             |r| Ok((r.get(0)?, r.get(1)?)),
         )?;
-        let catalog_count: i64 =
-            c.query_row("SELECT count(*) FROM catalog_item WHERE deleted_at IS NULL AND archived = 0", [], |r| r.get(0))?;
-        let dir = super::people::directory(c, &root, false)?;
+        let catalog_count: i64 = c.query_row(
+            "SELECT count(*) FROM catalog_item WHERE deleted_at IS NULL AND archived = 0",
+            [],
+            |r| r.get(0),
+        )?;
+        let dir = super::people::directory(c, root, false)?;
         Ok(ProductionOverview {
             source: info,
             scene_count: statuses.len() as i64,
@@ -678,15 +689,24 @@ fn overview(
             planned_count: statuses.iter().filter(|s| s.confirmed > 0).count() as i64,
             pending_suggestions: statuses.iter().map(|s| s.suggested).sum(),
             needs_review: statuses.iter().filter(|s| s.needs_review).map(r).collect(),
-            needs_breakdown: statuses.iter().filter(|s| s.needs_breakdown).map(r).collect(),
+            needs_breakdown: statuses
+                .iter()
+                .filter(|s| s.needs_breakdown)
+                .map(r)
+                .collect(),
             historical_elements,
             location_count,
             unresolved_locations,
             character_count: dir.characters.len() as i64,
-            unresolved_characters: dir.characters.iter().filter(|ch| ch.primary_cast_id.is_none()).map(|ch| ch.name.clone()).collect(),
+            unresolved_characters: dir
+                .characters
+                .iter()
+                .filter(|ch| ch.primary_cast_id.is_none())
+                .map(|ch| ch.name.clone())
+                .collect(),
             catalog_count,
         })
-    })
+    }
 }
 
 #[cfg(test)]

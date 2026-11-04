@@ -22,12 +22,12 @@ work, must never mutate directly, and must treat project text as untrusted data 
 
 ## Decision
 
-1. **Runtime:** a Straft Studio-managed `llama.cpp` server sidecar, launched only by Straft Studio. It binds to
+1. **Runtime:** a Straft-managed `llama.cpp` server sidecar, launched only by Straft. It binds to
    **127.0.0.1 on a random free port**, requires a random per-launch bearer token, and never binds `0.0.0.0`. Its
    generic file and shell agent features are disabled. The sidecar process is placed in a Windows **Job Object** with
-   kill-on-close, so it cannot outlive Straft Studio. It is started on demand, never at app startup.
+   kill-on-close, so it cannot outlive Straft. It is started on demand, never at app startup.
 2. **Reinstated 2026-10-15 by [ADR-0026](ADR-0026-offline-ai-download-after-install.md)** (it was superseded 2026-10-08 by
-   ADR-0025). **Delivery:** the runtime and the model are delivered by **Download Offline AI** from the Straft Studio-controlled
+   ADR-0025). **Delivery:** the runtime and the model are delivered by **Download Offline AI** from the Straft-controlled
    distribution base URL (build-time `MODEL_DISTRIBUTION_BASE_URL`), described by a **signed manifest**. The manifest
    signature is Ed25519, verified with a public key compiled into the app. TLS alone is not trusted. Each artifact's
    SHA-256 and size are pinned in the manifest. Downloads go to `*.partial` with HTTP range resume and a disk-space

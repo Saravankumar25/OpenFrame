@@ -83,7 +83,7 @@ export function ThemeImportDialog({ source, onClose, onSaved }: {
       open
       onOpenChange={(v) => !v && onClose()}
       title="Import theme"
-      sub={source.kind === "file" ? "Checked before anything is saved." : "Paste the text of a Straft Studio theme file. It is checked before anything is saved."}
+      sub={source.kind === "file" ? "Checked before anything is saved." : "Paste the text of a Straft theme file. It is checked before anything is saved."}
       size="lg"
       footer={
         <>

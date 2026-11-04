@@ -22,7 +22,7 @@ reversible action that hides the project from recent views. FSD Part 2 §72 has 
 (`Active/Archived/Closed`), the initial status is unspecified, and the PRD has a third vocabulary (C-27).
 
 **Resolution:** *Status* is a manual, user-selected phase label: `Idea` (initial), `Development`, `Writing`,
-`Rewrite`, `Shooting Draft`, `Pre-Production`, `Shoot Preparation`, `Shooting` (`ProjectStatus` enum). Straft Studio
+`Rewrite`, `Shooting Draft`, `Pre-Production`, `Shoot Preparation`, `Shooting` (`ProjectStatus` enum). Straft
 never changes it automatically (`status_user_selected`). *Archived* is **not a status**. It is the separate
 `project.archived` flag, mirrored in `sys_recent_project.archived` for Home, set by `project.set_archived`. Archiving
 keeps the status, so restoring from the archive returns the project exactly as it was (FSD §4.6 "contents

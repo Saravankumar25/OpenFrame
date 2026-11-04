@@ -105,7 +105,7 @@ export function ReviewViewer({ source, reviewKey, onClose }: { source: "review" 
     const chosen = await saveDialog({
       title: "Export Response Package",
       defaultPath: `${ws.draftName} - review response.ofresponse`,
-      filters: packageFilter(["response"], "Straft Studio response package"),
+      filters: packageFilter(["response"], "Straft response package"),
     });
     if (typeof chosen !== "string") return;
     try {

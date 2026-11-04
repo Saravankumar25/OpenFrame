@@ -1,5 +1,8 @@
 # Chapter 3: commercial distribution on the Microsoft Store and the Mac App Store
 
+> **Started by the owner on 2026-11-03.** The work list is the [release package](../release/package-2026-11-03/00_README_START_HERE.md), decisions in
+> [ADR-0039](../adr/ADR-0039-store-release-licensing.md). The package wins where the older text below differs: there is no licence server, and the sentence "No Chapter 3 code is written before then" no longer holds.
+
 > Rewritten 2026-10-15. Chapter 3 starts after Chapter 2. This page keeps what is decided, what is built and unverified, and
 > what must be checked against the stores' current rules. The implementation plan with phases is written when Chapter 2
 > closes. No Chapter 3 code is written before then. The earlier version is in
@@ -18,7 +21,7 @@ prices (not final): 3,000 rupees in India, 89 US dollars in the USA and the rest
 | Model | Paid, 7-day free trial, no credit card to start | [ADR-0018](../adr/ADR-0018-distribution-licensing-commerce.md) |
 | Price in the app | Never shown; the store's purchase window shows it | [ADR-0023](../adr/ADR-0023-store-trial-and-internal-installer.md) |
 | Microsoft Store trial | The Store runs the trial; the app reads the Store licence; an ended trial blocks everything except Buy and Restore | ADR-0023 |
-| Mac App Store trial | A zero-price "7-day Trial" non-consumable and a paid "Lifetime Access" non-consumable; expiry computed by a licence server from Apple's purchase time; full block at expiry | [ADR-0022](../adr/ADR-0022-mac-trial-end-lock.md), [38-mac-app-store-trial.md](../engineering/38-mac-app-store-trial.md) |
+| Mac App Store trial | A zero-price "7-day Trial" non-consumable and a paid "Lifetime Access" non-consumable; expiry computed by a licence server from Apple (SUPERSEDED by ADR-0039 (no licence server))'s purchase time; full block at expiry | [ADR-0022](../adr/ADR-0022-mac-trial-end-lock.md), [38-mac-app-store-trial.md](../engineering/38-mac-app-store-trial.md) |
 | Internal builds | No trial, no purchase, no price, no lock; team password gate | ADR-0023, [ADR-0024](../adr/ADR-0024-internal-team-builds.md), [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) |
 | Platforms | Windows 11 and Apple silicon only | [ADR-0017](../adr/ADR-0017-cross-platform-windows-and-macos.md) |
 | AI in the packages | The runtime ships in the package; the models download after install on the user's click | [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) |
@@ -27,7 +30,7 @@ prices (not final): 3,000 rupees in India, 89 US dollars in the USA and the rest
 
 - `crates/straft-entitlement`: eight licence states, the 7-day rules, reminders, the Microsoft Store and Mac adapters
   over fake sources; the store lock inside the Rust dispatcher; the trial chip, reminders and Buy routing in the screens.
-- `services/licence-server`: a small Rust server for the Mac channel; the Mac app needs a network call during the trial, so
+- `services/licence-server` (removed 2026-11-03, SUPERSEDED by ADR-0039 (no licence server)): a small Rust server for the Mac channel; the Mac app needs a network call during the trial, so
   the Mac store channel is not fully offline while a trial runs.
 - A Swift StoreKit 2 bridge. It has never talked to the real App Store. It moves into the SwiftUI application
   ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)) when this chapter starts.
@@ -45,7 +48,7 @@ could not reach every official page, so each row is read again from the store's 
 | May a Mac App Store app offer a free trial that unlocks with one payment? | The 2021 guidelines allow a non-subscription trial as a zero-price non-consumable with the duration and later charge disclosed | Read guideline 3.1.1 and the Mac text; confirm a server-computed expiry is accepted |
 | Can the price be exactly 3,000 rupees, 89 dollars and 89 euros? | Regional prices come from price tiers | Read the price matrices in both consoles and adjust or set custom prices |
 | Must the app show the price? | ADR-0023 says never; Apple wants the trial length and the later charge disclosed | Confirm the first-launch screen satisfies guideline 3.1.1 without a price |
-| Does the offline promise survive the licence server? | The Mac channel checks online during the trial | Decide, and say so in the privacy policy |
+| Does the offline promise survive the licence server? (SUPERSEDED by ADR-0039 (no licence server): no server, so yes.) | The Mac channel checks online during the trial | Decide, and say so in the privacy policy |
 | May the app download model files after install under each store's rules? | Weights are data; the Mac sandbox forbids downloading executable code | Confirm with each store's current text (ADR-0026) |
 | Refunds | Each store decides | The owner decides what to promise; the app follows the store |
 

@@ -9,12 +9,12 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::{Path, PathBuf};
 
-use straft_domain::{
-    Actor, AppError, AppResult, Capability, PACKAGE_FORMAT_VERSION, new_id, now_ms,
-};
 use rusqlite::{Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use straft_domain::{
+    Actor, AppError, AppResult, Capability, PACKAGE_FORMAT_VERSION, new_id, now_ms,
+};
 use ts_rs::TS;
 
 use super::format::{
@@ -906,7 +906,7 @@ fn build_script(c: &Connection, a: &PackageExchangeArgs) -> AppResult<Built> {
         base,
         comments_included: include_comments,
         attachments_included: false,
-        explanation: "The reviewer opens a read-only copy of this draft in Straft Studio and adds comments. They send back a Response package; nothing in your project changes until you preview it and choose what to import.".into(),
+        explanation: "The reviewer opens a read-only copy of this draft in Straft and adds comments. They send back a Response package; nothing in your project changes until you preview it and choose what to import.".into(),
     })
 }
 
@@ -1114,8 +1114,7 @@ fn build_story(c: &Connection, root: &Path, a: &PackageExchangeArgs) -> AppResul
             })?
             .collect::<Result<_, _>>()?;
         for (id, ot, oid, asset_id, name) in rows {
-            if !owners.contains(&(ot.clone(), oid.clone()))
-                || !straft_domain::ids::is_valid_id(&id)
+            if !owners.contains(&(ot.clone(), oid.clone())) || !straft_domain::ids::is_valid_id(&id)
             {
                 continue;
             }

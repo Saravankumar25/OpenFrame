@@ -3,9 +3,9 @@
 //! cast member or crew member, and what happens to those links. Deleting is recoverable
 //! (Recently Deleted keeps items 30 days) and never rewrites the screenplay.
 
-use straft_domain::{Actor, AppError, AppResult, Capability};
 use rusqlite::{Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppError, AppResult, Capability};
 use ts_rs::TS;
 
 use super::{ProductionSceneRef, SourceScenes, active_source, catalog_usage, sort_refs};

@@ -3,9 +3,9 @@
 
 use std::path::Path;
 
+use serde_json::{Value, json};
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const SAMPLE_FOUNTAIN: &[u8] =
     include_bytes!("../../../straft-import-export/tests/fixtures/screenplay/sample.fountain");
@@ -15,9 +15,8 @@ const MALFORMED_FDX: &[u8] =
     include_bytes!("../../../straft-import-export/tests/fixtures/screenplay/malformed.fdx");
 const PASTED: &str =
     include_str!("../../../straft-import-export/tests/fixtures/screenplay/pasted.txt");
-const PROSE: &[u8] = include_bytes!(
-    "../../../straft-import-export/tests/fixtures/screenplay/not_a_screenplay.txt"
-);
+const PROSE: &[u8] =
+    include_bytes!("../../../straft-import-export/tests/fixtures/screenplay/not_a_screenplay.txt");
 
 fn count(env: &TestEnv, sql: &str) -> i64 {
     env.core
@@ -153,7 +152,7 @@ fn fsd_script_044_import_into_existing_screenplay_never_replaces_current_draft()
         second["draftName"], "blackrain (imported) 2",
         "names never collide"
     );
-    // The label Straft Studio writes uses a colon, never a dash (owner decision 2026-10-08).
+    // The label Straft writes uses a colon, never a dash (owner decision 2026-10-08).
     assert_eq!(s(&second["draftLabel"]), "Draft 2: blackrain (imported) 2");
     assert_eq!(
         s(&second["message"]),

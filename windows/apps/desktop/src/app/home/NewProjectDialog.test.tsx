@@ -79,7 +79,7 @@ describe("New Project validation", () => {
   });
 
   it("warns about a folder OneDrive syncs and offers a folder on this computer (W2)", async () => {
-    const LOCAL = "C:\\Users\\me\\Straft Studio Projects";
+    const LOCAL = "C:\\Users\\me\\Straft Projects";
     const user = userEvent.setup();
     const check = vi.fn((a: Record<string, unknown>) =>
       String(a.path).includes("OneDrive")

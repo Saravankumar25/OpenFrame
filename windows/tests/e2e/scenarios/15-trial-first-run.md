@@ -8,7 +8,7 @@ Before: an empty data folder of its own. The app is the internal test build (no 
 
 "Set the licence to X" below means: set the store channel and licence state by hand with the test-only switch of the debug build, then reload the page so the app asks the core again, the way a launch would. "Reset notices" clears the record of once-only screens already shown.
 
-"No price" means no visible text has a currency sign ($, €, £, ₹, ¥) or the words "price", "prices", "pay once", "subscription" or "lifetime".
+"No price" means no visible text has a currency sign ($, €, £, ₹, ¥) or the words "price" or "prices". The reminder itself says "Pay once, own forever. No subscription."
 
 ## The internal build shows no chip, no Buy and no popup; a store trial shows the chip
 
@@ -18,7 +18,7 @@ Before: an empty data folder of its own. The app is the internal test build (no 
 4. Check: there is no Buy full version button.
 5. Check: no dialog is open.
 6. Set the licence to Microsoft Store, trial active, 7 days left, and reset notices.
-7. Check: the Free trial chip shows "Trial: 7 days left", is not amber, and is read aloud as "Free trial, 7 days left."
+7. Check: the Free trial chip shows "Trial ends in 7 days", is not amber, and is read aloud as "Free trial. Ends in 7 days."
 8. Check: a Buy full version button shows.
 9. Check: no dialog is open.
 10. Check: no price anywhere on the screen.
@@ -29,16 +29,17 @@ Before: an empty data folder of its own. The app is the internal test build (no 
 1. Set the licence to Microsoft Store, trial active, 3 days left, and reset notices.
 2. Check: the "Trial reminder" dialog shows with "Your free trial ends in 3 days".
 3. Check: the dialog shows no price.
-4. Check: the chip shows "Trial: 3 days left", is amber, and is read aloud as "Free trial, 3 days left. Your trial ends soon."
-5. Check: the screen is quiet.
-6. Click Continue trial in the dialog.
-7. Check: the dialog closes.
-8. Set the licence to Microsoft Store, trial active, 3 days left (no reset).
-9. Wait about 1.5 seconds.
-10. Check: no dialog is open (no second reminder on the same day).
-11. Click Buy full version.
-12. Check: the screen shows "The Microsoft Store connection is not available in this build."
-13. Check: no dialog is open.
+4. Check: the chip shows "Trial ends in 3 days", is amber, and is read aloud as "Free trial. Ends in 3 days. Your trial ends soon."
+5. Check: the dialog shows "Pay once, own forever. No subscription."
+6. Check: the screen is quiet.
+7. Click Continue trial in the dialog.
+8. Check: the dialog closes.
+9. Set the licence to Microsoft Store, trial active, 3 days left (no reset).
+10. Wait about 1.5 seconds.
+11. Check: no dialog is open (no second reminder on the same day).
+12. Click Buy full version.
+13. Check: the screen shows "The Microsoft Store connection is not available in this build."
+14. Check: no dialog is open.
 
 ## After a purchase: the data note, the 4-step tutorial and the welcome show once, work by keyboard, and cannot be skipped
 
@@ -53,45 +54,72 @@ Before: an empty data folder of its own. The app is the internal test build (no 
 9. Tick the checkbox.
 10. Check: OK, I understand becomes enabled.
 11. Check: the screen shows "Show in File Explorer".
-12. Check: the screen is quiet.
-13. Click OK, I understand.
-14. Check: the dialog "File safety tutorial" shows.
-15. Press Esc.
-16. Check: the tutorial is still open.
-17. Click Next. Check: the screen shows "Step 2 of 4".
-18. Click Next. Check: the screen shows "Step 3 of 4".
-19. Click Next. Check: the screen shows "Step 4 of 4".
-20. Check: Finish is disabled.
-21. Check: the dialog has exactly three checkboxes. Tick all three.
-22. Check: Finish becomes enabled.
-23. Check: the screen is quiet.
-24. Click Finish.
-25. Check: the dialog "Welcome to the Straft Studio family" shows with "Be a part of our community."
-26. Check: the screen is quiet.
-27. Click OK in the dialog.
-28. Check: the dialog closes.
-29. Set the licence to Microsoft Store, purchased, again.
-30. Wait about 1.5 seconds.
-31. Check: no dialog is open and there is no trial chip.
+12. Check: the screen shows "Uninstalling Straft Studio removes its private data on this computer (settings and downloaded AI files), but not your projects in the root folder."
+13. Check: the screen is quiet.
+14. Click OK, I understand.
+15. Check: the dialog "File safety tutorial" shows.
+16. Press Esc.
+17. Check: the tutorial is still open.
+18. Click Next. Check: the screen shows "Step 2 of 4".
+19. Click Next. Check: the screen shows "Step 3 of 4".
+20. Click Next. Check: the screen shows "Step 4 of 4".
+21. Check: Finish is disabled.
+22. Check: the dialog has exactly three checkboxes. Tick all three.
+23. Check: Finish becomes enabled.
+24. Check: the screen is quiet.
+25. Click Finish.
+26. Check: the dialog "Welcome to the Straft Studio family" shows with "Be a part of our community." (the test build is a debug build, so the placeholder rows show; a release build shows only the thank-you text and OK)
+27. Check: the screen is quiet.
+28. Click OK in the dialog.
+29. Check: the dialog closes.
+30. Set the licence to Microsoft Store, purchased, again.
+31. Wait about 1.5 seconds.
+32. Check: no dialog is open and there is no trial chip.
 
 ## A purchase check that cannot answer can be closed, and the project stays open
 
 1. Set the licence to Microsoft Store, needs an online check.
 2. Check: the dialog "Checking your purchase" shows.
 3. Check: the screen shows "Your projects stay open and can be exported. Nothing is deleted."
-4. Click Not now in the dialog.
-5. Check: the dialog closes and the Workspaces navigation shows.
-6. Click Check purchase in the Licence group.
-7. Check: the dialog "Checking your purchase" shows again.
-8. Press Esc.
-9. Check: the dialog closes.
-10. Check: the screen is quiet.
+4. Check: the dialog has a Need help? Contact us button.
+5. Click Not now in the dialog.
+6. Check: the dialog closes and the Workspaces navigation shows.
+7. Click Check purchase in the Licence group.
+8. Check: the dialog "Checking your purchase" shows again.
+9. Press Esc.
+10. Check: the dialog closes.
+11. Check: the screen is quiet.
 
-## Mac App Store: an ended trial locks the app with only Buy full version and Restore purchase
+## The chip and the reminder show on Application Home too
+
+1. Set the licence to Microsoft Store, trial active, 3 days left, and reset notices.
+2. Check: the "Trial reminder" dialog shows. Click Continue trial.
+3. Close the project through the project menu. Check: Application Home shows.
+4. Check: the Free trial chip shows "Trial ends in 3 days", is amber, and is read aloud as "Free trial. Ends in 3 days. Your trial ends soon."
+5. Check: a Buy full version button shows.
+6. Set the licence to Microsoft Store, trial active, 2 days left, and reset notices, with Application Home open.
+7. Check: the "Trial reminder" dialog shows on Application Home with "Your free trial ends in 2 days".
+8. Check: the screen is quiet.
+9. Click Continue trial. Check: the dialog closes.
+10. Open the project "Night Ferry" again.
+
+## The lock keeps text typed just before it, and has the contact link
+
+1. Set the licence to Microsoft Store, trial active, 7 days left.
+2. Open the Story workspace, click the Story page and type 'Typed just before the lock.' without waiting.
+3. Without a reload, change the licence to trial ended (as a store check does while the app is open).
+4. Check: the dialog "Your free trial has ended" shows with a Need help? Contact us button.
+5. Wait about 1.5 seconds.
+6. Without a reload, change the licence back to trial active, 7 days left.
+7. Check: the dialog closes.
+8. Ask the core for the Story page. Check: its text contains 'Typed just before the lock.'
+9. Check: the screen is quiet.
+
+## Mac App Store: an ended trial locks the app with Buy full version, Restore purchase and the contact link
 
 1. Set the licence to Mac App Store, trial ended. Do not wait for the project screen.
 2. Check: the dialog "Your free trial has ended" shows.
-3. Check: the dialog has exactly two buttons, in order: Buy full version, Restore purchase.
+3. Check: the dialog has exactly three buttons, in order: Buy full version, Restore purchase, Need help? Contact us.
 4. Press Esc, then press Ctrl+K.
 5. Check: the only open dialog is still "Your free trial has ended".
 6. Ask the core for the current project directly, below the screen.
@@ -100,11 +128,11 @@ Before: an empty data folder of its own. The app is the internal test build (no 
 9. Click Buy full version in the dialog.
 10. Check: the screen shows "The App Store connection is not available in this build."
 
-## Microsoft Store: an ended trial locks the app with only Buy full version and Restore purchase
+## Microsoft Store: an ended trial locks the app with Buy full version, Check again and the contact link
 
 1. Set the licence to Microsoft Store, trial ended. Do not wait for the project screen.
 2. Check: the dialog "Your free trial has ended" shows.
-3. Check: the dialog has exactly two buttons, in order: Buy full version, Restore purchase.
+3. Check: the dialog has exactly three buttons, in order: Buy full version, Check again, Need help? Contact us.
 4. Press Esc, then press Ctrl+K.
 5. Check: the only open dialog is still "Your free trial has ended".
 6. Ask the core for the current project directly, below the screen.

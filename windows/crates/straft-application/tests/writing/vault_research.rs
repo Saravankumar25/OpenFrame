@@ -6,10 +6,10 @@
 //! Vault, is one undo step, survives restart and crash, travels with copies between the vaults,
 //! and the assistant can read it but never set it.
 
+use serde_json::{Value, json};
 use straft_application::registry::{self, AiExposure};
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 fn note(env: &TestEnv, store: &str, body: &str) -> Value {
     env.ok(

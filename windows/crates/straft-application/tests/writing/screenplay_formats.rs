@@ -6,11 +6,11 @@
 //!   Specification §50): every step a Final Draft user takes, except reopening the export in a
 //!   licensed copy of Final Draft, which is a manual check.
 
-use straft_application::modules::ai::scope::{self, AiScopeArgs, AiScopeKind};
+use serde_json::{Value, json};
+use straft_application::modules::ai::scope;
 use straft_application::modules::ai::toolbox::{self, ToolStep};
 use straft_domain::new_id;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const TELUGU: &str = "మీరా రైలు స్టేషన్\u{200C}లో వేచి ఉంది. క్షమించండి!";
 const HINDI: &str = "मीरा ने कहा, “क्षमा करें, ट्रेन देर से है।”";
@@ -91,20 +91,7 @@ fn retrieve(env: &TestEnv, query: &str) -> String {
         .project()
         .unwrap()
         .store
-        .read(|c| {
-            scope::resolve(
-                c,
-                &actor,
-                &AiScopeArgs {
-                    kind: AiScopeKind::WholeProject,
-                    draft_id: None,
-                    scene_id: None,
-                    selection: Vec::new(),
-                    shooting_day_id: None,
-                    call_sheet_id: None,
-                },
-            )
-        })
+        .read(scope::whole)
         .unwrap();
     match toolbox::run_tool_unlocked(
         &env.core,
@@ -373,7 +360,7 @@ fn final_draft_migration_definition_of_done() {
     );
     assert!(r["pages"].as_u64().unwrap() >= 1);
     let bytes = std::fs::read(&pdf).unwrap();
-    assert!(!String::from_utf8_lossy(&bytes).contains("Straft Studio"));
+    assert!(!String::from_utf8_lossy(&bytes).contains("Straft"));
 
     // Step 11: the structure is the original's, with exactly the one edited line changed.
     let mut expected = original.clone();

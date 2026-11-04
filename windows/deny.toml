@@ -51,7 +51,7 @@ allow = [
     "Zlib",
 ]
 # Reviewed weak-copyleft exceptions. MPL-2.0 is file-level copyleft: using the
-# unmodified crate is compatible with any Straft Studio license choice; modifying its
+# unmodified crate is compatible with any Straft license choice; modifying its
 # source files would require publishing those modifications under MPL-2.0.
 # These come in transitively through Tauri (HTML/CSS processing) and `directories`.
 exceptions = [
@@ -74,8 +74,8 @@ allow-wildcard-paths = true
 highlight = "all"
 deny = [
     # TLS is rustls-only (reqwest `rustls-tls`); no system OpenSSL on Windows.
-    { crate = "openssl-sys", reason = "Straft Studio uses rustls; OpenSSL is not shipped." },
-    { crate = "native-tls", reason = "Straft Studio uses rustls; see deny.toml." },
+    { crate = "openssl-sys", reason = "Straft uses rustls; OpenSSL is not shipped." },
+    { crate = "native-tls", reason = "Straft uses rustls; see deny.toml." },
 ]
 
 [sources]

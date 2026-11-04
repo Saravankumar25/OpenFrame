@@ -1,4 +1,4 @@
-// WindowsHTML capture section: Files, Notes and Tasks, Activity, Recently Deleted, Templates, Project settings and every settings tab (Writing, Keyboard shortcuts, Offline AI, Advanced, Appearance incl. theme import), Export Diagnostics.
+// WindowsHTML capture section: Files, Notes and Tasks, Activity, Recently Deleted, Templates, Project settings and every settings tab (Writing, Keyboard shortcuts, Straft AI, Advanced, Appearance incl. theme import), Export Diagnostics.
 // See tests/e2e/capture/kit.mjs for the toolkit and the rules every section follows.
 
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
@@ -652,7 +652,7 @@ export default async function (t) {
 
   await state("settings-shortcut-recording", async () => {
     await t.type('input[aria-label="Filter commands"]', "");
-    await t.press(addFor("Open or close the assistant"));
+    await t.press(addFor("Open or close Straft AI"));
     await t.waitText("Press the new keys");
   }, { blur: false });
 
@@ -674,7 +674,7 @@ export default async function (t) {
   });
 
   await state("settings-shortcut-changed", async () => {
-    await t.press(addFor("Open or close the assistant"));
+    await t.press(addFor("Open or close Straft AI"));
     await t.keys("F9");
     await t.waitText("(changed)");
   }, { keepToasts: true });
@@ -718,10 +718,10 @@ export default async function (t) {
     await t.waitText("used by two commands", { present: false, timeout: 8000 });
   });
 
-  // ------------------------------------------------------------- Offline AI
+  // ------------------------------------------------------------- Straft AI
   await state("settings-offline-ai-ready", async () => {
-    await t.settingsTab("Offline AI");
-    await t.el('//section[@aria-label="AI health"]');
+    await t.settingsTab("Straft AI");
+    await t.el('//section[@aria-label="Straft AI health"]');
     await t.sleep(800);
   });
   const aiReady = await exists('//button[normalize-space(.)="Remove Straft AI…"]');
@@ -733,13 +733,13 @@ export default async function (t) {
     await state("settings-offline-ai-technical-details", async () => {
       await t.press("Cancel", DIALOG);
       await t.go('//summary[normalize-space(.)="Technical details"]');
-      await t.el('//table[@aria-label="Offline AI components"]');
+      await t.el('//table[@aria-label="Straft AI components"]');
       await scrollEnd();
     });
     await state("settings-offline-ai-stopped-toast", async () => {
       await scrollEnd(0);
-      await t.press("Stop Offline AI (free memory)");
-      await t.waitText("Offline AI stopped", { timeout: 8000 });
+      await t.press("Stop Straft AI (free memory)");
+      await t.waitText("Straft AI stopped", { timeout: 8000 });
     }, { keepToasts: true });
     await state("settings-offline-ai-graphics-off", async () => {
       await t.press("Off", rg("Graphics card"));
@@ -747,12 +747,12 @@ export default async function (t) {
     }, { keepToasts: true });
     await quiet("graphics restore", () => t.press("Automatic", rg("Graphics card")));
   } else {
-    log("Offline AI is not ready here, so its ready-state actions are not captured");
+    log("Straft AI is not ready here, so its ready-state actions are not captured");
   }
   t.unreachable("settings-offline-ai-not-downloaded", "Needs the AI models removed from this computer (spec header e2e-ai-models: none); the tour runs with the models present.");
   t.unreachable("settings-offline-ai-download-states", "Downloading, paused, failed, not enough space, damaged and cannot-download need the test model host steered to fail or stall, which the tour does not run.");
-  t.unreachable("settings-offline-ai-health-filled", "The AI health table fills only after questions were asked in the AI Assistant, which happens after this section in the tour.");
-  t.unreachable("settings-offline-ai-export-report", "Export AI report opens the Windows Save dialog (native dialog).");
+  t.unreachable("settings-offline-ai-health-filled", "The Straft AI health table fills only after questions were asked in the Straft AI, which happens after this section in the tour.");
+  t.unreachable("settings-offline-ai-export-report", "Export Straft AI report opens the Windows Save dialog (native dialog).");
 
   // --------------------------------------------------------------- Advanced
   await state("settings-advanced", async () => {

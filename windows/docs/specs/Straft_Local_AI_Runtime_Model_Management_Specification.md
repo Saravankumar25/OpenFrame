@@ -6,7 +6,7 @@
     **Document class:** Implementation / engineering specification  
     **Baseline:** Windows 11 production architecture, v1  
     **Updated:** 30 September 2026 (single Offline AI profile: Gemma 3 1B Instruct + BGE small embeddings; supersedes the three-tier Qwen design)  
-    **Purpose:** Define a zero-technical-setup, local-only AI subsystem where filmmakers click **Download Offline AI** and Straft Studio manages everything else.
+    **Purpose:** Define a zero-technical-setup, local-only AI subsystem where filmmakers click **Download Offline AI** and Straft manages everything else.
 
 > **Current decision: [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (2026-10-15).** The download after
 > install described below is the target design again. The runtime ships in every package; the chat and embedding models
@@ -23,7 +23,7 @@
 
 ## Authority and non-conflict rule
 
-This engineering document implements the approved Straft Studio specifications and the agentic AI + hybrid RAG spec (`straft_ai_agentic_rag_spec_prompt.md`, §1, §12, §23–§25, §36–§37). It does **not** redefine product behavior.
+This engineering document implements the approved Straft specifications and the agentic AI + hybrid RAG spec (`straft_ai_agentic_rag_spec_prompt.md`, §1, §12, §23–§25, §36–§37). It does **not** redefine product behavior.
 
 Implementation precedence is:
 
@@ -44,12 +44,12 @@ If an implementation detail conflicts with an authoritative product rule, the im
 | Initial OS | Windows 11 first; preserve macOS-ready boundaries |
 | Desktop shell | Tauri v2 |
 | Core/business logic | Rust owns domain rules; React is presentation/input |
-| Offline AI | One-click **Download Offline AI**; Straft Studio installs runtime + models |
+| Offline AI | One-click **Download Offline AI**; Straft installs runtime + models |
 | AI profile | Exactly **one** production profile, internal id `straft-local-ai-v1`; no model picker |
 | Language model | Google **Gemma 3 1B Instruct**, GGUF **Q8_0** (chosen by benchmark, §4.2) |
 | Embedding model | **BGE small English v1.5**, GGUF Q8_0, 384 dimensions, CLS pooling (MIT) |
 | Runtime | Pinned llama.cpp `llama-server` build (CPU and Vulkan builds), two managed sidecars |
-| Model distribution | ~~Signed manifest (Ed25519); Straft Studio-controlled endpoint in production~~ Hugging Face at pinned commits, sizes and SHA-256 compiled in (ADR-0032) |
+| Model distribution | ~~Signed manifest (Ed25519); Straft-controlled endpoint in production~~ Hugging Face at pinned commits, sizes and SHA-256 compiled in (ADR-0032) |
 | AI providers | **Local AI only**; no cloud AI, no API keys, no Ollama |
 | Accounts / telemetry | None / none |
 | Collaboration | File packages only (LAN collaboration removed) |
@@ -58,7 +58,7 @@ If an implementation detail conflicts with an authoritative product rule, the im
 
 ## 1. Product rule
 
-The user must never be required to install Ollama, Python, CUDA tooling, model managers, command-line utilities or a separate server. Straft Studio is fully usable if AI is never installed.
+The user must never be required to install Ollama, Python, CUDA tooling, model managers, command-line utilities or a separate server. Straft is fully usable if AI is never installed.
 
 ```text
 AI feature clicked
@@ -76,7 +76,7 @@ User-facing wording (spec §1, §24, §36):
 
 | Situation | Wording |
 |---|---|
-| Offer | **Enable Offline AI** — "Download the AI components required for Straft Studio's AI features. AI runs on this computer and project data is not sent to Straft Studio or an AI cloud service." |
+| Offer | **Enable Offline AI** — "Download the AI components required for Straft's AI features. AI runs on this computer and project data is not sent to Straft or an AI cloud service." |
 | Not installed | "Offline AI is not installed." + **[Download Offline AI]** |
 | Installed | **AI Ready** (header chip) |
 | Steps | Checking device · Downloading · Verifying · Installing · Starting · Ready |
@@ -108,14 +108,14 @@ Neither model has any project-database or filesystem authority. The chat model p
 
 ## 3. Runtime
 
-Straft Studio downloads a pinned llama.cpp release (`b11259`, MIT; Windows x64 CPU build and Vulkan build) listed in the manifest with exact bytes and SHA-256.
+Straft downloads a pinned llama.cpp release (`b11259`, MIT; Windows x64 CPU build and Vulkan build) listed in the manifest with exact bytes and SHA-256.
 
 Production rules (unchanged, enforced in `supervisor.rs`):
-- launched only by Straft Studio, with a fixed argument list; `LLAMA_*` environment overrides are stripped;
+- launched only by Straft, with a fixed argument list; `LLAMA_*` environment overrides are stripped;
 - bound to `127.0.0.1` on a random free port — never `0.0.0.0`;
 - a random 256-bit per-launch API key passed through the environment (`LLAMA_API_KEY`), never the command line;
 - `--no-webui --no-slots --offline --parallel 1`, no console window;
-- a kill-on-close Job Object: the sidecars can never outlive Straft Studio;
+- a kill-on-close Job Object: the sidecars can never outlive Straft;
 - stdout/stderr go to sanitized, redacted, size-rotated logs (`logs/ai-runtime.log`, `logs/ai-embedding.log`);
 - lazy start, idle unload after 15 minutes, bounded automatic restart after a crash (2 within 10 minutes), explicit retry after a start failure.
 
@@ -130,7 +130,7 @@ One profile, `straft-local-ai-v1`. The manifest may move it to a new version (ne
 
 Candidates are downloaded into the gitignored `.dev-models/` and SHA-256 checked. Each is run through the **real runtime path** — the pinned `llama-server` with the same flags the supervisor uses — and measured in the order of the product priorities:
 
-1. **Tool calling** — the real Straft Studio planner request captured from the application (`scripts/ai-benchmark/planner-request.json`: policy text, 23 tools + 7 proposal tools, grammar-constrained `oneOf` schema), 18 requests from the §35 evaluation categories (exact counts, navigation, search, unscheduled scenes, character co-occurrence, task/scene-card/rename/status proposals, product help, private notes, workspace navigation, summaries, breakdown suggestions, draft comparison, an ambiguous "Change it."), scored for schema-valid JSON, correct tool and correct key arguments; the same requests without a grammar (raw JSON discipline); one prompt-injection case (hostile text in the project-data block).
+1. **Tool calling** — the real Straft planner request captured from the application (`scripts/ai-benchmark/planner-request.json`: policy text, 23 tools + 7 proposal tools, grammar-constrained `oneOf` schema), 18 requests from the §35 evaluation categories (exact counts, navigation, search, unscheduled scenes, character co-occurrence, task/scene-card/rename/status proposals, product help, private notes, workspace navigation, summaries, breakdown suggestions, draft comparison, an ambiguous "Change it."), scored for schema-valid JSON, correct tool and correct key arguments; the same requests without a grammar (raw JSON discipline); one prompt-injection case (hostile text in the project-data block).
 2. **Summarization / creative** — scene summary (grounding check: names + setting present) and three alternative endings (saved for review).
 3. **Latency** — load, planner p50/p95, prompt and generation tokens/s.
 4. **Download size.** 5. **Memory** — peak working set of the server process.
@@ -145,7 +145,7 @@ Machine: Intel Core Ultra 5 125H (14 cores / 18 threads), 16 GB RAM, Intel Arc i
 | QAT Q4_0 (ggml-org) | 687 MB | 100% | 33.3% | 88.9% | yes | 10.7 s / 26.1 s | 13 / 3 | 5.4 s | 1.38 GB | yes |
 | **Q8_0 (ggml-org)** | **1020 MB** | **100%** | **38.9%** | **94.4%** | **yes** | **4.4 s / 13.9 s** | **28 / 8** | **2.7 s** | **1.35 GB** | **yes** |
 
-Embedding model (BGE small en v1.5 Q8_0, 35 MB): 384 dimensions, returned vectors L2-normalised, cosine(similar scene pair) 0.859 vs cosine(unrelated) 0.473, 32 chunks of ~600 characters in 9.9 s under the same load, 67 MB peak memory. An input over the 512-token window is refused by the server (HTTP 500), so Straft Studio bounds inputs to 1 500 characters and retries a refused input shorter (§9.1).
+Embedding model (BGE small en v1.5 Q8_0, 35 MB): 384 dimensions, returned vectors L2-normalised, cosine(similar scene pair) 0.859 vs cosine(unrelated) 0.473, 32 chunks of ~600 characters in 9.9 s under the same load, 67 MB peak memory. An input over the 512-token window is refused by the server (HTTP 500), so Straft bounds inputs to 1 500 characters and retries a refused input shorter (§9.1).
 
 **Decision: Q8_0.** It is best on priority 1 (tool + arguments 38.9% vs 33.3% / 22.2%, raw JSON 94.4%) and on latency (Q8_0 dequantisation is cheap on CPU), with memory equal to the QAT file; the cost is priority 4 (≈330 MB larger download). Full Offline AI download: **1 125 156 323 bytes** (runtime 19.2 MB + Gemma 1 069.3 MB + BGE 36.7 MB) on a processor-only computer.
 
@@ -155,7 +155,7 @@ Findings for the agent layer (owned by the orchestrator, recorded here because t
 
 ### 4.3 Backend (CPU / Vulkan)
 
-The Vulkan build is chosen only when a real (non-software) adapter has **dedicated** memory ≥ the chat model's `gpuVramBytes` + 512 MB and a Vulkan loader is installed. Integrated graphics report little dedicated memory (they share system RAM) and use the processor build. If the Vulkan runtime fails its health check at install time, Straft Studio downloads the processor build (added to the same progress figure), health-checks it and activates it instead; the unused runtime is then removed.
+The Vulkan build is chosen only when a real (non-software) adapter has **dedicated** memory ≥ the chat model's `gpuVramBytes` + 512 MB and a Vulkan loader is installed. Integrated graphics report little dedicated memory (they share system RAM) and use the processor build. If the Vulkan runtime fails its health check at install time, Straft downloads the processor build (added to the same progress figure), health-checks it and activates it instead; the unused runtime is then removed.
 
 ## 5. Device check (no picker)
 
@@ -204,7 +204,7 @@ Trust: Ed25519 signature over the exact bytes, public key compiled in. Developme
 ## 8. Storage
 
 ```text
-%LOCALAPPDATA%/Straft/            (Microsoft Store edition: %LOCALAPPDATA%\Packages\<PackageFamilyName>\LocalState\Straft Studio, 27-microsoft-store.md §5.2)
+%LOCALAPPDATA%/Straft/            (Microsoft Store edition: %LOCALAPPDATA%\Packages\<PackageFamilyName>\LocalState\Straft, 27-microsoft-store.md §5.2)
 ├─ models/
 │  ├─ manifest-cache.json (+ .sig)
 │  ├─ active.json                     { schema: 2, profileId, profileVersion, runtimeId, backend,
@@ -272,14 +272,14 @@ Real-component validation, 30 Sept 2026 (same machine, under build load, files s
 ## 17. Licensing
 
 - llama.cpp — MIT (Windows build also contains the LLVM OpenMP runtime, Apache-2.0 WITH LLVM-exception).
-- Gemma 3 1B Instruct — Gemma Terms of Use (https://ai.google.dev/gemma/terms) and the Gemma Prohibited Use Policy. Straft Studio must show the notice "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms." (Settings → Offline AI → Technical details and THIRD_PARTY_LICENSES.md) and pass the terms on when redistributing through its own endpoint.
+- Gemma 3 1B Instruct — Gemma Terms of Use (https://ai.google.dev/gemma/terms) and the Gemma Prohibited Use Policy. Straft must show the notice "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms." (Settings → Offline AI → Technical details and THIRD_PARTY_LICENSES.md) and pass the terms on when redistributing through its own endpoint.
 - BGE small English v1.5 — MIT.
 
 `npm run licenses` lists these components (from the manifest) in `THIRD_PARTY_LICENSES.md`.
 
 ## 18. Privacy
 
-Normal inference: React → Rust → local context → local llama.cpp → local Gemma → result. Project data is never sent to Google, Straft Studio or any AI service because the weights came from Google. The AI subsystem uses the network only for user-initiated component downloads and the signed manifest. No telemetry of prompts, screenplay text, retrieved chunks, private notes or AI responses exists. See `docs/store/privacy-policy.md`.
+Normal inference: React → Rust → local context → local llama.cpp → local Gemma → result. Project data is never sent to Google, Straft or any AI service because the weights came from Google. The AI subsystem uses the network only for user-initiated component downloads and the signed manifest. No telemetry of prompts, screenplay text, retrieved chunks, private notes or AI responses exists. See `docs/store/privacy-policy.md`.
 
 ## 19. Explicit exclusions
 

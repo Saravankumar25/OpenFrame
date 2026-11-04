@@ -6,19 +6,50 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
-## 2026-11-04: product renamed to Straft Studio, names changed across the documents
+## 2026-11-04: the Windows work merged with the windows folder on GitHub
 
-Owner decision of 2026-11-04 ([ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md)). The product name, the assistant name
-(Straft AI), crate and package names, identifiers and the data folder changed in every living document, in the three Word
-manuals (inside their compressed XML, other content untouched) and in the file names under `docs/`, `.github/` and the root.
-The `docs/history` records, which CLAUDE.md normally forbids editing, were edited in place for the product name only, by the
-owner's instruction of the same day. No fact, date, number or decision was changed. The domain, the Instagram account name and
-the `.of*` package extensions were left as they were. Renamed documents are linked by their new names (`node scripts/check-links.mjs`
-passes). The app data folder is `Straft` (`%LOCALAPPDATA%\Straft`, `%APPDATA%\Straft`), because the per-user program folder is
-`%LOCALAPPDATA%\Straft Studio`.
-The 15 pictures and the checksum list in `docs/release/evidence/M0/M0.20-visual-baseline/` showed the old name and were removed;
-they stay in git history. Spec 90 needs `E2E_UPDATE_BASELINE=1` on Windows to recreate them (the README in that folder says so).
-The saved WindowsHTML pages keep their old CSS file names (content hashes of the earlier text) until the next capture.
+Two sessions renamed the product on the same day. The local Windows work had newer features; the windows folder on GitHub had
+the older code with its own rename and first-start migration. They were merged with a three-way merge on 12940da1, the last
+sync between them.
+
+- [ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md) stays the decision. [ADR-0041](../adr/ADR-0041-product-renamed-straft.md) became a pointer and what only it said (domain, email, format names) moved into ADR-0042.
+- GitHub's migration is the one way (`legacy_names`, `legacy_migration`, `legacy_rename`). The local one was removed after what
+  only it had was carried over with tests: hard linked models, junction handling, rollback of records, evidence for crash
+  recovery, the finished-scan record, and validating a project before renaming it.
+- GitHub's text says "Straft Studio" where the old sentence used the short name. The newer app, its screens, WindowsHTML and the
+  manuals say "Straft" in running text and "Straft Studio" for the full name, so that form stayed. Paths follow ADR-0042:
+  the library folder is `Straft Studio`.
+- The Mac bundle and product ids are ADR-0042's `app.straftstudio.studio` values. The Mac wire fixture was regenerated with them
+  by the fixture writer of the removed licence server, taken from git history.
+- GitHub removed the 15 visual baseline pictures. They were kept here, because the local set was captured with the new name.
+  `packaging/brand` was dropped: its logo was traced from an image and differs from the owner's artwork.
+
+## 2026-11-04 (later): domain and company email changed to straftstudio.com
+
+Owner decision (chat, 2026-11-04), recorded in [ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md) decision 5.
+
+- The official domain is `https://straftstudio.com`, with Google Workspace on it. Official addresses: `admin@`, `support@`,
+  `contact@`, `developer@`, `hello@` at `straftstudio.com`. The legal company stays Vighnajith Advisories Private Limited.
+- This reverses the "domains and addresses never change" line of the first rename notes. A text replace had already turned the
+  old domain and support address into the new ones in documents and code.
+- The old domain is not deleted. The owner repoints or retires it (owner-decisions.md, manual work).
+
+## 2026-11-04: product renamed to Straft Studio, and the name rewritten inside audits and history
+
+Owner decision (chat, 2026-11-04), recorded in [ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md).
+
+- The product name, the assistant name (Straft AI), crate and package names, identifiers and the data folder changed in every
+  living document, in the three Word manuals and in the file names under `docs/`, `.github/` and the root.
+- The rename also rewrote the old product name inside `docs/audits/` and `docs/history/`, which are otherwise never edited, on
+  the owner's explicit instruction ("There should not be even a single trace"). Only the name changed; the meaning of each page
+  did not. The original wording stays in git history.
+- Documents that moved because their file name held the old name now carry the new name, and the Rust crates moved to
+  `crates/straft-*`. Links were updated with the move.
+- Kept on purpose: the `.of*` package extensions, `tests/fixtures/release-baseline-1/` and the old install path that fixture
+  records. The Cloudflare Pages project keeps its earlier hosting name until the owner changes it.
+- The app data folder is `Straft` (`%LOCALAPPDATA%\Straft`, `%APPDATA%\Straft`), because the per-user program folder is
+  `%LOCALAPPDATA%\Straft Studio`.
+- The history index ([history/README.md](../history/README.md)) says its files are not edited; this entry is the one exception.
 
 ## 2026-10-27: old report and session prompt moved to history
 

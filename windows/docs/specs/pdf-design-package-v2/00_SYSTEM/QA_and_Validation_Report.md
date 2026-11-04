@@ -1,7 +1,7 @@
 # QA and Validation Report (v2)
 
 Date of work: 2026-10-23. Source of truth: `Saravankumar25/StraftStudio` `main` @ `2f5a045416bd2125801329533fc47f986ccc8174`.
-This report states what was actually run and looked at, and what was not. Nothing here claims validation against Straft Studio's Rust renderer — none of these designs has been rendered by it.
+This report states what was actually run and looked at, and what was not. Nothing here claims validation against Straft's Rust renderer — none of these designs has been rendered by it.
 
 ## 1. Scope check
 
@@ -16,7 +16,7 @@ This report states what was actually run and looked at, and what was not. Nothin
 
 ## 2. Mechanical verification (`tools/verify_pdf.py`, run over all 61 PDFs)
 
-For every PDF: page size is US Letter (portrait or landscape as designed); every page has the brand line, the logo image in the footer band with undistorted aspect ratio (4.509 : 1), and `Page X of Y` with the **true** page number and total; no text, shape or image intrudes into the 66 pt footer band or the side margins; running header text present where the HTML sets one (absent/none where it does not); no blank page.
+For every PDF: page size is US Letter (portrait or landscape as designed); every page has the brand line, the logo image in the footer band with undistorted aspect ratio (4.289 : 1), and `Page X of Y` with the **true** page number and total; no text, shape or image intrudes into the 66 pt footer band or the side margins; running header text present where the HTML sets one (absent/none where it does not); no blank page.
 
 * Result: **0 failures** on the final set, with one intentional exception explained below.
 * `Moodboard_STRESS_TEST.pdf` p10: the header intentionally prints `MOODBOARD` instead of `LOW TIDE RADIO · MOODBOARD` (this is the "project title off" case — the project name must not leak when the option is unticked). The automated header check flags this; it is correct behaviour.
@@ -48,7 +48,7 @@ For every PDF: page size is US Letter (portrait or landscape as designed); every
 ## 5. Defects found in the CURRENT application output (verified in the supplied PDFs and/or source)
 
 Cross-cutting
-* The footer redraws the logo mark as vector lines with typed "Straft Studio STUDIO" text (`design::draw_footer` / `lockup`) instead of the official artwork; footer text carries project/document and `Page n / N`.
+* The footer redraws the logo mark as vector lines with typed "Straft STUDIO" text (`design::draw_footer` / `lockup`) instead of the official artwork; footer text carries project/document and `Page n / N`.
 * `ReportImage::decode` converts every image to JPEG q85 (lossy for logos).
 * Table titles are separate `Section` blocks followed by a "(CONTINUED)" band: headings are orphaned at page foot (Call Sheet p1, Beat Board board p2/p4, Breakdown scene 2 head) and "(CONTINUED)" is printed on a table's first page (Call Sheet p2, Breakdown p55/p58).
 * Tiny text: chips/labels at 5.8 pt in several exports; `pal::FAINT` (#8792A5, 3.1 : 1) used for readable text (Moodboard notes, Storyboard notes).
@@ -67,7 +67,7 @@ Beat Board: card split across pages, stranded sequence headings, act-level beats
 7. Selected-scene ordering (Shot List), Beat Board scope `selected`/`project` output, comment replies: from source only.
 8. Whether the product owner accepts the structural changes listed in each MD, section E (e.g. Call Sheet talent contact/notes folding, Cast Scene column order swap, Budget category subtotals, Storyboard 2/4-column option, Moodboard 2-column rule).
 9. Contrast figures are computed from hex values (WCAG formula), not measured from printed output; no physical print test was done.
-10. The logo asset: only rasters exist here (735 × 163 for light paper, 1406 × 360 dark-background master). If a vector master exists it should replace them.
+10. The logo asset: only a raster (812 × 347) was supplied/found; the package crops it to artwork bounds. If a vector master exists it should replace it.
 
 ## 7. Blockers
 
@@ -80,8 +80,6 @@ python tools/render_pdf.py exports/call-sheet/Call_Sheet.html exports/call-sheet
 python tools/verify_pdf.py exports/call-sheet/Call_Sheet.pdf --header "SHOOT DAY 01" --thumbs out --gray
 ```
 Requires Python 3 with PyMuPDF, and Chrome/Chromium/Edge (v131+ for CSS page margin boxes; built with 155).
-
-All 61 PDFs were re-rendered on 2026-11-04 for the product rename, on macOS with Chrome 156, with Arial placed ahead of Helvetica in a temporary copy of the sources so the font matches the earlier references. Page counts, page sizes and per-page text were compared with the previous PDFs; the only differences are the name, the logo statements and the renamed file names.
 
 ## 9. Version 2 changes — what was checked
 

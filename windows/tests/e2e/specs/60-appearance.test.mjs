@@ -64,7 +64,7 @@ describe("appearance", () => {
       assert.equal(a.theme, "straft-default");
       assert.equal(a.pref, "system");
       const logo = await browser.$('//header//*[@role="img"][@aria-label="Straft Studio"]');
-      assert.ok(await logo.isDisplayed(), "the Straft Studio logo is in the top bar");
+      assert.ok(await logo.isDisplayed(), "the Straft logo is in the top bar");
     });
 
     await step("Settings > Appearance from the project menu; Light and Dark switch at once", async () => {

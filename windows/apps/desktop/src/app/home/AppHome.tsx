@@ -29,6 +29,7 @@ import { matches as matchesShortcut, useShortcutLabel } from "../shortcuts";
 import { DisplayNameDialog } from "./DisplayNameDialog";
 import { BrandLogo } from "../../theme/BrandLogo";
 import { GlobalSettingsDialog } from "./GlobalSettingsDialog";
+import { TrialCorner } from "../../features/licensing/TrialCorner";
 import { PackagesOverlay, usePackagesUi } from "../../features/packages";
 
 /** Restore a Backup Package or open a Full Project Package (mock 171): the way back in on a new computer. */
@@ -104,6 +105,9 @@ function GlobalVaultHome() {
         </div>
         <Button size="sm" variant="ghost" icon={<ArrowLeft size={14} />} onClick={closeGlobalVault}>Your projects</Button>
         <div className="grow" />
+        <div className="tb-actions row">
+          <TrialCorner />
+        </div>
       </header>
       <div className="layout">
         <main className="main" aria-label="Global Idea Vault">
@@ -169,7 +173,7 @@ function ProjectsHome() {
   };
 
   const openExisting = async () => {
-    const dir = await openDialog({ directory: true, title: "Open a Straft Studio project folder" });
+    const dir = await openDialog({ directory: true, title: "Open a Straft project folder" });
     if (typeof dir !== "string") return;
     try {
       await call("project.open", { path: dir });
@@ -288,6 +292,7 @@ function ProjectsHome() {
         </div>
         <div className="grow" />
         <div className="tb-actions row">
+          <TrialCorner />
           <Button size="sm" variant="ghost" icon={<Lightbulb size={14} />} onClick={() => openGlobalVault()} title={keys.capture ? `Your ideas outside any project (${keys.capture} for Quick Capture)` : "Your ideas outside any project"}>
             Global Idea Vault
           </Button>
@@ -589,7 +594,7 @@ function DeleteProjectDialog({ project, onClose, onArchiveInstead }: { project: 
         </>
       }
     >
-      <Banner tone="err"><b>This is the most destructive action in Straft Studio. The whole project will be removed from this computer.</b></Banner>
+      <Banner tone="err"><b>This is the most destructive action in Straft. The whole project will be removed from this computer.</b></Banner>
       <p className="sm" style={{ margin: "10px 0" }}>
         The project folder (ideas, story, screenplay, production plans and stored files) is moved to the Windows Recycle Bin. Files linked from other folders are not touched.
       </p>
@@ -641,7 +646,7 @@ function UnavailableDialog({ project, onClose }: { project: RecentProject; onClo
         <br />
         Last known location: <b className="selectable-text" style={{ wordBreak: "break-all" }}>{project.path}</b>
       </p>
-      <p style={{ margin: 0 }}>Straft Studio has not created a replacement project. Reconnect the drive and try again, or locate another copy of the project.</p>
+      <p style={{ margin: 0 }}>Straft has not created a replacement project. Reconnect the drive and try again, or locate another copy of the project.</p>
     </Dialog>
   );
 }

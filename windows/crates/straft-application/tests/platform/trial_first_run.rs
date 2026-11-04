@@ -10,6 +10,7 @@ use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
+use serde_json::{Value, json};
 use straft_application::events::RecordingSink;
 use straft_application::modules::ai::toolbox;
 use straft_application::registry::{self, AiExposure};
@@ -25,7 +26,6 @@ use straft_entitlement::mac::{
     ProductInfo, PurchaseOutcome, RevalidateReason, StoreEnvironment, StoreKitBridge,
     UnavailableServer, VerifiedTransaction,
 };
-use serde_json::{Value, json};
 
 const DAY_SECONDS: u64 = 24 * 60 * 60;
 /// 2027-01-15, a fixed purchase date for the Mac fakes.
@@ -100,7 +100,10 @@ fn start(config: AppConfig) -> Arc<AppCore> {
 }
 
 fn ms_core(root: &Path, store: &MsStore) -> Arc<AppCore> {
-    start(ms_config(root, store))
+    let core = start(ms_config(root, store));
+    // Startup asks the Microsoft Store nothing: the shell's worker runs the first read.
+    core.refresh_entitlement();
+    core
 }
 
 fn call(core: &AppCore, op: &str, args: Value) -> Value {
@@ -365,9 +368,11 @@ fn plat_009_trial_users_and_the_internal_build_never_see_the_first_run_screens()
         ),
         "conflict.state"
     );
+    // The first Store read saved its memory; the refused screen added no flag to it.
+    let saved = std::fs::read_to_string(notices_file(dir.path())).unwrap();
     assert!(
-        !notices_file(dir.path()).exists(),
-        "nothing written for a refused screen"
+        saved.contains("\"dataNoteAcknowledged\": false"),
+        "nothing written for a refused screen: {saved}"
     );
     stop(core);
     // The internal installer build: no trial, no reminder, no purchase screens (ADR-0023).
@@ -412,9 +417,9 @@ fn plat_009_a_folder_that_cannot_be_written_never_traps_the_user_on_a_mandatory_
     let dir = tempfile::tempdir().unwrap();
     let store = MsStore::trial(7);
     store.set_bought();
-    let core = ms_core(dir.path(), &store);
-    // The notice record path now goes through a folder that cannot hold the file.
+    // The notice record path goes through a folder that cannot hold the file.
     std::fs::create_dir_all(notices_file(dir.path())).unwrap();
+    let core = ms_core(dir.path(), &store);
     assert_eq!(notice(&core, "2027-01-15"), json!({ "kind": "dataNote" }));
     assert_eq!(
         record(&core, "dataNote", None)["notice"],

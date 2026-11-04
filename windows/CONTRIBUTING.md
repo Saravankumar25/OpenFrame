@@ -1,6 +1,6 @@
 # Contributing to Straft Studio
 
-Straft Studio holds the only copy of the work of writers, screenwriters and production teams. Contributions are judged first on **not losing or corrupting
+Straft holds the only copy of the work of writers, screenwriters and production teams. Contributions are judged first on **not losing or corrupting
 user data**, second on **matching the approved product behavior exactly**, and only then on everything else.
 
 > **Licensing notice.** No open-source license has been selected yet ([LICENSE-PENDING.md](LICENSE-PENDING.md)).

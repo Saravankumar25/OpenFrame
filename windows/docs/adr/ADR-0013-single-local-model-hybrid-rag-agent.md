@@ -72,7 +72,7 @@ above the user's.
   facts therefore come from deterministic tools, the catalogue offered per request is small and route-relevant, and
   every model reply is schema-constrained (100% valid JSON in the benchmark).
 - Gemma is distributed under the Gemma Terms of Use: the notice is shown in Settings → Offline AI → Technical details
-  and in `THIRD_PARTY_LICENSES.md`, and redistribution through the Straft Studio endpoint must pass the terms on (release
+  and in `THIRD_PARTY_LICENSES.md`, and redistribution through the Straft endpoint must pass the terms on (release
   prerequisite, 23-release-migration.md §7).
 - Retrieval quality has not yet been measured against an evaluation set (Recall@K / MRR, spec §35); only the
   latency budgets (spec §34) are measured. Until that harness exists, the claim is limited to what the tests show.

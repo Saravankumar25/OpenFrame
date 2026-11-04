@@ -3,11 +3,11 @@
 //! untrusted parser. Every hostile input must change nothing: no preference, no saved theme, no
 //! project.
 
+use serde_json::{Value, json};
 use straft_application::modules::appearance::theme::{self, MAX_THEME_BYTES};
 use straft_application::registry::{self, AiExposure};
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const VALID: &str = r#"{
   "formatVersion": 1,
@@ -672,7 +672,7 @@ fn rename_export_reimport_and_delete() {
             "seeds"
         ]
     );
-    // Exporting into Straft Studio's own folders is refused.
+    // Exporting into Straft's own folders is refused.
     let inside = env.dir.path().join("appdata").join("theme.json");
     assert!(
         env.call(
@@ -740,7 +740,7 @@ fn a_damaged_or_missing_saved_theme_falls_back_to_default() {
         "appearance.import_theme",
         json!({ "text": VALID, "apply": true }),
     );
-    // Damage the stored row the way an edit outside Straft Studio could.
+    // Damage the stored row the way an edit outside Straft could.
     env.core
         .with_app_db(|c| {
             c.execute(

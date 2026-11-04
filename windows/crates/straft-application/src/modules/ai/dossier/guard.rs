@@ -11,8 +11,8 @@
 
 use std::sync::LazyLock;
 
-use straft_domain::Actor;
 use regex::Regex;
+use straft_domain::Actor;
 
 use super::Fact;
 use crate::modules::production::privacy::may_see_contacts;

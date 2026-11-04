@@ -11,7 +11,7 @@
 | Installed `straft-desktop.exe` SHA-256 | `91bac2bccf38eaffe811eea9aa24bea2952330ca9b94c4119e66d7af1f5306c2` |
 | Plain release build | `0d380442...` |
 | Difference | 3 bytes at Tauri's `__TAURI_BUNDLE_TYPE` marker (UNK becomes NSS). Byte comparison done. The installer sets the marker; the code is the same |
-| Uninstall of an earlier copy | Silent uninstall kept `Documents\Straft Studio` (projects kept: True) |
+| Uninstall of an earlier copy | Silent uninstall kept `Documents\Straft` (projects kept: True) |
 | Reinstall | Worked |
 
 ## The suite

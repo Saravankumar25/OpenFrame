@@ -43,7 +43,20 @@ export async function launchApp() {
   await browser.waitUntil(async () => (await browser.execute(() => document.readyState)) === "complete", { timeout: 30_000 });
   await installConsoleProbe(browser);
   if (process.env.E2E_TEAM_PASSWORD) await unlockTeamGate(browser, process.env.E2E_TEAM_PASSWORD);
+  if (process.env.E2E_RELEASE === "open") await closeCheckScreen(browser);
   return browser;
+}
+
+/**
+ * An open release run (run.mjs `--release=open`) drives the store-channel executable outside its
+ * package. The Microsoft Store cannot answer there, so the app starts on "Checking your purchase"
+ * (state NeedsOnlineCheck: opening and exporting work, editing is refused in Rust). Close it the
+ * way a person does, with "Not now". The store read can take up to 40 seconds, hence the wait.
+ */
+export async function closeCheckScreen(browser) {
+  const notNow = await button(browser, "Not now", { timeout: 60_000 });
+  await notNow.click();
+  await notNow.waitForExist({ reverse: true, timeout: 15_000, timeoutMsg: "The purchase check screen did not close" });
 }
 
 /** A gated release run (run.mjs `--release=gated`): pass the team password screen the way a tester does. */

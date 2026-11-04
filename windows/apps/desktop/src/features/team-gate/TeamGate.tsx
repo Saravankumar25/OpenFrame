@@ -13,8 +13,8 @@ import type { TeamGateAnswer } from "../../ipc/generated/TeamGateAnswer";
 import type { TeamGateStatus } from "../../ipc/generated/TeamGateStatus";
 import { BrandLogo } from "../../theme/BrandLogo";
 
-const LOAD_FAILED = "Straft Studio could not start the password check. Close Straft Studio and open it again.";
-const TRY_FAILED = "Straft Studio could not check the password right now. Try again.";
+const LOAD_FAILED = "Straft could not start the password check. Close Straft and open it again.";
+const TRY_FAILED = "Straft could not check the password right now. Try again.";
 
 /** "1:05", "0:09": the wait in minutes and seconds. */
 export function waitClock(seconds: number): string {

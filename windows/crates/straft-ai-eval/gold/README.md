@@ -96,3 +96,78 @@ Every case sets `length_class`, `answer_type` and `no_internal_words`. `no_navig
 Run only these on the real model: `ai-eval --only conv-lt-` and `ai-eval --only tool-lt-` (the harness matches case ids). One family: `--only conv-lt-money-`, the export: `--only conv-lt-export-`.
 
 **Drafted by Claude; the owner approves the sets before their numbers count.**
+
+## Section-scoped bench (`sections.lowtide.en.jsonl`)
+
+Written for the section-scoped assistant (spec `docs/specs/ai-section-scoped-assistant.md`, sections 3.1, 3.6, 3.7, 6 and 12; slice R0). The user picks one to three sections (leaves) before asking; the assistant reads only those. Each case says which leaves were picked, so the set measures two things: answers inside the pick, and the pointer ("That is in Production > Budget. Add it to your selection and ask again.") when the answer lives in a leaf that was not picked.
+
+The file is written by `tools/make-sections.mjs` (run `node crates/straft-ai-eval/gold/tools/make-sections.mjs`). The script reads every expected value from `fixtures/low-tide-two-screenplays/FACTS.md` (or from `knowledge.md` for the two help leaves), computes counts and lists from its tables, and stops when a total does not match what FACTS.md states. The tables below are written by the script too.
+
+**Projects.** Most cases run on `low-tide-two-screenplays`, so the 274-case baseline stays comparable. Two leaves have no data there: Story > Timeline (Story Days and time notes) and Idea Vault > Global. Cases that pick either leaf, or expect a pointer to it, run on the new fixture `low-tide-sections`: the same base plus `fixtures/low-tide-sections/extra.jsonl` (five Story Days over 23 scenes, three time notes, four global vault items). Its facts are in `fixtures/low-tide-sections/FACTS.md`. Day Out of Days, Daily View, Sides, Reports, Moodboards, Storyboards and Catalog needed no new data: they read the schedule, the breakdown, the scenes and the two boards the base fixture already holds. The frozen R0 binary does not know `low-tide-sections`, so a case on it fails to build the project there; every other case runs.
+
+**Fields.** A case is the usual conversation case plus:
+
+| Field | Meaning |
+|---|---|
+| `sections` | The picks, one to three. `{ "leaf": "production/budget" }`, with the instance choices of spec 3.1 where the leaf has a picker: `scene` (an ordinal), `day` (a shooting day number), `screenplay` (the title; required for `screenplay/scenes`). A pick with no `scene` or `day` means all. |
+| `sections_before` | Multi-turn cases where the selection changed between turns: the picks the earlier turns were asked under. |
+| `expect.pointer` | The leaf the answer must point to. Set on out-of-section negatives and on partial answers (answer the part that fits, then point). A case without it expects no pointer. |
+| `expect.new_answer_type` | `describe`, `brief` or `story_explanation` (the narrative types of spec 3.7 and 12.5). `answer_type` holds the old type when there is one, and is left out otherwise. |
+| `expect.new_length_class` | `long250` (up to 250 words) or `long350` (up to 350). `length_class` holds the old class when there is one, and is left out for these. `min_words` and `max_words` carry the same limits for the first harness. |
+| `expect.derived` | Expected values that are computed from the fixture (a category total, for example) and so do not appear in its text. |
+
+The first harness reads `answer_type` and `length_class` as plain text and ignores fields it does not know, so the file loads in it. The new values live in their own fields so the old binary never scores a type it cannot know. The harness change that reads `sections`, `pointer` and the `new_` fields comes later.
+
+**Ids.** `sec-s-<leaf>-NNN` is in the fixed model sample, `sec-x-<leaf>-NNN` is not; the leaf is the id with the slash written as a hyphen (`sec-s-production-budget-001`). Families without one leaf: `pair`, `triple`, `neg` (out-of-section negatives, partial answers and "could not find" cases), `conv` (conversational answers: scene brief, character description, relationship, story explanation) and `turn` (multi-turn follow-ups; `before` holds the earlier requests and the selection is kept). The sample is picked by even spacing over each family ordered by question type, so every kind of question is in it. Run it with `--only sec-s-`, everything with `--only sec-`.
+
+**What is in it.** One leaf per case family: questions a person would ask on that screen, with counts, lists, lookups, a few sloppy messages and, where the leaf holds narrative material, describe and brief cases. The 15 most likely pairs have three cases each (the spec example is the first: Screenplay + Cast & Crew, "How many scenes does Sudheesh play in, and describe his character?"). The 5 triples are all in the sample. Every leaf has at least three negatives that pick it alone, plus negatives with two and three leaves picked, partial answers and nothing-found cases.
+
+**Left out on purpose.** Story > Story Page: the Story page is not offered to the assistant (its operations are hidden), so no answer is allowed there; the leaf has negatives only. Story > Episodes: the leaf is offered only on episodic projects and the fixtures are feature films; it needs an episodic fixture before it can be measured.
+
+**Deterministic checks only.** Facts in the answer, facts that must not appear (data from an unpicked leaf, other people's private notes), the pointer, the length limits and no internal words. Nothing is judged by a model.
+
+<!-- sections-table:start -->
+| Leaf | Own cases | In the sample | Negatives that pick it | In pairs, triples, conversation, turns | Why the count is what it is |
+|---|---|---|---|---|---|
+| `idea-vault/this-project` (Idea Vault > This Project) | 12 | 6 | 3 | 2 | The project vault holds four items. |
+| `idea-vault/global` (Idea Vault > Global) | 9 | 6 | 3 | 0 | Four items, added in low-tide-sections (the base fixture has no global vault). |
+| `story/story-page` (Story > Story Page) | 0 | 0 | 3 | 0 | None on purpose: the Story page is not offered to the assistant (the operations are hidden), so there is nothing it may answer. Negatives only. |
+| `story/beat-board` (Story > Beat Board) | 18 | 6 | 3 | 11 | Three acts and nine cards. |
+| `story/outline` (Story > Outline) | 10 | 6 | 3 | 0 | The Outline shows the same acts and cards as the Beat Board, so the facts are the same and the questions are about order and structure. |
+| `story/characters` (Story > Characters) | 30 | 6 | 5 | 21 | The fixture holds enough data. |
+| `story/timeline` (Story > Timeline) | 14 | 6 | 3 | 2 | Five Story Days and three time notes, added in low-tide-sections. |
+| `story/episodes` (Story > Episodes) | 0 | 0 | 0 | 0 | None: the project is a feature film and the leaf is offered only on episodic projects, so no case can pick it. Needs an episodic fixture if it must be measured. |
+| `screenplay/scenes` (Screenplay > Scenes) | 31 | 6 | 5 | 37 | About thirty. |
+| `breakdown/breakdown` (Breakdown) | 31 | 6 | 3 | 15 | About thirty. |
+| `production/overview` (Production > Overview) | 7 | 6 | 3 | 0 | The overview shows six numbers, so few questions are about it alone. |
+| `production/catalog` (Production > Catalog) | 10 | 6 | 3 | 3 | The catalog is the breakdown elements by item; only props and vehicles have named, countable items in FACTS.md. |
+| `production/locations` (Production > Locations) | 29 | 6 | 4 | 13 | The fixture holds enough data. |
+| `production/cast-crew` (Production > Cast & Crew) | 33 | 6 | 5 | 23 | The fixture holds enough data. |
+| `production/moodboards` (Production > Moodboards) | 10 | 6 | 3 | 0 | One board with four notes and no images. |
+| `production/storyboards` (Production > Storyboards) | 10 | 6 | 3 | 3 | One storyboard with four empty panels. |
+| `production/shot-lists` (Production > Shot Lists) | 19 | 6 | 4 | 6 | Eleven shots. |
+| `production/schedule` (Production > Schedule) | 29 | 6 | 5 | 23 | The fixture holds enough data. |
+| `production/day-out-of-days` (Production > Day Out of Days) | 15 | 6 | 3 | 5 | Derived from the schedule and the breakdown cast; the questions use only work days, start and finish. |
+| `production/daily-view` (Production > Daily View) | 14 | 6 | 3 | 6 | Derived from the schedule, the breakdown and the day notes. |
+| `production/sides` (Production > Sides) | 10 | 6 | 3 | 3 | Derived from the scenes of a day; the questions use the scenes and cast of the day and the scene text. |
+| `production/reports` (Production > Reports) | 12 | 6 | 3 | 0 | Six report types, each a projection of data held elsewhere; the questions name the report. |
+| `production/budget` (Production > Budget) | 26 | 6 | 6 | 9 | The fixture holds enough data. |
+| `call-sheets/call-sheets` (Call Sheets) | 19 | 6 | 4 | 7 | The fixture holds enough data. |
+| `files/files` (Files) | 10 | 6 | 3 | 0 | Four files in two folders. |
+| `notes-tasks/notes` (Notes & Tasks > Notes) | 13 | 6 | 3 | 1 | Five project notes and one private note of the local user. |
+| `notes-tasks/tasks` (Notes & Tasks > Tasks) | 14 | 6 | 4 | 3 | Eight tasks. |
+| `help/product-guide` (App Help & Settings > Product Guide) | 20 | 6 | 3 | 3 | Facts come from knowledge.md, not from the fixture. |
+| `help/settings` (App Help & Settings > Settings) | 13 | 6 | 3 | 0 | Facts come from the Settings parts of knowledge.md, not from the fixture. |
+
+| Family | Cases | In the sample |
+|---|---|---|
+| one leaf each | 468 | 162 |
+| pair | 45 | 29 |
+| triple | 5 | 5 |
+| conv | 24 | 24 |
+| turn | 51 | 30 |
+| neg | 113 | 52 |
+| all | 706 | 302 |
+<!-- sections-table:end -->
+
+**Drafted by Claude; a person spot-checks about one in ten before the numbers count.**

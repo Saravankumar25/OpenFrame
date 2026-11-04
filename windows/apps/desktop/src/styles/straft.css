@@ -20,15 +20,11 @@ svg.i.s{width:13px;height:13px} svg.i.l{width:20px;height:20px} svg.i.xl{width:2
 /* top bar */
 .topbar{height:46px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 12px;gap:12px;flex:none}
 .brand{display:flex;align-items:center;width:164px;flex:none}
-/* Logo (owner request 2026-10-07, Trial_Licensing_Mocks section 5): film-frame mark with a gradient from
-   --lg1..3, which follow the active theme, and the "Straft Studio" wordmark (Straft 700, Studio 300). */
-.brandlogo{display:inline-flex;align-items:center;gap:9px;color:var(--ink)}
-.brandlogo .mk{width:28px;height:28px;overflow:visible;flex:none}
-.brandlogo .wm{font:700 19px/1 "Segoe UI Variable Display","Segoe UI",Inter,system-ui,sans-serif;letter-spacing:-.02em;white-space:nowrap}
-.brandlogo .wm i{font-style:normal;font-weight:300}
-.brandlogo.lg{gap:12px}
-.brandlogo.lg .mk{width:40px;height:40px}
-.brandlogo.lg .wm{font-size:28px}
+/* Logo: one picture of the Straft mark and the words "Straft Studio" (src/theme/BrandLogo.tsx). The mark keeps
+   its own gradient; "Straft" takes the text colour. The height is set here and the width follows. */
+.brandlogo{display:inline-flex;align-items:center;color:var(--ink)}
+.brandlogo svg{display:block;height:30px;width:auto;flex:none}
+.brandlogo.lg svg{height:44px}
 .projsel{display:flex;align-items:center;gap:8px;padding:5px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);font-weight:600;min-width:196px}
 .projsel small{color:var(--muted);font-weight:500;font-size:11px}
 .search{flex:1;max-width:400px;margin:0 auto;display:flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);color:var(--muted)}

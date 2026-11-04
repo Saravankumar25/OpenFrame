@@ -1,4 +1,4 @@
-# Straft Studio website plan
+# Straft website plan
 
 > **Superseded as a plan (2026-10-15).** The website is Chapter 2; its current plan is [chapter-2-website.md](../roadmap/chapter-2-website.md), and its implementation plan is written when Chapter 1 closes. This page stays as source notes.
 

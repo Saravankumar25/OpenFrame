@@ -32,7 +32,7 @@ const DOCS: LibraryInspection = {
   vaultFound: true,
   ideaCount: 12,
   cloudService: "OneDrive",
-  message: "This is a Straft Studio library with 3 projects and a Global Idea Vault with 12 ideas.",
+  message: "This is a Straft library with 3 projects and a Global Idea Vault with 12 ideas.",
 };
 
 function answer(table: OpTable) {
@@ -50,7 +50,7 @@ beforeEach(() => {
   vi.mocked(openDialog).mockReset();
 });
 
-describe("Set up your Straft Studio library", () => {
+describe("Set up your Straft library", () => {
   it("opens straight away when the library is ready", async () => {
     answer({ "library.status": READY });
     show();
@@ -70,8 +70,8 @@ describe("Set up your Straft Studio library", () => {
   it("offers three choices and creates the default only on confirm", async () => {
     answer({ "library.status": NEEDS, "library.use_default": READY });
     show();
-    expect(await screen.findByRole("heading", { name: "Set up your Straft Studio library" })).toBeInTheDocument();
-    for (const name of ["Use the default location", "Choose a new location", "Locate existing Straft Studio data"]) {
+    expect(await screen.findByRole("heading", { name: "Set up your Straft library" })).toBeInTheDocument();
+    for (const name of ["Use the default location", "Choose a new location", "Locate existing Straft data"]) {
       expect(screen.getByRole("radio", { name })).toBeInTheDocument();
     }
     expect(screen.getByText(HOME)).toBeInTheDocument();
@@ -93,7 +93,7 @@ describe("Set up your Straft Studio library", () => {
     show();
     fireEvent.click(await screen.findByRole("radio", { name: "Choose a new location" }));
     fireEvent.click(screen.getByRole("button", { name: "Choose Folder…" }));
-    expect(await screen.findByText("D:\\Work\\Straft Studio")).toBeInTheDocument();
+    expect(await screen.findByText("D:\\Work\\Straft")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Create Library" }));
     expect(await screen.findByText("Home screen")).toBeInTheDocument();
     expect(calls.find((c) => c.op === "library.create_at")?.args).toEqual({ parent: "D:\\Work" });
@@ -109,14 +109,14 @@ describe("Set up your Straft Studio library", () => {
       },
     });
     show();
-    fireEvent.click(await screen.findByRole("radio", { name: "Locate existing Straft Studio data" }));
+    fireEvent.click(await screen.findByRole("radio", { name: "Locate existing Straft data" }));
     fireEvent.click(screen.getByRole("button", { name: "Choose Folder…" }));
     expect(await screen.findByText(/3 projects and a Global Idea Vault with 12 ideas/)).toBeInTheDocument();
     expect(screen.getByText(/It belongs to Meera/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Connect Library" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("That folder can't be found.");
     expect(screen.queryByText("Home screen")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Set up your Straft Studio library" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Set up your Straft library" })).toBeInTheDocument();
     expect(calls.find((c) => c.op === "library.connect")?.args).toEqual({ dir: DOCS.libraryRoot });
   });
 
@@ -127,7 +127,7 @@ describe("Set up your Straft Studio library", () => {
       "library.inspect": { ...DOCS, kind: "project", libraryRoot: null, message: "This folder is one project, not a library." },
     });
     show();
-    fireEvent.click(await screen.findByRole("radio", { name: "Locate existing Straft Studio data" }));
+    fireEvent.click(await screen.findByRole("radio", { name: "Locate existing Straft data" }));
     fireEvent.click(screen.getByRole("button", { name: "Choose Folder…" }));
     expect(await screen.findByText(/one project, not a library/)).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Connect Library" })).not.toBeInTheDocument();
@@ -136,7 +136,7 @@ describe("Set up your Straft Studio library", () => {
   it("lists libraries found on this computer first", async () => {
     answer({ "library.status": { ...NEEDS, found: [DOCS] }, "library.connect": READY });
     show();
-    const region = await screen.findByRole("region", { name: "Straft Studio data found on this computer" });
+    const region = await screen.findByRole("region", { name: "Straft data found on this computer" });
     expect(region).toHaveTextContent(DOCS.path);
     expect(region).toHaveTextContent(/synced by OneDrive/);
     fireEvent.click(screen.getByRole("button", { name: "Use This Library" }));
@@ -149,7 +149,7 @@ describe("Set up your Straft Studio library", () => {
     answer({ "library.status": { ...NEEDS, state: "missing", root: expected }, "library.connect": READY });
     show();
     expect(await screen.findByText(/Your library was not found at E:\\Straft/)).toBeInTheDocument();
-    for (const name of ["Use the default location", "Choose a new location", "Locate existing Straft Studio data"]) {
+    for (const name of ["Use the default location", "Choose a new location", "Locate existing Straft data"]) {
       expect(screen.getByRole("radio", { name })).toBeInTheDocument();
     }
     fireEvent.click(screen.getByRole("button", { name: "Try Again" }));

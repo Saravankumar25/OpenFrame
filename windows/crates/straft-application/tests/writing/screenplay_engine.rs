@@ -7,10 +7,10 @@
 
 use std::path::PathBuf;
 
+use serde_json::{Value, json};
 use straft_application::MutationMeta;
 use straft_domain::{Capability, Role, new_id};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 struct Sp {
     env: TestEnv,
@@ -158,7 +158,7 @@ fn page_setup_is_saved_with_the_screenplay_undone_and_survives_restart() {
         "A4 width in points"
     );
     assert!(
-        !text.contains("Straft Studio"),
+        !text.contains("Straft"),
         "screenplay PDFs carry no branding"
     );
 

@@ -18,7 +18,7 @@ otherwise offline, listener-free application.
 ## Decision
 
 **Real-time local-network collaboration is removed from Straft Studio entirely**, by product-owner decision
-(rationale: scope reduction). The first release of Straft Studio has **no** host or join sessions, network discovery, presence, soft locks,
+(rationale: scope reduction). The first release of Straft has **no** host or join sessions, network discovery, presence, soft locks,
 WebSocket or other network server, or live co-editing.
 
 **Remote collaboration is file-based only**, through **Exchange, Review and Response packages** (export package →

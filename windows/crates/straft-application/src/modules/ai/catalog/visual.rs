@@ -4,8 +4,8 @@
 //! identity. Media the user must supply (image files, sketches, pasted images)
 //! is never invented: panels are created as empty placeholders.
 
-use straft_domain::{AppError, AppResult, Capability};
 use serde_json::{Value, json};
+use straft_domain::{AppError, AppResult, Capability};
 
 use super::super::queries::{self, SceneRow};
 use super::super::toolbox::resolve::{self as rv, Found};
@@ -769,7 +769,7 @@ fn moodboard_link(
     }
     d.row("Link", url)
         .row("On", b.label.clone())
-        .row("Network", "Straft Studio does not open or fetch the link");
+        .row("Network", "Straft does not open or fetch the link");
     d.op(
         "moodboard.add_link",
         op,

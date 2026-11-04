@@ -1,4 +1,4 @@
-# Chapter 1: complete, test and validate Straft Studio
+# Chapter 1: complete, test and validate Straft
 
 > Written 2026-10-09 after the full retrospection ([report](../reports/2026-10-09-project-retrospection-and-audit.md)).
 > This is the current plan for finishing the application. It replaces the habit of working down the 26 areas of the
@@ -58,12 +58,12 @@ says two streams are independent.
 ### Projects inside cloud-synced folders (Medium)
 
 - **Objective.** A writer whose Documents folder is synced by OneDrive does not get a damaged or locked project.
-- **Why.** Projects live in `Documents\Straft Studio\Projects`. Windows 11 often redirects Documents into OneDrive.
+- **Why.** Projects live in `Documents\Straft\Projects`. Windows 11 often redirects Documents into OneDrive.
   [ADR-0003](../adr/ADR-0003-project-folder-format.md) allows cloud folders and says sync "may still interfere". A
   SQLite database in write-ahead mode (the `-wal` and `-shm` files) is a known bad fit for sync clients.
 - **Where.** `crates/straft-project-format/src/lib.rs` (`default_projects_dir`), `crates/straft-security` (path
   checks), the new-project dialog and Home.
-- **Expected behaviour.** Straft Studio detects a synced location (OneDrive, Dropbox, Google Drive, iCloud Drive by folder
+- **Expected behaviour.** Straft detects a synced location (OneDrive, Dropbox, Google Drive, iCloud Drive by folder
   markers and known-folder redirection), tells the person in plain words, and offers a local folder as the default. It
   never moves existing projects by itself.
 - **Verification.** A test with a folder under a fake `OneDrive` root; a manual test on a Windows laptop with Documents
@@ -229,7 +229,7 @@ The owner has a Mac now. Everything Mac-specific is unverified until it runs the
    installation restriction.
 4. **Check the Mac behaviours.** Spell check (the Mac adapter is written but never run), file dialogs, shortcuts with the
    Command key, window close and quit, data in `~/Library/Application Support/Straft`, documents in
-   `~/Documents/Straft Studio`.
+   `~/Documents/Straft`.
 5. **Mac test automation.** `tauri-driver`, which the end-to-end suite uses, does not support macOS (the Tauri
    documentation says so). Options: the WebdriverIO Tauri service named in the same documentation, or a written manual
    checklist run by a person. Decide after the first manual pass.

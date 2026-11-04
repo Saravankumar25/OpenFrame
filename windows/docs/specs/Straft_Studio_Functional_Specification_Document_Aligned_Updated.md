@@ -10,7 +10,7 @@
 
 **Primary platform:** Windows + macOS desktop application
 
-**Operating model:** Local-first, offline-capable, user-owned project files; optional internet-assisted AI and optional local-network collaboration; no mandatory Straft Studio cloud.
+**Operating model:** Local-first, offline-capable, user-owned project files; optional internet-assisted AI and optional local-network collaboration; no mandatory Straft cloud.
 
 **Source PRD:** `Straft_Studio_Mega_PRD_Aligned_Updated.md`
 
@@ -57,7 +57,7 @@ Acceptance criteria
 This section is the contract that applies to every feature below. A feature that violates one of these rules is considered functionally incorrect even if its individual UI works.
 
 ### 1.1 One application, multiple practical workspaces
-Straft Studio is one desktop application with several workspaces. A filmmaker should be able to move between Idea Vault, Story, Screenplay, Breakdown, Production and Call Sheets without creating duplicate projects or manually copying ordinary metadata between screens.
+Straft is one desktop application with several workspaces. A filmmaker should be able to move between Idea Vault, Story, Screenplay, Breakdown, Production and Call Sheets without creating duplicate projects or manually copying ordinary metadata between screens.
 
 ### 1.2 Progressive structure
 The least structured area is Idea Vault. The Beat Board adds lightweight visual structure. The Screenplay adds strict writing structure. Breakdown and scheduling add production structure. This progression must be visible to the user.
@@ -78,7 +78,7 @@ AI and automatic parsing can suggest. The user confirms anything that becomes me
 Core workflows work without internet. The absence of internet cannot prevent a user from opening, editing, saving, or exporting a local project.
 
 ### 1.8 File exchange instead of mandatory cloud collaboration
-Remote collaboration defaults to portable exchange packages. Real-time collaboration is an optional local-network session. Straft Studio does not require its own cloud service for ordinary use.
+Remote collaboration defaults to portable exchange packages. Real-time collaboration is an optional local-network session. Straft does not require its own cloud service for ordinary use.
 
 ### 1.9 Short films are first-class projects
 A short film can use only Beat Board + Screenplay + a few production features. The software must not force empty enterprise-style sections into a short-film workflow.
@@ -457,7 +457,7 @@ User can create a Beat in a sequence, Act, or Parking Lot.
 A Beat can move anywhere the board accepts a Beat. Dragging changes order and parent. No version branch is created.
 
 ### 10.5 Convert Beat to Scene
-The user may choose Convert to Scene. Straft Studio creates a new Scene Card using the Beat text as its initial short description. The original Beat may be retained as a history/reference object or marked converted according to UI choice; the default is to retain it in a “Converted” reference state so no creative thought is lost.
+The user may choose Convert to Scene. Straft creates a new Scene Card using the Beat text as its initial short description. The original Beat may be retained as a history/reference object or marked converted according to UI choice; the default is to retain it in a “Converted” reference state so no creative thought is lost.
 
 ### 10.6 Beat not used
 A Beat can remain in Parking Lot indefinitely without impacting the screenplay.
@@ -785,7 +785,7 @@ After import, show:
 - source filename.
 
 ### 19.9 Source preservation
-Original imported file can be retained in Project Files if the user chooses. The imported screenplay remains the editable Straft Studio object.
+Original imported file can be retained in Project Files if the user chooses. The imported screenplay remains the editable Straft object.
 
 
 # 20. Screenplay Export
@@ -808,7 +808,7 @@ User can export:
 PDF output must be professionally formatted and printable. Notes are excluded unless explicitly selected.
 
 ### 20.4 FDX
-Export must preserve screenplay structure and content that maps to FDX. Unsupported Straft Studio metadata is retained internally but does not block export.
+Export must preserve screenplay structure and content that maps to FDX. Unsupported Straft metadata is retained internally but does not block export.
 
 ### 20.5 Fountain
 Export must represent screenplay structure using standard Fountain conventions. Internal project metadata that is not part of screenplay text is not inserted into Fountain unless the user selects an optional header/comment export.
@@ -820,13 +820,13 @@ Export produces an editable document suitable for ordinary document workflows wh
 After export, the application displays the file location and offers “Reveal in File Manager.”
 
 ### 20.8 Export immutability
-Exported files are snapshots. Editing an exported file outside Straft Studio does not change the project.
+Exported files are snapshots. Editing an exported file outside Straft does not change the project.
 
 
 # 21. Drafts, Automatic History, and Version Control
 
 ### 21.1 Two layers
-Straft Studio uses:
+Straft uses:
 
 1. Automatic recoverable edit history.
 2. Named drafts created intentionally by the user.
@@ -1570,7 +1570,7 @@ Normal text detection is sufficient for the core product.
 
 ### 42.1 Purpose
 
-AI is an optional system-wide natural-language assistant and command interface over the existing Straft Studio application.
+AI is an optional system-wide natural-language assistant and command interface over the existing Straft application.
 
 It is not a second database and it is not an autonomous filmmaker.
 
@@ -1586,7 +1586,7 @@ A configured local model may operate without internet. External/cloud AI provide
 
 The assistant can use two categories of knowledge:
 
-- **Product knowledge:** Straft Studio terminology, supported workflows, source-of-truth rules, permissions, versioning, import/export, offline behavior and supported commands.
+- **Product knowledge:** Straft terminology, supported workflows, source-of-truth rules, permissions, versioning, import/export, offline behavior and supported commands.
 - **Project knowledge:** user-accessible content from the current project and explicitly selected Global Idea Vault content.
 
 The assistant should not rely on model memory when an authoritative application rule or project value is available.
@@ -1760,7 +1760,7 @@ AI conversation history may be retained according to product settings.
 
 AI responses do not silently become Project Notes, Beat Board content or screenplay content.
 
-Accepted AI mutations become normal Straft Studio history/activity records and remain undoable where supported.
+Accepted AI mutations become normal Straft history/activity records and remain undoable where supported.
 
 ### 42.19 External disclosure
 
@@ -1912,7 +1912,7 @@ Private notes remain visible only to their owner. They are excluded from exchang
 # 47. Remote Collaboration Through Exchange Packages
 
 ### 47.1 Purpose
-Remote collaboration uses files as the transport layer, not mandatory Straft Studio cloud synchronization.
+Remote collaboration uses files as the transport layer, not mandatory Straft cloud synchronization.
 
 ### 47.2 Package categories
 Each major workspace can export a purpose-specific package:
@@ -1958,7 +1958,7 @@ If package source is older than current host content, show source version and cu
 > **SUPERSEDED by ADR-0007 (2026-09-30). Do not implement or test.** Live LAN collaboration was removed by the product owner. The text below is kept unchanged for history. Current rule: collaboration is file-based (Exchange, Review and Response packages). See the [decision register](../adr/README.md).
 
 ### 48.1 Purpose
-Users physically together or on the same private network can optionally collaborate live without a Straft Studio cloud account.
+Users physically together or on the same private network can optionally collaborate live without a Straft cloud account.
 
 ### 48.2 Host session
 
@@ -1966,7 +1966,7 @@ Users physically together or on the same private network can optionally collabor
 One user selects Start Collaboration Session. The application displays the session name and join information.
 
 ### 48.3 Join
-Another Straft Studio desktop joins the session using the displayed local session information.
+Another Straft desktop joins the session using the displayed local session information.
 
 ### 48.4 Shared scope
 The host chooses what is shared:
@@ -1995,7 +1995,7 @@ When a participant disconnects, their last acknowledged changes remain in the sh
 Host can end the collaboration session. The host project remains local and saved.
 
 ### 48.9 No permanent hosting requirement
-Ending a session does not publish or upload the project to a Straft Studio server.
+Ending a session does not publish or upload the project to a Straft server.
 
 
 # 49. Collaboration Conflict Rules
@@ -2387,7 +2387,7 @@ Errors must:
 ### 62.2 Save failure
 Message:
 
-> “Straft Studio could not save the latest changes to the project.”
+> “Straft could not save the latest changes to the project.”
 
 Actions:
 
@@ -2618,7 +2618,7 @@ Season-level navigation remains simple and episode-centric. No giant season-room
 | FSD-OFF-002 | Local save remains source of truth. | P0 | Edit/save/reopen offline. |
 | FSD-COL-001 | Project can export a portable exchange package. | P0 | Export and inspect package in another installation. |
 | FSD-COL-002 | Review package import does not blindly overwrite host project. | P0 | Import stale response package. |
-| FSD-COL-003 | Local-network session allows shared work without Straft Studio cloud. | P1 | Host and join on same LAN. |
+| FSD-COL-003 | Local-network session allows shared work without Straft cloud. | P1 | Host and join on same LAN. |
 | FSD-COL-004 | Same-object conflicts are surfaced rather than silently lost. | P1 | Concurrent conflicting edit test. |
 | FSD-AI-001 | AI is optional and unavailable core functions still work. | P1 | Run with AI disabled. |
 | FSD-AI-002 | AI modifications require user confirmation. | P1 | Ask AI to create card; verify confirmation. |
@@ -2768,7 +2768,7 @@ The Beat Board and Stripboard may be information-dense, but each card/strip rema
 
 # 76. QA Test Design Guidance
 
-QA should test Straft Studio in four layers.
+QA should test Straft in four layers.
 
 ### Layer 1 — Feature behavior
 Does each feature perform its stated actions?
@@ -3267,7 +3267,7 @@ The Production landing view is a gateway; it does not show every detail at once.
 
 # 87. Form and Field Behavior Rules
 
-Every form in Straft Studio follows the same functional principles.
+Every form in Straft follows the same functional principles.
 
 ### 87.1 Required fields
 Required fields are limited to information necessary to create a valid object. A required field is visibly marked. The user receives an inline message if they try to commit it empty.
@@ -3451,7 +3451,7 @@ User chooses whole draft, selected scenes, or selected comments. The preview rep
 Package is written to a user-chosen path. Export does not change the draft status.
 
 ### 93.4 Import
-Receiver selects Import Exchange. Straft Studio identifies package type and source draft/version.
+Receiver selects Import Exchange. Straft identifies package type and source draft/version.
 
 ### 93.5 Mapping
 The importer attempts to map comments to:
@@ -3950,7 +3950,7 @@ The application may suggest a status transition when obvious, but the user must 
 
 ### Contextual Attention Indicators
 
-Straft Studio uses lightweight contextual attention indicators, not notification spam.
+Straft uses lightweight contextual attention indicators, not notification spam.
 
 Examples:
 
@@ -3967,10 +3967,10 @@ Indicators should be attached to the relevant workspace and disappear once resol
 Functional round-trip rules:
 
 ### FDX
-Straft Studio-exported FDX should be re-importable with screenplay structure substantially intact.
+Straft-exported FDX should be re-importable with screenplay structure substantially intact.
 
 ### Fountain
-Straft Studio-exported Fountain should be parseable back into equivalent screenplay elements.
+Straft-exported Fountain should be parseable back into equivalent screenplay elements.
 
 ### DOCX
 Export/re-import should preserve readable screenplay content even if some layout details vary.
@@ -4175,7 +4175,7 @@ This section defines user-visible privacy behavior; implementation details belon
 A project stored locally remains readable only through the user's machine/file access unless the user chooses to share/export it.
 
 ### 127.2 AI disclosure
-When using an external AI provider, the UI must clearly state that selected/project information is being sent outside Straft Studio.
+When using an external AI provider, the UI must clearly state that selected/project information is being sent outside Straft.
 
 ### 127.3 Private note exclusion
 Private notes must not appear in standard exports, exchange packages or call sheets.
@@ -4680,7 +4680,7 @@ Before each release, the product owner should verify:
 - Does the project still work with no internet?
 - Can the project be backed up and moved?
 - Can remote reviewers collaborate using files?
-- Can local collaborators work together without Straft Studio cloud?
+- Can local collaborators work together without Straft cloud?
 
 ### Simplicity
 - Are users being asked for information that has no current purpose?
@@ -5109,7 +5109,7 @@ The application should distinguish:
 
 **Online:** optional external services available.
 
-**Local Session:** connected to another Straft Studio desktop on the same private network.
+**Local Session:** connected to another Straft desktop on the same private network.
 
 **Cloud AI:** selected AI provider connection active.
 
@@ -5127,7 +5127,7 @@ or
 
 > `AI Provider Connected`
 
-No “Syncing to Straft Studio Cloud” state exists in the core product.
+No “Syncing to Straft Cloud” state exists in the core product.
 
 
 # 155. External AI Data Handling — User Flow
@@ -5651,7 +5651,7 @@ The engineering team should use this FSD together with the PRD, not as a replace
 |PRD-AI-001|FSD-AI-020|Locked/private/approval state enforcement|AI respects locked content, private notes and approval gates.|P1|Attempt protected action.|
 |PRD-AI-001|FSD-AI-021|Change Set base-version validation|Stale proposals require revalidation before application.|P1|Change project after proposal and reapply.|
 |PRD-AI-001|FSD-AI-022|Application tool boundary and validation|AI cannot directly write project storage and tool calls are validated.|P1|Inspect denied/bypassed write attempt.|
-|PRD-AI-001|FSD-AI-023|Product knowledge access|AI can answer supported questions about Straft Studio behavior from current product knowledge.|P1|Ask workflow/rule question.|
+|PRD-AI-001|FSD-AI-023|Product knowledge access|AI can answer supported questions about Straft behavior from current product knowledge.|P1|Ask workflow/rule question.|
 |PRD-AI-001|FSD-AI-024|Scope/provenance disclosure|Materially scoped answers identify relevant scope/source context.|P1|Ask same metric under different scopes.|
 |PRD-AI-001|FSD-AI-025|AI lifecycle/activity integration|Accepted AI mutations are recorded as normal application history/activity.|P1|Accept mutation and inspect history/undo.|
 |PRD-AI-001|FSD-AI-026|Conversation/session context|Follow-up requests can reuse safe session context without mutating data.|P1|Issue contextual follow-up request.|
@@ -5759,7 +5759,7 @@ The engineering team should use this FSD together with the PRD, not as a replace
 # 175. Canonical User Journey — Day 1 to Shooting Day
 
 ### 175.1 Day 1: raw idea
-The user opens Straft Studio, creates a project, and immediately enters Project Idea Vault. They can add text, screenshots, a video reference, a PDF research document, a voice note and a handwritten sketch without entering a title or classification. They close the app.
+The user opens Straft, creates a project, and immediately enters Project Idea Vault. They can add text, screenshots, a video reference, a PDF research document, a voice note and a handwritten sketch without entering a title or classification. They close the app.
 
 **Expected state on reopen:** all items are present, the project opens at the last meaningful location, and no setup wizard is required.
 
@@ -5769,7 +5769,7 @@ The user creates Act 1, then a Sequence named `Hero Introduction`. They create s
 **Expected state:** Beat Board contains a usable outline with no manual scene numbering and no character/production metadata.
 
 ### 175.3 Screenplay creation
-User adds headings to the scenes selected for the screenplay and clicks Build Screenplay. Straft Studio previews the order and confirms a new draft. The screenplay opens with the scenes in order.
+User adds headings to the scenes selected for the screenplay and clicks Build Screenplay. Straft previews the order and confirms a new draft. The screenplay opens with the scenes in order.
 
 **Expected state:** screenplay has generated scene numbers; Beat Board remains an independent reference.
 

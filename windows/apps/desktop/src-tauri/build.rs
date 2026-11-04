@@ -3,9 +3,9 @@
 //! `STRAFT_DISTRIBUTION` selects the distribution channel at build time
 //! (docs/engineering/27-microsoft-store.md §5):
 //!
-//! * unset / `direct`: the internal team builds (Windows installer, Mac disk image; ADR-0023,
+//! * unset / `direct`: the internal team builds (Windows installer; ADR-0023,
 //!   ADR-0024), and every development build;
-//! * `store`: the Microsoft Store and Mac App Store packages. Sets `cfg(straft_store)` so code
+//! * `store`: the Microsoft Store package. Sets `cfg(straft_store)` so code
 //!   that must never ship in store builds (the in-app updater, the team password gate) can be
 //!   compiled out entirely.
 //!
@@ -25,13 +25,8 @@
 //! read by the crate with `option_env!`. A build of any profile accepts it only with
 //! `STRAFT_TEST_BUILD=1`, which only the test scripts set, so a team or store build can never
 //! carry it by accident.
-//!
-//! On a macOS target the script also builds the Swift StoreKit 2 bridge
-//! (`macos/StoreKitBridge/`) and links it with the StoreKit and Foundation frameworks
-//! (docs/engineering/37-platform-boundary.md). On every other target it does nothing more.
 
-use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::path::PathBuf;
 
 /// The rules and the hash, shared with the check in the app so the two never disagree.
 #[path = "../../../crates/straft-entitlement/src/team_gate/build_hash.rs"]
@@ -53,10 +48,6 @@ fn main() {
     println!("cargo:rustc-env=STRAFT_DISTRIBUTION={channel}");
     embed_team_gate(channel);
     check_model_source();
-    // The target, not the machine running this script.
-    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("macos") {
-        link_storekit_bridge();
-    }
     // Only these commands may be invoked by the webview, each named in the capability file.
     tauri_build::try_build(
         tauri_build::Attributes::new()
@@ -136,75 +127,4 @@ fn check_model_source() {
     println!(
         "cargo:warning=This build downloads Straft AI from the local test host {url}: a test build, never for the team."
     );
-}
-
-/// Build the Swift package into `OUT_DIR` and link its static library. Runs only for a macOS
-/// target, which needs a Mac with Xcode or the Swift toolchain.
-fn link_storekit_bridge() {
-    let manifest = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("set by Cargo"));
-    let package = manifest.join("macos").join("StoreKitBridge");
-    let scratch = PathBuf::from(std::env::var("OUT_DIR").expect("set by Cargo")).join("swift");
-    println!(
-        "cargo:rerun-if-changed={}",
-        package.join("Package.swift").display()
-    );
-    println!(
-        "cargo:rerun-if-changed={}",
-        package.join("Sources").display()
-    );
-
-    let args = |extra: &[&str]| -> Vec<String> {
-        let mut a: Vec<String> = [
-            "build",
-            "-c",
-            "release",
-            "--product",
-            "StoreKitBridge",
-            "--package-path",
-        ]
-        .iter()
-        .map(|s| s.to_string())
-        .collect();
-        a.push(package.display().to_string());
-        a.push("--scratch-path".to_string());
-        a.push(scratch.display().to_string());
-        a.extend(extra.iter().map(|s| s.to_string()));
-        a
-    };
-    run_swift(&args(&[]), "build the StoreKit bridge");
-    let bin = run_swift(&args(&["--show-bin-path"]), "find the StoreKit bridge");
-    println!("cargo:rustc-link-search=native={}", bin.trim());
-    println!("cargo:rustc-link-lib=static=StoreKitBridge");
-    println!("cargo:rustc-link-lib=framework=StoreKit");
-    println!("cargo:rustc-link-lib=framework=Foundation");
-    // The Swift runtime: the system copy in /usr/lib/swift and the toolchain's compatibility
-    // libraries, as `swift -print-target-info` reports them.
-    let info = run_swift(&["-print-target-info".to_string()], "read the Swift target");
-    let info: serde_json::Value =
-        serde_json::from_str(&info).expect("`swift -print-target-info` printed JSON");
-    let paths = info["paths"]["runtimeLibraryPaths"]
-        .as_array()
-        .expect("`swift -print-target-info` lists runtimeLibraryPaths");
-    for path in paths.iter().filter_map(serde_json::Value::as_str) {
-        if Path::new(path).is_dir() {
-            println!("cargo:rustc-link-search=native={path}");
-        }
-    }
-    println!("cargo:rustc-link-search=native=/usr/lib/swift");
-}
-
-/// Run `swift` with `args` and return its standard output. Fails the build with `what` on error.
-fn run_swift(args: &[String], what: &str) -> String {
-    let out = Command::new("swift")
-        .args(args)
-        .output()
-        .unwrap_or_else(|e| panic!("could not {what}: `swift` did not start ({e})"));
-    if !out.status.success() {
-        panic!(
-            "could not {what}: `swift {}` failed\n{}",
-            args.join(" "),
-            String::from_utf8_lossy(&out.stderr)
-        );
-    }
-    String::from_utf8(out.stdout).unwrap_or_else(|_| panic!("could not {what}: output not UTF-8"))
 }

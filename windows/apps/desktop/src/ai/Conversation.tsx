@@ -1,4 +1,4 @@
-// The assistant conversation (agentic spec §5, §30, §36, §42; FSD §42; UX §3.40).
+// Straft AI conversation (agentic spec §5, §30, §36, §42; FSD §42; UX §3.40).
 //
 // - One request runs a bounded, multi-step agent on this computer; the answer is
 //   plain conversational text. Sources, steps, how sure the answer is, and any list that only
@@ -10,13 +10,13 @@
 // - While the project context is rebuilt, a short notice explains that answers
 //   may use fewer sources. No model names or technical details appear here.
 
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { save as saveDialog } from "@tauri-apps/plugin-dialog";
 import { Download } from "lucide-react";
 import { OpError, call, onAppEvent } from "../ipc/client";
 import { reportError, useOp } from "../ipc/query";
-import { Banner, Button, Chip, IconButton, Select, TextArea } from "../design-system";
+import { Banner, Button, Chip, IconButton, TextArea } from "../design-system";
 import { useNav } from "../app/stores";
 import { toast } from "../app/toast";
 import type { AiCancelDto } from "../ipc/generated/AiCancelDto";
@@ -25,27 +25,27 @@ import type { AiStatusDto } from "../ipc/generated/AiStatusDto";
 import type { AiHistoryDto } from "../ipc/generated/AiHistoryDto";
 import type { AiExchange } from "../ipc/generated/AiExchange";
 import type { AiResultDto } from "../ipc/generated/AiResultDto";
-import type { AiScopeKind } from "../ipc/generated/AiScopeKind";
+import type { AiSectionTreeDto } from "../ipc/generated/AiSectionTreeDto";
 import {
-  SCOPE_LABELS,
   UNAVAILABLE_TEXT,
   confidenceLabel,
-  defaultScope,
   indexNotice,
   indexStateOf,
   runtimeLabel,
-  scopeArgs,
-  scopeOptions,
   sourceChips,
   stepsSummary,
   toRoute,
 } from "./model";
 import { ProposedChanges } from "./ProposedChanges";
 import { AnswerText } from "./answerText";
+import SectionPicker from "./SectionPicker";
+import { MAX_PICKS, askSections, draftOfPicks, isPicked, leafById, pruneToTree, sendHint, toggle, useAiPicks } from "./sections";
 
 const HISTORY_TABLES = ["ai_request", "ai_result", "change_set"];
+/** What the section pickers list: the screenplays, drafts and scenes, the shooting days and the call sheets. */
+const TREE_TABLES = ["project", "screenplay", "screenplay_draft", "screenplay_scene", "shooting_day", "call_sheet"];
 
-/** The line shown while a request runs: what the assistant is doing now. */
+/** The line shown while a request runs: what Straft AI is doing now. */
 export interface Progress {
   label: string;
   step: number;
@@ -98,12 +98,20 @@ function useIndexNotice() {
   return q.isError ? null : indexNotice(indexStateOf(q.data));
 }
 
-export default function Assistant({ status, hasProject }: { status: AiStatusDto; hasProject: boolean }) {
+export default function Assistant({ status, hasProject, projectId }: { status: AiStatusDto; hasProject: boolean; projectId?: string | null }) {
   const qc = useQueryClient();
-  const route = useNav((s) => s.route);
   const go = useNav((s) => s.go);
-  const options = useMemo(() => scopeOptions(route), [route]);
-  const [scope, setScope] = useState<AiScopeKind>(() => defaultScope(route));
+  const picks = useAiPicks((s) => s.picks);
+  const setPicks = useAiPicks((s) => s.set);
+  const resetPicks = useAiPicks((s) => s.reset);
+  const bindProject = useAiPicks((s) => s.bind);
+  // The draft whose scenes the pickers list, when a Screenplay pick chose one other than the current.
+  const [sceneDraft, setSceneDraft] = useState<string | null>(null);
+  const treeQuery = useOp<AiSectionTreeDto>("ai.sections", { draftId: sceneDraft }, TREE_TABLES, {
+    enabled: hasProject,
+    placeholderData: (prev) => prev,
+  });
+  const tree = treeQuery.data;
   const [conversation, setConversation] = useState<string | null | undefined>(undefined);
   const [text, setText] = useState("");
   const [pending, setPending] = useState<string | null>(null);
@@ -112,20 +120,42 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
   const [stopping, setStopping] = useState(false);
   const progress = useProgress(running);
   const endRef = useRef<HTMLDivElement>(null);
-  const effectiveScope = options.includes(scope) ? scope : defaultScope(route);
   const notice = useIndexNotice();
+  const hint = sendHint(tree, picks);
+
+  // Picks made in another project mean nothing here: another project empties them.
+  useEffect(() => bindProject(projectId ?? null), [projectId, bindProject]);
+  // A section or choice the project no longer offers (the person's role changed, a series became a film, a
+  // screenplay was deleted) leaves the selection. The stale tree shown while a new one loads is not judged.
+  const arrivedTree = treeQuery.isPlaceholderData ? undefined : tree;
+  useEffect(() => {
+    const kept = pruneToTree(arrivedTree, picks);
+    if (kept !== picks) setPicks(kept);
+  }, [arrivedTree, picks, setPicks]);
+  useEffect(() => {
+    setSceneDraft(draftOfPicks(tree, picks));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [picks.map((p) => p.draftId ?? "").join(",")]);
 
   const history = useOp<AiHistoryDto>("ai.history", { conversationId: conversation ?? null, limit: 50 }, HISTORY_TABLES, {
     enabled: hasProject && conversation !== null,
   });
   const exchanges = conversation === null ? [] : history.data?.exchanges ?? [];
-  const last = exchanges[exchanges.length - 1];
 
   useEffect(() => {
     endRef.current?.scrollIntoView?.({ block: "end" });
   }, [exchanges.length, pending]);
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["ai.history"] });
+
+  // "Add <section>" on an answer that pointed elsewhere: the section joins the selection and the
+  // person types the question again.
+  const inputRef = useRef<HTMLDivElement>(null);
+  const canAdd = (leaf: string) => picks.length < MAX_PICKS && !isPicked(picks, leaf) && !!leafById(tree, leaf);
+  const addSection = (leaf: string) => {
+    setPicks(toggle(picks, leaf, true));
+    inputRef.current?.querySelector("textarea")?.focus();
+  };
 
   // Only the person's own click writes anything: the file goes where the Save dialog says and nowhere else.
   const conversationId = exchanges[0]?.conversationId ?? null;
@@ -169,7 +199,7 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
 
   const send = () => {
     const q = text.trim();
-    if (!q || pending) return;
+    if (!q || pending || hint) return;
     // A new conversation gets its id here, so Cancel can name it while the first answer is awaited.
     const conversationForAsk =
       (conversation === null ? null : (conversation ?? history.data?.conversationId ?? null)) ?? newConversationId();
@@ -179,7 +209,7 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
     setText("");
     call<AiExchange>("ai.ask", {
       text: q,
-      scope: scopeArgs(effectiveScope, route),
+      sections: askSections(picks),
       conversationId: conversationForAsk,
     })
       .then((x) => {
@@ -210,14 +240,13 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
   };
 
   const rl = runtimeLabel(status.runtimeState);
-  const usingLabel = last && last.scopeLabel && scopeOfLast(last) === effectiveScope ? last.scopeLabel : `Using: ${SCOPE_LABELS[effectiveScope]}`;
 
   if (!hasProject) {
     return (
       <div className="body">
         <div className="empty" style={{ height: "auto", padding: 20 }}>
           <h2 style={{ fontSize: 15 }}>Open a project to ask about it</h2>
-          <p className="sm">The assistant answers from the project that is open, on this computer.</p>
+          <p className="sm">Straft AI answers from the project that is open, on this computer.</p>
         </div>
       </div>
     );
@@ -227,25 +256,32 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
     <>
       <div className="body" style={{ paddingBottom: 0 }}>
         <div className="row">
-          <label className="xs muted" htmlFor="ai-scope">
-            Scope
-          </label>
-          <div style={{ flex: 1 }}>
-            <Select<AiScopeKind>
-              id="ai-scope"
-              value={effectiveScope}
-              onChange={setScope}
-              options={options.map((k) => ({ value: k, label: SCOPE_LABELS[k] }))}
-            />
-          </div>
+          <span className="xs muted grow">Sections to read</span>
           <IconButton label="Save conversation for review" disabled={!conversationId} onClick={() => void saveForReview()}>
             <Download size={14} />
           </IconButton>
-          <Button size="xs" variant="ghost" onClick={() => setConversation(null)} title="Start a new conversation">
+          <Button
+            size="xs"
+            variant="ghost"
+            disabled={!!pending}
+            onClick={() => {
+              setConversation(null);
+              resetPicks();
+            }}
+            title="Start a new conversation"
+          >
             New
           </Button>
         </div>
-        <div className="xs muted">{usingLabel}</div>
+        <SectionPicker
+          tree={tree}
+          picks={picks}
+          onChange={setPicks}
+          onDraft={setSceneDraft}
+          disabled={!!pending}
+          failed={treeQuery.isError}
+          onRetry={() => void treeQuery.refetch()}
+        />
         {status.runtimeState === "Failed" && (
           <Banner tone="warn">{status.runtimeMessage ?? UNAVAILABLE_TEXT} Ask again to restart it.</Banner>
         )}
@@ -264,7 +300,7 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
             </div>
           )}
           {exchanges.map((x) => (
-            <ExchangeView key={x.requestId} x={x} onChanged={refresh} />
+            <ExchangeView key={x.requestId} x={x} onChanged={refresh} canAdd={canAdd} onAdd={addSection} />
           ))}
           {pending && (
             <>
@@ -282,7 +318,7 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
           <div ref={endRef} />
         </div>
       </div>
-      <div className="ai-input">
+      <div className="ai-input" ref={inputRef}>
         <TextArea
           aria-label="Ask or command"
           placeholder="Ask or command… e.g. “Open Scene 42.”"
@@ -293,26 +329,36 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
           onKeyDown={onKey}
           disabled={!!pending}
         />
-        <Button size="sm" variant="primary" onClick={send} disabled={!text.trim() || !!pending}>
-          Send
-        </Button>
+        <div className="ai-send">
+          <Button size="sm" variant="primary" onClick={send} disabled={!text.trim() || !!pending || !!hint} aria-describedby={hint ? "ai-send-hint" : undefined}>
+            Send
+          </Button>
+          {hint && (
+            <div id="ai-send-hint" className="xs muted" role="status">
+              {hint}
+            </div>
+          )}
+        </div>
       </div>
     </>
   );
 }
 
-function scopeOfLast(x: AiExchange): AiScopeKind | null {
-  for (const [k, label] of Object.entries(SCOPE_LABELS) as [AiScopeKind, string][]) {
-    if (x.scopeLabel === `Using: ${label}`) return k;
-  }
-  return null;
-}
-
-function ExchangeView({ x, onChanged }: { x: AiExchange; onChanged: () => void }) {
+function ExchangeView({
+  x,
+  onChanged,
+  canAdd,
+  onAdd,
+}: {
+  x: AiExchange;
+  onChanged: () => void;
+  canAdd: (leaf: string) => boolean;
+  onAdd: (leaf: string) => void;
+}) {
   return (
     <>
       <div className="msg u">{x.requestText}</div>
-      <ResultView r={x.result} onChanged={onChanged} />
+      <ResultView r={x.result} onChanged={onChanged} using={x.scopeLabel} canAdd={canAdd} onAdd={onAdd} />
     </>
   );
 }
@@ -355,7 +401,22 @@ function ItemList({ r }: { r: AiResultDto }) {
   );
 }
 
-export function ResultView({ r, onChanged }: { r: AiResultDto; onChanged: () => void }) {
+/** `using` is the line that says which sections the answer was read from ("Using: Screenplay + Cast & Crew").
+ * When the answer pointed to a section that was not picked, `canAdd` says whether there is room and `onAdd`
+ * adds it; with three sections picked the sentence already says to remove one, so there is no button. */
+export function ResultView({
+  r,
+  onChanged,
+  using,
+  canAdd,
+  onAdd,
+}: {
+  r: AiResultDto;
+  onChanged: () => void;
+  using?: string | null;
+  canAdd?: (leaf: string) => boolean;
+  onAdd?: (leaf: string) => void;
+}) {
   const go = useNav((s) => s.go);
   const conf = confidenceLabel(r.confidence);
   const navRoute = toRoute(r.nav);
@@ -383,6 +444,13 @@ export function ResultView({ r, onChanged }: { r: AiResultDto; onChanged: () => 
           </div>
         )}
         {itemsInline && <ItemList r={r} />}
+        {r.pointer && onAdd && canAdd?.(r.pointer.leaf) && (
+          <div className="row" style={{ marginTop: 6 }}>
+            <Button size="xs" onClick={() => onAdd(r.pointer!.leaf)}>
+              Add {r.pointer.label}
+            </Button>
+          </div>
+        )}
         {navRoute && (
           <div className="row" style={{ marginTop: 6 }}>
             <Button size="xs" onClick={() => go(navRoute)}>
@@ -418,6 +486,7 @@ export function ResultView({ r, onChanged }: { r: AiResultDto; onChanged: () => 
             {steps && <div className="xs muted ai-steps">{steps}</div>}
           </details>
         )}
+        {using && <div className="xs muted ai-using">{using}</div>}
       </div>
       {r.changeSet && <ProposedChanges cs={r.changeSet} onChanged={onChanged} />}
     </>

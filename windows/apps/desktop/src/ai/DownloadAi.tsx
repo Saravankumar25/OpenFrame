@@ -4,7 +4,7 @@
 // they match the pins). Before the click the screen shows the size, the
 // free space needed and that the download uses the internet; nothing touches the network until the
 // click. Then: progress with Pause, Resume where it stopped, a plain reason and Try again when it
-// fails. Shown in Settings > Offline AI and in the AI panel while Straft AI is not installed.
+// fails. Shown in Settings > Straft AI and in Straft AI while Straft AI is not installed.
 
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -87,7 +87,7 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
     return q.isError ? (
       <section className="card pad" aria-label="Download Straft AI">
         <Banner tone="err" actions={<Button size="sm" onClick={() => void q.refetch()}>Try again</Button>}>
-          Straft Studio could not show the download right now.
+          Straft could not show the download right now.
         </Banner>
       </section>
     ) : null;

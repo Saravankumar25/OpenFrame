@@ -7,9 +7,9 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::{Arc, LazyLock};
 use std::time::Duration;
 
-use straft_search::{Embedder, l2_normalize};
 use parking_lot::Mutex;
 use serde::Deserialize;
+use straft_search::{Embedder, l2_normalize};
 
 use super::AnswerType;
 

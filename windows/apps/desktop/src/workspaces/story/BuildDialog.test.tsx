@@ -49,7 +49,7 @@ describe("Build Screenplay preview", () => {
   it("asks for a heading or for the card to be left out, and blocks the build until then", () => {
     render(<BuildDialog episodeId={null} />);
     expect(screen.getByText(/2 cards have no valid scene heading/)).toBeInTheDocument();
-    expect(screen.getByText(/Straft Studio never makes up a heading/)).toBeInTheDocument();
+    expect(screen.getByText(/Straft never makes up a heading/)).toBeInTheDocument();
     expect(screen.getAllByText("Heading needed")).toHaveLength(2);
     expect(buildButton()).toBeDisabled();
     expect(screen.getByText("3 of 3 cards will be built · 2 need a heading")).toBeInTheDocument();

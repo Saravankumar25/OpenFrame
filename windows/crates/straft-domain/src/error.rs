@@ -132,7 +132,7 @@ impl AppError {
     pub fn storage(detail: impl Into<String>) -> Self {
         Self::new(
             "storage.write_failed",
-            "Straft Studio could not save this change yet. Your work is still open and has not been discarded.",
+            "Straft could not save this change yet. Your work is still open and has not been discarded.",
         )
         .with_detail(detail)
         .retryable()
@@ -140,21 +140,21 @@ impl AppError {
     pub fn disk_full() -> Self {
         Self::new(
             "storage.disk_full",
-            "The drive is full, so Straft Studio could not save this change. Free up some space and try again. Your work is still open.",
+            "The drive is full, so Straft could not save this change. Free up some space and try again. Your work is still open.",
         )
         .retryable()
     }
     pub fn busy() -> Self {
         Self::new(
             "storage.busy",
-            "Straft Studio could not save this change yet. Your work is still open and has not been discarded.",
+            "Straft could not save this change yet. Your work is still open and has not been discarded.",
         )
         .retryable()
     }
     pub fn drive_unavailable() -> Self {
         Self::new(
             "storage.drive_unavailable",
-            "The drive holding this project is no longer available. Reconnect it to keep saving. Straft Studio will not create a separate copy.",
+            "The drive holding this project is no longer available. Reconnect it to keep saving. Straft will not create a separate copy.",
         )
         .retryable()
     }
@@ -163,7 +163,7 @@ impl AppError {
     pub fn file_locked(detail: impl Into<String>) -> Self {
         Self::new(
             "storage.file_locked",
-            "Another program is using this file right now, so Straft Studio can't save to it. Wait a moment and try again.",
+            "Another program is using this file right now, so Straft can't save to it. Wait a moment and try again.",
         )
         .with_detail(detail)
         .retryable()
@@ -171,7 +171,7 @@ impl AppError {
     pub fn access_denied(detail: impl Into<String>) -> Self {
         Self::new(
             "storage.access_denied",
-            "Straft Studio doesn't have permission to write to this location. Choose a different folder or check its permissions.",
+            "Straft doesn't have permission to write to this location. Choose a different folder or check its permissions.",
         )
         .with_detail(detail)
     }
@@ -183,7 +183,7 @@ impl AppError {
     pub fn migration(detail: impl Into<String>) -> Self {
         Self::new(
             "migration.failed",
-            "Straft Studio couldn't upgrade this project. The original project was left untouched and a safety backup was kept.",
+            "Straft couldn't upgrade this project. The original project was left untouched and a safety backup was kept.",
         )
         .with_detail(detail)
     }
@@ -203,7 +203,7 @@ impl AppError {
     pub fn network(detail: impl Into<String>) -> Self {
         Self::new(
             "network.unavailable",
-            "Straft Studio couldn't reach the internet. Everything else keeps working offline.",
+            "Straft couldn't reach the internet. Everything else keeps working offline.",
         )
         .with_detail(detail)
         .retryable()
@@ -214,7 +214,7 @@ impl AppError {
     pub fn internal(detail: impl Into<String>) -> Self {
         Self::new(
             "internal.unexpected",
-            "Something went wrong inside Straft Studio. Your project was not changed.",
+            "Something went wrong inside Straft. Your project was not changed.",
         )
         .with_detail(detail)
     }
@@ -236,7 +236,7 @@ impl From<std::io::Error> for AppError {
             (K::PermissionDenied, _) => AppError::access_denied(err.to_string()),
             (K::NotFound, _) => AppError::new(
                 "not_found.file",
-                "A file Straft Studio expected could not be found.",
+                "A file Straft expected could not be found.",
             )
             .with_detail(err.to_string()),
             _ => AppError::storage(err.to_string()),
@@ -256,7 +256,7 @@ impl From<rusqlite::Error> for AppError {
                 C::ReadOnly | C::PermissionDenied => AppError::access_denied(detail),
                 C::DatabaseCorrupt | C::NotADatabase => AppError::new(
                     "project_format.corrupt",
-                    "This project's data file is damaged. Straft Studio will not modify it. Restore from a backup or recovery point.",
+                    "This project's data file is damaged. Straft will not modify it. Restore from a backup or recovery point.",
                 )
                 .with_detail(detail),
                 C::CannotOpen => AppError::drive_unavailable().with_detail(detail),

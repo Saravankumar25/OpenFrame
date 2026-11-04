@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<!-- Copyright 2026 Straft Studio. Fictional sample written for Straft Studio; you may use it to learn the app. -->
+<!-- Copyright 2026 Straft Studio. Fictional sample written for Straft; you may use it to learn the app. -->
 <!-- FDX Interchange Test. Each construct is listed in FDX-Interchange-Test.README.md. -->
 <FinalDraft DocumentType="Script" Template="No" Version="5">
   <Content>
@@ -174,12 +174,12 @@
       <Paragraph Alignment="Center" Type="Action"><Text>Written by</Text></Paragraph>
       <Paragraph Alignment="Center" Type="Action"><Text>Straft Studio</Text></Paragraph>
       <Paragraph Alignment="Center" Type="Action"><Text></Text></Paragraph>
-      <Paragraph Alignment="Center" Type="Action"><Text>Based on an idea by the Straft Studio sample writers</Text></Paragraph>
+      <Paragraph Alignment="Center" Type="Action"><Text>Based on an idea by the Straft sample writers</Text></Paragraph>
       <Paragraph Alignment="Left" Type="Action"><Text>Straft Studio</Text></Paragraph>
       <Paragraph Alignment="Left" Type="Action"><Text>Sample scripts folder</Text></Paragraph>
       <Paragraph Alignment="Right" Type="Action"><Text>Production draft, Pink revision</Text></Paragraph>
       <Paragraph Alignment="Right" Type="Action"><Text>2026-10-07</Text></Paragraph>
-      <Paragraph Alignment="Left" Type="Action"><Text>Copyright 2026 Straft Studio. Fictional sample written for Straft Studio; you may use it to learn the app.</Text></Paragraph>
+      <Paragraph Alignment="Left" Type="Action"><Text>Copyright 2026 Straft Studio. Fictional sample written for Straft; you may use it to learn the app.</Text></Paragraph>
     </Content>
   </TitlePage>
   <ElementSettings Type="Text Message">

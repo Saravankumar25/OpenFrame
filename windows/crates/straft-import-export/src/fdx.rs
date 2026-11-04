@@ -2,7 +2,7 @@
 //!
 //! Paragraph `Type` mapping (both directions):
 //!
-//! | FDX                | Straft Studio          |
+//! | FDX                | Straft          |
 //! |--------------------|--------------------|
 //! | Scene Heading      | scene heading      |
 //! | Action / General   | action             |
@@ -17,7 +17,7 @@
 //! | `StartsNewPage="Yes"` | page break before the paragraph |
 //! | any other `Type`   | custom element (identity = the type name) |
 //!
-//! A paragraph type Straft Studio has no built-in element for (a Final Draft
+//! A paragraph type Straft has no built-in element for (a Final Draft
 //! custom element such as "TELEPHONE", a Cast List) is never flattened into
 //! action: it is kept as a custom element whose import and export identity is
 //! the type name, with its look read from the file's `ElementSettings`
@@ -54,7 +54,7 @@ pub const MAX_CUSTOM_TYPES: usize = 256;
 /// Characters kept of a custom paragraph type name (its import and export identity).
 pub const MAX_CUSTOM_TYPE_CHARS: usize = 60;
 
-/// A custom paragraph type name as Straft Studio keeps it: control characters
+/// A custom paragraph type name as Straft keeps it: control characters
 /// removed, surrounding space trimmed and at most [`MAX_CUSTOM_TYPE_CHARS`]
 /// characters, so every later copy of the name is bounded and two types that
 /// only differ past the limit become one identity.
@@ -253,7 +253,7 @@ fn handle_paragraph(st: &mut State, p: &Node, dual: bool) {
     push_inline_notes(st, p);
 }
 
-/// Final Draft script notes attached to a paragraph become Straft Studio notes right after it,
+/// Final Draft script notes attached to a paragraph become Straft notes right after it,
 /// so their text is kept (notes never print).
 fn push_inline_notes(st: &mut State, p: &Node) {
     for note in p.children_named("ScriptNote") {
@@ -451,7 +451,7 @@ pub fn parse(bytes: &[u8]) -> AppResult<ImportOutcome> {
         st.doc.warnings.push(Warning::attention(
             "fdx_many_custom_elements",
             format!(
-                "This file uses {kinds} paragraph types that Straft Studio has no built-in element for; the first {MAX_LISTED_CUSTOM_TYPES} are listed."
+                "This file uses {kinds} paragraph types that Straft has no built-in element for; the first {MAX_LISTED_CUSTOM_TYPES} are listed."
             ),
         ));
     }
@@ -540,7 +540,7 @@ pub fn parse(bytes: &[u8]) -> AppResult<ImportOutcome> {
         st.doc.warnings.push(Warning::info(
             "fdx_settings_not_used",
             format!(
-                "Final Draft settings in this file ({}) were not used; Straft Studio applies the screenplay's own page setup.",
+                "Final Draft settings in this file ({}) were not used; Straft applies the screenplay's own page setup.",
                 layout_only.join(", ")
             ),
         ));

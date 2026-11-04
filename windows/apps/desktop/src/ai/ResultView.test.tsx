@@ -76,3 +76,43 @@ describe("assistant answers", () => {
     expect(screen.getByText(/You are a Viewer on this project/)).toBeTruthy();
   });
 });
+
+describe("an answer that points to a section that was not picked", () => {
+  const pointer = { leaf: "production/budget", label: "Budget" };
+  const sentence = "That is in Production > Budget. Add it to your selection and ask again.";
+
+  it("offers Add <section> and hands the leaf to the panel", () => {
+    const added: string[] = [];
+    renderWithClient(
+      <ResultView
+        r={result({ content: sentence, pointer })}
+        onChanged={() => undefined}
+        canAdd={() => true}
+        onAdd={(l) => added.push(l)}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Add Budget" }));
+    expect(added).toEqual(["production/budget"]);
+  });
+
+  it("has no button at three sections, where the sentence says to remove one", () => {
+    renderWithClient(
+      <ResultView
+        r={result({
+          content: "That is in Production > Budget. Remove a section and add this one, then ask again.",
+          pointer,
+        })}
+        onChanged={() => undefined}
+        canAdd={() => false}
+        onAdd={() => undefined}
+      />,
+    );
+    expect(screen.getByText(/Remove a section and add this one/)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /^Add / })).toBeNull();
+  });
+
+  it("has no button on an answer that did not point", () => {
+    renderWithClient(<ResultView r={result({})} onChanged={() => undefined} canAdd={() => true} onAdd={() => undefined} />);
+    expect(screen.queryByRole("button", { name: /^Add / })).toBeNull();
+  });
+});

@@ -1,5 +1,5 @@
-// Settings > Offline AI > Assistant memory (spec ai-conversational-harness, section 5.7; slice S6).
-// What the assistant remembers about the person in this project: facts and preferences they stated
+// Settings > Straft AI > Straft AI memory (spec ai-conversational-harness, section 5.7; slice S6).
+// What Straft AI remembers about the person in this project: facts and preferences they stated
 // outright, or answers they confirmed. Kept on this computer, never shared, each entry deletable.
 
 import { useQueryClient } from "@tanstack/react-query";
@@ -26,15 +26,15 @@ export function AssistantMemoryCard() {
   };
 
   return (
-    <section className="card pad" style={{ width: 420, flex: "none" }} aria-label="Assistant memory">
+    <section className="card pad" style={{ width: 420, flex: "none" }} aria-label="Straft AI memory">
       <div className="h4" style={{ marginTop: 0 }}>
-        Assistant memory
+        Straft AI memory
       </div>
       {!entries ? (
         <Skeleton h={60} />
       ) : entries.length === 0 ? (
         <p className="sm muted">
-          Nothing is remembered yet. The assistant keeps a fact or preference only when you state it outright, or confirm one of its answers.
+          Nothing is remembered yet. Straft AI keeps a fact or preference only when you state it outright, or confirm one of its answers.
         </p>
       ) : (
         <ul className="sm" aria-label="Remembered entries" style={{ listStyle: "none", margin: 0, padding: 0, maxHeight: 320, overflow: "auto" }}>
@@ -54,7 +54,7 @@ export function AssistantMemoryCard() {
         </ul>
       )}
       <p className="hint">
-        Saved on this computer, in this project, for you only. Delete an entry and the assistant forgets it.
+        Saved on this computer, in this project, for you only. Delete an entry and Straft AI forgets it.
       </p>
     </section>
   );

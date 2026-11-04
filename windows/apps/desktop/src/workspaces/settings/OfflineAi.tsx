@@ -1,5 +1,5 @@
-// Settings → Offline AI (agentic AI spec §1, §36, §37; ADR-0026). The engine ships inside the app;
-// the models are a one-time download the person starts here (or in the AI panel). This page shows
+// Settings → Straft AI (agentic AI spec §1, §36, §37; ADR-0026). The engine ships inside the app;
+// the models are a one-time download the person starts here (or in Straft AI). This page shows
 // the status, the download while Straft AI is not installed, a way to free memory, Remove, and
 // the technical details ordinary UI never shows (component names, versions, licences, sizes and
 // SHA-256 hashes, where the engine is installed, this computer).
@@ -18,9 +18,9 @@ import "../../ai/ai.css";
 import { AiHealthCard } from "./AiHealth";
 import { AssistantMemoryCard } from "./AssistantMemory";
 
-/** The privacy promise shown wherever Offline AI is described (spec §1). */
+/** The privacy promise shown wherever Straft AI is described (spec §1). */
 export const OFFLINE_AI_PROMISE =
-  "Straft AI runs on this computer after a one-time download. Your project data is not sent to Straft Studio or to an AI cloud service.";
+  "Straft AI runs on this computer after a one-time download. Your project data is not sent to Straft or to an AI cloud service.";
 
 /** Plain-language status line for the settings card. */
 export function offlineAiStateText(s: AiStatusDto): string {
@@ -29,7 +29,7 @@ export function offlineAiStateText(s: AiStatusDto): string {
   if (!s.available) return s.bundleState === "Unsupported" ? "Not available on this computer" : "Needs a reinstall";
   if (s.bundleState === "Checking") return "Checking its files…";
   if (s.runtimeState === "Failed") return "Stopped after a problem. It restarts when you ask something";
-  return runtimeLabel(s.runtimeState) ?? "AI Ready";
+  return runtimeLabel(s.runtimeState) ?? "Ready";
 }
 
 const GEMMA_NOTICE = "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms.";
@@ -71,18 +71,18 @@ export default function OfflineAiSettings() {
 
   return (
     <div className="content" style={{ overflow: "auto" }}>
-      <PageHeader title="Offline AI" sub="AI runs on this computer." />
+      <PageHeader title="Straft AI" sub="Straft AI runs on this computer." />
       <div className="row" style={{ alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-        {/* Cards wrap to a new row before they get narrower than 320 px (measured: beside the AI panel the two
+        {/* Cards wrap to a new row before they get narrower than 320 px (measured: beside Straft AI the two
             growing cards were squeezed to 200 px and cut the status chip). */}
-        <section className="card pad" style={{ flex: "1 1 320px", minWidth: 320, maxWidth: 720 }} aria-label="Offline AI">
+        <section className="card pad" style={{ flex: "1 1 320px", minWidth: 320, maxWidth: 720 }} aria-label="Straft AI">
           {!s ? (
             <Skeleton h={80} />
           ) : (
             <>
               <div className="row" style={{ marginBottom: 8 }}>
                 <div className="h4" style={{ margin: 0 }}>
-                  Offline AI
+                  Straft AI
                 </div>
                 <Chip tone={s.available ? "g" : "default"}>{offlineAiStateText(s)}</Chip>
               </div>
@@ -92,9 +92,9 @@ export default function OfflineAiSettings() {
                 <div className="row">
                   <Button
                     size="sm"
-                    onClick={() => void call("ai.stop_runtime").then(() => toast.info("Offline AI stopped. It starts again when you ask something.")).catch(reportError)}
+                    onClick={() => void call("ai.stop_runtime").then(() => toast.info("Straft AI stopped. It starts again when you ask something.")).catch(reportError)}
                   >
-                    Stop Offline AI (free memory)
+                    Stop Straft AI (free memory)
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setRemoving(true)}>
                     Remove Straft AI…
@@ -102,7 +102,7 @@ export default function OfflineAiSettings() {
                 </div>
               )}
               {s.available && <GraphicsChoice />}
-              <p className="hint">Straft Studio works normally without Straft AI.</p>
+              <p className="hint">Straft works normally without Straft AI.</p>
               <ConfirmDialog
                 open={removing}
                 onOpenChange={setRemoving}
@@ -112,7 +112,7 @@ export default function OfflineAiSettings() {
                 busy={removeBusy}
                 onConfirm={remove}
               >
-                <p className="sm">This frees the space the AI models use on this computer. AI stays off until you download it again. Your projects are not changed.</p>
+                <p className="sm">This frees the space the Straft AI models use on this computer. Straft AI stays off until you download it again. Your projects are not changed.</p>
               </ConfirmDialog>
             </>
           )}
@@ -185,7 +185,7 @@ export function TechnicalDetails() {
         ) : (
           <div className="ai-tech">
             <div className="ai-tech-scroll">
-            <table className="tbl" aria-label="Offline AI components">
+            <table className="tbl" aria-label="Straft AI components">
               <thead>
                 <tr>
                   <th className="ai-col-name">Component</th>

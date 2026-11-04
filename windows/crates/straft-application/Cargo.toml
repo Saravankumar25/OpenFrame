@@ -1,6 +1,6 @@
 [package]
 name = "straft-application"
-description = "Straft Studio application layer: command/query pipeline, permissions, undo, activity, search indexing and all module services."
+description = "Straft application layer: command/query pipeline, permissions, undo, activity, search indexing and all module services."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -12,6 +12,7 @@ straft-persistence.workspace = true
 straft-project-format.workspace = true
 straft-security.workspace = true
 straft-platform.workspace = true
+fs4.workspace = true
 # Licence and free-trial state (build plan area "Payment and free trial in all three channels").
 straft-entitlement.workspace = true
 straft-import-export.workspace = true

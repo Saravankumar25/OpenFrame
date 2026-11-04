@@ -1,8 +1,8 @@
 //! Offline AI status and download operations (agentic AI spec §1, §12, §36; Local AI Runtime spec;
-//! ADR-0026). Application-level: no project is needed, and nothing else in Straft Studio depends on
-//! these operations (Straft Studio stays fully usable without AI).
+//! ADR-0026). Application-level: no project is needed, and nothing else in Straft depends on
+//! these operations (Straft stays fully usable without AI).
 //!
-//! - `ai.status`: simple state for ordinary UI ("AI Ready" / "Off"; no model names), plus the
+//! - `ai.status`: simple state for ordinary UI ("Ready" / "Off"; no model names), plus the
 //!   plain-language reason when the AI is not downloaded, missing or damaged;
 //! - `ai.download.status`: what the Download Straft AI screen shows (size and free space
 //!   before the click, without any network use; progress after it);
@@ -15,9 +15,9 @@
 //! - `ai.diagnostics`: technical details for Settings > Offline AI (model names, versions,
 //!   licences, hashes, where the bundle is installed, this computer).
 
+use serde::{Deserialize, Serialize};
 use straft_ai::{BundleState, ComponentKind, DownloadPhase, RuntimeState};
 use straft_domain::{Actor, AppError, AppResult};
-use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use super::service::service;
@@ -31,7 +31,7 @@ use crate::core::AppCore;
 pub struct AiStatusDto {
     /// Offline AI can be used: the bundled AI is present and not known to be damaged.
     pub available: bool,
-    /// Header chip: "AI Ready" or "Off".
+    /// Header chip: "Ready" or "Off".
     pub mode: String,
     /// NotInstalled | NotChecked | Checking | Verified | Missing | Damaged | Unsupported
     pub bundle_state: String,
@@ -147,7 +147,7 @@ pub fn status(core: &AppCore, _actor: &Actor, _: super::AiEmptyArgs) -> AppResul
         return Ok(AiStatusDto {
             available: attached,
             mode: if attached {
-                "AI Ready".into()
+                "Ready".into()
             } else {
                 "Off".into()
             },
@@ -177,7 +177,7 @@ pub fn status(core: &AppCore, _actor: &Actor, _: super::AiEmptyArgs) -> AppResul
     Ok(AiStatusDto {
         available,
         mode: if available {
-            "AI Ready".into()
+            "Ready".into()
         } else {
             "Off".into()
         },

@@ -19,7 +19,7 @@
 // flags reach the webview through the session capabilities (E2E_WEBVIEW_ARGS, see lib/app.mjs);
 // no other spec gets them.
 //
-// Every spec runs with deterministic Offline AI sampling (STRAFT_AI_DETERMINISTIC=1: temperature 0
+// Every spec runs with deterministic Straft AI sampling (STRAFT_AI_DETERMINISTIC=1: temperature 0
 // and a fixed seed; honoured by debug builds on an isolated data root only).
 //
 // Straft AI is downloaded after install (ADR-0026). The run starts the local model host

@@ -88,7 +88,7 @@ pub fn replace_bytes(dest: &Path, bytes: &[u8]) -> io::Result<()> {
 /// [`unique_temp_path`] in the same folder as `dest`; it is synced before the rename and removed
 /// when anything fails.
 pub fn replace_from_staged(staged: &Path, dest: &Path) -> io::Result<()> {
-    if !is_our_temp_name(staged) {
+    if !is_our_temp_name(staged, TEMP_SUFFIX) {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
             "staging file was not created by unique_temp_path",
@@ -147,7 +147,9 @@ pub fn remove_stale_temps(folder: &Path) -> usize {
     let mut removed = 0;
     for entry in entries.flatten() {
         let path = entry.path();
-        if !is_our_temp_name(&path) {
+        if !is_our_temp_name(&path, TEMP_SUFFIX)
+            && !is_our_temp_name(&path, crate::legacy_names::TEMP_SUFFIX)
+        {
             continue;
         }
         let Ok(meta) = entry.metadata() else { continue };
@@ -197,15 +199,12 @@ fn temp_name(dest: &Path) -> String {
     format!(".{stem}.{tag:016x}{TEMP_SUFFIX}")
 }
 
-/// Whether `path` has the exact shape produced by [`temp_name`].
-fn is_our_temp_name(path: &Path) -> bool {
+/// Whether `path` has the exact shape produced by [`temp_name`] with the given suffix.
+fn is_our_temp_name(path: &Path, suffix: &str) -> bool {
     let Some(name) = path.file_name().and_then(|n| n.to_str()) else {
         return false;
     };
-    let Some(body) = name
-        .strip_prefix('.')
-        .and_then(|n| n.strip_suffix(TEMP_SUFFIX))
-    else {
+    let Some(body) = name.strip_prefix('.').and_then(|n| n.strip_suffix(suffix)) else {
         return false;
     };
     match body.rsplit_once('.') {
@@ -392,7 +391,7 @@ mod tests {
         let name = a.file_name().unwrap().to_string_lossy().into_owned();
         assert!(name.starts_with(".report.pdf."));
         assert!(name.ends_with(TEMP_SUFFIX));
-        assert!(is_our_temp_name(&a));
+        assert!(is_our_temp_name(&a, TEMP_SUFFIX));
 
         let long = dir.path().join("x".repeat(240) + ".txt");
         let t = unique_temp_path(dir.path(), &long).unwrap();
@@ -410,11 +409,7 @@ mod tests {
         fs::write(&fresh, b"being written").unwrap();
         fs::write(dir.path().join("a.txt"), b"user").unwrap();
         fs::write(dir.path().join("notes.straft-tmp.txt"), b"user too").unwrap();
-        fs::write(
-            dir.path().join(".draft.straft-tmp"),
-            b"user, wrong shape",
-        )
-        .unwrap();
+        fs::write(dir.path().join(".draft.straft-tmp"), b"user, wrong shape").unwrap();
         let old = SystemTime::now() - STALE_AFTER - Duration::from_secs(60);
         OpenOptions::new()
             .write(true)
@@ -430,6 +425,23 @@ mod tests {
         assert!(dir.path().join("notes.straft-tmp.txt").exists());
         assert!(dir.path().join(".draft.straft-tmp").exists());
         assert_eq!(remove_stale_temps(&dir.path().join("missing")), 0);
+    }
+
+    #[test]
+    fn stale_temps_from_the_earlier_release_are_swept_too() {
+        let dir = tempfile::tempdir().unwrap();
+        let name = format!(".a.txt.{:016x}{}", 7u64, crate::legacy_names::TEMP_SUFFIX);
+        let old_temp = dir.path().join(name);
+        fs::write(&old_temp, b"left behind").unwrap();
+        let old = SystemTime::now() - STALE_AFTER - Duration::from_secs(60);
+        OpenOptions::new()
+            .write(true)
+            .open(&old_temp)
+            .unwrap()
+            .set_modified(old)
+            .unwrap();
+        assert_eq!(remove_stale_temps(dir.path()), 1);
+        assert!(!old_temp.exists());
     }
 
     #[test]

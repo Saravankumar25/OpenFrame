@@ -6,12 +6,12 @@
 //! cannot drift from the page. Reproducible: the document carries the date of the schedule's last
 //! change, never the export clock. The day is only read; nothing in the project changes.
 
+use serde::Deserialize;
 use straft_domain::{Actor, AppError, AppResult};
 use straft_import_export::report::{
     Align, BRAND_LINE, Block, Cell, CellItem, Chip, Col, Document, HeaderStyle, Masthead, Metric,
     Metrics, Rgb, Row, Section, Side, StyledTable, Tone, Txt, pal, wrap_pt,
 };
-use serde::Deserialize;
 use ts_rs::TS;
 
 use super::style::nb;

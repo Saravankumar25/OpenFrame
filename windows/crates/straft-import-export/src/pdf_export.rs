@@ -9,7 +9,7 @@
 //! advances it is drawn with, and Courier Prime keeps the 0.6 em advance of Courier, so the
 //! screenplay columns, wrapping and page breaks do not move.
 //!
-//! Screenplay files carry no Straft Studio branding (Screenplay and Production
+//! Screenplay files carry no Straft branding (Screenplay and Production
 //! Depth Specification §43): the document information names only the title
 //! and the author. Sides are pages of the same script and carry none either (owner, 2026-10-27).
 

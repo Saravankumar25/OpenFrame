@@ -15,17 +15,17 @@
 //! (production header, day and times, locations, scene schedule, talent, practical notes) and
 //! the optional sections the user adds with "Add Section". An optional section is `None` until
 //! it is added or prefilled with data, so empty optional sections stay hidden. Values nobody
-//! has entered yet read "Needs input"; Straft Studio never invents them (weather, sunrise and sunset
+//! has entered yet read "Needs input"; Straft never invents them (weather, sunrise and sunset
 //! are typed by the user; there is no network lookup).
 
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::rows::{int, text, update_fields};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::rows::{int, text, update_fields};
 use ts_rs::TS;
 
 use super::board::{Board, effective_status, load_days, load_schedule};

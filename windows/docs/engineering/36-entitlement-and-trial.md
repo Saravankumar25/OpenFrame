@@ -1,5 +1,7 @@
 # Entitlement and trial
 
+> **Current decisions (2026-11-03).** [ADR-0039](../adr/ADR-0039-store-release-licensing.md) and [package file 02](../release/package-2026-11-03/02_TRIAL_AND_LICENSING_SPEC.md) win over this page where they differ: no licence server, the Store licence is read again while the app is open, new chip and lock wording, the lock flushes typed text first.
+
 > **Current decisions (2026-10-15).** Chapter 3 material. The Mac StoreKit bridge moves into the SwiftUI application when Chapter 3 starts ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). The team gate minimum is 8 characters ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)).
 
 > Written 2026-10-06 from the code in `crates/straft-entitlement/src/` (then `lib.rs`, `trial.rs`, `licence.rs`, `adapters.rs`).
@@ -27,7 +29,7 @@ crate is the one place in the Rust core that answers three questions for the res
 3. What may the user do right now?
 
 The crate never talks to a store from its core. Each release file has one adapter behind the `ChannelAdapter` trait (section 7).
-Both stores own the trial and decide the whole state themselves (`ChannelAdapter::channel_state`); Straft Studio keeps no trial timer
+Both stores own the trial and decide the whole state themselves (`ChannelAdapter::channel_state`); Straft keeps no trial timer
 of its own (ADR-0023). The Windows installer is an internal build for the owner's team: its state is InternalBuild and nothing
 is asked, shown or locked.
 
@@ -115,11 +117,11 @@ section 4 starts, counts or extends a Mac trial. The owner decided the Mac metho
 
 | Rule | What happens |
 |---|---|
-| Products | Apple's non-subscription trial model. A zero-price Non-Consumable "7-day Trial" (`com.straft.studio.trial7`) and a separate paid Non-Consumable "Lifetime Access" (`com.straft.studio.lifetime`). No auto-renewing subscription. Family Sharing is off. |
+| Products | Apple's non-subscription trial model. A zero-price Non-Consumable "7-day Trial" (`app.straftstudio.studio.trial7`) and a separate paid Non-Consumable "Lifetime Access" (`app.straftstudio.studio.lifetime`). No auto-renewing subscription. Family Sharing is off. |
 | Before the trial | The app shows the 7-day length and offers the trial, the purchase and restore. It names no price (ADR-0023); Apple's sheet shows it. The trial begins only after the verified free StoreKit transaction succeeds. |
 | Source of truth | Only cryptographically verified StoreKit 2 transactions are authoritative. The installation date, the system clock, the time zone, UserDefaults, SQLite, files, Keychain and frontend state are never the source of truth. Local state is a cache. |
 | Trial state | Built from the verified trial transaction: product id, Apple transaction id and the Apple-recorded purchase date. The trial starts at that transaction's `purchaseDate` (or its own earlier `originalPurchaseDate`), never at `AppTransaction.originalPurchaseDate`. Apple's `appTransactionID` only links the Apple Account to the app and is optional, because Apple provides it on macOS 15.4 and later only; the server requires every `appTransactionID` present in one request to match. |
-| Expiry | Server-authoritative. A small licensing server validates the Apple-signed transaction and computes `trialEndsAt` as the Apple purchase time plus 168 hours in server UTC. Apple private keys and server secrets never live in the app. |
+| Expiry | (SUPERSEDED by ADR-0039 (no licence server); the Mac trial is computed offline from StoreKit.) Server-authoritative. A small licensing server validates the Apple-signed transaction and computes `trialEndsAt` as the Apple purchase time plus 168 hours in server UTC. Apple private keys and server secrets never live in the app. |
 | During the trial | The app needs a successful online validation at launch. It receives the remaining seconds and a lease (6 hours by default, never more than the seconds left) and counts down with monotonic elapsed time in the session, not the wall clock. A validation is good for `min(lease, remaining)` of monotonic time. |
 | Revalidation | The shell calls `revalidate` at launch, after the Mac wakes or the window returns after a long idle, when StoreKit reports a change (`Transaction.updates` or an account change), and when the lease runs out. If the server cannot be reached, the current countdown continues until its lease ends, then editing locks (NeedsOnlineCheck, "check again") until a check succeeds. A successful check takes the server's seconds left (Apple purchase date plus 168 hours minus server time) and never adds to them, so no sequence of leases, sleeps and relaunches gives more than 168 hours of use. A revocation StoreKit reports locks at once. |
 | Validation fails | The app fails safe with a connectivity message: editing locks, opening and exporting stay. It never restarts or extends the trial. |
@@ -139,9 +141,9 @@ prevent (a different Apple Account gets a new trial; no device fingerprinting) i
 
 | Rule | What happens |
 |---|---|
-| Trial | Owned by the Store (Partner Center trial). Straft Studio keeps no timer and no `trial.json` for this channel. |
+| Trial | Owned by the Store (Partner Center trial). Straft keeps no timer and no `trial.json` for this channel. |
 | Licence | `StoreContext.GetAppLicenseAsync`: IsActive, IsTrial and TrialTimeRemaining, read at launch, on "Restore purchase" and when the Store raises `OfflineLicensesChanged`. The call sits behind `adapters::StoreLicenceSource`, supplied by the Windows shell as `AppConfig::microsoft_store`. |
-| Mapping (`store_licence_state`) | Active and not a trial: Purchased. Active trial: TrialActive with TrialTimeRemaining in whole days, rounded up, 1 to 7. Not active: TrialEnded. No answer and no cached licence: NeedsOnlineCheck. |
+| Mapping (`read_store`, ADR-0039 item 5) | Active and not a trial: Purchased. Active trial: TrialActive with TrialTimeRemaining in whole days, rounded up, 1 to 7. Not active: TrialEnded, or Revoked when the last known answer was a purchase. A failed read keeps Purchased, or counts a trial down from the last good time left (never more: monotonic clock inside a run, wall clock floored at zero after a restart), and needs a check when nothing is remembered or the time ran out. The memory is `lastState`, `lastTrialSeconds` and `lastTrialReadAtMs` in `notices.json`. |
 | After the trial | The whole app locks, as on the Mac: only **Buy full version** and **Restore purchase**, not closable, enforced in Rust. Nothing is deleted. |
 | Buy | `StoreContext.RequestPurchaseAsync` with the app window's handle, so the Store's own purchase dialog opens over the app and shows the price. A closed dialog changes nothing and shows no failure; a network or server error comes back in plain words. |
 | Offline | The Store answers from its cached offline licence, so a buyer or a running trial keeps working. No cached licence and no Store: NeedsOnlineCheck (editing locks, opening and exporting stay). |
@@ -235,7 +237,7 @@ Checks, in order (`DirectInstallerAdapter::check_file`, `licence::parse` and `li
 1. At most 8 KiB plus one byte of the file is read. A larger file, a file that is not valid text, or text that is not a licence
    file is refused as unreadable. The decoded payload is also capped at 8 KiB.
 2. The signature decodes and verifies against the embedded public key, with strict verification (non-canonical signatures are
-   refused). The domain prefix stops a signature made for another Straft Studio file from being replayed as a licence.
+   refused). The domain prefix stops a signature made for another Straft file from being replayed as a licence.
 3. Only after that is the payload parsed. The schema and the product must match.
 
 The signature covers the stored payload bytes and not a re-serialisation, so a later change to field order or to the Rust types
@@ -257,8 +259,8 @@ Limits that follow from the code:
 
 | Channel | Adapter | State today |
 |---|---|---|
-| Microsoft Store (`.msix`) | `MicrosoftStoreAdapter` over `StoreLicenceSource` | **Mapping, lock and purchase path built and tested with a fake source; not connected to the Store.** `channel_state` and `restore_channel_state` read the Store licence and map it with `store_licence_state` (section 3). `buy_full_version` runs the Store's purchase dialog. Without a source (`MicrosoftStoreAdapter::unavailable`, every build today) the state is NeedsOnlineCheck with the limitation "The Microsoft Store connection is not available in this build." and Buy returns that message. The real `GetAppLicenseAsync`, `RequestPurchaseAsync` and `OfflineLicensesChanged` calls in the Windows shell need the Partner Center product identity (owner task). |
-| Mac App Store (`.pkg`) | `mac::MacAppStoreAdapter` | **Built and tested with fakes; not connected to Apple.** The policy and the adapter are in `crates/straft-entitlement/src/mac/`, tested against a fake StoreKit bridge and a fake licensing server; design and test list in [38-mac-app-store-trial.md](38-mac-app-store-trial.md). Without the shell's `MacInputs` (every build today) `for_channel` builds it over `UnavailableBridge` and `UnavailableServer`: NeedsOnlineCheck with "The App Store connection is not available in this build.", nothing granted, nothing cached. That is a gap in the build, not a user state. |
+| Microsoft Store (`.msix`) | `MicrosoftStoreAdapter` over `StoreLicenceSource` | **Mapping, lock and purchase path built and tested with a fake source; not connected to the Store.** `channel_state` and `restore_channel_state` read the Store licence and map it with `read_store` (section 3). `buy_full_version` runs the Store's purchase dialog. Without a source (`MicrosoftStoreAdapter::unavailable`, every build today) the state is NeedsOnlineCheck with the limitation "The Microsoft Store connection is not available in this build." and Buy returns that message. The real `GetAppLicenseAsync`, `RequestPurchaseAsync` and `OfflineLicensesChanged` calls in the Windows shell need the Partner Center product identity (owner task). |
+| Mac App Store (`.pkg`) | `mac::MacAppStoreAdapter` | (SUPERSEDED by ADR-0039 (no licence server); the licensing server and the Tauri StoreKit bridge are gone.) **Built and tested with fakes; not connected to Apple.** The policy and the adapter are in `crates/straft-entitlement/src/mac/`, tested against a fake StoreKit bridge and a fake licensing server; design and test list in [38-mac-app-store-trial.md](38-mac-app-store-trial.md). Without the shell's `MacInputs` (every build today) `for_channel` builds it over `UnavailableBridge` and `UnavailableServer`: NeedsOnlineCheck with "The App Store connection is not available in this build.", nothing granted, nothing cached. That is a gap in the build, not a user state. |
 | Internal builds (`.exe`, `.dmg`) | none | **Internal build** (ADR-0023, ADR-0024). `for_channel` returns no adapter and the core sets InternalBuild without asking anything. The team password gate is section 11. |
 
 `for_channel` builds the adapter from the channel, the app data folder, optional `MacInputs` and an optional
@@ -279,7 +281,7 @@ and the screen operations (section 10), and refuses every operation during the s
 - Microsoft Store: the real `StoreLicenceSource` in the Windows shell (`GetAppLicenseAsync`, `RequestPurchaseAsync` with the window
   handle) and the `OfflineLicensesChanged` subscription that calls `refresh`, after the owner reserves the product in Partner
   Center; the Partner Center trial set to 7 days.
-- Mac App Store: the real StoreKit 2 bridge in Swift, the HTTPS licensing server client and the system nonce source, handed to the
+- Mac App Store (SUPERSEDED by ADR-0039 (no licence server); no licensing server, no HTTPS client, and the bridge moves into the SwiftUI shell): the real StoreKit 2 bridge in Swift, the HTTPS licensing server client and the system nonce source, handed to the
   core as `MacInputs`; the shell's calls to `revalidate`; the licensing server's deployment and its response keys; a check against
   Apple's current review rules before submission.
 - Tests that are still missing: an end-to-end run in each store against the real store.
@@ -330,7 +332,7 @@ due; the interface only shows it. Code: `crates/straft-entitlement/src/notices.r
 | 184, 185, 189 | Trial reminder: day 5 "Your free trial ends in 3 days", day 6 "ends in 2 days", day 7 "ends today"; "Buy the full version to keep using Straft Studio."; **Buy full version** and **Continue trial** | Either store, TrialActive with 3, 2 or 1 days left, a project open, at most once per calendar day | Yes (Continue trial or Escape) |
 | 186, 190 | The lock: "Your free trial has ended" (or "Your purchase is no longer active" after a refund, naming the store) with only **Buy full version** and **Restore purchase**; "Your projects are safe on this Mac (this computer). Nothing is deleted." | Either store, TrialEnded or Revoked (ADR-0022, ADR-0023) | No: no close button, no Escape, no click outside, app shortcuts held back, focus trapped. The core refuses every project operation underneath it |
 | 187 | Mac first launch: **Start free trial**, **Buy full version**, **Restore purchase** | Mac, TrialNotStarted | No |
-| 191 | The store's own purchase window: Apple's payment sheet, or the Microsoft Store purchase dialog | Through `ChannelAdapter::buy_full_version`. Straft Studio never draws it; it shows the price. | The store's |
+| 191 | The store's own purchase window: Apple's payment sheet, or the Microsoft Store purchase dialog | Through `ChannelAdapter::buy_full_version`. Straft never draws it; it shows the price. | The store's |
 | 192 | "Checking your purchase" with **Not now**, **Buy full version** and **Try again**, naming the store; "Your projects stay open and can be exported. Nothing is deleted." | Either store, NeedsOnlineCheck | Yes (Not now, Escape or Close), ADR-0018 decision 6. Stays closed for the session while it is due |
 | 193 | "Your data, your responsibility": six points, the real root folder, **Show in File Explorer** or **Show in Finder**, a tick box, **OK, I understand** | Purchased and not yet acknowledged | No. The box enables only after the list is scrolled to its end; OK only after the box is ticked |
 | 194 to 197 | File safety tutorial, 4 steps; **Finish** needs all three boxes on step 4. Step 3 says how to install per channel: the App Store with the same Apple Account, the Microsoft Store with the same Microsoft account, or (internal build) just "Install Straft Studio on the new laptop." | Purchased, note acknowledged, tutorial not finished | No |

@@ -37,7 +37,7 @@ const entry = (id: string, text: string, kind: "fact" | "preference") => ({
   createdAt: Date.now(),
 });
 
-describe("Assistant memory card", () => {
+describe("Straft AI memory card", () => {
   beforeEach(() => {
     calls.length = 0;
     entries = [];

@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
+use parking_lot::Mutex;
 use straft_ai::{ChatRequest, InferenceProvider, ProviderCapabilities};
 use straft_domain::{AppError, AppResult};
 use straft_search::{Embedder, SearchError};
-use parking_lot::Mutex;
 
 use super::AnswerType::*;
 use super::*;
@@ -73,8 +73,8 @@ fn strong_rules_read_the_shape_of_the_question() {
         ("open the file map.png", Navigate),
         ("explain the opening", Explain),
         ("I need an explanation of the ending", Explain),
-        ("can you describe the mood of the harbour", Explain),
-        ("what happens at the end of act two", Explain),
+        ("can you describe the mood of the harbour", Describe),
+        ("what happens at the end of act two", Brief),
         ("how do I export a PDF", Help),
         ("where do I find the backups", Help),
         ("can I use this offline", Help),
@@ -716,4 +716,183 @@ fn the_warm_up_embeds_the_examples_once_and_a_failing_embedder_leaves_nothing_be
     // The second call finds the vectors of this embedder in the cache: a failing one is not asked.
     assert!(warm::examples(&ok));
     assert!(!warm::examples(&ExampleEmbedder::new(true)));
+}
+
+// ------------------------------------------------------------------ the narrative types (round R5)
+
+/// One question of the section-scoped set per row: what the message is, and the type the rules read.
+#[test]
+fn the_rules_read_the_narrative_types_of_the_section_scoped_set() {
+    let cases: &[(&str, AnswerType)] = &[
+        ("Describe Mariamma.", Describe),
+        ("Describe scene 35.", Describe),
+        ("Tell me about Beena Chacko.", Describe),
+        ("Who is Young Anjali? Describe her.", Describe),
+        (
+            "Describe the look of the film from the moodboard.",
+            Describe,
+        ),
+        (
+            "How many scenes does Sudheesh play in, and describe his character?",
+            Describe,
+        ),
+        ("Brief me on scene 41.", Brief),
+        ("Brief me on Act Two.", Brief),
+        ("Brief me on Shoot Day 12.", Brief),
+        ("Walk me through scene 32.", Brief),
+        (
+            "What is scene 45 about? Give me a proper picture of it.",
+            Brief,
+        ),
+        (
+            "Give me a briefing on scene 41: who is there and what happens.",
+            Brief,
+        ),
+        ("Describe the plan for scene 41 in shots and panels.", Brief),
+        ("Explain Act One.", StoryExplanation),
+        ("Explain the second act using the scenes.", StoryExplanation),
+        ("Explain what happens in the second act.", StoryExplanation),
+        ("Explain the whole story act by act.", StoryExplanation),
+        ("Walk me through the outline as a story.", StoryExplanation),
+        (
+            "Who cut the cable and why? Explain what the scenes show.",
+            StoryExplanation,
+        ),
+        (
+            "Why does Mariamma not tell Anjali how Varghese died? Explain.",
+            StoryExplanation,
+        ),
+        (
+            "Explain the story: who drives each act and how are they related?",
+            StoryExplanation,
+        ),
+        ("How are Anjali and Sudheesh related?", Relation),
+        (
+            "What is the link between Babu, Mariamma and the Harbour Clerk?",
+            Relation,
+        ),
+    ];
+    for (message, want) in cases {
+        let got = plain(message);
+        assert_eq!(got.answer_type, *want, "{message}");
+        assert_eq!(got.how, ReadHow::Rule, "{message}");
+        assert_eq!(got.group, Group::Narrative, "{message}");
+    }
+    // The old explain stays for what the new rules do not name.
+    assert_eq!(plain("explain scene 14").answer_type, Explain);
+}
+
+#[test]
+fn the_narrative_types_have_their_length_classes_and_the_persons_words_win() {
+    let class = |m: &str| plain(m).length_class;
+    assert_eq!(class("Describe Mariamma."), LengthClass::Long250);
+    assert_eq!(class("Brief me on scene 41."), LengthClass::Long250);
+    assert_eq!(
+        class("How are Anjali and Sudheesh related?"),
+        LengthClass::Long250
+    );
+    assert_eq!(class("Explain Act One."), LengthClass::Long350);
+    // "Brief me" is the verb, not a request to be brief.
+    assert_eq!(class("Brief me on scene 3."), LengthClass::Long250);
+    // The person's words win.
+    assert_eq!(class("Describe Mariamma briefly."), LengthClass::Paragraph);
+    assert_eq!(class("Describe Mariamma in detail."), LengthClass::Long350);
+    assert_eq!(
+        class("Describe Mariamma in one line."),
+        LengthClass::OneSentence
+    );
+    assert_eq!(class("Explain Act One in detail."), LengthClass::Long350);
+    // A paragraph answer never grows into a long class.
+    assert_eq!(class("explain scene 4 in detail"), LengthClass::Paragraph);
+    assert_eq!(LengthClass::Long250.words(), (40, 250));
+    assert_eq!(LengthClass::Long350.words(), (60, 350));
+    assert!(LengthClass::Long250.is_long() && !LengthClass::Paragraph.is_long());
+}
+
+#[test]
+fn only_a_briefing_over_several_scenes_may_be_a_list() {
+    for m in [
+        "Brief me on Act Two.",
+        "Brief me on Day 7.",
+        "Go scene by scene through the first act.",
+        "Walk me through the Roof transmission storyboard.",
+    ] {
+        assert!(scene_by_scene(m), "{m}");
+    }
+    for m in [
+        "Brief me on scene 3.",
+        "Describe Mariamma.",
+        "Explain the ending.",
+    ] {
+        assert!(!scene_by_scene(m), "{m}");
+    }
+}
+
+#[test]
+fn a_narrative_verb_inside_another_request_does_not_make_a_brief() {
+    for (m, want) in [
+        ("delete the recap note", Change),
+        ("when is the briefing", Lookup),
+        ("how many characters does scene 3 describe", Count),
+        ("remove the summarize button", Change),
+        ("explain how to export the story", Help),
+    ] {
+        assert_eq!(plain(m).answer_type, want, "{m}");
+    }
+    for (m, want) in [
+        ("Recap scene 3.", Brief),
+        ("Please summarize act two.", Brief),
+        ("Break down scene 12.", Brief),
+        ("Who is Young Anjali? Describe her.", Describe),
+        ("ok bro tell me about Babu", Describe),
+        ("Give me a briefing on scene 41.", Brief),
+    ] {
+        assert_eq!(plain(m).answer_type, want, "{m}");
+    }
+}
+
+#[test]
+fn one_line_per_scene_keeps_the_list_class() {
+    let class = |m: &str| plain(m).length_class;
+    assert_ne!(
+        class("Brief me on day 3, one line per scene."),
+        LengthClass::OneSentence
+    );
+    assert_eq!(
+        class("Describe Mariamma in one line."),
+        LengthClass::OneSentence
+    );
+    assert!(scene_by_scene("one line per scene"));
+}
+
+#[test]
+fn a_short_follow_up_asks_the_last_question_again() {
+    let r = read_with("and Nandan?", Some(List), &Resolved::default());
+    assert_eq!((r.answer_type, r.how), (List, ReadHow::Repair));
+    let r = read_with("and his daughter?", Some(Lookup), &Resolved::default());
+    assert_eq!(r.answer_type, Lookup);
+    // Thanks beside "and" stays chat, and a follow-up with nothing before it is not inherited.
+    assert_eq!(
+        read_with("and thanks", Some(List), &Resolved::default()).answer_type,
+        Chat
+    );
+    assert_ne!(
+        read_with("and Nandan?", None, &Resolved::default()).how,
+        ReadHow::Repair
+    );
+}
+
+#[test]
+fn a_question_word_opening_a_message_is_never_chat_or_a_change() {
+    for q in [
+        "who is varkey",
+        "At what wind speed do we call off the sea day?",
+        "whats left to do before the roof night",
+        "What is due on 2027-03-05?",
+    ] {
+        assert!(rules::wh_question(q), "{q}");
+    }
+    for q in ["delete scene 3", "thanks a lot", "the sea day is off"] {
+        assert!(!rules::wh_question(q), "{q}");
+    }
 }

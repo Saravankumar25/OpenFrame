@@ -15,14 +15,15 @@
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { click, installConsoleProbe, launchApp, sleep, stepper, waitForText } from "../lib/app.mjs";
-import { assertQuiet, firstLaunchProject } from "../lib/flows.mjs";
+import { click, installConsoleProbe, launchApp, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
+import { assertQuiet, closeProject, firstLaunchProject, openProject, waitForHome } from "../lib/flows.mjs";
 
 let browser;
 const step = stepper(() => browser, "trial");
 
 /** Set the licence state by hand (debug builds only), then reload so the app asks again. A lock
- * refuses `project.current`, so the project screen is not waited for then. */
+ * refuses `project.current`, so the project screen is not waited for then; nor on Application Home
+ * (pass `locked = true` there too). */
 async function setLicence(channel, state, resetNotices = false, locked = false) {
   const r = await browser.execute(
     (c, s, reset) =>
@@ -38,6 +39,16 @@ async function setLicence(channel, state, resetNotices = false, locked = false) 
   if (!locked) await browser.$('//nav[@aria-label="Workspaces"]').waitForExist({ timeout: 20_000 });
 }
 
+/** Set the licence state without a reload, as a store check that changes the state while the app is
+ * open does: the core then says "entitlement changed" and the page asks again. */
+const changeLicence = (channel, state, resetNotices = false) =>
+  browser.execute(
+    (c, s, reset) => window.__TAURI_INTERNALS__.invoke("of_invoke", { op: "entitlement.debug_set", args: { channel: c, state: s, resetNotices: reset } }),
+    channel,
+    state,
+    resetNotices,
+  );
+
 const dialog = (title) => browser.$(`//*[@role="dialog"][.//h2[normalize-space(.)="${title}"]]`);
 const dialogs = () => browser.execute(() => [...document.querySelectorAll('[role="dialog"] h2')].map((h) => h.textContent.trim()));
 const chip = () =>
@@ -47,7 +58,8 @@ const chip = () =>
     const c = g.querySelector(".chip");
     return { text: c.querySelector("[aria-hidden]").textContent, amber: c.classList.contains("y"), spoken: c.querySelector(".sr-only").textContent };
   });
-const NO_PRICE = /[$€£₹¥]|\bprices?\b|pay once|subscription|lifetime/i;
+// The reminder says "Pay once, own forever. No subscription." (owner mock 184); a currency sign or the word price stays forbidden.
+const NO_PRICE = /[$€£₹¥]|\bprices?\b/i;
 
 describe("trial and first-run screens", () => {
   before(async () => {
@@ -66,7 +78,7 @@ describe("trial and first-run screens", () => {
       assert.deepEqual(await dialogs(), []);
       await setLicence("microsoftStore", { state: "trialActive", days_left: 7 }, true);
       await browser.waitUntil(async () => (await chip()) !== null, { timeout: 15_000, timeoutMsg: "no trial chip" });
-      assert.deepEqual(await chip(), { text: "Trial: 7 days left", amber: false, spoken: "Free trial, 7 days left." });
+      assert.deepEqual(await chip(), { text: "Trial ends in 7 days", amber: false, spoken: "Free trial. Ends in 7 days." });
       await (await browser.$('//button[normalize-space(.)="Buy full version"]')).waitForDisplayed();
       assert.deepEqual(await dialogs(), []);
       assert.doesNotMatch(await browser.execute(() => document.body.innerText), NO_PRICE, "no price anywhere");
@@ -76,16 +88,19 @@ describe("trial and first-run screens", () => {
 
   test("day 5 reminder shows once that day; Buy says when the Store is not connected", async () => {
     await step("reminder", async () => {
-      await setLicence("microsoftStore", { state: "trialActive", days_left: 3 }, true);
+      // No reload: the page hears the change at once and the reminder is remembered as soon as it
+      // shows, so a reload right after would find it already shown today.
+      await changeLicence("microsoftStore", { state: "trialActive", days_left: 3 }, true);
       const d = await dialog("Trial reminder");
       await d.waitForDisplayed({ timeout: 15_000 });
       await waitForText(browser, "Your free trial ends in 3 days");
       assert.doesNotMatch(await d.getText(), NO_PRICE);
       assert.deepEqual(await chip(), {
-        text: "Trial: 3 days left",
+        text: "Trial ends in 3 days",
         amber: true,
-        spoken: "Free trial, 3 days left. Your trial ends soon.",
+        spoken: "Free trial. Ends in 3 days. Your trial ends soon.",
       });
+      await waitForText(browser, "Pay once, own forever. No subscription.");
       await assertQuiet(browser, "reminder");
       await click(browser, "Continue trial", { within: '//*[@role="dialog"]' });
       await d.waitForExist({ reverse: true, timeout: 10_000 });
@@ -125,6 +140,7 @@ describe("trial and first-run screens", () => {
       await box.click();
       await browser.waitUntil(() => ok.isEnabled(), { timeout: 5_000 });
       await waitForText(browser, "Show in File Explorer");
+      await waitForText(browser, "Uninstalling Straft Studio removes its private data on this computer (settings and downloaded AI files), but not your projects in the root folder.");
       await assertQuiet(browser, "data note");
       await ok.click();
 
@@ -169,6 +185,7 @@ describe("trial and first-run screens", () => {
       const d = await dialog("Checking your purchase");
       await d.waitForDisplayed({ timeout: 15_000 });
       await waitForText(browser, "Your projects stay open and can be exported. Nothing is deleted.");
+      await (await browser.$('//*[@role="dialog"]//button[normalize-space(.)="Need help? Contact us"]')).waitForDisplayed({ timeout: 5_000 });
       await click(browser, "Not now", { within: '//*[@role="dialog"]' });
       await d.waitForExist({ reverse: true, timeout: 10_000 });
       await browser.$('//nav[@aria-label="Workspaces"]').waitForDisplayed({ timeout: 10_000 });
@@ -180,17 +197,72 @@ describe("trial and first-run screens", () => {
     });
   });
 
+  test("the chip and the reminder show on Application Home too", async () => {
+    await step("home", async () => {
+      await changeLicence("microsoftStore", { state: "trialActive", days_left: 3 }, true);
+      await (await dialog("Trial reminder")).waitForDisplayed({ timeout: 15_000 });
+      await click(browser, "Continue trial", { within: '//*[@role="dialog"]' });
+      await closeProject(browser);
+      await browser.waitUntil(async () => (await chip()) !== null, { timeout: 15_000, timeoutMsg: "no trial chip on Application Home" });
+      assert.deepEqual(await chip(), {
+        text: "Trial ends in 3 days",
+        amber: true,
+        spoken: "Free trial. Ends in 3 days. Your trial ends soon.",
+      });
+      await (await browser.$('//button[normalize-space(.)="Buy full version"]')).waitForDisplayed();
+      // A reminder due on Home shows there, not only over a project.
+      // A fresh page first: the page remembers a reminder closed today until it reloads.
+      await setLicence("microsoftStore", { state: "trialActive", days_left: 2 }, false, true);
+      await waitForHome(browser);
+      await changeLicence("microsoftStore", { state: "trialActive", days_left: 2 }, true);
+      const d = await dialog("Trial reminder");
+      await d.waitForDisplayed({ timeout: 15_000 });
+      await waitForText(browser, "Your free trial ends in 2 days");
+      await assertQuiet(browser, "reminder on home");
+      await click(browser, "Continue trial", { within: '//*[@role="dialog"]' });
+      await d.waitForExist({ reverse: true, timeout: 10_000 });
+      await openProject(browser, "Night Ferry");
+    });
+  });
+
+  test("the lock keeps text typed just before it, and has the contact link", async () => {
+    await step("lock-keeps-text", async () => {
+      await setLicence("microsoftStore", { state: "trialActive", days_left: 7 });
+      await openWorkspace(browser, "Story");
+      const area = await browser.$('//*[@role="textbox"][@aria-label="Story text"]');
+      await area.waitForDisplayed({ timeout: 15_000 });
+      await area.click();
+      const typed = "Typed just before the lock.";
+      await browser.keys(typed.split(""));
+      // No wait: the page has not stored this yet. The trial ends while the app is open.
+      await changeLicence("microsoftStore", { state: "trialEnded" });
+      const d = await dialog("Your free trial has ended");
+      await d.waitForDisplayed({ timeout: 15_000 });
+      await (await browser.$('//*[@role="dialog"]//button[normalize-space(.)="Need help? Contact us"]')).waitForDisplayed();
+      await sleep(1500);
+      // The purchase (or a fresh check) lifts the lock; the text is there.
+      await changeLicence("microsoftStore", { state: "trialActive", days_left: 7 });
+      await d.waitForExist({ reverse: true, timeout: 15_000 });
+      const page = await browser.execute(() =>
+        window.__TAURI_INTERNALS__.invoke("of_invoke", { op: "story.page.get", args: {} }),
+      );
+      assert.ok(page.text.includes(typed), `the text typed before the lock is missing: ${page.text}`);
+      await assertQuiet(browser, "lock keeps text");
+    });
+  });
+
   for (const [channel, store] of [
     ["macAppStore", "The App Store"],
     ["microsoftStore", "The Microsoft Store"],
   ]) {
-    test(`${channel}: an ended trial locks the app with only Buy full version and Restore purchase`, async () => {
+    test(`${channel}: an ended trial locks the app with only Buy, the check button and the contact link`, async () => {
       await step(`lock-${channel}`, async () => {
         await setLicence(channel, { state: "trialEnded" }, false, true);
         const d = await dialog("Your free trial has ended");
         await d.waitForDisplayed({ timeout: 15_000 });
         const labels = await browser.execute(() => [...document.querySelectorAll('[role="dialog"] button')].map((b) => b.textContent.trim()));
-        assert.deepEqual(labels, ["Buy full version", "Restore purchase"]);
+        const again = channel === "macAppStore" ? "Restore purchase" : "Check again";
+        assert.deepEqual(labels, ["Buy full version", again, "Need help? Contact us"]);
         await browser.keys(["Escape"]);
         await browser.keys(["Control", "k"]);
         await sleep(400);

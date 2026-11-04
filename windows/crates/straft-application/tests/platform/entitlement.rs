@@ -12,7 +12,8 @@
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use straft_application::events::RecordingSink;
+use serde_json::{Value, json};
+use straft_application::events::{AppEvent, RecordingSink};
 use straft_application::modules::ai::toolbox;
 use straft_application::registry::{self, AiExposure, OpClass};
 use straft_application::{AppConfig, AppCore};
@@ -22,7 +23,6 @@ use straft_entitlement::Channel;
 use straft_entitlement::adapters::{
     StoreAppLicence, StoreLicenceError, StoreLicenceSource, StorePurchaseStatus,
 };
-use serde_json::{Value, json};
 
 const DAY_SECONDS: u64 = 24 * 60 * 60;
 
@@ -82,11 +82,14 @@ fn start(config: AppConfig) -> Arc<AppCore> {
 }
 
 fn ms_core(root: &Path, store: &FakeMsStore) -> Arc<AppCore> {
-    start(AppConfig {
+    let core = start(AppConfig {
         channel: Channel::MicrosoftStore,
         microsoft_store: Some(Box::new(store.clone())),
         ..AppConfig::isolated(root)
-    })
+    });
+    // Startup asks the Microsoft Store nothing: the shell's worker runs the first read.
+    core.refresh_entitlement();
+    core
 }
 
 fn internal_core(root: &Path) -> Arc<AppCore> {
@@ -167,6 +170,9 @@ fn open_read_export(core: &AppCore, root: &Path, path: &str, card: &str) {
 /// Every kind of project operation is refused with the licence code, and the lock screen's own
 /// operations still answer.
 fn assert_locked(core: &AppCore, path: &str) {
+    // A lock that appears in a running app first leaves a short window for the lock screen to
+    // store what the editors hold; the screen ends it with `entitlement.lock_ready`.
+    call(core, "entitlement.lock_ready", json!({}));
     for (op, args) in [
         ("project.open", json!({ "path": path })),
         (
@@ -328,7 +334,7 @@ fn plat_009_the_microsoft_store_trial_comes_from_the_store_licence() {
     assert_eq!(s["limitation"], Value::Null);
     assert!(
         !trial_file(dir.path()).exists(),
-        "the Store owns the trial; Straft Studio keeps no timer"
+        "the Store owns the trial; Straft keeps no timer"
     );
     // TrialTimeRemaining moves on; the shell asks again on OfflineLicensesChanged.
     store.set(Ok(trial(2)));
@@ -353,7 +359,7 @@ fn plat_009_the_microsoft_store_trial_over_locks_every_project_operation_until_b
     let path = make_project(&core, "Monsoon Ferry", card);
     stop(core);
 
-    // The trial ran out while Straft Studio was closed.
+    // The trial ran out while Straft was closed.
     store.set(Ok(ENDED));
     let core = ms_core(dir.path(), &store);
     let s = status(&core);
@@ -361,7 +367,7 @@ fn plat_009_the_microsoft_store_trial_over_locks_every_project_operation_until_b
     assert_eq!(s["canEdit"], false);
     assert_eq!(
         s["summary"],
-        "Your free trial has ended. Buy Straft Studio or restore your purchase to open your projects again. Nothing is deleted."
+        "Your free trial has ended. Buy the full version to keep using Straft Studio. Your projects are safe on this computer. Buying unlocks them again exactly as you left them."
     );
     assert_eq!(
         call(
@@ -432,6 +438,9 @@ fn plat_009_the_store_lock_refuses_deleting_or_restoring_a_screenplay() {
 
     store.set(Ok(ENDED));
     let core = ms_core(dir.path(), &store);
+    // The trial ended between launches: the first read found the lock with the page possibly
+    // holding text, so the short window is open until the lock screen says it has saved.
+    call(&core, "entitlement.lock_ready", json!({}));
     for (op, args) in [
         ("screenplay.delete", json!({ "screenplayId": sid })),
         ("trash.restore", json!({ "id": "any" })),
@@ -460,7 +469,9 @@ fn plat_009_a_microsoft_store_check_that_cannot_answer_keeps_open_and_export() {
     let path = make_project(&core, "Night Bus", "Asha misses the night bus");
     stop(core);
 
-    // Offline and no cached licence: a check is needed. Editing locks, nothing else does.
+    // Offline on a computer that remembers nothing (no memory file) and has no cached licence: a
+    // check is needed. Editing locks, nothing else does.
+    std::fs::remove_dir_all(dir.path().join("appdata").join("entitlement")).unwrap();
     store.set(Err(StoreLicenceError::Unreachable));
     let core = ms_core(dir.path(), &store);
     let s = status(&core);
@@ -476,6 +487,48 @@ fn plat_009_a_microsoft_store_check_that_cannot_answer_keeps_open_and_export() {
         json!({ "kind": "checkNeeded" })
     );
     open_read_export(&core, dir.path(), &path, "Asha misses the night bus");
+
+    // Editing is locked in Rust: a command that changes the project is refused with plain words,
+    // closing the project, the app's settings and the assistant's reads still work.
+    let e = core
+        .dispatch(
+            &core.local_actor(),
+            "story.create_act",
+            json!({ "title": "Act Two" }),
+        )
+        .unwrap_err();
+    assert_eq!(e.code_str(), "permission.licence_required");
+    assert!(
+        e.message.contains("could not check your purchase"),
+        "{}",
+        e.message
+    );
+    assert!(
+        e.message.contains("open your projects and export"),
+        "{}",
+        e.message
+    );
+    let ai = Actor {
+        origin: ActorOrigin::Ai {
+            request_id: "r1".into(),
+        },
+        ..core.local_actor()
+    };
+    assert_eq!(
+        core.dispatch(&ai, "story.create_act", json!({ "title": "Act Two" }))
+            .unwrap_err()
+            .code_str(),
+        "permission.licence_required"
+    );
+    call(&core, "appearance.get", json!({}));
+    call(&core, "story.board", json!({}));
+    call(&core, "project.close", json!({}));
+
+    // A good answer from the Store lifts it.
+    store.set(Ok(trial(4)));
+    call(&core, "entitlement.restore_purchase", json!({}));
+    call(&core, "project.open", json!({ "path": path }));
+    call(&core, "story.create_act", json!({ "title": "Act Two" }));
 }
 
 #[test]
@@ -516,7 +569,8 @@ fn plat_014_mac_channel_without_the_store_bridge_needs_an_online_check_and_keeps
             ..AppConfig::isolated(dir.path())
         })
     };
-    let core = mac_core();
+    // The project is made on an internal build: editing is locked while a store cannot be checked.
+    let core = internal_core(dir.path());
     let path = make_project(&core, "Harbour Lights", "Meena waits at the pier");
     stop(core);
 
@@ -599,10 +653,8 @@ impl straft_entitlement::mac::StoreKitBridge for FakeBridge {
     }
     fn app_transaction(
         &self,
-    ) -> Result<
-        straft_entitlement::mac::AppTransactionInfo,
-        straft_entitlement::mac::BridgeError,
-    > {
+    ) -> Result<straft_entitlement::mac::AppTransactionInfo, straft_entitlement::mac::BridgeError>
+    {
         Err(straft_entitlement::mac::BridgeError::StoreUnavailable)
     }
     fn environment(&self) -> straft_entitlement::mac::StoreEnvironment {
@@ -611,8 +663,7 @@ impl straft_entitlement::mac::StoreKitBridge for FakeBridge {
     fn product_info(
         &self,
         _product_id: &str,
-    ) -> Result<straft_entitlement::mac::ProductInfo, straft_entitlement::mac::BridgeError>
-    {
+    ) -> Result<straft_entitlement::mac::ProductInfo, straft_entitlement::mac::BridgeError> {
         Err(straft_entitlement::mac::BridgeError::ProductNotFound)
     }
 }
@@ -726,8 +777,8 @@ fn plat_014_a_mac_trial_that_ended_locks_open_edit_and_export_and_a_restore_unlo
 
 #[test]
 fn plat_014_with_the_store_bridge_startup_asks_nothing_and_the_background_check_decides() {
-    use straft_entitlement::mac::RevalidateReason;
     use std::sync::atomic::Ordering;
+    use straft_entitlement::mac::RevalidateReason;
 
     let dir = tempfile::tempdir().unwrap();
     let bridge = FakeBridge::new(vec![lifetime_tx("2000000009", false)]);
@@ -891,4 +942,692 @@ fn plat_009_status_takes_no_arguments() {
         .dispatch(&core.local_actor(), "entitlement.status", json!({ "x": 1 }))
         .unwrap_err();
     assert_eq!(e.code.0, "validation.invalid_input");
+}
+
+// ------------------------------------------------------------------ Store licensing (ADR-0039)
+
+/// A Microsoft Store core whose events the test can read. Runs the first read, as the shell's
+/// worker does after startup.
+fn ms_core_with_sink(root: &Path, store: &FakeMsStore) -> (Arc<AppCore>, Arc<RecordingSink>) {
+    let sink = Arc::new(RecordingSink::default());
+    let core = AppCore::new(
+        AppConfig {
+            channel: Channel::MicrosoftStore,
+            microsoft_store: Some(Box::new(store.clone())),
+            ..AppConfig::isolated(root)
+        },
+        sink.clone(),
+    )
+    .expect("startup never fails");
+    core.refresh_entitlement();
+    (core, sink)
+}
+
+fn licence_changes(sink: &RecordingSink) -> usize {
+    sink.events
+        .lock()
+        .iter()
+        .filter(|e| {
+            matches!(e, AppEvent::Module { module, name, .. }
+                if module == "entitlement" && name == "changed")
+        })
+        .count()
+}
+
+fn notice_kind(core: &AppCore, today: &str) -> Value {
+    call(core, "entitlement.notice", json!({ "today": today }))["notice"].clone()
+}
+
+fn buy_with(core: &AppCore, store: &FakeMsStore) -> Value {
+    *store.purchase.lock().unwrap() = StorePurchaseStatus::Succeeded;
+    *store.after_purchase.lock().unwrap() = Some(BOUGHT);
+    call(core, "entitlement.buy", json!({}))
+}
+
+fn now_ms() -> i64 {
+    straft_domain::now_ms()
+}
+
+#[test]
+fn store_matrix_the_chip_words_the_end_moment_and_the_reminder_follow_the_days_left() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = FakeMsStore::new(Ok(trial(7)));
+    let core = ms_core(dir.path(), &store);
+    for days in (1..=7u64).rev() {
+        store.set(Ok(trial(days)));
+        core.refresh_entitlement();
+        let before = now_ms();
+        let s = status(&core);
+        let after = now_ms();
+        assert_eq!(
+            s["state"],
+            json!({ "state": "trialActive", "days_left": days })
+        );
+        let words = if days == 1 {
+            "Trial ends in 1 day.".to_string()
+        } else {
+            format!("Trial ends in {days} days.")
+        };
+        assert_eq!(s["summary"], words);
+        let day_ms = i64::try_from(days * DAY_SECONDS * 1000).unwrap();
+        let ends = s["trialEndsAtMs"]
+            .as_i64()
+            .expect("an end moment in a trial");
+        assert!(
+            (before - 5_000 + day_ms..=after + day_ms).contains(&ends),
+            "{days} days: {ends}"
+        );
+        // Reminders only on 3, 2 and 1 days left.
+        let expected = if days <= 3 {
+            json!({ "kind": "reminder", "daysLeft": days })
+        } else {
+            json!({ "kind": "none" })
+        };
+        assert_eq!(notice_kind(&core, "2027-02-03"), expected, "{days} days");
+    }
+}
+
+#[test]
+fn store_matrix_a_purchase_on_any_day_unlocks_at_once_and_the_first_run_screens_follow_in_order() {
+    for days in [7, 4, 1] {
+        let dir = tempfile::tempdir().unwrap();
+        let store = FakeMsStore::new(Ok(trial(days)));
+        let (core, sink) = ms_core_with_sink(dir.path(), &store);
+        let seen = licence_changes(&sink);
+        let r = buy_with(&core, &store);
+        assert_eq!(
+            r["status"]["state"],
+            json!({ "state": "purchased" }),
+            "day {days}"
+        );
+        assert_eq!(r["status"]["trialEndsAtMs"], Value::Null);
+        assert_eq!(
+            r["status"]["summary"],
+            "Straft Studio is unlocked. Thank you."
+        );
+        assert_eq!(licence_changes(&sink), seen + 1, "the page is told once");
+        // No chip, no reminder; the three screens once each, in order.
+        assert_eq!(
+            notice_kind(&core, "2027-02-03"),
+            json!({ "kind": "dataNote" })
+        );
+        for (kind, next) in [
+            ("dataNote", "tutorial"),
+            ("tutorial", "welcome"),
+            ("welcome", "none"),
+        ] {
+            let v = call(
+                &core,
+                "entitlement.record_notice",
+                json!({ "notice": kind, "today": "2027-02-03" }),
+            );
+            assert_eq!(
+                v["notice"],
+                json!({ "kind": next }),
+                "day {days} after {kind}"
+            );
+        }
+        stop(core);
+        // A restart never shows them again.
+        let core = ms_core(dir.path(), &store);
+        assert_eq!(notice_kind(&core, "2027-02-04"), json!({ "kind": "none" }));
+    }
+}
+
+#[test]
+fn store_matrix_a_refund_and_an_ended_trial_lock_with_their_own_words() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = FakeMsStore::new(Ok(BOUGHT));
+    let (core, sink) = ms_core_with_sink(dir.path(), &store);
+    let seen = licence_changes(&sink);
+
+    // Refund while open.
+    store.set(Ok(ENDED));
+    assert_eq!(
+        core.refresh_entitlement(),
+        straft_entitlement::EntitlementState::Revoked
+    );
+    let s = status(&core);
+    assert_eq!(s["state"], json!({ "state": "revoked" }));
+    assert_eq!(
+        s["summary"],
+        "Your purchase is no longer active. The store no longer shows a purchase for this account, so Straft Studio is locked. Your projects are still on this computer. If this is a mistake, choose Check again or contact us."
+    );
+    assert_eq!(
+        notice_kind(&core, "2027-02-03"),
+        json!({ "kind": "locked" })
+    );
+    assert_eq!(licence_changes(&sink), seen + 1);
+    // Bought again from the lock screen: Purchased comes back from the memory.
+    let r = buy_with(&core, &store);
+    assert_eq!(r["status"]["state"], json!({ "state": "purchased" }));
+
+    // A trial that ends while the app is open, on a computer that never bought.
+    let dir = tempfile::tempdir().unwrap();
+    let store = FakeMsStore::new(Ok(trial(1)));
+    let (core, _) = ms_core_with_sink(dir.path(), &store);
+    store.set(Ok(ENDED));
+    core.refresh_entitlement();
+    let s = status(&core);
+    assert_eq!(s["state"], json!({ "state": "trialEnded" }));
+    assert_eq!(s["trialEndsAtMs"], Value::Null);
+    assert_eq!(
+        s["summary"],
+        "Your free trial has ended. Buy the full version to keep using Straft Studio. Your projects are safe on this computer. Buying unlocks them again exactly as you left them."
+    );
+    assert_eq!(
+        notice_kind(&core, "2027-02-03"),
+        json!({ "kind": "locked" })
+    );
+}
+
+#[test]
+fn store_matrix_a_store_that_cannot_be_reached_keeps_what_the_app_last_knew() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = FakeMsStore::new(Ok(BOUGHT));
+    let core = ms_core(dir.path(), &store);
+    stop(core);
+    // A buyer is never locked by a network error, also after a restart.
+    store.set(Err(StoreLicenceError::Unreachable));
+    let core = ms_core(dir.path(), &store);
+    assert_eq!(status(&core)["state"], json!({ "state": "purchased" }));
+    assert_eq!(
+        notice_kind(&core, "2027-02-03"),
+        json!({ "kind": "dataNote" })
+    );
+    stop(core);
+
+    // A trial keeps counting from the last good answer, never more, also after a restart.
+    let dir = tempfile::tempdir().unwrap();
+    let store = FakeMsStore::new(Ok(trial(3)));
+    let core = ms_core(dir.path(), &store);
+    let ends = status(&core)["trialEndsAtMs"].as_i64().unwrap();
+    store.set(Err(StoreLicenceError::Unreachable));
+    core.refresh_entitlement();
+    let s = status(&core);
+    assert_eq!(
+        s["state"],
+        json!({ "state": "trialActive", "days_left": 3 })
+    );
+    assert!(
+        s["trialEndsAtMs"].as_i64().unwrap() <= ends + 1_000,
+        "never later than before"
+    );
+    stop(core);
+    let core = ms_core(dir.path(), &store);
+    assert_eq!(
+        status(&core)["state"],
+        json!({ "state": "trialActive", "days_left": 3 })
+    );
+    stop(core);
+
+    // The memory file says the trial ran out three days ago: nothing to count down.
+    std::fs::write(
+        dir.path()
+            .join("appdata")
+            .join("entitlement")
+            .join("notices.json"),
+        format!(
+            r#"{{"lastState":"trial","lastTrialSeconds":{},"lastTrialReadAtMs":{}}}"#,
+            3 * DAY_SECONDS,
+            now_ms() - 4 * 86_400_000
+        ),
+    )
+    .unwrap();
+    let core = ms_core(dir.path(), &store);
+    assert_eq!(
+        status(&core)["state"],
+        json!({ "state": "needsOnlineCheck" })
+    );
+    assert_eq!(
+        notice_kind(&core, "2027-02-03"),
+        json!({ "kind": "checkNeeded" })
+    );
+
+    // Nothing remembered and no answer: a check is needed, and opening still works.
+    let dir = tempfile::tempdir().unwrap();
+    let core = ms_core(
+        dir.path(),
+        &FakeMsStore::new(Err(StoreLicenceError::Unreachable)),
+    );
+    assert_eq!(
+        status(&core)["state"],
+        json!({ "state": "needsOnlineCheck" })
+    );
+    call(
+        &core,
+        "project.create",
+        json!({ "title": "Still Opens", "projectType": "Short Film" }),
+    );
+}
+
+#[test]
+fn store_matrix_the_internal_build_shows_no_chip_no_end_moment_and_no_screen() {
+    let dir = tempfile::tempdir().unwrap();
+    let core = internal_core(dir.path());
+    let s = status(&core);
+    assert_eq!(s["trialEndsAtMs"], Value::Null);
+    assert_eq!(notice_kind(&core, "2027-02-03"), json!({ "kind": "none" }));
+    assert_eq!(
+        call(&core, "entitlement.notice", json!({}))["debugBuild"],
+        false
+    );
+}
+
+#[test]
+fn a_lock_that_appears_in_a_running_app_keeps_the_typed_text() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = FakeMsStore::new(Ok(BOUGHT));
+    let (core, _sink) = ms_core_with_sink(dir.path(), &store);
+    let path = make_project(&core, "Monsoon Ferry", "Ravi waits for the last ferry");
+    let typed = "typed while the lock was opening";
+    const LATE: &str = "zq-edit-after-the-lock-was-ready";
+
+    // The Store takes the purchase back while a writer is typing.
+    store.set(Ok(ENDED));
+    core.refresh_entitlement();
+    assert!(core.entitlement.locks_the_app());
+    assert!(core.entitlement.flush_window_open());
+    assert_eq!(
+        notice_kind(&core, "2027-02-03"),
+        json!({ "kind": "locked" })
+    );
+
+    // The lock screen stores what the editors hold: the save still goes through.
+    let act = call(&core, "story.create_act", json!({ "title": "Act Two" }));
+    call(
+        &core,
+        "story.create_card",
+        json!({ "parent": { "parentType": "act", "parentId": act["id"] }, "shortDescription": typed }),
+    );
+    // Then the screen says it is ready: the window ends and the lock holds.
+    call(&core, "entitlement.lock_ready", json!({}));
+    assert!(!core.entitlement.flush_window_open());
+    assert_eq!(
+        refused(&core, "story.board", json!({})),
+        "permission.licence_required"
+    );
+    assert_eq!(
+        refused(
+            &core,
+            "story.create_card",
+            json!({ "parent": { "parentType": "act", "parentId": act["id"] }, "shortDescription": LATE })
+        ),
+        "permission.licence_required"
+    );
+    // Said twice, it changes nothing.
+    call(&core, "entitlement.lock_ready", json!({}));
+
+    // The text is in the project's main database file, not only in the write-ahead log: a copy
+    // of that one file, without its side files, has it.
+    let main = core.project().unwrap().layout.database();
+    let alone = dir.path().join("main-file-only.sqlite");
+    std::fs::copy(&main, &alone).unwrap();
+    let conn =
+        rusqlite::Connection::open_with_flags(&alone, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
+            .unwrap();
+    assert!(
+        database_holds(&conn, typed),
+        "the typed text is in the main file after the lock"
+    );
+    assert!(
+        !database_holds(&conn, LATE),
+        "nothing was added after the lock"
+    );
+    drop(conn);
+
+    // Bought again: everything is as it was left, the text included.
+    *store.purchase.lock().unwrap() = StorePurchaseStatus::Succeeded;
+    *store.after_purchase.lock().unwrap() = Some(BOUGHT);
+    call(&core, "entitlement.buy", json!({}));
+    call(&core, "project.open", json!({ "path": path }));
+    assert!(
+        call(&core, "story.board", json!({}))
+            .to_string()
+            .contains(typed)
+    );
+}
+
+/// True when any text column of any table in `conn` contains `needle`.
+fn database_holds(conn: &rusqlite::Connection, needle: &str) -> bool {
+    let tables: Vec<String> = conn
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")
+        .unwrap()
+        .query_map([], |r| r.get(0))
+        .unwrap()
+        .map(Result::unwrap)
+        .collect();
+    let like = format!("%{needle}%");
+    tables.iter().any(|t| {
+        let columns: Vec<String> = conn
+            .prepare(&format!("PRAGMA table_info(\"{t}\")"))
+            .unwrap()
+            .query_map([], |r| r.get(1))
+            .unwrap()
+            .map(Result::unwrap)
+            .collect();
+        columns.iter().any(|c| {
+            conn.query_row(
+                &format!("SELECT 1 FROM \"{t}\" WHERE \"{c}\" LIKE ?1 LIMIT 1"),
+                [&like],
+                |_| Ok(()),
+            )
+            .is_ok()
+        })
+    })
+}
+
+#[test]
+fn the_flush_window_ends_by_itself_and_a_lock_found_at_launch_has_none() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = FakeMsStore::new(Ok(trial(1)));
+    let (core, _) = ms_core_with_sink(dir.path(), &store);
+    core.entitlement
+        .set_flush_window_for_tests(std::time::Duration::from_millis(150));
+    store.set(Ok(ENDED));
+    core.refresh_entitlement();
+    // Inside the window an operation passes, although the page never answered.
+    call(&core, "project.list_recent", json!({}));
+    std::thread::sleep(std::time::Duration::from_millis(300));
+    assert!(!core.entitlement.flush_window_open());
+    assert_eq!(
+        refused(&core, "project.list_recent", json!({})),
+        "permission.licence_required"
+    );
+    stop(core);
+
+    // The trial was over before the app started: nothing is unsaved, so no window.
+    let core = ms_core(dir.path(), &store);
+    assert!(core.entitlement.locks_the_app());
+    assert!(!core.entitlement.flush_window_open());
+    assert_eq!(
+        refused(&core, "project.list_recent", json!({})),
+        "permission.licence_required"
+    );
+    // A purchase closes the lock; a second lock opens a fresh window.
+    buy_with(&core, &store);
+    assert!(!core.entitlement.locks_the_app());
+    store.set(Ok(ENDED));
+    core.refresh_entitlement();
+    assert!(core.entitlement.flush_window_open());
+}
+
+#[test]
+fn a_hand_set_lock_goes_through_the_same_window_and_only_the_person_can_end_it() {
+    let dir = tempfile::tempdir().unwrap();
+    let core = start(AppConfig {
+        entitlement_debug_controls: true,
+        debug_build: true,
+        ..AppConfig::isolated(dir.path())
+    });
+    let s = call(
+        &core,
+        "entitlement.debug_set",
+        json!({ "channel": "microsoftStore", "state": { "state": "trialEnded" }, "trialEndsAtMs": null }),
+    );
+    assert_eq!(s["state"], json!({ "state": "trialEnded" }));
+    assert!(
+        core.entitlement.flush_window_open(),
+        "also for the first call"
+    );
+    for origin in [
+        ActorOrigin::Ai {
+            request_id: "r1".into(),
+        },
+        ActorOrigin::Exchange {
+            package_id: "p1".into(),
+        },
+    ] {
+        let who = Actor {
+            origin,
+            ..core.local_actor()
+        };
+        let e = core
+            .dispatch(&who, "entitlement.lock_ready", json!({}))
+            .unwrap_err();
+        assert_eq!(e.code.0, "permission.denied");
+    }
+    assert!(
+        core.entitlement.flush_window_open(),
+        "refused callers end nothing"
+    );
+    call(&core, "entitlement.lock_ready", json!({}));
+    assert!(!core.entitlement.flush_window_open());
+    // Nothing is open and no store is behind a hand-set state: ending the window is harmless.
+    call(&core, "entitlement.lock_ready", json!({}));
+
+    // The forced end moment and the debug flag reach the page.
+    let end = now_ms() + 2 * 86_400_000;
+    let s = call(
+        &core,
+        "entitlement.debug_set",
+        json!({ "channel": "microsoftStore", "state": { "state": "trialActive", "days_left": 2 }, "trialEndsAtMs": end }),
+    );
+    assert_eq!(s["trialEndsAtMs"], end);
+    assert_eq!(
+        call(&core, "entitlement.notice", json!({}))["debugBuild"],
+        true
+    );
+    // The assistant never sees the new operation.
+    let m = registry::catalog()
+        .metadata("entitlement.lock_ready")
+        .unwrap();
+    assert!(matches!(m.ai_exposure, AiExposure::Hidden(r) if r.contains("assistant")));
+    assert_eq!(
+        call(
+            &core,
+            "entitlement.debug_set",
+            json!({ "channel": "microsoftStore", "state": { "state": "clockChanged" } })
+        )["state"],
+        json!({ "state": "clockChanged" })
+    );
+    assert_eq!(
+        notice_kind(&core, "2027-02-03"),
+        json!({ "kind": "clockChanged" })
+    );
+}
+
+#[test]
+fn the_page_is_told_once_when_the_licence_changes_and_not_when_it_does_not() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = FakeMsStore::new(Ok(trial(5)));
+    let (core, sink) = ms_core_with_sink(dir.path(), &store);
+    assert_eq!(licence_changes(&sink), 1, "Unknown to a running trial");
+
+    core.refresh_entitlement();
+    core.refresh_entitlement();
+    assert_eq!(licence_changes(&sink), 1, "the same answer says nothing");
+
+    store.set(Ok(trial(4)));
+    core.refresh_entitlement();
+    assert_eq!(licence_changes(&sink), 2, "a day passed");
+    core.refresh_entitlement();
+    assert_eq!(licence_changes(&sink), 2);
+
+    // Restore with no change says nothing; a buy that changes the state says so once.
+    call(&core, "entitlement.restore_purchase", json!({}));
+    assert_eq!(licence_changes(&sink), 2);
+    buy_with(&core, &store);
+    assert_eq!(licence_changes(&sink), 3);
+    call(&core, "entitlement.restore_purchase", json!({}));
+    assert_eq!(licence_changes(&sink), 3);
+
+    // The Store goes quiet and a refund shows up: one more.
+    store.set(Ok(ENDED));
+    core.refresh_entitlement();
+    assert_eq!(licence_changes(&sink), 4);
+}
+
+#[test]
+fn an_update_keeps_the_flags_and_the_reminder_day_of_a_file_from_the_earlier_version() {
+    let dir = tempfile::tempdir().unwrap();
+    let folder = dir.path().join("appdata").join("entitlement");
+    std::fs::create_dir_all(&folder).unwrap();
+    let file = folder.join("notices.json");
+    // Written by the version before the Store memory existed.
+    std::fs::write(
+        &file,
+        r#"{
+  "reminderShownOn": "2027-02-02",
+  "dataNoteAcknowledged": true,
+  "tutorialCompleted": true,
+  "welcomeShown": true
+}"#,
+    )
+    .unwrap();
+    let store = FakeMsStore::new(Ok(trial(2)));
+    let core = ms_core(dir.path(), &store);
+    assert_eq!(
+        notice_kind(&core, "2027-02-02"),
+        json!({ "kind": "none" }),
+        "shown today already"
+    );
+    assert_eq!(
+        notice_kind(&core, "2027-02-03"),
+        json!({ "kind": "reminder", "daysLeft": 2 })
+    );
+    // The first read saved the memory next to the flags and changed none of them.
+    let text = std::fs::read_to_string(&file).unwrap();
+    for part in [
+        "\"reminderShownOn\": \"2027-02-02\"",
+        "\"dataNoteAcknowledged\": true",
+        "\"tutorialCompleted\": true",
+        "\"welcomeShown\": true",
+        "\"version\": 1",
+        "\"lastState\": \"trial\"",
+    ] {
+        assert!(text.contains(part), "{part} in {text}");
+    }
+    // Bought after the update: the flags hold, so no screen repeats.
+    buy_with(&core, &store);
+    assert_eq!(notice_kind(&core, "2027-02-03"), json!({ "kind": "none" }));
+    assert!(
+        std::fs::read_to_string(&file)
+            .unwrap()
+            .contains("\"lastState\": \"purchased\"")
+    );
+    stop(core);
+
+    // A damaged file starts empty, is kept aside, and never stops the app.
+    std::fs::write(&file, b"{\"welcomeShown\": tr").unwrap();
+    let core = ms_core(dir.path(), &store);
+    assert_eq!(status(&core)["state"], json!({ "state": "purchased" }));
+    assert_eq!(
+        std::fs::read(folder.join("notices.json.bad")).unwrap(),
+        b"{\"welcomeShown\": tr"
+    );
+}
+
+/// ADR-0039 item 5: a lock saved by an earlier run holds before the Store has answered, and a
+/// lock the first read finds with nothing saved leaves the page the short window to store text.
+#[test]
+fn a_saved_lock_holds_before_the_first_read_and_a_first_read_lock_opens_the_window() {
+    let dir = tempfile::tempdir().unwrap();
+    let store = FakeMsStore::new(Ok(trial(1)));
+    let core = ms_core(dir.path(), &store);
+    store.set(Ok(ENDED));
+    core.refresh_entitlement();
+    assert!(core.entitlement.locks_the_app());
+    stop(core);
+
+    // The next launch, with the first read not run yet (the Store may hang for 40 seconds).
+    let core = start(AppConfig {
+        channel: Channel::MicrosoftStore,
+        microsoft_store: Some(Box::new(store.clone())),
+        ..AppConfig::isolated(dir.path())
+    });
+    assert!(
+        core.entitlement.locks_the_app(),
+        "locked from the first moment"
+    );
+    assert_eq!(
+        refused(&core, "project.list_recent", json!({})),
+        "permission.licence_required"
+    );
+    core.refresh_entitlement();
+    assert!(
+        !core.entitlement.flush_window_open(),
+        "known lock, nothing unsaved"
+    );
+    stop(core);
+
+    // The trial ended between launches and nothing was saved: the first read finds the lock
+    // while the page may already hold typing.
+    let fresh = tempfile::tempdir().unwrap();
+    let core = ms_core(fresh.path(), &store);
+    assert!(core.entitlement.locks_the_app());
+    assert!(core.entitlement.flush_window_open());
+}
+
+/// A Store whose purchase window stays open until the test lets it go.
+#[derive(Clone)]
+struct OpenWindowStore {
+    inner: FakeMsStore,
+    entered: Arc<Mutex<std::sync::mpsc::Sender<()>>>,
+    release: Arc<Mutex<std::sync::mpsc::Receiver<()>>>,
+}
+
+impl StoreLicenceSource for OpenWindowStore {
+    fn app_licence(&self) -> Result<StoreAppLicence, StoreLicenceError> {
+        self.inner.app_licence()
+    }
+    fn request_purchase(&self) -> StorePurchaseStatus {
+        self.entered.lock().unwrap().send(()).unwrap();
+        let _ = self
+            .release
+            .lock()
+            .unwrap()
+            .recv_timeout(std::time::Duration::from_secs(30));
+        self.inner.request_purchase()
+    }
+}
+
+/// ADR-0039 item 6: reads keep running while the Store's window is open, and a second "Buy"
+/// never opens a second window.
+#[test]
+fn reads_run_while_the_purchase_window_is_open_and_a_second_buy_waits_for_it() {
+    let dir = tempfile::tempdir().unwrap();
+    let inner = FakeMsStore::new(Ok(trial(1)));
+    let (entered_tx, entered_rx) = std::sync::mpsc::channel();
+    let (release_tx, release_rx) = std::sync::mpsc::channel();
+    let store = OpenWindowStore {
+        inner: inner.clone(),
+        entered: Arc::new(Mutex::new(entered_tx)),
+        release: Arc::new(Mutex::new(release_rx)),
+    };
+    let core = start(AppConfig {
+        channel: Channel::MicrosoftStore,
+        microsoft_store: Some(Box::new(store)),
+        ..AppConfig::isolated(dir.path())
+    });
+    core.refresh_entitlement();
+    let buyer = {
+        let core = core.clone();
+        std::thread::spawn(move || core.dispatch(&core.local_actor(), "entitlement.buy", json!({})))
+    };
+    entered_rx
+        .recv_timeout(std::time::Duration::from_secs(10))
+        .expect("the Store window opened");
+
+    // A second Buy answers plainly and opens no second window.
+    let second = call(&core, "entitlement.buy", json!({}));
+    assert!(
+        second["message"]
+            .as_str()
+            .is_some_and(|m| m.contains("already open")),
+        "{second}"
+    );
+    assert!(entered_rx.try_recv().is_err(), "no second window");
+
+    // The trial ends while the dialog is open: the read runs and the lock shows.
+    inner.set(Ok(ENDED));
+    core.refresh_entitlement();
+    assert!(core.entitlement.locks_the_app());
+
+    release_tx.send(()).unwrap();
+    buyer.join().unwrap().unwrap();
+    assert!(
+        core.entitlement.locks_the_app(),
+        "closing the window bought nothing"
+    );
 }

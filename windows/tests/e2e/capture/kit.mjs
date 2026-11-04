@@ -161,8 +161,8 @@ export function makeKit(getBrowser, cap) {
     /** Back to the starting state: overlays closed, AI panel closed, Home workspace. */
     async reset() {
       await t.closeOverlays();
-      const ai = await b().$('//aside[@aria-label="AI Assistant"]');
-      if (await ai.isExisting()) await (await b().$('//button[@aria-label="Close AI Assistant"]')).click().catch(() => undefined);
+      const ai = await b().$('//aside[@aria-label="Straft AI"]');
+      if (await ai.isExisting()) await (await b().$('//button[@aria-label="Close Straft AI"]')).click().catch(() => undefined);
       const nav = await b().$('//nav[@aria-label="Workspaces"]');
       if (await nav.isExisting()) {
         await (await b().$('//nav[@aria-label="Workspaces"]//button[normalize-space(.)="Home" or @aria-label="Home"]')).click();

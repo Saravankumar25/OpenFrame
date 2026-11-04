@@ -5,9 +5,9 @@
 
 use std::collections::BTreeMap;
 
-use straft_domain::{Actor, AppError, AppResult};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult};
 
 use super::super::queries::{self, join_and};
 use super::super::scope::ResolvedScope;
@@ -608,16 +608,40 @@ pub fn retrieve_hybrid(
 ) -> AppResult<Option<ToolOutput>> {
     use super::super::retrieval::{RetrieveRequest, retrieve};
     let q = a_str(args, "query").ok_or_else(|| queries::ambiguous("What should I look for?"))?;
-    let packet = retrieve(
+    let want = a_limit(args, 8).min(24);
+    // Under picks only passages of the picked sections go on; ask for the most, then cut.
+    let types = super::super::sections::tools::picked_entity_types(&scope.sections);
+    let mut packet = retrieve(
         core,
         actor,
         &RetrieveRequest {
             query: q.clone(),
             scope: Some(scope.clone()),
-            limit: a_limit(args, 8).min(24),
+            limit: if types.is_some() { 24 } else { want },
             route: None,
         },
     )?;
+    if let Some(types) = &types {
+        let keep: Vec<bool> = packet
+            .sources
+            .iter()
+            .map(|s| types.contains(&s.entity_type.as_str()))
+            .collect();
+        let pick = |i: &mut usize| {
+            let k = keep.get(*i).copied().unwrap_or(false);
+            *i += 1;
+            k
+        };
+        let mut i = 0;
+        packet.items.retain(|_| pick(&mut i));
+        i = 0;
+        packet.provenance.retain(|_| pick(&mut i));
+        i = 0;
+        packet.sources.retain(|_| pick(&mut i));
+        packet.items.truncate(want);
+        packet.provenance.truncate(want);
+        packet.sources.truncate(want);
+    }
     let mut o = ToolOutput::exact(if packet.items.is_empty() {
         format!("Nothing in this project matches “{}”.", clip(&q, 80))
     } else {
@@ -1173,7 +1197,7 @@ fn package_history(ctx: &ToolCtx<'_>, _: &Value) -> AppResult<ToolOutput> {
         ));
     }
     Ok(o.detail(
-        "Opening, reviewing and applying packages stays in Packages (the assistant can't do it).",
+        "Opening, reviewing and applying packages stays in Packages (Straft AI can't do it).",
     )
     .prov("Scope", "Package history"))
 }

@@ -8,14 +8,14 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, OnceLock, Weak};
 
+use parking_lot::{Mutex, RwLock};
+use rusqlite::{Connection, OptionalExtension, params};
+use serde::Serialize;
 use straft_domain::auth::ActorOrigin;
 use straft_domain::{Actor, AppError, AppResult, Role, new_id, now_ms};
 use straft_entitlement::Channel;
 use straft_entitlement::mac::MacInputs;
 use straft_project_format::{ProjectLayout, ProjectLock, ProjectManifest};
-use parking_lot::{Mutex, RwLock};
-use rusqlite::{Connection, OptionalExtension, params};
-use serde::Serialize;
 use ts_rs::TS;
 
 use crate::events::{AppEvent, EventSink, StoreKind, TaskProgress};
@@ -74,6 +74,10 @@ pub struct AppConfig {
     /// licence state and channel by hand. The desktop shell turns it on only in a debug build with
     /// an isolated test data root; release builds never do (tested in the shell).
     pub entitlement_debug_controls: bool,
+    /// True in a debug build. The core tells the page through `EntitlementNotice.debug_build`, so
+    /// a release build hides the placeholder social rows (ADR-0039 item 12). The shell sets it;
+    /// false everywhere else.
+    pub debug_build: bool,
     /// The internal builds' team password hash (Argon2id PHC string, ADR-0024), embedded by the
     /// desktop build script from `STRAFT_TEAM_PASSWORD` on the build machine. When set, nothing
     /// but the password screen runs until the password is right. `None` in store packages, which
@@ -103,6 +107,7 @@ impl std::fmt::Debug for AppConfig {
                 "entitlement_debug_controls",
                 &self.entitlement_debug_controls,
             )
+            .field("debug_build", &self.debug_build)
             .field("team_password_hash", &self.team_password_hash.is_some())
             .field("rename_earlier_names", &self.rename_earlier_names)
             .finish()
@@ -120,8 +125,7 @@ impl AppConfig {
         let (app_data_dir, pointer_dir) =
             crate::modules::storage::legacy_migration::folders_for_current_user();
         let mut config = Self::at_user_folders(app_data_dir, pointer_dir, app_version)?;
-        config.rename_earlier_names =
-            crate::modules::storage::legacy_migration::allowed_here();
+        config.rename_earlier_names = crate::modules::storage::legacy_migration::allowed_here();
         Ok(config)
     }
 
@@ -198,6 +202,7 @@ impl AppConfig {
             mac_inputs: None,
             microsoft_store: None,
             entitlement_debug_controls: false,
+            debug_build: false,
             rename_earlier_names: false,
             team_password_hash: None,
         })
@@ -226,13 +231,14 @@ impl AppConfig {
             mac_inputs: None,
             microsoft_store: None,
             entitlement_debug_controls: false,
+            debug_build: false,
             rename_earlier_names: false,
             team_password_hash: None,
         }
     }
 
     /// [`AppConfig::isolated`] that starts like a new computer: the library is not set up, the
-    /// suggested place is `<root>/home/Straft Studio`, an earlier library would be in
+    /// suggested place is `<root>/home/Straft`, an earlier library would be in
     /// `<root>/Documents/Straft Studio` and the pointer in `<root>/roaming` (tests and the end-to-end
     /// switch `STRAFT_LIBRARY_SETUP=1`).
     pub fn isolated_needing_setup(root: &std::path::Path) -> Self {
@@ -462,9 +468,7 @@ impl AppCore {
                 "removed stale staging files from the app data folder"
             );
         }
-        let mut conn =
-            straft_persistence::open_connection(&config.app_data_dir.join("app.sqlite"), true)?;
-        straft_persistence::migrate::apply(&mut conn, crate::schema::APP_MIGRATIONS)?;
+        let conn = open_app_database(&config.app_data_dir)?;
         // Cover photos no project row names (a crash between the file and the row) are removed.
         crate::modules::project_cover::sweep(&conn, &config.app_data_dir);
         if config.rename_earlier_names {
@@ -595,7 +599,7 @@ impl AppCore {
             {
                 return Err(AppError::new(
                     "storage.not_writable",
-                    "Straft Studio can't save files in that library folder, so it was not connected.",
+                    "Straft can't save files in that library folder, so it was not connected.",
                 ));
             }
         }
@@ -842,7 +846,7 @@ impl AppCore {
                 "The project is being moved. Wait for the move to finish, then try again.",
             )),
             Some(StorageOp::LibraryMove) => Err(storage_busy(
-                "Your Straft Studio library is being moved. Wait for the move to finish, then try again.",
+                "Your Straft library is being moved. Wait for the move to finish, then try again.",
             )),
             _ => Ok(()),
         }?;
@@ -990,7 +994,7 @@ impl AppCore {
             on_spawn_failure.fail(
                 &AppError::new(
                     "internal.task_start_failed",
-                    "Straft Studio could not start this task. Close other programs and try again.",
+                    "Straft could not start this task. Close other programs and try again.",
                 )
                 .with_detail(e.to_string()),
             );
@@ -1032,23 +1036,57 @@ impl AppCore {
     pub fn on_power_event(&self, event: straft_platform::power::PowerEvent) {
         use straft_platform::power::PowerEvent;
         match event {
-            PowerEvent::Suspending => {
-                let project = self.project_opt();
-                let global = self.global.lock().clone();
-                let stores = project
-                    .as_ref()
-                    .map(|p| &p.store)
-                    .into_iter()
-                    .chain(global.as_deref());
-                for store in stores {
-                    if let Err(e) = store.with_writer(straft_persistence::checkpoint) {
-                        tracing::warn!(code = e.code_str(), "checkpoint before sleep failed");
-                    }
-                }
-                tracing::info!("data folded into the database files before sleep");
-            }
+            PowerEvent::Suspending => self.checkpoint_open_stores("sleep"),
             PowerEvent::Resumed => tracing::info!("computer woke from sleep"),
         }
+    }
+
+    /// Fold the write-ahead logs of the open project and of the Global Idea Vault into their
+    /// database files, so what is committed is in the main file. `why` is for the log only.
+    /// Errors are logged, never raised.
+    pub fn checkpoint_open_stores(&self, why: &str) {
+        let project = self.project_opt();
+        let global = self.global.lock().clone();
+        let stores = project
+            .as_ref()
+            .map(|p| &p.store)
+            .into_iter()
+            .chain(global.as_deref());
+        for store in stores {
+            if let Err(e) = store.with_writer(straft_persistence::checkpoint) {
+                tracing::warn!(code = e.code_str(), why, "checkpoint failed");
+            }
+        }
+        tracing::info!(why, "data folded into the database files");
+    }
+
+    /// Ask the store again and tell the page when the answer changed (ADR-0039 item 6): a
+    /// `module` event named `entitlement` / `changed`, which the interface answers by asking for
+    /// the status again. The shell's worker calls this at launch, on a focus return, every 15
+    /// minutes, at midnight and at the trial's end moment.
+    pub fn refresh_entitlement(&self) -> straft_entitlement::EntitlementState {
+        let before = self.entitlement.change_marker();
+        let state = self.entitlement.refresh();
+        self.announce_entitlement_change(before);
+        state
+    }
+
+    /// Emit the change event when the licence view differs from `before`.
+    pub(crate) fn announce_entitlement_change(
+        &self,
+        before: crate::modules::entitlement::ChangeMarker,
+    ) {
+        if self.entitlement.change_marker() != before {
+            self.emit_entitlement_changed();
+        }
+    }
+
+    pub(crate) fn emit_entitlement_changed(&self) {
+        self.emit(AppEvent::Module {
+            module: "entitlement".into(),
+            name: "changed".into(),
+            payload: serde_json::json!({}),
+        });
     }
 
     /// Clean shutdown: close the project (checkpoint + clear crash marker).
@@ -1080,6 +1118,49 @@ pub(crate) fn vault_missing_error(dir: &std::path::Path) -> AppError {
          the vault folder.",
     )
     .with_detail(dir.to_string_lossy().into_owned())
+}
+
+/// Open `app.sqlite` and bring it to the current version. A file that is damaged (not a database,
+/// or it fails its quick check) holds only settings, appearance and the recent list, so it is kept
+/// as `app.sqlite.bad` and replaced by a new one: the app starts, and the library file gives the
+/// person their name and folders back. Anything else (a newer version, a locked file) is not damage
+/// and is reported as it is.
+fn open_app_database(dir: &std::path::Path) -> AppResult<Connection> {
+    let path = dir.join("app.sqlite");
+    let open = || -> AppResult<Connection> {
+        let mut conn = straft_persistence::open_connection(&path, true)?;
+        let problems = straft_persistence::integrity_problems(&conn, false)?;
+        if !problems.is_empty() {
+            return Err(
+                AppError::new("project_format.corrupt", "The settings file is damaged.")
+                    .with_detail(problems.join("; ")),
+            );
+        }
+        straft_persistence::migrate::apply(&mut conn, crate::schema::APP_MIGRATIONS)?;
+        Ok(conn)
+    };
+    match open() {
+        Err(e) if e.code_str() == "project_format.corrupt" => {
+            tracing::warn!("app.sqlite is damaged; it is kept as app.sqlite.bad and started again");
+            for suffix in ["", "-wal", "-shm"] {
+                let from = dir.join(format!("app.sqlite{suffix}"));
+                let to = dir.join(format!("app.sqlite.bad{suffix}"));
+                if !from.exists() {
+                    continue;
+                }
+                let renamed = std::fs::rename(&from, &to);
+                if suffix.is_empty() {
+                    // The damaged file is the evidence: never delete it when it cannot be kept.
+                    renamed?;
+                } else if renamed.is_err() {
+                    // A leftover log of a damaged file must not attach to the new one.
+                    std::fs::remove_file(&from)?;
+                }
+            }
+            open()
+        }
+        other => other,
+    }
 }
 
 /// The library file of `place`: valid, or `None` with whether it is there but unusable. An
@@ -1154,4 +1235,27 @@ fn ensure_profile(
         insert_profile(conn, &profile)?;
     }
     Ok((profile, save))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A damaged settings file that cannot be kept aside is never deleted: the error comes back.
+    #[test]
+    fn a_damaged_app_database_that_cannot_be_renamed_is_kept_and_reported() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(
+            dir.path().join("app.sqlite"),
+            b"this is not a database at all",
+        )
+        .unwrap();
+        // A folder where the copy would go makes the rename fail.
+        std::fs::create_dir(dir.path().join("app.sqlite.bad")).unwrap();
+        assert!(open_app_database(dir.path()).is_err());
+        assert_eq!(
+            std::fs::read(dir.path().join("app.sqlite")).unwrap(),
+            b"this is not a database at all"
+        );
+    }
 }

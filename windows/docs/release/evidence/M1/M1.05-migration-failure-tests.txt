@@ -64,47 +64,47 @@ test tests::backup_over_an_existing_copy_replaces_it ... ok
 test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
 
      Running tests\migration_failures.rs (target\debug\deps\migration_failures-ca943f1c759be8d4.exe)
-damaged page: refused with project_format.corrupt "This project's data file is damaged. Straft Studio will not modify it. Restore from a backup or recovery point."
-newer schema: refused with project_format.too_new "This project was saved by a newer version of Straft Studio. Update Straft Studio to open it — the project has not been changed."
-safety backup unwritable: refused with storage.write_failed "Straft Studio could not save this change yet. Your work is still open and has not been discarded."
-newer schema: refused with project_format.too_new "This project was saved by a newer version of Straft Studio. Update Straft Studio to open it — the project has not been changed."
+damaged page: refused with project_format.corrupt "This project's data file is damaged. Straft will not modify it. Restore from a backup or recovery point."
+newer schema: refused with project_format.too_new "This project was saved by a newer version of Straft. Update Straft to open it — the project has not been changed."
+safety backup unwritable: refused with storage.write_failed "Straft could not save this change yet. Your work is still open and has not been discarded."
+newer schema: refused with project_format.too_new "This project was saved by a newer version of Straft. Update Straft to open it — the project has not been changed."
 test m1_05_database_from_a_newer_straft_is_refused_byte_for_byte_untouched ... ok
-read-only project.sqlite: refused with migration.failed "Straft Studio couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
-disk full at Step(11): refused with migration.failed "Straft Studio couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
-damaged header: refused with project_format.corrupt "This project's data file is damaged. Straft Studio will not modify it. Restore from a backup or recovery point."
+read-only project.sqlite: refused with migration.failed "Straft couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
+disk full at Step(11): refused with migration.failed "Straft couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
+damaged header: refused with project_format.corrupt "This project's data file is damaged. Straft will not modify it. Restore from a backup or recovery point."
 test m1_05_damaged_database_needing_migration_is_refused_before_any_backup_or_write ... ok
 test m1_05_safety_backup_that_cannot_be_written_stops_the_migration ... ok
 test m1_05_read_only_database_is_refused_untouched_and_opens_once_writable ... ok
-disk full at Commit: refused with storage.disk_full "The drive is full, so Straft Studio could not save this change. Free up some space and try again — your work is still open."
+disk full at Commit: refused with storage.disk_full "The drive is full, so Straft could not save this change. Free up some space and try again — your work is still open."
 test m1_05_full_drive_during_migration_leaves_the_database_untouched ... ok
 test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.96s
      Running tests\migration_failures.rs (target\debug\deps\migration_failures-ca943f1c759be8d4.exe)
-damaged page: refused with project_format.corrupt "This project's data file is damaged. Straft Studio will not modify it. Restore from a backup or recovery point."
-safety backup unwritable: refused with storage.write_failed "Straft Studio could not save this change yet. Your work is still open and has not been discarded."
-newer schema: refused with project_format.too_new "This project was saved by a newer version of Straft Studio. Update Straft Studio to open it — the project has not been changed."
-disk full at Step(11): refused with migration.failed "Straft Studio couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
-newer schema: refused with project_format.too_new "This project was saved by a newer version of Straft Studio. Update Straft Studio to open it — the project has not been changed."
-read-only project.sqlite: refused with migration.failed "Straft Studio couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
+damaged page: refused with project_format.corrupt "This project's data file is damaged. Straft will not modify it. Restore from a backup or recovery point."
+safety backup unwritable: refused with storage.write_failed "Straft could not save this change yet. Your work is still open and has not been discarded."
+newer schema: refused with project_format.too_new "This project was saved by a newer version of Straft. Update Straft to open it — the project has not been changed."
+disk full at Step(11): refused with migration.failed "Straft couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
+newer schema: refused with project_format.too_new "This project was saved by a newer version of Straft. Update Straft to open it — the project has not been changed."
+read-only project.sqlite: refused with migration.failed "Straft couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
 test m1_05_database_from_a_newer_straft_is_refused_byte_for_byte_untouched ... ok
-damaged header: refused with project_format.corrupt "This project's data file is damaged. Straft Studio will not modify it. Restore from a backup or recovery point."
+damaged header: refused with project_format.corrupt "This project's data file is damaged. Straft will not modify it. Restore from a backup or recovery point."
 test m1_05_damaged_database_needing_migration_is_refused_before_any_backup_or_write ... ok
 test m1_05_safety_backup_that_cannot_be_written_stops_the_migration ... ok
 test m1_05_read_only_database_is_refused_untouched_and_opens_once_writable ... ok
-disk full at Commit: refused with storage.disk_full "The drive is full, so Straft Studio could not save this change. Free up some space and try again — your work is still open."
+disk full at Commit: refused with storage.disk_full "The drive is full, so Straft could not save this change. Free up some space and try again — your work is still open."
 test m1_05_full_drive_during_migration_leaves_the_database_untouched ... ok
 test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.31s
      Running tests\migration_failures.rs (target\debug\deps\migration_failures-ca943f1c759be8d4.exe)
-damaged page: refused with project_format.corrupt "This project's data file is damaged. Straft Studio will not modify it. Restore from a backup or recovery point."
-newer schema: refused with project_format.too_new "This project was saved by a newer version of Straft Studio. Update Straft Studio to open it — the project has not been changed."
-safety backup unwritable: refused with storage.write_failed "Straft Studio could not save this change yet. Your work is still open and has not been discarded."
-newer schema: refused with project_format.too_new "This project was saved by a newer version of Straft Studio. Update Straft Studio to open it — the project has not been changed."
-disk full at Step(11): refused with migration.failed "Straft Studio couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
-read-only project.sqlite: refused with migration.failed "Straft Studio couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
+damaged page: refused with project_format.corrupt "This project's data file is damaged. Straft will not modify it. Restore from a backup or recovery point."
+newer schema: refused with project_format.too_new "This project was saved by a newer version of Straft. Update Straft to open it — the project has not been changed."
+safety backup unwritable: refused with storage.write_failed "Straft could not save this change yet. Your work is still open and has not been discarded."
+newer schema: refused with project_format.too_new "This project was saved by a newer version of Straft. Update Straft to open it — the project has not been changed."
+disk full at Step(11): refused with migration.failed "Straft couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
+read-only project.sqlite: refused with migration.failed "Straft couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
 test m1_05_database_from_a_newer_straft_is_refused_byte_for_byte_untouched ... ok
-damaged header: refused with project_format.corrupt "This project's data file is damaged. Straft Studio will not modify it. Restore from a backup or recovery point."
+damaged header: refused with project_format.corrupt "This project's data file is damaged. Straft will not modify it. Restore from a backup or recovery point."
 test m1_05_damaged_database_needing_migration_is_refused_before_any_backup_or_write ... ok
 test m1_05_read_only_database_is_refused_untouched_and_opens_once_writable ... ok
 test m1_05_safety_backup_that_cannot_be_written_stops_the_migration ... ok
-disk full at Commit: refused with storage.disk_full "The drive is full, so Straft Studio could not save this change. Free up some space and try again — your work is still open."
+disk full at Commit: refused with storage.disk_full "The drive is full, so Straft could not save this change. Free up some space and try again — your work is still open."
 test m1_05_full_drive_during_migration_leaves_the_database_untouched ... ok
 test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.37s

@@ -1,6 +1,6 @@
 [package]
 name = "straft-ai"
-description = "Straft Studio Offline AI: the engine bundled with the app (pinned lock), the models downloaded after install (signed manifest, resume, check, activation), the integrity check before the first start, hardware inspection, managed llama.cpp engine supervisor and local loopback chat client."
+description = "Straft Offline AI: the engine bundled with the app (pinned lock), the models downloaded after install (signed manifest, resume, check, activation), the integrity check before the first start, hardware inspection, managed llama.cpp engine supervisor and local loopback chat client."
 version.workspace = true
 edition.workspace = true
 license.workspace = true

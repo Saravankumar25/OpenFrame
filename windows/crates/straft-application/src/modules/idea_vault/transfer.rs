@@ -4,12 +4,12 @@
 //! * "Send to Story" (FSD §5.10, FSD-IDEA-004/015..017): a new Story object;
 //!   the Vault original stays exactly as it was.
 
-use straft_domain::enums::VaultItemType;
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::rows::{next_position, opt_text, text};
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::enums::VaultItemType;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::rows::{next_position, opt_text, text};
 use ts_rs::TS;
 
 use super::items::{NewItem, VaultFailedFile, check_collection, check_folder, insert_item};

@@ -24,7 +24,7 @@ Engineers and agents must not write the agreement or pick a license. The decisio
 - **Local AI artifacts.** Model and engine redistribution has its own notices (Local AI Runtime spec section 17).
   The license of the `llama.cpp` engine, of Gemma 3 1B Instruct (Gemma Terms of Use, redistribution rules in
   `docs/engineering/23-release-migration.md` section 7) and of BGE small English v1.5 must be verified per artifact.
-  Model weights are downloaded after install, but Straft Studio's distribution endpoint still redistributes them.
+  Model weights are downloaded after install, but Straft's distribution endpoint still redistributes them.
 - **Three channels.** The Microsoft Store and the Mac App Store each have a standard license terms page. The agreement for
   the Windows installer must say what happens at the end of the trial and what a purchase covers.
 - **Refunds and the trial.** The agreement and the store listings must say the same thing (ADR-0018, still open: price and refunds).

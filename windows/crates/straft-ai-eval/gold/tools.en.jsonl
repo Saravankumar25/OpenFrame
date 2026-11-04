@@ -46,7 +46,7 @@
 {"id":"tool-en-046","kind":"tool","lang":"en","project":"example-short","request":"Search for 'returned to owner'.","expect":{"tool":["search_project","find_scenes_mentioning"],"args":{"text":"returned to owner"}}}
 {"id":"tool-en-047","kind":"tool","lang":"en","project":"example-feature","request":"Which drafts does this screenplay have?","expect":{"tool":["list_drafts","draft_status"]}}
 {"id":"tool-en-048","kind":"tool","lang":"en","project":"example-feature","request":"What is the current draft called?","expect":{"tool":["list_drafts","draft_status"]}}
-{"id":"tool-en-049","kind":"tool","lang":"en","project":"example-feature","request":"How do I lock a shooting draft in Straft Studio?","expect":{"tool":"answer_product_question"}}
+{"id":"tool-en-049","kind":"tool","lang":"en","project":"example-feature","request":"How do I lock a shooting draft in Straft?","expect":{"tool":"answer_product_question"}}
 {"id":"tool-en-050","kind":"tool","lang":"en","project":"example-feature","request":"What does the Production Source mean?","expect":{"tool":"answer_product_question"}}
 {"id":"tool-en-051","kind":"tool","lang":"en","project":"example-feature","request":"How does undo work for AI changes?","expect":{"tool":"answer_product_question"}}
 {"id":"tool-en-052","kind":"tool","lang":"en","project":"example-feature","request":"What is a Change Set?","expect":{"tool":"answer_product_question"}}

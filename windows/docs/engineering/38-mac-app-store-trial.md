@@ -1,5 +1,7 @@
 # Mac App Store trial and purchase
 
+> **SUPERSEDED 2026-11-03 by [ADR-0039](../adr/ADR-0039-store-release-licensing.md).** No licence server. The Mac trial is computed offline from Apple-signed StoreKit data with a local clock guard: [package file 04](../release/package-2026-11-03/04_MAC_TASKS.md). This page is history; do not build from it.
+
 > Written 2026-10-06 on a Windows machine with no Mac, no Xcode and no Apple developer account, and updated the same day with the
 > owner's corrections (trial origin, server checks, one wire format, lease and revalidation, threat boundary). The Swift bridge has
 > never been compiled, and nothing here has run against Apple's sandbox. Section 14 separates what is proven on this machine from
@@ -19,8 +21,8 @@ The Mac App Store build is a free download. Two in-app purchases control what th
 
 | Product | Product id | Type | Price | Family Sharing |
 |---|---|---|---|---|
-| 7-day Trial | `com.straft.studio.trial7` | Non-Consumable | Free (zero price) | Off |
-| Lifetime Access | `com.straft.studio.lifetime` | Non-Consumable | Set by the owner (open) | Off |
+| 7-day Trial | `app.straftstudio.studio.trial7` | Non-Consumable | Free (zero price) | Off |
+| Lifetime Access | `app.straftstudio.studio.lifetime` | Non-Consumable | Set by the owner (open) | Off |
 
 There is no subscription. The rules from the owner decision and its corrections:
 
@@ -36,7 +38,7 @@ There is no subscription. The rules from the owner decision and its corrections:
   exporting wait for a purchase or a restore (owner decision 2026-10-07, ADR-0022). Nothing is deleted.
 - Lifetime Access comes from verified `Transaction.currentEntitlements` only, works offline, restores on its own on a new Mac or
   after a reinstall, and a refund (revocation) is honoured.
-- Apple's private keys and Straft Studio's signing key are never in the app.
+- Apple's private keys and Straft's signing key are never in the app.
 - Sandbox and production are separate: two server deployments with two signing keys.
 
 Status of each part:
@@ -86,7 +88,7 @@ section 15 runs such sequences.
 ## 3. Architecture
 
 ```text
- Mac (App Sandbox)                                          Straft Studio server (one per environment)
+ Mac (App Sandbox)                                          Straft server (one per environment)
  +--------------------------------------------------+       +------------------------------------+
  | React webview                                    |       | POST /v1/mac/validate              |
  |   shows state, trial sheet, buttons              |       |   1. schema, nonce, environment    |
@@ -141,11 +143,11 @@ NeedsOnlineCheck.
 
 | Reason | Message |
 |---|---|
-| `LeaseExpired` | Straft Studio needs to check your free trial again. Connect to the internet, then choose Check again. |
-| `NoConnection` (the last confirmed state was a running trial) | Straft Studio needs the internet to continue your free trial. Connect and open Straft Studio again. |
-| `NoConnection` | Straft Studio needs the internet to check your free trial. Connect and open Straft Studio again. |
-| `CouldNotConfirm` | Straft Studio could not confirm your free trial with the App Store. Try again later. |
-| `AppStoreUnavailable` | Straft Studio could not reach the App Store (or could not confirm your purchase). Check that you are signed in to the App Store, then open Straft Studio again. |
+| `LeaseExpired` | Straft needs to check your free trial again. Connect to the internet, then choose Check again. |
+| `NoConnection` (the last confirmed state was a running trial) | Straft needs the internet to continue your free trial. Connect and open Straft again. |
+| `NoConnection` | Straft needs the internet to check your free trial. Connect and open Straft again. |
+| `CouldNotConfirm` | Straft could not confirm your free trial with the App Store. Try again later. |
+| `AppStoreUnavailable` | Straft could not reach the App Store (or could not confirm your purchase). Check that you are signed in to the App Store, then open Straft again. |
 
 The cache file `<app data>/entitlement/mac-cache.json` only picks the words of these messages. It holds no id, date or JWS, is
 never read to decide a state, and is not rewritten when nothing changed.
@@ -195,7 +197,7 @@ at most 16 KiB; three JWS parts; header `alg` is `ES256`; `x5c` has exactly thre
 pinned Apple Root CA G3; the intermediate names the root as issuer, is signed by it, is a CA and carries Apple's intermediate
 marker `1.2.840.113635.100.6.2.1`; the leaf names the intermediate as issuer, is signed by it, is not a CA and carries Apple's
 marker `1.2.840.113635.100.6.11.1`; the ES256 signature verifies with the leaf key; only then is the payload parsed; all three
-certificates are valid at the payload's `signedDate`; `bundleId` is `com.straft.studio`; the environment (`environment` in a
+certificates are valid at the payload's `signedDate`; `bundleId` is `app.straftstudio.studio`; the environment (`environment` in a
 transaction, `receiptType` in the app transaction) is the deployment's. For a transaction also: `productId` is one of the two
 products; `transactionId` and `originalTransactionId` are 1 to 64 decimal digits; `appTransactionId`, when present, is 1 to 128
 characters of `A-Z a-z 0-9 - _ .`; `inAppOwnershipType` is `PURCHASED`; `type` is `Non-Consumable`.
@@ -261,7 +263,7 @@ Payload JSON:
 
 `trial` is `null` when no valid trial transaction was sent. The signature covers the bytes `straft-mac-licence-response-v1`,
 one zero byte, then the payload bytes exactly as sent. The app verifies the signature over those bytes (strict Ed25519) before it
-parses them, so no canonical JSON form is needed. The domain prefix keeps a signature made for another Straft Studio file, such as
+parses them, so no canonical JSON form is needed. The domain prefix keeps a signature made for another Straft file, such as
 the installer licence, from passing as an answer.
 
 **Shared fixture.** `services/licence-server/tests/fixtures/mac-validate-v1.json` holds one request (a trial transaction JWS and
@@ -305,7 +307,7 @@ policy on it. The test key lives only in `services/licence-server/src/tests.rs`.
 - **A different Apple Account.** A user who signs in to the App Store with an entirely different Apple Account is a new App Store
   customer. That account gets a new `appTransactionID` and can buy the zero-price trial again, so it gets a new 7-day trial.
   StoreKit's account-level entitlement logic cannot perfectly prevent this, and this design does not try to link accounts.
-- **No device fingerprinting.** Straft Studio does not use hardware identifiers, MAC addresses, serial numbers or any other device
+- **No device fingerprinting.** Straft does not use hardware identifiers, MAC addresses, serial numbers or any other device
   fingerprint to tie a trial to a Mac. They would be personal data, are partly unavailable in the App Sandbox, and would conflict
   with the project's privacy rules.
 - **DeviceCheck and App Attest.** If they are investigated later, they are supplementary only: detected at runtime, used when
@@ -323,12 +325,12 @@ Do these in App Store Connect with the Account Holder or Admin role. Exact scree
 
 1. **Agreements, Tax and Banking.** Accept the Paid Apps agreement and finish tax and banking. In-app purchases do not work
    without it, even at zero price.
-2. **App record.** Bundle id `com.straft.studio`, platform macOS, price of the app itself: Free.
+2. **App record.** Bundle id `app.straftstudio.studio`, platform macOS, price of the app itself: Free.
 3. **7-day Trial.** In-App Purchases, create: type Non-Consumable, reference name `7-day Trial`, product id
-   `com.straft.studio.trial7`, price Free (the zero price point), Family Sharing off, display name `7-day Trial`, a short
+   `app.straftstudio.studio.trial7`, price Free (the zero price point), Family Sharing off, display name `7-day Trial`, a short
    description such as "Use every feature for 7 days. Free.", a review screenshot of the trial sheet and a review note that
    explains the trial.
-4. **Lifetime Access.** Create: type Non-Consumable, reference name `Lifetime Access`, product id `com.straft.studio.lifetime`,
+4. **Lifetime Access.** Create: type Non-Consumable, reference name `Lifetime Access`, product id `app.straftstudio.studio.lifetime`,
    the price you choose, Family Sharing off, display name `Lifetime Access`, review screenshot and note.
 5. **Before you start sheet.** Apple's review guideline 3.1.1 allows a free trial through a zero-price non-consumable and asks the
    app to say, before the trial starts, how long it lasts, what stops working after it, and what the user must pay to continue.
@@ -345,8 +347,8 @@ Do these in App Store Connect with the Account Holder or Admin role. Exact scree
    >
    > To keep editing, buy Lifetime Access for {price}. It is a one-time purchase, not a subscription.
    >
-   > During the trial, Straft Studio checks your trial online when it starts, after your Mac wakes, and at least every 6 hours while
-   > you use it. The check sends Apple's purchase records for Straft Studio and nothing from your projects.
+   > During the trial, Straft checks your trial online when it starts, after your Mac wakes, and at least every 6 hours while
+   > you use it. The check sends Apple's purchase records for Straft and nothing from your projects.
    >
    > Buttons: **Start free trial**, **Buy Lifetime Access for {price}**, **Restore Purchases**, **Not now**
 

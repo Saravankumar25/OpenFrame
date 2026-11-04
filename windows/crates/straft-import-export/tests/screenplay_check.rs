@@ -62,7 +62,7 @@ fn title_page_stress() -> ScreenplayDoc {
 fn stress() -> ScreenplayDoc {
     let mut doc = ScreenplayDoc::default();
     doc.title_page.set("Title", "Stress");
-    doc.title_page.set("Author", "Straft Studio");
+    doc.title_page.set("Author", "Straft");
     let speech = "I kept the radio on all night because the silence was louder than the storm, and every time the signal broke I heard your voice in the static. ";
     for i in 0..14 {
         let mut s = Scene::new(format!("INT. ROOM {i} - NIGHT"));

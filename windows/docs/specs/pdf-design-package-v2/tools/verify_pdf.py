@@ -22,7 +22,7 @@ import pymupdf
 PAPER = {"letter": (612, 792), "landscape": (792, 612)}
 MARGIN_X, MARGIN_TOP, MARGIN_BOTTOM = 46, 46, 66
 TOL = 1.5
-LOGO_RATIO = 735 / 163
+LOGO_RATIO = 699 / 163
 
 
 def main():
@@ -47,7 +47,7 @@ def main():
         words = p.get_text("words")
         text = p.get_text()
         foot_top = h - MARGIN_BOTTOM
-        if "Created using Straft Studio" not in text:
+        if "Created using Straft" not in text:
             fails.append(f"p{i}: brand line missing")
         m = re.search(r"Page\s+(\d+)\s+of\s+(\d+)", text)
         if not m:

@@ -148,7 +148,7 @@
     {
       "code": "fdx_settings_not_used",
       "level": "info",
-      "message": "Final Draft settings in this file (SmartType, HeaderAndFooter, PageLayout) were not used; Straft Studio applies the screenplay's own page setup.",
+      "message": "Final Draft settings in this file (SmartType, HeaderAndFooter, PageLayout) were not used; Straft applies the screenplay's own page setup.",
       "scene": null
     }
   ]

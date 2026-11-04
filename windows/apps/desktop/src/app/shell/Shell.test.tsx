@@ -1,4 +1,4 @@
-// The AI Assistant panel docks beside the page (owner decision 2026-10-08): it is a column of the
+// The Straft AI panel docks beside the page (owner decision 2026-10-08): it is a column of the
 // layout row after the page, never a layer inside it, so opening it narrows the page instead of
 // covering controls. Its open state is a per-user layout preference that survives a restart, the
 // shortcut (Ctrl+J by default) still opens and closes it, and keyboard focus reaches the page
@@ -51,9 +51,9 @@ vi.mock("../routes", () => {
 });
 vi.mock("../../ai/AiPanel.tsx", () => ({
   default: ({ onClose }: { onClose: () => void }) => (
-    <aside className="ai" aria-label="AI Assistant">
+    <aside className="ai" aria-label="Straft AI">
       <button type="button" onClick={onClose}>
-        Close AI Assistant
+        Close Straft AI
       </button>
     </aside>
   ),
@@ -69,9 +69,9 @@ afterEach(() => {
   window.localStorage.clear();
 });
 
-const panel = () => screen.queryByRole("complementary", { name: "AI Assistant" });
+const panel = () => screen.queryByRole("complementary", { name: "Straft AI" });
 
-describe("AI Assistant panel docked beside the page", () => {
+describe("Straft AI panel docked beside the page", () => {
   it("sits after the page in the layout row, not inside it, so it covers nothing", async () => {
     act(() => useUi.getState().setAiOpen(true));
     renderWithClient(<Shell />);
@@ -86,7 +86,7 @@ describe("AI Assistant panel docked beside the page", () => {
     expect(pageAction.compareDocumentPosition(aside) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it("opens and closes with the assistant shortcut and remembers the state", async () => {
+  it("opens and closes with the Straft AI shortcut and remembers the state", async () => {
     renderWithClient(<Shell />);
     await screen.findByRole("main", { name: "Home" });
     expect(panel()).toBeNull();
@@ -94,14 +94,14 @@ describe("AI Assistant panel docked beside the page", () => {
     await waitFor(() => expect(panel()).toBeTruthy());
     expect(window.localStorage.getItem(AI_PANEL_KEY)).toBe("true");
     expect(readAiPanelOpen()).toBe(true);
-    fireEvent.click(screen.getByRole("button", { name: "Close AI Assistant" }));
+    fireEvent.click(screen.getByRole("button", { name: "Close Straft AI" }));
     await waitFor(() => expect(panel()).toBeNull());
     expect(readAiPanelOpen()).toBe(false);
   });
 
   it("the top bar button shows the panel state", async () => {
     renderWithClient(<Shell />);
-    const button = await screen.findByRole("button", { name: "Assistant" });
+    const button = await screen.findByRole("button", { name: "Straft AI" });
     expect(button.getAttribute("aria-pressed")).toBe("false");
     fireEvent.click(button);
     await waitFor(() => expect(panel()).toBeTruthy());

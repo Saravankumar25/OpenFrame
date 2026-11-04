@@ -3,7 +3,7 @@
 > **Current decisions (2026-10-15).** CI tests the AI download against a test manifest and a local host, not the model files. New gates: secret scan, link check, installer string scan ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)), and the AI evaluation harness as a model gate ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)). The Tauri Mac compile job is retired in Mac phase M1 ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)).
 
 > **Status legend:** ✅ implemented · 📋 planned.
-> Source: `.github/workflows/{ci.yml,mac.yml,release.yml}`, `deny.toml`, `scripts/*.mjs`, `Cargo.lock`, `package-lock.json`.
+> Source: `.github/workflows/{ci.yml,release.yml}`, `deny.toml`, `scripts/*.mjs`, `Cargo.lock`, `package-lock.json`.
 
 ## 1. Pipelines
 
@@ -13,7 +13,7 @@
 |---|---|---|---|
 | `rust` | `windows-latest` | stable toolchain (rustfmt, clippy) → rust-cache → `cargo fmt --all -- --check` → placeholder `apps/desktop/dist` (needed by `tauri::generate_context!`) → `cargo clippy --workspace --all-targets --locked -- -D warnings` → `cargo test --workspace --locked` → **no drift** in `apps/desktop/src/ipc/generated` (ts-rs regenerates the types during tests) and in `docs/engineering/ai-tool-coverage.md` (regenerated from the Registry) | Blocking |
 | `web` | `windows-latest` | Node 20 + npm cache → `npm ci` → `npm run typecheck` (tsc) → ESLint `--max-warnings 0` → Vitest → `npm --workspace apps/desktop run build:web` | Blocking |
-| `governance` | `windows-latest` | Node 20 → `scripts/architecture-lint.mjs --list` (webview imports, single IPC, no webview network, capabilities, CSP, command allow-list, SQLite write sites, AI apply boundary, listeners, `unsafe`, process spawn) → `scripts/check-migrations.mjs` (linear numbering, embedded list, freeze checksums) → `scripts/check-feature-status.mjs` (every in-scope row has a source, a build area, a UI route, tests, a status and an ADR-0030 proof level its evidence supports) → reachability, plan evidence, writing standard → `scripts/check-links.mjs` (document links, and every web address in the shipped app source on the allow-list `scripts/app-addresses.json`) → `scripts/check-secrets.mjs` (secret patterns and secret files in the working tree and every commit) → `node --test scripts/tests/governance.test.mjs` (each check catches a planted violation) | **Blocking** (build plan: feature status check in CI, architecture lint, migration policy) |
+| `governance` | `windows-latest` | Node 20 → `scripts/architecture-lint.mjs --list` (webview imports, single IPC, no webview network, capabilities, CSP, command allow-list, SQLite write sites, AI apply boundary, listeners, `unsafe`, process spawn) → `scripts/check-migrations.mjs` (linear numbering, embedded list, freeze checksums) → `scripts/check-feature-status.mjs` (every in-scope row has a source, a build area, a UI route, tests, a status and an ADR-0030 proof level its evidence supports) → reachability, plan evidence, writing standard → `scripts/check-links.mjs` (document links, and every web address in the shipped app source on the allow-list `scripts/app-addresses.json`) → `scripts/check-secrets.mjs` (secret patterns and secret files in the working tree and every commit) → `node --test scripts/tests/governance.test.mjs scripts/tests/release-placeholders.test.mjs` (each check catches a planted violation; the second file covers the Store placeholder and submission guards) | **Blocking** (build plan: feature status check in CI, architecture lint, migration policy) |
 | `e2e` | `windows-latest` | rust toolchain + cache → Node + `npm ci` → `npm run test:e2e` (verifies and stages the bundled Offline AI from `STRAFT_AI_ASSETS_DIR`, builds the real debug app with it, installs msedgedriver matching the runner's WebView2 and tauri-driver, runs `tests/e2e/specs`: lifecycle journey, relaunch, the AI specs with the real model, reachability generated from the feature status file) → failure screenshots uploaded. Fails closed until the runner has the pinned AI files for today's bundled build; after the download flow is rebuilt, CI tests the download against a test manifest and host (ADR-0026) | **Blocking**; the same job runs on the release tag in `release.yml` and `build` / `store` need it (build plan: end-to-end tests in CI) |
 | `supply-chain` | `windows-latest` | `cargo install cargo-deny` → `cargo deny --locked check` (advisories, licenses, bans, sources) → `cargo install cargo-audit` → `cargo audit` → `npm ci` → `npm audit --omit=dev --audit-level=moderate` → `license-inventory --check` + `THIRD_PARTY_LICENSES.md` must be current | **Blocking** since 2026-10-05 (build plan: supply-chain checks); also a hard gate in releases. An advisory may be ignored only in `deny.toml` with id, reason and tracking reference. |
 
@@ -22,18 +22,9 @@ Locally, `npm run verify` runs format, lint, typecheck, `npm run check:governanc
 
 Concurrency cancels superseded runs per ref. Permissions are `contents: read`.
 
-### `mac.yml` (written 2026-10-06, has not run yet)
+### `mac.yml` (removed 2026-11-03)
 
-Triggered by a pull request or a push to `main` that changes `apps/desktop/src-tauri/**`, `crates/straft-platform/**`,
-`crates/straft-entitlement/**` or the workflow itself, and by hand. macOS runner minutes cost ten times Windows minutes, hence the
-path filter.
-
-| Job | Runner | Steps | Gating |
-|---|---|---|---|
-| `mac-build` | `macos-latest` (Apple silicon), 30 minute timeout | Rust 1.98.1 with `aarch64-apple-darwin`, rust-cache (same pinned actions as `ci.yml`) → `swift build -c release --product StoreKitBridge` → placeholder `apps/desktop/dist` → `cargo check -p straft-desktop --target aarch64-apple-darwin --locked` → `cargo test -p straft-platform -p straft-entitlement --target aarch64-apple-darwin --locked` → `cargo test -p straft-desktop --lib --target aarch64-apple-darwin --locked` (links a binary against the Swift bridge, which `cargo check` does not) | Not a required check yet: make it required once it has passed (doc 37 section 8) |
-
-It compiles and links the macOS shell (doc 37 section 8) and runs the crate and shell unit tests on macOS. It does not sign, package
-or start the app and never talks to StoreKit or the App Store.
+SUPERSEDED by [ADR-0039](../adr/ADR-0039-store-release-licensing.md) and [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md). The workflow built the retired Tauri Mac shell (the Swift StoreKit bridge and the licence server client) and nothing else, so the whole file is gone. The Mac app is a native SwiftUI shell over the Rust core, and its CI is written with the Mac phases (M1 onward).
 
 ### `release.yml` ✅ (tag `v*.*.*`, or manual with an existing tag)
 

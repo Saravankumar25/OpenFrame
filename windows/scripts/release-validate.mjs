@@ -7,8 +7,10 @@
 //   node scripts/release-validate.mjs --report-only [--store] (print status, always exit 0)
 //
 // Checks (both channels)
-//   1. version consistency: Cargo.toml [workspace.package].version, package.json,
-//      apps/desktop/package.json, tauri.conf.json — and the git tag (vX.Y.Z) when given;
+//   1. version consistency. The one source of the app version is Cargo.toml [workspace.package].version.
+//      package.json, apps/desktop/package.json and apps/desktop/src-tauri/tauri.conf.json must equal it,
+//      and so must the git tag (vX.Y.Z) when given. build-msix reads tauri.conf.json and refuses to
+//      build when it differs from Cargo.toml, so the Store package version comes from the same source;
 //   2. an open-source license has been selected (LICENSE file present, LICENSE-PENDING.md
 //      removed, manifests no longer carry the pending placeholder);
 //   3. no key material is committed;
@@ -28,8 +30,13 @@
 //   7. Partner Center identity filled in (packaging/msix/store.config.json or MSIX_* variables);
 //   8. the version maps to a Store package version X.Y.Z.0;
 //   9. all MSIX visual assets are present, and the manifest template renders and declares only
-//      the expected capabilities;
-//  10. the privacy policy URL is configured (https) and its source exists (docs/store/privacy-policy.md).
+//      the expected capabilities (internetClient for the AI model download, runFullTrust);
+//  10. the privacy policy URL is configured (https) and its source exists (docs/store/privacy-policy.md);
+//  11. no REPLACE_WITH_ placeholder remains in the Store files (scripts/check-release-placeholders.mjs;
+//      the CI identity variables count as a real value);
+//  12. the package version is higher than the last submitted one and ends in .0, and the identity
+//      equals the one recorded at the first submission (packaging/msix/submissions.json, ADR-0039
+//      item 15). Debug, test and internal builds never run checks 11 and 12.
 
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -45,6 +52,7 @@ import {
   validatePrivacyPolicyUrl,
   validateStoreIdentity,
 } from "./build-msix.mjs";
+import { checkIdentityUnchanged, checkVersionRises, loadSubmissions, scanPlaceholders } from "./check-release-placeholders.mjs";
 import { prepare as prepareAiAssets } from "./prepare-ai-assets.mjs";
 
 const ROOT = path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
@@ -252,13 +260,13 @@ if (STORE) {
     try {
       const xml = renderManifest(fs.readFileSync(TEMPLATE_PATH, "utf8"), { ...cfg, version: pkgVersion ?? "1.0.0.0" });
       const caps = [...xml.matchAll(/<(?:rescap:|uap\d*:)?Capability\s+Name="([^"]+)"/g)].map((m) => m[1]).sort();
-      const expected = ["runFullTrust"];
+      const expected = ["internetClient", "runFullTrust"];
       const problems = [];
       if (caps.join(",") !== expected.join(",")) problems.push(`capabilities are [${caps.join(", ")}], expected [${expected.join(", ")}] (a new capability needs a documented justification)`);
       if (!/<TargetDeviceFamily Name="Windows\.Desktop"/.test(xml)) problems.push("TargetDeviceFamily must be Windows.Desktop");
       if (!/EntryPoint="Windows\.FullTrustApplication"/.test(xml)) problems.push("Application must use EntryPoint=Windows.FullTrustApplication");
       if (problems.length) failCheck("MSIX manifest template", problems.join("; "));
-      else pass("MSIX manifest template", "renders; only capability runFullTrust");
+      else pass("MSIX manifest template", "renders; only capabilities internetClient and runFullTrust");
     } catch (e) {
       failCheck("MSIX manifest template", e.message);
     }
@@ -280,6 +288,24 @@ if (STORE) {
     if (privacy) failCheck("Privacy policy URL", privacy);
     else pass("Privacy policy URL", cfg.privacyPolicyUrl);
     if (!exists("docs/store/privacy-policy.md")) failCheck("Privacy policy source", "docs/store/privacy-policy.md is missing");
+
+    // Store releases only: leftover placeholders (CI identity variables count as real values).
+    const left = scanPlaceholders();
+    if (left.length) failCheck("Release placeholders", left.map((h) => `${h.file}: ${h.placeholder}`).join("; "));
+    else pass("Release placeholders", "none left");
+
+    // Store releases only: the submission record (ADR-0039 item 15).
+    try {
+      const rec = loadSubmissions(ROOT);
+      const rise = pkgVersion ? checkVersionRises(pkgVersion, rec.lastSubmittedVersion) : "no valid package version to compare";
+      if (rise) failCheck("Store version rises", rise);
+      else pass("Store version rises", `${pkgVersion} after ${rec.lastSubmittedVersion ?? "no earlier submission"}`);
+      const same = checkIdentityUnchanged({ name: cfg.identityName, publisher: cfg.publisher }, rec.firstSubmissionIdentity);
+      if (same) failCheck("Store identity unchanged", same);
+      else pass("Store identity unchanged", rec.firstSubmissionIdentity ? "equals the first submission" : "no first submission recorded yet");
+    } catch (e) {
+      failCheck("Store submission record", `packaging/msix/submissions.json: ${e.message}`);
+    }
   }
 }
 

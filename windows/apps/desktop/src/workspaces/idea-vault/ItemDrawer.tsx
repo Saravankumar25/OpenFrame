@@ -318,7 +318,7 @@ function StorageMarker({ item, scope, onRelinked }: { item: VaultItemDto; scope:
       <div style={{ marginBottom: 12 }}>
         <Banner tone="err" actions={isExternal(item) ? <span className="row"><Button size="xs" onClick={() => void relink()}>Relink…</Button><Button size="xs" icon={<FolderOpen size={12} />} onClick={openLocation}>Open Location</Button></span> : undefined}>
           <b>File unavailable.</b> The original file could not be found{a.path ? <> at <span className="selectable-text">{a.path}</span></> : null}.
-          <div>Straft Studio keeps this item and its notes. Nothing has been deleted.</div>
+          <div>Straft keeps this item and its notes. Nothing has been deleted.</div>
         </Banner>
         {isExternal(item) && <div className="xs muted" style={{ marginTop: 4 }}>This item links to a file outside the project. Files stored inside the project show a different marker.</div>}
       </div>
@@ -465,7 +465,7 @@ function ItemEditor({ item, scope, collections, folders, copyLabel, canSendToSto
   );
 }
 
-/** Research verification flag (FSD 107.5, mock 045). The user's own judgement; never set by Straft Studio. */
+/** Research verification flag (FSD 107.5, mock 045). The user's own judgement; never set by Straft. */
 function ResearchFlagField({ scope, item }: { scope: Scope; item: VaultItemDto }) {
   const change = async (v: string) => {
     const known = RESEARCH_FLAGS.find((f) => f.value === v);
@@ -482,7 +482,7 @@ function ResearchFlagField({ scope, item }: { scope: Scope; item: VaultItemDto }
     <Field
       label="Research flag"
       htmlFor="vv-research"
-      hint="Verification flags are yours to set. Straft Studio never marks research as true just because you imported it."
+      hint="Verification flags are yours to set. Straft never marks research as true just because you imported it."
     >
       <Select
         id="vv-research"

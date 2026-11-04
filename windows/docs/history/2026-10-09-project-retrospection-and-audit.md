@@ -3,7 +3,7 @@
 # Straft Studio: retrospection and audit
 
 > Written on 2026-10-09 for the founder, Saravan Kumar M K. This report explains, from scratch and in simple words, what
-> Straft Studio is, how it was built, how it works, what is finished, what is not, what is risky, and what to do next. It is a
+> Straft is, how it was built, how it works, what is finished, what is not, what is risky, and what to do next. It is a
 > snapshot of one day. Findings name the file and line so that anyone can check them. Re-check a finding in the code before
 > acting on it, because the code moves.
 
@@ -21,8 +21,8 @@ want to decide what happens next, read Sections 9 to 16.
 | Section | What you get |
 |---|---|
 | 1. The short answer | Answers to the questions you asked, in one page each |
-| 2. What Straft Studio is | The product in plain words |
-| 3. Concepts from scratch | Desktop apps, Rust, Tauri, React, SQLite, local AI, installers, Git and Claude Code, each with a Straft Studio example |
+| 2. What Straft is | The product in plain words |
+| 3. Concepts from scratch | Desktop apps, Rust, Tauri, React, SQLite, local AI, installers, Git and Claude Code, each with a Straft example |
 | 4. How it was built | A day-by-day story from 2026-09-30 to 2026-10-09 |
 | 5. How the application works | The big picture, with diagrams |
 | 6. Inside the code | The modules, the patterns, the habits of the codebase |
@@ -69,7 +69,7 @@ audit: **a status text can lag the code, so read the code**. Three rows were sta
 
 ## 1. The short answer
 
-### 1.1 What Straft Studio contains today
+### 1.1 What Straft contains today
 
 - A desktop application with 12 screens (workspaces): Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call
   Sheets, Files, Recently Deleted, Activity, Notes and Tasks, Settings.
@@ -135,7 +135,7 @@ Section 13 explains why.
 6. Bring the Mac build up on your Mac.
 7. Run the 2 to 3 day writer pilot.
 
-## 2. What Straft Studio is, in plain words
+## 2. What Straft is, in plain words
 
 ### 2.1 The product
 
@@ -197,14 +197,14 @@ Everything is inside one installed program, stored in one folder per project, wi
 ## 3. Concepts from scratch
 
 Read this section once. After it, the rest of the report reads easily. Each idea has a short explanation and an example
-from Straft Studio.
+from Straft.
 
 ### 3.1 What a desktop app is
 
 A website lives on someone else's computer (a server) and you look at it through a browser. A **desktop app** is a program
-that is installed on your own computer and runs there. Straft Studio is a desktop app.
+that is installed on your own computer and runs there. Straft is a desktop app.
 
-Why this matters for Straft Studio:
+Why this matters for Straft:
 
 - **Your files stay with you.** A writer's script is a folder on their disk, not a record on a server. That is the whole
   promise of the product: it works with no internet, and nobody else can read it.
@@ -216,18 +216,18 @@ Why this matters for Straft Studio:
 
 Some words you will meet:
 
-| Word | Meaning | Straft Studio example |
+| Word | Meaning | Straft example |
 |---|---|---|
 | Process | A running program | `straft-desktop.exe`; also the two AI helper programs |
-| Window | What the process shows | The Straft Studio window, 1440 by 900 at start |
+| Window | What the process shows | The Straft window, 1440 by 900 at start |
 | Install folder | Where the program files go | Windows: your user's program folder (per-user install) |
 | User data folder | Where the program keeps settings | `%LOCALAPPDATA%\Straft` (settings, logs) |
-| Documents | Where people expect their work | `Documents\Straft Studio\Projects\Title.straft` |
+| Documents | Where people expect their work | `Documents\Straft\Projects\Title.straft` |
 | Crash | The program dies without warning | A power cut while saving; the app must reopen safely |
 
-### 3.2 Why Straft Studio uses two programming languages
+### 3.2 Why Straft uses two programming languages
 
-Straft Studio is written in **TypeScript** (with the library **React**) for what you see and click, and in **Rust** for
+Straft is written in **TypeScript** (with the library **React**) for what you see and click, and in **Rust** for
 everything that must be right: saving, rules, files, the AI helper.
 
 - **TypeScript** is JavaScript with checks. Browsers run JavaScript, so screens built with it can be made quickly. React
@@ -235,7 +235,7 @@ everything that must be right: saving, rules, files, the AI helper.
 - **Rust** is a language for programs that must not crash or corrupt data. It refuses to compile code that could misuse
   memory. It is fast. It is harder to learn than TypeScript.
 - **Why not one language?** A screen written in TypeScript is easy to change but is allowed to do anything inside the
-  browser engine. A brain written in Rust is strict. Straft Studio puts the screens in a cage (they cannot touch files or the
+  browser engine. A brain written in Rust is strict. Straft puts the screens in a cage (they cannot touch files or the
   network) and lets only the Rust brain do real work. That is the main safety idea of the whole design.
 
 ### 3.3 Rust from zero
@@ -244,12 +244,12 @@ everything that must be right: saving, rules, files, the AI helper.
 
 - **Cargo** is Rust's build tool and package manager. You type `cargo build` or `cargo test` and it does the work.
 - A **crate** is one Rust package: a folder with a `Cargo.toml` file (its name and its needs) and source files in `src/`.
-- A **workspace** is a group of crates built together. Straft Studio's root `Cargo.toml` lists 12 members: the desktop shell and
+- A **workspace** is a group of crates built together. Straft's root `Cargo.toml` lists 12 members: the desktop shell and
   11 crates under `crates/`.
-- `Cargo.lock` records the exact version of every package used. Straft Studio uses 632 packages (counted in `Cargo.lock`),
+- `Cargo.lock` records the exact version of every package used. Straft uses 632 packages (counted in `Cargo.lock`),
   most of them small libraries written by other people (for SQLite, ZIP files, PDFs, fonts, encryption and so on).
 
-Straft Studio's crates, in plain words:
+Straft's crates, in plain words:
 
 | Crate | Job |
 |---|---|
@@ -274,21 +274,21 @@ compiler checks and optimises a lot. Key words:
 
 - **Debug build.** Compiles faster, runs slower, contains information that helps a developer find mistakes. Used while
   developing and by the test suite.
-- **Release build.** Compiles slower, runs faster, is smaller. This is what customers get. Straft Studio's release profile
+- **Release build.** Compiles slower, runs faster, is smaller. This is what customers get. Straft's release profile
   uses "thin LTO", which means extra optimisation across crates.
-- **Profile.** A named set of compiler settings in `Cargo.toml`. Straft Studio has `dev`, `release` and a special `perf`.
+- **Profile.** A named set of compiler settings in `Cargo.toml`. Straft has `dev`, `release` and a special `perf`.
 - **`target/` folder.** Where all compiled output goes. It can become huge (see Section 12).
-- **Linker.** The final tool that joins compiled pieces into one `.exe`. Straft Studio uses the fast `rust-lld` linker for
+- **Linker.** The final tool that joins compiled pieces into one `.exe`. Straft uses the fast `rust-lld` linker for
   development and the Microsoft linker for releases (the Microsoft one is required for some security flags).
 - **sccache.** A helper that remembers compiled pieces so that a second compile of the same code is faster.
 - **Incremental compile.** Rust remembers what it compiled last time so that small edits compile faster.
 
 Why a small change can still be slow: a change inside `straft-application` means every test program that includes it
-must be linked again. Straft Studio has 46 separate test programs for that crate alone.
+must be linked again. Straft has 46 separate test programs for that crate alone.
 
 #### 3.3.3 The tools that check Rust code
 
-| Command | What it does | Straft Studio use |
+| Command | What it does | Straft use |
 |---|---|---|
 | `cargo fmt` | Makes formatting uniform | Checked before every commit |
 | `cargo clippy` | A strict code reviewer for common mistakes | Run with "warnings are errors" |
@@ -299,15 +299,15 @@ must be linked again. Straft Studio has 46 separate test programs for that crate
 #### 3.3.4 How Rust handles errors
 
 Rust has no hidden exceptions. A function that can fail returns a `Result`, which is either "ok with a value" or "error".
-Straft Studio uses its own error type `AppError` with a stable code (for example `storage.disk_full`) and a message written
-for a human, such as "The drive is full, so Straft Studio could not upgrade this project. Free up some space and try again.
-Nothing was changed." The code `unwrap()` means "crash if this is an error". In Straft Studio's production code `unwrap` and
+Straft uses its own error type `AppError` with a stable code (for example `storage.disk_full`) and a message written
+for a human, such as "The drive is full, so Straft could not upgrade this project. Free up some space and try again.
+Nothing was changed." The code `unwrap()` means "crash if this is an error". In Straft's production code `unwrap` and
 `expect` are rare (about 60 lines outside tests, counted by a script) because a crash is the worst outcome.
 
 #### 3.3.5 `unsafe` Rust
 
 `unsafe` marks code where the developer promises the compiler that something is safe. It is needed to talk to Windows or
-macOS directly. Straft Studio has 73 uses, nearly all in `straft-platform` (calls to the operating system) and in the Mac
+macOS directly. Straft has 73 uses, nearly all in `straft-platform` (calls to the operating system) and in the Mac
 StoreKit bridge. They are listed and reviewed by a rule in `scripts/architecture-lint.mjs`.
 
 ### 3.4 Tauri from zero
@@ -327,7 +327,7 @@ uses the browser already on the computer, so the program is small. The choice is
 #### 3.4.2 The window, the page and the brain
 
 ```text
- +--------------------------- Straft Studio process ---------------------------+
+ +--------------------------- Straft process ---------------------------+
  |   Window (Tauri)                                                        |
  |    +---------------------------+     bridge      +------------------+  |
  |    |  Webview: the React screens| <------------> |  Rust brain      |  |
@@ -338,7 +338,7 @@ uses the browser already on the computer, so the program is small. The choice is
 
 #### 3.4.3 A Tauri command
 
-A **command** is a Rust function the web page may call. Most apps have dozens. Straft Studio deliberately has four:
+A **command** is a Rust function the web page may call. Most apps have dozens. Straft deliberately has four:
 
 - `of_invoke(op, args)`: the one door for all project work. `op` is a name such as `"story.create_act"`.
 - `of_open_asset`: opens a project file by its id, never by a path from the page.
@@ -351,7 +351,7 @@ is not on the list of 483 operations.
 
 #### 3.4.4 Capabilities and the content security policy
 
-Tauri 2 requires a list of **capabilities**: what the web page may do. Straft Studio's list
+Tauri 2 requires a list of **capabilities**: what the web page may do. Straft's list
 (`apps/desktop/src-tauri/capabilities/default.json`) allows listening to events, setting the window title, asking whether
 the window is full screen, reading the app version and opening file dialogs. It does not allow reading files, running
 programs or making web requests.
@@ -361,7 +361,7 @@ frames, no forms, connections only to the bridge. It stops a hostile script from
 
 #### 3.4.5 `tauri.conf.json`
 
-The settings file for the shell. In Straft Studio it names the app (`Straft Studio`), the window size, the content security
+The settings file for the shell. In Straft it names the app (`Straft Studio`), the window size, the content security
 policy, the installer targets (`nsis` and `msi` only) and the installer description. A second file,
 `tauri.bundled-ai.conf.json`, adds the 1.1 GB AI folder as a resource, so it is copied next to the program.
 
@@ -377,7 +377,7 @@ policy, the installer targets (`nsis` and `msi` only) and the installer descript
 ### 3.5 React and TypeScript from zero
 
 - A **component** is a small piece of screen as a function: "show this list of cards". Components contain other components.
-- **State** is data that the screen remembers. Straft Studio keeps only view state in the browser (which workspace is open,
+- **State** is data that the screen remembers. Straft keeps only view state in the browser (which workspace is open,
   whether the AI panel is open) using a small library named zustand. The project data never lives there.
 - **React Query** is a cache for answers from Rust. A screen asks `useOp("story.board", args, ["story_card"])` and shows the
   result. When Rust says "the table `story_card` changed", every screen that depends on it asks again. There is no polling.
@@ -389,41 +389,41 @@ policy, the installer targets (`nsis` and `msi` only) and the installer descript
 
 ### 3.6 SQLite from zero
 
-SQLite is a database stored in one file. There is no server. Every Straft Studio project has `project.sqlite`.
+SQLite is a database stored in one file. There is no server. Every Straft project has `project.sqlite`.
 
 Key ideas:
 
 - **Table and row.** A table is a grid; a row is one record. The project database has 81 tables (counted in the
   migrations), for acts, cards, scenes, screenplay elements, breakdown elements, schedule strips, call sheets and so on.
 - **Transaction.** A group of changes that happen all together or not at all. If the power fails halfway, the database
-  returns to the state before the transaction. Straft Studio wraps every change in one.
+  returns to the state before the transaction. Straft wraps every change in one.
 - **WAL mode (write-ahead log).** SQLite writes changes to a side file (`-wal`) first, which makes it fast and crash-safe,
-  but it also means a project has extra files while it is open. Straft Studio sets `synchronous=FULL`, so a committed change
+  but it also means a project has extra files while it is open. Straft sets `synchronous=FULL`, so a committed change
   survives a power cut.
-- **Migration.** A numbered script that changes the database layout when the app gets a new feature. Straft Studio has 16 for
+- **Migration.** A numbered script that changes the database layout when the app gets a new feature. Straft has 16 for
   projects, 4 for the Global Idea Vault and 2 for the app's own settings. Rule: a shipped migration is never edited.
 - **Foreign key.** A link between tables that the database enforces.
-- **FTS5.** SQLite's built-in full-text search. Straft Studio uses it for the search box and for AI keyword retrieval.
-- **Trigger.** A small program inside the database that runs on every change. Straft Studio uses triggers to record every
+- **FTS5.** SQLite's built-in full-text search. Straft uses it for the search box and for AI keyword retrieval.
+- **Trigger.** A small program inside the database that runs on every change. Straft uses triggers to record every
   change so that undo and redo are generic.
-- **Integrity check.** A built-in test that the file is not damaged. Straft Studio runs it every time a project opens and
+- **Integrity check.** A built-in test that the file is not damaged. Straft runs it every time a project opens and
   refuses to open a damaged file without touching it.
-- **Backup.** SQLite can copy a database safely while it is open. Straft Studio uses this for safety backups.
+- **Backup.** SQLite can copy a database safely while it is open. Straft uses this for safety backups.
 
-Straft Studio uses the Rust library `rusqlite` with SQLite built into the program (ADR-0002), so the customer installs nothing.
+Straft uses the Rust library `rusqlite` with SQLite built into the program (ADR-0002), so the customer installs nothing.
 
 ### 3.7 Local AI from zero
 
 #### 3.7.1 The words
 
-| Word | Plain meaning | In Straft Studio |
+| Word | Plain meaning | In Straft |
 |---|---|---|
 | Language model | A program that predicts the next piece of text | Google Gemma 3 1B Instruct |
 | Parameters, "1B" | The number of learned numbers inside it: one billion | A small model; chat services use models 100 times larger |
 | Weights | The file holding those numbers | `model.gguf`, 1,069,306,368 bytes |
 | GGUF | A file format for model weights that llama.cpp reads | Both models are GGUF |
 | Quantization, "Q8_0" | Storing each number with 8 bits to make the file smaller | The model is Q8_0 |
-| llama.cpp | A fast open program that runs GGUF models on a normal computer | Straft Studio bundles version b11259 for Windows |
+| llama.cpp | A fast open program that runs GGUF models on a normal computer | Straft bundles version b11259 for Windows |
 | Token | A piece of a word (about three quarters of a word) | The model reads and writes tokens |
 | Context window | How many tokens the model can look at at once | 8,192 tokens for chat |
 | Embedding | A list of numbers that stands for the meaning of a text | BGE small English v1.5, 384 numbers per text |
@@ -436,7 +436,7 @@ Straft Studio uses the Rust library `rusqlite` with SQLite built into the progra
 
 #### 3.7.2 How the pieces fit
 
-1. Straft Studio starts two copies of `llama-server.exe` as helper processes: one for chat (Gemma) and one for embeddings
+1. Straft starts two copies of `llama-server.exe` as helper processes: one for chat (Gemma) and one for embeddings
    (BGE). They listen only on `127.0.0.1` (this computer), on a random port, protected by a key made at launch.
 2. When the writer asks something, Rust gathers relevant project text (search plus meaning search), picks a few tools that
    fit the request, and asks the model for one JSON object: "which tool, with which arguments".
@@ -447,7 +447,7 @@ Straft Studio uses the Rust library `rusqlite` with SQLite built into the progra
 
 #### 3.7.3 Why a 1B model needs care
 
-A one-billion-parameter model is small. It follows instructions loosely, forgets, and invents. Straft Studio handles that with
+A one-billion-parameter model is small. It follows instructions loosely, forgets, and invents. Straft handles that with
 walls instead of trust: facts come from tools, the output must be valid JSON (the model's output is constrained by a
 grammar), the number of steps is capped, repeated identical calls end the loop, project text is marked as data, and the
 model can never write. The cost is that it may choose the wrong tool or misunderstand a request, and then the writer sees
@@ -471,7 +471,7 @@ The warnings are **installation restrictions, not defects**. The test plan tells
 
 ### 3.9 Git from zero
 
-| Word | Meaning | Straft Studio example |
+| Word | Meaning | Straft example |
 |---|---|---|
 | Repository | The folder with the full history of changes | `C:\Straft\.git` |
 | Commit | A saved snapshot with a message | 215 commits on `main` |
@@ -492,7 +492,7 @@ its own build folder, and mistakes with them deleted files once (Section 12).
 Claude Code is a program in which an AI model (Claude) reads your files, runs commands and edits code while you talk to it.
 The words you asked about:
 
-| Word | Plain meaning | In Straft Studio |
+| Word | Plain meaning | In Straft |
 |---|---|---|
 | Session | One conversation from start to end | "Session 1", "session 2" are groups of work |
 | Context window | How much Claude can hold in mind at once; it is finite | Everything read in a session uses it up |
@@ -520,7 +520,7 @@ building at once on a 16 GB laptop produced the storage and memory trouble of Se
 
 ### 3.11 Testing words
 
-| Word | Meaning | Straft Studio example |
+| Word | Meaning | Straft example |
 |---|---|---|
 | Unit test | Tests one small function | `theme.rs` contrast checks |
 | Integration test | Tests many parts together through the real entry point | `core_pipeline.rs::permissions_are_enforced_before_any_mutation` |
@@ -593,7 +593,7 @@ async fn of_open_url(url: String) -> Result<(), AppError> {
     let url = straft_security::web_link(&url)
         .ok_or_else(|| AppError::invalid_input("Only web links (http or https) can be opened."))?;
     straft_platform::shell::open_url(url).map_err(|e| {
-        AppError::new("internal.open_failed", "Straft Studio couldn't open that link.")
+        AppError::new("internal.open_failed", "Straft couldn't open that link.")
             .with_detail(e.to_string())
     })
 }
@@ -605,7 +605,7 @@ async fn of_open_url(url: String) -> Result<(), AppError> {
   as `file:///C:/...` or `javascript:...` is refused. `.ok_or_else(...)` turns "nothing" into an error with a friendly
   message; the `?` at the end means "if this failed, stop and return the error".
 - `straft_platform::shell::open_url(url)`: the platform crate, the only place allowed to ask the operating system to open a
-  browser. If it fails, the user sees "Straft Studio couldn't open that link." and the technical reason is kept for support.
+  browser. If it fails, the user sees "Straft couldn't open that link." and the technical reason is kept for support.
 
 Notice what is not there: the page never gets to open anything it likes. Even this small door checks its input and uses the
 platform crate.
@@ -667,7 +667,7 @@ What is not known, and is not guessed here:
 - **The Git author** on 212 of 215 commits is "Manjunath", the name set in the Git configuration of this computer. Claude's
   commits were made under that name. Three commits carry your name.
 - **The project lived at another path first.** The leftover worktree folders have `.git` files that point to
-  `C:/dev/Straft Studio`, which no longer exists. The project was moved to `C:\Straft` at some point. When is not recorded.
+  `C:/dev/Straft`, which no longer exists. The project was moved to `C:\Straft` at some point. When is not recorded.
 
 ### 4.2 The timeline at a glance
 
@@ -915,7 +915,7 @@ The function `run()` in `apps/desktop/src-tauri/src/lib.rs` (line 407) does this
 
 1. **Detect how it was installed** (`distribution.rs`): store package or not; packaged builds keep data in the package's
    data folder.
-2. **Choose the data folders.** Normally `%LOCALAPPDATA%\Straft` for settings and `Documents\Straft Studio` for work. The
+2. **Choose the data folders.** Normally `%LOCALAPPDATA%\Straft` for settings and `Documents\Straft` for work. The
    end-to-end tests set `STRAFT_DATA_ROOT`, honoured by debug builds only, so tests never touch real data.
 3. **Decide the channel**: Microsoft Store (if running inside an MSIX package), Mac App Store (store build on a Mac), or
    an internal team build (everything else).
@@ -1004,7 +1004,7 @@ per burst of typing (a coalesce key).
 ### 5.7 The project on disk
 
 ```text
-Documents\Straft Studio\Projects\Night Bus.straft\
+Documents\Straft\Projects\Night Bus.straft\
   straft.json         identity and versions (human readable)
   project.sqlite         all structured data
   project.sqlite-wal     recent changes, while the project is open
@@ -1013,12 +1013,12 @@ Documents\Straft Studio\Projects\Night Bus.straft\
   cache\                 rebuildable: thumbnails, intelligence.sqlite for the AI
   recovery\              session.json (the crash marker) and checkpoint.sqlite (last confirmed copy)
   backups\               pre-migration and pre-replace safety copies
-  .lock                  a file lock so only one Straft Studio writes this project
+  .lock                  a file lock so only one Straft writes this project
 ```
 
 Other places:
 
-- `Documents\Straft Studio\Global Idea Vault\` with its own `vault.sqlite` and `assets`.
+- `Documents\Straft\Global Idea Vault\` with its own `vault.sqlite` and `assets`.
 - `%LOCALAPPDATA%\Straft\app.sqlite`: settings, recent projects, shortcuts, themes, the local profile.
 - `%LOCALAPPDATA%\Straft\logs\`: 14 days of redacted logs.
 - `%LOCALAPPDATA%\Straft\entitlement\`: licence notices and, in internal builds, the team gate counter.
@@ -1030,7 +1030,7 @@ Other places:
 3. Take the single-writer lock.
 4. Remove staging files left by a crash.
 5. Check whether the last session ended uncleanly (the crash marker `recovery/session.json` still exists).
-6. Open the database: check integrity, screen the schema for code Straft Studio did not create (triggers and views from a
+6. Open the database: check integrity, screen the schema for code Straft did not create (triggers and views from a
    hostile file), then plan the migration. If an upgrade is needed, write and verify a safety backup first, then run all
    pending migrations in one transaction with foreign key and integrity checks before commit.
 7. Check that the identity in the database matches `straft.json`.
@@ -1062,8 +1062,8 @@ sends the difference. A failed send keeps the text on screen and retries every 3
 - **Windows long paths:** paths of 240 characters or more use a special file layer so SQLite can open them.
 - **Two kinds of connection:** one writer (guarded by a lock) and one read-only reader (`query_only=ON`).
 - **Untrusted schema screening:** a project received from someone else may carry triggers or views that run code inside
-  Straft Studio's connection. At open, every schema object must have a plain name, and every trigger and view must match
-  exactly what Straft Studio's own migrations create. Anything else refuses the file untouched.
+  Straft's connection. At open, every schema object must have a plain name, and every trigger and view must match
+  exactly what Straft's own migrations create. Anything else refuses the file untouched.
 - **Migrations:** 16 for projects (core, vault, story, screenplay, production, visual planning, schedule, AI, collaboration,
   performance, AI apply journal, story card and vault research, screenplay engine, production depth, schedule timeline, call
   sheets and budget), 4 for the vault, 2 for the app. A checksum of each applied migration is stored; opening a project whose
@@ -1658,7 +1658,7 @@ No feature is Release-ready, because that word needs an installer, a clean compu
 | FDX export valid and re-importable | Reachable | **Reopen in a licensed Final Draft is an owner task** |
 | Fountain, Word, PDF (best effort), text import and export | Reachable, Built | PDF import reads exported PDFs exactly; scanned PDFs refused |
 | Import report exact; failed export writes nothing | Reachable | |
-| Screenplay outputs carry no Straft Studio branding | Built | |
+| Screenplay outputs carry no Straft branding | Built | |
 | PDF visual regression goldens | Built | Windows renderer only |
 | Exchange, review, response packages | Verified | |
 | Backup, full project package, identity collision | Verified | **Manual restore drill on a second Windows account is an owner task** |
@@ -2406,7 +2406,7 @@ not checked by any script and will drift; the new documents name files, and line
 | Worktrees | `.claude/worktrees/` (39 dead folders) | Never loaded; costs disk |
 | Knowledge graph | `graphify-out/` (22,062 nodes) with a hook that reminds Claude to query it first | On Bash, Grep, Read, Glob |
 
-### 14.2 What each concept does in Straft Studio (plain words)
+### 14.2 What each concept does in Straft (plain words)
 
 - **CLAUDE.md** is the project's standing orders. It said: what we are building, the control documents, the security
   standard, writing standard, git flow, storage rules, session start and end. It was 14.8 KB and included history ("found on
@@ -2416,7 +2416,7 @@ not checked by any script and will drift; the new documents name files, and line
 - **Skills** are saved procedures such as "brainstorm before building" or "review Rust code". They are listed in every
   session's context, so a large number of skills uses context before any work starts. This session's list has several
   hundred names.
-- **Subagents** are helper Claudes. In Straft Studio they did the area work in parallel, each with its own worktree.
+- **Subagents** are helper Claudes. In Straft they did the area work in parallel, each with its own worktree.
 - **Hooks** are automatic checks. Useful ones here: the graphify reminder; the commit validator. Costly one: a "fact-forcing
   gate" that blocks the first write to every file until facts are stated (27 refusals in this session).
 - **Plugins** bring all of the above in bundles. Several overlap (superpowers, agent-skills and ecc all offer planning,
@@ -2741,7 +2741,7 @@ tool; the preview would list affected scenes; the stale check would refuse it if
 
 1. The export dialog (`features/interchange/ExportScreenplayDialog.tsx`) lists drafts, options (title page, revision marks)
    and a file name. The native save dialog gives a path; the path is passed to Rust as text.
-2. `screenplay.export` validates the destination (`straft_security::validate_output_file`: not a protected Straft Studio
+2. `screenplay.export` validates the destination (`straft_security::validate_output_file`: not a protected Straft
    file, not on a network path, not a reserved name, parent exists).
 3. `straft-import-export` builds the document model, runs `layout::layout` (one engine for the page view, the print
    preview and the PDF), embeds subset fonts for Indian scripts, and writes the PDF bytes.
@@ -2786,7 +2786,7 @@ No file access, no database, so it is safe everywhere.
 #### `straft-project-format` (525 lines): the folder
 
 Layout paths, the manifest, the session marker, stale staging cleanup and the single-writer lock (a file lock through
-`fs4`; a second Straft Studio sees "this project is open elsewhere"). Also the default folders (the Documents fallback noted in
+`fs4`; a second Straft sees "this project is open elsewhere"). Also the default folders (the Documents fallback noted in
 the audit).
 
 #### `straft-security` (2,000 lines): hostile input
@@ -3469,7 +3469,7 @@ as its purpose.
 | `pdf_golden.rs` | 557 | Golden PDF image-compare regression for screenplay PDF export (build plan item PDF image comparison, feature XFER-010; ADR-0008 deterministic PDF). |
 | `performance.rs` | 126 | A feature-length (120-page) screenplay imports and exports in a few seconds. |
 | `report.rs` | 303 | Generic report documents: PDF (Helvetica, tables, page breaks), CSV, XLSX. |
-| `samples.rs` | 212 | The four Straft Studio-owned sample scripts as regression fixtures (masterplan area "Call sheets, budget, templates, samples and exports", box "Sample scr |
+| `samples.rs` | 212 | The four Straft-owned sample scripts as regression fixtures (masterplan area "Call sheets, budget, templates, samples and exports", box "Sample scr |
 | `screenplay_engine.rs` | 800 | Screenplay engine: page setup (Letter and A4, font size, spacing), one page layout shared by the preview and the PDF, keep-together rules, dialogue |
 | `security_parsers.rs` | 295 | Regression tests for the 2026-09-30 security review: hostile XML (PARSE-01) and PDF (PARSE-02) input must fail fast and safely : never hang, exhaust m |
 | `txt.rs` | 142 | TXT and pasted screenplay text (FSD §19.6, Import/Export §4.8, §4.11). |
@@ -3606,7 +3606,7 @@ From `docs/adr/`. Status is as written in each record on 2026-10-09.
 | `31-ai-assisted-development-controls.md` | 1004 | Straft Studio: Vibe Coding Gaps and How to Cover Them |
 | `32-screenplay-engine-contract.md` | 169 | 32: Screenplay engine contract (proposed) |
 | `33-production-depth-contract.md` | 208 | 33: Production depth contract (proposed) |
-| `34-ux-laws-checklist.md` | 38 | 34: UX laws checklist for Straft Studio UI work |
+| `34-ux-laws-checklist.md` | 38 | 34: UX laws checklist for Straft UI work |
 | `35-writing-standard.md` | 69 | Writing standard |
 | `36-entitlement-and-trial.md` | 486 | Entitlement and trial |
 | `37-platform-boundary.md` | 180 | Platform boundary |
@@ -3676,7 +3676,7 @@ Nothing was built, run or tested.
 | Checkpoint | A copy of the database taken at a clean close or on Save |
 | CI | Continuous integration: automatic checks on a server |
 | Command (Tauri) | A Rust function the page may call |
-| Command (Straft Studio) | An operation that changes data |
+| Command (Straft) | An operation that changes data |
 | Commit | A saved snapshot in Git; also a finished database transaction |
 | Context window | How much text a model can consider at once |
 | CSP | Content security policy: rules for what a web page may load or contact |
@@ -3700,7 +3700,7 @@ Nothing was built, run or tested.
 | MCP | A way to connect Claude to outside services |
 | Notarization | Apple's scan and record of a signed Mac app |
 | Operation | A named action the brain can do, such as `story.create_act` |
-| Package (Straft Studio) | A file made to share work or make a backup |
+| Package (Straft) | A file made to share work or make a backup |
 | Plugin | A bundle of skills, agents, commands and hooks for Claude Code |
 | Profile (Cargo) | A set of compiler settings |
 | Proposal | A change the AI prepared but did not apply |
@@ -3807,9 +3807,9 @@ Date, short hash and subject (215 commits). The first three are large snapshots;
 2026-10-07 01:56  4eefb5e  Story Board and Idea Vault: long scene description, Card Display Settings, card limits, lineage links, research flags
 2026-10-07 02:01  ea3911c  Mockups: remove every writing standard hit and lower the mockups baseline to 0
 2026-10-07 02:02  dd1795b  Merge mockup writing cleanup: 1311 em dash hits removed from HTML_Mockups
-2026-10-07 02:03  9b8119a  Add the four Straft Studio-owned sample scripts under templates/samples
+2026-10-07 02:03  9b8119a  Add the four Straft-owned sample scripts under templates/samples
 2026-10-07 02:04  dc56d9b  Writing check: skip the two website prompts that list banned phrases as words to avoid; living-docs baseline 671 to 665
-2026-10-07 02:05  5d1325b  Merge four Straft Studio-owned sample scripts (Example Feature, Short, Scene, FDX Interchange Test)
+2026-10-07 02:05  5d1325b  Merge four Straft-owned sample scripts (Example Feature, Short, Scene, FDX Interchange Test)
 2026-10-07 02:14  90be753  Themes in the UI: one token layer, Settings > Appearance, theme import and the new logo
 2026-10-07 05:34  fa513c4  Appearance tests, docs and Windows High Contrast states
 2026-10-07 05:34  edac25e  Screenplay engine: migration 0013, element rule table, page setup with A4, header and footer, page breaks, custom elements, production numbers and loc
@@ -3942,7 +3942,7 @@ Date, short hash and subject (215 commits). The first three are large snapshots;
 2026-10-08 15:24  0097907  Merge session-2 (area 14 Schedule and Day Out of Days) into the several screenplays branch
 2026-10-08 15:24  f5ad6d7  Merge branch 'area/11-several-screenplays' into session-2
 2026-10-08 15:58  8be3687  Call sheets: full content, Draft / Needs refresh / Final, and a versioned source
-2026-10-08 15:58  18878dd  Budget Planned and Actual, Straft Studio branding on production exports, PDF regression
+2026-10-08 15:58  18878dd  Budget Planned and Actual, Straft branding on production exports, PDF regression
 2026-10-08 15:59  49b49bf  Built-in templates as independent copies, and the four sample scripts shipped in the app
 2026-10-08 16:09  911335f  Call sheets: prove edits never touch other modules, keep typed actors and addresses
 2026-10-08 16:10  d3af142  Call sheets: test Add Section permissions, search, undo and the Final refusal
@@ -3991,7 +3991,7 @@ Date, short hash and subject (215 commits). The first three are large snapshots;
 2026-10-08 23:38  7e74f07  Dock the AI Assistant panel beside the page
 2026-10-08 23:38  8d6b53e  Screenplay: one Enter after a new character name creates it and moves on
 2026-10-09 00:17  922a7c8  Docked AI panel: nothing cut off at the smallest window; spec fixes
-2026-10-09 00:18  d5cc2bb  Remove dashes from text Straft Studio shows or writes itself
+2026-10-09 00:18  d5cc2bb  Remove dashes from text Straft shows or writes itself
 2026-10-09 00:44  4fdd7d3  Visual baseline: refresh the Production Overview screen for the new wording
 2026-10-09 01:04  86d7f3f  Evidence: docked AI panel, one-Enter character flow and dash sweep, final full E2E green
 2026-10-09 01:06  df4853c  rustfmt: re-wrap the lines the dash sweep shortened (formatting only)

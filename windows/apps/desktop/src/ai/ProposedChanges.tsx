@@ -2,7 +2,7 @@
 //
 // Every AI-prepared project change arrives here as ONE Change Set: summary,
 // affected areas and an exact preview, then the user's explicit choice
-// [Reject] [Apply Changes]. Nothing is applied by the assistant itself.
+// [Reject] [Apply Changes]. Nothing is applied by Straft AI itself.
 // A stale or conflicting proposal can never be applied from this card; it must
 // be re-checked against the current project first. Destructive changes also
 // need the product's usual confirmation.

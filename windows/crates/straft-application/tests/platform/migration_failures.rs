@@ -13,7 +13,7 @@
 //!
 //! Scenarios: full drive inside the migration transaction (debug-only fault hook
 //! `straft_persistence::migrate::fault`, which returns the `SQLITE_FULL` error SQLite itself
-//! gives), read-only database file (permission denied), database written by a newer Straft Studio,
+//! gives), read-only database file (permission denied), database written by a newer Straft,
 //! damaged database that needs a migration, and a pre-migration safety backup that cannot be
 //! written. An *interrupted* migration (the process killed mid-upgrade) is covered by the real
 //! process-kill matrix in `forced_kill.rs`
@@ -23,11 +23,11 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use rusqlite::{Connection, OpenFlags};
+use serde_json::{Value, json};
 use straft_application::schema::PROJECT_MIGRATIONS;
 use straft_domain::AppError;
 use straft_test_support::TestEnv;
-use rusqlite::{Connection, OpenFlags};
-use serde_json::{Value, json};
 
 /// Schema the fixtures go back to. Migration 11 only adds `sys_ai_apply_journal` and its index;
 /// migration 12 only adds `story_scene_card.long_description` and `vault_item.research_flag`;
@@ -410,7 +410,7 @@ fn m1_05_database_from_a_newer_straft_is_refused_byte_for_byte_untouched() {
         let e = f.open().expect_err(case);
         assert_eq!(e.code.0, "project_format.too_new", "attempt {attempt}");
         assert_human(&e, case);
-        assert!(e.message.contains("Update Straft Studio"), "{}", e.message);
+        assert!(e.message.contains("Update Straft"), "{}", e.message);
         assert!(
             fs::read(f.db()).unwrap() == before.db,
             "attempt {attempt}: project.sqlite changed"

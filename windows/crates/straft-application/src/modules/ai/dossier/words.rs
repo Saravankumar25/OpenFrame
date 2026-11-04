@@ -11,8 +11,19 @@ pub struct Msg {
 
 impl Msg {
     pub fn new(s: &str) -> Self {
+        Self::with_topics(s, &[])
+    }
+
+    /// The message with the words of the picked section added as if it had said them: a section
+    /// the person picked is the topic, so the "is this about X" tests of its fetcher hold. The
+    /// added words answer `has`, `any` and `stem` only; `words` and `keywords` stay the person's.
+    pub fn with_topics(s: &str, topics: &[&str]) -> Self {
         let norm = normalize(s);
-        let padded = format!(" {norm} ");
+        let mut padded = format!(" {norm} ");
+        for t in topics {
+            padded.push_str(&normalize(t));
+            padded.push(' ');
+        }
         Self { norm, padded }
     }
 
@@ -26,7 +37,7 @@ impl Msg {
 
     /// A word that starts with `stem` ("character" matches "characters").
     pub fn stem(&self, stem: &str) -> bool {
-        self.norm.split(' ').any(|w| w.starts_with(stem))
+        self.padded.split(' ').any(|w| w.starts_with(stem))
     }
 
     pub fn words(&self) -> impl Iterator<Item = &str> {

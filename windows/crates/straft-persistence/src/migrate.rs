@@ -7,9 +7,9 @@
 //! structural integrity, and only then commits. A failure leaves the database
 //! exactly as it was.
 
-use straft_domain::{AppError, AppResult, now_ms};
 use rusqlite::{Connection, params};
 use sha2::{Digest, Sha256};
+use straft_domain::{AppError, AppResult, now_ms};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Migration {
@@ -32,7 +32,7 @@ pub enum MigrationPlan {
         from: u32,
         to: u32,
     },
-    /// Written by a newer Straft Studio. Must not be opened for writing.
+    /// Written by a newer Straft. Must not be opened for writing.
     TooNew {
         found: u32,
         supported: u32,
@@ -84,7 +84,7 @@ pub fn plan(conn: &Connection, migrations: &[Migration]) -> AppResult<MigrationP
 pub fn too_new_error(found: u32, supported: u32) -> AppError {
     AppError::new(
         "project_format.too_new",
-        "This project was saved by a newer version of Straft Studio. Update Straft Studio to open it. The project has not been changed.",
+        "This project was saved by a newer version of Straft. Update Straft to open it. The project has not been changed.",
     )
     .with_detail(format!("schema {found} > supported {supported}"))
 }
@@ -169,7 +169,7 @@ pub enum Subject {
     Project,
     /// The Global Idea Vault database.
     GlobalIdeaVault,
-    /// Straft Studio's own `app.sqlite` (settings, recent projects).
+    /// Straft's own `app.sqlite` (settings, recent projects).
     AppData,
 }
 
@@ -192,7 +192,7 @@ pub fn upgrade_failure(err: AppError, subject: Subject) -> AppError {
         AppError::new(
             "storage.disk_full",
             format!(
-                "The drive is full, so Straft Studio could not upgrade {noun}. Free up some space and try again. Nothing was changed."
+                "The drive is full, so Straft could not upgrade {noun}. Free up some space and try again. Nothing was changed."
             ),
         )
         .with_detail(detail)
@@ -201,7 +201,7 @@ pub fn upgrade_failure(err: AppError, subject: Subject) -> AppError {
         AppError::new(
             "storage.access_denied",
             format!(
-                "Straft Studio could not upgrade {noun} because its file or folder is read-only or Straft Studio lacks permission to write there. Move it to a folder you can write to, or check its permissions, then try again. Nothing was changed."
+                "Straft could not upgrade {noun} because its file or folder is read-only or Straft lacks permission to write there. Move it to a folder you can write to, or check its permissions, then try again. Nothing was changed."
             ),
         )
         .with_detail(detail)
@@ -222,7 +222,7 @@ pub fn backup_failure(err: AppError, subject: Subject) -> AppError {
         AppError::new(
             "storage.disk_full",
             format!(
-                "The drive is full, so Straft Studio could not make the safety copy it takes before it can upgrade {noun}. Free up some space and try again. Nothing was changed."
+                "The drive is full, so Straft could not make the safety copy it takes before it can upgrade {noun}. Free up some space and try again. Nothing was changed."
             ),
         )
         .with_detail(detail)
@@ -231,7 +231,7 @@ pub fn backup_failure(err: AppError, subject: Subject) -> AppError {
         AppError::new(
             "storage.access_denied",
             format!(
-                "Straft Studio could not make the safety copy it takes before it can upgrade {noun}, because it lacks permission to write to the backups folder. Check the folder's permissions and try again. Nothing was changed."
+                "Straft could not make the safety copy it takes before it can upgrade {noun}, because it lacks permission to write to the backups folder. Check the folder's permissions and try again. Nothing was changed."
             ),
         )
         .with_detail(detail)
@@ -239,7 +239,7 @@ pub fn backup_failure(err: AppError, subject: Subject) -> AppError {
         AppError::new(
             "storage.backup_failed",
             format!(
-                "Straft Studio could not make the safety copy it takes before it can upgrade {noun}, so it did not upgrade it. Nothing was changed. Check that the folder can be written to and try again."
+                "Straft could not make the safety copy it takes before it can upgrade {noun}, so it did not upgrade it. Nothing was changed. Check that the folder can be written to and try again."
             ),
         )
         .with_detail(detail)
@@ -657,8 +657,11 @@ mod tests {
 
     #[test]
     fn a_windows_checkout_of_the_earlier_text_is_accepted_too() {
-        let crlf: &'static str =
-            Box::leak(earlier_appearance_sql().replace('\n', "\r\n").into_boxed_str());
+        let crlf: &'static str = Box::leak(
+            earlier_appearance_sql()
+                .replace('\n', "\r\n")
+                .into_boxed_str(),
+        );
         let mut c = crate::open_in_memory().unwrap();
         apply(&mut c, &[M1, appearance(crlf)]).unwrap();
         let shipped = [M1, appearance(APPEARANCE_NOW)];
@@ -716,7 +719,11 @@ mod tests {
     fn the_allow_list_names_exactly_the_files_the_rename_changed() {
         assert_eq!(RENAMED_MIGRATIONS.len(), 11);
         for r in RENAMED_MIGRATIONS {
-            assert!(r.before != r.now && r.before != r.before_crlf, "{}", r.version);
+            assert!(
+                r.before != r.now && r.before != r.before_crlf,
+                "{}",
+                r.version
+            );
         }
     }
 

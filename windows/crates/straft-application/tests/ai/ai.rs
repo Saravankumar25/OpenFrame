@@ -10,13 +10,13 @@
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
+use rusqlite::params;
+use serde_json::{Value, json};
 use straft_ai::{ChatRequest, InferenceProvider};
 use straft_application::MutationMeta;
 use straft_application::modules::ai::{self, ChangeSetDraft, OpCall, PreviewRow, change_set};
 use straft_domain::{AppError, AppResult, Capability, Role, new_id, now_ms};
 use straft_test_support::TestEnv;
-use rusqlite::params;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ fixtures
 
@@ -52,11 +52,12 @@ impl ScriptedModel {
 impl InferenceProvider for ScriptedModel {
     fn chat(&self, req: &ChatRequest) -> AppResult<String> {
         self.seen.lock().unwrap().push(req.clone());
-        self.replies
-            .lock()
-            .unwrap()
-            .pop_front()
-            .unwrap_or_else(|| Err(AppError::ai("unavailable", "AI is currently unavailable. Straft Studio's core workflows continue to work normally.")))
+        self.replies.lock().unwrap().pop_front().unwrap_or_else(|| {
+            Err(AppError::ai(
+                "unavailable",
+                "AI is currently unavailable. Straft's core workflows continue to work normally.",
+            ))
+        })
     }
     fn model_reference(&self) -> String {
         "test-local-profile".into()
@@ -148,12 +149,45 @@ fn seed_screenplay(env: &TestEnv) -> Screenplay {
     Screenplay { draft, scenes }
 }
 
-fn ask(env: &TestEnv, text: &str, scope: Value) -> Value {
-    env.ok("ai.ask", json!({ "text": text, "scope": scope }))
+fn ask(env: &TestEnv, text: &str, sections: Value) -> Value {
+    // The default pick is the screenplay; a request for a change also picks the section its tool lives in.
+    let sections = if sections == whole() {
+        sections_for(text)
+    } else {
+        sections
+    };
+    env.ok("ai.ask", json!({ "text": text, "sections": sections }))
 }
 
+/// The sections a request needs: the tools the model is scripted to name must be homed in a picked
+/// section (spec 3.9, round R6). The screenplay always, then the section of the tool the request is
+/// about. Three at most.
+fn sections_for(text: &str) -> Value {
+    let t = text.to_lowercase();
+    let mut leaves = vec!["screenplay/scenes"];
+    for (words, leaf) in [
+        (&["scene card", "create it again"][..], "story/beat-board"),
+        (&["rename"], "story/characters"),
+        (&["project note", "pin a note"], "notes-tasks/notes"),
+        (&["task"], "notes-tasks/tasks"),
+        (&["set dressing"], "production/catalog"),
+        (&["breakdown"], "breakdown/breakdown"),
+    ] {
+        if leaves.len() < 3 && words.iter().any(|w| t.contains(w)) {
+            leaves.push(leaf);
+        }
+    }
+    json!(
+        leaves
+            .iter()
+            .map(|l| json!({ "leaf": l }))
+            .collect::<Vec<_>>()
+    )
+}
+
+/// The sections these tests read: the screenplay (the assistant reads only what is picked).
 fn whole() -> Value {
-    json!({ "kind": "WholeProject" })
+    json!([{ "leaf": "screenplay/scenes" }])
 }
 
 fn count(env: &TestEnv, sql: &str) -> i64 {
@@ -224,7 +258,7 @@ fn fsd_ai_001_straft_works_fully_without_offline_ai() {
     assert_eq!(
         env.err(
             "ai.ask",
-            json!({ "text": "Please look up the scenes.", "scope": whole() })
+            json!({ "text": "Please look up the scenes.", "sections": whole() })
         ),
         "ai.assets_missing"
     );
@@ -322,14 +356,14 @@ fn ai_ac_020_unavailable_runtime_leaves_the_project_unchanged() {
     let m = attach(&env);
     m.fail(AppError::ai(
         "unavailable",
-        "AI is currently unavailable. Straft Studio's core workflows continue to work normally.",
+        "AI is currently unavailable. Straft's core workflows continue to work normally.",
     ));
     let before = undo_steps(&env);
     let x = ask(&env, "Please look up the scenes.", whole());
     assert_eq!(x["result"]["kind"], "Unavailable");
     assert_eq!(
         x["result"]["content"],
-        "AI is currently unavailable. Straft Studio's core workflows continue to work normally."
+        "AI is currently unavailable. Straft's core workflows continue to work normally."
     );
     assert!(
         x["result"]["details"]
@@ -348,12 +382,12 @@ fn ai_ac_002_a_count_is_written_from_the_projects_own_number_and_never_from_the_
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
     let m = attach(&env);
-    let scope = json!({ "kind": "CurrentScreenplay" });
+    let scope = json!([{ "leaf": "screenplay/scenes" }]);
 
     // The model writes the sentence; the number comes from the project, so the check holds it to it.
     m.reply("The script has 3 scenes.");
     let x = ask(&env, "How many scenes are in the script?", scope.clone());
-    assert_eq!(x["scopeLabel"], "Using: Draft 1");
+    assert_eq!(x["scopeLabel"], "Using: Screenplay (Draft 1, all scenes)");
     let r = &x["result"];
     assert_eq!(r["kind"], "Answer");
     assert_eq!(r["content"], "The script has 3 scenes.");
@@ -439,7 +473,11 @@ fn ai_ac_023_product_questions_are_grounded_in_the_product_guide() {
     // writer is given, and the model only writes the answer. A small model's markdown never reaches
     // the chat: the answer is plain sentences.
     m.reply("**The Production Source** is the screenplay draft that production planning uses.");
-    let x = ask(&env, "What is the Production Source?", whole());
+    let x = ask(
+        &env,
+        "What is the Production Source?",
+        json!([{ "leaf": "help/product-guide" }]),
+    );
     assert_eq!(x["result"]["kind"], "Answer");
     assert_eq!(
         x["result"]["content"],
@@ -600,7 +638,7 @@ fn ai_ac_011_permissions_are_inherited_viewers_cannot_prepare_or_apply() {
         .call_as(
             &viewer,
             "ai.ask",
-            json!({ "text": "How many scenes are in the script?", "scope": whole() }),
+            json!({ "text": "How many scenes are in the script?", "sections": whole() }),
         )
         .unwrap();
     assert_eq!(x["result"]["content"], "The script has 3 scenes.");
@@ -611,7 +649,7 @@ fn ai_ac_011_permissions_are_inherited_viewers_cannot_prepare_or_apply() {
         .call_as(
             &viewer,
             "ai.ask",
-            json!({ "text": "Create a Scene Card", "scope": whole() }),
+            json!({ "text": "Create a Scene Card", "sections": sections_for("Create a Scene Card") }),
         )
         .unwrap();
     assert_eq!(x["result"]["kind"], "Denied");
@@ -961,7 +999,7 @@ fn operations_outside_the_allow_list_are_never_applied() {
     assert_eq!(r["state"], "Failed");
     assert_eq!(
         r["errorMessage"],
-        "This proposal contains a change Straft Studio can't apply. Nothing was changed."
+        "This proposal contains a change Straft can't apply. Nothing was changed."
     );
     assert_eq!(
         count(&env, "SELECT count(*) FROM project WHERE archived=1"),
@@ -1024,9 +1062,10 @@ fn ai_ac_013_other_users_private_notes_never_reach_the_model() {
     let x = ask(
         &env,
         "Summarize this",
-        json!({ "kind": "CurrentSelection", "selection": [{ "id": theirs }] }),
+        json!([{ "leaf": "notes-tasks/notes" }]),
     );
-    assert_eq!(x["scopeLabel"], "Using: Selection (nothing available)");
+    assert_eq!(x["scopeLabel"], "Using: Notes");
+    let _ = theirs;
 
     // Searching for the words of the note, or asking what its writer plans, finds nothing.
     m.reply("I could not find that in the project.");
@@ -1059,12 +1098,9 @@ fn prompt_injection_in_project_text_is_data_not_instructions() {
     let sp = seed_screenplay(&env);
     let m = attach(&env);
     m.reply("Ravi waits for a late train at the railway station.");
-    let scope = json!({ "kind": "CurrentScene", "sceneId": sp.scenes[1] });
+    let scope = json!([{ "leaf": "screenplay/scenes", "sceneId": sp.scenes[1] }]);
     let x = ask(&env, "Give me the gist of this scene", scope.clone());
-    assert_eq!(
-        x["scopeLabel"],
-        "Using: Scene 2: EXT. RAILWAY STATION — DAY (Draft 1)"
-    );
+    assert_eq!(x["scopeLabel"], "Using: Screenplay (Draft 1, Scene 2)");
     {
         let seen = m.seen.lock().unwrap();
         let writer = &seen[0];
@@ -1156,7 +1192,7 @@ fn ai_records_keep_references_and_audit_without_context_copies() {
     ask(
         &env,
         "Explain this scene",
-        json!({ "kind": "CurrentScene", "sceneId": sp.scenes[0] }),
+        json!([{ "leaf": "screenplay/scenes", "sceneId": sp.scenes[0] }]),
     );
     let s = env.core.project().unwrap();
     let (scope_json, processing, model, class): (String, String, String, String) = s
@@ -1201,7 +1237,7 @@ fn ai_ac_024_history_is_personal_and_survives_restart() {
     m.reply("The script has 3 scenes.");
     env.ok(
         "ai.ask",
-        json!({ "text": "And how many scenes are there in total?", "scope": whole(), "conversationId": conv }),
+        json!({ "text": "And how many scenes are there in total?", "sections": whole(), "conversationId": conv }),
     );
     assert!(m.seen_text().contains("<conversation>"));
     assert!(
@@ -1239,7 +1275,7 @@ fn a_conversation_is_saved_for_review_only_on_the_persons_call_and_only_their_ow
     m.reply("The script has 3 scenes.");
     env.ok(
         "ai.ask",
-        json!({ "text": "And how many scenes in total?", "scope": whole(), "conversationId": conv }),
+        json!({ "text": "And how many scenes in total?", "sections": whole(), "conversationId": conv }),
     );
     // A third exchange in another conversation must not travel with the first two.
     m.reply("The script has 3 scenes.");
@@ -1383,7 +1419,7 @@ fn an_answer_that_never_gets_the_language_right_is_replaced_by_a_true_sentence()
     assert_eq!(
         content,
         "I could not find anything that matches \u{201C}इस स्क्रिप्ट में कितने दृश्य हैं?\u{201D}. \
-         I looked in the screenplays, the Story, Production, the Schedule, the Budget, notes and files."
+         I looked in Screenplay > Scenes."
     );
     assert_eq!(m.calls(), 3);
     assert_eq!(x["result"]["confidence"], "Unavailable");

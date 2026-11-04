@@ -28,7 +28,7 @@ All steps below are one scenario.
 
 1. Do the first launch: type 'E2E Tester' as the name, click Continue, click Create Project, type 'Harbour Lights' as the title, click Create.
 2. Check: the theme is "straft-default" and the preference is "system".
-3. Check: the top bar shows the Straft Studio logo.
+3. Check: the top bar shows the Straft logo.
 4. Open the project menu and choose Appearance.
 5. Check: the "Theme" choice shows.
 6. Click Dark.

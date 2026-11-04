@@ -1,22 +1,25 @@
 {
-  "$comment": "Microsoft Store packaging settings (docs/engineering/27-microsoft-store.md). Identity values are public, not secrets: copy them from Partner Center > your app > Product management > Product identity and commit them. Environment variables MSIX_IDENTITY_NAME, MSIX_PUBLISHER, MSIX_PUBLISHER_DISPLAY_NAME, MSIX_DISPLAY_NAME and STORE_PRIVACY_POLICY_URL override these values (CI repository variables). Values starting with REPLACE_ are placeholders and block Store builds.",
+  "$comment": "Microsoft Store packaging settings (docs/engineering/27-microsoft-store.md). Identity values are public, not secrets: copy them from Partner Center > your app > Product management > Product identity and commit them. Environment variables MSIX_IDENTITY_NAME, MSIX_PUBLISHER, MSIX_PUBLISHER_DISPLAY_NAME, MSIX_DISPLAY_NAME and STORE_PRIVACY_POLICY_URL override these values (CI repository variables). Values starting with REPLACE_ are placeholders and block Store builds; scripts/check-release-placeholders.mjs lists them.",
   "identity": {
+    "$comment_name": "Owner supplies the name from Partner Center > the app > Product management > Product identity (Package/Identity/Name), or the CI variable MSIX_IDENTITY_NAME. Never change it after the first submission.",
+    "$comment_publisher": "Owner supplies the Publisher value (CN=...) from the same Product identity page, or the CI variable MSIX_PUBLISHER. Never change it after the first submission.",
+    "$comment_publisherDisplayName": "Owner chooses it (open decision, package file 06 section D), or sets the CI variable MSIX_PUBLISHER_DISPLAY_NAME.",
     "name": "REPLACE_WITH_PACKAGE_IDENTITY_NAME",
     "publisher": "CN=REPLACE_WITH_PACKAGE_IDENTITY_PUBLISHER",
     "publisherDisplayName": "REPLACE_WITH_PUBLISHER_DISPLAY_NAME"
   },
   "displayName": "Straft Studio",
-  "shortName": "Straft Studio",
+  "shortName": "Straft",
   "description": "Local-first studio for writers, screenwriters and production teams: ideas, story, screenplay and production planning.",
-  "privacyPolicyUrl": "",
-  "supportUrl": "",
+  "privacyPolicyUrl": "https://straftstudio.com/legal/privacy/",
+  "supportUrl": "https://straftstudio.com/contact/",
   "minVersion": "10.0.22000.0",
   "maxVersionTested": "10.0.26100.0",
   "fileTypeAssociations": {
     "$comment": "Off until the app handles file activation (opening a package file passed on the command line). Projects are folders, so they are never associated.",
     "enabled": false,
     "name": "straft.exchangepackage",
-    "displayName": "Straft Studio exchange package",
+    "displayName": "Straft exchange package",
     "extensions": [".ofstory", ".ofschedule", ".ofshots"]
   }
 }

@@ -26,7 +26,7 @@ specification per export. Version 2 changed the orientation of four exports and 
 1. **The package is the design source.** Where an export's `.md` and the renderer disagree, the package wins until the owner
    changes it. A deliberate difference is written in that export's section E with its reason.
 2. **Footer on every page.** The official logo as a lossless image (17 pt high, never redrawn, typeset, recoloured or
-   cropped) at the bottom left, `Created using Straft Studio` directly below it, `Page X of Y` at the bottom right with the
+   cropped) at the bottom left, `Created using Straft` directly below it, `Page X of Y` at the bottom right with the
    real page count. No footer rule and no project text in the footer. The logo is embedded once and reused on every page.
 3. **Bottom margin 66 pt** (was 80 pt). Margins left, right and top are 46 pt. Content area 520 by 680 pt portrait and 700 by
    500 pt landscape. `MARGIN` and `FOOTER_SPACE` are re-derived together; every pagination and golden file changes.

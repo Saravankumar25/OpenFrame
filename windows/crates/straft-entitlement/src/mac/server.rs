@@ -1,6 +1,6 @@
 //! The licensing server contract for the Mac App Store trial.
 //!
-//! During the trial the app sends the signed StoreKit JWS strings to Straft Studio's licensing server.
+//! During the trial the app sends the signed StoreKit JWS strings to Straft's licensing server.
 //! The server checks Apple's signature on each JWS, takes the trial transaction's Apple-recorded
 //! purchase date, computes `trialEndsAt = purchaseDate + 168 h` in UTC and returns the remaining
 //! seconds measured on its own clock. The Mac's clock is never sent and never used.
@@ -9,7 +9,7 @@
 //! must check again. The server sends [`DEFAULT_LEASE_SECONDS`], never more than the seconds left.
 //!
 //! Wire format, version 1 (the licence server in `services/licence-server` follows it, and the
-//! shared fixture `services/licence-server/tests/fixtures/mac-validate-v1.json` proves both sides
+//! shared fixture `mac/fixtures/mac-validate-v1.json` proves both sides
 //! agree on the same bytes):
 //!
 //! - Request: `{schema, nonce, environment, appTransactionJws, transactionJws}` where `nonce` is
@@ -21,12 +21,12 @@
 //!   is base64url (no padding) of the Ed25519 signature over [`RESPONSE_DOMAIN`] followed by the
 //!   payload bytes.
 //!
-//! The answer is signed with Straft Studio's Ed25519 response key. The app holds only the public key.
+//! The answer is signed with Straft's Ed25519 response key. The app holds only the public key.
 //! The signature covers the domain prefix [`RESPONSE_DOMAIN`] followed by the payload bytes exactly
 //! as sent, so:
 //!
 //! - an edited response fails the signature check,
-//! - a signature made for another Straft Studio message cannot be replayed as a response,
+//! - a signature made for another Straft message cannot be replayed as a response,
 //! - a response recorded earlier fails the nonce check, because every request carries a fresh
 //!   random nonce that the server must echo inside the signed payload.
 //!
@@ -39,7 +39,8 @@ use serde::{Deserialize, Serialize};
 
 use super::bridge::StoreEnvironment;
 
-/// Domain separation prefix for the signed response.
+/// Domain separation prefix for the signed response. It is a wire-format constant: the committed
+/// wire fixture signs with these exact bytes.
 pub const RESPONSE_DOMAIN: &[u8] = b"straft-mac-licence-response-v1\0";
 
 /// Current request and response schema.
@@ -71,7 +72,7 @@ pub struct ValidateRequest {
     pub environment: StoreEnvironment,
     /// `AppTransaction.shared` JWS, when StoreKit returned it.
     pub app_transaction_jws: Option<String>,
-    /// The JWS of every Straft Studio transaction StoreKit returned for this environment.
+    /// The JWS of every Straft transaction StoreKit returned for this environment.
     pub transaction_jws: Vec<String>,
 }
 

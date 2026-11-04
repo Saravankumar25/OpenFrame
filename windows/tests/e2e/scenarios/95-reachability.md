@@ -12,7 +12,7 @@ The routes come from `scripts/check-reachability.mjs`, which reads every feature
 
 - "shell": check the Workspaces navigation shows.
 - "search-overlay": press Ctrl+K, check a dialog shows, press Esc.
-- "ai-panel": press Ctrl+J, check the AI Assistant opens, press Ctrl+J, check it closes.
+- "ai-panel": press Ctrl+J, check the Straft AI opens, press Ctrl+J, check it closes.
 - "project-menu": click the project button (named "Project: ..."), check a menu shows, press Esc.
 - A project page (trash, activity, notes, settings): open the project menu and choose Recently Deleted, Activity, Notes & Tasks or Project settings.
 - A workspace (home, vault, story, screenplay, breakdown, production, callsheets, files): click Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets or Files in the Workspaces navigation.
@@ -21,7 +21,7 @@ The routes come from `scripts/check-reachability.mjs`, which reads every feature
   - story: Board, Outline, Characters, Timeline, Episodes.
   - screenplay: Compare, Review.
   - vault: Recently Deleted (this one replaces the page, so check a Back to Vault button shows instead).
-  - settings: Templates, Offline AI, Writing, Keyboard shortcuts, Advanced, Appearance.
+  - settings: Templates, Straft AI, Writing, Keyboard shortcuts, Advanced, Appearance.
   - After the click, except for screenplay sub-parts and the vault page switch, check the clicked tab is announced as current (selected or current).
 - Any route with no recipe above fails the scenario, so a new route in the feature status file needs a recipe added to the spec and to this list.
 

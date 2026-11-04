@@ -10,11 +10,11 @@ pub mod stress;
 
 use std::sync::Arc;
 
+use serde_json::{Value, json};
 use straft_application::events::RecordingSink;
 use straft_application::{AppConfig, AppCore};
 use straft_domain::auth::ActorOrigin;
 use straft_domain::{Actor, AppError, Role};
-use serde_json::{Value, json};
 
 pub struct TestEnv {
     pub dir: tempfile::TempDir,
@@ -23,7 +23,7 @@ pub struct TestEnv {
 }
 
 impl TestEnv {
-    /// An isolated Straft Studio environment (own app data, projects dir, global vault).
+    /// An isolated Straft environment (own app data, projects dir, global vault).
     pub fn new() -> TestEnv {
         let dir = tempfile::tempdir().expect("tempdir");
         let sink = Arc::new(RecordingSink::default());

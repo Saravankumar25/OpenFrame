@@ -20,9 +20,9 @@
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
-use straft_domain::{AppError, AppResult, now_ms};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use straft_domain::{AppError, AppResult, now_ms};
 
 use crate::bundle::{InstalledModels, PinnedFile, models_damaged};
 use crate::download::{FileEntry, Tier};
@@ -108,7 +108,7 @@ impl ModelsDir {
             )),
             None => Err(install_error(
                 "disk_unknown",
-                "Straft Studio could not check the free space on this drive, so the download did not start.",
+                "Straft could not check the free space on this drive, so the download did not start.",
                 "free space unknown",
             )),
         }
@@ -249,7 +249,7 @@ impl ModelsDir {
         let failed = |e: std::io::Error| {
             install_error(
                 "remove_failed",
-                "Straft AI could not be removed completely. Close Straft Studio and try again.",
+                "Straft AI could not be removed completely. Close Straft and try again.",
                 e.kind().to_string(),
             )
         };
@@ -329,12 +329,26 @@ impl ModelsDir {
     }
 
     /// Remove Straft AI (the Remove button): every set, every staging file, the quarantine,
-    /// the pointer. Links inside are removed, never followed.
+    /// the pointer. Links inside are removed, never followed. A model file can still be open for a
+    /// moment after the engine stopped (an answer or a file check finishing, a virus scanner), and
+    /// Windows refuses to delete an open file, so the removal is tried again for up to 3 seconds.
     pub fn remove_all(&self) -> AppResult<()> {
+        let mut r = self.remove_all_once();
+        for _ in 0..12 {
+            if r.is_ok() {
+                break;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(250));
+            r = self.remove_all_once();
+        }
+        r
+    }
+
+    fn remove_all_once(&self) -> AppResult<()> {
         let failed = |e: std::io::Error| {
             install_error(
                 "remove_failed",
-                "Straft AI could not be removed completely. Close Straft Studio and try again.",
+                "Straft AI could not be removed completely. Close Straft and try again.",
                 e.kind().to_string(),
             )
         };
@@ -358,7 +372,7 @@ impl ModelsDir {
             r.map_err(|e| {
                 install_error(
                     "remove_failed",
-                    "Straft AI could not be removed completely. Close Straft Studio and try again.",
+                    "Straft AI could not be removed completely. Close Straft and try again.",
                     e.kind().to_string(),
                 )
             })?;
@@ -652,6 +666,26 @@ mod tests {
         assert!(d.active().is_none() && !d.set_dir("v2").exists());
     }
 
+    /// A model file still held open by a file check when Remove is pressed: the removal waits for it.
+    #[cfg(windows)]
+    #[test]
+    fn remove_all_waits_for_a_model_file_that_is_briefly_open() {
+        let dir = tempfile::tempdir().unwrap();
+        let d = ModelsDir::new(dir.path());
+        let set = dir.path().join("v1");
+        std::fs::create_dir_all(&set).unwrap();
+        let file = set.join("chat.gguf");
+        std::fs::write(&file, b"model").unwrap();
+        let held = straft_platform::files::open_read_only_shared(&file).unwrap();
+        let release = std::thread::spawn(move || {
+            std::thread::sleep(std::time::Duration::from_millis(600));
+            drop(held);
+        });
+        d.remove_all().unwrap();
+        release.join().unwrap();
+        assert!(!file.exists());
+    }
+
     #[test]
     fn a_pointer_naming_an_unsafe_folder_is_ignored() {
         let dir = tempfile::tempdir().unwrap();
@@ -745,5 +779,49 @@ mod tests {
         std::fs::write(&mine2, b"the embed model").unwrap();
         d.import_file("m-1", &t, &mine2).unwrap();
         assert_eq!(d.activate("m-1", &t).unwrap().version, "m-1");
+    }
+
+    /// Update safety (package file 05, U7): installing a new app version never removes a model.
+    /// A set that the new pins do not name is left alone; it goes only after its replacement is
+    /// installed, checked and healthy.
+    #[test]
+    fn an_app_update_with_other_pins_removes_no_model_until_the_new_set_is_healthy() {
+        let dir = tempfile::tempdir().unwrap();
+        let d = ModelsDir::new(dir.path());
+        let (c1, e1) = (
+            entry("chat.gguf", b"chat one", "chat"),
+            entry("embed.gguf", b"embed one", "embedding"),
+        );
+        let t1 = tier(vec![c1.clone(), e1.clone()]);
+        for (f, b) in [(&c1, &b"chat one"[..]), (&e1, &b"embed one"[..])] {
+            put_partial(&d, "m-1", f, b);
+            d.check_file("m-1", f).unwrap();
+        }
+        d.activate("m-1", &t1).unwrap();
+        d.confirm_healthy().unwrap();
+        let installed = || active_complete(&d, &t1);
+        // The app is updated and now pins other models: the old set counts as not installed.
+        // What a download start does first (clear other staging folders) leaves it alone.
+        assert_eq!(d.installed("m-2", &t1).unwrap(), None);
+        d.sweep_staging("m-2");
+        assert!(installed(), "the set on disk is untouched");
+        // A new download is only a partial file in staging: still no model is removed.
+        let c2 = entry("chat.gguf", b"chat two!", "chat");
+        put_partial(&d, "m-2", &c2, b"chat");
+        d.sweep_staging("m-2");
+        assert!(installed());
+        // Two kinds of leftovers are harmless: a pointer that names a previous set that is gone.
+        std::fs::write(
+            dir.path().join("active.json"),
+            br#"{"version":"m-1","tier":"small","previous":"m-0","activatedAt":0}"#,
+        )
+        .unwrap();
+        d.confirm_healthy().unwrap();
+        assert!(installed(), "a missing previous set costs nothing");
+        // A truncated pointer is reported as damage and nothing is deleted.
+        std::fs::write(dir.path().join("active.json"), br#"{"version":"m-1","ti"#).unwrap();
+        assert!(d.installed("m-1", &t1).unwrap_err().is("ai.models_damaged"));
+        assert!(d.set_dir("m-1").join("chat.gguf").is_file());
+        assert!(d.set_dir("m-1").join("embed.gguf").is_file());
     }
 }

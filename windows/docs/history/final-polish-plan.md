@@ -2,7 +2,7 @@
 
 # Windows final polish: work plan
 
-Written 2026-10-19 at the owner's request ("Straft Studio Windows: final refinement, UI unification and release build").
+Written 2026-10-19 at the owner's request ("Straft Windows: final refinement, UI unification and release build").
 Sources: `changes/` (the owner's change list `all_changes.docx`, change specs 01 to 05 with their HTML references, two
 reference pictures), `StraftAI.docx` (AI repair brief with 12 screenshots), and the Mac app in `StraftMac/` (its
 SwiftUI source and the 179 captured screens in `StraftMac/release-out/MacHTML/`). These three folders are reference

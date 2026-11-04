@@ -15,22 +15,22 @@ Before: the shared data folder after the journey (01), which holds the project "
    mixes Telugu, Tamil, Devanagari, an emoji and accented Latin.
 3. Through the core: add a character with a 62-character name.
 
-## Every screen at two window sizes, with the AI Assistant closed and open
+## Every screen at two window sizes, with the Straft AI closed and open
 
 This scenario runs six times: 1200 by 720 (the smallest window), 1280 by 720 and 1920 by 1080, each with the AI
-Assistant closed and then open.
+Straft AI closed and then open.
 
-1. Set the window size. Open or close the AI Assistant with its top bar button.
+1. Set the window size. Open or close the Straft AI with its top bar button.
 2. Visit, in order: Home; Idea Vault; Story with its Board, Outline, Characters and Timeline views; Screenplay;
    Breakdown; Production with each of its 14 tabs; Call Sheets; Files; Settings (top bar gear).
 3. On each screen, wait about half a second, then:
    - Check: the page itself does not scroll sideways.
-   - Check: the AI Assistant and the navigation do not overlap the page.
+   - Check: the Straft AI and the navigation do not overlap the page.
    - Check: no button, tab or field of the page is outside the window, cut off by a box that cannot scroll, or covered
      by another element.
    - Check: no text is cut off inside its box unless a tooltip or label holds the full text.
 4. On Story > Outline: check that the outline list scrolls inside the page to its last row (wheel, and Page Down after focusing the list), while the toolbar above it stays where it is.
-5. On Settings > Offline AI, open Technical details: check that the card is as wide as the page, the component table stays inside it, no card covers another, and no card is narrower than 300 pixels. Close Technical details again.
+5. On Settings > Straft AI, open Technical details: check that the card is as wide as the page, the component table stays inside it, no card covers another, and no card is narrower than 300 pixels. Close Technical details again.
 
 ## Notes
 

@@ -6,7 +6,7 @@
 
 ## 1. What the owner has said
 
-- A website for Straft Studio, hosted publicly on a **purchased domain**, with **company email** on that domain.
+- A website for Straft Studio, hosted publicly on a **purchased domain**, with **company email** on that domain. The domain is `straftstudio.com` and Google Workspace is configured on it (owner, 2026-11-04, [ADR-0041](../adr/ADR-0041-product-renamed-straft.md) item 7).
 - The owner wrote that the website is built **manually**. What this means (hand-written pages, no site builder, or no AI
   generation of the pages) is confirmed with the owner when the plan is written. Until then no tool or method is assumed.
 - The screens shown on the site are faithful recreations of the real screens of both the Windows and the Mac application.

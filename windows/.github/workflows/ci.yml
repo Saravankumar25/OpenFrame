@@ -57,7 +57,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force apps/desktop/dist | Out-Null
-          Set-Content -Path apps/desktop/dist/index.html -Value '<!doctype html><title>Straft Studio</title>'
+          Set-Content -Path apps/desktop/dist/index.html -Value '<!doctype html><title>Straft</title>'
 
       - name: cargo clippy (deny warnings)
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
@@ -125,7 +125,7 @@ jobs:
         run: node scripts/check-secrets.mjs
 
       - name: Governance check self-tests
-        run: node --test scripts/tests/governance.test.mjs
+        run: node --test scripts/tests/governance.test.mjs scripts/tests/release-placeholders.test.mjs
 
   e2e:
     name: Desktop E2E (release gate)

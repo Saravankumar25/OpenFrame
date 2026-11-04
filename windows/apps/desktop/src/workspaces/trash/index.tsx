@@ -1,5 +1,5 @@
 // Recently Deleted (FSD §52; UX §3.38; mock 157).
-// Deleted items stay here for 30 days, then Straft Studio removes them for good
+// Deleted items stay here for 30 days, then Straft removes them for good
 // (owner decision 2026-10-07, ADR-0012 amendment). Each row says how many days are left.
 // Restore returns an item to its previous place; when that place no longer
 // exists it goes to Unassigned / the top level and the user is told (FSD §52.5).

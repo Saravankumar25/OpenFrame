@@ -1,14 +1,14 @@
 //! "Save this conversation for review" (ADR-0028 decision 8, amended 2026-10-24).
 //!
-//! The one place the assistant's words leave the app database, and only by the person's own action:
+//! The one place Straft AI's words leave the app database, and only by the person's own action:
 //! the Save button of the AI panel calls `ai.export_conversation` with a path chosen in the Save
 //! dialog. Nothing is written on any other path and nothing is sent anywhere (ADR-0021). The file
 //! holds the requesting user's own exchanges of one conversation, loaded through the same filter as
 //! `ai.history`, so another person's conversation or private material can never appear.
 
-use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
 use serde::Deserialize;
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
 use ts_rs::TS;
 
 use super::trace::{self, AiReportResult};
@@ -28,9 +28,7 @@ pub struct AiConversationExportArgs {
 }
 
 fn nothing_to_save() -> AppError {
-    AppError::invalid_input(
-        "There is no conversation to save yet. Ask the assistant something first.",
-    )
+    AppError::invalid_input("There is no conversation to save yet. Ask Straft AI something first.")
 }
 
 /// Write one conversation of the requesting user to a file the person chose. `rows` is the number
@@ -40,7 +38,7 @@ pub fn export_conversation(
     actor: &Actor,
     a: AiConversationExportArgs,
 ) -> AppResult<AiReportResult> {
-    actor.require(Capability::UseAi, "use the assistant")?;
+    actor.require(Capability::UseAi, "use Straft AI")?;
     if !orchestrator::valid_conversation_id(&a.conversation_id) {
         return Err(nothing_to_save());
     }

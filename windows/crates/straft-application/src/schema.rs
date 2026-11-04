@@ -154,6 +154,11 @@ pub const APP_MIGRATIONS: &[Migration] = &[
         "ai_trace_dossier",
         "../../../migrations/app/0009_ai_trace_dossier.sql"
     ),
+    m!(
+        10,
+        "ai_trace_sections",
+        "../../../migrations/app/0010_ai_trace_sections.sql"
+    ),
 ];
 
 pub fn project_schema_version() -> u32 {

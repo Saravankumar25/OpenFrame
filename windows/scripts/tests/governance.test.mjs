@@ -578,7 +578,7 @@ test("installer scan finds the team password in plain text", () => {
 
 test("release builds get control-flow guard, the Microsoft linker and no personal paths (W3)", async () => {
   const { hardenedEnv } = await import(url.pathToFileURL(script("with-msvc-linker.mjs")).href);
-  const env = hardenedEnv({ RUSTFLAGS: "-C target-cpu=x86-64-v2" }, { platform: "win32", repo: "D:/work/Straft Studio", home: "C:/Users/Some One" });
+  const env = hardenedEnv({ RUSTFLAGS: "-C target-cpu=x86-64-v2" }, { platform: "win32", repo: "D:/work/Straft", home: "C:/Users/Some One" });
   const flags = env.CARGO_ENCODED_RUSTFLAGS.split("\x1f");
   assert.equal(env.CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER, "link.exe");
   assert.deepEqual(flags.slice(0, 2), ["-C", "target-cpu=x86-64-v2"], "flags set by the builder are kept");
@@ -586,7 +586,7 @@ test("release builds get control-flow guard, the Microsoft linker and no persona
   assert.ok(flags.includes("link-arg=/CETCOMPAT"));
   assert.equal(env.CFLAGS_x86_64_pc_windows_msvc, "/ZH:SHA_256");
   assert.equal(hardenedEnv({ CFLAGS: "/O2" }, { platform: "win32" }).CFLAGS_x86_64_pc_windows_msvc, "/O2 /ZH:SHA_256");
-  for (const where of ["D:/work/Straft Studio=straft", "Some One", ".cargo=cargo", ".rustup=rustup"]) {
+  for (const where of ["D:/work/Straft=straft", "Some One", ".cargo=cargo", ".rustup=rustup"]) {
     assert.ok(flags.some((f) => f.startsWith("--remap-path-prefix=") && f.includes(where)), `${where} is remapped: ${flags}`);
   }
   assert.equal(env.RUSTFLAGS, undefined, "one source of flags, the encoded one, which allows spaces in paths");
@@ -638,22 +638,71 @@ test("the uninstaller never deletes the app data root recursively and removes on
   assert.match(hook, /^\s*RMDir\s+"\$LOCALAPPDATA\\Straft"\s*$/m, "final non-recursive RMDir of the root");
 });
 
-test("the uninstaller clears the earlier data folder by the same rules and marks every line", () => {
+// ---------------------------------------------------------------------------------------------
+// The AI has one name: "Straft AI" (owner decision 2026-11-04). No other name may be readable by a
+// person: screens, buttons, aria-labels, toasts, the text Straft AI answers from, the store text.
+// Code comments, identifiers and file names are not scanned.
+// ---------------------------------------------------------------------------------------------
+
+const BANNED_AI_NAMES = /AI Assistant|Offline AI|the assistant|AI panel|local AI|["'`]Assistant["'`]/i;
+// Only a hit that is truly not visible may be listed here, as "path:line".
+const AI_NAME_ALLOW = [];
+
+function withoutTsComments(src) {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "))
+    .split(/\r?\n/)
+    .map((line) => line.replace(/(^|\s)\/\/.*$/, "$1"));
+}
+
+function visibleNameFiles() {
+  const out = [];
+  const walk = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const p = path.join(dir, e.name);
+      if (e.isDirectory()) {
+        if (e.name !== "generated") walk(p);
+      } else if (/\.(ts|tsx)$/.test(e.name) && !/\.(test|spec)\.(ts|tsx)$/.test(e.name)) {
+        out.push(p);
+      }
+    }
+  };
+  walk(path.join(REPO, "apps/desktop/src"));
+  return out;
+}
+
+test("the AI is called Straft AI everywhere a person can read it", () => {
+  const hits = [];
+  for (const file of visibleNameFiles()) {
+    const rel = path.relative(REPO, file).replaceAll("\\", "/");
+    withoutTsComments(fs.readFileSync(file, "utf8")).forEach((line, i) => {
+      if (BANNED_AI_NAMES.test(line) && !AI_NAME_ALLOW.includes(`${rel}:${i + 1}`)) hits.push(`${rel}:${i + 1}: ${line.trim().slice(0, 100)}`);
+    });
+  }
+  for (const rel of ["crates/straft-application/src/modules/ai/knowledge.md", "docs/store/listing.md", "docs/store/privacy-policy.md"]) {
+    fs.readFileSync(path.join(REPO, rel), "utf8")
+      .split(/\r?\n/)
+      .forEach((line, i) => {
+        if (BANNED_AI_NAMES.test(line) && !AI_NAME_ALLOW.includes(`${rel}:${i + 1}`)) hits.push(`${rel}:${i + 1}: ${line.trim().slice(0, 100)}`);
+      });
+  }
+  assert.deepEqual(hits, [], `Use "Straft AI", never another name for the AI:\n${hits.join("\n")}`);
+});
+
+test("the AI name guard catches the old names", () => {
+  for (const bad of ['label="AI Assistant"', "Offline AI settings", "Ask the assistant", 'title="Assistant"', "the AI panel"]) {
+    assert.ok(BANNED_AI_NAMES.test(bad), bad);
+  }
+  assert.ok(!BANNED_AI_NAMES.test("Straft AI could not find that."));
+  assert.deepEqual(withoutTsComments("const a = 1; // the assistant\n/* AI Assistant */ const u = 'https://x.y';").filter((l) => BANNED_AI_NAMES.test(l)), []);
+});
+
+test("the uninstaller never touches the earlier product's data folder", () => {
   const hook = fs.readFileSync(path.join(REPO, "apps/desktop/src-tauri/windows/installer-hooks.nsh"), "utf8");
   const code = hook.split("\n").filter((l) => !/^\s*;/.test(l));
-  const legacyFolder = "OpenFrame"; // LEGACY: Open Frame name kept for migration
-  const list = (verb, base) =>
-    code.map((l) => l.match(new RegExp(`^\\s*${verb}\\s+"\\$LOCALAPPDATA\\\\${base}\\\\([^"\\\\]+)"`, "i"))).filter(Boolean).map((m) => m[1]);
-  assert.ok(list("RMDir /r", "Straft").length > 0);
-  assert.deepEqual(list("RMDir /r", legacyFolder), list("RMDir /r", "Straft"), "same folders in both places");
-  assert.deepEqual(list("Delete", legacyFolder), list("Delete", "Straft"), "same files in both places");
-  assert.ok(!code.some((l) => new RegExp(`RMDir\\s+/r\\s+"\\$LOCALAPPDATA\\\\${legacyFolder}"`, "i").test(l)), "recursive delete of the earlier root");
-  assert.ok(code.some((l) => new RegExp(`^\\s*RMDir\\s+"\\$LOCALAPPDATA\\\\${legacyFolder}"`, "i").test(l)), "final non-recursive RMDir of the earlier root");
+  assert.deepEqual(code.filter((l) => /open[ _-]?frame/i.test(l)), []);
   // A path with a space in it, unquoted, would remove the wrong thing.
   for (const l of code.filter((x) => /^\s*(RMDir|Delete)\b/.test(x))) {
     assert.match(l, /^\s*(RMDir|Delete)(\s+\/r)?\s+"[^"]+"/, `unquoted path: ${l}`);
-  }
-  for (const l of code.filter((x) => /open[ _-]?frame/i.test(x))) {
-    assert.ok(l.includes("; LEGACY: Open Frame name kept for migration"), `no marker: ${l}`);
   }
 });

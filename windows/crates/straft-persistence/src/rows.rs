@@ -6,9 +6,9 @@
 //! `deleted_at INTEGER` (recoverable delete) and `position INTEGER` for
 //! user-controlled sibling order. Display numbers are never stored.
 
-use straft_domain::{AppError, AppResult, now_ms};
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{Connection, OptionalExtension, params_from_iter};
+use straft_domain::{AppError, AppResult, now_ms};
 
 use crate::undo::quote_ident;
 

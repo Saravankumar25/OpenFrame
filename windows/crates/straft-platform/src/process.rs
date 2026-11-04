@@ -1,5 +1,5 @@
-//! Managed child processes (the AI engine). The child must never outlive Straft Studio, even when
-//! Straft Studio crashes, and must never show a console window.
+//! Managed child processes (the AI engine). The child must never outlive Straft, even when
+//! Straft crashes, and must never show a console window.
 //!
 //! Windows adapter: the child is created suspended, put in a kill-on-close Job Object that also
 //! allows only one process (the engine cannot start other programs), and only then resumed, so it
@@ -329,7 +329,7 @@ mod imp {
             // SAFETY: getpgid only reads kernel state for a pid we own.
             let pgid = unsafe { libc::getpgid(pid) };
             // Only a child that leads its own group may be guarded; otherwise a group signal
-            // would reach Straft Studio itself. `prepare_background` makes the child a leader.
+            // would reach Straft itself. `prepare_background` makes the child a leader.
             (pgid == pid && pid > 1).then_some(Self { pid })
         }
     }

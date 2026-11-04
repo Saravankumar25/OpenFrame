@@ -67,7 +67,7 @@ export function AppearancePanel() {
 
   const pickFile = async () => {
     try {
-      const picked = await openDialog({ multiple: false, directory: false, filters: [{ name: "Straft Studio theme", extensions: ["json"] }] });
+      const picked = await openDialog({ multiple: false, directory: false, filters: [{ name: "Straft theme", extensions: ["json"] }] });
       if (typeof picked === "string") setImporting({ kind: "file", path: picked });
     } catch (e) {
       reportError(e);
@@ -193,7 +193,7 @@ function MyThemes({ state, mode, onApplied }: { state: AppearanceState; mode: Re
     try {
       // A name is text, not a path: no folder separators or reserved characters in the suggestion.
       const fileName = `${t.name.replace(/[\\/:*?"<>|]+/g, " ").trim() || t.id}.json`;
-      const path = await saveDialog({ defaultPath: fileName, filters: [{ name: "Straft Studio theme", extensions: ["json"] }] });
+      const path = await saveDialog({ defaultPath: fileName, filters: [{ name: "Straft theme", extensions: ["json"] }] });
       if (!path) return;
       const r = await call<ExportThemeResult>("appearance.export_theme", { id: t.id, path });
       toast.success(`Saved ${r.fileName}.`);
@@ -205,7 +205,7 @@ function MyThemes({ state, mode, onApplied }: { state: AppearanceState; mode: Re
   return (
     <>
       {state.myThemes.length === 0 ? (
-        <p className="ap-note" style={{ marginTop: 0 }}>No imported themes yet. Theme files are small .json files, for example from the Straft Studio website.</p>
+        <p className="ap-note" style={{ marginTop: 0 }}>No imported themes yet. Theme files are small .json files, for example from the Straft website.</p>
       ) : (
     <div className="ap-mine" role="list" aria-label="My Themes">
       {state.myThemes.map((t) => {

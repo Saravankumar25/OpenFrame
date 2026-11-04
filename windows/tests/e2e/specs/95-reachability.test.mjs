@@ -35,7 +35,7 @@ const SUB_LABEL = {
   story: { board: "Board", outline: "Outline", characters: "Characters", timeline: "Timeline", episodes: "Episodes" },
   screenplay: { compare: "Compare" },
   vault: { deleted: "Recently Deleted" },
-  settings: { templates: "Templates", "offline-ai": "Offline AI", writing: "Writing", shortcuts: "Keyboard shortcuts", advanced: "Advanced", appearance: "Appearance", storage: "Storage" },
+  settings: { templates: "Templates", "offline-ai": "Straft AI", writing: "Writing", shortcuts: "Keyboard shortcuts", advanced: "Advanced", appearance: "Appearance", storage: "Storage" },
 };
 /** Sub-routes that replace the page rather than select a tab: the button that opens them goes
  * away, and the page shows this button instead. */
@@ -80,10 +80,10 @@ async function visit(route) {
   }
   if (route === "ai-panel") {
     await browser.keys(["Control", "j"]);
-    const panel = await browser.$('//aside[@aria-label="AI Assistant"]');
-    await panel.waitForDisplayed({ timeout: 10_000, timeoutMsg: "Ctrl+J did not open the AI Assistant" });
+    const panel = await browser.$('//aside[@aria-label="Straft AI"]');
+    await panel.waitForDisplayed({ timeout: 10_000, timeoutMsg: "Ctrl+J did not open the Straft AI" });
     await browser.keys(["Control", "j"]);
-    await panel.waitForExist({ reverse: true, timeout: 10_000, timeoutMsg: "Ctrl+J did not close the AI Assistant" });
+    await panel.waitForExist({ reverse: true, timeout: 10_000, timeoutMsg: "Ctrl+J did not close the Straft AI" });
     return;
   }
   if (route === "project-menu") {

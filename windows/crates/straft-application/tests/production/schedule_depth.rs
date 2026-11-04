@@ -8,9 +8,9 @@
 
 use std::path::PathBuf;
 
+use serde_json::{Value, json};
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ fixtures
 

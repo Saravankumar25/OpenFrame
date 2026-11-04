@@ -1,8 +1,8 @@
 //! Undo/redo, activity history and Recently Deleted (FSD §51, §52, §106).
 
-use straft_domain::{Actor, AppResult, Capability};
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppResult, Capability};
 use ts_rs::TS;
 
 use crate::core::AppCore;

@@ -25,7 +25,7 @@ import { formatBytes, joinPath } from "../packages/api";
 import { StorageTaskDialog, type StorageAction } from "./StorageTask";
 import { refreshStorage } from "./refresh";
 
-const VAULT_FILTER = [{ name: "Straft Studio vault backup or package", extensions: ["ofvault"] }];
+const VAULT_FILTER = [{ name: "Straft vault backup or package", extensions: ["ofvault"] }];
 
 const today = () => new Date().toISOString().slice(0, 10);
 const folderName = (p: string) => p.split(/[\\/]/).filter(Boolean).pop() ?? p;
@@ -158,7 +158,7 @@ export function VaultActions({ info }: { info: StorageInfo }) {
     if (v.kind === "project") {
       toast.error("That folder is a project, not a vault. Choose the folder that holds your Global Idea Vault.");
     } else if (v.kind === "nothing" || !v.vaultDir) {
-      toast.error("There is no Global Idea Vault in that folder. Choose the vault folder, or the Straft Studio folder that holds it.");
+      toast.error("There is no Global Idea Vault in that folder. Choose the vault folder, or the Straft folder that holds it.");
     } else if (v.active) {
       toast.info("This vault is already the one in use. Nothing was changed.");
     } else {
@@ -239,7 +239,7 @@ function LocateDialog({ found, onConnect, onClose }: { found: VaultFolderInspect
           {found.filesMissing > 0 && ` ${plural(found.filesMissing, "file is", "files are")} missing from its folder.`}
         </p>
         <p style={{ marginBottom: empty ? undefined : 0 }}>
-          Straft Studio will use this vault from now on. Your current vault is not moved or deleted, and you can connect it again later.
+          Straft will use this vault from now on. Your current vault is not moved or deleted, and you can connect it again later.
         </p>
         {empty && (
           <Banner tone="warn">

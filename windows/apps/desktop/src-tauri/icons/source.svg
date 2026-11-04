@@ -1,25 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
-  <!-- Straft Studio app icon (owner request 2026-10-07, Trial_Licensing_Mocks section 5): the film-frame
-       mark in the Straft Default logo gradient on the dark sidebar colour. Regenerate the icon set by
-       running "npx tauri icon src-tauri/icons/source.svg" in apps/desktop (see docs/engineering/30-appearance-themes.md). -->
+  <!-- Straft app icon: the Straft mark in its logo gradient on the dark tile. The mark is the artwork path
+       on its own 1024 grid, scaled evenly by 0.74 and centred. Regenerate the Tauri icon set, icon.ico,
+       icon.icns and the Store assets with "node scripts/generate-brand-assets.mjs" from the repository root. -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FF5E6C"/>
+      <stop offset="0.5" stop-color="#FF9A45"/>
+      <stop offset="1" stop-color="#FFC13D"/>
+    </linearGradient>
+  </defs>
   <rect width="1024" height="1024" rx="224" fill="#1a1d26"/>
-  <svg x="176" y="176" width="672" height="672" viewBox="0 0 24 24">
-    <defs>
-      <linearGradient id="ofg" gradientUnits="userSpaceOnUse" x1="2" y1="2" x2="22" y2="22">
-        <stop offset="0" stop-color="#ff5d6c"/>
-        <stop offset=".55" stop-color="#ff9a3d"/>
-        <stop offset="1" stop-color="#ffc23d"/>
-      </linearGradient>
-    </defs>
-    <g fill="none" stroke="url(#ofg)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="2" y="2" width="20" height="20" rx="2.2"/>
-      <line x1="7" y1="2" x2="7" y2="22"/>
-      <line x1="17" y1="2" x2="17" y2="22"/>
-      <line x1="2" y1="12" x2="22" y2="12"/>
-      <line x1="2" y1="7" x2="7" y2="7"/>
-      <line x1="2" y1="17" x2="7" y2="17"/>
-      <line x1="22" y1="7" x2="17" y2="7"/>
-      <line x1="22" y1="17" x2="17" y2="17"/>
-    </g>
-  </svg>
+  <g transform="translate(133.5 133.5) scale(0.74)">
+    <path fill-rule="evenodd" fill="url(#g)" d="M179,51H844A128,128 0 0 1 972,179V844A128,128 0 0 1 844,972H179A128,128 0 0 1 51,844V179A128,128 0 0 1 179,51ZM179,119H264V264H119V179A60,60 0 0 1 179,119ZM759,119H844A60,60 0 0 1 904,179V264H759V119ZM119,332H264V478H119V332ZM759,332H904V478H759V332ZM119,546H264V691H119V546ZM759,546H904V691H759V546ZM119,759H264V904H179A60,60 0 0 1 119,844V759ZM759,759H904V844A60,60 0 0 1 844,904H759V759ZM332,119H691V478H332V119ZM332,546H691V904H332V546Z"/>
+  </g>
 </svg>

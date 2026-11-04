@@ -30,7 +30,7 @@ vi.mock("../../ipc/client", async () => {
 
 const empty = { requests: 0, medianTotalMs: null, medianTokensIn: null, medianContextFillPct: null, proposals: 0, applied: 0, rejected: 0, undone: 0, applyRatePct: null, averagePasses: null, errors: 0, weakestTool: null };
 
-describe("AI health card", () => {
+describe("Straft AI health card", () => {
   beforeEach(() => {
     calls.length = 0;
     saveMock.mockClear();
@@ -51,16 +51,16 @@ describe("AI health card", () => {
     expect(await screen.findByText(/No requests yet/)).toBeInTheDocument();
   });
 
-  it("Export AI report asks where to save and writes only after the person chooses", async () => {
+  it("Export Straft AI report asks where to save and writes only after the person chooses", async () => {
     health = empty;
     renderWithClient(<AiHealthCard />);
-    await userEvent.click(await screen.findByRole("button", { name: "Export AI report" }));
+    await userEvent.click(await screen.findByRole("button", { name: "Export Straft AI report" }));
     await waitFor(() => expect(calls.some((c) => c.op === "ai.export_report")).toBe(true));
     expect(calls.find((c) => c.op === "ai.export_report")?.args).toEqual({ path: "C:\\Reports\\straft-ai-report.json" });
 
     calls.length = 0;
     saveMock.mockResolvedValueOnce(null);
-    await userEvent.click(screen.getByRole("button", { name: "Export AI report" }));
+    await userEvent.click(screen.getByRole("button", { name: "Export Straft AI report" }));
     await waitFor(() => expect(saveMock).toHaveBeenCalledTimes(2));
     expect(calls.some((c) => c.op === "ai.export_report")).toBe(false);
   });

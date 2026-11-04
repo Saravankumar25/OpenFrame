@@ -102,5 +102,5 @@
 646,277 8.0 0
 673,277 8.0 0
 628,588 6.8 BLACK RAIN · DAY OUT OF DAYS
-46,24 6.8 Created using Straft Studio
+46,24 6.8 Created using Straft
 708,24 7.4 Page 1 of 1

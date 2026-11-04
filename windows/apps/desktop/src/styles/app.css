@@ -92,14 +92,14 @@ textarea.textarea { resize: vertical; }
 @media (forced-colors: active) {
   .nav button.navitem.active, .subnav button.active, .seg button.on, .seg button[aria-checked="true"],
   .ap-card[aria-checked="true"], .iconbtn.on, .btn.on, .sc.sel, .seq.sel, .beat.sel { outline: 2px solid Highlight; outline-offset: -2px; }
-  .brandlogo .mk g, .ap-pv .mk g { stroke: CanvasText; }
+  .brandlogo path, .ap-pv .mk path { fill: CanvasText; }
   .btn.pri, .btn.dan { border: 1px solid ButtonText; }
   .ap-pv { forced-color-adjust: none; }
 }
 
 /* The logo in the top bar is a button that opens all projects (owner change list item 17). */
 .brand-btn { border: 0; background: transparent; padding: 0; cursor: pointer; text-align: left; }
-.brand-btn:hover .wm { color: var(--accent-d); }
+.brand-btn:hover .brandlogo { color: var(--accent-d); }
 /* The page frame never scrolls as a whole; only the scroll areas inside it do (owner item 5). */
 .layout, .main, .spx, .spx .sp-body { overflow: clip; }
 /* Segmented controls never wrap a label or squeeze an option out of view (owner item 8). */

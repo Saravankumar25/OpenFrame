@@ -15,39 +15,39 @@
 
 **Version:** 1.0  
 **Prepared:** 2026-10-02  
-**Purpose:** A practical implementation specification for expanding Straft Studio's screenplay engine to the level required for comfortable migration from Final Draft, without turning Straft Studio into a complicated word processor or a studio-management system.
+**Purpose:** A practical implementation specification for expanding Straft's screenplay engine to the level required for comfortable migration from Final Draft, without turning Straft into a complicated word processor or a studio-management system.
 
 ---
 
 ## 1. Source basis and evidence note
 
-This specification compares the supplied Straft Studio product manual, the supplied Final Draft 13 User Guide table of contents, and the supplied StudioBinder call-sheet example.
+This specification compares the supplied Straft product manual, the supplied Final Draft 13 User Guide table of contents, and the supplied StudioBinder call-sheet example.
 
 ### Supplied sources
 
-1. **Straft Studio Complete Product Feature Manual**
-   - Defines Straft Studio as a local-first filmmaking workspace progressing from Idea Vault → Beat Board → Screenplay → Breakdown → Production → Schedule → Call Sheets.
+1. **Straft Complete Product Feature Manual**
+   - Defines Straft as a local-first filmmaking workspace progressing from Idea Vault → Beat Board → Screenplay → Breakdown → Production → Schedule → Call Sheets.
    - Defines the Screenplay workspace as the professionally strict writing environment and specifies automatic screenplay formatting, drafts, review, locking/revisions, import/export, title page and printing.
    - Its current-status table marks Screenplay, Breakdown, Production, Schedule, Call Sheets, templates and related creative modules as **In development**, so this file is a requirements/upgrade plan rather than a claim that every feature is already shipped.
 
 2. **Final Draft 13 User Guide — supplied `Pasted markdown(5).md`**
    - The uploaded file is a **table of contents**, not the body of the manual.
    - It establishes coverage of Proofing, Font, Script Elements, Title Page, Saving, Printing, Tracking, Views, Formatting, Paragraphs, Page Setup, Production/Scene Numbers, Revisions, Lock Pages, Tags, Beat Board, Outline Editor, Navigator, Panels, Header/Footer, Reformatting, SmartType, Shortcuts and Language.
-   - Because the supplied Final Draft source is a TOC only, detailed behavior below is stated as a Straft Studio implementation requirement where appropriate rather than falsely presented as directly verified Final Draft behavior.
+   - Because the supplied Final Draft source is a TOC only, detailed behavior below is stated as a Straft implementation requirement where appropriate rather than falsely presented as directly verified Final Draft behavior.
 
 3. **StudioBinder Call Sheet template**
    - The supplied five-page PDF shows production contacts, general call, day/date/weather, sunrise/sunset, crew/shooting/meal calls, locations, parking, nearest hospital, scene schedule, talent, atmosphere/background, department notes, advance schedule, crew by department, walkie channels and extras.
-   - Straft Studio should use it as a **structural reference**, not copy the visual template.
+   - Straft should use it as a **structural reference**, not copy the visual template.
 
 ---
 
 # 2. Product rule: deep engine, simple surface
 
-Straft Studio should **not** copy Final Draft's full ribbon UI, every Word-like control or every niche feature.
+Straft should **not** copy Final Draft's full ribbon UI, every Word-like control or every niche feature.
 
 The target is:
 
-> **Final Draft migration depth where it affects trust, compatibility and professional writing — with Straft Studio's simpler interaction model.**
+> **Final Draft migration depth where it affects trust, compatibility and professional writing — with Straft's simpler interaction model.**
 
 A new writer should still be able to:
 
@@ -152,7 +152,7 @@ just because it looks visually similar.
 
 # 5. Standard screenplay elements
 
-The current Straft Studio manual defines:
+The current Straft manual defines:
 
 - Scene Heading
 - Action
@@ -411,9 +411,9 @@ This is foundational for:
 
 # 10. Page locking and production locking
 
-The supplied Final Draft TOC explicitly includes Lock Pages, Lock A Pages and locking tools. Straft Studio does not need to copy the whole locking menu, but it needs a credible equivalent.
+The supplied Final Draft TOC explicitly includes Lock Pages, Lock A Pages and locking tools. Straft does not need to copy the whole locking menu, but it needs a credible equivalent.
 
-## 10.1 Straft Studio's existing lock
+## 10.1 Straft's existing lock
 
 The manual already defines:
 
@@ -455,7 +455,7 @@ Do not reproduce a large collection of niche locking commands unless real users 
 
 # 11. Revision colors — P0
 
-Straft Studio already defines:
+Straft already defines:
 
 - Blue
 - Pink
@@ -525,7 +525,7 @@ Changing 27 → 25 must not break:
 
 # 13. Title page — P0
 
-Straft Studio's manual already specifies Figure 100 Title Page.
+Straft's manual already specifies Figure 100 Title Page.
 
 Required fields:
 
@@ -554,7 +554,7 @@ Avoid arbitrary drag-anywhere page design.
 
 The supplied Final Draft TOC includes Header/Footer content, options and placeholders.
 
-Add a controlled Straft Studio version.
+Add a controlled Straft version.
 
 Support:
 
@@ -601,7 +601,7 @@ Avoid:
 
 # 16. Scene navigator
 
-Straft Studio already has a scene navigator.
+Straft already has a scene navigator.
 
 Improve it with optional columns:
 
@@ -636,7 +636,7 @@ This is the right amount of “Navigator 2.0-like” depth without creating a se
 
 The supplied Final Draft TOC includes creation/modification of custom elements.
 
-Straft Studio should support this, because migration may encounter custom FDX semantics.
+Straft should support this, because migration may encounter custom FDX semantics.
 
 A custom element should have:
 
@@ -665,7 +665,7 @@ Never silently convert it to Action.
 
 # 18. Find and Replace
 
-Straft Studio already defines:
+Straft already defines:
 
 - Find
 - Replace
@@ -829,7 +829,7 @@ Display settings never change underlying scene data.
 
 # 22. Breakdown — preserve current architecture
 
-Straft Studio already specifies:
+Straft already specifies:
 
 - eleven default categories
 - script highlighting
@@ -905,7 +905,7 @@ Keep the rule:
 
 # 25. Schedule — practical depth, not an optimizer
 
-The current Straft Studio schedule foundation is good:
+The current Straft schedule foundation is good:
 
 - Unscheduled pool
 - Stripboard
@@ -1308,7 +1308,7 @@ Finalized sheets remain stable historical snapshots.
 
 # 33. Lightweight budget
 
-Straft Studio already specifies a small budget view. Keep its boundary.
+Straft already specifies a small budget view. Keep its boundary.
 
 Current categories:
 
@@ -1406,21 +1406,21 @@ A built-in sample-script library is useful for new users and for testing.
 
 However:
 
-> A screenplay being publicly viewable online does not automatically mean Straft Studio can redistribute its text.
+> A screenplay being publicly viewable online does not automatically mean Straft can redistribute its text.
 
 ## Safe sources
 
 Use only:
 
-- Straft Studio-authored scripts
+- Straft-authored scripts
 - public-domain material
 - explicitly licensed material
-- material for which Straft Studio has redistribution permission
+- material for which Straft has redistribution permission
 
 ## Recommended built-in folder
 
 ```text
-Straft Studio
+Straft
 └── Samples
     ├── Example Feature
     ├── Example Short
@@ -1428,7 +1428,7 @@ Straft Studio
     └── FDX Interchange Test
 ```
 
-Make them fictional and Straft Studio-authored where possible.
+Make them fictional and Straft-authored where possible.
 
 Include test coverage for:
 
@@ -1503,7 +1503,7 @@ Export must:
 - preserve title data where supported
 - preserve revisions where supported
 - preserve custom elements
-- remain re-importable by Straft Studio
+- remain re-importable by Straft
 - be structurally readable by Final Draft
 
 ---
@@ -1634,7 +1634,7 @@ The goal is **document trust**, not maximum formatting configurability.
 
 User requirement:
 
-> Every export/download should carry Straft Studio branding except screenplay documents.
+> Every export/download should carry Straft branding except screenplay documents.
 
 ## Screenplay outputs — no branding
 
@@ -1663,19 +1663,19 @@ Brand:
 
 Use:
 
-- small Straft Studio logo
-- “Created with Straft Studio” (superseded 2026-10-20: the owner's PDF change specs use “Created using Straft Studio”)
+- small Straft logo
+- “Created with Straft Studio” (superseded 2026-10-20: the owner's PDF change specs use “Created using Straft”)
 - header/footer or unobtrusive watermark
 
 For spreadsheets, use workbook/first-sheet metadata or footer rather than putting a logo into every row.
 
-For project packages/backups, use a Straft Studio-branded manifest/README rather than modifying user-owned files.
+For project packages/backups, use a Straft-branded manifest/README rather than modifying user-owned files.
 
 ---
 
 # 44. Dark mode
 
-The supplied Straft Studio manual does not specify dark mode.
+The supplied Straft manual does not specify dark mode.
 
 It is not migration-critical, but it is useful for writing comfort.
 
@@ -1711,7 +1711,7 @@ The engine must handle multilingual content before large UI-localization work be
 
 # 46. What NOT to implement from Final Draft
 
-The supplied Final Draft TOC covers many things. Straft Studio should deliberately omit or defer these unless actual user evidence justifies them:
+The supplied Final Draft TOC covers many things. Straft should deliberately omit or defer these unless actual user evidence justifies them:
 
 ## Full Ribbon UI
 
@@ -1727,7 +1727,7 @@ A small command bar is enough.
 
 ## WGA-specific tools
 
-Not central to Straft Studio's indie workflow.
+Not central to Straft's indie workflow.
 
 ## Speech Control
 
@@ -1759,25 +1759,25 @@ Not the goal.
 
 ---
 
-# 47. What Straft Studio should cover through existing concepts
+# 47. What Straft should cover through existing concepts
 
-| Final Draft concept | Straft Studio approach |
+| Final Draft concept | Straft approach |
 |---|---|
 | Beat Board | Beat Board |
 | Outline Editor | Beat Board + Outline |
 | Structure Lines | Story relationships; do not create a second duplicate system unless needed |
 | Script Navigator | Scene Navigator + configurable columns |
-| ScriptNotes | Straft Studio Notes + Comments |
+| ScriptNotes | Straft Notes + Comments |
 | Tags | Breakdown/Catalog instead of another disconnected production database |
-| Multiple drafts | Straft Studio Drafts |
-| Revision workflow | Straft Studio Revisions |
+| Multiple drafts | Straft Drafts |
+| Revision workflow | Straft Revisions |
 | Production tagging | Breakdown |
 | Production reports | Reports + DOOD |
 | Call sheets | Schedule → Call Sheet |
-| Custom elements | Straft Studio custom element engine |
-| Sample scripts | Straft Studio-authored/public-domain/licensed |
+| Custom elements | Straft custom element engine |
+| Sample scripts | Straft-authored/public-domain/licensed |
 | Collaboration | File-based Exchange/Review/Response |
-| Page locking | Simple Straft Studio production/page lock |
+| Page locking | Simple Straft production/page lock |
 
 ---
 
@@ -1850,7 +1850,7 @@ A Final Draft user should be able to:
 6. Edit the script normally.
 7. Export FDX.
 8. Re-open the exported FDX in Final Draft.
-9. Re-import that FDX into Straft Studio.
+9. Re-import that FDX into Straft.
 10. Export clean PDF.
 11. Compare the resulting structure to the original.
 
@@ -1862,7 +1862,7 @@ A migration is not considered successful merely because the text is visible.
 
 Do not call the screenplay engine production-ready until:
 
-- all standard Straft Studio elements are editable
+- all standard Straft elements are editable
 - automatic element progression is reliable
 - structural suggestions are reliable
 - FDX import is safe
@@ -1997,7 +1997,7 @@ Every generated document must:
 - not silently omit supported information
 - give a recoverable error on failure
 
-Every non-screenplay export receives subtle Straft Studio branding.
+Every non-screenplay export receives subtle Straft branding.
 
 Every screenplay export remains clean/unbranded.
 
@@ -2087,7 +2087,7 @@ The desired product is:
 +
 **simple writing experience**
 +
-**Straft Studio's end-to-end filmmaking workflow**
+**Straft's end-to-end filmmaking workflow**
 +
 **strong import/export interoperability**
 +
@@ -2117,7 +2117,7 @@ It is:
 
 **Do not redistribute random internet screenplays.** Public availability is not the same as redistribution permission.
 
-Use Straft Studio-created, public-domain, or explicitly licensed scripts.
+Use Straft-created, public-domain, or explicitly licensed scripts.
 
 ## Structural suggestion list
 
@@ -2227,32 +2227,32 @@ Continue working
 
 without losing semantic meaning.
 
-That is the level of depth Straft Studio needs to become **migration-trustworthy** while remaining an approachable indie filmmaking tool.
+That is the level of depth Straft needs to become **migration-trustworthy** while remaining an approachable indie filmmaking tool.
 
 # 47A. Appearance Theme System — Optional User Themes, Canonical Default Preserved
 
 ## 47A.1 Product intent
 
-Straft Studio should support personal appearance choices without turning the application into a visual customization tool.
+Straft should support personal appearance choices without turning the application into a visual customization tool.
 
-The existing Straft Studio UI shown in the product design is the **canonical default appearance**. It must remain the default software design and must not be replaced, weakened, recolored, or visually redesigned merely because the theme system is introduced.
+The existing Straft UI shown in the product design is the **canonical default appearance**. It must remain the default software design and must not be replaced, weakened, recolored, or visually redesigned merely because the theme system is introduced.
 
 The theme system is an **additional layer on top of the existing design**:
 
 ```text
-Existing Straft Studio appearance
+Existing Straft appearance
         = Default / factory appearance
                  +
         Optional user-selected theme
 ```
 
-A user who never opens Appearance Settings should see the same Straft Studio design that exists today.
+A user who never opens Appearance Settings should see the same Straft design that exists today.
 
 A user may deliberately select another theme when they prefer a different visual mood.
 
 The target is:
 
-> **Keep the existing Straft Studio design as the trusted default; add professional optional themes without changing the product's information architecture, layout, controls, typography, workflow, or screenplay document appearance.**
+> **Keep the existing Straft design as the trusted default; add professional optional themes without changing the product's information architecture, layout, controls, typography, workflow, or screenplay document appearance.**
 
 ---
 
@@ -2260,7 +2260,7 @@ The target is:
 
 ### Principle 1 — The current design wins
 
-The present Straft Studio palette, spacing, component hierarchy, typography and visual language remain the default.
+The present Straft palette, spacing, component hierarchy, typography and visual language remain the default.
 
 Do not make the current interface look like one of the new themes merely because the theme engine exists.
 
@@ -2309,7 +2309,7 @@ The built-in palette set should cover:
 - accessibility
 - neutral viewing for color-sensitive workflows
 
-Avoid themes that make text difficult to read, make status colors ambiguous, or turn Straft Studio into a gaming/RGB interface.
+Avoid themes that make text difficult to read, make status colors ambiguous, or turn Straft into a gaming/RGB interface.
 
 ### Principle 5 — Progressive disclosure
 
@@ -2325,7 +2325,7 @@ Technical theme data stays behind the scenes.
 
 ## 47A.3 Theme modes
 
-Straft Studio provides three appearance modes:
+Straft provides three appearance modes:
 
 - **Light**
 - **Dark**
@@ -2345,7 +2345,7 @@ The dark version is derived from the same theme seeds rather than requiring a se
 
 Follows the operating system's light/dark preference using the application's normal OS media-query/event mechanism.
 
-When the OS preference changes while Straft Studio is running, System mode updates automatically without requiring an application restart.
+When the OS preference changes while Straft is running, System mode updates automatically without requiring an application restart.
 
 ### Important separation
 
@@ -2371,9 +2371,9 @@ A user is never forced to use a theme only in the mode suggested by its name.
 
 ---
 
-## 47A.4 Canonical default theme — preserve today's Straft Studio design
+## 47A.4 Canonical default theme — preserve today's Straft design
 
-The existing Straft Studio design must be represented as the factory/default theme.
+The existing Straft design must be represented as the factory/default theme.
 
 ### Default behavior
 
@@ -2384,7 +2384,7 @@ Theme = Straft Default
 Mode  = System
 ```
 
-where the resolved Light/Dark appearance remains the current Straft Studio design language.
+where the resolved Light/Dark appearance remains the current Straft design language.
 
 If the current design is already represented by the prototype's `Studio Amber` seed profile, that profile may be retained internally as the seed definition for the canonical default. **Do not change the visible default palette solely to introduce this feature.**
 
@@ -2582,11 +2582,11 @@ Theme changes must never make:
 
 The initial built-in collection should contain approximately 15 optional themes.
 
-The names below are original Straft Studio names; do not market or ship themes under trademarked product, studio, film, character or brand names.
+The names below are original Straft names; do not market or ship themes under trademarked product, studio, film, character or brand names.
 
 ### 1. Straft Default
 
-**Purpose:** Canonical existing Straft Studio appearance.
+**Purpose:** Canonical existing Straft appearance.
 
 This is the factory/default design.
 
@@ -2696,7 +2696,7 @@ Mode
 
 Theme
 [ Straft Default ]
-  Canonical Straft Studio appearance
+  Canonical Straft appearance
 
 [ Graphite ]
   Restrained graphite / steel
@@ -2729,7 +2729,7 @@ Selecting a built-in theme:
 
 ## 47A.10 Theme import — untrusted external files
 
-Users may download a theme from the Straft Studio website or another trusted source and import it without updating the application.
+Users may download a theme from the Straft website or another trusted source and import it without updating the application.
 
 The application does **not** need an in-app theme server/API.
 
@@ -2747,7 +2747,7 @@ Illustrative structure:
   "id": "example-theme",
   "name": "Example Theme",
   "description": "A restrained example palette.",
-  "author": "Straft Studio Community",
+  "author": "Straft Community",
   "seeds": {
     "neutralHue": 220,
     "neutralTint": 0.018,
@@ -2909,7 +2909,7 @@ When a theme fails:
 2. auto-correct only when the correction is deterministic and does not materially change the theme;
 3. otherwise reject the theme from application.
 
-A visually attractive theme that makes writing difficult is not an acceptable Straft Studio theme.
+A visually attractive theme that makes writing difficult is not an acceptable Straft theme.
 
 High Contrast may intentionally use explicit token overrides to reach stronger separation.
 
@@ -2994,7 +2994,7 @@ Do not embed:
 
 ## 47A.17 Community/theme website model
 
-The Straft Studio website may host downloadable `.json` theme files.
+The Straft website may host downloadable `.json` theme files.
 
 The app does not need:
 
@@ -3126,7 +3126,7 @@ The production task is therefore not:
 
 It is:
 
-> **“Complete tokenization of the existing Straft Studio design once, then let the theme engine supply the palette.”**
+> **“Complete tokenization of the existing Straft design once, then let the theme engine supply the palette.”**
 
 ### Required migration audit
 
@@ -3252,7 +3252,7 @@ in:
 
 ### Regression
 
-Every existing Straft Studio screen should remain structurally identical when using **Straft Default**.
+Every existing Straft screen should remain structurally identical when using **Straft Default**.
 
 This is critical: introducing theming must not become a hidden UI redesign.
 
@@ -3262,7 +3262,7 @@ This is critical: introducing theming must not become a hidden UI redesign.
 
 The theme system is complete only when all are true:
 
-- The existing Straft Studio appearance remains the factory default.
+- The existing Straft appearance remains the factory default.
 - Existing users do not unexpectedly receive a new visual design.
 - Light, Dark and System modes work.
 - System follows OS preference and updates live.
@@ -3319,7 +3319,7 @@ high-contrast      — High Contrast
 
 ### Note on the existing prototype
 
-The uploaded prototype currently demonstrates 15 seeded theme entries and Light/Dark/System switching. Its default seed profile is labeled `Studio Amber`, while the product requirement here is that the **existing Straft Studio appearance remains the canonical default**.
+The uploaded prototype currently demonstrates 15 seeded theme entries and Light/Dark/System switching. Its default seed profile is labeled `Studio Amber`, while the product requirement here is that the **existing Straft appearance remains the canonical default**.
 
 Therefore, during production integration:
 
@@ -3332,14 +3332,14 @@ Therefore, during production integration:
 
 ## 47A.27 Product-level outcome
 
-The theme system should make Straft Studio feel personal without making it feel configurable in the way a design tool is configurable.
+The theme system should make Straft feel personal without making it feel configurable in the way a design tool is configurable.
 
 The user experience should be:
 
 ```text
-Open Straft Studio
+Open Straft
    ↓
-The familiar Straft Studio design
+The familiar Straft design
    ↓
 Write normally
 ```
@@ -3356,6 +3356,6 @@ Choose a professional theme
 Continue working
 ```
 
-The product remains the same Straft Studio.
+The product remains the same Straft.
 
 Only its visual atmosphere changes.

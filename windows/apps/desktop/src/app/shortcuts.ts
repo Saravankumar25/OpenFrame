@@ -37,7 +37,7 @@ const el = (id: string, label: string, key: string | null): ShortcutCommand => (
 
 export const SHORTCUT_COMMANDS: ShortcutCommand[] = [
   { id: "app.search", label: "Search", group: "General", scope: "project", defaults: ["Mod+K"], route: "Search box at the top of the window" },
-  { id: "app.assistant", label: "Open or close the assistant", group: "General", scope: "project", defaults: ["Mod+J"], route: "Assistant button at the top right" },
+  { id: "app.assistant", label: "Open or close Straft AI", group: "General", scope: "project", defaults: ["Mod+J"], route: "Straft AI button at the top right" },
   { id: "app.save", label: "Save now", group: "General", scope: "project", defaults: ["Mod+S"], route: "Project menu: Save now" },
   { id: "app.undo", label: "Undo", group: "General", scope: "project", defaults: ["Mod+Z"], route: "Undo button at the top" },
   { id: "app.redo", label: "Redo", group: "General", scope: "project", defaults: ["Mod+Y", "Mod+Shift+Z"], route: "Redo button at the top" },
