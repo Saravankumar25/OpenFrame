@@ -154,7 +154,7 @@ labelled orange stays orange in every theme.
 ## 8. Logo
 
 Owner request 2026-10-07 (mocks section 5). `BrandLogo` renders the film-frame mark (24 by 24 grid, stroke 1.6, round
-caps and joins) and the wordmark "Straft Studio" ("Open" weight 300, "Frame" weight 700, letter spacing -0.02em, no STUDIO
+caps and joins) and the wordmark "Straft Studio" ("Straft" weight 700, "Studio" weight 300, letter spacing -0.02em, on one
 line). The gradient stops are `--lg1`, `--lg2`, `--lg3`: Straft Default and Studio Amber use the website stops
 `#ff5d6c`, `#ff9a3d`, `#ffc23d`; every other theme derives them from its accent (`oklch(from var(--accent) ...)`).
 There is no separate logo setting. Each mark has its own gradient id (`useId`). Shown on Home, the project top bar,

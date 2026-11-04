@@ -43,7 +43,7 @@ Context rot is the slow loss of accuracy in long sessions and the quiet build-up
    change. Status text lags code (three feature rows were stale on 2026-10-09); read the code before trusting a row.
 6. Keep this file short (about 150 lines). Anything long belongs in `docs/` with a link here. Anything about the past
    belongs in `docs/history/` or the progress log, never here.
-7. Memory (`~/.claude/projects/C--Straft Studio/memory/`) holds only facts the repository cannot show: owner preferences,
+7. Memory (`~/.claude/projects/C--Straft/memory/`) holds only facts the repository cannot show: owner preferences,
    decisions not yet written down, hardware facts. Delete a memory when the repository records it or it is wrong.
 
 ## Project control documents

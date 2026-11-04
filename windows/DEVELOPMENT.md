@@ -73,11 +73,11 @@ cd apps/desktop; npx vitest                          # watch mode
 
 | What | Where |
 |---|---|
-| Application data (local profile, recent projects, settings) | `%LOCALAPPDATA%Straft Studio\app.sqlite` |
-| Logs | `%LOCALAPPDATA%Straft Studio\logs\straft.YYYY-MM-DD.log`: JSON lines, rotated daily, 14 files kept |
+| Application data (local profile, recent projects, settings) | `%LOCALAPPDATA%\Straft Studio\app.sqlite` |
+| Logs | `%LOCALAPPDATA%\Straft Studio\logs\straft.YYYY-MM-DD.log`: JSON lines, rotated daily, 14 files kept |
 | New projects (default) | `Documents\Straft Studio\Projects\<Title>.straft\` |
 | Global Idea Vault | `Documents\Straft Studio\Global Idea Vault\` (`vault.sqlite` + `assets/`) |
-| Offline AI engine (in the package, read-only) and models (downloaded after install, ADR-0026) | engine: `ai\` next to `straft-desktop.exe` (installer, MSIX and development builds); models: `%LOCALAPPDATA%Straft Studio\models\<version>\`; writable AI records in `%LOCALAPPDATA%\Straft Studio\ai\` and `logs\` (Store builds: `LocalState\Straft Studio`, see doc 27). `ai\graphics.json` holds the Graphics card setting and what the card checks found; set `"forceIntegratedProbe": true` there by hand to check integrated graphics even when the memory rule says no (ADR-0029, never shown in the app) |
+| Offline AI engine (in the package, read-only) and models (downloaded after install, ADR-0026) | engine: `ai\` next to `straft-desktop.exe` (installer, MSIX and development builds); models: `%LOCALAPPDATA%\Straft Studio\models\<version>\`; writable AI records in `%LOCALAPPDATA%\Straft Studio\ai\` and `logs\` (Store builds: `LocalState\Straft Studio`, see doc 27). `ai\graphics.json` holds the Graphics card setting and what the card checks found; set `"forceIntegratedProbe": true` there by hand to check integrated graphics even when the memory rule says no (ADR-0029, never shown in the app) |
 
 **Log level.** Set the `STRAFT_LOG` environment variable. It uses
 [`tracing_subscriber::EnvFilter`](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html)

@@ -499,7 +499,7 @@ The words you asked about:
 | Compaction | When the window fills, old parts are summarised | Details can be lost in a summary |
 | Context rot | Quality drops as the context gets long, stale or contradictory | The reason for the handoff file and short `CLAUDE.md` |
 | `CLAUDE.md` | A file Claude reads at the start of every session in a project | 14.8 KB before today, 153 lines now |
-| Memory | Small notes Claude keeps for you across sessions | 10 files in `~/.claude/projects/C--Straft Studio/memory/` |
+| Memory | Small notes Claude keeps for you across sessions | 10 files in `~/.claude/projects/C--Straft/memory/` |
 | Skill | A saved how-to Claude can load when a task matches | `superpowers`, `ecc`, `caveman`, dozens more |
 | Plugin | A bundle of skills, agents, commands and hooks | 11 enabled in your settings |
 | Subagent | A helper Claude that works on a separate task in its own context | 33 GSD agents and the ECC reviewers |
@@ -2397,7 +2397,7 @@ not checked by any script and will drift; the new documents name files, and line
 | User instructions | `~/.claude/CLAUDE.md` (231 bytes: a graphify note) | Every session, every project |
 | Project instructions | `C:\Straft\CLAUDE.md` (rewritten today, 12.5 KB) | Every session in this project |
 | Old copy | `C:\Straft\AGENTS.md` (untracked, 13 KB, for another tool) | Not by Claude Code; stale |
-| Memory | 10 files in `~/.claude/projects/C--Straft Studio/memory/` | The index every session; files when relevant |
+| Memory | 10 files in `~/.claude/projects/C--Straft/memory/` | The index every session; files when relevant |
 | User settings | Default model Haiku, effort high, output style Concise, 11 plugins, six plugin sources, a permission list with many entries from unrelated Python work | Every session |
 | Project settings | `.claude/settings.json` (git-ignored): hooks for graphify and GSD | Every session here |
 | Plugins | figma, ecc, frontend-design, impeccable, superpowers, claude-code-setup, security-guidance, caveman, agent-skills, claude-security, claude-mem | Every session; each adds skills, agents, commands and hooks |

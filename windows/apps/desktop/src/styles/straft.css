@@ -21,7 +21,7 @@ svg.i.s{width:13px;height:13px} svg.i.l{width:20px;height:20px} svg.i.xl{width:2
 .topbar{height:46px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 12px;gap:12px;flex:none}
 .brand{display:flex;align-items:center;width:164px;flex:none}
 /* Logo (owner request 2026-10-07, Trial_Licensing_Mocks section 5): film-frame mark with a gradient from
-   --lg1..3, which follow the active theme, and the "Straft Studio" wordmark (Open 300, Frame 700). */
+   --lg1..3, which follow the active theme, and the "Straft Studio" wordmark (Straft 700, Studio 300). */
 .brandlogo{display:inline-flex;align-items:center;gap:9px;color:var(--ink)}
 .brandlogo .mk{width:28px;height:28px;overflow:visible;flex:none}
 .brandlogo .wm{font:700 19px/1 "Segoe UI Variable Display","Segoe UI",Inter,system-ui,sans-serif;letter-spacing:-.02em;white-space:nowrap}

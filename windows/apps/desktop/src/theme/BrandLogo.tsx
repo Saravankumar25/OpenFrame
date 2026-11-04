@@ -1,6 +1,6 @@
 // The Straft Studio logo (owner request 2026-10-07; Trial_Licensing_Mocks section 5): a film-frame
 // mark on a 24 by 24 grid whose gradient reads --lg1, --lg2 and --lg3 from the active theme, and
-// the one-word wordmark "Straft Studio" ("Open" weight 300, "Frame" weight 700). There is no separate
+// the wordmark "Straft Studio" ("Straft" weight 700, "Studio" weight 300). There is no separate
 // logo setting: choosing a theme or a mode recolours it.
 
 import { useId } from "react";
@@ -37,7 +37,7 @@ export function BrandLogo({ size }: { size?: "lg" }) {
     <span className={size === "lg" ? "brandlogo lg" : "brandlogo"} role="img" aria-label="Straft Studio">
       <LogoMark />
       <span className="wm" aria-hidden="true">
-        <i>Open</i>Frame
+        Straft <i>Studio</i>
       </span>
     </span>
   );
