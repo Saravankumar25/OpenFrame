@@ -360,11 +360,17 @@ mod tests {
 
     #[test]
     fn a_day_or_scene_in_a_follow_up_replaces_the_earlier_one() {
-        assert_eq!(replaced_by("what is on day 4", "and day 5").trim(), "what is on");
+        assert_eq!(
+            replaced_by("what is on day 4", "and day 5").trim(),
+            "what is on"
+        );
         assert_eq!(
             replaced_by("props for scene 3", "and the vehicles"),
             "props for scene 3"
         );
-        assert_eq!(replaced_by("props for scene 3", "and scene 9").trim(), "props for");
+        assert_eq!(
+            replaced_by("props for scene 3", "and scene 9").trim(),
+            "props for"
+        );
     }
 }

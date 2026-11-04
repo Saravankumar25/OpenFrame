@@ -26,7 +26,12 @@ const PROMISES: &[(&[&str], &str)] = &[
     ),
     (
         &[
-            "internet", "offline", "online", "connection", "wifi", "network",
+            "internet",
+            "offline",
+            "online",
+            "connection",
+            "wifi",
+            "network",
         ],
         "without the internet",
     ),

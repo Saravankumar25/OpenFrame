@@ -280,15 +280,18 @@ pub fn day_out_of_days(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec
                     .days
                     .iter()
                     .filter(|d| {
-                        row.cells.iter().any(|c| {
-                            c.day_id == d.id && dood::is_work(&c.code)
-                        })
+                        row.cells
+                            .iter()
+                            .any(|c| c.day_id == d.id && dood::is_work(&c.code))
                     })
                     .map(|d| d.short_label.clone())
                     .collect();
                 f = f.f("days worked", worked.join(", "));
                 for n in &asked_days {
-                    let Some(d) = view.days.iter().find(|d| day_number(&d.short_label) == Some(*n))
+                    let Some(d) = view
+                        .days
+                        .iter()
+                        .find(|d| day_number(&d.short_label) == Some(*n))
                     else {
                         continue;
                     };

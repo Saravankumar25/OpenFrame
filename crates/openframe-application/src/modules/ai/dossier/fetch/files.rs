@@ -17,8 +17,18 @@ use crate::modules::ai::turn::{AnswerType, TurnRead};
 
 /// Words that only name the file list.
 const FILE_WORDS: &[&str] = &[
-    "file", "files", "folder", "folders", "attachment", "attachments", "say", "says", "letter",
-    "document", "mention", "mentions",
+    "file",
+    "files",
+    "folder",
+    "folders",
+    "attachment",
+    "attachments",
+    "say",
+    "says",
+    "letter",
+    "document",
+    "mention",
+    "mentions",
 ];
 /// The text of one file given to the writer.
 const FILE_TEXT_CHARS: usize = 900;

@@ -125,9 +125,7 @@ pub(crate) fn names_row(message: &str, title: &str) -> bool {
 /// is not asking for every scene of Jose.
 pub(crate) fn asks_more_than(message: &str, names: &[String], plain: &[&str]) -> bool {
     let names: Vec<String> = names.iter().flat_map(|n| pointer::words(n)).collect();
-    row_words(message, plain)
-        .iter()
-        .any(|w| !names.contains(w))
+    row_words(message, plain).iter().any(|w| !names.contains(w))
 }
 
 /// The question asks for a status, in any of the words for one.
@@ -156,8 +154,8 @@ pub(crate) fn value_is_asked(f: &Fact, value: &str, message: &str) -> bool {
     let attribute = field_of(f, value).is_some_and(|n| ATTRIBUTES.contains(&n));
     if attribute {
         let typed = pointer::words(message);
-        let names_field = field_of(f, value)
-            .is_some_and(|n| pointer::words(n).iter().any(|w| typed.contains(w)));
+        let names_field =
+            field_of(f, value).is_some_and(|n| pointer::words(n).iter().any(|w| typed.contains(w)));
         let names_value = pointer::words(value).iter().any(|w| typed.contains(w));
         return names_field
             || names_value
@@ -196,7 +194,10 @@ mod tests {
     #[test]
     fn a_common_word_picks_no_row() {
         assert_eq!(
-            row_words("Which locations are still only an idea?", &["location", "idea"]),
+            row_words(
+                "Which locations are still only an idea?",
+                &["location", "idea"]
+            ),
             Vec::<String>::new()
         );
     }
@@ -224,27 +225,59 @@ mod tests {
 
     #[test]
     fn a_status_is_demanded_only_when_a_word_asks_for_it() {
-        let sheet = Fact::new("Call sheet", "c").f("day", "Day 4").f("status", "Draft");
-        assert!(!value_is_asked(&sheet, "Draft", "what time is the call on day 4"));
-        assert!(value_is_asked(&sheet, "Draft", "what is the status of day 4"));
+        let sheet = Fact::new("Call sheet", "c")
+            .f("day", "Day 4")
+            .f("status", "Draft");
+        assert!(!value_is_asked(
+            &sheet,
+            "Draft",
+            "what time is the call on day 4"
+        ));
+        assert!(value_is_asked(
+            &sheet,
+            "Draft",
+            "what is the status of day 4"
+        ));
         assert!(value_is_asked(&sheet, "Draft", "is day 4 final"));
         assert!(value_is_asked(&sheet, "Draft", "is day 4 a draft"));
     }
 
     #[test]
     fn a_name_the_person_typed_is_not_demanded_back_and_a_number_always_is() {
-        let f = Fact::new("Note", "n").f("title", "Permit status").f("count", "4");
-        assert!(!value_is_asked(&f, "Permit status", "what does the permit status note say"));
-        assert!(value_is_asked(&f, "Permit status", "which note is about the beach"));
+        let f = Fact::new("Note", "n")
+            .f("title", "Permit status")
+            .f("count", "4");
+        assert!(!value_is_asked(
+            &f,
+            "Permit status",
+            "what does the permit status note say"
+        ));
+        assert!(value_is_asked(
+            &f,
+            "Permit status",
+            "which note is about the beach"
+        ));
         assert!(value_is_asked(&f, "4", "how many scenes are on day 4"));
-        assert!(value_is_asked(&f, "Confirmed", "is that location confirmed"));
+        assert!(value_is_asked(
+            &f,
+            "Confirmed",
+            "is that location confirmed"
+        ));
     }
 
     #[test]
     fn the_scene_where_someone_does_a_thing_asks_for_more_than_their_scenes() {
         let plain = &["scene", "appear", "speak", "day"];
         let names = s(&["Jose"]);
-        assert!(asks_more_than("In which scene does Jose confess?", &names, plain));
-        assert!(!asks_more_than("Which scenes does Jose appear in?", &names, plain));
+        assert!(asks_more_than(
+            "In which scene does Jose confess?",
+            &names,
+            plain
+        ));
+        assert!(!asks_more_than(
+            "Which scenes does Jose appear in?",
+            &names,
+            plain
+        ));
     }
 }

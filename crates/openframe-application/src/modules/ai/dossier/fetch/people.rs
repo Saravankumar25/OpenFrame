@@ -10,7 +10,7 @@ use regex::Regex;
 
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
 use crate::modules::ai::dossier::guard;
-use crate::modules::ai::dossier::words::{Msg, clip, dates_in, date_within};
+use crate::modules::ai::dossier::words::{Msg, clip, date_within, dates_in};
 use crate::modules::ai::dossier::{Fact, P_HIGH, P_MID};
 use crate::modules::ai::index::{Kind, Resolved, normalize};
 use crate::modules::ai::turn::{AnswerType, Group, TurnRead, leaf_hints};
@@ -153,11 +153,7 @@ fn windows(ctx: &FetchCtx<'_>, owner: AvailabilityOwner, id: &str) -> AppResult<
 
 /// The windows of someone a date of the question falls in, as the screen writes them. Empty when the
 /// question names no date or they are free on it.
-fn windows_on_date(
-    ctx: &FetchCtx<'_>,
-    owner: AvailabilityOwner,
-    id: &str,
-) -> AppResult<String> {
+fn windows_on_date(ctx: &FetchCtx<'_>, owner: AvailabilityOwner, id: &str) -> AppResult<String> {
     let dates = dates_in(&ctx.message);
     if dates.is_empty() {
         return Ok(String::new());

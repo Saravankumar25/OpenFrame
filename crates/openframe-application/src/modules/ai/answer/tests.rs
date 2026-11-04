@@ -1159,7 +1159,11 @@ fn an_attempt_that_misses_a_required_value_is_kept_and_code_adds_it() {
         .unwrap();
     assert_eq!(r.model.calls(), 3);
     assert_eq!(a.shown, Shown::WrittenAdded);
-    assert!(a.text.starts_with("The lead cast is 40,00,000."), "{}", a.text);
+    assert!(
+        a.text.starts_with("The lead cast is 40,00,000."),
+        "{}",
+        a.text
+    );
     assert!(a.text.contains("Camera, planned: 18,00,000."), "{}", a.text);
 }
 
@@ -1180,7 +1184,10 @@ fn an_attempt_that_says_something_wrong_is_not_kept() {
 #[test]
 fn the_last_resort_states_every_required_fact() {
     let (text, used) = fallback::last_resort(&budget_of_two()).unwrap();
-    assert_eq!(text, "Lead cast, planned: 40,00,000. Camera, planned: 18,00,000.");
+    assert_eq!(
+        text,
+        "Lead cast, planned: 40,00,000. Camera, planned: 18,00,000."
+    );
     assert_eq!(used.len(), 2);
 }
 
@@ -1250,7 +1257,10 @@ fn a_sentence_said_twice_is_said_once() {
         "Varghese is a fisherman from the coast of Kerala. He has a boat. \
          Varghese is a fisherman from the coast of Kerala.",
     );
-    assert_eq!(fixed, "Varghese is a fisherman from the coast of Kerala. He has a boat.");
+    assert_eq!(
+        fixed,
+        "Varghese is a fisherman from the coast of Kerala. He has a boat."
+    );
     assert!(check::repeated_run(&fixed).is_none());
     let plain = "One thing here. Another thing there.";
     assert_eq!(check::repaired(plain), plain);
@@ -1262,11 +1272,18 @@ fn a_repeated_sentence_no_longer_costs_the_first_pass() {
         "The lead cast is planned at 40,00,000 rupees in all. The lead cast is planned at 40,00,000 rupees in all.",
     ]);
     let a = r
-        .ask("what is the lead cast line", AnswerType::Lookup, &lead_cast())
+        .ask(
+            "what is the lead cast line",
+            AnswerType::Lookup,
+            &lead_cast(),
+        )
         .unwrap();
     assert_eq!(r.model.calls(), 1);
     assert_eq!(a.shown, Shown::Written);
-    assert_eq!(a.text, "The lead cast is planned at 40,00,000 rupees in all.");
+    assert_eq!(
+        a.text,
+        "The lead cast is planned at 40,00,000 rupees in all."
+    );
 }
 
 #[test]
@@ -1279,22 +1296,27 @@ fn saying_nothing_was_found_when_a_row_holds_the_words_is_held_back() {
         facts: vec![f],
         ..Dossier::default()
     };
-    let r = Run::new(&[
-        "I could not find the height.",
-        "The mast is 42 metres.",
-    ]);
-    let a = r.ask("how tall is the mast", AnswerType::Lookup, &d).unwrap();
+    let r = Run::new(&["I could not find the height.", "The mast is 42 metres."]);
+    let a = r
+        .ask("how tall is the mast", AnswerType::Lookup, &d)
+        .unwrap();
     assert_eq!(r.model.calls(), 2);
     assert_eq!(a.text, "The mast is 42 metres.");
     // Three times over: the abstention shows the row that holds the words first.
-    let r = Run::new(&["I could not find it.", "I could not find it.", "Not found, I could not find it."]);
+    let r = Run::new(&[
+        "I could not find it.",
+        "I could not find it.",
+        "Not found, I could not find it.",
+    ]);
     let other = fact("File", "g").f("name", "other.txt");
     let picked = fact("File", "f").f("name", "mast.txt").prio(P_PICKED);
     let d = Dossier {
         facts: vec![other, picked],
         ..Dossier::default()
     };
-    let a = r.ask("how tall is the mast", AnswerType::Lookup, &d).unwrap();
+    let a = r
+        .ask("how tall is the mast", AnswerType::Lookup, &d)
+        .unwrap();
     assert!(a.text.contains("mast.txt"), "{}", a.text);
 }
 
@@ -1308,7 +1330,11 @@ fn a_short_sentence_said_again_goes_with_the_blank_lines_around_it() {
 
 #[test]
 fn a_last_resort_too_thin_for_a_story_gives_the_abstention() {
-    let r = Run::new(&["Silvanus sails.", "Silvanus sails on.", "Silvanus sails away."]);
+    let r = Run::new(&[
+        "Silvanus sails.",
+        "Silvanus sails on.",
+        "Silvanus sails away.",
+    ]);
     let a = r
         .ask("what is the story", AnswerType::Story, &lead_cast())
         .unwrap();

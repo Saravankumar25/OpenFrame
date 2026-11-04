@@ -188,7 +188,9 @@ pub fn dates_in(message: &str) -> Vec<(u32, u32)> {
     };
     let mut out = Vec::new();
     let tokens: Vec<&str> = message
-        .split(|c: char| c.is_whitespace() || matches!(c, ',' | '?' | '.' | '!' | ';' | ':' | '(' | ')'))
+        .split(|c: char| {
+            c.is_whitespace() || matches!(c, ',' | '?' | '.' | '!' | ';' | ':' | '(' | ')')
+        })
         .filter(|t| !t.is_empty())
         .collect();
     for t in &tokens {

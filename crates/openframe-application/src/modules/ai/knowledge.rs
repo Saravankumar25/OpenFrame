@@ -15,9 +15,9 @@ pub fn sections() -> Vec<(&'static str, &'static str)> {
 
 /// Words that say nothing about which section is meant.
 const STOP: &[&str] = &[
-    "does", "what", "this", "that", "with", "have", "from", "need", "needs", "will", "your", "when",
-    "where", "which", "there", "about", "into", "they", "them", "then", "than", "would", "could",
-    "should", "like", "once", "work", "thing", "things", "instead",
+    "does", "what", "this", "that", "with", "have", "from", "need", "needs", "will", "your",
+    "when", "where", "which", "there", "about", "into", "they", "them", "then", "than", "would",
+    "could", "should", "like", "once", "work", "thing", "things", "instead",
 ];
 
 fn words(s: &str) -> Vec<String> {
@@ -95,14 +95,17 @@ mod tests {
     fn a_rare_word_decides_and_the_stop_words_do_not_count() {
         let r = relevant("does the AI need the internet", 2);
         assert!(
-            r.iter().any(|(t, _)| *t == "Getting OpenFrame AI"
-                || *t == "Saving and working offline"),
+            r.iter()
+                .any(|(t, _)| *t == "Getting OpenFrame AI" || *t == "Saving and working offline"),
             "{r:?}"
         );
         let r = relevant("is my project sent anywhere", 2);
         assert!(r.iter().any(|(_, b)| b.contains("never sent")), "{r:?}");
         let r = relevant("Who can change things in a project?", 2);
-        assert!(r.iter().any(|(t, _)| *t == "Roles and permissions"), "{r:?}");
+        assert!(
+            r.iter().any(|(t, _)| *t == "Roles and permissions"),
+            "{r:?}"
+        );
     }
 
     #[test]

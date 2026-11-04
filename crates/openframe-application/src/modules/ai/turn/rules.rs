@@ -462,7 +462,12 @@ fn conversational(m: &str, men: Mentions) -> Option<AnswerType> {
 fn plural_after_what(m: &str) -> bool {
     re!(r"\bwhat\s+(\w{3,}s)\s+(?:are|were|do|does|did|have|has|will|can)\b")
         .captures_iter(m)
-        .any(|c| !matches!(&c[1], "does" | "was" | "has" | "this" | "is" | "his" | "its"))
+        .any(|c| {
+            !matches!(
+                &c[1],
+                "does" | "was" | "has" | "this" | "is" | "his" | "its"
+            )
+        })
 }
 
 /// "which budget lines", "which locations are": a plural noun right after "which" asks for several.

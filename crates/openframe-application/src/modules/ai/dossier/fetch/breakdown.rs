@@ -220,7 +220,8 @@ fn project_counts(ctx: &FetchCtx<'_>, t: AnswerType, asked: &[&str]) -> AppResul
             out.push(f);
         }
         // "Which scenes have no wardrobe": the scenes of the source with nothing in the category.
-        if t == AnswerType::List && ctx.m.any(&["no", "without"]) && ctx.m.any(&["scene", "scenes"]) {
+        if t == AnswerType::List && ctx.m.any(&["no", "without"]) && ctx.m.any(&["scene", "scenes"])
+        {
             let without = scenes_without(ctx, cat)?;
             let mut f = Fact::new("Breakdown", "")
                 .f("category", cat)

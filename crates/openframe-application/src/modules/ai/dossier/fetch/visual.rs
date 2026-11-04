@@ -33,7 +33,15 @@ const SHOT_WORDS: &[&str] = &[
 /// Words that only name the Idea Vault.
 const VAULT_WORDS: &[&str] = &["idea", "vault", "project", "item", "items", "source", "who"];
 /// Words that only name a mood board.
-const MOOD_WORDS: &[&str] = &["mood", "board", "boards", "moodboard", "moodboards", "item", "items"];
+const MOOD_WORDS: &[&str] = &[
+    "mood",
+    "board",
+    "boards",
+    "moodboard",
+    "moodboards",
+    "item",
+    "items",
+];
 
 pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
     safe("visual", || fetch(ctx, read, r))
@@ -196,14 +204,14 @@ fn shots(ctx: &FetchCtx<'_>, t: AnswerType, s: &SceneRef) -> AppResult<Vec<Fact>
     out.push(c);
     for (i, (id, d, size, mv, angle, lens)) in rows.iter().enumerate() {
         let mut shot = Fact::new("Shot", id)
-                .f("scene", s.number.to_string())
-                .f("number", (i + 1).to_string())
-                .f("description", clip(d, 160))
-                .f("size", size)
-                .f("movement", mv)
-                .f("angle", angle)
-                .f("lens", lens)
-                .prio(P_MID);
+            .f("scene", s.number.to_string())
+            .f("number", (i + 1).to_string())
+            .f("description", clip(d, 160))
+            .f("size", size)
+            .f("movement", mv)
+            .f("angle", angle)
+            .f("lens", lens)
+            .prio(P_MID);
         // A short list asked for as a list is told shot by shot.
         if t == AnswerType::List && rows.len() <= 6 {
             shot = shot.require(clip(d, LONG_TEXT)).require(mv);
@@ -279,7 +287,9 @@ fn storyboards(ctx: &FetchCtx<'_>, t: AnswerType, scenes: &[SceneRef]) -> AppRes
                 if let Some(p) = asked_panel.filter(|p| p.chars().count() <= LONG_TEXT) {
                     f = f.require(p);
                 }
-                if m.any(&["drawing", "drawings", "drawn", "image", "images", "sketch", "sketches"]) {
+                if m.any(&[
+                    "drawing", "drawings", "drawn", "image", "images", "sketch", "sketches",
+                ]) {
                     f = f.require(format!("{empty} empty"));
                 }
                 if t == AnswerType::Count && panels_counted {
@@ -313,7 +323,10 @@ fn storyboards(ctx: &FetchCtx<'_>, t: AnswerType, scenes: &[SceneRef]) -> AppRes
                     .f("name", name)
                     .f("scene", s.number.to_string())
                     .f("panels", n.to_string())
-                    .f("panel notes", clip(&numbered(&panel_lines(ctx, id)?), PANEL_CHARS))
+                    .f(
+                        "panel notes",
+                        clip(&numbered(&panel_lines(ctx, id)?), PANEL_CHARS),
+                    )
                     .prio(P_HIGH)
                     .require(name)
                     .require(n.to_string()),
@@ -400,14 +413,11 @@ fn moodboards(ctx: &FetchCtx<'_>, t: AnswerType) -> AppResult<Vec<Fact>> {
                 Ok((kind, [body, caption, title].join(" ").trim().to_string()))
             })?
             .collect::<Result<_, _>>()?;
-        let with_kind = |kind: &str, plural: &str| match items
-            .iter()
-            .filter(|(k, _)| k == kind)
-            .count()
-        {
-            0 => format!("no {plural}"),
-            n => format!("{n} {plural}"),
-        };
+        let with_kind =
+            |kind: &str, plural: &str| match items.iter().filter(|(k, _)| k == kind).count() {
+                0 => format!("no {plural}"),
+                n => format!("{n} {plural}"),
+            };
         f = f.f(
             "holds",
             format!(
@@ -487,7 +497,9 @@ fn vault(ctx: &FetchCtx<'_>, read: &TurnRead, named: &[String]) -> AppResult<Vec
         .collect();
     let hits = best_rows(&words, &texts, 3);
     let asks_source = ctx.m.any(&["source", "who", "whose", "from"]);
-    let asks_kinds = ctx.m.any(&["kind", "kinds", "type", "types", "sort", "sorts"]);
+    let asks_kinds = ctx
+        .m
+        .any(&["kind", "kinds", "type", "types", "sort", "sorts"]);
     let whole = list && words.is_empty();
     for (i, (id, title, kind, body, caption, source)) in rows.iter().enumerate() {
         let is_named = named.contains(id);

@@ -872,7 +872,10 @@ pub const LEAVES: &[Leaf] = &[
         label: "Settings",
         title: "Settings",
         aliases: &["preferences", "project settings", "members"],
-        fetchers: &[f("settings", settings::run), f("product guide", product::run)],
+        fetchers: &[
+            f("settings", settings::run),
+            f("product guide", product::run),
+        ],
         kinds: &[
             "Project",
             "Project member",

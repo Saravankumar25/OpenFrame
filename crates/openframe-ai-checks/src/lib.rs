@@ -698,7 +698,9 @@ fn at_sentence_start(text: &str, at: usize) -> bool {
 /// "Separately, the...". A short word stays a candidate.
 fn opens_a_clause(answer: &str, start: usize, word: &str) -> bool {
     let lower = word.to_lowercase();
-    lower.chars().count() >= 7 && lower.ends_with("ly") && answer[start + word.len()..].starts_with(',')
+    lower.chars().count() >= 7
+        && lower.ends_with("ly")
+        && answer[start + word.len()..].starts_with(',')
 }
 
 /// The base forms of a word at the start of a sentence: "applying" to "apply", "requests" to "request",
@@ -1159,9 +1161,18 @@ mod clause_openers {
 
     #[test]
     fn a_real_name_at_a_sentence_start_still_needs_its_evidence() {
-        assert_eq!(ungrounded_names("Marcus arrives at dawn.", &["Anjali"]), vec!["Marcus"]);
-        assert_eq!(ungrounded_names("Sterling arrives at dawn.", &["Anjali"]), vec!["Sterling"]);
-        assert_eq!(ungrounded_names("Thomas arrives at dawn.", &["Anjali"]), vec!["Thomas"]);
+        assert_eq!(
+            ungrounded_names("Marcus arrives at dawn.", &["Anjali"]),
+            vec!["Marcus"]
+        );
+        assert_eq!(
+            ungrounded_names("Sterling arrives at dawn.", &["Anjali"]),
+            vec!["Sterling"]
+        );
+        assert_eq!(
+            ungrounded_names("Thomas arrives at dawn.", &["Anjali"]),
+            vec!["Thomas"]
+        );
     }
 }
 

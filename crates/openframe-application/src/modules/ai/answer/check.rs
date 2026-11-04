@@ -467,7 +467,8 @@ fn sentences(s: &str) -> Vec<String> {
     let chars: Vec<char> = s.chars().collect();
     for (i, c) in chars.iter().enumerate() {
         now.push(*c);
-        let ends = matches!(c, '.' | '!' | '?') && chars.get(i + 1).is_none_or(|n| n.is_whitespace());
+        let ends =
+            matches!(c, '.' | '!' | '?') && chars.get(i + 1).is_none_or(|n| n.is_whitespace());
         if ends || *c == '\n' {
             out.push(std::mem::take(&mut now));
         }

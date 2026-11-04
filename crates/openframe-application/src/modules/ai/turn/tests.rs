@@ -751,23 +751,34 @@ fn the_warm_up_embeds_the_examples_once_and_a_failing_embedder_leaves_nothing_be
 
 #[test]
 fn how_many_with_a_second_clause_is_not_a_count() {
-    assert_eq!(plain("How many shots are planned for scene 41?").answer_type, Count);
+    assert_eq!(
+        plain("How many shots are planned for scene 41?").answer_type,
+        Count
+    );
     assert_eq!(
         plain("How many shots are planned for scene 41 and what happens in it?").answer_type,
         Explain
     );
     assert_ne!(
-        plain("For scene 41, what happens, what props does it need and how many shots?").answer_type,
+        plain("For scene 41, what happens, what props does it need and how many shots?")
+            .answer_type,
         Count
     );
-    assert!(!rules::asks_a_count("how many shoot days, what is planned for fees"));
+    assert!(!rules::asks_a_count(
+        "how many shoot days, what is planned for fees"
+    ));
     assert!(rules::asks_a_count("how many shoot days are planned"));
     assert!(rules::asks_a_count("what is the number of scenes"));
 }
 
 #[test]
 fn a_short_follow_up_inherits_the_last_type() {
-    for message in ["and the actual", "and the vehicles", "and day 5", "was it over"] {
+    for message in [
+        "and the actual",
+        "and the vehicles",
+        "and day 5",
+        "was it over",
+    ] {
         let r = read_with(message, Some(Lookup), &Resolved::default());
         assert_eq!(r.answer_type, Lookup, "{message}");
         assert_eq!(r.how, ReadHow::Repair, "{message}");
@@ -843,8 +854,14 @@ impl Embedder for OneVote {
 
 #[test]
 fn plural_nouns_after_what_and_kinds_of_read_as_a_list() {
-    assert_eq!(plain("What shots are planned for scene 41?").answer_type, List);
-    assert_eq!(plain("What kinds of things have I saved in the vault?").answer_type, List);
+    assert_eq!(
+        plain("What shots are planned for scene 41?").answer_type,
+        List
+    );
+    assert_eq!(
+        plain("What kinds of things have I saved in the vault?").answer_type,
+        List
+    );
     assert_ne!(plain("What does the note say?").answer_type, List);
 }
 
@@ -854,7 +871,10 @@ fn a_connection_to_the_internet_and_a_linked_board_relate_no_people() {
         plain("Can the AI work without a connection once it is downloaded?").answer_type,
         Relation
     );
-    assert_ne!(plain("Which scene is the storyboard linked to?").answer_type, Relation);
+    assert_ne!(
+        plain("Which scene is the storyboard linked to?").answer_type,
+        Relation
+    );
     assert_eq!(plain("Are Babu and Jose connected?").answer_type, Relation);
 }
 

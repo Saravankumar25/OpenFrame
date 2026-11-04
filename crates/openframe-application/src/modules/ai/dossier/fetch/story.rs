@@ -20,9 +20,34 @@ const CARD_WORDS: &[&str] = &[
 ];
 /// Words that do not narrow a question about the whole story.
 const ACT_WORDS: &[&str] = &[
-    "act", "acts", "story", "film", "movie", "plot", "script", "screenplay", "beat", "board",
-    "outline", "explain", "happen", "happens", "summary", "summarise", "summarize", "recap",
-    "brief", "briefly", "tell", "walk", "through", "go", "end", "begin", "start", "structure",
+    "act",
+    "acts",
+    "story",
+    "film",
+    "movie",
+    "plot",
+    "script",
+    "screenplay",
+    "beat",
+    "board",
+    "outline",
+    "explain",
+    "happen",
+    "happens",
+    "summary",
+    "summarise",
+    "summarize",
+    "recap",
+    "brief",
+    "briefly",
+    "tell",
+    "walk",
+    "through",
+    "go",
+    "end",
+    "begin",
+    "start",
+    "structure",
 ];
 
 pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
@@ -504,7 +529,8 @@ fn acts_and_cards(
             .prio(P_HIGH);
         // The act titles are the shape of the story when the story is what is asked, not when the
         // question is about a person or one thing in it.
-        let about_all = r.characters.is_empty() && !asked::asks_more_than(&ctx.message, &[], ACT_WORDS);
+        let about_all =
+            r.characters.is_empty() && !asked::asks_more_than(&ctx.message, &[], ACT_WORDS);
         if whole && narrative && about_all {
             f = f.require(title);
         }
@@ -557,11 +583,10 @@ fn acts_and_cards(
         for i in picked {
             let c = &cards[i];
             let scene = c.4.as_ref().and_then(|s| numbers.get(s));
-            let act = c
-                .1
-                .as_deref()
-                .and_then(|p| acts.iter().find(|(id, _, _)| id == p))
-                .map_or("", |(_, t, _)| t.as_str());
+            let act =
+                c.1.as_deref()
+                    .and_then(|p| acts.iter().find(|(id, _, _)| id == p))
+                    .map_or("", |(_, t, _)| t.as_str());
             let what = clip(&c.2, 200);
             let mut card = Fact::new("Card", &c.0)
                 .f("act", act)

@@ -17,14 +17,42 @@ use crate::modules::production::availability::{self as av, AvailabilityOwner};
 
 /// Words that only name the location list.
 const LOCATION_WORDS: &[&str] = &[
-    "location", "locations", "place", "places", "status", "confirmed", "shortlisted", "idea",
-    "rejected", "backup", "shoot", "shot", "set",
+    "location",
+    "locations",
+    "place",
+    "places",
+    "status",
+    "confirmed",
+    "shortlisted",
+    "idea",
+    "rejected",
+    "backup",
+    "shoot",
+    "shot",
+    "set",
 ];
 /// Words that only name the task list.
 const TASK_WORDS: &[&str] = &[
-    "task", "tasks", "todo", "due", "date", "deadline", "overdue", "open", "done", "pending",
-    "outstanding", "finished", "completed", "left", "first", "earliest", "soon", "march",
-    "february", "april",
+    "task",
+    "tasks",
+    "todo",
+    "due",
+    "date",
+    "deadline",
+    "overdue",
+    "open",
+    "done",
+    "pending",
+    "outstanding",
+    "finished",
+    "completed",
+    "left",
+    "first",
+    "earliest",
+    "soon",
+    "march",
+    "february",
+    "april",
 ];
 /// Rows of the location list or the task list one question can demand by its words.
 const ROWS_PICKED: usize = 3;
@@ -350,7 +378,10 @@ fn scene_location(
         if let Some(id) = loc {
             ids.push(id.clone());
         }
-        if let Some(st) = status.as_ref().filter(|_| asked::status_asked(&ctx.message)) {
+        if let Some(st) = status
+            .as_ref()
+            .filter(|_| asked::status_asked(&ctx.message))
+        {
             f = f.require(st);
         }
         parts.push(match status {
@@ -465,10 +496,7 @@ fn tasks(
         .filter(|i| no_due && rows[*i].3.is_none())
         .collect();
     let words = row_words(&ctx.message, TASK_WORDS);
-    let texts: Vec<String> = rows
-        .iter()
-        .map(|r| format!("{} {}", r.1, r.4))
-        .collect();
+    let texts: Vec<String> = rows.iter().map(|r| format!("{} {}", r.1, r.4)).collect();
     let by_word = best_rows(&words, &texts, ROWS_PICKED);
     let picked: Vec<usize> = if !by_date.is_empty() {
         by_date

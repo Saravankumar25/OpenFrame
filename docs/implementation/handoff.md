@@ -2,7 +2,7 @@
 
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-11-03, end of slice R7 of the section-scoped assistant.
+> entry, trust the log and fix this page first. Last rewritten: 2026-11-03, after tuning the section answers on the real model.
 
 ## State
 
@@ -13,15 +13,16 @@
    kinds, the domain table, the fetcher table, the wide passages round, the retrieval router and the project map are deleted.
    Project migration 0020 and app migration 0011 drop their columns. A request with no picks gets a fixed sentence; under
    `AppConfig.ai_eval_all_sections` (tests and evaluation only, false in the FFI) it reads every section through the same path.
-3. **Measured with no model:** the pointer bench `crates/openframe-ai-eval/tests/pointer_gold.rs`. **Not measured:** none of this
-   has run with the real model since R6. Results of the R6 run are in `release-out/eval/r6` (a run started before R7, on the older
-   code: it does not measure this slice).
+3. **Measured with the real model on this build:** the section set scores 324 of 336 answer facts, length 40 of 40, pointer
+   precision 59 of 59 and recall 59 of 60, false pointers 0 of 333, median 2.3 s. `docs/release/evidence/ai-reharness/README.md` holds
+   the runs and what still fails. **Not measured:** the older gold sets on this build, and the relationship and mood checks, which
+   stay off.
 
 ## Next items
 
-1. **Full evaluation with the real model** on this build against the saved baseline (`docs/release/evidence/ai-reharness/`), then
-   measure the false alarms of the relationship, mood and scene reference checks. The older gold sets now read every section, so
-   their numbers will move: compare by family, show the owner, never lower a bar quietly.
+1. **The older gold sets on the real model** against the saved baseline, then the false alarms of the relationship and mood checks
+   (the scene reference check showed none). The older sets now read every section, so their numbers will move: compare by family,
+   show the owner, never lower a bar quietly. A person spot-checks one section case in ten.
 2. **Windows:** copy the shared Rust and build the picker (`docs/release/windows-port-2026-11-03.md`).
 3. **Items from before:** the full regular E2E on the Mac, the snapshot spinner in sides and reports, and the items that need Xcode and the
    developer account (`docs/release/mac-app-store-readiness.md`).

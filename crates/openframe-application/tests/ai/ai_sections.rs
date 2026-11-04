@@ -2271,7 +2271,10 @@ fn the_row_that_holds_the_asked_words_is_demanded() {
         AnswerType::Lookup,
     );
     // Most of the title was typed, so the title is not news.
-    assert!(!d.iter().any(|v| v == "Confirm the station permit"), "{d:?}");
+    assert!(
+        !d.iter().any(|v| v == "Confirm the station permit"),
+        "{d:?}"
+    );
     let d = demanded(
         &f.env,
         "Which task has no due date?",
@@ -2298,10 +2301,22 @@ fn a_count_question_demands_the_count_of_what_it_counts() {
     let f = film();
     for (message, leaf, value) in [
         ("How many items are in the vault?", "vault/project", "1"),
-        ("How many mood boards are there?", "production/moodboards", "1"),
-        ("How many call sheets are there?", "callsheets/callsheets", "1"),
+        (
+            "How many mood boards are there?",
+            "production/moodboards",
+            "1",
+        ),
+        (
+            "How many call sheets are there?",
+            "callsheets/callsheets",
+            "1",
+        ),
         ("How many tasks are there?", "notes/tasks", "1"),
-        ("How many scenes are unscheduled?", "production/schedule", "1"),
+        (
+            "How many scenes are unscheduled?",
+            "production/schedule",
+            "1",
+        ),
         ("How many budget lines are there?", "production/budget", "1"),
     ] {
         let d = demanded(&f.env, message, leaf, AnswerType::Count);
@@ -2403,7 +2418,11 @@ fn settings_questions_read_the_product_guide_and_its_promises_are_demanded() {
         AnswerType::Help,
     );
     assert!(d.render().contains("Guide"), "{}", d.render());
-    assert!(d.required.iter().any(|v| v == "never sent"), "{:?}", d.required);
+    assert!(
+        d.required.iter().any(|v| v == "never sent"),
+        "{:?}",
+        d.required
+    );
     assert!(!d.render().contains("Black Rain"), "{}", d.render());
     let d = facts_for(
         &f.env,
@@ -2610,7 +2629,10 @@ fn a_panel_named_by_its_place_is_demanded_and_storyboards_are_counted() {
         "production/storyboards",
         AnswerType::Lookup,
     );
-    assert!(d.iter().any(|v| v.contains("Nandan lifts the lamp")), "{d:?}");
+    assert!(
+        d.iter().any(|v| v.contains("Nandan lifts the lamp")),
+        "{d:?}"
+    );
     let d = demanded(
         &f.env,
         "Do the panels have drawings yet?",
@@ -2678,8 +2700,16 @@ fn a_named_day_reads_where_it_is_shot() {
         &[pick("production/locations")],
         AnswerType::Lookup,
     );
-    assert!(d.render().contains("Police Station (Confirmed)"), "{}", d.render());
-    assert!(d.required.iter().any(|v| v == "Confirmed"), "{:?}", d.required);
+    assert!(
+        d.render().contains("Police Station (Confirmed)"),
+        "{}",
+        d.render()
+    );
+    assert!(
+        d.required.iter().any(|v| v == "Confirmed"),
+        "{:?}",
+        d.required
+    );
 }
 
 #[test]
@@ -2691,7 +2721,10 @@ fn the_heading_of_a_scene_is_demanded_when_asked_for() {
         "screenplay/scenes",
         AnswerType::Lookup,
     );
-    assert!(d.iter().any(|v| v == "EXT. OLD RAILWAY STATION - DAY"), "{d:?}");
+    assert!(
+        d.iter().any(|v| v == "EXT. OLD RAILWAY STATION - DAY"),
+        "{d:?}"
+    );
 }
 
 #[test]
@@ -2736,7 +2769,11 @@ fn a_card_picked_for_a_told_answer_is_read_and_not_demanded() {
         &[pick("story/beat-board")],
         AnswerType::Explain,
     );
-    assert!(told.render().contains("Meera finds the folder"), "{}", told.render());
+    assert!(
+        told.render().contains("Meera finds the folder"),
+        "{}",
+        told.render()
+    );
     assert!(told.required.is_empty(), "{:?}", told.required);
     let d = demanded(
         &f.env,

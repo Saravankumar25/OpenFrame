@@ -32,9 +32,29 @@ const NOT_A_PLACE: &[&str] = &[
 
 /// Words that do not narrow a question about where and when a character appears.
 const WHERE_WORDS: &[&str] = &[
-    "day", "days", "date", "dates", "scene", "scenes", "shoot", "shooting", "shot", "schedule",
-    "scheduled", "when", "work", "working", "works", "appear", "appears", "last", "first", "final",
-    "plays", "play", "free",
+    "day",
+    "days",
+    "date",
+    "dates",
+    "scene",
+    "scenes",
+    "shoot",
+    "shooting",
+    "shot",
+    "schedule",
+    "scheduled",
+    "when",
+    "work",
+    "working",
+    "works",
+    "appear",
+    "appears",
+    "last",
+    "first",
+    "final",
+    "plays",
+    "play",
+    "free",
 ];
 
 /// "What is on Day 4", "what was planned", "which scenes are on it": the question asks what a named
@@ -341,11 +361,8 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 .prio(P_HIGH);
             // "Varghese's last scene" is his last day alone. A question that says more than who and
             // when ("the scene where Jose confesses") leaves the days as reading.
-            let narrowed = asked::asks_more_than(
-                &ctx.message,
-                std::slice::from_ref(&name),
-                WHERE_WORDS,
-            );
+            let narrowed =
+                asked::asks_more_than(&ctx.message, std::slice::from_ref(&name), WHERE_WORDS);
             let wanted: Vec<u32> = if m.any(&["last scene", "final scene", "last day"]) {
                 per_day.keys().next_back().copied().into_iter().collect()
             } else if m.any(&["first scene", "first day"]) {
@@ -782,7 +799,9 @@ fn sheet_facts(ctx: &FetchCtx<'_>, id: &str, day: Option<u32>, d: &CallSheetDocu
     let label = day.map(|n| format!("Day {n}")).unwrap_or_default();
     let base = |kind: &'static str| Fact::new(kind, id).f("day", &label).prio(P_MID);
     // The time a question names is demanded, and "the call" means the crew call.
-    let m = ctx.m.without(&["call sheet", "call sheets", "callsheet", "callsheets"]);
+    let m = ctx
+        .m
+        .without(&["call sheet", "call sheets", "callsheet", "callsheets"]);
     let plain_call = m.any(&["call", "calls", "call time"])
         && !m.any(&["general call", "shooting call", "makeup", "make up"]);
     let mut times = base("Call sheet times")

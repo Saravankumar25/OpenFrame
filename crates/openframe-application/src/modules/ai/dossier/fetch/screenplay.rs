@@ -17,8 +17,24 @@ use crate::modules::ai::turn::{AnswerType, Group, TurnRead};
 
 /// Words that do not narrow a question about the scenes someone is in.
 const APPEAR_WORDS: &[&str] = &[
-    "scene", "scenes", "appear", "appears", "appearing", "speak", "speaks", "speaking", "both",
-    "together", "there", "present", "share", "same", "lines", "dialogue", "script", "screenplay",
+    "scene",
+    "scenes",
+    "appear",
+    "appears",
+    "appearing",
+    "speak",
+    "speaks",
+    "speaking",
+    "both",
+    "together",
+    "there",
+    "present",
+    "share",
+    "same",
+    "lines",
+    "dialogue",
+    "script",
+    "screenplay",
 ];
 
 /// Characters of scene text given for a paragraph answer and for a brainstorm.
