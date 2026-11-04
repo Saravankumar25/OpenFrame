@@ -1,7 +1,7 @@
 # Website security
 
 Audit of 2026-10-31 by the `seo-sec` agent. Scope: the static site in this repository and its Cloudflare Pages deployment
-(project `openframe-studio`). The product apps are out of scope. The checks below are repeated by `tests/seo.test.mjs` on every
+(project `openframe-studio`, a name the Cloudflare project still has). The product apps are out of scope. The checks below are repeated by `tests/seo.test.mjs` on every
 build, so this page is the explanation and the test is the guard.
 
 ## 1. What the site is, and what that means for risk

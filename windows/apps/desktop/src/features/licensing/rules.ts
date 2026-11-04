@@ -83,14 +83,14 @@ export interface SocialLink {
 }
 
 export const SOCIAL_LINKS: readonly SocialLink[] = [
-  { name: "Instagram", short: "IG", handle: "@openframestudio", url: null },
-  { name: "YouTube", short: "YT", handle: "@openframestudio", url: null },
-  { name: "X", short: "X", handle: "@openframestudio", url: null },
-  { name: "Facebook", short: "f", handle: "@openframestudio", url: null },
-  { name: "LinkedIn", short: "in", handle: "@openframestudio", url: null },
-  { name: "Reddit", short: "Rd", handle: "@openframestudio", url: null },
-  { name: "Discord", short: "Dc", handle: "@openframestudio", url: null },
-  { name: "Threads", short: "Th", handle: "@openframestudio", url: null },
+  { name: "Instagram", short: "IG", handle: "@straftstudio", url: null },
+  { name: "YouTube", short: "YT", handle: "@straftstudio", url: null },
+  { name: "X", short: "X", handle: "@straftstudio", url: null },
+  { name: "Facebook", short: "f", handle: "@straftstudio", url: null },
+  { name: "LinkedIn", short: "in", handle: "@straftstudio", url: null },
+  { name: "Reddit", short: "Rd", handle: "@straftstudio", url: null },
+  { name: "Discord", short: "Dc", handle: "@straftstudio", url: null },
+  { name: "Threads", short: "Th", handle: "@straftstudio", url: null },
 ];
 
 /** The only sites a welcome link may open. */

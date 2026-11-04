@@ -2,15 +2,14 @@
 // The product is Straft Studio. The old name is matched in every spelling (one word, two words, with a hyphen or underscore,
 // any case) and replaced case-aware: STRAFT for an all-caps form, straft for one starting in lowercase, Straft otherwise
 // (so the old "<name> Studio" becomes "Straft Studio"). "an <old name>" becomes "a Straft".
-// Domains and addresses that still use the old name (the site domain, its email addresses, the Pages project host) are left
-// as they are: a form directly followed by "...studio.app" or "...studio.pages.dev" is kept.
+// The Cloudflare Pages project host still uses the old name, so a form directly followed by "...studio.pages.dev" is kept.
 // The patterns spell the old name with character classes, so a repo grep for it stays clean.
 //
 // BRAND_RULES is plain data ([source, flags, kind]) so the same rules can be handed to a browser page (scripts/shots.mjs and
 // scripts/render-screens.mjs run their cleaners there) and rebuilt there with makeRebrand's source.
 
 const NAME = '[Oo][Pp][Ee][Nn][\\s_-]?[Ff][Rr][Aa][Mm][Ee]'; // the old name, any case, any separator
-const KEEP = '(?![\\w-]*studio\\.(?:app|pages\\.dev))'; // not part of a domain or email address
+const KEEP = '(?![\\w-]*studio\\.pages\\.dev)'; // not part of the Pages project host
 
 export const BRAND_RULES = [
   [`\\b([Aa])[Nn](\\s+)(?=${NAME}${KEEP})`, 'g', 'article'], // an / An / AN before the name -> a / A / A
@@ -58,5 +57,5 @@ export function rebrandDom(o) {
   return n;
 }
 
-// True when text still holds the old name outside the kept domains (for checks).
+// True when text still holds the old name outside the kept host (for checks).
 export const hasOldName = (t) => new RegExp(`${NAME}${KEEP}`).test(t); // the same forms the name rule renames

@@ -113,7 +113,11 @@ a fast site that costs nothing to run, sets no cookies of its own, and has one c
 
 ### 4.1 Pages (live now)
 
-- Project `openframe-studio`, live at https://openframestudio.app (apex and `www` active), direct upload from this folder.
+- Project `openframe-studio`, direct upload from this folder. The Cloudflare project still has that name, and so does the
+  API token `openframe-website` in section 4.11. Renaming them is a manual owner action; change the text here only after that.
+- Official address: https://straftstudio.com. Not connected as of 2026-11-04: the domain has Cloudflare name servers and
+  Google mail records but no A, AAAA or CNAME record, so the site answers only at `openframe-studio.pages.dev`. That
+  deployment still predates the product rename. To connect it, follow the order in section 4.11.
 - Static assets are free and unlimited, on Free and paid plans. Cost appears only if a Pages Function runs; there are
   none, and the site has no `functions/` folder. Keep it that way until a feature needs one.
 - Pages caches by itself. For cacheable requests it sends `public, max-age=0, must-revalidate` with an ETag, so
@@ -306,7 +310,7 @@ Before the domain:
 
 When the domain is bought:
 
-- [x] Registrar: openframestudio.app bought on Cloudflare Registrar (2026-11-01). Auto-renew and WHOIS redaction: not checked.
+- [x] Registrar: straftstudio.com is the official domain, on Cloudflare name servers (checked 2026-11-04). Auto-renew and WHOIS redaction: not checked.
 - [ ] DNS: DNSSEC on.
 - [ ] Pages custom domains: apex added, then `www` added, both show Active.
 - [ ] Redirect Rule: `www` to apex, 301, query string kept. Tested with the simulator.
@@ -315,16 +319,22 @@ When the domain is bought:
 - [ ] HSTS: decision made (the site already sends it); Preload still off.
 - [ ] Security: Free Managed Ruleset deployed; Bot Fight Mode on only after the privacy page covers its cookies.
 - [ ] Speed, Observatory: first test of three pages saved.
-- [x] Site rebuilt for https://openframestudio.app, tested (131/131), deployed; `site.config.mjs` default changed.
+- [x] `site.config.mjs` default changed to https://straftstudio.com (2026-11-04).
+- [ ] Site rebuilt for https://straftstudio.com, tested and deployed.
 - [ ] Search setup (section 5) started.
 
-### 4.11 Domain automation and token permissions (live since 2026-11-01)
+### 4.11 Domain automation and token permissions
 
 `npm run domain:ensure` makes the Cloudflare side match this document. It only looks, then changes what differs, so it is
 safe to run again. `npm run domain:verify` needs no credentials and checks the public site. `npm run deploy` runs the
 verify step after every deploy.
 
-What `ensure` keeps in place for `openframestudio.app`:
+Order for connecting straftstudio.com (not done yet): give the token access to that zone, run `npm run domain:ensure`,
+then `npm run build`, `npm test`, `npm run deploy`. Deploying first uploads the site, then the verify step fails because the
+domain has no address yet. `ensure` adds a redirect to the `pages_dev_to_domain` list only when the list is empty, so if that
+list already holds an entry for the previous domain, correct the entry in the dashboard.
+
+What `ensure` keeps in place for `straftstudio.com`:
 
 | Item | Setting |
 |---|---|
@@ -346,7 +356,7 @@ never in the repository):
 | Account | Account Filter Lists: Edit | the `pages_dev_to_domain` list |
 | Account | Mass URL Redirects: Edit | the Bulk Redirect rule |
 
-Limit the zone permissions to the one zone `openframestudio.app` and the account permissions to this account. The other
+Limit the zone permissions to the one zone `straftstudio.com` and the account permissions to this account. The other
 permissions on the token (analytics, cache, WAF, email routing and so on) are not used by these scripts.
 
 Why there is no GitHub Actions deploy: the site build needs the screen pictures in `.cache/shots`, which are generated on

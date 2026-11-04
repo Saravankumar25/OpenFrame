@@ -35,7 +35,7 @@ test('footer links to the five legal pages on every page, and they resolve', { s
     const h = page(p);
     const foot = h.slice(h.indexOf('<footer'));
     for (const l of FOOTER) assert.ok(foot.includes(`href="${l}"`), `${p} footer lacks ${l}`);
-    assert.ok(text(foot).replace(/\s+/g, " ").includes("Published by Vighnajith Advisories Private Limited · 12/1, Ground Floor, 22nd Main Road, Bengaluru, Karnataka 560078, India · support@openframestudio.app"), `${p} footer lacks the publisher line`);
+    assert.ok(text(foot).replace(/\s+/g, " ").includes("Published by Vighnajith Advisories Private Limited · 12/1, Ground Floor, 22nd Main Road, Bengaluru, Karnataka 560078, India · support@straftstudio.com"), `${p} footer lacks the publisher line`);
   }
   for (const l of FOOTER) assert.ok(resolvesInDist(l), l);
 });
@@ -84,15 +84,15 @@ test('OF_SHOW_PLACEHOLDERS=1 renders the bracketed text for review builds', asyn
   } finally { delete process.env.OF_SHOW_PLACEHOLDERS; }
 });
 
-test('the contact page shows the support email and links the verified store pages', { skip: SKIP }, () => {
+test('the contact page shows the contact email and links the verified store pages', { skip: SKIP }, () => {
   const h = main(page('/contact/'));
   assert.ok(!h.includes('data-placeholder'));
-  assert.ok(h.includes('href="mailto:support@openframestudio.app"'));
+  assert.ok(h.includes('href="mailto:contact@straftstudio.com"'));
   assert.ok(h.includes('support.microsoft.com/en-us/accounts-billing/subscriptions/get-a-refund-for-apps-and-games-purchased-from-microsoft-store'));
   assert.ok(h.includes('support.apple.com/en-us/118223'));
   assert.ok(!/\+?\d[\d ()-]{8,}\d/.test(text(h)), 'no phone number may appear');
   for (const m of text(h).match(/[\w.+-]+@[\w-]+\.[\w.]+/g) || []) assert.ok(h.includes(`mailto:${m}`), `${m} must be a mailto link`);
-  for (const p of ['/legal/privacy/', '/legal/terms/']) { const m = text(main(page(p))); assert.match(m, /12[/]1, Ground Floor, 22nd Main Road, Bengaluru, Karnataka 560078, India/); assert.ok(page(p).includes('href="mailto:support@openframestudio.app"')); }
+  for (const p of ['/legal/privacy/', '/legal/terms/']) { const m = text(main(page(p))); assert.match(m, /12[/]1, Ground Floor, 22nd Main Road, Bengaluru, Karnataka 560078, India/); assert.ok(page(p).includes('href="mailto:support@straftstudio.com"')); }
 });
 
 test('privacy, cookies and refunds state the verified facts', { skip: SKIP }, () => {

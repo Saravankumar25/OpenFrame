@@ -6,7 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { COMPANY, COMPANY_ADDRESS, SUPPORT_EMAIL } from '../content/nav.mjs';
+import { COMPANY, COMPANY_ADDRESS, SUPPORT_EMAIL, CONTACT_EMAIL } from '../content/nav.mjs';
 
 const UPDATED = '3 November 2026';
 const FONTS = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'assets', 'fonts');
@@ -261,7 +261,7 @@ ${phero('Contact us', 'Questions? Start here.', 'Most answers are already in the
 <a class="card linkcard" href="/faq/"><h3>Questions and answers</h3><p>Platforms, privacy, files and the trial.</p></a>
 <a class="card linkcard" href="/pricing/"><h3>Pricing</h3><p>One payment after a 7-day trial.</p></a>
 </div></div>
-<div class="cinfo"><h3>Write to us</h3><p>${mail()}</p><h3>Purchases and refunds</h3><p>The Microsoft Store and the Mac App Store handle purchases, receipts and refunds. Use ${ext(LINKS.msRefund, 'Microsoft’s refund help')} for Windows and ${ext(LINKS.appleRefund, 'Apple’s refund help')} for the Mac. More on our <a href="/legal/refunds/">refunds page</a>.</p><h3>Privacy</h3><p>Your rights and how to use them are on the <a href="/legal/privacy/">privacy page</a>.</p><h3>This website</h3><p>The site has no contact form and collects nothing.</p></div>
+<div class="cinfo"><h3>Write to us</h3><p><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></p><h3>Purchases and refunds</h3><p>The Microsoft Store and the Mac App Store handle purchases, receipts and refunds. Use ${ext(LINKS.msRefund, 'Microsoft’s refund help')} for Windows and ${ext(LINKS.appleRefund, 'Apple’s refund help')} for the Mac. More on our <a href="/legal/refunds/">refunds page</a>.</p><h3>Privacy</h3><p>Your rights and how to use them are on the <a href="/legal/privacy/">privacy page</a>.</p><h3>This website</h3><p>The site has no contact form and collects nothing.</p></div>
 </div></div></section>`,
   });
 

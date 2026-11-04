@@ -1,4 +1,4 @@
-// Deploy dist/ to Cloudflare Pages (project openframe-studio). Credentials come from the environment
+// Deploy dist/ to Cloudflare Pages (project openframe-studio: the Cloudflare project still has that name). Credentials come from the environment
 // (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID); on Windows they are read from the user's saved variables.
 // The values are passed only to the wrangler child process and are never printed.
 import { execFileSync } from 'node:child_process';

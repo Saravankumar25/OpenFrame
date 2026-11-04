@@ -396,7 +396,7 @@ the person at this computer (`permission.denied` for the assistant and for packa
 "Show in File Explorer" and "Show in Finder" call the shell command `of_reveal_path` with the fixed kind `dataRoot`; the path never
 comes from the webview. The welcome links open only through `of_open_url` and only for fixed https addresses on the networks'
 own sites (`isFixedSocialUrl`). The owner has not sent the real handles yet, so every account has no address and none can be
-opened; the tiles show the placeholder handle `@openframestudio`.
+opened; the tiles show the placeholder handle `@straftstudio`.
 
 ### 10.5 Hand-set state for end-to-end tests
 
