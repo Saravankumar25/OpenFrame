@@ -274,6 +274,9 @@ final class UI {
 
     /// Types into whatever has keyboard focus now (the screenplay editor, for example).
     func typeHere(_ text: String) async throws {
+        // A page that takes focus when it appears does so a moment later on a busy machine.
+        let until = Date().addingTimeInterval(5)
+        while firstResponderText() == nil, Date() < until { await idle(0.2) }
         guard let target = firstResponderText() else { throw DriverError("nothing has keyboard focus") }
         target.insertText(text, replacementRange: target.selectedRange())
         await idle()
