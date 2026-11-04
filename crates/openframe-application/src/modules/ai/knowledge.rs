@@ -13,19 +13,40 @@ pub fn sections() -> Vec<(&'static str, &'static str)> {
         .collect()
 }
 
+/// Words that say nothing about which section is meant.
+const STOP: &[&str] = &[
+    "does", "what", "this", "that", "with", "have", "from", "need", "needs", "will", "your", "when",
+    "where", "which", "there", "about", "into", "they", "them", "then", "than", "would", "could",
+    "should", "like", "once", "work", "thing", "things", "instead",
+];
+
 fn words(s: &str) -> Vec<String> {
     s.to_lowercase()
         .split(|c: char| !c.is_alphanumeric())
-        .filter(|w| w.len() >= 4)
+        .filter(|w| w.len() >= 4 && !STOP.contains(w))
         .map(|w| w.trim_end_matches('s').to_string())
         .collect()
 }
 
 /// The `n` sections most relevant to `question` (keyword overlap; titles weigh more).
 pub fn relevant(question: &str, n: usize) -> Vec<(&'static str, &'static str)> {
-    let q = words(question);
+    let mut q = words(question);
     let asked = question.to_lowercase();
-    let mut scored: Vec<(usize, (&str, &str))> = sections()
+    // "Who can do this" asks about roles, whatever the verb is.
+    if asked.contains("who can") {
+        q.extend(["role".to_string(), "permission".to_string()]);
+    }
+    let all = sections();
+    // A word few sections hold says more than one most of them hold.
+    let parts: Vec<Vec<String>> = all
+        .iter()
+        .map(|(t, b)| words(&format!("{t} {b}")))
+        .collect();
+    let weight = |w: &String| -> usize {
+        let held = parts.iter().filter(|p| p.contains(w)).count().max(1);
+        1 + (usize::BITS - (parts.len() / held).leading_zeros()) as usize
+    };
+    let mut scored: Vec<(usize, (&str, &str))> = all
         .into_iter()
         .map(|(t, b)| {
             let tw = words(t);
@@ -40,11 +61,12 @@ pub fn relevant(question: &str, n: usize) -> Vec<(&'static str, &'static str)> {
             let overlap: usize = q
                 .iter()
                 .map(|w| {
-                    tw.iter().filter(|x| *x == w).count() * 3
-                        + bw.iter().filter(|x| *x == w).count()
+                    (tw.iter().filter(|x| *x == w).count() * 3
+                        + bw.iter().filter(|x| *x == w).count())
+                        * weight(w)
                 })
                 .sum();
-            let score = overlap + usize::from(named) * 20;
+            let score = overlap + usize::from(named) * 200;
             (score, (t, b))
         })
         .filter(|(s, _)| *s > 0)
@@ -67,6 +89,20 @@ mod tests {
         assert!(r.iter().any(|(t, _)| t.contains("Call sheets")));
         let r = relevant("What is the Production Source?", 1);
         assert_eq!(r[0].0, "Production Source");
+    }
+
+    #[test]
+    fn a_rare_word_decides_and_the_stop_words_do_not_count() {
+        let r = relevant("does the AI need the internet", 2);
+        assert!(
+            r.iter().any(|(t, _)| *t == "Getting OpenFrame AI"
+                || *t == "Saving and working offline"),
+            "{r:?}"
+        );
+        let r = relevant("is my project sent anywhere", 2);
+        assert!(r.iter().any(|(_, b)| b.contains("never sent")), "{r:?}");
+        let r = relevant("Who can change things in a project?", 2);
+        assert!(r.iter().any(|(t, _)| *t == "Roles and permissions"), "{r:?}");
     }
 
     #[test]

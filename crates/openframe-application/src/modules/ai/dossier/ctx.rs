@@ -4,8 +4,10 @@
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::rc::Rc;
+use std::sync::LazyLock;
 
 use openframe_domain::{Actor, AppResult};
+use regex::Regex;
 use rusqlite::{Connection, OptionalExtension};
 
 use super::guard::Guard;
@@ -45,6 +47,8 @@ pub struct FetchCtx<'a> {
     /// The message; a correction ("I asked you ...") carries the message it corrects too.
     pub message: String,
     pub m: Msg,
+    /// The person's previous message in this conversation, for a follow-up that names nothing.
+    pub previous: Option<String>,
     pub guard: Guard,
     /// The section this fetcher reads for. `None` only for the names stage, which reads no section.
     pub picked: Option<&'a PickedLeaf>,
@@ -56,7 +60,9 @@ pub struct FetchCtx<'a> {
 impl<'a> FetchCtx<'a> {
     pub fn new(input: &Input<'a>) -> Self {
         let message = match (input.read.how, input.previous_message) {
-            (ReadHow::Repair, Some(p)) => format!("{p} {}", input.message),
+            (ReadHow::Repair, Some(p)) => {
+                format!("{} {}", replaced_by(p, input.message), input.message)
+            }
             _ => input.message.to_string(),
         };
         Self {
@@ -66,6 +72,7 @@ impl<'a> FetchCtx<'a> {
             core: input.core,
             m: Msg::new(&message),
             message,
+            previous: input.previous_message.map(str::to_string),
             guard: Guard::for_actor(input.actor),
             picked: None,
             drafts: RefCell::new(HashMap::new()),
@@ -186,7 +193,9 @@ impl<'a> FetchCtx<'a> {
                 add(&mut out, self.scene_by_id(&id));
             }
         }
+        // "Varghese's last scene" is his, not the screenplay's: the fetchers read it from his scenes.
         if out.is_empty()
+            && r.characters.is_empty()
             && let Some(sp) = self.screenplay(r)
         {
             if self
@@ -316,6 +325,23 @@ impl<'a> FetchCtx<'a> {
     }
 }
 
+static DAY_WORDS: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?i)\b(?:shoot\s+)?day\s+#?\d{1,3}\b").expect("valid pattern"));
+static SCENE_WORDS: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?i)\bscenes?\s+#?\d{1,4}\b").expect("valid pattern"));
+
+/// The earlier message a follow-up is read with: "and day 5" after "what is on day 4" reads day 5 alone,
+/// and the same for a scene.
+fn replaced_by(previous: &str, message: &str) -> String {
+    let mut p = previous.to_string();
+    for words in [&*DAY_WORDS, &*SCENE_WORDS] {
+        if words.is_match(message) {
+            p = words.replace_all(&p, " ").into_owned();
+        }
+    }
+    p
+}
+
 /// Run a read that may fail; a failure adds no facts and is logged, never shown.
 pub fn safe(name: &str, f: impl FnOnce() -> AppResult<Vec<Fact>>) -> Vec<Fact> {
     f().unwrap_or_else(|e| {
@@ -326,4 +352,19 @@ pub fn safe(name: &str, f: impl FnOnce() -> AppResult<Vec<Fact>>) -> Vec<Fact> {
         );
         Vec::new()
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::replaced_by;
+
+    #[test]
+    fn a_day_or_scene_in_a_follow_up_replaces_the_earlier_one() {
+        assert_eq!(replaced_by("what is on day 4", "and day 5").trim(), "what is on");
+        assert_eq!(
+            replaced_by("props for scene 3", "and the vehicles"),
+            "props for scene 3"
+        );
+        assert_eq!(replaced_by("props for scene 3", "and scene 9").trim(), "props for");
+    }
 }

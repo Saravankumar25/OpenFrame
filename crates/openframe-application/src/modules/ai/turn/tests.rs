@@ -746,3 +746,131 @@ fn the_warm_up_embeds_the_examples_once_and_a_failing_embedder_leaves_nothing_be
     assert!(warm::examples(&ok));
     assert!(!warm::examples(&ExampleEmbedder::new(true)));
 }
+
+// ------------------------------------------------------------------ guards on a vote
+
+#[test]
+fn how_many_with_a_second_clause_is_not_a_count() {
+    assert_eq!(plain("How many shots are planned for scene 41?").answer_type, Count);
+    assert_eq!(
+        plain("How many shots are planned for scene 41 and what happens in it?").answer_type,
+        Explain
+    );
+    assert_ne!(
+        plain("For scene 41, what happens, what props does it need and how many shots?").answer_type,
+        Count
+    );
+    assert!(!rules::asks_a_count("how many shoot days, what is planned for fees"));
+    assert!(rules::asks_a_count("how many shoot days are planned"));
+    assert!(rules::asks_a_count("what is the number of scenes"));
+}
+
+#[test]
+fn a_short_follow_up_inherits_the_last_type() {
+    for message in ["and the actual", "and the vehicles", "and day 5", "was it over"] {
+        let r = read_with(message, Some(Lookup), &Resolved::default());
+        assert_eq!(r.answer_type, Lookup, "{message}");
+        assert_eq!(r.how, ReadHow::Repair, "{message}");
+    }
+    assert_eq!(
+        read_with("what about the props", Some(List), &Resolved::default()).answer_type,
+        List
+    );
+    // A change is never carried over to a follow-up.
+    assert_ne!(
+        read_with("and the budget", Some(Change), &Resolved::default()).how,
+        ReadHow::Repair
+    );
+    // Nothing to inherit: the read goes on as before.
+    assert_eq!(plain("and the actual").how, ReadHow::Fallback);
+}
+
+#[test]
+fn a_vote_needs_the_words_that_back_it() {
+    assert!(rules::asks_to_open("open the budget"));
+    assert!(rules::asks_to_open("show me the budget"));
+    assert!(!rules::asks_to_open("what is the last card on the board"));
+    assert!(rules::asks_about_the_story("why does the story end there"));
+    assert!(!rules::asks_about_the_story("what does he want"));
+}
+
+#[test]
+fn a_vote_for_count_navigate_or_story_without_those_words_reads_as_a_lookup() {
+    // Every example votes the same way, so the vote is clear and the guard is what is measured.
+    for message in [
+        "what is the wind limit",
+        "what is the last card on the beat board",
+        "what does he want",
+    ] {
+        let e: Arc<dyn Embedder> = Arc::new(OneVote);
+        let r = read(
+            &TurnInput {
+                message,
+                previous_message: None,
+                previous_type: None,
+                resolved: &Resolved::default(),
+            },
+            &Aids {
+                embedder: Some(e),
+                model: None,
+                stopped: &|| false,
+                wait: WAIT,
+            },
+        );
+        assert_ne!(r.answer_type, Count, "{message}");
+        assert_ne!(r.answer_type, Navigate, "{message}");
+        assert_ne!(r.answer_type, Story, "{message}");
+    }
+}
+
+/// An embedder that makes every message the same vector: the vote is what the examples hold.
+struct OneVote;
+
+impl Embedder for OneVote {
+    fn model_id(&self) -> String {
+        "one-vote".into()
+    }
+    fn dim(&self) -> usize {
+        2
+    }
+    fn embed(&self, inputs: &[String]) -> Result<Vec<Vec<f32>>, SearchError> {
+        Ok(inputs.iter().map(|_| vec![1.0, 0.0]).collect())
+    }
+    fn embed_queries(&self, inputs: &[String]) -> Result<Vec<Vec<f32>>, SearchError> {
+        self.embed(inputs)
+    }
+}
+
+#[test]
+fn plural_nouns_after_what_and_kinds_of_read_as_a_list() {
+    assert_eq!(plain("What shots are planned for scene 41?").answer_type, List);
+    assert_eq!(plain("What kinds of things have I saved in the vault?").answer_type, List);
+    assert_ne!(plain("What does the note say?").answer_type, List);
+}
+
+#[test]
+fn a_connection_to_the_internet_and_a_linked_board_relate_no_people() {
+    assert_ne!(
+        plain("Can the AI work without a connection once it is downloaded?").answer_type,
+        Relation
+    );
+    assert_ne!(plain("Which scene is the storyboard linked to?").answer_type, Relation);
+    assert_eq!(plain("Are Babu and Jose connected?").answer_type, Relation);
+}
+
+#[test]
+fn what_a_scene_is_about_is_told() {
+    assert_eq!(plain("What is scene 45 about?").answer_type, Explain);
+}
+
+#[test]
+fn what_a_note_says_gets_room_to_be_retold() {
+    assert_eq!(
+        rules::length_class("what does the permit status note say", Lookup),
+        LengthClass::Short
+    );
+    assert_eq!(
+        rules::length_class("what is the wind limit", Lookup),
+        LengthClass::OneSentence
+    );
+}

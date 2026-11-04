@@ -121,6 +121,8 @@ pub struct IndexSnapshot {
 pub struct ProjectIndex {
     pub project_id: String,
     project_db: PathBuf,
+    /// The project folder: the indexer reads the words of small copied text files inside it.
+    project_root: PathBuf,
     index_path: PathBuf,
     shared: Mutex<Shared>,
     cond: Condvar,
@@ -150,10 +152,16 @@ struct Job {
 }
 
 impl ProjectIndex {
-    pub fn new(project_id: String, project_db: PathBuf, index_path: PathBuf) -> Self {
+    pub fn new(
+        project_id: String,
+        project_db: PathBuf,
+        project_root: PathBuf,
+        index_path: PathBuf,
+    ) -> Self {
         Self {
             project_id,
             project_db,
+            project_root,
             index_path,
             shared: Mutex::new(Shared::default()),
             cond: Condvar::new(),
@@ -689,6 +697,7 @@ fn process(
                     &conn,
                     &tx,
                     registry,
+                    &ix.project_root,
                     &ix.project_id,
                     key,
                     model.as_deref(),
@@ -768,6 +777,7 @@ fn apply_key(
     conn: &Connection,
     tx: &Connection,
     registry: &Registry,
+    root: &Path,
     project_id: &str,
     key: &DocKey,
     model: Option<&str>,
@@ -776,6 +786,11 @@ fn apply_key(
     let doc_id = key.doc_id();
     match documents::build(conn, registry, project_id, key)? {
         Some(b) => {
+            let b = if key.kind == "project_file" {
+                documents::with_file_text(b, conn, root, &key.id)
+            } else {
+                b
+            };
             docs::upsert_document(tx, &SqliteVecIndex, &b.doc, model, now).map_err(index_error)?;
             graph::replace_fragment(tx, &doc_id, &b.own_nodes, &b.referenced, &b.edges)
                 .map_err(index_error)?;

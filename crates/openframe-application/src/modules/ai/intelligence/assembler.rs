@@ -149,10 +149,18 @@ pub fn assemble(
         let built = session
             .store
             .read(|c| documents::build(c, &registry, &project_id, &hit.key))?;
-        let Some(b) = built else {
+        let Some(mut b) = built else {
             dropped += 1;
             continue;
         };
+        // The words of a file live only in the index: the canonical rows confirm the file is still
+        // there and who may read it, and the text comes from what the indexer stored. No file is opened.
+        if b.doc.entity_type == "project_file" {
+            let stored = super::stored_chunks(core, &doc_id);
+            if !stored.is_empty() {
+                b.doc.chunks = stored;
+            }
+        }
         if b.doc
             .owner_user_id
             .as_deref()

@@ -2,10 +2,13 @@
 //! Day Out of Days, Daily View, Sides and Reports. Each one reads through the same code the screen
 //! uses, so the answer and the screen say the same thing. Plain facts, typed queries, no writes.
 
+use super::breakdown::categories_in;
+use super::schedule;
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
 use crate::modules::ai::dossier::words::{clip, numbers};
 use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
 use crate::modules::ai::index::{Resolved, normalize};
+use crate::modules::ai::pointer;
 use crate::modules::ai::turn::{AnswerType, TurnRead};
 use crate::modules::production::source::read_overview;
 use crate::modules::schedule::board;
@@ -20,7 +23,7 @@ const REPORT_PREVIEW_ROWS: usize = 3;
 
 // ------------------------------------------------------------------ Overview
 
-pub fn overview(ctx: &FetchCtx<'_>, _read: &TurnRead, _r: &Resolved) -> Vec<Fact> {
+pub fn overview(ctx: &FetchCtx<'_>, read: &TurnRead, _r: &Resolved) -> Vec<Fact> {
     safe("production overview", || {
         let root = ctx
             .core
@@ -56,8 +59,29 @@ pub fn overview(ctx: &FetchCtx<'_>, _read: &TurnRead, _r: &Resolved) -> Vec<Fact
                 clip(&o.unresolved_characters.join(", "), 300),
             );
         }
-        Ok(vec![plan_counts(ctx, f)])
+        Ok(vec![demand_the_asked_field(ctx, read, plan_counts(ctx, f))])
     })
+}
+
+/// A count or a lookup demands the field whose name the question says in full: "how many shoot days"
+/// is "shoot days", and "scenes unscheduled" wins over "scenes" when both words are there.
+fn demand_the_asked_field(ctx: &FetchCtx<'_>, read: &TurnRead, f: Fact) -> Fact {
+    if !matches!(read.answer_type, AnswerType::Count | AnswerType::Lookup) {
+        return f;
+    }
+    let typed = pointer::words(&ctx.message);
+    let best = f
+        .fields
+        .iter()
+        .filter(|(name, _)| pointer::words(name).iter().all(|w| typed.contains(w)))
+        .max_by_key(|(name, _)| pointer::words(name).len())
+        .map(|(_, value)| value.clone());
+    // A zero is not demanded: with no Production Source the screen's counts are all empty, and the
+    // answer may rightly come from the script.
+    match best.filter(|v| v != "0") {
+        Some(value) => f.require(value),
+        None => f,
+    }
 }
 
 /// The rest of what the Overview and Home screens sum up: the shoot, its warnings, the call sheets,
@@ -162,6 +186,23 @@ pub fn catalog(ctx: &FetchCtx<'_>, read: &TurnRead, _r: &Resolved) -> Vec<Fact> 
             count = count.require(rows.len().to_string());
         }
         let mut out = vec![count];
+        // A category the question names is counted on its own, and the whole catalog is then reading.
+        let named_categories = categories_in(&ctx.m);
+        if !named_categories.is_empty() {
+            out[0].requires.clear();
+        }
+        let counting = read.answer_type == AnswerType::Count;
+        for cat in &named_categories {
+            let n = rows.iter().filter(|r| r.2 == *cat).count();
+            let mut f = Fact::new("Count", "")
+                .f("what", format!("{} in the catalog", cat.to_lowercase()))
+                .f("value", n.to_string())
+                .prio(P_HIGH);
+            if counting {
+                f = f.require(n.to_string());
+            }
+            out.push(f);
+        }
         for (id, name, category, status, description) in rows {
             let named = {
                 let n = normalize(&name);
@@ -203,6 +244,7 @@ pub fn day_out_of_days(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec
             )]);
         }
         let day = ctx.picked_day();
+        let asked_days = schedule::named_days(ctx, r);
         let names: Vec<String> = r
             .characters
             .iter()
@@ -233,7 +275,52 @@ pub fn day_out_of_days(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec
                 f = f.f("code on this day", code);
             }
             if named {
-                f = f.require(row.work_days.to_string());
+                // The days worked come from the row's cells, the same cells the screen shows.
+                let worked: Vec<String> = view
+                    .days
+                    .iter()
+                    .filter(|d| {
+                        row.cells.iter().any(|c| {
+                            c.day_id == d.id && worked_code(&c.code)
+                        })
+                    })
+                    .map(|d| d.short_label.clone())
+                    .collect();
+                f = f.f("days worked", worked.join(", "));
+                for n in &asked_days {
+                    let Some(d) = view.days.iter().find(|d| day_number(&d.short_label) == Some(*n))
+                    else {
+                        continue;
+                    };
+                    let code = row
+                        .cells
+                        .iter()
+                        .find(|c| c.day_id == d.id)
+                        .map_or("", |c| c.code.as_str());
+                    let works = worked_code(code);
+                    f = f.f(
+                        &format!("works on {}", d.short_label),
+                        if works { "yes" } else { "no" },
+                    );
+                    if read.answer_type == AnswerType::Lookup {
+                        f = f.require(if works { "yes" } else { "not" });
+                    }
+                }
+                match read.answer_type {
+                    AnswerType::Count => f = f.require(row.work_days.to_string()),
+                    AnswerType::List => {
+                        for w in &worked {
+                            f = f.require(w);
+                        }
+                    }
+                    _ => {}
+                }
+                if ctx.m.any(&["first day", "first working day", "start"]) {
+                    f = f.require(row.start_label.as_deref().unwrap_or_default());
+                }
+                if ctx.m.any(&["last day", "last working day", "finish"]) {
+                    f = f.require(row.finish_label.as_deref().unwrap_or_default());
+                }
             }
             out.push(f);
         }
@@ -250,9 +337,24 @@ pub fn day_out_of_days(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec
     })
 }
 
+/// A cell code that means the person works that day: start, work, finish and the like, not a hold, a
+/// travel day or an empty cell.
+fn worked_code(code: &str) -> bool {
+    let c = code.trim().to_uppercase();
+    !c.is_empty() && !c.starts_with('H') && !c.starts_with('T') && c != "-"
+}
+
+/// The number in a day label: "Day 9" to 9.
+fn day_number(label: &str) -> Option<u32> {
+    label
+        .split(|c: char| !c.is_ascii_digit())
+        .find(|p| !p.is_empty())
+        .and_then(|p| p.parse().ok())
+}
+
 // ------------------------------------------------------------------ Daily View
 
-pub fn daily(ctx: &FetchCtx<'_>, _read: &TurnRead, r: &Resolved) -> Vec<Fact> {
+pub fn daily(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
     safe("daily view", || {
         // The day the person chose, the day the question names, else the day the screen opens on.
         let named = r.days.first().map(|h| h.id.as_str());
@@ -292,6 +394,7 @@ pub fn daily(ctx: &FetchCtx<'_>, _read: &TurnRead, r: &Resolved) -> Vec<Fact> {
                     .or(d.date.as_deref())
                     .unwrap_or_default(),
             )
+            .f("scene count", scenes.len().to_string())
             .f("scenes", numbers(scenes.iter().copied()))
             .f("cast", clip(&cast.join(", "), 400))
             .f("crew call", d.crew_call.as_deref().unwrap_or_default())
@@ -308,6 +411,22 @@ pub fn daily(ctx: &FetchCtx<'_>, _read: &TurnRead, r: &Resolved) -> Vec<Fact> {
                 "call sheet",
                 format!("revision {}, {}", sheet.revision, sheet.status),
             );
+        }
+        // Scenes and notes are demanded when the question names them, and a count only states its
+        // number.
+        if read.answer_type == AnswerType::Count {
+            if ctx.m.stem("scene") {
+                f = f.require(scenes.len().to_string());
+            }
+        } else {
+            if ctx.m.stem("scene") {
+                for n in &scenes {
+                    f = f.require(n.to_string());
+                }
+            }
+            if ctx.m.stem("note") {
+                f = f.require(clip(d.notes.as_deref().unwrap_or_default(), 300));
+            }
         }
         Ok(vec![f])
     })

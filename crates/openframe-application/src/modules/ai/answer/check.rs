@@ -136,7 +136,7 @@ static MONTH: LazyLock<Regex> = LazyLock::new(|| {
 static ORDINAL: LazyLock<Regex> = LazyLock::new(|| re(r"\b(\d+)(?:st|nd|rd|th)\b"));
 static NUMBER_WORD: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r"\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\b",
+        r"\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty)\b",
     )
 });
 static DIGITS: LazyLock<Regex> = LazyLock::new(|| re(r"\d+"));
@@ -160,6 +160,7 @@ fn month_short(full: &str) -> &'static str {
 
 fn number_of(word: &str) -> u32 {
     match word {
+        "zero" => 0,
         "one" => 1,
         "two" => 2,
         "three" => 3,
@@ -428,6 +429,68 @@ pub(crate) fn unstated_moods(answer: &str, pool: &[&str]) -> Vec<String> {
 }
 
 static ECHO: LazyLock<Regex> = LazyLock::new(|| re(r"\s\|\s|^\|\s|\s\|$"));
+
+// ------------------------------------------------------------------ what code can repair
+
+/// A line of the data copied into the answer, as a sentence: the kind goes, and the fields stay as
+/// "name: value". The Echo rule still fires on any pipe that is left.
+fn echoed_line_as_sentence(line: &str) -> String {
+    if !ECHO.is_match(line) {
+        return line.to_string();
+    }
+    let mut parts: Vec<&str> = line.split(" | ").map(str::trim).collect();
+    if parts.len() > 1 && !parts[0].contains(':') {
+        parts.remove(0);
+    }
+    let mut out = parts
+        .iter()
+        .filter(|p| !p.starts_with("id:"))
+        .copied()
+        .collect::<Vec<_>>()
+        .join(", ");
+    if !out.ends_with(['.', '!', '?']) {
+        out.push('.');
+    }
+    out
+}
+
+/// The sentences of a text with their separators kept.
+fn sentences(s: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut now = String::new();
+    let chars: Vec<char> = s.chars().collect();
+    for (i, c) in chars.iter().enumerate() {
+        now.push(*c);
+        let ends = matches!(c, '.' | '!' | '?') && chars.get(i + 1).is_none_or(|n| n.is_whitespace());
+        if ends || *c == '\n' {
+            out.push(std::mem::take(&mut now));
+        }
+    }
+    if !now.trim().is_empty() {
+        out.push(now);
+    }
+    out
+}
+
+/// A later sentence that repeats a run of six words the text already said goes: the first saying
+/// stands, and nothing new is lost.
+fn without_repeated_sentences(s: &str) -> String {
+    let mut kept = String::new();
+    for sentence in sentences(s) {
+        let joined = format!("{kept}{sentence}");
+        if repeated_run(&joined).is_none() || kept.trim().is_empty() {
+            kept = joined;
+        }
+    }
+    kept.trim().to_string()
+}
+
+/// What code repairs before the checks: a line of the data becomes a sentence, and a sentence said twice
+/// is said once. The checks then judge the words the person would read.
+pub(crate) fn repaired(answer: &str) -> String {
+    let lines: Vec<String> = answer.lines().map(echoed_line_as_sentence).collect();
+    without_repeated_sentences(&lines.join("\n"))
+}
 
 // ------------------------------------------------------------------ the whole check
 

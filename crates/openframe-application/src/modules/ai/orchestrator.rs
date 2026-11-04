@@ -608,7 +608,7 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
     } else {
         let mut o = ToolOutput::of_kind(AiResultKind::Answer, answered.text.clone());
         o.confidence = Some(match answered.shown {
-            Shown::Written | Shown::WrittenSoft => Confidence::Inferred,
+            Shown::Written | Shown::WrittenSoft | Shown::WrittenAdded => Confidence::Inferred,
             Shown::LastResort => Confidence::Exact,
             Shown::Abstained | Shown::Stopped => Confidence::Unavailable,
         });
@@ -669,6 +669,7 @@ fn stage_log(
             "shown": match a.shown {
                 Shown::Written => "written",
                 Shown::WrittenSoft => "written_soft",
+                Shown::WrittenAdded => "written_added",
                 Shown::LastResort => "last_resort",
                 Shown::Abstained => "abstained",
                 Shown::Stopped => "stopped",

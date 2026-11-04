@@ -10,11 +10,12 @@
 //! 3. Code checks it (`check.rs`). If pass 1 passes every rule it is shown at once. Otherwise the model
 //!    gets one short message that names the exact offenders and writes again, three passes in all,
 //!    inside the 60 second budget the request already has.
-//! 4. After three failed passes the person still gets a true answer, written by code
-//!    (`fallback.rs`): a lookup, a count or a comparison shows the first answering fact as one plain
-//!    sentence; any other type shows the abstention sentence and the facts that were fetched. Never
-//!    a canned overview. A pass that fails only on length (too long or too thin) is not a failure of
-//!    the answer: it is shown, cut to the limit when it is too long.
+//! 4. After three failed passes the person still gets a true answer. The attempt that came closest
+//!    is kept when it says nothing wrong and only leaves out values code holds: code adds a sentence
+//!    for each (`fallback.rs`). Failing that, code writes the answer from every fact that holds a
+//!    value it had to state; failing that, the abstention sentence and the facts that were fetched.
+//!    Never a canned overview. A pass that fails only on length (too long or too thin) is not a
+//!    failure of the answer: it is shown, cut to the limit when it is too long.
 //!
 //! The model never decides whether data exists (code does, in the dossier) and no record id, path or
 //! contact detail can reach the person unless the facts held it.
@@ -102,6 +103,8 @@ pub(super) enum Shown {
     Written,
     /// The model's answer failed only on length; it is shown, cut when too long.
     WrittenSoft,
+    /// The model's closest answer, with code sentences for the required values it left out.
+    WrittenAdded,
     /// Code wrote one sentence from the first answering fact.
     LastResort,
     /// Code wrote the abstention sentence (and the facts fetched).
@@ -292,7 +295,7 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
             return Ok(stopped(logs));
         }
         (i.progress)(3, 3, "Checking the answer");
-        let written = text::tidy(&raw, i.message);
+        let written = check::repaired(&text::tidy(&raw, i.message));
         let offences = check::check(&written, &material, &expect);
         logs.push(PassLog::of(&offences, text::word_count(&written)));
         if offences.is_empty() {
@@ -336,26 +339,30 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
         });
     }
 
-    // Three failed passes: code writes a true answer.
+    // The closest attempt that says nothing wrong: code adds what it left out.
+    if !chat && let Some(kept) = keep_best_attempt(&attempts, dossier, &material, &expect) {
+        return Ok(Answered {
+            sources: sources_of(dossier, &kept),
+            text: kept,
+            shown: Shown::WrittenAdded,
+            passes: logs,
+        });
+    }
+
+    // Three failed passes and no attempt to keep: code writes a true answer.
+    let value_asked = matches!(
+        i.read.answer_type,
+        AnswerType::Lookup | AnswerType::Count | AnswerType::Compare
+    );
     let (text, shown, used) = match group {
         Group::Chat => (fallback::chat(), Shown::Abstained, Vec::new()),
-        _ if matches!(
-            i.read.answer_type,
-            AnswerType::Lookup | AnswerType::Count | AnswerType::Compare
-        ) =>
-        {
-            match fallback::last_resort(dossier) {
-                Some((t, fact)) => (t, Shown::LastResort, vec![fact]),
-                None => {
-                    let (t, used) = fallback::abstention(dossier, true);
-                    (t, Shown::Abstained, used)
-                }
+        _ => match fallback::last_resort(dossier) {
+            Some((t, facts)) => (t, Shown::LastResort, facts),
+            None => {
+                let (t, used) = fallback::abstention(dossier, value_asked);
+                (t, Shown::Abstained, used)
             }
-        }
-        _ => {
-            let (t, used) = fallback::abstention(dossier, false);
-            (t, Shown::Abstained, used)
-        }
+        },
     };
     Ok(Answered {
         text,
@@ -363,6 +370,49 @@ pub(super) fn run(i: &Input<'_>) -> AppResult<Answered> {
         passes: logs,
         sources: used,
     })
+}
+
+/// The attempt that left out the fewest required values and failed nothing else, with a code sentence
+/// for each value it left out. `None` when every attempt said something wrong, or the sentences do not
+/// pass the same checks. Only deterministic code decides this (ADR-0028).
+fn keep_best_attempt(
+    attempts: &[(String, Vec<Offence>)],
+    dossier: &Dossier,
+    material: &Material<'_>,
+    expect: &Expect<'_>,
+) -> Option<String> {
+    let missing_of = |offences: &[Offence]| -> Vec<String> {
+        offences
+            .iter()
+            .find(|o| o.rule == check::Rule::Required)
+            .map(|o| o.items.clone())
+            .unwrap_or_default()
+    };
+    let (best, offences) = attempts
+        .iter()
+        .filter(|(t, o)| {
+            !t.trim().is_empty()
+                && !states_nothing_found(t)
+                && o.iter()
+                    .all(|x| x.rule.soft() || x.rule == check::Rule::Required)
+        })
+        .min_by_key(|(_, o)| missing_of(o).len())?;
+    let (added, _) = fallback::added_sentences(dossier, &missing_of(offences));
+    let kept = if added.is_empty() {
+        best.clone()
+    } else {
+        format!("{} {added}", best.trim())
+    };
+    let hard = check::check(&kept, material, expect)
+        .into_iter()
+        .any(|o| !o.rule.soft());
+    (!hard).then_some(kept)
+}
+
+/// The attempt says it could not find the thing, so a sentence of the thing beside it would contradict
+/// it: code writes the answer from the facts instead.
+fn states_nothing_found(answer: &str) -> bool {
+    check::states_absence(answer, &[])
 }
 
 /// The facts the answer used: a fact is used when the answer holds a value it states (a required

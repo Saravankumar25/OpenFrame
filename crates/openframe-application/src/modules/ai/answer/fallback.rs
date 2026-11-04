@@ -2,9 +2,9 @@
 //!
 //! Written by code from the facts, so it is true by construction:
 //!
-//! - a lookup, a count or a comparison gets the **last-resort fact sentence**, built from the first
-//!   answering fact: "Lead cast, planned: 40,00,000.";
-//! - any other type gets the **abstention sentence** and the first facts that were fetched;
+//! - any answer with values it had to state gets the **last-resort fact sentences**, one per fact that
+//!   holds such a value: "Lead cast, planned: 40,00,000.";
+//! - any other answer gets the **abstention sentence** and the first facts that were fetched;
 //! - when the fetch found nothing, the abstention says so and names what is missing.
 //!
 //! Never a canned overview of the project. The trace counts how often each is used, so the rate can
@@ -72,18 +72,15 @@ fn raw_sentence(f: &Fact) -> String {
     if let Some(s) = &f.sentence {
         return end_with_stop(s.clone());
     }
+    let wanted: Vec<String> = f.requires.iter().map(|r| norm(r)).collect();
+    let holds = |v: &str| wanted.iter().any(|r| holds_value(v, r));
+    // A count says its value, unless what must be stated is another of its fields ("different items").
     if f.kind == "Count"
         && let (Some(what), Some(value)) = (f.field("what"), f.field("value"))
+        && (f.requires.is_empty() || holds(value))
     {
         return end_with_stop(format!("{value} {what}"));
     }
-    let wanted: Vec<String> = f.requires.iter().map(|r| norm(r)).collect();
-    let holds = |v: &str| {
-        let n = norm(v);
-        wanted
-            .iter()
-            .any(|r| !r.is_empty() && n.contains(r.as_str()))
-    };
     let Some(((first, subject), rest)) = f.fields.split_first() else {
         return end_with_stop(f.kind.to_string());
     };
@@ -99,8 +96,74 @@ fn raw_sentence(f: &Fact) -> String {
     if asked.is_empty() {
         return end_with_stop(subject);
     }
-    let list: Vec<String> = asked.iter().map(|(n, v)| format!("{n}: {v}")).collect();
+    // A long text is told by the sentences that hold what must be stated, not read out whole.
+    let list: Vec<String> = asked
+        .iter()
+        .map(|(n, v)| {
+            let held = sentences_holding(v, &wanted);
+            if v.chars().count() > LONG_VALUE && !held.is_empty() {
+                format!("{n}: {held}")
+            } else {
+                format!("{n}: {v}")
+            }
+        })
+        .collect();
     end_with_stop(format!("{subject}, {}", list.join(", ")))
+}
+
+/// A field holds a wanted value. A bare number has to be a whole number of the field: 4 is not in 14.
+fn holds_value(field: &str, wanted: &str) -> bool {
+    let n = norm(field);
+    if wanted.is_empty() {
+        false
+    } else if wanted.chars().all(|c| c.is_ascii_digit()) {
+        n.split(|c: char| !c.is_ascii_digit()).any(|t| t == wanted)
+    } else {
+        n.contains(wanted)
+    }
+}
+
+/// A field longer than this is not quoted whole by a code sentence.
+const LONG_VALUE: usize = 120;
+
+/// The sentences of a text that hold a wanted value, in order.
+fn sentences_holding(text: &str, wanted: &[String]) -> String {
+    text.split_inclusive(['.', '!', '?'])
+        .filter(|s| {
+            let n = norm(s);
+            wanted.iter().any(|w| holds_value(&n, w))
+        })
+        .map(str::trim)
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// Code sentences for the required values an answer left out: one per fact that holds one, built only
+/// from that fact, and only for the values still missing. Empty when no fact holds them.
+pub(super) fn added_sentences(d: &Dossier, absent: &[String]) -> (String, Vec<Fact>) {
+    let mut said = String::new();
+    let mut used = Vec::new();
+    for f in real(d) {
+        let mut wanted: Vec<String> = f
+            .requires
+            .iter()
+            .filter(|r| absent.contains(r))
+            .cloned()
+            .collect();
+        wanted.retain(|w| !norm(&said).contains(norm(w).trim()));
+        if wanted.is_empty() {
+            continue;
+        }
+        let mut only = f.clone();
+        only.requires = wanted;
+        let sentence = fact_sentence(&only);
+        if !said.is_empty() {
+            said.push(' ');
+        }
+        said.push_str(&sentence);
+        used.push(f.clone());
+    }
+    (said, used)
 }
 
 /// A statement about what could not be found, as a sentence ("I could not find a makeup artist for
@@ -111,19 +174,21 @@ fn missing_sentence(s: &str) -> String {
     end_with_stop(first.unwrap_or_default() + c.as_str())
 }
 
-/// The last-resort fact sentence and the fact it was built from: the first fact that carries a value
-/// the answer had to state, followed by what the project does not hold ("Anna, actor: Maya Rao.
+/// The last-resort answer and the facts it was built from: one sentence for every fact that carries a
+/// value the answer had to state, followed by what the project does not hold ("Anna, actor: Maya Rao.
 /// Contact details are not shown for your role."). `None` when no fact carries a value (the project
 /// holds nothing for the question, or the question has no single value to state): the abstention is
 /// shown instead.
-pub(super) fn last_resort(d: &Dossier) -> Option<(String, Fact)> {
-    let fact = real(d).find(|f| !f.requires.is_empty())?;
-    let mut text = fact_sentence(fact);
+pub(super) fn last_resort(d: &Dossier) -> Option<(String, Vec<Fact>)> {
+    let (mut text, used) = added_sentences(d, &d.required);
+    if used.is_empty() {
+        return None;
+    }
     for m in &d.missing {
         text.push(' ');
         text.push_str(&missing_sentence(m));
     }
-    Some((text, fact.clone()))
+    Some((text, used))
 }
 
 /// The abstention sentence. For a question with a single value to state (`value_asked`) that the

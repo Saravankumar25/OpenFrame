@@ -7,9 +7,13 @@
 //! not need flows to the others. Text passages have the lowest priority, so they fill what the facts
 //! leave. A fact that carries a required value is never cut.
 
+use std::collections::HashMap;
+
 use super::ctx::FetchCtx;
 use super::fetch::story;
-use super::{Dossier, Fact, Input, cap_tokens, dedupe, guard, names, trim, wants_facts, words};
+use super::{
+    Dossier, Fact, Input, asked, cap_tokens, dedupe, guard, names, trim, wants_facts, words,
+};
 use crate::modules::ai::index::{self, Hit, How, Kind, Resolved, SceneHit};
 use crate::modules::ai::sections::{Leaf, PickedLeaf, SectionPicker, Selection, home_of};
 use crate::modules::ai::{pointer, queries};
@@ -314,34 +318,64 @@ fn for_leaf(all: &Resolved, p: &PickedLeaf, ix: &index::EntityIndex) -> Resolved
     r
 }
 
-/// With several sections picked, each reads its area whatever the question says. What the question did
-/// not ask for is reading around it, not something the answer must state: an answer about the scenes
-/// need not give the number of characters. A value stays demanded when the words the person typed open
-/// the fact, not the section's topic, and the fact speaks of a word of the question.
+/// A section reads its area whatever the question says. What the question did not ask for is reading
+/// around it, not something the answer must state: an answer about the crew call need not say the sheet
+/// is a draft. Each required value is tested on its own:
+///
+/// - The section's topic words open fetchers, never a required value: when the words the person typed
+///   read the same row, the value stays only if that read demands it too. A row only the topic read
+///   stays demanded when it speaks of a word of the question.
+/// - The field that holds the value is asked for ([`asked::value_is_asked`]).
+/// - With several sections, a fact that speaks of no word of the question demands nothing.
 fn only_the_asked_is_demanded(
     got: &mut [Fact],
     input: &Input<'_>,
     ctx: &FetchCtx<'_>,
     p: &PickedLeaf,
     r: &Resolved,
+    several: bool,
 ) {
-    let asked = pointer::asked_words(&ctx.message);
-    let typed: Vec<String> = if p.leaf.topic.is_empty() {
-        Vec::new()
-    } else {
+    if got.iter().all(|f| f.requires.is_empty()) {
+        return;
+    }
+    let row_key = |f: &Fact| {
+        format!(
+            "{}|{}|{}",
+            f.kind,
+            f.record_id,
+            f.fields.first().map_or("", |(_, v)| v.as_str())
+        )
+    };
+    let typed: Option<HashMap<String, Vec<String>>> = (!p.leaf.topic.is_empty()).then(|| {
         let typed = FetchCtx::typed_for_leaf(input, p);
-        p.leaf
+        let mut rows: HashMap<String, Vec<String>> = HashMap::new();
+        for f in p
+            .leaf
             .fetchers
             .iter()
             .flat_map(|fetcher| (fetcher.run)(&typed, input.read, r))
-            .map(|f| f.render())
-            .collect()
-    };
-    for f in got.iter_mut() {
-        let opened = p.leaf.topic.is_empty() || typed.contains(&f.render());
-        if !opened || (!asked.is_empty() && !pointer::speaks_of(f, &asked)) {
-            f.requires.clear();
+        {
+            rows.entry(row_key(&f)).or_default().extend(f.requires);
         }
+        rows
+    });
+    let asked = pointer::asked_words(&ctx.message);
+    for f in got.iter_mut() {
+        let speaks = asked.is_empty() || pointer::speaks_of(f, &asked);
+        if several && !speaks {
+            f.requires.clear();
+            continue;
+        }
+        let twin = typed.as_ref().map(|rows| rows.get(&row_key(f)));
+        let snapshot = f.clone();
+        f.requires.retain(|v| {
+            let opened = match twin {
+                None => true,
+                Some(Some(demands)) => demands.contains(v),
+                Some(None) => !several && speaks,
+            };
+            opened && asked::value_is_asked(&snapshot, v, &ctx.message)
+        });
     }
 }
 
@@ -366,9 +400,7 @@ pub fn build(input: &Input<'_>, read: &LeafRead<'_>) -> Dossier {
                 got.extend((fetcher.run)(&ctx, input.read, &r));
             }
             got.retain(|f| p.leaf.admits(f));
-            if sel.picks.len() > 1 {
-                only_the_asked_is_demanded(&mut got, input, &ctx, p, &r);
-            }
+            only_the_asked_is_demanded(&mut got, input, &ctx, p, &r, sel.picks.len() > 1);
             got.extend(read.passages.get(i).cloned().unwrap_or_default());
         }
         if i == 0 {

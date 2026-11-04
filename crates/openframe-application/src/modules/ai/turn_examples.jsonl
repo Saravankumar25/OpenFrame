@@ -335,3 +335,13 @@
 {"t": "describe", "l": "en", "m": "describe the harbour cafe owner"}
 {"t": "brief", "l": "en", "m": "brief the crew on scene 9"}
 {"t": "story", "l": "en", "m": "why did the ferry stop running"}
+{"t":"lookup","l":"en","m":"what is the last card on the beat board"}
+{"t":"lookup","l":"en","m":"how long should room tone be recorded"}
+{"t":"lookup","l":"en","m":"what is the wind limit"}
+{"t":"lookup","l":"en","m":"what does he want"}
+{"t":"lookup","l":"en","m":"how tall is the mast"}
+{"t":"list","l":"en","m":"what kinds of things have i saved"}
+{"t":"list","l":"en","m":"what shots are planned for this scene"}
+{"t":"list","l":"en","m":"which call sheets are final"}
+{"t":"help","l":"en","m":"where in settings do i get the ai model"}
+{"t":"help","l":"en","m":"can the ai work without a connection"}

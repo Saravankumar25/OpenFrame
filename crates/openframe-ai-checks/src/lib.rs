@@ -395,6 +395,21 @@ const ALLOWED: &[&str] = &[
 /// Common English words that start a sentence and are not names. Compared in lower case, and only
 /// for the first word of a sentence.
 const SENTENCE_STARTERS: &[&str] = &[
+    "furthermore",
+    "moreover",
+    "additionally",
+    "alternatively",
+    "simultaneously",
+    "meanwhile",
+    "however",
+    "therefore",
+    "thus",
+    "instead",
+    "otherwise",
+    "finally",
+    "next",
+    "later",
+    "afterwards",
     "the",
     "a",
     "an",
@@ -671,6 +686,24 @@ fn at_sentence_start(text: &str, at: usize) -> bool {
     true
 }
 
+/// A long word at the start of a sentence that reads as an adverb or a verb form, not a name:
+/// "Separately, the..." and "Applying the change...". A short word stays a candidate, and so does a
+/// word followed by anything else: "Sterling arrives" still needs its evidence.
+fn opens_a_clause(answer: &str, start: usize, word: &str) -> bool {
+    let lower = word.to_lowercase();
+    if lower.chars().count() < 7 {
+        return false;
+    }
+    let rest = &answer[start + word.len()..];
+    (lower.ends_with("ly") && rest.starts_with(','))
+        || (lower.ends_with("ing")
+            && rest.starts_with(' ')
+            && rest[1..]
+                .split_whitespace()
+                .next()
+                .is_some_and(|n| matches!(n, "the" | "a" | "an" | "this" | "that" | "these" | "those" | "your" | "my")))
+}
+
 /// Proper-name candidates in an answer: runs of capitalised words ("Lakshmi", "Venkat Rao",
 /// "Farooq Senior") and all-caps words of two or more letters ("DEVI"), in order, without repeats.
 /// A common English word that opens a sentence is not a name ("She", "Meanwhile", the "The" of
@@ -688,9 +721,10 @@ pub fn candidate_names(answer: &str) -> Vec<String> {
             return;
         };
         if at_sentence_start(answer, start)
-            && words
-                .first()
-                .is_some_and(|w| SENTENCE_STARTERS.contains(&straight(&w.to_lowercase()).as_str()))
+            && words.first().is_some_and(|w| {
+                SENTENCE_STARTERS.contains(&straight(&w.to_lowercase()).as_str())
+                    || (words.len() == 1 && opens_a_clause(answer, start, w))
+            })
         {
             words.remove(0);
         }
@@ -1041,6 +1075,33 @@ pub fn repeated_ngram(answer: &str, n: usize) -> Option<String> {
         .windows(n)
         .find(|w| counts[w] >= 3)
         .map(|w| w.join(" "))
+}
+
+#[cfg(test)]
+mod clause_openers {
+    use super::*;
+
+    #[test]
+    fn a_connective_or_a_verb_form_at_a_sentence_start_is_not_a_name() {
+        for answer in [
+            "Furthermore, the crew is ready.",
+            "Simultaneously, the lamps go out.",
+            "Alternatively, use Recently Deleted.",
+            "Applying the change is up to you.",
+            "Separately, the boat is booked.",
+        ] {
+            assert!(candidate_names(answer).iter().all(|n| {
+                !["Furthermore", "Simultaneously", "Alternatively", "Applying", "Separately"]
+                    .contains(&n.as_str())
+            }), "{answer}");
+        }
+    }
+
+    #[test]
+    fn a_real_name_at_a_sentence_start_still_needs_its_evidence() {
+        assert_eq!(ungrounded_names("Marcus arrives at dawn.", &["Anjali"]), vec!["Marcus"]);
+        assert_eq!(ungrounded_names("Sterling arrives at dawn.", &["Anjali"]), vec!["Sterling"]);
+    }
 }
 
 #[cfg(test)]

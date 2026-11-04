@@ -7,12 +7,19 @@ use std::sync::LazyLock;
 use openframe_domain::AppResult;
 use regex::Regex;
 
+use crate::modules::ai::dossier::asked;
 use crate::modules::ai::dossier::ctx::{FetchCtx, SceneRef, safe};
 use crate::modules::ai::dossier::words::{Msg, clip, numbers};
 use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
 use crate::modules::ai::index::{Resolved, ScreenplayInfo};
 use crate::modules::ai::queries;
 use crate::modules::ai::turn::{AnswerType, Group, TurnRead};
+
+/// Words that do not narrow a question about the scenes someone is in.
+const APPEAR_WORDS: &[&str] = &[
+    "scene", "scenes", "appear", "appears", "appearing", "speak", "speaks", "speaking", "both",
+    "together", "there", "present", "share", "same", "lines", "dialogue", "script", "screenplay",
+];
 
 /// Characters of scene text given for a paragraph answer and for a brainstorm.
 const TEXT_EXPLAIN: usize = 1_400;
@@ -464,7 +471,11 @@ fn appearances(
         if let Some((a, b)) = range {
             f = f.f("between", format!("{a} and {b}"));
         }
-        if r.characters.len() == 1 {
+        // "Which scenes does Jose appear in" is his whole list. "The scene where Jose confesses" says
+        // more than who, and the list is only reading.
+        if r.characters.len() == 1
+            && !asked::asks_more_than(&ctx.message, std::slice::from_ref(&name), APPEAR_WORDS)
+        {
             if t == AnswerType::Count {
                 f = f.require(list.len().to_string());
             } else if list.len() <= 12 {
@@ -499,7 +510,8 @@ fn appearances(
             )
             .f("count", both.len().to_string())
             .prio(P_HIGH + 10);
-        if both.len() <= 12 {
+        let names: Vec<String> = sets.iter().map(|(n, _)| n.clone()).collect();
+        if both.len() <= 12 && !asked::asks_more_than(&ctx.message, &names, APPEAR_WORDS) {
             for n in &both {
                 f = f.require(n.to_string());
             }

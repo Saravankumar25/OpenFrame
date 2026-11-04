@@ -2198,3 +2198,296 @@ fn a_search_reads_the_project_the_question_was_asked_in_not_the_one_open_now() {
     assert!(text.contains("harbour office"), "{text}");
     assert!(!text.contains("Another film"), "{text}");
 }
+
+// ------------------------------------------------------------------ what is demanded of an answer
+
+fn demanded(env: &TestEnv, message: &str, leaf: &str, t: AnswerType) -> Vec<String> {
+    facts_for(env, message, &[pick(leaf)], t).required
+}
+
+#[test]
+fn a_status_is_demanded_only_when_a_word_asks_for_it() {
+    let f = film();
+    let d = demanded(
+        &f.env,
+        "What time is the call on Day 1?",
+        "callsheets/callsheets",
+        AnswerType::Lookup,
+    );
+    assert!(!d.iter().any(|v| v == "Draft"), "{d:?}");
+    let d = demanded(
+        &f.env,
+        "What is the status of the Day 1 call sheet?",
+        "callsheets/callsheets",
+        AnswerType::Lookup,
+    );
+    assert!(d.iter().any(|v| v == "Draft"), "{d:?}");
+}
+
+#[test]
+fn the_topic_of_a_section_opens_no_required_value() {
+    let f = film();
+    // The Budget section's topic word is "budget", which would ask for the planned amount.
+    let d = facts_for(
+        &f.env,
+        "What was actually spent on the camera?",
+        &[pick("production/budget")],
+        AnswerType::Lookup,
+    );
+    assert!(
+        !d.required.iter().any(|v| v.contains("18")),
+        "only the actual is asked: {:?}",
+        d.required
+    );
+}
+
+#[test]
+fn a_status_word_filters_the_call_sheets_and_they_are_demanded_by_their_day() {
+    let f = film();
+    let d = demanded(
+        &f.env,
+        "Which call sheets are still drafts?",
+        "callsheets/callsheets",
+        AnswerType::List,
+    );
+    assert!(d.iter().any(|v| v == "Day 1"), "{d:?}");
+    assert!(!d.iter().any(|v| v == "Draft"), "{d:?}");
+}
+
+#[test]
+fn the_row_that_holds_the_asked_words_is_demanded() {
+    let f = film();
+    let d = demanded(
+        &f.env,
+        "anything saved about the platform in the vault?",
+        "vault/project",
+        AnswerType::Lookup,
+    );
+    assert_eq!(d, vec!["Platform song"]);
+    let d = demanded(
+        &f.env,
+        "Is there a task about the station permit?",
+        "notes/tasks",
+        AnswerType::Lookup,
+    );
+    // Most of the title was typed, so the title is not news.
+    assert!(!d.iter().any(|v| v == "Confirm the station permit"), "{d:?}");
+    let d = demanded(
+        &f.env,
+        "Which task has no due date?",
+        "notes/tasks",
+        AnswerType::Lookup,
+    );
+    assert_eq!(d, vec!["Confirm the station permit"]);
+}
+
+#[test]
+fn a_task_named_by_its_title_demands_its_status_when_a_status_word_is_there() {
+    let f = film();
+    let d = demanded(
+        &f.env,
+        "Is the station permit task done?",
+        "notes/tasks",
+        AnswerType::Lookup,
+    );
+    assert_eq!(d, vec!["Open"]);
+}
+
+#[test]
+fn a_count_question_demands_the_count_of_what_it_counts() {
+    let f = film();
+    for (message, leaf, value) in [
+        ("How many items are in the vault?", "vault/project", "1"),
+        ("How many mood boards are there?", "production/moodboards", "1"),
+        ("How many call sheets are there?", "callsheets/callsheets", "1"),
+        ("How many tasks are there?", "notes/tasks", "1"),
+        ("How many scenes are unscheduled?", "production/schedule", "1"),
+        ("How many budget lines are there?", "production/budget", "1"),
+    ] {
+        let d = demanded(&f.env, message, leaf, AnswerType::Count);
+        assert_eq!(d, vec![value], "{message}");
+    }
+}
+
+#[test]
+fn a_count_of_a_category_is_not_the_total() {
+    let f = film();
+    let d = demanded(
+        &f.env,
+        "How many cast elements are in the breakdown?",
+        "breakdown/breakdown",
+        AnswerType::Count,
+    );
+    assert_eq!(d, vec!["2"]);
+    let d = demanded(
+        &f.env,
+        "How many props are in the catalog?",
+        "production/catalog",
+        AnswerType::Count,
+    );
+    assert_eq!(d, vec!["1"]);
+    let d = demanded(
+        &f.env,
+        "How many crew members are there?",
+        "production/cast-crew",
+        AnswerType::Count,
+    );
+    assert!(!d.iter().any(|v| v == "1"), "no cast count here: {d:?}");
+}
+
+#[test]
+fn the_overview_demands_the_field_the_question_names() {
+    let f = film();
+    let d = demanded(
+        &f.env,
+        "How many shoot days are planned?",
+        "production/overview",
+        AnswerType::Count,
+    );
+    assert_eq!(d, vec!["2"]);
+}
+
+#[test]
+fn a_named_day_demands_its_scenes_and_a_call_sheet_is_not_a_call() {
+    let f = film();
+    let d = demanded(
+        &f.env,
+        "What is scheduled on Day 1?",
+        "production/schedule",
+        AnswerType::List,
+    );
+    assert!(d.iter().any(|v| v == "1"), "{d:?}");
+    let d = demanded(
+        &f.env,
+        "Which scenes are on the Day 1 call sheet?",
+        "production/schedule",
+        AnswerType::Lookup,
+    );
+    assert!(d.iter().any(|v| v == "1"), "{d:?}");
+    assert!(!d.iter().any(|v| v.contains(':')), "no call time: {d:?}");
+    let d = demanded(
+        &f.env,
+        "What scenes are on this day?",
+        "production/daily-view",
+        AnswerType::List,
+    );
+    assert!(!d.is_empty(), "the day's scene numbers: {d:?}");
+}
+
+#[test]
+fn the_scene_where_someone_does_a_thing_does_not_demand_all_their_scenes() {
+    let f = film();
+    let d = demanded(
+        &f.env,
+        "In which scene does Arjun walk the platform?",
+        "screenplay/scenes",
+        AnswerType::Lookup,
+    );
+    assert!(!d.iter().any(|v| v == "2"), "{d:?}");
+    let d = demanded(
+        &f.env,
+        "Which scenes does Arjun appear in?",
+        "screenplay/scenes",
+        AnswerType::List,
+    );
+    assert!(d.iter().any(|v| v == "2"), "{d:?}");
+}
+
+#[test]
+fn settings_questions_read_the_product_guide_and_its_promises_are_demanded() {
+    let f = film();
+    let d = facts_for(
+        &f.env,
+        "is my project sent anywhere",
+        &[pick("help/settings")],
+        AnswerType::Help,
+    );
+    assert!(d.render().contains("Guide"), "{}", d.render());
+    assert!(d.required.iter().any(|v| v == "never sent"), "{:?}", d.required);
+    assert!(!d.render().contains("Black Rain"), "{}", d.render());
+    let d = facts_for(
+        &f.env,
+        "does the AI need the internet",
+        &[pick("help/settings")],
+        AnswerType::Help,
+    );
+    assert!(
+        d.required.iter().any(|v| v == "without the internet"),
+        "{:?} {}",
+        d.required,
+        d.render()
+    );
+    let d = facts_for(
+        &f.env,
+        "What is the title of this project?",
+        &[pick("help/settings")],
+        AnswerType::Lookup,
+    );
+    assert!(d.render().contains("Black Rain"), "{}", d.render());
+}
+
+#[test]
+fn shots_and_storyboards_with_no_scene_named_carry_their_scene_numbers() {
+    let f = film();
+    let d = facts_for(
+        &f.env,
+        "Which scene has a wide shot of the desk?",
+        &[pick("production/shots")],
+        AnswerType::Lookup,
+    );
+    assert!(d.render().contains("scene: 1"), "{}", d.render());
+    assert!(d.required.iter().any(|v| v == "1"), "{:?}", d.required);
+    let d = facts_for(
+        &f.env,
+        "Which scene is the storyboard linked to?",
+        &[pick("production/storyboards")],
+        AnswerType::Lookup,
+    );
+    assert!(d.render().contains("scene: 1"), "{}", d.render());
+    assert!(d.required.iter().any(|v| v == "1"), "{:?}", d.required);
+}
+
+#[test]
+fn only_the_count_of_a_filter_is_demanded_for_shots() {
+    let f = film();
+    let d = demanded(
+        &f.env,
+        "How many shots are there?",
+        "production/shots",
+        AnswerType::Count,
+    );
+    assert_eq!(d, vec!["1"]);
+    let d = demanded(
+        &f.env,
+        "How many shots are of the desk?",
+        "production/shots",
+        AnswerType::Count,
+    );
+    assert_eq!(d, vec!["1"]);
+    let d = demanded(
+        &f.env,
+        "How many shots are handheld?",
+        "production/shots",
+        AnswerType::Count,
+    );
+    assert!(d.is_empty(), "the total is not the answer: {d:?}");
+}
+
+#[test]
+fn the_text_of_a_file_is_read_from_the_index_and_no_file_is_opened_for_a_question() {
+    let f = film();
+    let path = f
+        .env
+        .write_file("mast-notes.txt", b"The mast is 42 metres of steel lattice.");
+    f.env.ok("files.add", json!({ "paths": [path] }));
+    // The index is not running in this test: the question still reads the file's row and nothing else,
+    // and a question about its words does not open it.
+    let d = facts_for(
+        &f.env,
+        "How tall is the mast?",
+        &[pick("files/files")],
+        AnswerType::Lookup,
+    );
+    assert!(d.render().contains("mast-notes.txt"), "{}", d.render());
+    assert!(!d.render().contains("42 metres"), "{}", d.render());
+}

@@ -8,9 +8,10 @@ use openframe_domain::AppResult;
 use rusqlite::OptionalExtension;
 
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
-use crate::modules::ai::dossier::words::{Msg, clip};
+use crate::modules::ai::dossier::words::{Msg, clip, numbers};
 use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
 use crate::modules::ai::index::Resolved;
+use crate::modules::ai::queries;
 use crate::modules::ai::turn::{AnswerType, Group, TurnRead};
 
 /// The categories and the words that name each.
@@ -193,11 +194,66 @@ fn project_counts(ctx: &FetchCtx<'_>, t: AnswerType, asked: &[&str]) -> AppResul
             .f("different items", distinct.to_string())
             .prio(P_HIGH);
         if t == AnswerType::Count {
-            f = f.require(elements.to_string());
+            let different = ctx.m.any(&["distinct", "different", "unique"]);
+            f = f.require(if different { distinct } else { elements }.to_string());
         }
         out.push(f);
+        // "Which animals appear": the names of the category, when they are few enough to state.
+        if t == AnswerType::List && !ctx.m.any(&["scene", "scenes"]) {
+            let mut st = ctx.conn.prepare(
+                "SELECT DISTINCT display_name FROM breakdown_element
+                 WHERE category = ?1 AND deleted_at IS NULL AND archived = 0 AND confirmation_state <> 'Rejected'
+                   AND (?2 IS NULL OR source_id = ?2) ORDER BY display_name LIMIT 40",
+            )?;
+            let names: Vec<String> = st
+                .query_map(rusqlite::params![cat, source], |r| r.get(0))?
+                .collect::<Result<_, _>>()?;
+            let mut f = Fact::new("Breakdown", "")
+                .f("category", cat)
+                .f("items", clip(&names.join(", "), 420))
+                .prio(P_HIGH);
+            if names.len() <= 10 {
+                for n in &names {
+                    f = f.require(n);
+                }
+            }
+            out.push(f);
+        }
+        // "Which scenes have no wardrobe": the scenes of the source with nothing in the category.
+        if t == AnswerType::List && ctx.m.any(&["no", "without"]) && ctx.m.any(&["scene", "scenes"]) {
+            let without = scenes_without(ctx, cat)?;
+            let mut f = Fact::new("Breakdown", "")
+                .f("category", cat)
+                .f("scenes with none", numbers(without.iter().copied()))
+                .prio(P_HIGH);
+            if without.len() <= 12 {
+                for n in &without {
+                    f = f.require(n.to_string());
+                }
+            }
+            out.push(f);
+        }
     }
     Ok(out)
+}
+
+/// The numbers of the scenes of the current draft that have no element of a category.
+fn scenes_without(ctx: &FetchCtx<'_>, category: &str) -> AppResult<Vec<u32>> {
+    let Some((_, draft)) = queries::production_source_draft(ctx.conn)? else {
+        return Ok(Vec::new());
+    };
+    let mut st = ctx.conn.prepare(
+        "SELECT DISTINCT scene_id FROM breakdown_element
+         WHERE category = ?1 AND deleted_at IS NULL AND archived = 0 AND confirmation_state <> 'Rejected'",
+    )?;
+    let with: Vec<String> = st
+        .query_map([category], |r| r.get(0))?
+        .collect::<Result<_, _>>()?;
+    Ok(queries::scenes(ctx.conn, &draft)?
+        .into_iter()
+        .filter(|s| !with.contains(&s.id))
+        .map(|s| s.number as u32)
+        .collect())
 }
 
 /// How much the breakdown holds, for a question that names no category and no scene.
@@ -221,24 +277,36 @@ pub fn summary(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
             )]);
         }
         let total: i64 = rows.iter().map(|(_, n)| n).sum();
+        // A category the words of the question name ("cast elements") is what is counted.
+        let named_row = |category: &str| {
+            category
+                .split(|c: char| !c.is_alphanumeric())
+                .filter(|w| !w.is_empty())
+                .any(|w| ctx.m.has(&w.to_lowercase()))
+        };
+        let counting = read.answer_type == AnswerType::Count;
+        let any_named = rows.iter().any(|(c, _)| named_row(c));
         let mut whole = Fact::new("Count", "")
             .f("what", "elements in the breakdown")
             .f("value", total.to_string())
             .prio(P_HIGH);
-        if read.answer_type == AnswerType::Count {
+        if counting && !any_named {
             whole = whole.require(total.to_string());
         }
         let mut out = vec![whole];
         for (category, n) in rows {
-            out.push(
-                Fact::new("Count", "")
-                    .f(
-                        "what",
-                        format!("{} elements in the breakdown", category.to_lowercase()),
-                    )
-                    .f("value", n.to_string())
-                    .prio(P_MID),
-            );
+            let named = named_row(&category);
+            let mut f = Fact::new("Count", "")
+                .f(
+                    "what",
+                    format!("{} elements in the breakdown", category.to_lowercase()),
+                )
+                .f("value", n.to_string())
+                .prio(if named { P_HIGH } else { P_MID });
+            if counting && named {
+                f = f.require(n.to_string());
+            }
+            out.push(f);
         }
         Ok(out)
     })

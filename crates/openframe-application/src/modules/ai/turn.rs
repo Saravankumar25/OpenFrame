@@ -15,6 +15,9 @@
 //!    ships and the labelled example messages of `turn_examples.jsonl` vote.
 //! 5. Only when that vote is weak, one short model call with the closed list.
 //!
+//! A vote of step 4 or 5 is held to the words of the message (see `decide`), because the nearest
+//! example can share a shape without sharing the meaning.
+//!
 //! Without an embedder or an engine (tests, AI not installed) the stage ends with the rules and the
 //! previous type. It never panics and never blocks a request: the embedding step waits at most
 //! [`WAIT`], and a late result still fills the example cache for the next message.
@@ -342,10 +345,23 @@ fn decide(message: &str, input: &TurnInput<'_>, aids: &Aids<'_>) -> (AnswerType,
         rules::Verdict::Inherit(t) => (t, ReadHow::Repair, 0.0),
         rules::Verdict::Chat => (AnswerType::Chat, ReadHow::Rule, 0.0),
         rules::Verdict::Open { angry } => {
+            let lower = message.to_lowercase();
+            let english = super::answer::language_of(message).is_none();
             let guard = |t: AnswerType| {
                 // Anger is never a change or a count, whatever the neighbours say.
                 if angry && matches!(t, AnswerType::Change | AnswerType::Count) {
-                    AnswerType::Chat
+                    return AnswerType::Chat;
+                }
+                // A vote only goes as far as the words back it: a count needs a word for counting, a
+                // navigation an open verb, a story a word about the story. Rules read English only.
+                let backed = match t {
+                    AnswerType::Count => rules::asks_a_count(&lower),
+                    AnswerType::Navigate => rules::asks_to_open(&lower),
+                    AnswerType::Story => rules::asks_about_the_story(&lower),
+                    _ => true,
+                };
+                if english && !backed {
+                    AnswerType::Lookup
                 } else {
                     t
                 }

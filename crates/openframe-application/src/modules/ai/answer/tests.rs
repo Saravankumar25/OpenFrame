@@ -531,7 +531,7 @@ fn three_failed_lookups_give_the_last_resort_fact_sentence() {
 }
 
 #[test]
-fn three_failed_explanations_give_the_abstention_and_the_facts_never_an_overview() {
+fn three_failed_explanations_state_what_they_had_to_and_never_an_overview() {
     let r = Run::new(&[
         "Silvanus sails away.",
         "Silvanus sails far away.",
@@ -545,6 +545,27 @@ fn three_failed_explanations_give_the_abstention_and_the_facts_never_an_overview
         )
         .unwrap();
     assert_eq!(r.model.calls(), 3);
+    assert_eq!(a.shown, Shown::LastResort);
+    assert!(
+        a.text.contains("Lead cast, planned: 40,00,000."),
+        "{}",
+        a.text
+    );
+    assert!(!a.text.to_lowercase().contains("overview"));
+    // With no value to state, the abstention shows what was fetched.
+    let mut plain = lead_cast();
+    plain.required.clear();
+    for f in &mut plain.facts {
+        f.requires.clear();
+    }
+    let r = Run::new(&[
+        "Silvanus sails away.",
+        "Silvanus sails far away.",
+        "Silvanus never returns.",
+    ]);
+    let a = r
+        .ask("explain the lead cast line", AnswerType::Explain, &plain)
+        .unwrap();
     assert_eq!(a.shown, Shown::Abstained);
     assert!(
         a.text
@@ -552,12 +573,6 @@ fn three_failed_explanations_give_the_abstention_and_the_facts_never_an_overview
         "{}",
         a.text
     );
-    assert!(
-        a.text.contains("Lead cast, planned: 40,00,000."),
-        "{}",
-        a.text
-    );
-    assert!(!a.text.to_lowercase().contains("overview"));
     assert_eq!(a.shown.fallback_code(), "abstained");
 }
 
@@ -750,7 +765,7 @@ fn the_last_resort_sentence_also_says_what_the_project_does_not_hold() {
         text,
         "Anna, actor: Maya Rao. Contact details are not shown for your role."
     );
-    assert_eq!(used.record_id, "c");
+    assert_eq!(used[0].record_id, "c");
     // A fact that carries no value to state is not an answer.
     let none = Dossier {
         facts: vec![fact("Scene", "s").f("scene", "3")],
@@ -1109,4 +1124,144 @@ fn a_scene_number_the_facts_do_not_give_as_a_scene_fails_the_answer() {
     );
     assert_eq!(stray("Scenes 3 and 9 are at the hut."), ["9"]);
     assert_eq!(stray("In scene 03 and scene 14."), ["14"]);
+}
+
+// ------------------------------------------------------------------ the closest attempt is kept
+
+fn budget_of_two() -> Dossier {
+    let a = fact("Budget line", "a")
+        .f("line", "Lead cast")
+        .f("planned", "40,00,000")
+        .require("40,00,000");
+    let b = fact("Budget line", "b")
+        .f("line", "Camera")
+        .f("planned", "18,00,000")
+        .require("18,00,000");
+    Dossier {
+        required: vec!["40,00,000".into(), "18,00,000".into()],
+        facts: vec![a, b],
+        ..Dossier::default()
+    }
+}
+
+#[test]
+fn an_attempt_that_misses_a_required_value_is_kept_and_code_adds_it() {
+    let r = Run::new(&[
+        "The lead cast is 40,00,000.",
+        "The lead cast is 40,00,000 in the plan.",
+        "Lead cast costs 40,00,000.",
+    ]);
+    let a = r
+        .ask("what are the two lines", AnswerType::List, &budget_of_two())
+        .unwrap();
+    assert_eq!(r.model.calls(), 3);
+    assert_eq!(a.shown, Shown::WrittenAdded);
+    assert!(a.text.starts_with("The lead cast is 40,00,000."), "{}", a.text);
+    assert!(a.text.contains("Camera, planned: 18,00,000."), "{}", a.text);
+}
+
+#[test]
+fn an_attempt_that_says_something_wrong_is_not_kept() {
+    let r = Run::new(&[
+        "Silvanus holds 40,00,000.",
+        "Silvanus holds 18,00,000.",
+        "Silvanus holds it.",
+    ]);
+    let a = r
+        .ask("what are the two lines", AnswerType::List, &budget_of_two())
+        .unwrap();
+    assert_eq!(a.shown, Shown::LastResort);
+    assert!(!a.text.contains("Silvanus"), "{}", a.text);
+}
+
+#[test]
+fn the_last_resort_states_every_required_fact() {
+    let (text, used) = fallback::last_resort(&budget_of_two()).unwrap();
+    assert_eq!(text, "Lead cast, planned: 40,00,000. Camera, planned: 18,00,000.");
+    assert_eq!(used.len(), 2);
+}
+
+#[test]
+fn an_attempt_that_says_it_found_nothing_gets_no_sentence_beside_it() {
+    let r = Run::new(&[
+        "I could not find that.",
+        "I could not find that either.",
+        "I could not find it at all.",
+    ]);
+    let a = r
+        .ask("what are the two lines", AnswerType::List, &budget_of_two())
+        .unwrap();
+    assert_eq!(a.shown, Shown::LastResort);
+    assert!(!a.text.contains("could not find"), "{}", a.text);
+}
+
+#[test]
+fn a_code_sentence_tells_a_long_text_by_the_sentences_that_hold_the_value() {
+    let long = "The guide opens here with many words that nobody asked about in this question. \
+                Your projects are never sent anywhere. It closes with more words nobody asked for.";
+    let f = fact("Guide", "g")
+        .f("section", "Getting OpenFrame AI")
+        .f("text", long)
+        .require("never sent");
+    assert_eq!(
+        fallback::fact_sentence(&f),
+        "Getting OpenFrame AI, text: Your projects are never sent anywhere."
+    );
+}
+
+#[test]
+fn a_count_whose_other_field_is_asked_says_that_field() {
+    let f = fact("Count", "")
+        .f("what", "prop elements")
+        .f("value", "97")
+        .f("different items", "73")
+        .require("73");
+    assert_eq!(
+        fallback::fact_sentence(&f),
+        "prop elements, different items: 73."
+    );
+}
+
+#[test]
+fn a_bare_number_must_be_a_whole_number_of_the_field() {
+    let f = fact("Production overview", "")
+        .f("what", "plan")
+        .f("scenes", "45")
+        .f("shoot days", "4")
+        .require("4");
+    assert_eq!(fallback::fact_sentence(&f), "plan, shoot days: 4.");
+}
+
+// ------------------------------------------------------------------ what code repairs
+
+#[test]
+fn a_copied_line_of_the_data_becomes_a_sentence() {
+    let fixed = check::repaired("Card | act: 2 | what: Jose admits he cut the net.");
+    assert_eq!(fixed, "act: 2, what: Jose admits he cut the net.");
+    assert!(!fixed.contains('|'));
+}
+
+#[test]
+fn a_sentence_said_twice_is_said_once() {
+    let fixed = check::repaired(
+        "Varghese is a fisherman from the coast of Kerala. He has a boat. \
+         Varghese is a fisherman from the coast of Kerala.",
+    );
+    assert_eq!(fixed, "Varghese is a fisherman from the coast of Kerala. He has a boat.");
+    assert!(check::repeated_run(&fixed).is_none());
+    let plain = "One thing here. Another thing there.";
+    assert_eq!(check::repaired(plain), plain);
+}
+
+#[test]
+fn a_repeated_sentence_no_longer_costs_the_first_pass() {
+    let r = Run::new(&[
+        "The lead cast is planned at 40,00,000 rupees in all. The lead cast is planned at 40,00,000 rupees in all.",
+    ]);
+    let a = r
+        .ask("what is the lead cast line", AnswerType::Lookup, &lead_cast())
+        .unwrap();
+    assert_eq!(r.model.calls(), 1);
+    assert_eq!(a.shown, Shown::Written);
+    assert_eq!(a.text, "The lead cast is planned at 40,00,000 rupees in all.");
 }

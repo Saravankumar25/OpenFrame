@@ -23,6 +23,7 @@
 //! Nothing here writes, prompts or checks: the answer stage (`answer`) puts the dossier into the
 //! writer and checks the written answer against it.
 
+mod asked;
 mod ctx;
 pub(super) mod fetch;
 pub(crate) mod guard;
