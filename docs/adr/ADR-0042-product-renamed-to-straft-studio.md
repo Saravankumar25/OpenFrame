@@ -35,7 +35,11 @@ so the window to do this closes at the first release.
 
 - Data written by internal builds under the earlier name is copied to the new folders on the first launch. Nothing is
   deleted from the old place.
-- Project folders with the earlier extension keep opening. New projects get `.straft`.
+- Folders a person already has under the earlier name take the new name at start: a library folder with the earlier name
+  becomes a sibling `Straft Studio` (left alone if that name is taken), and the project folders directly in its `Projects`
+  folder become `<title>.straft`. Any other project is renamed when it is opened. Every stored path follows. A rename that
+  cannot happen (a project open in another process, a held file, no permission) keeps the old path and is tried at the next
+  start. Packages made under the earlier name keep opening.
 - An earlier Windows internal install does not upgrade in place, because its application id differs. Testers install the new
   build next to it and remove the old one when they are ready.
 - On the Mac, settings the system keeps per application come across. The Keychain trial guard starts fresh, because no store

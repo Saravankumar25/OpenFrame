@@ -794,6 +794,7 @@ fn open(core: &AppCore, actor: &Actor, args: OpenProjectArgs) -> AppResult<OpenP
     if path.file_name().and_then(|n| n.to_str()).is_some_and(pf::is_manifest_name) {
         path = path.parent().map(Path::to_path_buf).unwrap_or(path);
     }
+    let path = crate::modules::storage::legacy_rename::project_on_open(core, &path);
     open_at(core, actor, &path)
 }
 
@@ -1402,6 +1403,7 @@ fn locate(core: &AppCore, actor: &Actor, args: LocateArgs) -> AppResult<OpenProj
             "That folder contains a different project. Choose the folder for this project.",
         ));
     }
+    let path = crate::modules::storage::legacy_rename::project_on_open(core, &path);
     core.with_app_db(|c| {
         c.execute(
             "UPDATE sys_recent_project SET path=?1, updated_at=?2 WHERE project_id=?3",

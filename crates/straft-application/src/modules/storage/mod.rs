@@ -6,6 +6,7 @@
 //! offered to the assistant, which never chooses or touches file system locations.
 
 pub mod legacy_migration;
+pub(crate) mod legacy_rename;
 pub mod library;
 pub mod library_ops;
 pub mod relocate;

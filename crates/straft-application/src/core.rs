@@ -20,6 +20,7 @@ use ts_rs::TS;
 
 use crate::events::{AppEvent, EventSink, StoreKind, TaskProgress};
 use crate::modules::entitlement::EntitlementService;
+use crate::modules::storage::legacy_rename;
 use crate::modules::storage::library_ops::{self, LibraryPlace, LibrarySetup};
 use crate::modules::storage::{self, library, library::Library};
 use crate::registry::Registry;
@@ -81,6 +82,9 @@ pub struct AppConfig {
     /// licence state and channel by hand. The desktop shell turns it on only in a debug build with
     /// an isolated test data root; release builds never do (tested in the shell).
     pub entitlement_debug_controls: bool,
+    /// Rename the person's own library and project folders that still have the product's earlier
+    /// name (`modules::storage::legacy_rename`). Off everywhere except a real start on real data.
+    pub rename_earlier_names: bool,
 }
 
 impl std::fmt::Debug for AppConfig {
@@ -104,6 +108,7 @@ impl std::fmt::Debug for AppConfig {
                 "entitlement_debug_controls",
                 &self.entitlement_debug_controls,
             )
+            .field("rename_earlier_names", &self.rename_earlier_names)
             .finish()
     }
 }
@@ -118,7 +123,10 @@ impl AppConfig {
     pub fn for_current_user(app_version: &str) -> AppResult<Self> {
         let (app_data_dir, pointer_dir) =
             crate::modules::storage::legacy_migration::folders_for_current_user();
-        Self::at_user_folders(app_data_dir, pointer_dir, app_version)
+        let mut config = Self::at_user_folders(app_data_dir, pointer_dir, app_version)?;
+        config.rename_earlier_names =
+            crate::modules::storage::legacy_migration::allowed_here();
+        Ok(config)
     }
 
     /// [`AppConfig::for_current_user`] for a store build: never looks for an earlier version's
@@ -196,6 +204,7 @@ impl AppConfig {
             mac_inputs: None,
             microsoft_store: None,
             entitlement_debug_controls: false,
+            rename_earlier_names: false,
         })
     }
 
@@ -224,6 +233,7 @@ impl AppConfig {
             mac_inputs: None,
             microsoft_store: None,
             entitlement_debug_controls: false,
+            rename_earlier_names: false,
         }
     }
 
@@ -486,9 +496,17 @@ impl AppCore {
         straft_persistence::migrate::apply(&mut conn, crate::schema::APP_MIGRATIONS)?;
         // Cover photos no project row names (a crash between the file and the row) are removed.
         crate::modules::project_cover::sweep(&conn, &config.app_data_dir);
+        if config.rename_earlier_names {
+            legacy_rename::library_at_start(&conn, &config);
+        }
         // The library in use: the remembered one when its folder is there, else none yet (the
         // first start asks; a missing folder is never recreated empty).
         let place = library_ops::place_at_start(&conn, &config);
+        if config.rename_earlier_names
+            && let Some(place) = &place
+        {
+            legacy_rename::projects_at_start(&conn, place);
+        }
         // A person who comes back after an app data reset keeps their identity and chosen folders.
         let (library, library_unusable) = read_library_file(place.as_ref(), &config.app_data_dir);
         let (profile, profile_saved) = ensure_profile(&conn, library.as_ref(), place.is_some())?;
