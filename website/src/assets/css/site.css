@@ -64,7 +64,9 @@ section.tint{background:var(--cream)}
 .menu li.open .chev{transform:rotate(180deg)}
 .nav-cta{display:flex;gap:10px;align-items:center}
 .mega{position:absolute;top:100%;left:0;padding-top:12px;visibility:hidden;opacity:0;transform:translateY(8px);transition:opacity .18s,transform .18s var(--ease),visibility .18s;z-index:60}
-li.open>.mega{visibility:visible;opacity:1;transform:none}
+/* a panel that is fading out no longer catches taps, so a tap on the page behind it closes what is open */
+.mega{pointer-events:none}
+li.open>.mega{visibility:visible;opacity:1;transform:none;pointer-events:auto}
 .mega-in{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:26px 26px 18px;width:min(1060px,calc(100vw - 40px));display:grid;grid-template-columns:repeat(4,1fr);gap:8px 26px}
 .mega.small .mega-in{width:340px;grid-template-columns:1fr;padding:14px}
 .mega.small{left:0}
