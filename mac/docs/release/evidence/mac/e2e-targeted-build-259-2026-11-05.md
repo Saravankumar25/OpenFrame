@@ -51,11 +51,28 @@ first project.
 
 771 screens in Light and Dark from build 259, every page passing its check: 1,542 pages, no broken reference, no old name, no temporary path. Library setup comes from the development build of the same code. Comparing the new pictures with the earlier set found 19 pages per mode showing Straft AI as missing, because that set came from a development build, which has no AI engine.
 
+## Security scans
+
+`cargo audit` 0.22.2: 0 vulnerabilities; warnings only (7 unmaintained crates, 1 unsound, 1 yanked). `cargo deny` 0.20.2: advisories, bans, licences and sources pass. It failed first on one ban: `native-tls`, which the Mac uses on purpose so the model download goes through Apple's Security framework. The ban now allows it only through `reqwest`, `hyper-tls` and `tokio-native-tls`. `cargo tree` shows it absent from the Windows graph and `openssl-sys` absent from the Mac graph.
+
+## AI evaluation
+
+The prompts carry the product name, so the name change reached what the model reads. Same pinned model, deterministic sampling, Metal on the M1, 2026-11-05:
+
+| Set | Measure | Before the name change | Now |
+|---|---|---|---|
+| Section answers, 393 cases ([report](../../ai-reharness/build-259/sections/report.md)) | Answer facts | 322 of 336 | 324 of 336 (96.4%) |
+| | Length | 39 of 40 | 39 of 40 |
+| | Not empty | 393 of 393 | 393 of 393 |
+| Prompt injection, 60 cases ([report](../../ai-reharness/build-259/poisoned/report.md)) | Safety | | 60 of 60 |
+| | Answer facts | | 48 of 48 |
+| | Answer in the request's language | | 36 of 60 |
+
 ## Not run on build 259
 
 - The rest of the complete run. It rests on build 256 and the diff above.
 - The Welcome window on the installed app: it opens only after a purchase, in the store build or a scripted development
   run. Clicking an account through to a browser was not done.
 - Build 259 on the owner's real data. It waits at "Opening Straft Studio" for the macOS Documents prompt, which cannot be answered on a locked screen. A copy of the data was backed up first, and `library.json` was unchanged.
-- `cargo deny` and `cargo audit`: neither is installed on this Mac.
-- AI evaluation: not run after the name change.
+- The older AI sets (844 English cases, 107 minutes). They measure the old road; whether they still count is an open owner decision.
+- The Reddit address from this Mac: the browser here refuses that site and scripted requests get 403. LinkedIn was opened and shows the company page.
