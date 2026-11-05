@@ -42,7 +42,7 @@ export function writeLlms(DIST, { paths, manual, FEATURE_GROUPS, CATALOG, OS }) 
 > ${SITE_NAME} is a local-first desktop app for writers, screenwriters and film production teams. One app covers ideas (Idea Vault), story (Story page, Beat Board, characters), the screenplay editor, script breakdown, cast, crew and locations, shot lists, storyboards, moodboards, the shooting schedule, call sheets, sides, reports and a light budget. Projects are stored on the user's computer.
 
 Facts:
-- Platforms: Windows 11 (64-bit) and macOS 14 or later on Apple silicon Macs. Sold through the Microsoft Store and the Mac App Store.
+- Platforms: Windows 11 (64-bit) and macOS 14 or later on Apple silicon Macs. Planned for the Microsoft Store (Windows) and the Mac App Store (Mac). The store listings are not live yet, so there is nothing to buy or download today.
 - Price: one-time lifetime purchase at a launch price of ₹3,999 in India (originally ₹7,999), €89 in Europe (originally €149) and US$89 in the USA and other countries (originally US$149), after a 7-day free trial. The store sets the final checkout amount.
 - Privacy: no Straft account, no telemetry, no cloud service. Works offline. Projects are not encrypted by the app.
 - Straft AI: optional. One-time download of about 1.2 GB that the person starts; runs on the computer; suggests changes that apply only when the person clicks Apply.
@@ -50,7 +50,9 @@ Facts:
 - Collaboration: no live co-editing and no cloud sharing. Teams pass project files and review packages between computers.
 
 ## Pages
-${link('/features/', 'Features', 'every capability, marked for Windows and Mac.')}${link('/pricing/', 'Pricing', 'the one-time price and the 7-day trial.')}${link('/download/', 'Download')}${link('/faq/', 'FAQ', 'platforms, privacy, files, Straft AI and the price.')}${link('/local-and-private/', 'Local and private', 'where files live and what the app never sends.')}${link('/switch/', 'Switch to Straft Studio', 'which script formats come in and go out.')}${link('/compare/', 'Compare')}${link('/themes/', 'Themes')}${link('/about/', 'About')}${link('/windows/tutorials/', 'Windows tutorials', 'step-by-step tutorials on the real Windows screens.')}${link('/mac/tutorials/', 'Mac tutorials', 'step-by-step tutorials on the real Mac screens.')}
+${link('/features/', 'Features', 'every capability, marked for Windows and Mac.')}${link('/pricing/', 'Pricing', 'the one-time price and the 7-day trial.')}${link('/download/', 'Download', 'system requirements for Windows and Mac and how the 7-day trial works.')}${link('/faq/', 'FAQ', 'platforms, privacy, files, Straft AI and the price.')}${link('/local-and-private/', 'Local and private', 'where files live and what the app never sends.')}${link('/switch/', 'Switch to Straft Studio', 'which script formats come in and go out.')}${link('/compare/', 'Compare', 'what one application replaces.')}${link('/themes/', 'Themes', 'the built-in app themes.')}${link('/about/', 'About', 'who builds Straft Studio.')}${link('/contact/', 'Contact', 'support@straftstudio.com.')}${link('/windows/tutorials/', 'Windows tutorials', 'step-by-step tutorials on the real Windows screens.')}${link('/mac/tutorials/', 'Mac tutorials', 'step-by-step tutorials on the real Mac screens.')}
+## Features
+${FEATURE_GROUPS.flatMap(([, items]) => items.map(([slug, title, blurb]) => link(`/features/${slug}/`, title, blurb))).join('')}
 ## Optional
 - [Complete feature catalog and tutorial list](${SITE_URL}/llms-full.txt)
 `);
@@ -72,7 +74,7 @@ ${link('/features/', 'Features', 'every capability, marked for Windows and Mac.'
 // ---------- _headers (Cloudflare Pages). Limits: 100 rules, 2,000 characters per line.
 export function headersFile(BOOT) {
   const bootHash = crypto.createHash('sha256').update(BOOT).digest('base64');
-  // Cloudflare Web Analytics is off until the owner switches it on in the dashboard; its script and beacon hosts are allowed now.
+  // No analytics: the CSP allows no outside script or beacon host, so Cloudflare Web Analytics would be blocked if it were switched on.
   const CSP = ["default-src 'self'", `script-src 'self' 'sha256-${bootHash}'`, "style-src 'self'", "img-src 'self' data:", "font-src 'self'",
     "connect-src 'self'", "manifest-src 'self'", "frame-src 'self'", "object-src 'none'", "worker-src 'none'", "base-uri 'self'", "form-action 'none'", "frame-ancestors 'none'", 'upgrade-insecure-requests'].join('; ');
   // The app screens are static pages with their own inline styles and no script. Only this site may frame them.
@@ -97,6 +99,14 @@ export function headersFile(BOOT) {
   Cache-Control: public, max-age=604800, no-transform
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+/403
+  X-Robots-Tag: noindex
+/404
+  X-Robots-Tag: noindex
+/500
+  X-Robots-Tag: noindex
+/503
+  X-Robots-Tag: noindex
 /403.html
   X-Robots-Tag: noindex
 /404.html
@@ -119,6 +129,10 @@ export function headersFile(BOOT) {
 /humans.txt
   Content-Type: text/plain; charset=utf-8
 /favicon.ico
+  Cache-Control: public, max-age=604800
+/hero/*
+  Cache-Control: public, max-age=604800
+/company/*
   Cache-Control: public, max-age=604800
 /*.png
   Cache-Control: public, max-age=604800

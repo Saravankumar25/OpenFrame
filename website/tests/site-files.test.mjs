@@ -40,3 +40,11 @@ test('icon set, manifest, security.txt and humans.txt are published and consiste
   const home = read(file('index.html'));
   for (const l of ['rel="manifest" href="/site.webmanifest"', 'rel="apple-touch-icon" href="/apple-touch-icon.png"', 'href="/favicon.ico"', 'property="og:image:width"', 'media="(prefers-color-scheme: dark)"']) assert.ok(home.includes(l), l);
 });
+
+test('_headers: the extensionless error pages are noindex, images cache for a week, and the rules stay under the host limits', { skip: SKIP }, () => {
+  const h = read(file('_headers'));
+  for (const p of ['/403', '/404', '/500', '/503']) assert.match(h, new RegExp(`^${p}\n  X-Robots-Tag: noindex$`, 'm'), p);
+  for (const p of ['/hero/*', '/company/*']) assert.match(h, new RegExp(`^${p.replace('*', '\\*')}\n  Cache-Control: public, max-age=604800$`, 'm'), p);
+  assert.ok(h.split('\n').filter((l) => /^\S/.test(l)).length <= 100, 'Cloudflare Pages allows 100 header rules');
+  assert.ok(h.split('\n').every((l) => l.length <= 2000), 'a header line is over 2,000 characters');
+});

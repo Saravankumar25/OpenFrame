@@ -69,17 +69,22 @@ company has its own public web presence to point to.
 ## 5. IndexNow
 
 * Key file: `src/static/8dff8bfd7101028db60a502780c7c4c7.txt`, published at `/8dff8bfd7101028db60a502780c7c4c7.txt` (its
-  content is the key). Bing, Yandex, Naver, Seznam and Yep share submissions. Google does not use IndexNow.
-* `scripts/indexnow.mjs` sends the sitemap URLs. **It has not been run.** Run it once after the custom domain is live:
-  ```
-  OF_SITE_URL=https://<domain> node scripts/build.mjs
-  node scripts/deploy.mjs
-  OF_SITE_URL=https://<domain> node scripts/indexnow.mjs
-  ```
-  It refuses to run against a `pages.dev` address, checks that the key file is live first, and sends at most 10,000 URLs
-  per request. `--changed` sends only pages whose lastmod is today (use it after each later deploy); `--dry-run` prints the
-  count and sends nothing. The request builder is tested without any network call.
-* It reads `dist/sitemap.xml`, so run it after the build you deployed.
+  content is the key, 32 hex characters, no newline). The key is public by design: it only proves that the site owns the file,
+  so it is committed and is not a secret. IndexNow lists Bing, Yandex, Naver, Seznam, Yep and Amazon; a submission to one is
+  shared with the others. Google does not take part. Specification: https://www.indexnow.org/documentation and
+  https://www.indexnow.org/faq.
+* `scripts/indexnow.mjs` runs after a deploy and sends only what changed. Modes: `--since <old-sitemap.xml>` (pages new or
+  with a different lastmod, plus pages that left the sitemap, compared with the live sitemap saved before the deploy),
+  `--changed` (lastmod is today; the fallback when no old sitemap exists), no flag (every URL; the first run, or to repeat a
+  failed one), `--dry-run` (prints, sends nothing). `--soft` turns every failure into a warning with exit code 0, so a
+  search-engine outage never fails a deploy.
+* It refuses a `pages.dev` address, waits up to 15 seconds for the key file to be live, sends at most 10,000 URLs per request,
+  and accepts 200 and 202 as success (400 format, 403 key, 422 wrong host or repeated unchanged URLs, 429 too many).
+* IndexNow asks for a resubmission of the same URL only after a real change and not within minutes. Do not run the no-flag
+  mode after every deploy. Cloudflare Crawler Hints sends its own IndexNow signal from cache misses once the owner switches it
+  on (`docs/SEO-CHECKLIST.md`); the script covers the pages it misses.
+* The deploy workflow lines and the full checklist are in `docs/SEO-CHECKLIST.md`. Live check of what search engines see:
+  `npm run seo:monitor` (`scripts/seo-monitor.mjs`). Tests without a browser: `tests/seo-live-ready.test.mjs`.
 
 ## 6. Moving to the custom domain (SEO side)
 
@@ -87,7 +92,7 @@ company has its own public web presence to point to.
    `security.txt` all follow it. Deploy.
 2. Search Console: add a Domain property (DNS TXT record), submit `/sitemap.xml`. Bing Webmaster Tools: import from Search
    Console. Check "Page indexing" after a week.
-3. Run IndexNow (section 5).
+3. Run IndexNow with no flag once (section 5), then let the deploy workflow send changes.
 4. Keep the `pages.dev` address answering; the canonical tags point search engines to the real domain.
 5. If the privacy notice or footer changes in the same release, keep `llms.txt` and the FAQ in step.
 
@@ -143,6 +148,7 @@ immutable and the content hash is in the file name, pictures for a week.
 
 * Decide whether the legal entity goes into JSON-LD (section 2): recommended not yet.
 * Decide the AI training policy (section 4).
-* After the custom domain exists: sections 5 and 6, and the Cloudflare list in `docs/SECURITY.md`.
+* Everything only the owner can do for search (Search Console, Bing, Cloudflare switches, the analytics decision) is in
+  `docs/SEO-CHECKLIST.md`, section "Pending user action". The Cloudflare list in `docs/SECURITY.md` still applies.
 * Before switching Cloudflare Web Analytics on, update the privacy notice (it says the site runs no analytics and loads
   nothing from other companies). See `docs/SECURITY.md` section 3.

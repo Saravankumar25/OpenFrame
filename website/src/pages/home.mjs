@@ -22,8 +22,8 @@ export default function home(ctx) {
   const { html, raw, mock, storeRow } = ctx;
   const svg = (k) => raw(`<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${IC[k]}</svg>`);
   const stage = ([name, label, line, scr], i) => html`<div class="stage-panel" id="stage-${i}" role="tabpanel" aria-labelledby="stage-tab-${i}"${i ? raw(' hidden') : ''}>
-<div data-os-show="win">${mock('win', scr.win, { caption: `${label}. ${line}`, eager: i === 0 })}</div>
-<div data-os-show="mac">${mock('mac', scr.mac, { caption: `${label}. ${line}`, eager: i === 0 })}</div></div>`;
+<div data-os-show="win">${mock('win', scr.win, { caption: `${label}. ${line}` })}</div>
+<div data-os-show="mac">${mock('mac', scr.mac, { caption: `${label}. ${line}` })}</div></div>`;
   /* the photographs are decoration, so each has an empty description; sizes follow the largest size a tile reaches */
   const tile = (p, i) => {
     const big = i < FEATURED + DOUBLE, top = i < FEATURED ? 1000 : big ? 640 : 480;

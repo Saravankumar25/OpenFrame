@@ -4,6 +4,7 @@
 import { FEATURE_PAGES } from '../content/features.mjs';
 import { CATALOG } from '../content/catalog.mjs';
 import { APP } from './info.mjs';
+import { PRICES } from '../content/copy.mjs';
 
 const nameOf = (s) => (s ? s.replace(/^\d+-/, '') : s);
 // Tutorials (manual workflows) that teach each feature group: matched on the area slug or the workflow title.
@@ -95,8 +96,8 @@ function indexPage(ctx) {
   const { html } = ctx;
   const body = html`
 <section class="phero"><div class="wrap"><span class="eyebrow">All features</span><h1>One film, moving forward.</h1>
-<p class="lead">From the first scrap of an idea to the final call sheet. Every part of Straft talks to every other part, so you never retype anything.</p>
-<p class="tmeta">Each feature is marked for Windows and Mac.</p></div></section>
+<p class="lead">Straft Studio is a desktop app for screenwriters and film production teams, for Windows 11 and Apple silicon Macs. It covers the film from the first scrap of an idea to the final call sheet, and every part talks to every other part, so you never retype anything.</p>
+<p class="tmeta">Each feature is marked for Windows and Mac. Launch price: one payment of ${PRICES.in.now} in India, ${PRICES.eu.now} in Europe or ${PRICES.us.now} elsewhere, after a 7-day free trial. See <a href="/pricing/">Pricing</a> or <a href="/download/">Download</a>.</p></div></section>
 <section class="sec-s pt30"><div class="wrap">
 ${ctx.FEATURE_GROUPS.map(([group, items]) => html`<div class="cat-group"><h2>${group}</h2><div class="grid3 mt18">
 ${items.map(([slug, title]) => html`<a class="card linkcard" href="/features/${slug}/"><h3>${title}</h3><p>${FEATURE_PAGES[slug].lead}</p></a>`)}

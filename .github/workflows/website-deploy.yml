@@ -53,8 +53,19 @@ jobs:
 
       - run: npm test
 
+      - name: Save the live sitemap, to find the pages this deploy changes
+        continue-on-error: true
+        run: curl -fsS --max-time 30 https://straftstudio.com/sitemap.xml -o "$RUNNER_TEMP/sitemap-before.xml"
+
       - name: Deploy and check the live site
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npm run deploy
+
+      - name: Tell IndexNow engines which pages changed (not Google)
+        continue-on-error: true
+        run: node scripts/indexnow.mjs --soft --since "$RUNNER_TEMP/sitemap-before.xml"
+
+      - name: Check what search engines see on the live site
+        run: node scripts/seo-monitor.mjs

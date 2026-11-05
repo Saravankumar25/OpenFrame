@@ -7,9 +7,9 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { DIST, ROOT, SKIP, read, walk, htmlFiles, pagePath, resolvesInDist } from './_helpers.mjs';
-import { SITE_URL } from '../site.config.mjs';
+import { SITE_URL, STORE } from '../site.config.mjs';
 import { BOOT } from '../src/lib/layout.mjs';
-import { bodyImages, sitemapXml, trimWords, fitTitle } from '../src/lib/seo.mjs';
+import { bodyImages, sitemapXml, trimWords, fitTitle, APP, ORG } from '../src/lib/seo.mjs';
 import { inspectDist, LIMITS } from '../scripts/dist-guard.mjs';
 import { findKey, payloads, sitemapUrls } from '../scripts/indexnow.mjs';
 
@@ -142,6 +142,13 @@ test('structured data matches the page: FAQ answers, prices, founders and the si
     for (const o of app.offers) assert.equal(o.priceValidUntil, undefined, 'the price has no end date, so none is stated');
   }
   assert.ok(ldOf(pages.find((p) => p.path === '/pricing/').s).some((o) => o.offers), 'pricing declares the offers');
+});
+
+test('offers claim availability only once a store listing exists, and the organization names its support address', () => {
+  for (const o of APP({ SITE_URL }, 'Windows 11', '/pricing/').offers) assert.equal(o.availability, STORE.win || STORE.mac ? 'https://schema.org/InStock' : undefined, 'no in-stock claim before the stores are live');
+  const org = ORG({ SITE_URL });
+  assert.equal(org.email, 'support@straftstudio.com');
+  assert.deepEqual([org.contactPoint['@type'], org.contactPoint.email], ['ContactPoint', 'support@straftstudio.com']);
 });
 
 test('title and description helpers cut at word boundaries', () => {

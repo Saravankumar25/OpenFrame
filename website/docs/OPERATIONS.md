@@ -42,17 +42,9 @@ are changed by hand in the dashboard (section 3), so the token never needs those
 - Do not add `--force`. It was needed once, to create the project, and is not needed again.
 - Pages sends the files named `_headers` and `_redirects` from the root of `dist/` as rules. The build generates both.
 
-### Building for the custom domain
+### Public address and store links
 
-The public address lives in `site.config.mjs` and can be overridden with `OF_SITE_URL`. Canonical links, Open Graph
-URLs, the sitemap, `robots.txt` and `llms.txt` all follow it. After the domain is live:
-
-```
-$env:OF_SITE_URL = 'https://<domain>'
-npm run build; npm test; npm run deploy
-```
-
-Then change the default in `site.config.mjs` so every later build uses the domain without the variable.
+The public address is `https://straftstudio.com`, the default in `site.config.mjs`. `OF_SITE_URL` overrides it, for example for a preview. Canonical links, Open Graph URLs, the sitemap, `robots.txt` and `llms.txt` all follow it.
 
 Store links work the same way: `OF_STORE_WIN` and `OF_STORE_MAC`. Until they are set the store buttons stay enabled and
 do nothing.
@@ -84,10 +76,7 @@ Pages commands (https://developers.cloudflare.com/workers/wrangler/commands/page
 
 ### Screen pictures
 
-`scripts/shots.mjs` is being written by another work stream and did not exist when this file was written. When it
-lands, read the comment at the top of the script for its options and fill this paragraph in. Until then the older
-chain still works: `npm run screens` runs `scripts/extract-screens.mjs` and `scripts/render-screens.mjs`, which read the
-captured app screens in `research/` and write the screen catalogs and thumbnails.
+`npm run screens` runs `scripts/extract-screens.mjs` and then `scripts/shots.mjs`. Together they read the captured app screens in `research/`, write the screen catalogs, and make the interactive screen pages and `manifest.json` in `.cache/shots` that the build copies to `/mockups/`. The comment at the top of `scripts/shots.mjs` lists its options. `node scripts/sim-mac.mjs` then adds the simulated Mac screens.
 
 Capture sources: recapture WindowsHTML or MacHTML in the app project, copy them to `research/WindowsHTML-src` and
 `research/MacHTML-src`, then run the screens step. A screen name that disappears makes `npm run build` and
