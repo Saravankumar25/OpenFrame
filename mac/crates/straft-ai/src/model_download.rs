@@ -17,9 +17,9 @@
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use straft_domain::{AppError, AppResult};
 use parking_lot::Mutex;
 use serde::Serialize;
+use straft_domain::{AppError, AppResult};
 
 use crate::download::Tier;
 use crate::fetch::{self, ModelSource};
@@ -89,6 +89,14 @@ impl ModelDownload {
     /// cannot start in the middle of it. `false` when a download is running.
     pub fn claim(&self) -> bool {
         !self.running.swap(true, Ordering::SeqCst)
+    }
+
+    /// A download run holds the slot, as opposed to `claim` (an import or Remove).
+    pub fn is_fetching(&self) -> bool {
+        matches!(
+            self.status.lock().phase,
+            DownloadPhase::Checking | DownloadPhase::Downloading | DownloadPhase::Installing
+        )
     }
 
     /// Give back the slot taken by `claim`.

@@ -11,7 +11,7 @@
 
 ## 1. What can be proved where
 
-The owner has an Intel MacBook now and expects an Apple silicon Mac later. Intel Macs are never a release target. They are
+*(Corrected 2026-11-04: the Mac used for this track turned out to be Apple silicon, an Apple M1, on 2026-10-17 ([owner-decisions.md](../implementation/owner-decisions.md)), so the Intel column below never applied. Kept as written.)* The owner has an Intel MacBook now and expects an Apple silicon Mac later. Intel Macs are never a release target. They are
 useful because most of the work is not specific to Apple silicon.
 
 | Check | Intel MacBook (if its macOS can run a recent Xcode) | Apple silicon Mac |
@@ -80,7 +80,7 @@ the AI harness is already finished and measured on Windows.
 - App lifecycle, window and menu structure with Mac conventions (Command key, Option, standard menus), the recovery and
   error dialogs, Home (recent projects, new project, open, templates and samples), the project open and create flows, the
   data-location note, the cloud-synced folder warning shared with Windows.
-- Settings, the 15 themes with Light, Dark and System, the logo colour following the theme, the Offline AI settings
+- Settings, the 15 themes with Light, Dark and System, the logo colour following the theme, the Straft AI settings
   placeholder, the diagnostics export.
 - *(Superseded 2026-10-27: the team password gate was removed; see [owner-decisions.md](../implementation/owner-decisions.md).)* The internal team password screen (the Mac gate follows [ADR-0024](../adr/ADR-0024-internal-team-builds.md) and the
   8-character minimum of ADR-0030); a wrong-password test.

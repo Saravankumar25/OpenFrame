@@ -37,6 +37,26 @@ struct SidesSelectedCastTests {
 
     private func strip(_ s: CSSidesModel, _ id: String) throws -> ScheduleStripDto { try #require(s.strips.first { $0.id == id }) }
 
+    /// A click on the row of the snapshot already open once cleared it with nothing to load it
+    /// again (the task reloads when its key changes), which left a spinner for good.
+    @Test func openingTheSnapshotAlreadyOpenKeepsItOnScreen() async throws {
+        let (r, s, _, _) = try await rig()
+        await s.save()
+        await s.loadPreview()
+        let id = try #require(s.openId)
+        #expect(s.openSaved != nil)
+        s.openSnapshot(id)
+        #expect(s.openSaved != nil)
+
+        let reports: CSReportsModel = r.hub.reports
+        await reports.saveSnapshot()
+        await reports.reload()
+        let saved = try #require(reports.savedId)
+        #expect(reports.saved != nil)
+        reports.openSnapshot(saved)
+        #expect(reports.saved != nil)
+    }
+
     @Test func marksScenesWithoutTheSelectedCastAsLeftOutAndPreviewsOnlyTheOthers() async throws {
         let (r, s, a, b) = try await rig()
         defer { r.close() }

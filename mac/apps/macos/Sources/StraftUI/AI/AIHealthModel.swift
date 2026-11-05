@@ -1,4 +1,4 @@
-// Settings, Offline AI: the status, the technical details, the AI health card and Export AI report,
+// Settings, Straft AI: the status, the technical details, the AI health card and Export AI report,
 // and the learned-memory screen. Figures come from the local, numbers-only AI log. Nothing is sent.
 
 import Foundation

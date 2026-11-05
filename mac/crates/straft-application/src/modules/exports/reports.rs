@@ -7,15 +7,15 @@
 //! table with status chips that carry a shape as well as a word, and a running header on every
 //! page of a report that runs past one page. CSV and XLSX print the data as it is stored.
 
+use rusqlite::OptionalExtension;
+use serde::Deserialize;
+use serde_json::json;
 use straft_domain::{Actor, AppError, AppResult};
 use straft_import_export::report::{
     Align, BRAND_LINE, Block, Callout, CalloutCol, Cell, CellItem, Chip, Col, Column, Document,
     HeaderStyle, Mark, Metric, MetricStrip, NoteBand, ReportHead, Rgb, Rich, Row, Run, StyledTable,
     Table, Tone, Txt, pal,
 };
-use rusqlite::OptionalExtension;
-use serde::Deserialize;
-use serde_json::json;
 use ts_rs::TS;
 
 use super::style::nb;

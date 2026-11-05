@@ -31,7 +31,7 @@ commit and size, and redirect to Hugging Face's own download servers on `*.hf.co
    test host instead (build value `STRAFT_TEST_MODEL_SOURCE`); a release build accepts it only with `STRAFT_TEST_BUILD=1`.
 4. **Resume and cache.** Unchanged from ADR-0026: `.partial` files with range resume, kept across sessions, checked before
    use, activated by one rename into `<app data>/models/<version>/`.
-5. **Manual import.** Settings, Offline AI offers "Import a model file…": the person picks a file (for example one copied
+5. **Manual import.** Settings, Straft AI offers "Import a model file…": the person picks a file (for example one copied
    from another computer); it is used only when its size and SHA-256 match a pinned model, and it is copied, never moved.
 6. **Offline.** After the download (or import) the AI runs without any network.
 7. **Licences.** The Gemma Terms of Use and the MIT licences stay in the notices file and Settings. The owner handles

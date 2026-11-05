@@ -79,7 +79,7 @@ struct CSReportsView: View {
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("reports-saved-\(s.id)")
                             Button { Task { await model.deleteSnapshot(s.id) } } label: { Label("Delete", systemImage: "trash") }
-                                .buttonStyle(.borderless)
+                                .buttonStyle(.ofBorderless)
                                 .accessibilityLabel("Delete \(s.title)")
                                 .accessibilityIdentifier("reports-delete-\(s.id)")
                         }

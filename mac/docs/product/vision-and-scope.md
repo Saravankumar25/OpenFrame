@@ -22,7 +22,7 @@ A person can go from a first idea to a shoot day inside one project folder on th
 - Schedule: stripboard, shooting days, Day Out of Days.
 - Call sheets, sides, reports and a light budget.
 - Import and export: Final Draft (FDX), Fountain, Word (DOCX), PDF, plain text, backups and review packages.
-- An offline AI assistant that reads the project and proposes changes that the person approves.
+- An Straft AI that reads the project and proposes changes that the person approves.
 
 The work stays on the person's computer. There is no account, no cloud service and no telemetry. The one network use is
 the AI download the person starts with a click.
@@ -35,7 +35,7 @@ One Rust core holds all rules, storage, search, parsers, exports and the AI safe
 - **Windows:** Tauri v2 with React and TypeScript screens.
 - **macOS:** a native SwiftUI application that calls the same core through a generated interface (UniFFI).
 
-The offline AI is run by `llama.cpp` behind a provider interface: a small default model and a larger tier for strong
+Straft AI is run by `llama.cpp` behind a provider interface: a small default model and a larger tier for strong
 computers, an embedding model chosen by measurement, graphics-card acceleration where it passes a first-run check, and on
 the Mac an optional Apple on-device model ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md),
 [ADR-0029](../adr/ADR-0029-gpu-acceleration.md)). English comes first and is held to a measured release bar; Hindi, Telugu,

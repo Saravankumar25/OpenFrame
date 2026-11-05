@@ -7,10 +7,10 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use serde_json::{Value, json};
 use straft_application::events::{AppEvent, RecordingSink};
 use straft_application::{AppConfig, AppCore};
 use straft_domain::{Actor, AppError};
-use serde_json::{Value, json};
 
 /// One call that failed although the program expected it to work.
 #[derive(Debug, Clone)]
@@ -49,14 +49,19 @@ pub fn arr(v: &Value) -> Vec<Value> {
 }
 
 impl Gold {
-    /// A core over `root` (appdata, projects, global-vault), optionally with the Offline AI.
+    /// A core over `root` (appdata, projects, global-vault), optionally with Straft AI.
     pub fn open(root: &Path, ai_bundle: Option<PathBuf>) -> Gold {
+        Self::open_as(root, ai_bundle, "0.1.0-gold")
+    }
+
+    /// The same core, recording `app_version` in the projects it creates.
+    pub fn open_as(root: &Path, ai_bundle: Option<PathBuf>, app_version: &str) -> Gold {
         std::fs::create_dir_all(root).expect("data root");
         let sink = Arc::new(RecordingSink::default());
         let mut config = AppConfig::isolated(root);
         // The gold project asks without sections and reads every area (ADR-0041).
         config.ai_eval_all_sections = true;
-        config.app_version = "0.1.0-gold".into();
+        config.app_version = app_version.into();
         if let Some(b) = ai_bundle {
             config.ai_bundle_dir = Some(b);
             config.ai_model_source = Some(straft_application::ModelSource::huggingface());

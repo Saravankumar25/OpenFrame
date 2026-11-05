@@ -79,8 +79,8 @@ use std::time::Duration;
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use straft_search::{Embedder, QueryEmbeddingCache};
 use parking_lot::{Mutex, RwLock};
+use straft_search::{Embedder, QueryEmbeddingCache};
 
 pub use indexer::{IndexSettings, IndexSnapshot, ProjectIndex};
 
@@ -133,7 +133,7 @@ impl IntelligenceService {
         }
     }
 
-    /// The embedder to use now: an attached one, else the Offline AI embedding runtime.
+    /// The embedder to use now: an attached one, else Straft AI embedding runtime.
     pub fn embedder(&self, core: &AppCore) -> Option<Arc<dyn Embedder>> {
         if let Some(e) = self.embedder.read().clone() {
             return Some(e);

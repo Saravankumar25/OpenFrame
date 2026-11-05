@@ -84,7 +84,7 @@ private struct Dialog<Body: View, Footer: View>: View {
             if logo { BrandHeader() }
             VStack(spacing: PageSpacing.tight) {
                 Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                if let subtitle { Text(subtitle).font(.callout).foregroundStyle(.secondary) }
+                if let subtitle { Text(subtitle).font(.callout).foregroundStyle(.ofMuted) }
             }
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
@@ -205,7 +205,7 @@ struct DataNoteDialog: View {
                                 .background(.quaternary, in: Circle()).accessibilityHidden(true)
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(p.title).fontWeight(.semibold)
-                                Text(p.body).font(.callout).foregroundStyle(.secondary)
+                                Text(p.body).font(.callout).foregroundStyle(.ofMuted)
                             }
                         }
                         .accessibilityElement(children: .combine)
@@ -229,7 +229,7 @@ struct DataNoteDialog: View {
             if let error = licence.saveError { Banner(tone: .error, text: error) }
         } footer: {
             Text(readToEnd ? (ticked ? "You cannot continue until this is acknowledged." : "Tick the box to continue.") : "Scroll to the end of the list to continue.")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption).foregroundStyle(.ofMuted)
             Spacer()
             Button("OK, I understand") { Task { await licence.record(.dataNote) } }
                 .buttonStyle(.ofProminent)
@@ -294,7 +294,7 @@ struct TutorialDialog: View {
             stepBody
             if let error = licence.saveError { Banner(tone: .error, text: error) }
         } footer: {
-            Text("Step \(step + 1) of 4 · mandatory").font(.caption).foregroundStyle(.secondary)
+            Text("Step \(step + 1) of 4 · mandatory").font(.caption).foregroundStyle(.ofMuted)
             Spacer()
             if step > 0 {
                 Button("Back") { step -= 1 }.accessibilityIdentifier("licence-back")
@@ -369,32 +369,28 @@ struct WelcomeDialog: View {
     @Environment(AppModel.self) private var app
 
     var body: some View {
-        Dialog(title: "Welcome to the Straft Studio family", width: 560) {
+        Dialog(title: "Welcome to the Straft Studio community", width: 560) {
             BrandHeader()
             Text("Thank you for backing independent filmmaking. Be a part of our community.")
-                .foregroundStyle(.secondary).frame(maxWidth: .infinity)
-            let links = LicenceRules.visibleSocialLinks(release: LicenceRules.isReleaseBuild)
-            if !links.isEmpty {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 4), spacing: 12) {
-                ForEach(links) { link in
-                    let openable = LicenceRules.isFixedSocialURL(link.url)
+                .foregroundStyle(.ofMuted).frame(maxWidth: .infinity)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 4), spacing: 12) {
+                ForEach(SocialLinks.all) { link in
                     Button {
-                        guard openable, let url = link.url else { return }
-                        Task { try? await app.core?.openURL(url) }
+                        guard link.openableURL != nil else { return }
+                        Task { try? await app.core?.openURL(link.url) }
                     } label: {
-                        VStack(spacing: 2) {
-                            Text(link.short).font(.callout.weight(.bold))
+                        VStack(spacing: 3) {
+                            SocialMark(commands: link.mark).frame(width: 18, height: 18)
                             Text(link.name).font(.caption.weight(.semibold))
-                            Text(link.handle).font(.caption2).foregroundStyle(.secondary)
+                            Text(link.handle).font(.caption2).foregroundStyle(.ofMuted).lineLimit(1)
                         }
                         .frame(maxWidth: .infinity).padding(8)
                         .background(.quaternary.opacity(0.4), in: RoundedRectangle(cornerRadius: 8))
                     }
                     .buttonStyle(.plain)
-                    .disabled(!openable)
-                    .accessibilityLabel(openable ? "\(link.name) \(link.handle), opens in your browser" : "\(link.name) \(link.handle)")
-                    .accessibilityIdentifier("licence-social-\(link.name.lowercased())")
-                }
+                    .help(link.url)
+                    .accessibilityLabel(link.accessibilityLabel)
+                    .accessibilityIdentifier("licence-social-\(link.id)")
                 }
             }
         } footer: {
@@ -429,7 +425,7 @@ struct MacFirstLaunchDialog: View {
             HStack(spacing: 16) {
                 Spacer()
                 Button { Task { await licence.restore() } } label: { Label("Restore purchase", systemImage: "arrow.clockwise") }
-                    .buttonStyle(.borderless).controlSize(.small).disabled(licence.busy)
+                    .buttonStyle(.ofBorderless).controlSize(.small).disabled(licence.busy)
                     .accessibilityIdentifier("licence-restore")
                 ContactLink(licence: licence)
                 Spacer()
@@ -443,7 +439,7 @@ struct MacFirstLaunchDialog: View {
     private func card<Action: View>(_ title: String, _ text: String, @ViewBuilder action: () -> Action) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title).font(.headline)
-            Text(text).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            Text(text).font(.callout).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true)
             action()
         }
         .padding(12).frame(maxWidth: .infinity, alignment: .leading)
@@ -472,7 +468,7 @@ struct LockedDialog: View {
                     .buttonStyle(.ofProminent).controlSize(.large).keyboardShortcut(.defaultAction)
                     .disabled(licence.busy).accessibilityIdentifier("licence-buy")
                 Button { Task { await licence.restore() } } label: { Label("Restore purchase", systemImage: "arrow.clockwise") }
-                    .buttonStyle(.borderless).controlSize(.small).disabled(licence.busy)
+                    .buttonStyle(.ofBorderless).controlSize(.small).disabled(licence.busy)
                     .accessibilityIdentifier("licence-restore")
                 ContactLink(licence: licence)
             }

@@ -11,9 +11,9 @@
 
 #![cfg(debug_assertions)]
 
+use serde_json::{Value, json};
 use straft_application::modules::ai::{ChangeSetDraft, OpCall, PreviewRow, change_set};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const OPS: usize = 3;
 

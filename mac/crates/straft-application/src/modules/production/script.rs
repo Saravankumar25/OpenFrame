@@ -7,9 +7,9 @@
 
 use std::collections::HashMap;
 
-use straft_domain::AppResult;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::Serialize;
+use straft_domain::AppResult;
 use ts_rs::TS;
 
 /// A screenplay draft as production sees it (source selection, banners).

@@ -30,6 +30,57 @@ public struct ProminentButtonStyle: PrimitiveButtonStyle {
     }
 }
 
+/// A button with no border: its label in the strong accent, which reads on every theme. The window
+/// tint is a fill colour and does not.
+public struct BorderlessAccentButtonStyle: PrimitiveButtonStyle {
+    @Environment(\.ofTheme) private var theme
+
+    public func makeBody(configuration: Configuration) -> some View {
+        Button(role: configuration.role, action: configuration.trigger) { configuration.label }
+            .buttonStyle(.borderless)
+            .tint(theme["accent-d"])
+    }
+}
+
+/// A menu with no border, drawn like `BorderlessAccentButtonStyle`.
+private struct BorderlessAccentMenu: ViewModifier {
+    @Environment(\.ofTheme) private var theme
+
+    func body(content: Content) -> some View {
+        content.menuStyle(.borderlessButton).tint(theme["accent-d"])
+    }
+}
+
+/// A plain text field whose hint is drawn in the theme's muted colour: macOS draws a field's own
+/// prompt in its fixed placeholder grey, whatever colour it is given, and that grey falls under 4.5 to 1.
+public struct HintedTextField: View {
+    let hint: String
+    @Binding var text: String
+    @Environment(\.ofTheme) private var theme
+
+    public init(_ hint: String, text: Binding<String>) {
+        self.hint = hint
+        _text = text
+    }
+
+    public var body: some View {
+        TextField(hint, text: $text, prompt: Text(""))
+            .overlay(alignment: .leading) {
+                if text.isEmpty {
+                    Text(hint).foregroundStyle(theme["muted"]).lineLimit(1).allowsHitTesting(false).accessibilityHidden(true)
+                }
+            }
+    }
+}
+
+extension View {
+    public func borderlessAccentMenu() -> some View { modifier(BorderlessAccentMenu()) }
+}
+
+extension PrimitiveButtonStyle where Self == BorderlessAccentButtonStyle {
+    public static var ofBorderless: BorderlessAccentButtonStyle { BorderlessAccentButtonStyle() }
+}
+
 extension PrimitiveButtonStyle where Self == StandardButtonStyle {
     public static var ofStandard: StandardButtonStyle { StandardButtonStyle() }
 }

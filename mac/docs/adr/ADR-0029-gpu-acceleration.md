@@ -1,4 +1,4 @@
-# ADR-0029: GPU acceleration for the offline AI
+# ADR-0029: GPU acceleration for Straft AI
 
 - **Status:** Accepted 2026-10-15 (owner, in chat).
 - **Date:** 2026-10-15
@@ -33,7 +33,7 @@ test on several laptops with different graphics cards.
    remembered too, the processor is used, and the person sees one plain sentence. The probe runs again when the driver
    changes.
 5. **Safety net while running.** If the engine on the card stops, it restarts on the processor.
-6. **Setting.** Settings, Offline AI: Graphics card, Automatic or Off. The AI health card shows which is in use and the
+6. **Setting.** Settings, Straft AI: Graphics card, Automatic or Off. The AI health card shows which is in use and the
    speed.
 7. **Embeddings stay on the processor.** The embedding engine keeps all layers on the processor so the card's memory is
    left to the chat model.

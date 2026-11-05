@@ -4,7 +4,7 @@
   recorded in [owner-decisions.md](../implementation/owner-decisions.md)). Open questions 2 and 3 take the defaults
   written below until the owner changes them. Nothing below is built yet. Detail, deterministic policy, evaluation and
   slices: [ai-conversational-harness.md](../specs/ai-conversational-harness.md). First spike:
-  `docs/release/evidence/ai-conversational-spike-2026-10-26/`.
+  `docs/history/evidence/ai-conversational-spike-2026-10-26/`.
 - **Date:** 2026-10-26
 - **Would amend, on acceptance:** [ADR-0035](ADR-0035-ai-lanes-briefings-and-code-verifiers.md) decision 1 (code picks
   one of five answer lanes for every question), [ADR-0013](ADR-0013-single-local-model-hybrid-rag-agent.md) decision 6

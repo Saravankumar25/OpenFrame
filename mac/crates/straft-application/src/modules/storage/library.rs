@@ -8,8 +8,8 @@
 
 use std::path::{Path, PathBuf};
 
-use straft_domain::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
+use straft_domain::{AppError, AppResult};
 
 pub const LIBRARY_FILE_NAME: &str = "library.json";
 const FORMAT: u32 = 1;

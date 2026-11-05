@@ -7,10 +7,10 @@
 
 use std::path::PathBuf;
 
+use serde_json::{Value, json};
 use straft_application::MutationMeta;
 use straft_domain::{Capability, Role, new_id};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 struct Sp {
     env: TestEnv,

@@ -72,6 +72,8 @@ const SQL_WRITE_ALLOW = {
     "Vault file: scrubs a private staging copy of the vault database for a package, and read-only integrity checks of a vault before it is restored or connected.",
   "crates/straft-application/src/modules/storage/relocate.rs":
     "Read-only integrity and identity check of the copy of a project made by Move Project, before it replaces the original.",
+  "crates/straft-application/src/modules/storage/legacy_rename.rs":
+    "One transaction on app.sqlite (Recent Projects and the library root) when the library folder takes the new name at start.",
   "crates/straft-application/src/modules/storage/library_ops.rs":
     "Read-only (immutable) counts of a library's vault for the setup preview, and one transaction on app.sqlite (Recent Projects paths, no project content) when a library moves.",
 };
@@ -116,6 +118,8 @@ const SPAWN_ALLOW = {
   "crates/straft-ai/src/supervisor.rs": "Starts the verified llama.cpp sidecar from the managed runtime folder.",
   "crates/straft-ai-eval/src/bin/engine-bench.rs":
     "Development measurement tool, never shipped (straft-ai-eval is not a dependency of the app): starts the staged llama-server on 127.0.0.1 to replay recorded requests, one setting at a time, and kills it when done.",
+  "crates/straft-gold-project/src/bin/demo_project/assets.rs":
+    "Development tool, never shipped (straft-gold-project is not a dependency of the app): runs macOS `say` and `afconvert` to make the voice notes of a demo project.",
   "crates/straft-gold-project/src/media.rs":
     "Development tool, never shipped (straft-gold-project is not a dependency of the app): runs macOS `say` and `afconvert` once to make the gold project's spoken voice memo.",
   "crates/straft-platform/src/process.rs":

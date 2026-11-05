@@ -6,7 +6,7 @@
 > runtime ship in every package; the chat and embedding models download after install on the user's click from a signed
 > manifest. This reverses ADR-0025 (2026-10-08). The current build still bundles the models from
 > `packaging/ai/ai-assets.lock.json` until the download flow is rebuilt. Text below that
-> describes downloading, installing or removing Offline AI is history; never implement it.
+> describes downloading, installing or removing Straft AI is history; never implement it.
 
 
     **Product:** Straft Studio  
@@ -50,7 +50,7 @@ These decisions were explicitly approved for the first implementation baseline:
 | Core/business logic | Rust owns domain rules; React is presentation/input |
 | Local persistence | SQLite + filesystem assets |
 | Project UX | One `.straft` project concept; internal files are implementation detail |
-| Offline AI | One-click **Download Offline AI**; Straft Studio installs runtime/model |
+| Straft AI | One-click **Download Straft AI**; Straft Studio installs runtime/model |
 | Model selection | One profile, no choice: Gemma 3 1B Instruct + BGE small English embeddings (ADR-0013; the earlier Qwen profiles are superseded) |
 | Model distribution | Straft Studio-controlled public model distribution endpoint/CDN |
 | AI providers | **Local AI only** for v1; no cloud AI provider integration |

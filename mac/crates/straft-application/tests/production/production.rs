@@ -5,11 +5,11 @@
 //! Screenplay content is seeded directly into the screenplay hub tables
 //! (test fixtures only) through the store pipeline.
 
+use rusqlite::params;
+use serde_json::{Value, json};
 use straft_application::MutationMeta;
 use straft_domain::{Capability, Role, new_id, now_ms};
 use straft_test_support::TestEnv;
-use rusqlite::params;
-use serde_json::{Value, json};
 
 // ---------------------------------------------------------------- fixtures
 

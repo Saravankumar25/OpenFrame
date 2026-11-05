@@ -244,7 +244,7 @@ struct StoryEpisodesView: View {
                         Divider()
                         Button("Delete season", role: .destructive) { Task { await m.deleteSeason(season) } }
                     } label: { Label("Options", systemImage: "ellipsis.circle") }
-                        .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+                        .borderlessAccentMenu().menuIndicator(.hidden).fixedSize()
                         .accessibilityLabel("Options for \(season.title)")
                 }
                 Spacer()
@@ -352,7 +352,7 @@ private struct EpisodeMenu: View {
             Divider()
             Button("Delete", role: .destructive) { m.sheet = .delete(e) }
         } label: { Label("Options", systemImage: "ellipsis") }
-            .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+            .borderlessAccentMenu().menuIndicator(.hidden).fixedSize()
             .accessibilityLabel("Options for \(e.title)")
             .accessibilityIdentifier("story-episode-options-\(e.id)")
     }
@@ -391,7 +391,7 @@ private struct EpisodeFormSheet: View {
                         Text("No season").tag(EpisodesModel.noSeason)
                     }
                 }
-                Text("The episode number comes from its order in the season.").font(.caption).foregroundStyle(.secondary)
+                Text("The episode number comes from its order in the season.").font(.caption).foregroundStyle(.ofMuted)
             }
         } footer: {
             Button("Cancel") { m.sheet = nil }.keyboardShortcut(.cancelAction)
@@ -427,7 +427,7 @@ private struct DuplicateEpisodeSheet: View {
         StorySheetFrame(title: "Duplicate \u{201C}\(e.title)\u{201D}", width: 420) {
             VStack(alignment: .leading, spacing: 6) {
                 Toggle("Also copy its Beat Board (new, independent cards)", isOn: $copyStory).toggleStyle(.checkbox)
-                Text("The copy is a new episode. Screenplay links are not copied.").font(.caption).foregroundStyle(.secondary)
+                Text("The copy is a new episode. Screenplay links are not copied.").font(.caption).foregroundStyle(.ofMuted)
             }
         } footer: {
             Button("Cancel") { m.sheet = nil }.keyboardShortcut(.cancelAction)

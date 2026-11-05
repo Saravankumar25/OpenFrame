@@ -7,7 +7,7 @@
 
 ## Dashboard (update every session from `npm run plan:status`)
 
-**Overall: 133 of 307 boxes (43.3%).** **Current goal** (boxes without the "Later: store publishing" tag): **132 of 224 (58.9%)**. Numbers unchanged on 2026-11-04 (the rename to Straft Studio; no box ticked). Last changed 2026-10-27 after the Mac sync with Windows.
+**Overall: 133 of 307 boxes (43.3%).** **Current goal** (boxes without the "Later: store publishing" tag): **132 of 224 (58.9%)**. Numbers unchanged on 2026-11-05 (the rename and the overnight pass; no box ticked). Last changed 2026-10-27 after the Mac sync with Windows.
 
 | # | Area | Done |
 |---|---|---|
@@ -18,7 +18,7 @@
 | 5 | Test infrastructure and quality gates | 4 of 13 |
 | 6 | Security hardening from the baseline audit | 3 of 9 |
 | 7 | Platform adapter layer for Windows and Mac | 1 of 10 |
-| 8 | AI assistant quality and hardening | 4 of 24 |
+| 8 | Straft AI quality and hardening | 4 of 24 |
 | 9 | Beat Board and Idea Vault | 8 of 9 |
 | 10 | Writing comfort | 6 of 6 |
 | 11 | Screenplay engine and file formats | 21 of 24 |
@@ -57,6 +57,34 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-11-05, Build 259: official accounts in the Welcome window, MacHTML from the installed app, push
+- **Areas and items worked:** owner's request for the eight official accounts; final steps of the overnight list.
+- **Done:** `Store/SocialLinks.swift` holds the eight addresses and marks, and the Welcome window opens them. Build 259 (`Straft-12.dmg`) made and installed. Repeat full run stopped at the owner's instruction. MacHTML rebuilt from the installed app, which also corrected 19 pages per mode that showed Straft AI as missing. `release/` added with the image, its SHA-256 and SBOM.
+- **Evidence:** [build 259](../release/evidence/mac/e2e-targeted-build-259-2026-11-05.md), [complete run on build 256](../release/evidence/mac/e2e-final-build-256-2026-11-05.md), `MacHTML/README.md`.
+- **Features moved:** none.
+- **Docs updated:** handoff, release gate, `release/README.md`, MacHTML README, third party licences, store placeholders.
+- **Decisions made or needed:** the owner decides whether the accounts also go in the Help menu.
+- **Blocked / risks:** three drag scenarios passed by hand only. `cargo deny` and `cargo audit` are not installed. AI evaluation not run after the name change.
+- **Next:** see the handoff.
+- **Checks run:** Swift 817 of 817, `straft-security`, `99-store` 7 of 7, first start 2 of 2, writing, links, governance. Rust as a whole not rerun: only one test changed since the 2982 pass.
+
+### 2026-11-05, Overnight pass on the Mac: build, parity, fixes, one clean run, MacHTML, push
+- **Areas and items worked:** the owner's overnight list, outside the plan boxes: build, old name sweep, parity with `windows/`, check every function, fixes, MacHTML, push.
+- **Done, in order of change:**
+  - Clean build from an empty `target/` and `.build`.
+  - Old name: pictures in one owner issues document cleaned. Every other hit is a `LEGACY` line, a frozen fixture, or the one sentence in ADR-0042.
+  - Migration safety from `windows/`: hard linked models, turn lock, put back on a failed path update, evidence rule for a sibling folder, damaged or newer projects keep their names, start scan time limit, notices never overwritten after a failed read, checkpoint on lock. A review added: a folder that cannot be read counts as in use, and the path update takes the database for writing from the start.
+  - App bugs found by the tests: text on the soft accent at 1.3 to 1 in dark themes, muted text and borderless buttons under 4.5 to 1, sidebar section titles, Project Home two points off a small window, the Story page under the Straft AI panel at the smallest window, Close breaking in two in the panel, Remove Straft AI refused during a finishing import, the Straft AI button opening and shutting on an accessibility press, Command+J doing nothing after the panel's own Close, Home search field without a name.
+  - Test measures corrected, with the reason in each commit: keyboard walks read the private SwiftUI proxy instead of what a screen reader gets; colours and pictures came from the app's own drawing, which leaves SwiftUI layers blank; assistant task requests picked the wrong section; timing in window fit, package restore and the New Project menu. New status `blocked` for a real mouse drag without the permission.
+  - Dead code and two unused dependencies removed; nine finished documents moved to `docs/history`; stale statements corrected.
+- **Evidence:** [final run](../release/evidence/mac/e2e-final-build-256-2026-11-05.md): 221 passed, 0 failed, 3 blocked, 9 skipped on the installed build 256; the 9 pass on the development build. Rust 2982, Swift 817 of 817, web 734 of 734, governance 90 of 90, links, writing, migrations, feature status, reachability and secrets OK. First start on a copy of real data passes and leaves the real library unchanged. [Store sandbox probe](../release/evidence/mac/store-sandbox-old-data-2026-11-04.md).
+- **Features moved:** none.
+- **Docs updated:** handoff, release gate, store readiness, `DEVELOPMENT.md`, MacHTML README, reconciliation log, document map.
+- **Decisions made or needed:** see the handoff. Not rebuilt: a team password gate. The owner's task described one; the code and the owner's decision of 2026-10-27 have none.
+- **Blocked / risks:** a first version of the old-data test reached the real library because the app database holds absolute paths: `updatedAt` in `library.json` changed and was restored from the backup; project files were compared and unchanged. The script now rewrites every stored path and compares the real library before and after. Not verified: three real mouse drags, the Dock icon and menu bar by eye (screen locked, computer use not granted), a signed store build, AI evaluation after the name change.
+- **Next:** see the handoff.
+- **Checks run:** see Evidence. `cargo deny` and `cargo audit` not run.
+
 ### 2026-11-04, Product renamed to Straft Studio
 - **Areas and items worked:** the owner's rename task, outside the plan boxes.
 - **Done:** every tracked text file and path renamed by a tested mapping. Old data carries over: app data copy, moved models, renamed library and project folders, stored paths, Mac preferences, theme id, old package formats readable, earlier migration checksums accepted. Logo: `packaging/brand/` holds the vector and a 3840 x 983 version, export logo replaced. Word manuals, design PDFs, gold outputs and hostile fixtures regenerated or repainted. MacHTML recaptured from `53d30d0b` with only the name changed. Same rename on the `windows/` tree in its own pull request.
@@ -80,7 +108,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Checks run:** no code changed; `npm run verify` not run.
 
 ### 2026-11-03, Release package finished on the Mac: rename, review fixes, installer, update check
-- **Areas and items worked:** Mac App Store package, payment and free trial, AI assistant quality; the owner's "Straft AI" naming instruction.
+- **Areas and items worked:** Mac App Store package, payment and free trial, Straft AI quality; the owner's "Straft AI" naming instruction.
 - **Done:** The product is called Straft AI on every screen, message, prompt, Settings tab and in the review notes and test cases
   (`e82646bb`, `58380df7`, `4bbf7150`). Seven findings of the file reading review fixed (`bd07d1af`). Internal build 225 built and installed from `Straft-6.dmg`.
 - **Evidence:** `cargo test --workspace` excluding the desktop crate 2861 passed, clippy clean. Swift 803 of 803 (two tests fixed: a bin check that raced and a day count that broke after a clock change). Section set on the final code 322 of 336, length 39 of 40 (`docs/release/evidence/ai-reharness/final-build/`). Final E2E on the dev build: 99-store 7/7,
@@ -96,7 +124,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Checks run:** writing, migrations, links, feature status, architecture, secrets, reachability, governance, store identity tests, typecheck: OK. `release-validate --report-only --store` fails 6 on purpose (licence agreement, migration freeze, store identity, placeholders, privacy URL, Windows engine inputs). Not run: the full regular E2E, by the owner's instruction.
 
 ### 2026-11-03, Section-scoped assistant, tuning the answers on the real model
-- **Areas and items worked:** AI assistant quality and hardening (ADR-0041): the 121 failing answers of run r6, by cause.
+- **Areas and items worked:** Straft AI quality and hardening (ADR-0041): the 121 failing answers of run r6, by cause.
 - **Done:** A required value must be asked for, on every pick and field by field; a section's topic words never open one. A row that holds the asked words, a count and a named day's scenes and notes are demanded. Answer type votes need the words that back them, and a short "and the X" inherits. Settings reads the product guide and its promise on data leaving the Mac is demanded in its words. Small copied text files keep their words on `project_file.search_text` (project migration 0021) and no file is opened for a question. Storyboards and shots with no scene carry scene numbers and numbered panels. After three passes the closest answer is kept and code adds what it left out. Day Out of Days gives the days. A "could not find" is refused when a row holds the words (rule `held_back`). Six gold lines corrected.
 - **Evidence:** `docs/release/evidence/ai-reharness/after-tuning/`, answer facts 215 of 336 to 324 of 336, length 40 of 40, pointer 59 of 59 with recall 59 of 60, false pointers 0 of 333, median 2.3 s. `cargo test -p straft-application --all-targets`.
 - **Features moved:** none
@@ -107,7 +135,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Checks run:** the tests above, `-p straft-ai-eval -p straft-ai-checks -p straft-search`, clippy with warnings as errors, writing, architecture lint, migrations, links, graphify. Not run: E2E, Swift, the older gold sets on the real model, `ecc:security-review` as an agent (the file read in `files.add` was reviewed by hand and has tests for traversal by `confine`, links, size and encoding).
 
 ### 2026-11-03, Section-scoped assistant, slice R7 and the security review
-- **Areas and items worked:** AI assistant quality and hardening (ADR-0041, slice R7 of the release package); security review fixes.
+- **Areas and items worked:** Straft AI quality and hardening (ADR-0041, slice R7 of the release package); security review fixes.
 - **Done:** One road for a question. Deleted `AskArgs.scope`, the scope kinds, the context budget, the domain table, the fetcher table with its automatic domains, the wide passages round, the retrieval router, the project map and the scope boost in search. Migrations: project 0020, app 0011. A request with no picks under `ai_eval_all_sections` reads every section through the same path. Gold cases name sections. Swift and the web shell stop sending a scope. Review fixes: spelling note escaped, gaps of empty sections, scene reference rule, contact details in tool results, superseded call sheets, picked and off days, existence pointer for viewers, session held through a request (also in the change path), tidy Using line, search results name the picks, scenes of a chosen screenplay stay. Also: a message that says something of its own no longer confirms the last answer for memory.
 - **Evidence:** `cargo test -p straft-application` (1234 lib, 209 ai, 186 platform, 251 production, 240 writing, 5 perf, 5 forced kill), `-p straft-ai-eval -p straft-ffi -p straft-search -p straft-entitlement` (180), Swift AI filter 92, web AI tests 60. Pointer bench with rules alone: precision 98.3 (59/60), recall 98.3 (59/60), false pointers 0 of 333.
 - **Features moved:** none
@@ -118,7 +146,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Checks run:** the tests above, clippy with warnings as errors, writing, architecture lint, migrations, links, web typecheck, E2E driver compiles, graphify. Not run: E2E, a real model, `security-guidance` on the new code.
 
 ### 2026-11-03, Section-scoped assistant, slices R4 to R6 and the memory gap
-- **Areas and items worked:** AI assistant quality and hardening (ADR-0041).
+- **Areas and items worked:** Straft AI quality and hardening (ADR-0041).
 - **Done:** Memory, focus and the map held to the picks; the out-of-section pointer (`modules/ai/pointer.rs`) with the Mac Add button; types describe, brief and story with their writer policy and briefing fetcher; the agent's tool list by section (`toolbox/homes.rs`); the m1_04 schema test waits for the background search rebuild.
 - **Evidence:** `crates/straft-ai-eval/tests/pointer_gold.rs` on the 395 section cases with rules alone and no model: precision 98.3, recall 96.7, false pointers 0 of 333.
 - **Features moved:** none
@@ -401,7 +429,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   scene facts, dialogue facts, character descriptions from that character's scenes, follow-ups, plain project questions
   routed to their read tool, writing kept to the asked length, clean answers with details behind "Details", a resizable
   panel. PDF: every export in the new design (samples in `release-out/pdf-samples`, not committed). UX: layout geometry
-  spec with stress text; fixes for the screenplay toolbar, Production tabs, Offline AI cards, 28 shortened labels, and
+  spec with stress text; fixes for the screenplay toolbar, Production tabs, Straft AI cards, 28 shortened labels, and
   the navigation rail styles that the first checkpoint had lost (found by the theme spec).
 - **Evidence:** Rust workspace 2,140 tests pass (`cargo test --workspace --no-fail-fast`), AI integration 111 and AI
   unit 90 after the last AI change, web 612, clippy `-D warnings` clean, fmt clean, governance 90 of 90. E2E: all 42
@@ -487,7 +515,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ### 2026-10-18 (last stretch of the endgame session), W9 closed: final installer rebuilt, gate has no Open row
 - **Areas and items worked:** Windows installer (area 20); security hardening (area 6); test infrastructure (area 5);
-  AI assistant quality (English rerun); storage; Mac handoff.
+  Straft AI quality (English rerun); storage; Mac handoff.
 - **Done:** a security review found a medium issue in the uninstaller (it removed the whole `%LOCALAPPDATA%\Straft`
   folder when the app data box was ticked). Fixed in 6f9a280: it removes only the app's own items, then the folder only
   if empty; a governance test guards it. Final installer rebuilt at 028d8b6: `Straft-Studio-0.1.0-internal-028d8b6.exe`,
@@ -515,7 +543,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ### 2026-10-17 to 2026-10-18 (endgame session), W9: installer built, release suite passed, clean-machine proof blocked
 - **Areas and items worked:** Windows installer (area 20); security hardening (area 6); test infrastructure (area 5);
-  AI assistant quality and hardening (poisoned-retrieval set); owner decisions.
+  Straft AI quality and hardening (poisoned-retrieval set); owner decisions.
 - **Done:** endgame plan and release gate; dependency upgrades to clear audit findings; SQL audit (LIKE escaping, stored
   table names); Tauri access list; installer pipeline; AI role and no-HTML tests; CET compatible binary and SHA-256
   hashing; poisoned set (60 cases, 12 languages); W10 pilot kit and freeze steps; webdriverio kept on 9. Internal
@@ -541,7 +569,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   Writing, links, plan-status and feature-status checks: see the final report of this session.
 
 ### 2026-10-17 (day), W6 rounds 2 and 3: English bar met
-- **Areas and items worked:** AI assistant quality and hardening (W6 recipes, rename, harness checks).
+- **Areas and items worked:** Straft AI quality and hardening (W6 recipes, rename, harness checks).
 - **Done:** round 2 and round 3 recipes; a rename of a character written only in the script now renames its cues; eight
   ai-eval end-state checks that could never pass fixed (requests and expected results unchanged). Commits c51e7c8 to the
   commit of this entry on `windows/w8-download`.
@@ -553,7 +581,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   poisoned-retrieval corpus, bigger-job recipes); merge `windows/w8-download` into `main`; W9.
 
 ### 2026-10-16 to 2026-10-17 (overnight session), W4 to W8 to release proof; W5 measured; W6 first round
-- **Areas and items worked:** AI assistant quality and hardening (download flow, non-English requests, hardware
+- **Areas and items worked:** Straft AI quality and hardening (download flow, non-English requests, hardware
   benchmark, harness); test infrastructure (release-executable suite); owner decisions (model set, hardware, licensing,
   worktree clean-up, tooling).
 - **Done:** models from Hugging Face at pinned commits (ADR-0032) with manual import; multilingual E5 small as the third
@@ -564,7 +592,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Evidence:** gated release executable, 39 spec files, 227 checks, 0 failures
   ([w4](../release/evidence/w4/README.md)); W5 measurements and baseline ([w5](../release/evidence/w5/README.md));
   W6 round 1 ([w6](../release/evidence/w6/README.md)); Rust workspace 60 test binaries and vitest 596 pass.
-- **Features moved:** Offline AI engine in every package, models downloaded after install: Verified, proof 3;
+- **Features moved:** Straft AI engine in every package, models downloaded after install: Verified, proof 3;
   hardware benchmark: Specified to Built; 63 spec-proven rows from proof 2 to proof 3; two bundled-era rows to Removed.
 - **Docs updated:** ADR-0026 (superseded parts), ADR-0029 (note 7), ADR-0032 (decision 8, model set), owner decisions,
   threat model T16, privacy policy draft, release migration, QA strategy, Microsoft Store guide, four specifications,

@@ -1,10 +1,10 @@
-# ADR-0026: Offline AI downloaded after install, on the user's click
+# ADR-0026: Straft AI downloaded after install, on the user's click
 
 - **Status:** Accepted 2026-10-15 (owner, in chat: "revert back to download after install"). Permanent and cross-platform.
 - **Date:** 2026-10-15
 - **Supersedes:** [ADR-0025](../history/adr/ADR-0025-offline-ai-bundled-in-every-package.md) in full.
 - **Reinstates** the download clauses that ADR-0025 superseded: [ADR-0006](ADR-0006-local-ai-sidecar.md) decision 2
-  (delivery by **Download Offline AI** with a signed manifest), [ADR-0013](ADR-0013-single-local-model-hybrid-rag-agent.md)
+  (delivery by **Download Straft AI** with a signed manifest), [ADR-0013](ADR-0013-single-local-model-hybrid-rag-agent.md)
   decision 2 ("One download"), and [ADR-0020](ADR-0020-ai-runtime-packaging-per-channel.md) decisions 1 (weights download
   part), 3 and 5. Their text stays in place with a pointer; read the rules below, which are the current wording.
 - **Keeps:** ADR-0020 decision 1 for the runtime (the `llama.cpp` runtime and OpenMP runtime ship inside every release
@@ -16,7 +16,7 @@
 
 ## Context
 
-ADR-0025 (2026-10-08) bundled the whole offline AI, about 1.1 GB, into every package so that AI worked on the first
+ADR-0025 (2026-10-08) bundled the whole Straft AI, about 1.1 GB, into every package so that AI worked on the first
 launch without a network connection. The owner now wants the installer to stay small. The application file should be
 about 20 to 30 MB, and users who want AI download it once, after installing, from inside the app.
 
@@ -64,7 +64,7 @@ and the store listings and privacy policy must describe the one network use.
 
 - **Installer size.** The package drops from about 1.1 GB to about 20 to 30 MB. The 20 to 30 MB is an estimate. The last
   measured release executable was 18.2 MB (2026-09-30); the real package size is measured and recorded when first built.
-- **First AI use needs internet once.** Offline AI is available after that download. The offline claim in the store
+- **First AI use needs internet once.** Straft AI is available after that download. The offline claim in the store
   listings and manual becomes "AI works offline after its one-time download".
 - **Network use is disclosed.** The download is a user-clicked network use. The `internetClient` capability on the
   Microsoft Store package is justified by this download and by links and update checks. The privacy policy names the
@@ -124,6 +124,6 @@ How the code meets the decisions above. None of this changes a decision; each po
 | Alternative | Reason |
 |---|---|
 | Keep the bundled AI (ADR-0025) | Makes the installer about 1.1 GB. The owner chose a small installer. |
-| Split into an app file plus a separate offline AI file on the same site | Still two files to fetch and verify, and it keeps the offline-first first-run promise only if the user downloads both. Not chosen by the owner. |
+| Split into an app file plus a separate Straft AI file on the same site | Still two files to fetch and verify, and it keeps the offline-first first-run promise only if the user downloads both. Not chosen by the owner. |
 | Download missing parts silently as a repair | Silent network use breaks the security standard. The user clicks, and reinstalling is the repair for a damaged install. |
 | Download the runtime too | Launching a downloaded executable is the reviewer-sensitive part of the store policy (ADR-0020). The runtime stays in the package. |

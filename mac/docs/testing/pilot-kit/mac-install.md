@@ -50,7 +50,7 @@ Settings > Privacy & Security > Open Anyway do not help for an app that macOS ca
 1. The app opens without a password.
 2. Create a project and start writing. Everything is saved on this Mac as you type.
 
-## 6. The offline AI
+## 6. Straft AI
 
 The AI is not in the disk image. It is downloaded inside the app, only when you ask for it:
 

@@ -18,7 +18,7 @@
 
 **Purpose:** Define the exact functional behavior of Straft Studio so product, UX, QA, and engineering teams can implement the product without needing to reinterpret the product vision for every feature.
 
-**Functional scope:** Project creation, Global and Project Idea Vaults, Project Home, Beat Board, Acts, Sequences, Beats, Scene Cards, Characters, Story Timeline, Screenplay Workspace, screenplay import/export, draft/version history, comparison, review rounds, comments, script lock and post-lock revisions, episodic organization, script breakdown, automatic breakdown suggestions with confirmation, production catalog, locations, cast/crew, moodboards, storyboards, shot lists, stripboard/scheduling, scheduling assistance, call sheets, project files, global search, lightweight budget snapshot, AI assistant, local/offline operation, portable exchange packages, local-network collaboration, permissions, undo/redo, deletion/recovery, saving, portability, backups, activity history, reports, sides, daily production view, templates, exports, printing, empty states, errors, and end-to-end source-of-truth rules.
+**Functional scope:** Project creation, Global and Project Idea Vaults, Project Home, Beat Board, Acts, Sequences, Beats, Scene Cards, Characters, Story Timeline, Screenplay Workspace, screenplay import/export, draft/version history, comparison, review rounds, comments, script lock and post-lock revisions, episodic organization, script breakdown, automatic breakdown suggestions with confirmation, production catalog, locations, cast/crew, moodboards, storyboards, shot lists, stripboard/scheduling, scheduling assistance, call sheets, project files, global search, lightweight budget snapshot, Straft AI, local/offline operation, portable exchange packages, local-network collaboration, permissions, undo/redo, deletion/recovery, saving, portability, backups, activity history, reports, sides, daily production view, templates, exports, printing, empty states, errors, and end-to-end source-of-truth rules.
 
 **Explicit exclusions:** enterprise ERP, payroll, union accounting, full accounting, advanced studio resource planning, VFX production tracking, post-production asset management, distribution CRM, festival submission suite, legal-management suite, talent marketplace, equipment marketplace, and a mandatory cloud-sync platform.
 
@@ -1566,7 +1566,7 @@ Click result → open the owning page and focus the matching item when possible.
 Normal text detection is sufficient for the core product.
 
 
-# 42. AI Assistant
+# 42. Straft AI
 
 ### 42.1 Purpose
 
@@ -4465,9 +4465,9 @@ A team should not mark a module “done” if it only demonstrates the happy-pat
 |90|Merge Safety|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |91|Page-Specific Exchange Packages|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |92|Why Exchange Packages Are Important|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
-|93|AI Assistant|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
-|94|AI Assistant — Allowed Capabilities|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
-|95|AI Assistant — Not Allowed by Default|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
+|93|Straft AI|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
+|94|Straft AI — Allowed Capabilities|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
+|95|Straft AI — Not Allowed by Default|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |96|AI Scope Selector|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |97|AI Action Approval|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |98|Global Project Search|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
@@ -4654,7 +4654,7 @@ This appendix does not prescribe code architecture. It defines a sensible implem
 28. Exchange packages.
 29. Local network session.
 30. Conflict/reconciliation.
-31. AI assistant.
+31. Straft AI.
 32. Advanced import/export hardening.
 
 This ordering is functional: it builds the core source objects before the downstream features that depend on them.

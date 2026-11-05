@@ -11,10 +11,10 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use straft_domain::{Actor, AppError, AppResult, now_ms};
-use straft_project_format::{self as pf, ProjectLayout};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppError, AppResult, now_ms};
+use straft_project_format::{self as pf, ProjectLayout};
 use ts_rs::TS;
 
 use super::relocate::{
@@ -57,9 +57,7 @@ impl LibrarySetup {
     pub fn for_current_user(app_data_dir: &Path, pointer_dir: Option<&Path>) -> Option<Self> {
         use straft_platform::dirs;
         let home = dirs::home_dir()?;
-        let pointer_file = pointer_dir
-            .unwrap_or(app_data_dir)
-            .join(POINTER_FILE);
+        let pointer_file = pointer_dir.unwrap_or(app_data_dir).join(POINTER_FILE);
         let mut documents: Vec<PathBuf> = dirs::documents_dir().into_iter().collect();
         documents.push(home.join("Documents"));
         documents.extend(dirs::onedrive_documents_dir(&home));
@@ -223,8 +221,7 @@ pub(crate) fn remember_root(core: &AppCore, root: Option<&Path>) -> AppResult<()
 fn usable_root(raw: &str) -> Option<PathBuf> {
     let p = PathBuf::from(raw);
     (p.is_absolute()
-        && straft_security::check_user_path(&p, straft_security::NetworkPaths::Refuse)
-            .is_ok())
+        && straft_security::check_user_path(&p, straft_security::NetworkPaths::Refuse).is_ok())
     .then_some(p)
 }
 
@@ -416,9 +413,11 @@ pub(super) fn register(r: &mut Registry) {
         .hidden(h::USER_PATH),
     );
     r.query("library.inspect", inspect).meta(
-        M::app_query("What a folder holds: a Straft Studio library, a project, a vault, or nothing.")
-            .fs(Fs::ProjectStorage)
-            .hidden(h::USER_PATH),
+        M::app_query(
+            "What a folder holds: a Straft Studio library, a project, a vault, or nothing.",
+        )
+        .fs(Fs::ProjectStorage)
+        .hidden(h::USER_PATH),
     );
     r.command("library.use_default", use_default).meta(
         M::app_command("Set up the Straft Studio library in the suggested folder.")

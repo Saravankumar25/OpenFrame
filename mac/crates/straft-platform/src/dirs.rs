@@ -90,7 +90,7 @@ pub fn onedrive_documents_dir(home: &std::path::Path) -> Option<PathBuf> {
 }
 
 /// The read-only folder holding the files installed with the app (the Tauri bundle resources),
-/// for example the bundled Offline AI (ADR-0025).
+/// for example the bundled Straft AI (ADR-0025).
 ///
 /// - Windows (installer, MSIX package and development builds): the folder of the executable. MSIX
 ///   installs it under `WindowsApps`, which is read-only for the app.
@@ -135,9 +135,8 @@ mod tests {
     #[cfg(target_os = "macos")]
     #[test]
     fn mac_app_bundle_resources_are_in_contents_resources() {
-        let exe = std::path::Path::new(
-            "/Applications/Straft Studio.app/Contents/MacOS/straft-desktop",
-        );
+        let exe =
+            std::path::Path::new("/Applications/Straft Studio.app/Contents/MacOS/straft-desktop");
         assert_eq!(
             resources_dir_for(exe).unwrap(),
             std::path::Path::new("/Applications/Straft Studio.app/Contents/Resources")

@@ -124,7 +124,7 @@ struct HomeView: View {
                     } else if let failure = home.failure, home.recents.isEmpty {
                         VStack(spacing: PageSpacing.small) {
                             Text("Your project list couldn't be loaded.").font(.headline)
-                            Text("Your projects are safe on this computer. \(failure.message)").foregroundStyle(.secondary).multilineTextAlignment(.center)
+                            Text("Your projects are safe on this computer. \(failure.message)").foregroundStyle(.ofMuted).multilineTextAlignment(.center)
                             Button("Try Again") { reload() }
                         }
                         .frame(maxWidth: .infinity)
@@ -151,6 +151,7 @@ struct HomeView: View {
                     BrandLogo(markSize: 22, wordSize: 15)
                         .accessibilityLabel("Straft Studio")
                 }
+                .plainToolbarBackground()
                 ToolbarItemGroup(placement: .primaryAction) {
                     Button { showVault = true } label: { Label("Global Idea Vault", systemImage: "lightbulb").labelStyle(.titleAndIcon) }
                         .help("Your ideas outside any project")
@@ -167,6 +168,7 @@ struct HomeView: View {
                     .accessibilityLabel("Your name: \(profileName). Change")
                     .accessibilityIdentifier("home-your-name")
                 }
+                .plainToolbarBackground()
             }
             .navigationTitle("")
         }
@@ -221,7 +223,7 @@ struct HomeView: View {
             .help(ShortcutStore.shared.tooltipWords("Open Project", "home.open_project"))
             .accessibilityIdentifier("home-open-project")
         Button { InterchangePresenter.shared.present(.openProject) } label: { Label("Restore Backup or Package\u{2026}", systemImage: "archivebox").labelStyle(.titleAndIcon) }
-            .buttonStyle(.borderless)
+            .buttonStyle(.ofBorderless)
             .foregroundStyle(.primary)
             .help("Restore a backup or open a project package")
             .accessibilityIdentifier("home-restore-package")
@@ -253,7 +255,7 @@ struct HomeView: View {
             Button { home.showArchived = true } label: {
                 Label("Open Archived\(home.archivedCount > 0 ? " (\(home.archivedCount))" : "")", systemImage: "archivebox").labelStyle(.titleAndIcon)
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.ofBorderless)
             .help("Archived projects are not deleted. Open them here to restore one.")
             .accessibilityIdentifier("home-open-archived")
         )
@@ -321,7 +323,7 @@ struct HomeView: View {
             Text("Create your first project.")
                 .font(.title3.weight(.semibold))
             Text("A project holds your ideas, beat board, screenplay and production plan for one film. Everything is stored on this computer.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.ofMuted)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 12) {
@@ -346,7 +348,7 @@ struct HomeView: View {
     private var noMatches: some View {
         VStack(spacing: 6) {
             Text("No projects match \u{201C}\(home.query)\u{201D}.").font(.headline)
-            Text("Search looks at the title, the type and the status.").foregroundStyle(.secondary)
+            Text("Search looks at the title, the type and the status.").foregroundStyle(.ofMuted)
         }
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)
@@ -475,7 +477,7 @@ struct ProjectCard: View {
                         if project.available {
                             Text("Last modified \(Formatting.relative(ms: project.modifiedAt ?? project.lastOpenedAt))")
                                 .font(.caption)
-                                .foregroundStyle(.tertiary)
+                                .foregroundStyle(.ofMuted)
                         } else {
                             Text("Folder not found. Reconnect the drive or locate the project.")
                                 .font(.caption)
@@ -505,7 +507,7 @@ struct ProjectCard: View {
                 Label("Actions", systemImage: "ellipsis").labelStyle(.titleAndIcon).font(.caption.weight(.medium))
             }
             .menuStyle(.button)
-            .buttonStyle(.borderless)
+            .buttonStyle(.ofBorderless)
             .menuIndicator(.hidden)
             .controlSize(.small)
             .fixedSize()
@@ -702,7 +704,7 @@ struct DataLocationNote: View {
                     .font(.subheadline.weight(.semibold))
                 Text("Projects are kept in \(info.projectsDir). Back up the Straft Studio folder in Documents to keep a copy of everything.")
                     .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.ofMuted)
                     .multilineTextAlignment(.center)
                     .textSelection(.enabled)
                     .fixedSize(horizontal: false, vertical: true)
@@ -726,6 +728,9 @@ struct ProjectSearchField: NSViewRepresentable {
         let f = NSSearchField()
         f.placeholderString = "Search projects"
         f.setAccessibilityLabel("Search projects")
+        // The field's cell is the element the accessibility tree shows.
+        f.cell?.setAccessibilityLabel("Search projects")
+        f.cell?.setAccessibilityIdentifier("home-search")
         f.setAccessibilityIdentifier("home-search")
         f.delegate = context.coordinator
         f.sendsSearchStringImmediately = true

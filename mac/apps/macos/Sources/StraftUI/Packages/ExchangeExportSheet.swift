@@ -135,7 +135,7 @@ struct ExchangeExportSheet: View {
                 .font(.callout)
             Text(s.counts.map { "\(Int($0.count)) \($0.label.lowercased())" }.joined(separator: " \u{00B7} ")).font(.callout)
             Label("Private notes: excluded", systemImage: "lock").font(.callout.weight(.semibold))
-            Text(s.explanation).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            Text(s.explanation).font(.caption).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true)
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)

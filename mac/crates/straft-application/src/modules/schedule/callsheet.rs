@@ -21,11 +21,11 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::rows::{int, text, update_fields};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::rows::{int, text, update_fields};
 use ts_rs::TS;
 
 use super::board::{Board, effective_status, load_days, load_schedule};

@@ -96,7 +96,7 @@ struct IXSheetFrame<Content: View, Footer: View, Leading: View>: View {
                 Text(title).font(.title3.weight(.semibold)).multilineTextAlignment(.center).accessibilityAddTraits(.isHeader)
                     .accessibilityIdentifier("\(idPrefix)-title")
                 if let sub {
-                    Text(sub).font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+                    Text(sub).font(.callout).foregroundStyle(.ofMuted).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
                 }
             }
             .frame(maxWidth: .infinity)
@@ -137,9 +137,9 @@ struct IXFact: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(label).font(.caption).foregroundStyle(.secondary)
+            Text(label).font(.caption).foregroundStyle(.ofMuted)
             Text(value).font(.body.weight(.semibold)).lineLimit(2).help(value)
-            if let detail { Text(detail).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
+            if let detail { Text(detail).font(.caption).foregroundStyle(.ofMuted).lineLimit(1) }
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -160,7 +160,7 @@ struct IXKeyValueTable: View {
         VStack(spacing: 0) {
             ForEach(Array(rows.enumerated()), id: \.offset) { i, row in
                 HStack(alignment: .firstTextBaseline) {
-                    Text(row.label).foregroundStyle(.secondary).frame(width: 170, alignment: .leading)
+                    Text(row.label).foregroundStyle(.ofMuted).frame(width: 170, alignment: .leading)
                     Text(row.value).textSelection(.enabled).frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .font(.callout)

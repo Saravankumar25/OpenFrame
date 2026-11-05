@@ -95,9 +95,9 @@ struct CatalogView: View {
             guard !Task.isCancelled else { return }
             await model.reload()
         }
-        .inspector(isPresented: Binding(get: { model.selected != nil }, set: { if !$0 { model.selectedId = nil } })) {
+        .sidePane("catalog", isPresented: model.selected != nil, minimum: 320, ideal: 380, maximum: 520) {
             if let item = model.selected {
-                CatalogInspector(model: model, item: item).inspectorColumnWidth(min: 320, ideal: 380, max: 520)
+                CatalogInspector(model: model, item: item)
             }
         }
         .themedSheet(item: $model.sheet) { CatalogSheetHost(model: model, sheet: $0) }
@@ -127,7 +127,7 @@ struct CatalogView: View {
             Menu(Self.more.contains { $0 == model.filter } ? "\(model.filter?.rawValue ?? "") \u{25BE}" : "More \u{25BE}") {
                 ForEach(Self.more, id: \.self) { c in Button(c.rawValue) { model.filter = c } }
             }
-            .menuStyle(.borderlessButton)
+            .borderlessAccentMenu()
             .fixedSize()
             .accessibilityLabel("More categories")
             Toggle("Show archived", isOn: $model.showArchived).toggleStyle(.checkbox)
@@ -149,7 +149,7 @@ struct CatalogView: View {
             BDBanner(tone: .err, content: { Text(f.message) }, actions: { Button("Try Again") { Task { await model.reload() } } })
         } else if model.items.isEmpty {
             if model.isFiltered {
-                Text("No catalog items match.").foregroundStyle(.secondary).padding(12)
+                Text("No catalog items match.").foregroundStyle(.ofMuted).padding(12)
             } else {
                 ContentUnavailableView {
                     Label("The catalog is empty.", systemImage: "shippingbox")
@@ -227,7 +227,7 @@ struct CatalogInspector: View {
             imageField
             aliasField
             BDField(label: "Used in scenes") { SceneChips(scenes: item.usedIn) }
-            Text("No financial or procurement fields. This is a production directory.").font(.caption).foregroundStyle(.secondary)
+            Text("No financial or procurement fields. This is a production directory.").font(.caption).foregroundStyle(.ofMuted)
         } footer: {
             if canEdit { Button("Delete") { model.sheet = .delete(item) }.accessibilityIdentifier("catalog-delete") }
             Spacer()
@@ -253,7 +253,7 @@ struct CatalogInspector: View {
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     if canEdit {
                         Button { Task { await model.setImage(item.id, path: nil) } } label: { Label("Remove", systemImage: "xmark.circle.fill") }
-                            .buttonStyle(.borderless).padding(6)
+                            .buttonStyle(.ofBorderless).padding(6)
                             .accessibilityLabel("Remove image")
                     }
                 }
@@ -264,7 +264,7 @@ struct CatalogInspector: View {
                 }
                 .controlSize(.small)
             } else {
-                Text("No image").font(.callout).foregroundStyle(.secondary)
+                Text("No image").font(.callout).foregroundStyle(.ofMuted)
             }
         }
     }
@@ -273,7 +273,7 @@ struct CatalogInspector: View {
         BDField(label: "Also known as", hint: "Other names used in the script. They help match this item in new scenes.") {
             VStack(alignment: .leading, spacing: 6) {
                 if item.aliases.isEmpty {
-                    Text("None").font(.caption).foregroundStyle(.secondary)
+                    Text("None").font(.caption).foregroundStyle(.ofMuted)
                 } else {
                     BDFlowLayout(spacing: 4) {
                         ForEach(item.aliases, id: \.id) { a in
@@ -281,7 +281,7 @@ struct CatalogInspector: View {
                                 BDChip(text: a.alias)
                                 if canEdit {
                                     Button { Task { await model.removeAlias(a.id) } } label: { Label("Remove", systemImage: "xmark.circle") }
-                                        .buttonStyle(.borderless)
+                                        .buttonStyle(.ofBorderless)
                                         .accessibilityLabel("Remove name \(a.alias)")
                                 }
                             }
@@ -323,7 +323,7 @@ private struct CatalogSheetHost: View {
                            onConfirm: { Task { await model.delete(i) } }, onCancel: { model.sheet = nil }) {
                 VStack(alignment: .leading, spacing: 8) {
                     ReferencesNote(kind: .catalogItem, id: i.id)
-                    if !i.usedIn.isEmpty { Text("Archiving is usually the better choice.").font(.callout).foregroundStyle(.secondary) }
+                    if !i.usedIn.isEmpty { Text("Archiving is usually the better choice.").font(.callout).foregroundStyle(.ofMuted) }
                 }
             }
         }

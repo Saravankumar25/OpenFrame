@@ -12,10 +12,10 @@ use std::path::{Path, PathBuf};
 
 use image::imageops::FilterType;
 use image::{DynamicImage, ExtendedColorType, GenericImageView, ImageFormat};
-use straft_domain::ids::is_valid_id;
-use straft_domain::{Actor, AppError, AppResult, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::ids::is_valid_id;
+use straft_domain::{Actor, AppError, AppResult, now_ms};
 use ts_rs::TS;
 
 use super::project::{RecentProject, recent_entry, recent_list_changed, require_local};

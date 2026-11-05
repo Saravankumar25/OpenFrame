@@ -8,11 +8,11 @@
 use std::collections::HashMap;
 use std::sync::{Arc, OnceLock};
 
-use straft_domain::{Actor, AppError, AppResult, Capability};
 use rusqlite::Connection;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use serde_json::Value;
+use straft_domain::{Actor, AppError, AppResult, Capability};
 
 use crate::core::AppCore;
 use crate::store::{DeletedItemRow, Tx};
@@ -134,7 +134,8 @@ pub struct OperationMetadata {
 /// Why an operation is not offered to the assistant (coverage matrix, spec §49.4).
 pub mod hidden {
     pub const HUMAN_APPROVAL: &str = "Human-only approval boundary: accepting, rejecting or re-checking a Change Set is a user action in the review card (spec §7, §40).";
-    pub const AI_SELF: &str = "Straft AI's own entry point and conversation history; a tool calling it would recurse.";
+    pub const AI_SELF: &str =
+        "Straft AI's own entry point and conversation history; a tool calling it would recurse.";
     pub const AI_RUNTIME: &str = "Straft AI status and engine control belong to the user in Settings, not to Straft AI itself.";
     pub const APP_LIFECYCLE: &str = "Application-level project lifecycle (create, open, close, locate, duplicate, archive or delete projects on disk, recent-project list); Straft AI works inside the one open project.";
     pub const USER_PATH: &str = "Reads or writes a file-system location the user picks in a file dialog; Straft AI never chooses or touches file-system paths (spec §3).";
@@ -142,7 +143,6 @@ pub mod hidden {
     pub const VIEW_STATE: &str = "Per-user view state (collapsed rows, remembered positions, current episode); not project content.";
     pub const FREE_WRITING: &str = "The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so no tool reads or changes it. Its text reaches Straft AI only when the person picks the Story Page section for that question (ADR-0041).";
     pub const SESSION_CONTROL: &str = "Immediate session control (undo/redo, save, cancel a running task, display name) stays a direct user action; an applied Change Set is itself one undo step.";
-    pub const STANDALONE_PAGE: &str = "The Story page is a free page kept apart from the rest of the project (owner request 2026-10-20): nothing links to it and no tool reads or edits it. Its text reaches Straft AI only when the person picks the Story Page section for that question (ADR-0041).";
     pub const MAINTENANCE: &str = "Internal maintenance with no user-visible project change.";
     pub const PACKAGE_REVIEW: &str = "Exchange and review packages bring other people's changes in from package files; opening, reviewing and applying them stays a human workflow.";
     pub const CROSS_PROJECT: &str = "Crosses the project boundary (Global Idea Vault or another project); no tool crosses it. The Global Idea Vault reaches Straft AI only when the person picks its section for that question (ADR-0041).";
@@ -151,7 +151,8 @@ pub mod hidden {
     pub const EDITOR_PRIMITIVE: &str = "Keystroke-level screenplay editor primitive (batched typing, element moves/splits); Straft AI proposes scene-level changes instead.";
     pub const LOCK_OVERRIDE: &str =
         "Owner-only override of a lock or finalization; it stays a deliberate human action.";
-    pub const ASSET_PATH: &str = "Returns local file paths of managed media; Straft AI never receives file-system paths.";
+    pub const ASSET_PATH: &str =
+        "Returns local file paths of managed media; Straft AI never receives file-system paths.";
     pub const PRIVATE_BOUNDARY: &str = "Would move content across the private/shared boundary; Straft AI only reads private notes of their owner.";
     pub const LAYOUT: &str = "Manual visual arrangement (drag position, size, stacking order) with no content meaning; the user arranges directly.";
     pub const MEDIA_INPUT: &str = "Adds media the user supplies (picked image files or pasted image data); Straft AI cannot supply media.";

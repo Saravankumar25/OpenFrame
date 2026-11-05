@@ -17,11 +17,11 @@
 
 use std::collections::{BTreeMap, HashMap};
 
-use straft_domain::{AppError, AppResult};
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{Connection, OptionalExtension, params_from_iter};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use straft_domain::{AppError, AppResult};
 
 /// Net change to one row within an undo entry. `old == None` means the row did
 /// not exist before; `new == None` means it does not exist after.

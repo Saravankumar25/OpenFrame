@@ -37,12 +37,6 @@ fileprivate extension Element {
 
 fileprivate extension UI {
     /// The project window at a width where the whole screenplay toolbar shows.
-    func widenWindow() {
-        guard let w = NSApp.windows.first(where: { $0.isVisible && $0.canBecomeMain }), let screen = w.screen ?? NSScreen.main else { return }
-        let vf = screen.visibleFrame
-        let target = NSRect(x: vf.minX + 20, y: vf.maxY - min(860, vf.height - 20) - 10, width: min(1440, vf.width - 40), height: min(860, vf.height - 20))
-        if w.frame != target { w.setFrame(target, display: true) }
-    }
 
     /// Types in the Search projects field of Application Home. The toolbar search field has no
     /// accessibility label, so it is found by its placeholder text.
@@ -131,7 +125,8 @@ fileprivate extension UI {
                 await idle(0.1)
             }
             guard let item else {
-                _ = try? await escapeMenu()
+                // Escape with no menu open would go to the sheet under it and close that.
+                if !openMenuItems(button).isEmpty { _ = try? await escapeMenu() }
                 throw DriverError("no menu item \(want) in \(items.map(name))")
             }
             guard item.isEnabled else { _ = try? await escapeMenu(); throw DriverError("menu item is disabled: \(want)") }
@@ -356,11 +351,6 @@ fileprivate extension UI {
 
     func waitHomeCards(_ count: Int) async throws {
         try await waitUntil("\(count) project cards, now \(homeCards())") { homeCards().count == count }
-    }
-
-    /// Refresh Home: Global Idea Vault and back (the list is read again from the core).
-    func refreshHome() async throws {
-        try await waitHome()
     }
 
     func windowTitle() -> String { (NSApp.keyWindow ?? windows.first)?.title ?? "" }
@@ -597,11 +587,15 @@ fileprivate extension UI {
     /// Text on the main window whose contrast against the colour behind it is under 4.5 to 1 (3 to 1 for large text).
     nonisolated(unsafe) static var problemShots = 0
 
-    func readabilityProblems(screen: String) -> [String] {
+    func readabilityProblems(screen: String, keepPicture: Bool = true) -> [String] {
         guard let w = windows.first(where: { !$0.title.contains("Settings") && !$0.title.hasPrefix("Appearance") && $0.frame.width > 400 }),
               let view = w.contentView?.superview ?? w.contentView,
-              let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return ["no window to read"] }
-        view.cacheDisplay(in: view.bounds, to: rep)
+              // The window server's own picture: drawing the views ourselves leaves the materials and
+              // the layer-backed SwiftUI content blank, and the colours read from that are not real.
+              w.windowNumber > 0,
+              let shot = CGWindowListCreateImage(.null, .optionIncludingWindow, CGWindowID(w.windowNumber), [.boundsIgnoreFraming, .bestResolution]),
+              shot.width > 10 else { return ["no window to read"] }
+        let rep = NSBitmapImageRep(cgImage: shot)
         // One sRGB copy of the bitmap as plain bytes: reading each pixel through NSColor was the slow part of this walk.
         let pw = rep.pixelsWide, ph = rep.pixelsHigh
         var bytes = [UInt8](repeating: 0, count: pw * ph * 4)
@@ -630,7 +624,16 @@ fileprivate extension UI {
         }
         let rootEl = Element(obj: w)
         if rootEl.children.isEmpty, let cv = w.contentView { walkOwn(Element(obj: cv), 0) } else { walkOwn(rootEl, 0) }
-        for e in own where roles.contains(e.role) && !e.text.isEmpty && !e.identifier.hasPrefix("screenplay-editor") && !e.identifier.hasPrefix("theme-card") {
+        // A control that is off need not meet the ratio (WCAG 1.4.3 leaves inactive controls out).
+        // macOS dims the controls of a window that is not the active one, and an inactive control need not
+        // meet the ratio either. The walk asks for the window to be active; a locked screen or another app
+        // in front keeps it from that, and then only plain text is read (the run's log says so).
+        let activeWindow = w.isKeyWindow && NSApp.isActive
+        let plainText: Set<String> = ["AXStaticText", "AXHeading", "AXTextField"]
+        for e in own where roles.contains(e.role) && (activeWindow || plainText.contains(e.role)) && e.isEnabled && !e.text.isEmpty && !e.identifier.hasPrefix("screenplay-editor") && !e.identifier.hasPrefix("theme-card") {
+            // The toolbar search field draws its own hint in the system's placeholder grey; the app has no say.
+            let inSearchField = String(describing: Swift.type(of: e.obj)).contains("Search") || e.subrole.contains("Search")
+            if inSearchField, e.role == "AXButton" || e.value.isEmpty { continue }
             let f = e.frame
             guard f.width > 6, f.height > 6, f.width < 900, f.minX.isFinite, f.minY.isFinite, f.maxX.isFinite, f.maxY.isFinite else { continue }
             // Only text the person can see on this window: the Settings window and sheets lie over it.
@@ -670,7 +673,7 @@ fileprivate extension UI {
             let large = f.height >= 24
             if best < (large ? 3.0 : 4.5) { out.append("\"\(e.text.prefix(30))\" \(String(format: "%.2f", best))") }
         }
-        if !out.isEmpty, UI.problemShots < 6, let png = rep.representation(using: .png, properties: [:]) {
+        if keepPicture, !out.isEmpty, UI.problemShots < 6, let png = rep.representation(using: .png, properties: [:]) {
             UI.problemShots += 1
             try? png.write(to: artifacts.appendingPathComponent("hard-to-read-\(screen.replacingOccurrences(of: " ", with: "-"))-\(Int(Date().timeIntervalSince1970) % 100000).png"))
         }
@@ -1336,12 +1339,17 @@ extension Scenarios {
             }
             let desc = ui.responderDescription(r)
             if let v = r as? NSView, v.isHiddenOrHasHiddenAncestor { findings.append("press \(i): the focused view is hidden: \(desc)") }
-            if desc.name.isEmpty { findings.append("press \(i): the focused element has no name: \(desc.text)") }
+            // SwiftUI puts a private proxy view in the key view loop, so the name is read where a
+            // screen reader reads it: the element the accessibility system reports as focused.
+            let seenByReader = ui.a11yFocused()
+            let name = seenByReader.map(ui.a11yFocusName) ?? desc.text
+            if name.hasSuffix("\"\"") || (seenByReader == nil && desc.name.isEmpty) { findings.append("press \(i): the focused element has no name: \(name)") }
+            if let f = seenByReader?.frame, !w.frame.intersects(f) { findings.append("press \(i): the focused element is outside the window: \(name)") }
             if !desc.ring { findings.append("press \(i): no focus mark on \(desc.text)") }
-            same = desc.text == last ? same + 1 : 0
-            if same >= 3 { findings.append("press \(i): focus is stuck on \(desc.text)"); break }
-            last = desc.text
-            if !seen.insert(desc.text).inserted && seen.count > 3 && i > 12 { break }
+            same = name == last ? same + 1 : 0
+            if same >= 3 { findings.append("press \(i): focus is stuck on \(name)"); break }
+            last = name
+            if !seen.insert(name).inserted && seen.count > 3 && i > 12 { break }
         }
         try ui.expect(findings.isEmpty, "keyboard findings in \(workspace): \(findings.prefix(8))")
     }
@@ -2584,6 +2592,7 @@ extension Scenarios {
             try await ui.closeProject()
             try await ui.openSettings("Appearance")
             var checked = 0
+            var dimmedShots = 0
             var problems: [String] = []
             for theme in builtInThemes {
                 for mode in ["Light", "Dark"] {
@@ -2592,16 +2601,27 @@ extension Scenarios {
                     try ui.expect(ui.themeCardSelected(theme.id) && ui.modeSelected(mode), "the appearance is \(theme.name), \(mode)")
                     for screen in themeScreens {
                         try await ui.showThemeScreen(screen)
+                        // The window a person reads is the active one; macOS dims the toolbar of any other.
+                        await ui.bringAppToFront()
+                        let projectWindow = ui.windows.first { !$0.title.contains("Settings") && !$0.title.hasPrefix("Appearance") && $0.frame.width > 400 }
+                        projectWindow?.makeKeyAndOrderFront(nil)
                         await ui.idle(0.5)
+                        if projectWindow?.isKeyWindow != true || !NSApp.isActive { dimmedShots += 1 }
                         checked += 1
-                        let found = ui.readabilityProblems(screen: screen)
-                        let known = theme.id == "straft-default" && mode == "Light"
-                        if !found.isEmpty && !known { problems.append("\(theme.name) \(mode) \(screen): \(found.prefix(3).joined(separator: "; "))") }
+                        var found = ui.readabilityProblems(screen: screen, keepPicture: false)
+                        // Only what stays: a theme change or a window that just took the keyboard redraws for a moment.
+                        if !found.isEmpty {
+                            await ui.idle(1.5)
+                            found = ui.readabilityProblems(screen: screen)
+                        }
+                        if !found.isEmpty { problems.append("\(theme.name) \(mode) \(screen): \(found.prefix(3).joined(separator: "; "))") }
                     }
                     try await ui.closeProject()
                 }
             }
             try ui.expect(checked == 16 * 2 * themeScreens.count, "480 screens were checked, \(checked) were")
+            ui.log("screens read with the window not active, controls left out: \(dimmedShots) of \(checked)")
+            try? "\(dimmedShots) of \(checked)".write(to: ui.artifacts.appendingPathComponent("screens-read-without-active-window.txt"), atomically: true, encoding: .utf8)
             try? problems.joined(separator: "\n").write(to: ui.artifacts.appendingPathComponent("theme-problems.txt"), atomically: true, encoding: .utf8)
             try ui.expect(problems.isEmpty, "\(problems.count) screens are hard to read; the first: \(problems.prefix(3))")
         },
@@ -3054,3 +3074,68 @@ extension Scenarios {
         },
     ] + writingPortScenarios
 }
+
+extension UI {
+    /// A process started from a shell is refused activation while another app is in front
+    /// (cooperative activation). Asking the system to open this same app does bring it forward,
+    /// and the running copy takes the request.
+    func bringAppToFront() async {
+        guard !NSApp.isActive, !UI.frontRefused else { return }
+        let options = NSWorkspace.OpenConfiguration()
+        options.activates = true
+        options.createsNewApplicationInstance = false
+        _ = try? await NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: options)
+        let until = Date().addingTimeInterval(3)
+        while !NSApp.isActive, Date() < until { await idle(0.1) }
+        if !NSApp.isActive {
+            UI.frontRefused = true
+            ActiveLook.apply()
+        }
+    }
+
+    /// The screen is locked or the system said no: asking again for each screen only costs time.
+    nonisolated(unsafe) static var frontRefused = false
+
+    /// A window left narrow would move toolbar items into the "more toolbar items" overflow menu.
+    func widenWindow() {
+        guard let w = NSApp.windows.first(where: { $0.isVisible && $0.canBecomeMain }), let screen = w.screen ?? NSScreen.main else { return }
+        let vf = screen.visibleFrame
+        let target = NSRect(x: vf.minX + 20, y: vf.maxY - min(860, vf.height - 20) - 10, width: min(1440, vf.width - 40), height: min(860, vf.height - 20))
+        if w.frame != target { w.setFrame(target, display: true) }
+    }
+}
+
+/// With the screen locked nothing can make the app active, and AppKit and SwiftUI then draw every window in
+/// its dimmed look. The driver tells them the app is active and each window is key, so the pictures and the
+/// colours read show the look a person gets. No event, no state of the app and no file changes with this.
+enum ActiveLook {
+    nonisolated(unsafe) private(set) static var applied = false
+
+    @MainActor static func apply() {
+        guard !applied else { return }
+        applied = true
+        swap(NSApplication.self, "isActive", #selector(ActiveAnswers.yes))
+        for name in ["isKeyWindow", "isMainWindow", "_hasKeyAppearance", "_hasMainAppearance", "_hasActiveAppearance", "hasKeyAppearance", "hasMainAppearance"] {
+            swap(NSWindow.self, name, #selector(ActiveAnswers.yes))
+        }
+        NotificationCenter.default.post(name: NSApplication.didBecomeActiveNotification, object: NSApp)
+        for w in NSApp.windows where w.isVisible {
+            NotificationCenter.default.post(name: NSWindow.didBecomeMainNotification, object: w)
+            NotificationCenter.default.post(name: NSWindow.didBecomeKeyNotification, object: w)
+            w.contentView?.superview?.needsDisplay = true
+            w.contentView?.needsDisplay = true
+            w.displayIfNeeded()
+        }
+    }
+
+    private static func swap(_ type: AnyClass, _ name: String, _ answer: Selector) {
+        let selector = NSSelectorFromString(name)
+        guard let original = class_getInstanceMethod(type, selector), let replacement = class_getInstanceMethod(ActiveAnswers.self, answer) else { return }
+        method_setImplementation(original, method_getImplementation(replacement))
+    }
+}
+
+final class ActiveAnswers: NSObject {
+    @objc func yes() -> Bool { true }
+}
+

@@ -1,4 +1,4 @@
-//! Offline AI evaluation harness (ADR-0028 decision 1; Windows phase W5): gold cases, deterministic
+//! Straft AI evaluation harness (ADR-0028 decision 1; Windows phase W5): gold cases, deterministic
 //! scoring and the report. The runner (`src/main.rs`) drives the real assistant pipeline and fills an
 //! [`Observation`] per case; everything here is plain code, so a score never depends on a model.
 //! The gold format is described in `gold/README.md`.
@@ -10,9 +10,9 @@ pub mod turn;
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use straft_ai_checks as checks;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use straft_ai_checks as checks;
 
 // ------------------------------------------------------------------ gold cases
 
@@ -378,8 +378,7 @@ pub fn turn_from_trace(c: &rusqlite::Connection, request_id: &str) -> Option<Tur
 
 /// The group of an answer type code, or None for a code that is not a type.
 pub fn group_of(answer_type: &str) -> Option<&'static str> {
-    straft_application::modules::ai::turn::AnswerType::parse(answer_type)
-        .map(|t| t.group().code())
+    straft_application::modules::ai::turn::AnswerType::parse(answer_type).map(|t| t.group().code())
 }
 
 /// The path of one request, as the trace recorded it: `lane` holds the answer path (`write`,

@@ -24,10 +24,9 @@ struct StoryboardsView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .task(id: "\(dataKey)|\(hub.scenesLoaded)") { await model.reload() }
         .themedSheet(item: $model.sheet) { StoryboardSheetHost(model: model, sheet: $0) }
-        .inspector(isPresented: Binding(get: { model.panel != nil }, set: { if !$0 { model.selectedPanelId = nil } })) {
+        .sidePane("storyboards", isPresented: model.panel != nil, minimum: 320, ideal: 380, maximum: 500) {
             if let p = model.panel, let b = model.board {
                 PanelInspector(model: model, panel: p, board: b.board).id(p.id)
-                    .inspectorColumnWidth(min: 320, ideal: 380, max: 500)
             }
         }
         .onPasteCommand(of: [.image, .png, .tiff]) { _ in
@@ -179,7 +178,7 @@ struct StoryboardsView: View {
 
 enum StoryboardLayout {
     /// The narrowest a panel column gets: three columns and their gaps fit the storyboard pane at
-    /// the smallest window with the sidebar and the AI Assistant open.
+    /// the smallest window with the sidebar and Straft AI open.
     static let columnMinimum: CGFloat = 90
     static let columns = Array(repeating: GridItem(.flexible(minimum: columnMinimum), spacing: 12), count: 3)
     static var gridMinimumWidth: CGFloat { columnMinimum * 3 + 12 * 2 }
@@ -205,7 +204,7 @@ private struct PanelGrid: View {
                         .frame(maxWidth: .infinity, minHeight: 140)
                         .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(theme["line2"], style: StrokeStyle(lineWidth: 1, dash: [5])))
                 }
-                .menuStyle(.borderlessButton).menuIndicator(.hidden)
+                .borderlessAccentMenu().menuIndicator(.hidden)
                 .accessibilityLabel("Add Panel")
                 .accessibilityIdentifier("storyboard-grid-add")
             }
@@ -309,7 +308,7 @@ private struct BoardMenu: View {
             Divider()
             Button("Delete Storyboard\u{2026}", role: .destructive) { model.sheet = .deleteBoard(board) }
         } label: { Label("Actions", systemImage: "ellipsis.circle") }
-            .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+            .borderlessAccentMenu().menuIndicator(.hidden).fixedSize()
             .accessibilityLabel("Storyboard actions")
             .accessibilityIdentifier("storyboard-actions")
     }
@@ -336,7 +335,7 @@ private struct PanelInspector: View {
                     }
                     Spacer()
                     Button { model.selectedPanelId = nil } label: { Label("Close", systemImage: "xmark") }
-                        .buttonStyle(.borderless).accessibilityLabel("Close").accessibilityIdentifier("panel-inspector-close")
+                        .buttonStyle(.ofBorderless).accessibilityLabel("Close").accessibilityIdentifier("panel-inspector-close")
                 }
                 VisualAssetImage(asset: panel.asset, fill: false, maxPixel: 720, emptyText: "Empty panel")
                     .frame(height: 170).clipShape(RoundedRectangle(cornerRadius: 6))

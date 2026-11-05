@@ -1,4 +1,4 @@
-//! Offline AI Assistant (FSD §42, FSD-AI-001..027; AI spec; Local AI Runtime spec;
+//! Straft AI (FSD §42, FSD-AI-001..027; AI spec; Local AI Runtime spec;
 //! UX §3.40; mockups 174–181).
 //!
 //! Operations:
@@ -47,8 +47,8 @@ pub mod turn;
 pub mod types;
 mod typo;
 
-use straft_domain::{Actor, AppResult, Capability};
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppResult, Capability};
 use ts_rs::TS;
 
 use crate::core::AppCore;

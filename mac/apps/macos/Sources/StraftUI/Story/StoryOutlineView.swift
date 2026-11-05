@@ -79,7 +79,7 @@ private struct OutlineRowView: View {
                 Button { Task { await model.setCollapsed(act.id, !collapsed) } } label: {
                     Image(systemName: collapsed ? "chevron.right" : "chevron.down").frame(width: 14)
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.ofBorderless)
                 .accessibilityLabel(collapsed ? "Expand \(act.title)" : "Collapse \(act.title)")
                 if renaming {
                     InlineField(initial: act.title, label: "Act title",
@@ -92,7 +92,7 @@ private struct OutlineRowView: View {
                 Spacer(minLength: 4)
                 Text(StoryLogic.actCountLabel(act)).font(.callout.weight(.semibold))
                 Menu { StoryActMenuOutline(model: model, act: act) } label: { Label("Options", systemImage: "ellipsis") }
-                    .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+                    .borderlessAccentMenu().menuIndicator(.hidden).fixedSize()
                     .accessibilityLabel("Act options for \(act.title)")
             }
             .padding(.horizontal, 8).padding(.vertical, 7)
@@ -151,7 +151,7 @@ private struct OutlineRowView: View {
                     Button { Task { await model.setCollapsed(ref.id, !collapsed) } } label: {
                         Image(systemName: collapsed ? "chevron.right" : "chevron.down").frame(width: 14)
                     }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.ofBorderless)
                     .accessibilityLabel(collapsed ? "Expand \(item.shownText)" : "Collapse \(item.shownText)")
                 }
                 if let color { Circle().fill(theme.label(color)).frame(width: 9, height: 9).accessibilityHidden(true) }

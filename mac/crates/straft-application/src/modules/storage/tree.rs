@@ -27,6 +27,8 @@ pub(super) struct Tree {
     /// Every folder (relative, forward slashes), so empty ones are recreated too.
     pub dirs: Vec<String>,
     pub bytes: u64,
+    /// Links (symbolic links, junctions) that were not followed, relative.
+    pub links: Vec<String>,
 }
 
 /// What was copied, for the check and for the removal of the source.
@@ -127,7 +129,9 @@ pub(super) fn walk(root: &Path, skip_top: &[&str]) -> AppResult<Tree> {
                 format!("{rel_dir}/{name}")
             };
             let kind = entry.file_type()?;
-            if kind.is_dir() {
+            if kind.is_symlink() {
+                tree.links.push(rel);
+            } else if kind.is_dir() {
                 tree.dirs.push(rel.clone());
                 pending.push((entry.path(), rel));
             } else if kind.is_file() && !is_finder_metadata(&entry.path()) {
@@ -347,11 +351,7 @@ mod tests {
         let root = src.path().join("Straft Studio");
         fs::create_dir_all(root.join("Projects/Night Bus.straft")).unwrap();
         fs::write(root.join("library.json"), b"{}").unwrap();
-        fs::write(
-            root.join("Projects/Night Bus.straft/project.sqlite"),
-            b"db",
-        )
-        .unwrap();
+        fs::write(root.join("Projects/Night Bus.straft/project.sqlite"), b"db").unwrap();
         for dir in ["", "Projects", "Projects/Night Bus.straft"] {
             fs::write(root.join(dir).join(".DS_Store"), DS_STORE).unwrap();
         }
@@ -361,10 +361,7 @@ mod tests {
         let rels: Vec<&str> = tree.files.iter().map(|f| f.rel.as_str()).collect();
         assert_eq!(
             rels,
-            [
-                "Projects/Night Bus.straft/project.sqlite",
-                "library.json"
-            ]
+            ["Projects/Night Bus.straft/project.sqlite", "library.json"]
         );
         assert_eq!(tree.bytes, 4);
 

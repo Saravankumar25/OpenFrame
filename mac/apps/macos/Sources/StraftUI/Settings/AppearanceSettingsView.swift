@@ -42,7 +42,7 @@ struct AppearanceSettingsContent: View {
                     .accessibilityIdentifier("settings-mode")
                     .frame(maxWidth: 320)
                     Text("System follows your Mac. Light and Dark stay as you set them.")
-                        .font(.callout).foregroundStyle(.secondary)
+                        .font(.callout).foregroundStyle(.ofMuted)
                 }
                 if let notice {
                     Label(notice, systemImage: "info.circle")
@@ -69,7 +69,7 @@ struct AppearanceSettingsContent: View {
                     Button("Export Selected Theme…") { Task { await exportTheme() } }
                         .accessibilityIdentifier("settings-export-theme")
                 }
-                if let message { Text(message).font(.callout).foregroundStyle(.secondary) }
+                if let message { Text(message).font(.callout).foregroundStyle(.ofMuted) }
                 if let error { SettingsErrorText(message: error) }
             }
         .padding(20)
@@ -122,7 +122,7 @@ struct AppearanceSettingsContent: View {
             let list = mine?.mine ?? []
             if list.isEmpty {
                 Text("No imported themes yet. Theme files are small .json files, for example from the Straft Studio website.")
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.callout).foregroundStyle(.ofMuted)
                     .accessibilityIdentifier("my-themes-empty")
             } else {
                 VStack(spacing: 0) {
@@ -161,7 +161,7 @@ struct AppearanceSettingsContent: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(item.name).fontWeight(.medium)
                 if let author = item.theme?.author, !author.isEmpty {
-                    Text("By \(author)").font(.caption).foregroundStyle(.secondary)
+                    Text("By \(author)").font(.caption).foregroundStyle(.ofMuted)
                 }
                 if let problem = item.problem {
                     Text("This theme cannot be used. \(problem)").font(.caption).foregroundStyle(theme["red-t"])
@@ -315,7 +315,7 @@ struct ThemeCard: View {
                         }
                     }
                     Text(data.description)
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(.ofMuted)
                         .lineLimit(2).fixedSize(horizontal: false, vertical: true)
                         .frame(minHeight: 32, alignment: .top)
                 }

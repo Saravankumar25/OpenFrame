@@ -42,7 +42,7 @@ Straft Studio, internal team build
 
 3. Open Straft Studio from Applications.
 
-4. The offline AI is downloaded inside the app when you ask for it (Settings > Offline AI).
+4. Straft AI is downloaded inside the app when you ask for it (Settings > Straft AI).
    Nothing else leaves this Mac.
 
 Apple silicon Macs only, macOS 14 or later.

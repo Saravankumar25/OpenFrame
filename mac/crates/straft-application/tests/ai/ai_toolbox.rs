@@ -7,12 +7,12 @@
 //! test then dispatches every proposed operation through the normal registry
 //! (exactly what an approved Change Set does) to prove the operations are valid.
 
+use serde_json::{Value, json};
 use straft_application::modules::ai::scope::ResolvedScope;
 use straft_application::modules::ai::toolbox::{self, ToolStep};
 use straft_application::modules::ai::{ChangeSetDraft, catalog, change_set};
 use straft_domain::{Actor, AppError, Role};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 fn whole(env: &TestEnv, _actor: &Actor) -> ResolvedScope {
     let s = env.core.project().unwrap();

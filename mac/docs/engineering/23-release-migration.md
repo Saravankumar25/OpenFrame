@@ -118,7 +118,7 @@ updater key configured, updater plugin not configured in `tauri.conf.json`.
   download. The runtime
   is part of the app version (ADR-0020). Local AI spec §15 describes the download flow.
 
-## 7. Offline AI release prerequisites ⛔
+## 7. Straft AI release prerequisites ⛔
 
 Design (ADR-0026 and ADR-0032): the package holds the app and the AI runtime. The Gemma 3 1B chat model and the BGE
 embedding model download on the user's click straight from Hugging Face at the commits the lock pins, each checked by
@@ -131,7 +131,7 @@ size and SHA-256. There is no model host and no signing key. The items below are
    CI runners do not have these files yet, so the release jobs stop at this check until they do.
 2. **Redistribution check.** Shipping Gemma inside every package is redistribution under the Gemma Terms of Use: the
    notice "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms." ships in
-   the app (Settings → Offline AI → Technical details, and `ai/notices/` in the package) and in
+   the app (Settings → Straft AI → Technical details, and `ai/notices/` in the package) and in
    `THIRD_PARTY_LICENSES.md`; the Terms and the Gemma Prohibited Use Policy are passed on to recipients; the owner
    confirms the check before the model host goes live and before any package leaves the team (ADR-0026 decision 9). BGE small (MIT), llama.cpp (MIT) and
    the LLVM OpenMP runtime (Apache-2.0 WITH LLVM-exception) notices ship as well.
@@ -141,7 +141,7 @@ size and SHA-256. There is no model host and no signing key. The items below are
 4. **Validation per format** (ADR-0026 decision 10): install with no network, first download, offline inference after
    the download, upgrade and
    uninstall on a clean machine for each package format before it is claimed as supported.
-5. **Hardware validation** (the Offline AI bundle gate in 22-qa-test-strategy.md): benchmark, `real_runtime` and
+5. **Hardware validation** (the Straft AI bundle gate in 22-qa-test-strategy.md): benchmark, `real_runtime` and
    `ai_real_model` on minimum (8 GB RAM) and recommended hardware with the bundled processor build. Not yet done
    (runtime spec §16).
 6. **Store listing** (Store builds): describe the generative AI and its one-time user-clicked model download, offline use after it, and provide a

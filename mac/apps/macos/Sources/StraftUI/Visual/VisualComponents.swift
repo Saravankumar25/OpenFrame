@@ -193,7 +193,7 @@ struct CommitField: View {
                 } label: {
                     Label("Suggestions", systemImage: "chevron.down.circle")
                 }
-                .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+                .borderlessAccentMenu().menuIndicator(.hidden).fixedSize()
                 .accessibilityLabel("\(label) suggestions")
                 .accessibilityIdentifier("\(identifier)-suggestions")
             }

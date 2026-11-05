@@ -609,7 +609,11 @@ test("every end-to-end spec has its plain-step scenario file, and every scenario
   const specs = fs.readdirSync(path.join(REPO, "tests/e2e/specs")).filter((f) => f.endsWith(".test.mjs")).map((f) => f.replace(/\.test\.mjs$/, ""));
   const scenarios = fs.readdirSync(path.join(REPO, "tests/e2e/scenarios")).filter((f) => f.endsWith(".md") && f !== "README.md").map((f) => f.replace(/\.md$/, ""));
   assert.deepEqual(specs.filter((s) => !scenarios.includes(s)), [], "specs without a scenario file in tests/e2e/scenarios/");
-  assert.deepEqual(scenarios.filter((s) => !specs.includes(s)), [], "scenario files without a spec");
+  // The store screens exist on the Mac only: their cases live in the Swift driver, not in a Windows spec.
+  const macOnly = ["99-store"];
+  const macDriver = fs.readFileSync(path.join(REPO, "apps/macos/Sources/StraftE2EDriver/Scenarios/StoreScenarios.swift"), "utf8");
+  for (const s of macOnly) assert.ok(macDriver.includes(`"${s}/`), `${s} has no case in the Mac driver`);
+  assert.deepEqual(scenarios.filter((s) => !specs.includes(s) && !macOnly.includes(s)), [], "scenario files without a spec");
   const readme = fs.readFileSync(path.join(REPO, "tests/e2e/scenarios/README.md"), "utf8");
   for (const s of scenarios) assert.ok(readme.includes(`\`${s}.md\``), `${s}.md is not listed in the scenario README`);
 });

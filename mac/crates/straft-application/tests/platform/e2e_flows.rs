@@ -5,17 +5,17 @@
 //! parallel: Idea Vault → Story → Build Screenplay → Screenplay editing →
 //! Production Source → Breakdown → Catalog / Locations / Cast → Shots &
 //! Storyboards → Schedule → Call Sheet; script revisions after production has
-//! started; screenplay import; the offline AI's deterministic tools; undo/redo,
+//! started; screenplay import; Straft AI's deterministic tools; undo/redo,
 //! restart persistence and Recently Deleted across modules.
 
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
+use serde_json::{Value, json};
 use straft_ai::{ChatRequest, InferenceProvider};
 use straft_application::modules::ai;
 use straft_domain::{AppError, AppResult};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 // ----------------------------------------------------------------- helpers
 
@@ -631,9 +631,7 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
     let env = TestEnv::with_project("Black Rain", "Feature Film");
     let fountain = env.write_file(
         "Black Rain.fountain",
-        include_bytes!(
-            "../../../straft-import-export/tests/fixtures/screenplay/sample.fountain"
-        ),
+        include_bytes!("../../../straft-import-export/tests/fixtures/screenplay/sample.fountain"),
     );
     let p = env.ok("screenplay.import_preview", json!({ "path": fountain }));
     assert_eq!(p["sourceFormat"], "fountain");
@@ -708,7 +706,7 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
     );
     assert!(pu["unchanged"].is_number());
 
-    // Offline AI: the model writes the answer, code holds it to the project's own numbers.
+    // Straft AI: the model writes the answer, code holds it to the project's own numbers.
     let model = Arc::new(ScriptedModel::default());
     ai::service(&env.core).attach_model(Some(model.clone() as Arc<dyn InferenceProvider>));
     model.reply(&format!("The script has {} scenes.", sc.len()));

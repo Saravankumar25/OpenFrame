@@ -80,7 +80,7 @@ struct BackupSheet: View {
                 Text("What this backup contains").font(.callout.weight(.semibold))
                 Text("Idea Vault, Beat Board, screenplay drafts, breakdown, catalog, production planning, comments"
                      + (p.privateNoteCount > 0 ? ", your private notes" : "") + ".")
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.callout).foregroundStyle(.ofMuted)
                 PKFileStatusTable(rows: [
                     ("Files stored in the project \u{00B7} \(PKText.formatBytes(p.includedBytes))", "Included", Int(p.includedFiles)),
                     ("Linked external files", model.portable ? "Copied" : "External", p.external.count),
@@ -96,7 +96,7 @@ struct BackupSheet: View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title).font(.callout.weight(.semibold))
             c()
-            if let hint { Text(hint).font(.caption).foregroundStyle(.secondary) }
+            if let hint { Text(hint).font(.caption).foregroundStyle(.ofMuted) }
         }
     }
 }
@@ -170,7 +170,7 @@ struct ExportProjectSheet: View {
                     .toggleStyle(.checkbox).accessibilityIdentifier("export-project-portable")
                 if !p.missing.isEmpty {
                     Text("\(p.missing.count) linked file\(p.missing.count == 1 ? " is" : "s are") missing and will be listed as missing. The project still opens.")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(.ofMuted)
                 }
                 if let e = model.startError { IXBanner(.err, e).accessibilityIdentifier("export-project-error") }
             }

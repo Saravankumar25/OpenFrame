@@ -6,13 +6,13 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use serde_json::json;
 use straft_application::events::AppEvent;
 use straft_application::modules::ai::intelligence::{self, IndexSettings, ProjectIndex};
 use straft_application::modules::ai::retrieval::IndexState;
 use straft_search::Embedder;
 use straft_test_support::TestEnv;
 use straft_test_support::embedder::ConceptEmbedder;
-use serde_json::json;
 
 /// Closing or switching a project while the embedding runtime is stalled must return
 /// within this bound (the UI waits on it). `ProjectIndex::shutdown` detaches a worker

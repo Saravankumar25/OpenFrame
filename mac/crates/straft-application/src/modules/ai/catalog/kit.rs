@@ -1,8 +1,8 @@
 //! Small helpers shared by the proposal builders: typed access to already
 //! schema-validated arguments and a Change Set draft builder with previews.
 
-use straft_domain::{AppError, AppResult};
 use serde_json::{Value, json};
+use straft_domain::{AppError, AppResult};
 
 use super::super::queries;
 use super::super::toolbox::resolve::Found;

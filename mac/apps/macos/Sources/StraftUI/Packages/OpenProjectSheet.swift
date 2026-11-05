@@ -50,8 +50,8 @@ struct OpenProjectSheet: View {
                 IXBanner(tone: .ok, text: Text(r.identityKept ? "Project opened." : "Opened as a copy.").bold())
                     .accessibilityIdentifier("open-project-done")
                 Label("Validated \u{00B7} \(r.message)", systemImage: "checkmark").font(.callout)
-                if let b = r.safetyBackup { Text("Safety backup: \(b)").font(.caption).foregroundStyle(.secondary).textSelection(.enabled) }
-                if r.migratedFrom != nil { Text("The project was upgraded from an older Straft Studio version; a safety copy was kept.").font(.caption).foregroundStyle(.secondary) }
+                if let b = r.safetyBackup { Text("Safety backup: \(b)").font(.caption).foregroundStyle(.ofMuted).textSelection(.enabled) }
+                if r.migratedFrom != nil { Text("The project was upgraded from an older Straft Studio version; a safety copy was kept.").font(.caption).foregroundStyle(.ofMuted) }
                 PKLinkedFiles(files: r.missingExternal)
             }
         } else if model.started {
@@ -64,10 +64,10 @@ struct OpenProjectSheet: View {
             details(i)
         } else {
             VStack(spacing: 10) {
-                Image(systemName: "archivebox").font(.system(size: 28)).foregroundStyle(.secondary).accessibilityHidden(true)
+                Image(systemName: "archivebox").font(.system(size: 28)).foregroundStyle(.ofMuted).accessibilityHidden(true)
                 Text("Choose a package").font(.headline)
                 Text(".ofproject (Full Project Package) or .ofbackup (Backup Package). The package is validated before anything is created.")
-                    .font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    .font(.callout).foregroundStyle(.ofMuted).multilineTextAlignment(.center)
                 if let e = model.errorText { IXBanner(.err, e).accessibilityIdentifier("open-project-error") }
                 Button(model.checking ? "Checking\u{2026}" : "Choose Package\u{2026}") {
                     if let url = picker.openFile(title: "Open Project Package", extensions: PKInfo.extensions(PKInfo.projectOpenTypes)) {
@@ -90,7 +90,7 @@ struct OpenProjectSheet: View {
             HStack(spacing: 8) {
                 IXFact(label: "Created", value: PKText.day(ms: i.manifest.exportedAt), detail: i.manifest.label, id: "open-project-fact-created")
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Size").font(.caption).foregroundStyle(.secondary)
+                    Text("Size").font(.caption).foregroundStyle(.ofMuted)
                     HStack { Text(PKText.formatBytes(i.sizeBytes)).fontWeight(.semibold); IXChip(text: "Valid", tone: .green) }
                 }
                 .padding(10).frame(maxWidth: .infinity, alignment: .leading)
@@ -119,7 +119,7 @@ struct OpenProjectSheet: View {
             if let n = model.notesNotice {
                 IXBanner(tone: .info, text: Text("Private notes.").bold() + Text(" " + n)).accessibilityIdentifier("open-project-notes")
             }
-            Text("Importing never silently replaces the current project.").font(.caption).foregroundStyle(.secondary)
+            Text("Importing never silently replaces the current project.").font(.caption).foregroundStyle(.ofMuted)
             if let e = model.startError { IXBanner(.err, e).accessibilityIdentifier("open-project-start-error") }
         }
     }
@@ -131,7 +131,7 @@ struct OpenProjectSheet: View {
                     .foregroundStyle(model.mode == m ? theme["accent"] : theme["muted"]).accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     HStack { Text(title).fontWeight(.semibold); IXChip(text: chip.0, tone: chip.1) }
-                    Text(text).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    Text(text).font(.callout).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
             }

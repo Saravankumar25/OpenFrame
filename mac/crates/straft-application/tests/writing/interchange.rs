@@ -3,9 +3,9 @@
 
 use std::path::Path;
 
+use serde_json::{Value, json};
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const SAMPLE_FOUNTAIN: &[u8] =
     include_bytes!("../../../straft-import-export/tests/fixtures/screenplay/sample.fountain");
@@ -15,9 +15,8 @@ const MALFORMED_FDX: &[u8] =
     include_bytes!("../../../straft-import-export/tests/fixtures/screenplay/malformed.fdx");
 const PASTED: &str =
     include_str!("../../../straft-import-export/tests/fixtures/screenplay/pasted.txt");
-const PROSE: &[u8] = include_bytes!(
-    "../../../straft-import-export/tests/fixtures/screenplay/not_a_screenplay.txt"
-);
+const PROSE: &[u8] =
+    include_bytes!("../../../straft-import-export/tests/fixtures/screenplay/not_a_screenplay.txt");
 
 fn count(env: &TestEnv, sql: &str) -> i64 {
     env.core

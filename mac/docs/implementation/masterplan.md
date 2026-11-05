@@ -21,7 +21,7 @@ three before 2026-10-07, when the installer became an internal build):
 | Internal Windows installer (`.exe`) | The owner's team only, never sold (ADR-0023) | Windows adapter, internal channel |
 | Internal Mac disk image (`.dmg`) | The owner's team only, never sold (ADR-0024) | macOS adapter, internal channel |
 
-Every one of them contains the complete offline AI (runtime, Gemma 3 1B weights, embedding weights, tokenizer), so AI
+Every one of them contains the complete Straft AI (runtime, Gemma 3 1B weights, embedding weights, tokenizer), so AI
 the AI runtime ships in every package and the AI models download after install on the user's click ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md), reinstating the download that ADR-0025 had replaced).
 
 **Current goal (owner decision 2026-10-08).** Finish building, testing, verification, end-to-end tests and packaging of
@@ -117,7 +117,7 @@ Work down this table. An area starts when the areas it needs are far enough alon
 | 5 | Test infrastructure and quality gates | Project controls | none |
 | 6 | Security hardening from the baseline audit | Project controls | none |
 | 7 | Platform adapter layer for Windows and Mac | Test infrastructure | none (Mac hardware needed for tests) |
-| 8 | AI assistant quality and hardening | Test infrastructure | support address, AI test hardware |
+| 8 | Straft AI quality and hardening | Test infrastructure | support address, AI test hardware |
 | 9 | Beat Board and Idea Vault | Test infrastructure | one product question |
 | 10 | Writing comfort | Test infrastructure | none |
 | 11 | Screenplay engine and file formats | Data safety, Test infrastructure | production numbers, PDF fonts |
@@ -287,7 +287,7 @@ Goal: one product, two thin adapters. Feature code never learns which operating 
 
 **Done when:** the same test suites pass on Windows 11 and on Apple silicon macOS, and the lint rule proves no feature code is operating-system specific.
 
-## 8. AI assistant quality and hardening
+## 8. Straft AI quality and hardening
 
 - [ ] **Retrieval test set.** A gold set of questions across all domains (`gold_retrieval_cases.jsonl`); a harness that reports Recall at 1, 5 and 10, mean reciprocal rank, nDCG, grounding, leakage and stale results for plain text, vector, hybrid and hybrid plus graph retrieval, using the real embedding model. Without the dev models, build the set and harness and mark the real run as pending. (work started)
 - [ ] **Owner approves the quality thresholds** after the first run. Drop the graph stage if it does not beat hybrid.
@@ -298,7 +298,7 @@ Goal: one product, two thin adapters. Feature code never learns which operating 
 - [ ] **Prompt injection and poisoned retrieval collection;** privilege escalation and nested AI tests.
 - [ ] **AI runtime inside each package, AI models downloaded after install** (`.exe` and `.dmg` for the current goal, `.msix` and `.app` later). The package holds the `llama.cpp` runtime, OpenMP and Visual C++ runtime DLLs (ADR-0020 decision 1). Gemma 3 1B weights, embedding weights and tokenizer data download on the user's click (ADR-0026). Writable AI data and the downloaded models sit in the user's app data folder, laid out per platform; the app loads under MSIX packaging and the macOS App Sandbox. Reopened 2026-10-15: the 2026-10-08 bundling of the models was reverted by ADR-0026, so no code is done for the download yet.
 - [x] **Rebuild the Download Straft AI flow (ADR-0026, ADR-0032).** Settings and first run offer **Download Straft AI** with size and free space shown; the user clicks; the app fetches each file straight from Hugging Face at the commit the compiled-in lock pins (ADR-0032; redirects only to `huggingface.co` or `*.hf.co`), downloads to `*.partial` with HTTP range resume, runs a disk-space preflight, checks each file's size and SHA-256, activates by atomic rename, keeps the last known-good model until the new one passes a health check, and quarantines a bad file. Nothing downloads at install, silently or as a repair. A release build that names the local test host fails without `STRAFT_TEST_BUILD=1`. A person who has the files imports them (copied, used only when they match a pin). Pinned hashes and sizes are compiled into the app from the lock (ADR-0032 replaced the signed manifest). Tests cover hash mismatch, interrupted and resumed download, disk full, offline start with the not-installed state, a file gone from the host with manual import, a failed health check rolled back, and the host seeing only the pinned file requests. (ev: straft-ai bundled.rs 27 flow tests including the_download_installs_checks_and_starts_the_ai, an_interrupted_download_resumes_where_it_stopped, a_damaged_file_is_refused_set_aside_and_never_used, a_file_gone_from_the_host_stops_plainly_and_manual_import_still_works, a_new_set_that_fails_its_health_check_falls_back_to_the_last_good_one, a_download_checked_while_the_app_warms_up_keeps_the_new_set; E2E 76-ai-files-integrity and 78-ai-download green on the gated release executable, docs/release/evidence/w4/README.md, proof level 3)
-- [ ] N/A: superseded by the rebuilt download flow in the box above (ADR-0026, ADR-0032). **Remove the download flow and model host code** (2026-10-08, ADR-0025). Reopened 2026-10-15 by ADR-0026: the code was removed, so the download flow is rebuilt in the box above. The 2026-10-08 removal evidence below stays for history. (ev: docs/history/evidence/2026-10-08-session-2/bundled-offline-ai.md section 1 ("Removed"); ai.rs::bundled_ai_needs_no_setup_and_the_download_operations_are_gone; documents changed in reconciliation-log.md entry "the download flow is removed"; E2E 72-ai-assistant.test.mjs "Settings > Offline AI ... offers no download or removal" and 76-ai-bundle-integrity.test.mjs "nothing offers a download", green in docs/history/evidence/2026-10-08-session-2/e2e-session-2.md section 8)
+- [ ] N/A: superseded by the rebuilt download flow in the box above (ADR-0026, ADR-0032). **Remove the download flow and model host code** (2026-10-08, ADR-0025). Reopened 2026-10-15 by ADR-0026: the code was removed, so the download flow is rebuilt in the box above. The 2026-10-08 removal evidence below stays for history. (ev: docs/history/evidence/2026-10-08-session-2/bundled-offline-ai.md section 1 ("Removed"); ai.rs::bundled_ai_needs_no_setup_and_the_download_operations_are_gone; documents changed in reconciliation-log.md entry "the download flow is removed"; E2E 72-ai-assistant.test.mjs "Settings > Straft AI ... offers no download or removal" and 76-ai-bundle-integrity.test.mjs "nothing offers a download", green in docs/history/evidence/2026-10-08-session-2/e2e-session-2.md section 8)
 - [ ] **Download Straft AI validation for the internal `.exe`.** On a clean Windows 11 machine: install with no network; download with a network; an interrupted download resumed; a corrupt file refused; offline inference after the download; start with the network off showing the not-installed state; upgrade keeps matching models; uninstall; record package size and hash checks (ADR-0026). (To be done after the download flow is rebuilt)
 - [ ] **Download Straft AI validation for the internal `.dmg`.** The same checks on a clean Apple silicon Mac (ADR-0026). (Needs Mac hardware)
 - [ ] **Download Straft AI validation for the Microsoft Store `.msix`.** The same checks, with the download and models working under MSIX packaging (ADR-0026). (Later: store publishing)
@@ -466,7 +466,7 @@ Contract: `docs/engineering/33-production-depth-contract.md`. Extend the existin
 - [ ] **Soak run on a release candidate.** Hours, repeated sleep and resume, repeated project switching.
 - [ ] **Beta.** 8 to 15 real writers, screenwriters and production team members use a release candidate for 3 to 4 weeks; feedback comes through the support channel; serious findings fixed; summary archived. (Later: store publishing)
 - [ ] **English-only check.** User text is kept in one place so translation can be added later, or the exception is recorded.
-- [ ] **User manual rebuilt** from the shipped UI; LAN figures removed; Offline AI and new features described; the manual source and how to rebuild it are stored.
+- [ ] **User manual rebuilt** from the shipped UI; LAN figures removed; Straft AI and new features described; the manual source and how to rebuild it are stored.
 - [ ] **Remaining LAN text removed** from the specification bodies, the security specification and the UX mock-up references.
 - [ ] **In-app help and public documentation outline** complete.
 - [ ] **Beta and review defects closed;** a known-issues list written.
@@ -501,7 +501,7 @@ Business model: paid, with a 7-day free trial and no credit card to start. One s
 - [ ] **Windows App Certification Kit** run against the exact package; all green; report archived. (Later: store publishing)
 - [ ] **Clean-machine matrix on Windows 11** (clean virtual machine or Windows Sandbox, no developer tools): install, first launch, create project, write, save, close, reopen, upgrade, uninstall, reinstall, projects survive; web view runtime present and missing. (Later: store publishing)
 - [ ] **First launch on a bare machine** needs nothing installed locally. (Later: store publishing)
-- [ ] **Installed-package end-to-end test.** Full journey and Offline AI (download, signature and hash verified, start, ask, apply, offline use after download; ADR-0026) on the installed package. (Later: store publishing)
+- [ ] **Installed-package end-to-end test.** Full journey and Straft AI (download, signature and hash verified, start, ask, apply, offline use after download; ADR-0026) on the installed package. (Later: store publishing)
 - [ ] **Windows Defender and antivirus** checked on the packaged build, including AI engine start. (Later: store publishing)
 - [ ] **Open and migrate every earlier project version** with the test collection, on the packaged build. (Later: store publishing)
 - [ ] **Hardware results** recorded for the listing. (Later: store publishing)
@@ -527,7 +527,7 @@ Business model: paid, with a 7-day free trial and no credit card to start. One s
 - [x] **Release-build smoke test.** One end-to-end spec drives the release executable (not the debug test build): start, create, type, close, reopen, an AI answer, and only loopback sockets. With and without the team password gate (the gate was removed on 2026-10-27; the evidence below predates that). Added 2026-10-09: the existing suite drives debug builds only, so the gate, the release log filter and the bundled resource path are covered by unit tests alone. (ev: 00-release-smoke.test.mjs on the gated release executable within the full suite, docs/release/evidence/w4/release-run-2026-10-17-gated.txt, and on the open release executable, docs/release/evidence/w4/release-run-2026-10-17-open.txt; proof level 3)
 - [ ] **Disk image target.** `tauri.conf.json` gains the `dmg` bundle target for the Mac build; the unsigned image and the Gatekeeper steps are documented as an installation restriction. (Needs Mac hardware) Added 2026-10-09: today the configuration lists only `nsis` and `msi`, and the Mac workflow only runs `cargo check`. **Superseded (ADR-0027, 2026-10-16 sweep):** the `.dmg` comes from the SwiftUI shell build in Mac phase M9, not from `tauri.conf.json`.
 
-**Done when:** the internal unsigned installer passes the clean-machine tests (with the team gate on until its removal on 2026-10-27) and Offline AI working
+**Done when:** the internal unsigned installer passes the clean-machine tests (with the team gate on until its removal on 2026-10-27) and Straft AI working
 offline, and the updater works. (Changed 2026-10-08 from "a signed installer"; signing is checked at the store and
 public step.)
 
@@ -541,7 +541,7 @@ Confirm Apple's current rules at build time. Known constraints: App Sandbox is r
 - [ ] **Sandbox behaviour.** Projects open and save in folders the user picks; downloaded model files and writable AI data and logs live in the app container (ADR-0026); AI engine runs as a sandboxed helper. (Later: store publishing) (Needs Mac hardware)
 - [ ] **No updater** in this build; updates come only from the App Store. (Later: store publishing) (Needs Mac hardware)
 - [ ] **TestFlight for Mac** run on a clean Apple silicon Mac: install, first launch, create project, write, save, close, reopen, update, delete, reinstall. (Later: store publishing) (Needs Mac hardware)
-- [ ] **App Store Connect details.** Privacy answers, export compliance (encryption), age rating, category, pricing, screenshots at the required sizes, review notes explaining the bundled offline AI and the trial. (Later: store publishing) (Needs Mac hardware) **Superseded in part (ADR-0026, 2026-10-16 sweep):** the models download after install, so the review notes explain the download, not a bundled model.
+- [ ] **App Store Connect details.** Privacy answers, export compliance (encryption), age rating, category, pricing, screenshots at the required sizes, review notes explaining the bundled Straft AI and the trial. (Later: store publishing) (Needs Mac hardware) **Superseded in part (ADR-0026, 2026-10-16 sweep):** the models download after install, so the review notes explain the download, not a bundled model.
 - [ ] **App Review readiness.** Review notes, demo steps and no unfinished features listed. (Later: store publishing)
 
 **Done when:** the package passes Apple's validation and a clean-machine TestFlight run.
@@ -555,7 +555,7 @@ Confirm Apple's current rules at build time. Known constraints: App Sandbox is r
 - [ ] **End-user licence agreement** and third-party notices page published. (Later: store publishing)
 - [ ] **Support live.** Company inbox, public support page, severity levels, response target, second person able to run it. (Later: store publishing)
 - [ ] **Public knowledge base.** Install, update, recovery, import and export, AI troubleshooting, Windows and Mac troubleshooting. (Later: store publishing)
-- [ ] **Website** per `docs/website/README.md`: product, features, store links, installer download, pricing and trial, support, privacy, terms, security contact. Claims match the build. (Later: store publishing)
+- [ ] **Website** per [chapter-2-website.md](../roadmap/chapter-2-website.md): product, features, store links, installer download, pricing and trial, support, privacy, terms, security contact. Claims match the build. (Later: store publishing)
 - [ ] **Security contact published and tested.** (Later: store publishing)
 - [ ] **Website copy checked** against the writing standard: no fake testimonials, no invented numbers, no AI-sounding phrases, no em dashes. (Later: store publishing)
 - [ ] **Website accessible and responsive** from 375 to 1440 pixels; Lighthouse and broken link checks recorded. (Later: store publishing)
@@ -583,7 +583,7 @@ Confirm Apple's current rules at build time. Known constraints: App Sandbox is r
 
 - [ ] **Submit** the unchanged Microsoft Store package and Mac App Store package; publish the installer on the website. (Later: store publishing)
 - [ ] **Answer reviewer findings** within one business day; fix and resubmit with a higher version. (Later: store publishing)
-- [ ] **After approval, install from the live listings** on clean machines: first launch, create project, trial and purchase, Offline AI model downloaded and working offline afterwards (ADR-0026). (Later: store publishing)
+- [ ] **After approval, install from the live listings** on clean machines: first launch, create project, trial and purchase, Straft AI model downloaded and working offline afterwards (ADR-0026). (Later: store publishing)
 - [ ] **Smoke-test** live listings, privacy address, support address and website links. (Later: store publishing)
 - [ ] **Launch team named:** incident lead, engineering lead, product decision maker, support lead, security owner and backups; stop conditions agreed. (Later: store publishing)
 - [ ] **Launch content ready:** trailer, founder story, 30-day content plan, creator and community outreach, social accounts with two-step sign-in. (Later: store publishing)
@@ -622,7 +622,7 @@ Any one of these blocks submission.
 | Test infrastructure and quality gates | | | | no |
 | Security hardening from the baseline audit | | | | no |
 | Platform adapter layer for Windows and Mac | | | | no |
-| AI assistant quality and hardening | | | | no |
+| Straft AI quality and hardening | | | | no |
 | Beat Board and Idea Vault | | | | no |
 | Writing comfort | | | | no |
 | Screenplay engine and file formats | | | | no |
@@ -654,7 +654,7 @@ Any one of these blocks submission.
 | 2026-10-08 | Owner decisions: local merge to `main` only after tests and end-to-end specs pass; ADR-0020 Accepted (AI engine inside every package); a project may hold several screenplays (ADR-0012 amendment, new area 11 box); Mac trial confirmed (ADR-0022); price and refunds decided later. Area 1: three boxes ticked. |
 | 2026-10-08 | `cargo deny`: dated exception for `rustybuzz` and `ttf-parser` (owner choice), new area 6 box "Maintained font shaping crates". |
 | 2026-10-08 | Build tools: sccache and rust-lld for dev and test builds in `.cargo/config.toml`; release builds keep the Microsoft linker (area 6 note on "Release hardening flags"). |
-| 2026-10-08 | Owner decisions: current goal is the internal `.exe` and `.dmg`; store publishing later; Mac work waits for a Mac; internal builds unsigned for now; team password gate stays on; Offline AI bundled in every package (ADR-0025). Every box tagged "(Later: store publishing)" or "(Needs Mac hardware)" where it applies; intro lists four release files and the current goal; area 8 AI packaging reworded with six new boxes (bundle with pinned hashes, remove the download code, validation per format) and the download and model host items marked N/A; area 20 gains "Internal `.exe` build with the team gate on, unsigned" and splits Mac signing into its own box; `plan:status` prints a "Current goal" line. Nothing ticked or unticked. |
+| 2026-10-08 | Owner decisions: current goal is the internal `.exe` and `.dmg`; store publishing later; Mac work waits for a Mac; internal builds unsigned for now; team password gate stays on; Straft AI bundled in every package (ADR-0025). Every box tagged "(Later: store publishing)" or "(Needs Mac hardware)" where it applies; intro lists four release files and the current goal; area 8 AI packaging reworded with six new boxes (bundle with pinned hashes, remove the download code, validation per format) and the download and model host items marked N/A; area 20 gains "Internal `.exe` build with the team gate on, unsigned" and splits Mac signing into its own box; `plan:status` prints a "Current goal" line. Nothing ticked or unticked. |
 | 2026-10-09 | Session 2 verification: 79 boxes ticked with evidence after the joined `session-2` passed every gate and the full end-to-end run (30 spec files, 158 tests, 0 failed; `docs/history/evidence/2026-10-08-session-2/e2e-session-2.md`): area 8 (2), 9 (8), 10 (6), 11 (21), 12 (10), 13 (7), 14 (9), 15 (11), 16 (3), 18 (2). Boxes left open carry a dated note with the reason. `npm run perf` was not run on the joined code. |
 | 2026-10-09 | Full retrospection and audit ([report](../history/reports/2026-10-09-project-retrospection-and-audit.md)). The work is organised in three chapters ([roadmap](../roadmap/README.md)); a "Chapters" section maps the 26 areas. Nine boxes added from the audit: area 3 (typed text on window close, cloud-synced project folders, project delete and locate tests, migration backup restores), area 8 (non-English requests measured, macOS engine pinned), area 17 (internal tester pilot), area 20 (release-build smoke test, disk image target). Area 3 is no longer complete. |
 | 2026-10-15 | Owner decision in chat: AI models download after install (ADR-0026, supersedes ADR-0025; reinstates ADR-0006 decision 2, ADR-0013 decision 2 and ADR-0020 decisions 1 (weights part), 3 and 5). Area 8 bundle and download-removal boxes reopened as "to be done"; owner tasks (model host, manifest key, Gemma redistribution check) reopened; store, privacy, QA, CI and specification wording updated. Nothing ticked except the boxes already evidenced. |

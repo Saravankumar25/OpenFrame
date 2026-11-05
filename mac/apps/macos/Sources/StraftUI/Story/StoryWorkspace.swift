@@ -44,9 +44,9 @@ struct StoryContent: View {
         .overlay(alignment: .bottom) { StoryNoticeBar(model: model) }
         .task(id: reloadKey) { await model.reload() }
         .themedSheet(item: $model.sheet) { StorySheetHost(model: model, sheet: $0) }
-        .inspector(isPresented: Binding(get: { model.drawer != nil }, set: { if !$0 { model.openDrawer(nil) } })) {
+        .sidePane("story", isPresented: model.drawer != nil, minimum: 320, ideal: 400, maximum: 560) {
             if let ref = model.drawer {
-                StoryInspector(model: model, ref: ref).inspectorColumnWidth(min: 320, ideal: 400, max: 560)
+                StoryInspector(model: model, ref: ref)
             }
         }
         .onChange(of: model.showEpisodes) { _, shown in if !shown, model.tab == .episodes { model.tab = .board } }
@@ -77,6 +77,7 @@ struct StoryContent: View {
                 model.addingAct = true
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("story-workspace")
     }
 
@@ -84,15 +85,10 @@ struct StoryContent: View {
 
     private var tabBar: some View {
         ZStack {
-            HStack(spacing: 12) {
-            Picker("Story views", selection: $model.tab) {
-                ForEach(model.tabs) { Text($0.title).tag($0) }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .fixedSize()
-            .accessibilityLabel("Story views")
-            .accessibilityIdentifier("story-tabs")
+            // In a narrow page the tabs scroll sideways; their full width would push the whole page off the window.
+            ViewThatFits(in: .horizontal) {
+                viewPicker
+                ScrollView(.horizontal, showsIndicators: false) { viewPicker }
             }
             HStack(spacing: 8) {
             Spacer()
@@ -112,6 +108,17 @@ struct StoryContent: View {
             }
         }
         .padding(.horizontal, 16).padding(.vertical, 8)
+    }
+
+    private var viewPicker: some View {
+        Picker("Story views", selection: $model.tab) {
+            ForEach(model.tabs) { Text($0.title).tag($0) }
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .fixedSize()
+        .accessibilityLabel("Story views")
+        .accessibilityIdentifier("story-tabs")
     }
 
     @ViewBuilder private var content: some View {
@@ -212,12 +219,12 @@ struct BoardPage: View {
 
             HStack(spacing: 4) {
                 Image(systemName: "magnifyingglass").foregroundStyle(theme["muted"]).accessibilityHidden(true)
-                TextField("Search / filter cards", text: $model.filter)
+                HintedTextField("Search / filter cards", text: $model.filter)
                     .textFieldStyle(.plain)
                     .accessibilityLabel("Search / filter cards")
                 if !model.filter.isEmpty {
                     Button { model.filter = "" } label: { Label("Clear", systemImage: "xmark.circle.fill") }
-                        .buttonStyle(.borderless).accessibilityLabel("Clear filter")
+                        .buttonStyle(.ofBorderless).accessibilityLabel("Clear filter")
                 }
             }
             .padding(.horizontal, 8).padding(.vertical, 5)
@@ -235,7 +242,7 @@ struct BoardPage: View {
                     Button { zoomPercent = Self.zoomLevels[min(Self.zoomLevels.count - 1, idx + 1)] } label: { Label("Zoom In", systemImage: "plus") }
                         .disabled(idx >= Self.zoomLevels.count - 1).accessibilityLabel("Zoom in")
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.ofBorderless)
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Zoom")
 
@@ -272,7 +279,7 @@ struct BoardPage: View {
             } label: {
                 Label("More", systemImage: "ellipsis.circle")
             }
-            .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+            .borderlessAccentMenu().menuIndicator(.hidden).fixedSize()
             .accessibilityLabel("More Beat Board actions")
             .accessibilityIdentifier("story-more")
     }
@@ -296,7 +303,7 @@ struct BoardPage: View {
             Button("Park") { Task { await model.park(refs) } }
             Button("Delete", role: .destructive) { Task { await model.requestDelete(refs) } }
             Button { model.clearSelection() } label: { Label("Clear", systemImage: "xmark") }
-                .buttonStyle(.borderless).accessibilityLabel("Clear selection")
+                .buttonStyle(.ofBorderless).accessibilityLabel("Clear selection")
         }
         .controlSize(.small)
         .padding(.horizontal, 16).padding(.vertical, 7)

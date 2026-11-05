@@ -48,7 +48,7 @@ struct TrialCornerToolbar: ViewModifier {
         content.toolbar {
             // Nothing is added in the internal build, so its toolbar stays exactly as it is.
             if licence.isStore {
-                ToolbarItem(placement: .primaryAction) { TrialCorner(licence: licence) }
+                ToolbarItem(placement: .primaryAction) { TrialCorner(licence: licence) }.plainToolbarBackground()
             }
         }
     }

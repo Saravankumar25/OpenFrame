@@ -1,9 +1,9 @@
 //! Folders (one per item) and collections (N:M thematic groups) — FSD §5.6, §88.7.
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::rows::{next_position, opt_text, text, update_fields};
 use rusqlite::{OptionalExtension, params};
 use serde::Deserialize;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::rows::{next_position, opt_text, text, update_fields};
 use ts_rs::TS;
 
 use super::items::check_folder;

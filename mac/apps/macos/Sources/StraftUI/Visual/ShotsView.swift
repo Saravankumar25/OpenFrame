@@ -39,10 +39,9 @@ struct ShotsView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .task(id: "\(dataKey)|\(hub.scenesLoaded)|\(model.sceneKey ?? "")|\(model.showRemoved)") { await model.reload() }
         .themedSheet(item: $model.sheet) { ShotSheetHost(model: model, sheet: $0) }
-        .inspector(isPresented: Binding(get: { model.selected != nil }, set: { if !$0 { model.selectedId = nil } })) {
+        .sidePane("shots", isPresented: model.selected != nil, minimum: 320, ideal: 380, maximum: 500) {
             if let s = model.selected {
                 ShotInspector(model: model, shot: s).id(s.id)
-                    .inspectorColumnWidth(min: 320, ideal: 380, max: 500)
             }
         }
         .onProjectIntent("production.new_shot") { composerFocused = true }
@@ -110,7 +109,7 @@ struct ShotsView: View {
                 Menu {
                     Button("Copy Planning to Another Scene\u{2026}") { model.sheet = .copyPlanning }
                 } label: { Label("More", systemImage: "ellipsis.circle") }
-                    .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+                    .borderlessAccentMenu().menuIndicator(.hidden).fixedSize()
                     .accessibilityLabel("More scene actions")
                     .accessibilityIdentifier("shots-more")
             }
@@ -433,7 +432,7 @@ private struct ShotInspector: View {
                     }
                     Spacer()
                     Button { model.selectedId = nil } label: { Label("Close", systemImage: "xmark") }
-                        .buttonStyle(.borderless).accessibilityLabel("Close").accessibilityIdentifier("shot-inspector-close")
+                        .buttonStyle(.ofBorderless).accessibilityLabel("Close").accessibilityIdentifier("shot-inspector-close")
                 }
                 if shot.needsReview, !shot.sceneRemoved {
                     Text("Scene \(shot.sceneNumber ?? "") changed since this shot was planned. Review it against the script.")
@@ -546,7 +545,7 @@ private struct ShotInspector: View {
                     Menu {
                         ForEach(unused, id: \.self) { c in Button(c) { charText = c; addCharacter() } }
                     } label: { Label("Characters", systemImage: "person.crop.circle.badge.plus") }
-                        .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+                        .borderlessAccentMenu().menuIndicator(.hidden).fixedSize()
                         .accessibilityLabel("Characters in this scene")
                         .accessibilityIdentifier("shot-character-suggestions")
                 }

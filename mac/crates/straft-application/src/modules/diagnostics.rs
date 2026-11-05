@@ -35,11 +35,11 @@ use std::collections::BTreeMap;
 use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_security::archive::{EntrySource, write_zip};
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_security::archive::{EntrySource, write_zip};
 use ts_rs::TS;
 
 use crate::core::AppCore;
@@ -865,9 +865,7 @@ fn sanitize_message(target: &str, raw: &str) -> String {
     // only (panic messages can quote values).
     let ours = target.starts_with("straft")
         || target.starts_with(straft_platform::legacy_names::LOG_TARGET_PREFIX);
-    if ours
-        && let Some(rest) = raw.strip_prefix("panic at ")
-    {
+    if ours && let Some(rest) = raw.strip_prefix("panic at ") {
         let loc = rest.split(": ").next().unwrap_or("");
         return if is_location(loc) {
             format!("panic at {loc} (message omitted)")

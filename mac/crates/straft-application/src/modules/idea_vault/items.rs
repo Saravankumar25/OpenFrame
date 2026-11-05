@@ -5,12 +5,12 @@
 use std::path::PathBuf;
 
 use base64::Engine as _;
-use straft_domain::enums::VaultItemType;
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::rows::{int, opt_int, opt_text, update_fields};
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::enums::VaultItemType;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::rows::{int, opt_int, opt_text, update_fields};
 use ts_rs::TS;
 
 use super::model::{

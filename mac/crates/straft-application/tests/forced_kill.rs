@@ -16,10 +16,10 @@ use std::process::{Child, Command, Stdio};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use serde_json::{Value, json};
 use straft_application::events::{AppEvent, RecordingSink};
 use straft_application::{AppConfig, AppCore};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const WORKER_ENV: &str = "STRAFT_KILL_WORKER";
 const DIR_ENV: &str = "STRAFT_KILL_DIR";

@@ -1,15 +1,23 @@
 {
   "about": "Every web address written into the shipped app (apps/desktop and crates source, tauri.conf.json, index.html). scripts/check-links.mjs fails on an address that is not listed here and on a listed address that no longer appears. `prefix: true` entries cover every address that starts with them. `online: true` addresses are fetched by `node scripts/check-links.mjs --online` before a build (ADR-0030 decision 6). Addresses a writer types (Idea Vault links, mood board links) are not listed: they are the writer's own.",
   "addresses": [
-    { "address": "https://developer.microsoft.com/microsoft-edge/webview2/consumer/", "online": true, "why": "Offered when the WebView2 runtime is missing (distribution.rs); the user chooses to open it." },
-    { "address": "https://schema.tauri.app/config/2", "online": false, "why": "JSON schema reference in tauri.conf.json for editors; the app never opens it." },
-    { "address": "http://localhost:1420", "online": false, "why": "Vite development server (devUrl); not used by release builds." },
-    { "address": "http://ipc.localhost", "online": false, "why": "Tauri IPC origin in the content security policy; local to the app, never the network." },
-    { "address": "http://ofasset.localhost", "online": false, "why": "Local asset protocol for project images (asset_scope.rs and the content security policy); never the network." },
-    { "address": "https://huggingface.co", "prefix": true, "online": true, "why": "The Straft AI model download after the person's click (download.rs, fetch.rs; ADR-0032): the pinned files at fixed commits, redirects only to huggingface.co or *.hf.co." },
-    { "address": "http://127.0.0.1:", "prefix": true, "online": false, "why": "The local llama.cpp server the app starts on a random loopback port (supervisor.rs); never leaves the computer." },
-    { "address": "http://schemas.openxmlformats.org/", "prefix": true, "online": false, "why": "XML namespace names written inside exported DOCX files (docx.rs); identifiers, never fetched." },
-    { "address": "http://purl.org/dc/elements/1.1", "online": false, "why": "Dublin Core namespace name inside exported DOCX files (docx.rs); an identifier, never fetched." },
-    { "address": "https://openframestudio.app/contact/", "online": true, "why": "Opened in the browser when the person chooses Contact us; the app sends nothing." }
+    {"address": "https://developer.microsoft.com/microsoft-edge/webview2/consumer/", "online": true, "why": "Offered when the WebView2 runtime is missing (distribution.rs); the user chooses to open it."},
+    {"address": "https://schema.tauri.app/config/2", "online": false, "why": "JSON schema reference in tauri.conf.json for editors; the app never opens it."},
+    {"address": "http://localhost:1420", "online": false, "why": "Vite development server (devUrl); not used by release builds."},
+    {"address": "http://ipc.localhost", "online": false, "why": "Tauri IPC origin in the content security policy; local to the app, never the network."},
+    {"address": "http://ofasset.localhost", "online": false, "why": "Local asset protocol for project images (asset_scope.rs and the content security policy); never the network."},
+    {"address": "https://huggingface.co", "prefix": true, "online": true, "why": "The Straft AI model download after the person's click (download.rs, fetch.rs; ADR-0032): the pinned files at fixed commits, redirects only to huggingface.co or *.hf.co."},
+    {"address": "http://127.0.0.1:", "prefix": true, "online": false, "why": "The local llama.cpp server the app starts on a random loopback port (supervisor.rs); never leaves the computer."},
+    {"address": "http://schemas.openxmlformats.org/", "prefix": true, "online": false, "why": "XML namespace names written inside exported DOCX files (docx.rs); identifiers, never fetched."},
+    {"address": "http://purl.org/dc/elements/1.1", "online": false, "why": "Dublin Core namespace name inside exported DOCX files (docx.rs); an identifier, never fetched."},
+    {"address": "https://straftstudio.com/contact/", "online": true, "why": "Opened in the browser when the person chooses Contact us; the app sends nothing."},
+    {"address": "https://www.youtube.com/@StraftStudio", "online": true, "why": "Official account (YouTube), opened in the browser when the person chooses it in the Mac welcome window (SocialLinks.swift); the app sends nothing."},
+    {"address": "https://www.facebook.com/straftstudio/", "online": true, "why": "Official account (Facebook), opened in the browser when the person chooses it in the Mac welcome window (SocialLinks.swift); the app sends nothing."},
+    {"address": "https://www.instagram.com/straftstudio/", "online": true, "why": "Official account (Instagram), opened in the browser when the person chooses it in the Mac welcome window (SocialLinks.swift); the app sends nothing."},
+    {"address": "https://x.com/straftstudio/", "online": true, "why": "Official account (X), opened in the browser when the person chooses it in the Mac welcome window (SocialLinks.swift); the app sends nothing."},
+    {"address": "https://www.threads.com/@straftstudio/", "online": true, "why": "Official account (Threads), opened in the browser when the person chooses it in the Mac welcome window (SocialLinks.swift); the app sends nothing."},
+    {"address": "https://www.linkedin.com/company/straftstudio/", "online": true, "why": "Official account (LinkedIn), opened in the browser when the person chooses it in the Mac welcome window (SocialLinks.swift); the app sends nothing."},
+    {"address": "https://www.reddit.com/user/straftstudio/", "online": true, "why": "Official account (Reddit), opened in the browser when the person chooses it in the Mac welcome window (SocialLinks.swift); the app sends nothing."},
+    {"address": "https://straftstudio.com/discord", "online": true, "why": "Official account (Discord, through the website so the invite can change), opened in the browser when the person chooses it in the Mac welcome window (SocialLinks.swift); the app sends nothing."}
   ]
 }

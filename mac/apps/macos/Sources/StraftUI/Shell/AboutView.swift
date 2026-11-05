@@ -114,11 +114,11 @@ struct AboutView: View {
                 Text("Version \(about.appVersion)")
                     .accessibilityIdentifier("about-version")
                 Text("Core \(about.coreVersion)")
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.callout).foregroundStyle(.ofMuted)
                     .accessibilityIdentifier("about-core")
                 if !about.channelName.isEmpty {
                     Text(about.channelName)
-                        .font(.callout).foregroundStyle(.secondary)
+                        .font(.callout).foregroundStyle(.ofMuted)
                         .accessibilityIdentifier("about-channel")
                 }
                 if let notice = about.notice {
@@ -132,13 +132,13 @@ struct AboutView: View {
             }
             Text("Your work is stored on this Mac.")
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.ofMuted)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 8)
             Text("Copyright 2026 Vighnajith Advisories Private Limited")
                 .font(.caption2)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(.ofMuted)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("about-publisher")

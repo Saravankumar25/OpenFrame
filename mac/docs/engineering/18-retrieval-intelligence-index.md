@@ -126,7 +126,7 @@ worker thread (per open project):
 - Delete → document, chunks, vectors, node and fragment removed after commit. Restore → rebuilt. Undo/redo → same path.
 - Migration → `canonical_schema_version` differs → rebuilt. Project open → hash-guarded full reconcile in the
   background (catches changes made while the index was closed, restored checkpoints, copied folders).
-- **Lazy activation.** The worker starts at project open when Offline AI is installed, else on the first retrieval,
+- **Lazy activation.** The worker starts at project open when Straft AI is installed, else on the first retrieval,
   `ai.index_status` or `ai.index_rebuild`. Before activation the observer records nothing (activation reconciles).
 - Close: `AppCore::set_project` detaches the observer and stops the worker, waiting until it released its files.
 - An embedding runtime failure pauses embeddings (retry after 30 s); documents and graph stay current.
@@ -182,10 +182,10 @@ untrusted-data boundary.
 
 `straft_search::Embedder` (`model_id` incl. version + hash prefix, `dim`, `embed`). The production adapter
 `AiManagerEmbedder` (`intelligence/mod.rs`) wraps `straft_ai::AiManager::{embedding_info, embed}`: the installed
-Offline AI embedding model (BGE small English v1.5, 384 dimensions, served by the embedding sidecar) with model id
+Straft AI embedding model (BGE small English v1.5, 384 dimensions, served by the embedding sidecar) with model id
 `<model id>@<version>#<first 12 hex of SHA-256>`. `IntelligenceService::embedder` uses an explicitly attached embedder
-first (`set_embedder`, tests), else this adapter; when Offline AI is not installed there is none, documents and graph
-are still built and retrieval runs FTS + graph + SQL. A different embedding model (for example after an Offline AI
+first (`set_embedder`, tests), else this adapter; when Straft AI is not installed there is none, documents and graph
+are still built and retrieval runs FTS + graph + SQL. A different embedding model (for example after Straft AI
 update) has a different model id, so the stored vectors are dropped and re-embedded (§3). Tests use `straft_test_support::embedder::ConceptEmbedder`
 (deterministic feature hashing + small synonym groups) — never shipped.
 

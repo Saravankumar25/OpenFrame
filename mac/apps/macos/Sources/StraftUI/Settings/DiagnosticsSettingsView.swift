@@ -24,7 +24,7 @@ struct DiagnosticsSettingsView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(file.name).font(.body.weight(.medium))
                             Text("\(file.description) (\(formattedBytes(file.bytes)))")
-                                .font(.callout).foregroundStyle(.secondary)
+                                .font(.callout).foregroundStyle(.ofMuted)
                         }
                         .accessibilityElement(children: .combine)
                     }

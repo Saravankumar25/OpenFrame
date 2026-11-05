@@ -23,11 +23,11 @@ struct GeneralSettingsView: View {
                     Button("Save Name") { Task { await save() } }
                         .disabled(saving || name.trimmingCharacters(in: .whitespaces).isEmpty || name == info?.profile.displayName)
                         .accessibilityIdentifier("settings-save-name")
-                    if saved { Text("Saved").foregroundStyle(.secondary) }
+                    if saved { Text("Saved").foregroundStyle(.ofMuted) }
                 }
                 if let error { SettingsErrorText(message: error) }
                 Text("This name appears on your notes, comments and history in the projects you open.")
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.callout).foregroundStyle(.ofMuted)
             }
             Section("Version") {
                 LabeledContent("Straft Studio", value: info?.appVersion ?? AppVersion.current)

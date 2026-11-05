@@ -12,8 +12,8 @@
 
 use std::sync::LazyLock;
 
-use straft_domain::Actor;
 use regex::Regex;
+use straft_domain::Actor;
 
 use super::Fact;
 use crate::modules::production::privacy::may_see_contacts;
@@ -186,8 +186,9 @@ pub fn apply(g: &Guard, facts: &mut Vec<Fact>, missing: &mut Vec<String>) -> usi
                 // A required value that holds contact data goes with it, and so does one cut from a
                 // sentence with the contact in it: only what the hidden fields still hold may be asked for.
                 let fields = std::mem::take(&mut f.fields);
-                f.requires
-                    .retain(|r| !hide_contacts(r).1 && fields.iter().any(|(_, v)| v.contains(r.as_str())));
+                f.requires.retain(|r| {
+                    !hide_contacts(r).1 && fields.iter().any(|(_, v)| v.contains(r.as_str()))
+                });
                 f.fields = fields;
                 hid_contact = true;
                 acted += 1;

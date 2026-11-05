@@ -6,13 +6,13 @@
 use std::path::Path;
 use std::sync::Arc;
 
+use serde::Deserialize;
+use serde_json::{Value, json};
 use straft_application::core::AppCore;
 use straft_application::modules::ai::index::{self, EntityIndex, Focus};
 use straft_application::modules::ai::sections::{self, SectionPick, Selection};
 use straft_application::modules::ai::turn;
 use straft_application::modules::schedule;
-use serde::Deserialize;
-use serde_json::{Value, json};
 
 use crate::{Case, fixture, is_proposal_tool};
 

@@ -14,9 +14,9 @@
 use std::sync::Arc;
 use std::time::Instant;
 
+use serde_json::{Value, json};
 use straft_application::core::{AppConfig, AppCore};
 use straft_application::events::RecordingSink;
-use serde_json::{Value, json};
 
 struct Env {
     _dir: tempfile::TempDir,

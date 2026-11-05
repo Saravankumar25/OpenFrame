@@ -25,12 +25,12 @@
 //! Change Set is applied) — and a Change Set can never contain an `ai.*`
 //! operation, so acceptance can't be nested or chained.
 
-use straft_domain::auth::ActorOrigin;
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::undo::{self, RowChange};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::Deserialize;
 use serde_json::{Value, json};
+use straft_domain::auth::ActorOrigin;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::undo::{self, RowChange};
 use ts_rs::TS;
 
 use super::catalog;
@@ -547,7 +547,8 @@ pub fn accept_with(
             || !registered
             || carries_file_argument(core, &op.op, &op.args)
         {
-            let msg = "This proposal contains a change Straft Studio can't apply. Nothing was changed.";
+            let msg =
+                "This proposal contains a change Straft Studio can't apply. Nothing was changed.";
             update_state(
                 store,
                 actor,

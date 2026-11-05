@@ -12,9 +12,9 @@ use std::io::Read as _;
 use std::path::{Path, PathBuf};
 
 use base64::Engine as _;
+use serde_json::{Value, json};
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ fixtures
 

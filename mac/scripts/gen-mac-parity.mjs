@@ -35,7 +35,7 @@ const FEATURE_NA = [
 
 // Mac phase: decided by build area first, then by words in the feature name.
 const NAME_PHASE = [
-  [/Offline AI engine|AI health|AI report/i, "M8"],
+  [/Straft AI engine|AI health|AI report/i, "M8"],
   [/Export diagnostics bundle|Appearance|themes?\b/i, "M3"],
   [/scene numbers|page break directive|Title page structured|Custom elements \(/i, "M4"],
   [/Moodboard|Storyboard panels|Shot list/i, "M6"],
@@ -51,7 +51,7 @@ function featurePhase(name, area) {
   if (/export|import|FDX|pdf/i.test(name) && !/Windows|Store/i.test(area)) return "M7";
   if (/Screenplay engine|Writing comfort/i.test(area)) return "M4";
   if (/Packages and backup/i.test(area)) return "M7";
-  if (/AI assistant/i.test(area)) return "M8";
+  if (/Straft AI/i.test(area)) return "M8";
   if (/Story Board and Idea Vault|Breakdown/i.test(area)) return "M5";
   if (/Shooting schedule|Call sheets, budget/i.test(area)) return "M6";
   return "M9";

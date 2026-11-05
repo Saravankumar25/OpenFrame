@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 use image::{Rgb, RgbImage};
 
-type C = [u8; 3];
+pub type C = [u8; 3];
 
 const NIGHT: C = [12, 20, 38];
 const SEA: C = [22, 58, 84];
@@ -19,24 +19,24 @@ const INK: C = [30, 30, 30];
 const PAPER: C = [246, 242, 230];
 const LEAF: C = [40, 96, 52];
 
-struct Canvas(RgbImage);
+pub struct Canvas(pub RgbImage);
 
 impl Canvas {
-    fn new(w: u32, h: u32, c: C) -> Self {
+    pub fn new(w: u32, h: u32, c: C) -> Self {
         Canvas(RgbImage::from_pixel(w, h, Rgb(c)))
     }
-    fn w(&self) -> i32 {
+    pub fn w(&self) -> i32 {
         self.0.width() as i32
     }
-    fn h(&self) -> i32 {
+    pub fn h(&self) -> i32 {
         self.0.height() as i32
     }
-    fn px(&mut self, x: i32, y: i32, c: C) {
+    pub fn px(&mut self, x: i32, y: i32, c: C) {
         if x >= 0 && y >= 0 && x < self.w() && y < self.h() {
             self.0.put_pixel(x as u32, y as u32, Rgb(c));
         }
     }
-    fn vgrad(&mut self, y0: i32, y1: i32, a: C, b: C) {
+    pub fn vgrad(&mut self, y0: i32, y1: i32, a: C, b: C) {
         for y in y0.max(0)..y1.min(self.h()) {
             let t = (y - y0) as f32 / (y1 - y0).max(1) as f32;
             let c = mix(a, b, t);
@@ -45,20 +45,20 @@ impl Canvas {
             }
         }
     }
-    fn rect(&mut self, x: i32, y: i32, w: i32, h: i32, c: C) {
+    pub fn rect(&mut self, x: i32, y: i32, w: i32, h: i32, c: C) {
         for yy in y..y + h {
             for xx in x..x + w {
                 self.px(xx, yy, c);
             }
         }
     }
-    fn frame(&mut self, x: i32, y: i32, w: i32, h: i32, t: i32, c: C) {
+    pub fn frame(&mut self, x: i32, y: i32, w: i32, h: i32, t: i32, c: C) {
         self.rect(x, y, w, t, c);
         self.rect(x, y + h - t, w, t, c);
         self.rect(x, y, t, h, c);
         self.rect(x + w - t, y, t, h, c);
     }
-    fn line(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, t: i32, c: C) {
+    pub fn line(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, t: i32, c: C) {
         let n = (x1 - x0).abs().max((y1 - y0).abs()).max(1);
         for i in 0..=n {
             let x = x0 + (x1 - x0) * i / n;
@@ -66,7 +66,7 @@ impl Canvas {
             self.rect(x - t / 2, y - t / 2, t.max(1), t.max(1), c);
         }
     }
-    fn disc(&mut self, cx: i32, cy: i32, r: i32, c: C) {
+    pub fn disc(&mut self, cx: i32, cy: i32, r: i32, c: C) {
         for y in -r..=r {
             for x in -r..=r {
                 if x * x + y * y <= r * r {
@@ -75,7 +75,7 @@ impl Canvas {
             }
         }
     }
-    fn waves(&mut self, y0: i32, rows: i32, c: C, seed: i32) {
+    pub fn waves(&mut self, y0: i32, rows: i32, c: C, seed: i32) {
         for r in 0..rows {
             let y = y0 + r * 14;
             let mut x = -((seed * 7 + r * 13) % 40);
@@ -87,7 +87,7 @@ impl Canvas {
         }
     }
     /// Upper-case label in a 5x7 pixel font, scaled.
-    fn text(&mut self, x: i32, y: i32, s: &str, scale: i32, c: C) {
+    pub fn text(&mut self, x: i32, y: i32, s: &str, scale: i32, c: C) {
         let mut cx = x;
         for ch in s.chars() {
             let g = glyph(ch.to_ascii_uppercase());
@@ -101,7 +101,7 @@ impl Canvas {
             cx += 6 * scale;
         }
     }
-    fn png(&self) -> Vec<u8> {
+    pub fn png(&self) -> Vec<u8> {
         let mut out = std::io::Cursor::new(Vec::new());
         self.0
             .write_to(&mut out, image::ImageFormat::Png)

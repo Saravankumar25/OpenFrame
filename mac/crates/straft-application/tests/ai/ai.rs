@@ -1,4 +1,4 @@
-//! Offline AI Assistant acceptance tests (FSD §42, FSD-AI-001..027, AI-AC-001..025;
+//! Straft AI acceptance tests (FSD §42, FSD-AI-001..027, AI-AC-001..025;
 //! Local AI Runtime spec §10–§14), driven through the public operation registry.
 //!
 //! No model is downloaded: a scripted in-process `InferenceProvider` is attached, so
@@ -10,13 +10,13 @@
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
+use rusqlite::params;
+use serde_json::{Value, json};
 use straft_ai::{ChatRequest, InferenceProvider};
 use straft_application::MutationMeta;
 use straft_application::modules::ai::{self, ChangeSetDraft, OpCall, PreviewRow, change_set};
 use straft_domain::{AppError, AppResult, Capability, Role, new_id, now_ms};
 use straft_test_support::TestEnv;
-use rusqlite::params;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ fixtures
 

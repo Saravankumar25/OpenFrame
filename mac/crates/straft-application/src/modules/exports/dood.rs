@@ -5,13 +5,13 @@
 //! Reproducible: the document carries the date of the schedule's last change,
 //! never the export clock, so the same data gives byte-identical files.
 
+use serde::Deserialize;
 use straft_domain::{Actor, AppError, AppResult};
 use straft_import_export::report::{
     Align, Block, Cell, Col, Column, Document, HeaderStyle, Masthead, Matrix, MatrixCode,
     MatrixCount, MatrixDay, MatrixKey, MatrixRow, MatrixTotals, Metric, Metrics, Rgb, Row, Side,
     StyledTable, Table, Txt, pal,
 };
-use serde::Deserialize;
 use time::Weekday;
 use ts_rs::TS;
 

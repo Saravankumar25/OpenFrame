@@ -23,10 +23,10 @@
 use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 
-use straft_application::core::AppCore;
-use straft_domain::Actor;
 use serde::Deserialize;
 use serde_json::{Value, json};
+use straft_application::core::AppCore;
+use straft_domain::Actor;
 
 pub const LOW_TIDE: &str = "low-tide-two-screenplays";
 pub const THIN: &str = "thin-project";

@@ -66,7 +66,7 @@ struct ShortcutsSettingsView: View {
                 .accessibilityLabel("Filter commands")
                 .accessibilityIdentifier("shortcuts-filter")
             Text("\(model.shown.count) commands")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption).foregroundStyle(.ofMuted)
                 .accessibilityIdentifier("shortcuts-count")
             Spacer()
             Button {
@@ -83,7 +83,7 @@ struct ShortcutsSettingsView: View {
     private var list: some View {
         List {
             Text("Change, remove or add keys. Every command also has a button or menu on screen. Your shortcuts apply in every project on this computer.")
-                .font(.callout).foregroundStyle(.secondary)
+                .font(.callout).foregroundStyle(.ofMuted)
                 .listRowSeparator(.hidden)
             ForEach(model.groups, id: \.self) { group in
                 Section(group) {
@@ -94,7 +94,7 @@ struct ShortcutsSettingsView: View {
             }
             if model.shown.isEmpty {
                 Text("No command matches \u{201C}\(model.filter)\u{201D}.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.ofMuted)
                     .accessibilityIdentifier("shortcuts-none")
             }
         }
@@ -110,10 +110,10 @@ struct ShortcutsSettingsView: View {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(c.label).fontWeight(.medium)
-                    Text("On screen: \(c.route)").font(.caption).foregroundStyle(.secondary)
+                    Text("On screen: \(c.route)").font(.caption).foregroundStyle(.ofMuted)
                     HStack(spacing: 4) {
-                        Text("Current").font(.caption).foregroundStyle(.secondary)
-                        if current.isEmpty && model.recording != c.id { Text("None").font(.callout).foregroundStyle(.secondary) }
+                        Text("Current").font(.caption).foregroundStyle(.ofMuted)
+                        if current.isEmpty && model.recording != c.id { Text("None").font(.callout).foregroundStyle(.ofMuted) }
                         ForEach(Array(current.enumerated()), id: \.offset) { index, chord in
                             keyChip(c, chord, index: index)
                         }
@@ -125,18 +125,18 @@ struct ShortcutsSettingsView: View {
                                 .frame(width: 190, height: 24)
                                 .accessibilityIdentifier("shortcut-recorder-\(c.id)")
                         }
-                        if model.isChanged(c) { Text("(changed)").font(.caption).foregroundStyle(.secondary) }
+                        if model.isChanged(c) { Text("(changed)").font(.caption).foregroundStyle(.ofMuted) }
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Default").font(.caption2).foregroundStyle(.secondary)
+                    Text("Default").font(.caption2).foregroundStyle(.ofMuted)
                     Text(c.defaults.isEmpty ? "None" : c.defaults.map(ShortcutCatalogue.display).joined(separator: ", "))
-                        .font(.callout).foregroundStyle(.secondary)
+                        .font(.callout).foregroundStyle(.ofMuted)
                 }
                 .frame(width: 90, alignment: .leading)
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Conflict").font(.caption2).foregroundStyle(.secondary)
+                    Text("Conflict").font(.caption2).foregroundStyle(.ofMuted)
                     Text(clash.isEmpty ? "None" : "Also used by \(clash.joined(separator: ", "))")
                         .font(.callout)
                         .foregroundStyle(clash.isEmpty ? Color.secondary : theme["red-t"])

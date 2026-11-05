@@ -16,11 +16,11 @@
 use std::collections::BTreeMap;
 use std::sync::LazyLock;
 
-use straft_domain::enums::ProjectStatus;
-use straft_domain::{Actor, AppError, AppResult, Capability};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::Deserialize;
 use serde_json::{Value, json};
+use straft_domain::enums::ProjectStatus;
+use straft_domain::{Actor, AppError, AppResult, Capability};
 
 use super::queries::{self, join_or};
 use super::scope::ResolvedScope;
@@ -311,10 +311,7 @@ fn draft(tool: &str, title: String, summary: String, module: &str, args: Value) 
 /// strict schema here). Does not write anything.
 pub fn build(ctx: &BuildCtx<'_>, tool: &str, args: &Value) -> AppResult<ChangeSetDraft> {
     let spec = spec(tool).ok_or_else(|| {
-        AppError::ai(
-            "unknown_tool",
-            "That isn't something Straft AI can do yet.",
-        )
+        AppError::ai("unknown_tool", "That isn't something Straft AI can do yet.")
     })?;
     if !spec
         .required_ops

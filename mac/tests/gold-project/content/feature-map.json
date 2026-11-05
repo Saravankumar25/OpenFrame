@@ -1095,7 +1095,7 @@
     },
     {
       "key": "AI-001",
-      "name": "Offline AI engine in every package, models downloaded after install and checked, import",
+      "name": "Straft AI engine in every package, models downloaded after install and checked, import",
       "ops": [
         "ai.download.start",
         "ai.download.pause",

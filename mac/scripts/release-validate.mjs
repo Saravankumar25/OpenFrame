@@ -13,7 +13,7 @@
 //      removed, manifests no longer carry the pending placeholder);
 //   3. no key material is committed;
 //   5. THIRD_PARTY_LICENSES.md exists and the license inventory has no copyleft/unknown entries;
-//   6. the Offline AI build inputs match packaging/ai/ai-assets.lock.json (ADR-0026: every package
+//   6. the Straft AI build inputs match packaging/ai/ai-assets.lock.json (ADR-0026: every package
 //      carries the engine; the models download after install);
 //   6a. every model in the lock is pinned to a Hugging Face file at a full commit (ADR-0032), and
 //      the test model source of the test suite is not set (STRAFT_TEST_MODEL_SOURCE,
@@ -184,12 +184,12 @@ if (!exists("THIRD_PARTY_LICENSES.md")) {
   }
 }
 
-// 6. Offline AI engine (ADR-0026) ---------------------------------------------------------------
+// 6. Straft AI engine (ADR-0026) ---------------------------------------------------------------
 try {
   const ai = prepareAiAssets({ check: true, log: () => undefined });
-  pass("Offline AI engine", `${ai.files.length} pinned files (${(ai.bytes / 1048576).toFixed(0)} MB) match the lock`);
+  pass("Straft AI engine", `${ai.files.length} pinned files (${(ai.bytes / 1048576).toFixed(0)} MB) match the lock`);
 } catch (e) {
-  failCheck("Offline AI engine", e.message.replace(/\s*\n\s*/g, " "));
+  failCheck("Straft AI engine", e.message.replace(/\s*\n\s*/g, " "));
 }
 
 // 6a. model source (ADR-0032) --------------------------------------------------------------------

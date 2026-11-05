@@ -71,7 +71,7 @@ struct StorySheetFrame<Content: View, Footer: View>: View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(spacing: PageSpacing.tight) {
                 Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                if let sub { Text(sub).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }
+                if let sub { Text(sub).font(.callout).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true) }
             }
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
@@ -133,7 +133,7 @@ struct StoryNoticeBar: View {
                             .accessibilityIdentifier("story-notice-undo")
                     }
                     Button { model.dismissNotice() } label: { Label("Dismiss", systemImage: "xmark") }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.ofBorderless)
                         .accessibilityLabel("Dismiss")
                 }
                 .font(.callout)
@@ -193,7 +193,7 @@ struct SavedField: View {
                         .padding(4)
                         .overlay(alignment: .topLeading) {
                             if saver.text.isEmpty && !placeholder.isEmpty {
-                                Text(placeholder).foregroundStyle(.tertiary).padding(.horizontal, 9).padding(.vertical, 12).allowsHitTesting(false)
+                                Text(placeholder).foregroundStyle(.ofMuted).padding(.horizontal, 9).padding(.vertical, 12).allowsHitTesting(false)
                             }
                         }
                 } else {
@@ -207,7 +207,7 @@ struct SavedField: View {
             .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(focused ? theme["accent"] : theme["line"]))
             .accessibilityLabel(label)
             .accessibilityIdentifier("story-field-\(label)")
-            if let hint { Text(hint).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }
+            if let hint { Text(hint).font(.caption).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true) }
         }
         .onChange(of: focused) { _, now in
             saver.focused = now
@@ -235,7 +235,7 @@ struct StoryAttachmentsField: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Attachments").font(.callout.weight(.medium))
             Text("Reference material only; attachments never become production assets automatically. Up to \(CardDrawerModel.attachmentsMax) per card.")
-                .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.caption).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true)
             FlowLayout(spacing: 6) {
                 ForEach(items, id: \.id) { a in
                     HStack(spacing: 4) {
@@ -249,11 +249,11 @@ struct StoryAttachmentsField: View {
                         } label: {
                             Label(a.asset.originalName, systemImage: "doc")
                         }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.ofBorderless)
                         .disabled(!a.asset.available)
                         .help(a.asset.available ? a.asset.originalName : "The file is missing")
                         Button { Task { await story.removeAttachment(a.id) } } label: { Label("Remove", systemImage: "xmark.circle") }
-                            .buttonStyle(.borderless)
+                            .buttonStyle(.ofBorderless)
                             .accessibilityLabel("Remove \(a.asset.originalName)")
                     }
                     .padding(.horizontal, 8).padding(.vertical, 3)

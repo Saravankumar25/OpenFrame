@@ -1,4 +1,4 @@
-// Pure view logic for the AI Assistant (Windows: apps/desktop/src/ai/model.ts). No project truth
+// Pure view logic for Straft AI (Windows: apps/desktop/src/ai/model.ts). No project truth
 // lives here: everything shown comes from `ai.*` operations. Same words as Windows.
 
 import Foundation

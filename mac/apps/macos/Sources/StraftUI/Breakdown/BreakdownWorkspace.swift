@@ -186,14 +186,14 @@ struct BreakdownTabView: View {
             Button { listHidden.toggle() } label: {
                 Label(listHidden ? "Show scenes" : "Hide scenes", systemImage: "sidebar.left").labelStyle(.titleAndIcon)
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.ofBorderless)
             .controlSize(.small)
             .help(listHidden ? "Show the scene list" : "Hide the scene list")
             .accessibilityIdentifier("breakdown-toggle-scenes")
             Button { panelHidden.toggle() } label: {
                 Label(panelHidden ? "Show panel" : "Hide panel", systemImage: "sidebar.right").labelStyle(.titleAndIcon)
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.ofBorderless)
             .controlSize(.small)
             .help(panelHidden ? "Show the scene breakdown panel" : "Hide the scene breakdown panel to give the script more room")
             .accessibilityIdentifier("breakdown-toggle-panel")

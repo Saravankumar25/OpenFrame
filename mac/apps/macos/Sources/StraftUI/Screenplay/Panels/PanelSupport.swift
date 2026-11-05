@@ -300,7 +300,7 @@ struct PanelChip: View {
         case .yellow: ("yellow-soft", "yellow-t")
         case .red: ("red-soft", "red-t")
         case .purple: ("purple-soft", "purple-t")
-        case .accent: ("accent-soft", "accent-ink")
+        case .accent: ("accent-soft", "accent-d")
         }
         Text(text)
             .font(.caption2.weight(.semibold))

@@ -6,6 +6,7 @@
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
+use serde_json::{Value, json};
 use straft_ai::{ChatRequest, InferenceProvider};
 use straft_application::MutationMeta;
 use straft_application::modules::ai::dossier::{self, Dossier, LeafRead};
@@ -17,7 +18,6 @@ use straft_application::modules::ai::service;
 use straft_application::modules::ai::turn::{self, Aids, AnswerType, TurnInput};
 use straft_domain::{Actor, AppResult, Capability, Role};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ fixtures
 
@@ -2523,7 +2523,11 @@ fn the_words_of_a_file_leave_the_project_when_it_is_deleted_for_good() {
         .unwrap()
         .clone();
     f.env.ok("trash.purge", json!({ "id": item["id"] }));
-    assert_eq!(words_in("sys_undo", "changes_json"), 0, "the undo log forgets them");
+    assert_eq!(
+        words_in("sys_undo", "changes_json"),
+        0,
+        "the undo log forgets them"
+    );
     assert_eq!(words_in("search_doc", "body"), 0, "search forgets them");
 }
 
@@ -2531,7 +2535,10 @@ fn the_words_of_a_file_leave_the_project_when_it_is_deleted_for_good() {
 #[cfg(unix)]
 fn a_picked_link_is_copied_but_its_words_stay_out_of_search() {
     let f = film();
-    let target = f.env.write_file("secret-notes.txt", b"The mast is 42 metres of steel lattice.");
+    let target = f.env.write_file(
+        "secret-notes.txt",
+        b"The mast is 42 metres of steel lattice.",
+    );
     let link = std::path::Path::new(&target).with_file_name("picked.txt");
     std::os::unix::fs::symlink(&target, &link).unwrap();
     f.env.ok("files.add", json!({ "paths": [link] }));

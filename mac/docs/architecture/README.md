@@ -77,7 +77,7 @@ If step 2 is never reached (the window is destroyed first), up to 400 ms of typi
 
 One Rust core, two shells. `straft-platform` holds the differences: folders, the atomic file replace, killing child processes with
 the app (Job Object on Windows, process group on the Mac), key labels, spell checking, power events, package identity.
-On the Mac the shell is a native SwiftUI application that calls the same core through a generated interface (UniFFI). It is built in the Mac track, after the Windows track closes ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)); the Tauri Mac shell is retired. The Mac platform adapter has never run. The AI engine is pinned only for Windows today (processor build); the engine provider interface, a Vulkan build and the Mac engine come in phases W5, W7 and M8.
+On the Mac the shell is a native SwiftUI application that calls the same core through a generated interface (UniFFI). It lives in `apps/macos` ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)); the Tauri Mac shell is retired. The AI engine is a helper process on both platforms behind the engine provider interface: processor and Vulkan builds on Windows ([ADR-0029](../adr/ADR-0029-gpu-acceleration.md)), a pinned Metal build on the Mac ([ADR-0033](../adr/ADR-0033-mac-ai-engine-helper-process-metal.md)).
 
 ## 5. Where to read more
 

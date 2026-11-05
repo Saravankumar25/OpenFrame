@@ -3,10 +3,10 @@
 
 use std::path::{Path, PathBuf};
 
-use straft_domain::{AppError, AppResult, new_id, now_ms};
-use straft_project_format::ProjectLayout;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::{AppError, AppResult, new_id, now_ms};
+use straft_project_format::ProjectLayout;
 use ts_rs::TS;
 
 use crate::core::AppCore;
@@ -481,9 +481,7 @@ pub fn ingest_file(tx: &Tx<'_>, source: &Path) -> AppResult<AssetInfo> {
     // Shared atomic replace: unique staging file in the shard folder, synced, then renamed; the
     // staging file is removed when the copy fails.
     let mut input = std::fs::File::open(source)?;
-    straft_platform::atomic::replace_with(&dest, |out| {
-        std::io::copy(&mut input, out).map(|_| ())
-    })?;
+    straft_platform::atomic::replace_with(&dest, |out| std::io::copy(&mut input, out).map(|_| ()))?;
     let sha = straft_security::sha256_file(&dest)?;
     let dims = image_dimensions(&dest, media_type);
     insert_asset(

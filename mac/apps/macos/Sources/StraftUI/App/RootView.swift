@@ -72,11 +72,6 @@ public struct RootView: View {
         }
     }
 
-    private var showsProject: Bool {
-        if case .project = model.phase { return true }
-        return false
-    }
-
     private func openPalette() {
         // A licence screen that cannot be closed also holds back the search palette.
         guard !model.licence.blocksApp else { return }

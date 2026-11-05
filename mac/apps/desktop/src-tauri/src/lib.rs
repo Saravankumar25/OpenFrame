@@ -12,10 +12,10 @@ mod distribution;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use serde_json::Value;
 use straft_application::events::{AppEvent, EventSink};
 use straft_application::{AppConfig, AppCore};
 use straft_domain::AppError;
-use serde_json::Value;
 use tauri::{AppHandle, Emitter, Manager, State};
 
 const EVENT_CHANNEL: &str = "of://event";
@@ -238,8 +238,11 @@ async fn of_open_url(url: String) -> Result<(), AppError> {
     let url = straft_security::web_link(&url)
         .ok_or_else(|| AppError::invalid_input("Only web links (http or https) can be opened."))?;
     straft_platform::shell::open_url(url).map_err(|e| {
-        AppError::new("internal.open_failed", "Straft Studio couldn't open that link.")
-            .with_detail(e.to_string())
+        AppError::new(
+            "internal.open_failed",
+            "Straft Studio couldn't open that link.",
+        )
+        .with_detail(e.to_string())
     })
 }
 
@@ -281,8 +284,11 @@ fn open_path(path: &std::path::Path, reveal: bool) -> Result<(), AppError> {
         straft_platform::shell::open_path(path)
     };
     r.map_err(|e| {
-        AppError::new("internal.open_failed", "Straft Studio couldn't open that file.")
-            .with_detail(e.to_string())
+        AppError::new(
+            "internal.open_failed",
+            "Straft Studio couldn't open that file.",
+        )
+        .with_detail(e.to_string())
     })
 }
 
@@ -681,23 +687,15 @@ mod tests {
     #[test]
     fn release_builds_cap_third_party_targets_at_info() {
         let f = |r: &str| log_filter_directives(Some(r), true);
-        assert_eq!(
-            f("trace"),
-            "info,straft=trace,tauri::protocol::asset=off"
-        );
-        assert_eq!(
-            f("debug"),
-            "info,straft=debug,tauri::protocol::asset=off"
-        );
+        assert_eq!(f("trace"), "info,straft=trace,tauri::protocol::asset=off");
+        assert_eq!(f("debug"), "info,straft=debug,tauri::protocol::asset=off");
         assert_eq!(
             f("warn,reqwest=trace,hyper=debug,straft_ai=trace"),
             "warn,reqwest=info,hyper=info,straft_ai=trace,tauri::protocol::asset=off"
         );
         // Span/field filters and junk are dropped; the asset protocol cannot be re-enabled.
         assert_eq!(
-            f(
-                "tauri[cmd{path}]=trace,=debug,x y=info,tauri::protocol::asset=trace,straft=bogus"
-            ),
+            f("tauri[cmd{path}]=trace,=debug,x y=info,tauri::protocol::asset=trace,straft=bogus"),
             "info,tauri::protocol::asset=off"
         );
         assert_eq!(
@@ -739,8 +737,8 @@ mod tests {
     /// the `ofasset` protocol may read: the project that was left is refused at once.
     #[test]
     fn asset_scope_follows_project_open_switch_and_close() {
-        use straft_application::events::RecordingSink;
         use serde_json::json;
+        use straft_application::events::RecordingSink;
         let base = tempfile::tempdir().unwrap();
         let core = AppCore::new(
             AppConfig::isolated(&base.path().join("env")),
@@ -851,8 +849,8 @@ mod tests {
     /// key-like values (CORE-014, log redaction test).
     #[test]
     fn real_operations_never_write_content_to_the_log() {
-        use straft_application::events::RecordingSink;
         use serde_json::json;
+        use straft_application::events::RecordingSink;
         use tracing_subscriber::util::SubscriberInitExt;
 
         const MARKERS: [&str; 9] = [

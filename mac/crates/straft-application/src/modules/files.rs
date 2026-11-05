@@ -2,11 +2,11 @@
 
 use std::path::PathBuf;
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::rows::{next_position, opt_text, text, update_fields};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::rows::{next_position, opt_text, text, update_fields};
 use ts_rs::TS;
 
 use crate::core::AppCore;
@@ -672,10 +672,8 @@ fn export_copy(core: &AppCore, actor: &Actor, args: ExportCopyArgs) -> AppResult
     // The shared atomic replace copies into a uniquely named sibling and renames it over the
     // destination, so a failed copy never leaves a half-written file or touches an existing one.
     let mut input = std::fs::File::open(&src).map_err(AppError::from)?;
-    straft_platform::atomic::replace_with(&dest, |out| {
-        std::io::copy(&mut input, out).map(|_| ())
-    })
-    .map_err(AppError::from)?;
+    straft_platform::atomic::replace_with(&dest, |out| std::io::copy(&mut input, out).map(|_| ()))
+        .map_err(AppError::from)?;
     Ok(dest.to_string_lossy().into_owned())
 }
 

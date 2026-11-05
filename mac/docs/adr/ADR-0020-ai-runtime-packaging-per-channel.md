@@ -1,4 +1,4 @@
-# ADR-0020: Offline AI runtime packaging per distribution channel
+# ADR-0020: Straft AI runtime packaging per distribution channel
 
 - **Amended 2026-10-15 by [ADR-0029](ADR-0029-gpu-acceleration.md):** the runtime that ships in each package now includes a Vulkan build next to the processor build. The Mac engine launch method (helper process or linked library) is an open item of [ADR-0027](ADR-0027-rust-core-two-ui-shells.md).
 - **Status:** Accepted 2026-10-08 (owner, in chat: "AI engine inside each package"). Amends ADR-0006 for every
@@ -11,7 +11,7 @@
 
 ## Context
 
-Offline AI downloads three things after install: model weights (Gemma 3 1B), embedding weights (BGE small) and the
+Straft AI downloads three things after install: model weights (Gemma 3 1B), embedding weights (BGE small) and the
 `llama.cpp` runtime **executable**. Store policy allows user-consented add-ons that enhance disclosed
 functionality and forbids undisclosed dynamic code. The supplied Store audit rates downloading and launching an
 executable as the reviewer-sensitive part, unlike downloading weights.
@@ -42,4 +42,4 @@ executable as the reviewer-sensitive part, unlike downloading weights.
 - On the Mac the runtime sits inside the signed app bundle, which App Sandbox and notarization require anyway.
 - ~~The model host and the production manifest key are still owner tasks (`owner-decisions.md`, manual work).~~
   Superseded 2026-10-08 by ADR-0025: neither is needed.
-- Requires an AI-benchmark and `real_runtime` pass on the bundled build (build plan area: AI assistant quality and hardening).
+- Requires an AI-benchmark and `real_runtime` pass on the bundled build (build plan area: Straft AI quality and hardening).

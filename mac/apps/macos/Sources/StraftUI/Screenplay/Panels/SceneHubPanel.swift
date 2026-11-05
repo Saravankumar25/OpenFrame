@@ -367,7 +367,7 @@ struct ScreenplayInspector: View {
                 .accessibilityLabel("Inspector")
                 Button { state.inspectorShown = false } label: { Label("Close", systemImage: "xmark.circle.fill") }
                     .buttonStyle(.plain)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.ofMuted)
                     .help("Close the inspector")
                     .accessibilityLabel("Close")
                     .accessibilityIdentifier("inspector-close")

@@ -29,7 +29,7 @@ Do not report the blue window as a bug.
 
 The AI helper is not inside the installer. You download it one time.
 
-1. Open Settings, then **Offline AI**, and start the download. You can also start it from the AI panel.
+1. Open Settings, then **Straft AI**, and start the download. You can also start it from the AI panel.
 2. It is about 1.2 GB. You need internet for this step only. It can take a while on a slow connection.
 3. You can pause it and come back later. Keep the laptop awake.
 4. After it finishes, the AI works with no internet.

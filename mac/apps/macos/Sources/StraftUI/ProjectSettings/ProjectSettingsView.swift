@@ -1,6 +1,6 @@
 // Project Settings: a sheet over the project window with Project settings, Keyboard shortcuts,
 // Templates, Advanced and Storage (Windows: workspaces/settings/index.tsx). The app-wide pages (Writing,
-// Appearance, Offline AI) are in the Settings window (Command+Comma); the button at the bottom
+// Appearance, Straft AI) are in the Settings window (Command+Comma); the button at the bottom
 // opens it.
 
 import StraftCore
@@ -68,7 +68,7 @@ struct ProjectSettingsView: View {
             Divider()
             HStack {
                 Text("Straft AI, Appearance and Keyboard shortcuts apply to every project on this Mac.")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption).foregroundStyle(.ofMuted)
                 Spacer()
                 Button("App Settings\u{2026}") { SettingsRouter.open() }
                     .accessibilityIdentifier("project-settings-open-app-settings")
@@ -208,7 +208,7 @@ struct ProjectGeneralForm: View {
                     .accessibilityIdentifier("project-settings-notes")
             }
             Text("Everything here is optional except title and type. Language, genre and creator are reused on exported documents.")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption).foregroundStyle(.ofMuted)
         }
         .textFieldStyle(.roundedBorder)
         .padding(16)
@@ -234,11 +234,11 @@ struct ProjectGeneralForm: View {
                     .controlSize(.small)
                     .accessibilityIdentifier("project-settings-move-or-back-up")
                 Divider()
-                Text("Created \(Formatting.dateTime(ms: p.createdAt))").font(.caption).foregroundStyle(.secondary)
-                Text("Last changed \(Formatting.dateTime(ms: p.updatedAt))").font(.caption).foregroundStyle(.secondary)
+                Text("Created \(Formatting.dateTime(ms: p.createdAt))").font(.caption).foregroundStyle(.ofMuted)
+                Text("Last changed \(Formatting.dateTime(ms: p.updatedAt))").font(.caption).foregroundStyle(.ofMuted)
             }
             Text("The project works fully offline. Everything stays in this folder.")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption).foregroundStyle(.ofMuted)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -259,7 +259,7 @@ struct ProjectGeneralForm: View {
                 Text(error).font(.caption).foregroundStyle(theme["red-t"])
                     .accessibilityIdentifier("project-settings-error-\(label.lowercased())")
             } else if let hint {
-                Text(hint).font(.caption).foregroundStyle(.secondary)
+                Text(hint).font(.caption).foregroundStyle(.ofMuted)
                     .accessibilityIdentifier("project-settings-hint-\(label.lowercased())")
             }
         }

@@ -97,10 +97,12 @@ cp "$MACOS/packaging/PrivacyInfo.xcprivacy" "$APP/Contents/Resources/PrivacyInfo
 # The third-party notices the About window's Licences sheet shows.
 cp "$ROOT/THIRD_PARTY_LICENSES.md" "$APP/Contents/Resources/THIRD_PARTY_LICENSES.md"
 [[ -f "$MACOS/packaging/AppIcon.icns" ]] && cp "$MACOS/packaging/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
-# The offline AI engine (llama.cpp with Metal), when packaging/ai has fetched it (ADR-0026).
+# The Straft AI engine (llama.cpp with Metal), when packaging/ai has fetched it (ADR-0026).
 if [[ -d "$ROOT/.build-cache/ai-runtime/macos-arm64" ]]; then
   mkdir -p "$APP/Contents/Resources/ai"
   cp -R "$ROOT/.build-cache/ai-runtime/macos-arm64/." "$APP/Contents/Resources/ai/"
+  # The engine is cached between builds; its notices follow the repository, so a change reaches the app.
+  cp "$ROOT"/packaging/ai/notices/*.txt "$APP/Contents/Resources/ai/notices/"
 fi
 if [[ "$STORE" == 1 ]]; then
   sed -e "s/__VERSION__/${VERSION}/" -e "s/__BUILD__/${BUILD}/" "$MACOS/packaging/Info-store.plist" > "$APP/Contents/Info.plist"

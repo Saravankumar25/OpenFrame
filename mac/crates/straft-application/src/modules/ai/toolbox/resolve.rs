@@ -6,8 +6,8 @@
 //! Table names and label expressions are static strings from this file, never
 //! model text.
 
-use straft_domain::{Actor, AppError, AppResult};
 use rusqlite::{Connection, OptionalExtension, params};
+use straft_domain::{Actor, AppError, AppResult};
 
 use super::super::queries::{self, DraftRef, SceneRow, join_or};
 use super::super::scope::ResolvedScope;

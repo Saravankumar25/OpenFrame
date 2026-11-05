@@ -14,13 +14,13 @@ struct PKProgress: View {
             HStack {
                 Text(task.message).font(.callout.weight(.semibold))
                 Spacer()
-                Text("\(task.percent)%").font(.caption).foregroundStyle(.secondary)
+                Text("\(task.percent)%").font(.caption).foregroundStyle(.ofMuted)
             }
             ProgressView(value: Double(task.percent), total: 100)
                 .accessibilityLabel("Progress")
                 .accessibilityValue("\(task.percent) percent")
             HStack {
-                Text("Your project stays open and saved while this runs.").font(.caption).foregroundStyle(.secondary)
+                Text("Your project stays open and saved while this runs.").font(.caption).foregroundStyle(.ofMuted)
                 Spacer()
                 Button("Cancel", action: cancel).controlSize(.small).accessibilityIdentifier("package-task-cancel")
             }
@@ -92,7 +92,7 @@ struct PKLinkedFiles: View {
                 }
                 if files.count > 8 { Text("and \(files.count - 8) more") }
             }
-            .font(.caption).foregroundStyle(.secondary)
+            .font(.caption).foregroundStyle(.ofMuted)
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Linked files")
             .accessibilityIdentifier("package-linked-files")
@@ -117,7 +117,7 @@ struct PKDoneBanner<Detail: View>: View {
         .accessibilityIdentifier("package-done")
         VStack(alignment: .leading, spacing: 2) {
             detail()
-            if let path { Text(path).font(.caption).foregroundStyle(.secondary).textSelection(.enabled).fixedSize(horizontal: false, vertical: true) }
+            if let path { Text(path).font(.caption).foregroundStyle(.ofMuted).textSelection(.enabled).fixedSize(horizontal: false, vertical: true) }
         }
         .font(.callout)
     }

@@ -42,7 +42,8 @@ pub const G4_USES_FRESH_SIGNATURE: bool = true;
 const GUARD_SAVE_EVERY_MS: i64 = 5 * 60 * 1000;
 
 /// Plain words for a purchase that waits for approval (Ask to Buy, or a payment step).
-pub const PURCHASE_PENDING: &str = "This purchase is waiting for approval. Straft Studio updates by itself once it is approved.";
+pub const PURCHASE_PENDING: &str =
+    "This purchase is waiting for approval. Straft Studio updates by itself once it is approved.";
 
 /// A monotonic clock: time since an arbitrary origin that never follows the wall clock.
 pub trait MonotonicClock: Send + Sync {

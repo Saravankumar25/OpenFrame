@@ -124,7 +124,9 @@ public enum ThemeEngine {
     // MARK: resolving
 
     /// The tokens of a theme in a mode. An unknown or invalid theme falls back to Straft Default.
-    public static func resolve(themeId: String, mode: ColorMode, themes: ThemeCatalog) -> ResolvedTheme {
+    /// `forScreen` applies the Mac's readability rule on top of the shared palette; without it the result
+    /// is the palette exactly as the shared formulas give it (the independent reference checks that).
+    public static func resolve(themeId: String, mode: ColorMode, themes: ThemeCatalog, forScreen: Bool = false) -> ResolvedTheme {
         let engine = themes.engine
         var theme = themes.theme(id: themeId)
         if let found = theme {
@@ -140,7 +142,7 @@ public enum ThemeEngine {
         guard let chosen else {
             return ResolvedTheme(id: ThemeCatalog.defaultThemeId, mode: mode, colors: [:], unresolved: ["catalog-empty"])
         }
-        return build(chosen, mode: mode, engine: engine)
+        return build(chosen, mode: mode, engine: engine, forScreen: forScreen)
     }
 
     private static func fmt(_ n: Double) -> String {
@@ -148,7 +150,7 @@ public enum ThemeEngine {
         return r == r.rounded() ? String(Int(r)) : String(r)
     }
 
-    private static func build(_ theme: ThemeData, mode: ColorMode, engine e: EngineSpec) -> ResolvedTheme {
+    private static func build(_ theme: ThemeData, mode: ColorMode, engine e: EngineSpec, forScreen: Bool) -> ResolvedTheme {
         let m = mode.rawValue
         let seeds = theme.seeds
         let r = FormulaResolver()
@@ -208,13 +210,43 @@ public enum ThemeEngine {
 
         if r.exprs["muted"] != nil { r.fallback = r.value(of: "muted") }
 
+        var values: [String: OKLab] = [:]
+        for name in r.exprs.keys.sorted() { values[name] = r.value(of: name) }
+        if forScreen { Self.keepTextReadable(&values) }
+
         var colors: [String: TokenColor] = [:]
-        for name in r.exprs.keys.sorted() {
-            let lab = r.value(of: name)
+        for name in values.keys.sorted() {
+            let lab = values[name] ?? OKLab(srgb: 0, 0, 0)
             let rgb = lab.srgb
             colors[name] = TokenColor(r: rgb.r, g: rgb.g, b: rgb.b, a: min(1, max(0, lab.alpha)))
         }
         let unresolved = Set(parseFailures).union(r.failed).sorted()
         return ResolvedTheme(id: theme.id, mode: mode, colors: colors, unresolved: unresolved)
+    }
+
+    /// The shared palette is tuned for the web shell's text rendering. Here text must reach 4.5 to 1 on
+    /// the surfaces it sits on, so a colour that falls short moves toward the ink until it does, and
+    /// the controls macOS draws with white text get a fill white reads on.
+    static func keepTextReadable(_ values: inout [String: OKLab]) {
+        guard let ink = values["ink"] else { return }
+        let surfaces = ["bg", "panel", "surface2", "surface3"].compactMap { values[$0] }
+        for name in ["muted", "accent-d"] {
+            guard var color = values[name] else { continue }
+            var share = 0.0
+            while share < 100, surfaces.contains(where: { ColorMath.contrast(color, $0) < 4.6 }) {
+                share += 4
+                color = ColorMath.mix(values[name] ?? color, 100 - share, ink, share)
+            }
+            values[name] = color
+        }
+        guard let start = values["control-tint"] ?? values["accent"] else { return }
+        let white = OKLab(srgb: 1, 1, 1), black = OKLab(srgb: 0, 0, 0)
+        var tint = start
+        var share = 0.0
+        while share < 100, ColorMath.contrast(tint, white) < 4.8 {
+            share += 4
+            tint = ColorMath.mix(start, 100 - share, black, share)
+        }
+        values["control-tint"] = tint
     }
 }

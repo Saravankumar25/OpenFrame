@@ -12,8 +12,7 @@ use straft_application::core::{AppConfig, AppCore};
 use straft_application::events::RecordingSink;
 use straft_application::modules::ai::turn::{Aids, AnswerType, ReadHow};
 
-const EXAMPLES: &str =
-    include_str!("../../straft-application/src/modules/ai/turn_examples.jsonl");
+const EXAMPLES: &str = include_str!("../../straft-application/src/modules/ai/turn_examples.jsonl");
 
 fn root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))

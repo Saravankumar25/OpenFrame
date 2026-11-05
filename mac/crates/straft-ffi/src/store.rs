@@ -19,6 +19,9 @@ use std::sync::mpsc::{self, RecvTimeoutError, Sender};
 use std::sync::{Arc, Weak};
 use std::time::{Duration, Instant};
 
+use parking_lot::Mutex;
+use serde::Deserialize;
+use serde_json::Value;
 use straft_application::AppCore;
 use straft_application::events::{AppEvent, EventSink};
 use straft_entitlement::Channel;
@@ -27,9 +30,6 @@ use straft_entitlement::mac::{
     RevalidateReason, StoreEnvironment, StoreKitBridge, StoreProducts, VerifiedTransaction,
     WallClock, keep_verified,
 };
-use parking_lot::Mutex;
-use serde::Deserialize;
-use serde_json::Value;
 
 /// Largest answer from the Swift side. A larger answer is refused unread.
 pub const MAX_JSON_BYTES: usize = 256 * 1024;
@@ -264,7 +264,9 @@ impl StoreWorker {
                     };
                     // The state can change on an operation thread too (a restore, a purchase), so
                     // what is due is read fresh each time.
-                    let Some(looking) = weak.upgrade() else { return };
+                    let Some(looking) = weak.upgrade() else {
+                        return;
+                    };
                     let due = looking.entitlement.next_check();
                     let timed = due
                         .filter(|(wait, _)| last_look.elapsed() >= *wait)
@@ -287,7 +289,10 @@ impl StoreWorker {
                     // look at launch stays first: it must not wait for the store.
                     if reason != RevalidateReason::Stored {
                         for queued in rx.try_iter() {
-                            if matches!(reason, RevalidateReason::Resume | RevalidateReason::ClockTick) {
+                            if matches!(
+                                reason,
+                                RevalidateReason::Resume | RevalidateReason::ClockTick
+                            ) {
                                 reason = queued;
                             }
                         }
@@ -341,9 +346,9 @@ impl StoreWorker {
 mod tests {
     use super::*;
     use crate::{CoreConfig, CoreHandle, EventListener};
-    use straft_entitlement::mac::{LIFETIME_PRODUCT_ID, TRIAL_PRODUCT_ID};
     use std::collections::VecDeque;
     use std::sync::atomic::{AtomicU64, Ordering};
+    use straft_entitlement::mac::{LIFETIME_PRODUCT_ID, TRIAL_PRODUCT_ID};
 
     /// 2026-10-06 00:00 UTC.
     const T0: i64 = 1_791_244_800_000;
@@ -460,7 +465,11 @@ mod tests {
         fn on_event(&self, _event_json: String) {}
     }
 
-    fn start(dir: &std::path::Path, store: bool, storekit: Option<FakeStoreKit>) -> Arc<CoreHandle> {
+    fn start(
+        dir: &std::path::Path,
+        store: bool,
+        storekit: Option<FakeStoreKit>,
+    ) -> Arc<CoreHandle> {
         let config = CoreConfig {
             app_version: "0.1.0".into(),
             isolated_data_root: Some(dir.to_string_lossy().into_owned()),
@@ -583,7 +592,12 @@ mod tests {
     fn a_clock_turned_back_locks_the_whole_app_and_clears_by_itself_once_it_is_fixed() {
         let dir = tempfile::tempdir().unwrap();
         let kit = FakeStoreKit::new("production");
-        kit.set(vec![transaction(TRIAL_PRODUCT_ID, "2000000001", "production", None)]);
+        kit.set(vec![transaction(
+            TRIAL_PRODUCT_ID,
+            "2000000001",
+            "production",
+            None,
+        )]);
         kit.set_now(T0 + 2 * DAY);
         let core = start(dir.path(), true, Some(kit.clone()));
         assert_eq!(settled(&core)["state"]["days_left"], 5);
@@ -770,7 +784,10 @@ mod tests {
     fn the_test_store_switch_needs_a_debug_build_on_a_test_folder() {
         assert!(crate::test_switch(true, true, true));
         assert!(!crate::test_switch(true, false, true), "release build");
-        assert!(!crate::test_switch(true, true, false), "the person's own data");
+        assert!(
+            !crate::test_switch(true, true, false),
+            "the person's own data"
+        );
         assert!(!crate::test_switch(false, true, true), "not asked");
     }
 

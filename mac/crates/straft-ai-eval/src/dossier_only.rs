@@ -19,13 +19,13 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use serde_json::{Value, json};
 use straft_ai::InferenceProvider;
 use straft_ai_eval::turn::{from_cases, index_of, picks_of, read_conv_resolved};
 use straft_ai_eval::{Case, PointerCheck, PointerMetrics};
 use straft_application::core::AppCore;
 use straft_application::modules::ai::sections;
 use straft_application::modules::ai::{dossier, intelligence, orchestrator, pointer, turn};
-use serde_json::{Value, json};
 
 /// How long one message may wait for the embedding model (the first one starts it).
 const WAIT: Duration = Duration::from_secs(300);

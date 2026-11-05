@@ -6,9 +6,9 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::rc::Rc;
 use std::sync::LazyLock;
 
-use straft_domain::{Actor, AppResult};
 use regex::Regex;
 use rusqlite::{Connection, OptionalExtension};
+use straft_domain::{Actor, AppResult};
 
 use super::guard::Guard;
 use super::words::{Msg, title_case};

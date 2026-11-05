@@ -1,6 +1,6 @@
 /target/
 /.build-cache/
-# Offline AI build inputs (ADR-0025): runtime and model weights, pinned by ai-assets.lock.json,
+# Straft AI build inputs (ADR-0025): runtime and model weights, pinned by ai-assets.lock.json,
 # too large for git; copied into the app bundle at build time.
 /.ai-assets/
 node_modules/

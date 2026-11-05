@@ -1,4 +1,4 @@
-// Settings (Command+Comma): General, Appearance, Keyboard Shortcuts, Storage, Offline AI and Diagnostics. Every value and every
+// Settings (Command+Comma): General, Appearance, Keyboard Shortcuts, Storage, Straft AI and Diagnostics. Every value and every
 // rule comes from the core; these screens only show it and forward the user's choice.
 
 import AppKit

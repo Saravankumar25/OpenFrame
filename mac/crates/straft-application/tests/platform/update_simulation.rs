@@ -9,10 +9,10 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use serde_json::{Value, json};
 use straft_application::events::RecordingSink;
 use straft_application::{AppConfig, AppCore};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 fn fixture_dir(release: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))

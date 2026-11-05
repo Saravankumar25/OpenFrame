@@ -294,7 +294,7 @@ as lookup, "what did we set aside for boat hire" as compare, "which costs more, 
 cast list" as navigate. Verdict: the group bar (90%) is met on wording the reader never saw, the exact bar is not. The group
 picks the fetch plan and the length class, so S5 builds on it; lookup, list, count and compare share the facts plan and the
 exact label only shapes the answer. A read takes about 23 ms with embeddings and about 0.5 s on average when the model is
-asked. Report: `docs/release/evidence/ai-conversational-s4-2026-10-26/`.
+asked. Report: `docs/history/evidence/ai-conversational-s4-2026-10-26/`.
 
 Anger and small talk (27 labelled `chat` messages): read as `chat` 24, read as `change`, `count` or a fact fetch **0**
 (bar met; with the rules alone one message fell to the default lookup, which the stage with an embedder does not do), read as
@@ -414,7 +414,7 @@ someone linked it.
 1B model for the answer type read, no model writes), on the 251 Low Tide conversation cases. A case expects entries of the
 answer (each `required_facts` entry, each `answer_has` group with any alternative); the measure looks for each in the
 dossier and in the statements about what is missing, ignoring case and digit grouping. Report and one line per case with
-the dossier text: `docs/release/evidence/ai-conversational-s5-2026-10-26/`.
+the dossier text: `docs/history/evidence/ai-conversational-s5-2026-10-26/`.
 
 | Measure | Result |
 |---|---|
@@ -579,7 +579,7 @@ by fixed patterns in `memory/rules.rs`, never by a model:
   (capability Use AI; both hidden from the assistant itself). Delete is a flag plus wiping the text, not Recently
   Deleted: the person asked to be forgotten, so the words must not wait in a bin. Deleting another person's entry does
   nothing.
-- **Settings.** Settings, Offline AI, "Assistant memory": each entry with its text, kind and date, a Delete button
+- **Settings.** Settings, Straft AI, "Assistant memory": each entry with its text, kind and date, a Delete button
   with an accessible name, and an empty state that says what is kept. Files: `workspaces/settings/AssistantMemory.tsx`
   and its test.
 
@@ -821,7 +821,7 @@ S8 status (2026-10-26): built and measured. The latency bars are met on the 30-c
 hand-built, fictional dossier of about 600 tokens (cast, crew, budget, schedule, one scene, three scene texts, one planted
 instruction), a fixed policy, 15 questions in plain, typo, follow-up, missing-data, upset and injection styles, and 28
 real or realistic messages for the answer-type read. Answers at temperature 0.2, labels at temperature 0. Script and raw
-results: `docs/release/evidence/ai-conversational-spike-2026-10-26/`. This is a capability probe on one prompt format, not a
+results: `docs/history/evidence/ai-conversational-spike-2026-10-26/`. This is a capability probe on one prompt format, not a
 benchmark: one run, one dossier, my own checks.
 
 **Answers.** The script scored 9 of 15. Reading each answer, 7 are good, 2 passed the script but are wrong, and 6 failed.

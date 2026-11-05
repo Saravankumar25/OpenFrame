@@ -1,6 +1,6 @@
 // The main window fits the screen: the frame is brought inside the screen's free area, the
-// project sidebar comes back at launch, the AI Assistant narrows in a narrow window, and a page
-// that scrolls sideways keeps its minimum width. The real-app proof is the end-to-end group
+// project sidebar comes back at launch, Straft AI narrows in a narrow window, a page that
+// scrolls sideways keeps its minimum width, and the panes of a page add up to the room there is. The real-app proof is the end-to-end group
 // 95-reachability/window-fits-* in Sources/StraftE2EDriver/Scenarios/WindowFitScenarios.swift.
 
 import AppKit
@@ -93,6 +93,74 @@ struct WindowFitTests {
         // Text-only content takes the pane's width and wraps.
         let text = NSHostingView(rootView: AtLeastWidth(width: 400) { Text(String(repeating: "word ", count: 200)) })
         #expect(text.fittingSize.width == 400)
+    }
+
+    // MARK: Pane widths
+
+    /// The owner's display: a maximized 1280-point window with the 228-point project sidebar.
+    private let maximizedDetail: CGFloat = 1052
+
+    @Test func aSidePaneAndThePageAddUpToTheRoomThereIs() {
+        for available: CGFloat in [420, 680, 691, 900, 1052, 1212, 1500, 2200] {
+            let fit = PaneFit.sidePane(available: available, minimum: 320, ideal: 380, maximum: 520)
+            if fit.floats {
+                #expect(fit.width <= available)
+                #expect(fit.pageWidth == available)
+            } else {
+                #expect(fit.width + 1 + fit.pageWidth == available)
+                #expect(fit.pageWidth >= PaneFit.pageMinimum)
+                #expect(fit.width >= 320)
+            }
+        }
+    }
+
+    @Test func aSidePaneGivesWayToThePageBeforeItFloats() {
+        // The usual width where there is room, less towards the minimum on the owner's display.
+        #expect(PaneFit.sidePane(available: 1500, minimum: 280, ideal: 340, maximum: 480).width == 340)
+        #expect(PaneFit.sidePane(available: maximizedDetail, minimum: 280, ideal: 340, maximum: 480).width == 340)
+        #expect(PaneFit.sidePane(available: maximizedDetail, minimum: 320, ideal: 380, maximum: 520).width == 351)
+        #expect(PaneFit.sidePane(available: 900, minimum: 320, ideal: 380, maximum: 520).width == 320)
+        // No room for the page beside it: the pane floats over the page at its minimum.
+        let tight = PaneFit.sidePane(available: 500, minimum: 340, ideal: 400, maximum: 540)
+        #expect(tight.floats && tight.width == 340)
+    }
+
+    @Test func aDraggedSidePaneKeepsItsWidthWhileThePageHasItsMinimum() {
+        #expect(PaneFit.sidePane(available: 1500, minimum: 320, ideal: 380, maximum: 520, dragged: 500).width == 500)
+        #expect(PaneFit.sidePane(available: 1500, minimum: 320, ideal: 380, maximum: 520, dragged: 900).width == 520)
+        #expect(PaneFit.sidePane(available: 800, minimum: 320, ideal: 380, maximum: 520, dragged: 500).pageWidth == PaneFit.pageMinimum)
+        #expect(PaneFit.sidePaneLimit(available: 800, minimum: 320, maximum: 520) == 479)
+    }
+
+    @Test func theSceneListGivesWayToTheScriptThenStepsAside() {
+        // Room for both at their usual widths.
+        #expect(PaneFit.sceneList(available: 1500) == 290)
+        #expect(PaneFit.sceneList(available: maximizedDetail) == 290)
+        // The owner's display with the inspector open: the list narrows and all the script shows.
+        let page = PaneFit.sidePane(available: maximizedDetail, minimum: 280, ideal: 340, maximum: 480).pageWidth
+        #expect(PaneFit.sceneList(available: page) == 160)
+        // Tighter: down to the list's minimum, then no list.
+        #expect(PaneFit.sceneList(available: 461) == 120)
+        #expect(PaneFit.sceneList(available: 460) == nil)
+        // A list the person made narrow stays narrow, and never takes the script's minimum.
+        #expect(PaneFit.sceneList(available: 1500, preferred: 130) == 130)
+        #expect(PaneFit.sceneList(available: 500, preferred: 340) == 159)
+    }
+
+    @Test func theFileTableKeepsItsNameColumn() {
+        // Every column at a maximized window with nothing open.
+        #expect(FileTableColumns.fitting(FileTableColumns.tableWidth(pageWidth: maximizedDetail)) == FileTableColumns(kind: true, place: true, modified: true))
+        // The details panel open: Where goes first, then Type, and the name keeps its minimum.
+        let beside = PaneFit.sidePane(available: maximizedDetail, minimum: 320, ideal: 380, maximum: 520).pageWidth
+        #expect(FileTableColumns.fitting(FileTableColumns.tableWidth(pageWidth: beside)) == FileTableColumns(kind: false, place: false, modified: true))
+        for width in stride(from: FileTableColumns.smallest, through: 1000, by: 13) {
+            let c = FileTableColumns.fitting(width)
+            var used = FileTableColumns.smallest
+            if c.modified { used += FileTableColumns.modifiedWidth + FileTableColumns.gap }
+            if c.kind { used += FileTableColumns.kindWidth + FileTableColumns.gap }
+            if c.place { used += FileTableColumns.placeWidth + FileTableColumns.gap }
+            #expect(used <= width)
+        }
     }
 
     @Test func theScreenplayPageNeverGetsNarrowerThanItsText() {

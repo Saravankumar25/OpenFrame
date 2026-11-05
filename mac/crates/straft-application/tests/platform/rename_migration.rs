@@ -204,11 +204,35 @@ fn an_earlier_installation_starts_with_everything_it_had() {
         json!({ "themeId": legacy_names::DEFAULT_THEME_ID }),
     );
     assert_eq!(set["themeId"], "straft-default", "{set}");
-    // The models came across by rename and the set in use is still the one in use.
+    // The models came across as hard links and the set in use is still the one in use. The old
+    // folder keeps its own.
+    let models = straft_ai::model_download::models_dir(&new);
+    assert_eq!(models.active().unwrap().version, "m-abc");
+    assert!(new.join("models").join("m-abc").join("chat.gguf").is_file());
+    assert!(old.join("models").join("m-abc").join("chat.gguf").is_file());
+}
+
+/// An earlier Mac build renamed the models across, so they are in the new folder and not in the old
+/// one. That person starts as before: nothing to link, no error and no second copy.
+#[test]
+fn models_an_earlier_mac_build_moved_across_stay_in_use() {
+    let dir = tempfile::tempdir().unwrap();
+    let (old, user) = earlier_app_data(dir.path());
+    let new = dir.path().join("New App Data");
+    assert_eq!(bring_over(&old, &new, &Plan::APP_DATA), Outcome::Copied);
+    fs::remove_dir_all(old.join("models")).unwrap();
+    assert_eq!(
+        bring_over(&old, &new, &Plan::APP_DATA),
+        Outcome::AlreadyThere
+    );
+    let sink = Arc::new(RecordingSink::default());
+    let core = AppCore::new(at_app_data(dir.path(), &new), sink.clone()).unwrap();
+    assert_eq!(core.profile().user_id, user, "the same person");
     let models = straft_ai::model_download::models_dir(&new);
     assert_eq!(models.active().unwrap().version, "m-abc");
     assert!(new.join("models").join("m-abc").join("chat.gguf").is_file());
     assert!(!old.join("models").exists());
+    core.shutdown();
 }
 
 /// Changes still in the write-ahead log (the earlier version is running or crashed) are not lost.
@@ -944,4 +968,164 @@ fn a_normal_test_start_renames_nothing() {
     env.ok("project.open", json!({ "path": folder.to_string_lossy() }));
     assert!(folder.is_dir());
     assert!(earlier_root(env.dir.path()).is_dir());
+}
+
+// --------------------------------------------------- what must never happen to a person's folders
+
+/// A code checkout with the earlier name that was recorded by accident is not a library.
+#[test]
+fn a_recorded_folder_that_is_not_a_library_is_never_renamed() {
+    let (home, _) = earlier_library(earlier_root, &[]);
+    let old = earlier_root(home.path());
+    fs::remove_dir_all(old.join(library_ops::PROJECTS_FOLDER)).unwrap();
+    fs::remove_dir_all(old.join(library_ops::VAULT_FOLDER)).unwrap();
+    fs::remove_file(old.join(library::LIBRARY_FILE_NAME)).unwrap();
+    fs::create_dir_all(old.join("src")).unwrap();
+    fs::write(old.join("src").join("main.rs"), "fn main() {}").unwrap();
+    let env = start_renaming(home);
+    assert!(old.join("src").join("main.rs").is_file());
+    assert!(!new_root(env.dir.path()).exists());
+    assert_eq!(pointer_of(env.dir.path()).unwrap(), old);
+}
+
+/// The name is compared the way the drive compares it.
+#[test]
+fn a_library_with_the_earlier_name_in_other_capitals_is_renamed() {
+    let (home, _) = earlier_library(
+        |h| {
+            h.join("Documents")
+                .join(legacy_names::PRODUCT_NAME.to_lowercase())
+        },
+        &[],
+    );
+    let env = start_renaming(home);
+    assert_eq!(
+        env.core.library_place().unwrap().root,
+        new_root(env.dir.path())
+    );
+}
+
+/// The records cannot follow: the pointer's place holds a folder. The folder goes back and every
+/// record with it, so the app works at the old path now and tries again at the next start.
+#[test]
+fn a_failed_switch_puts_the_folder_and_every_record_back() {
+    let (home, _) = earlier_library(earlier_root, &["Film"]);
+    let old = earlier_root(home.path());
+    let pointer = home
+        .path()
+        .join("roaming")
+        .join(library_ops::LIBRARY_FOLDER)
+        .join(library_ops::POINTER_FILE);
+    fs::remove_file(&pointer).unwrap();
+    fs::create_dir(&pointer).unwrap();
+    let env = start_renaming(home);
+    assert!(old.is_dir() && !new_root(env.dir.path()).exists());
+    assert_eq!(env.core.library_place().unwrap().root, old);
+    assert_eq!(env.ok("library.status", json!({}))["state"], "ready");
+    let library::Read::Valid(found) = library::read(
+        &old.join(library::LIBRARY_FILE_NAME),
+        &env.core.config.app_data_dir,
+    ) else {
+        panic!("the library file is valid");
+    };
+    for folder in [found.projects_dir, found.vault_dir].into_iter().flatten() {
+        assert!(library::is_inside(&old, &folder), "{}", folder.display());
+    }
+}
+
+/// A folder with the new name and no evidence that it is this library is someone else's.
+#[test]
+fn a_sibling_with_no_evidence_is_not_adopted() {
+    let (home, _) = earlier_library(earlier_root, &[]);
+    fs::remove_dir_all(earlier_root(home.path())).unwrap();
+    let sibling = new_root(home.path());
+    fs::create_dir_all(sibling.join(library_ops::PROJECTS_FOLDER)).unwrap();
+    fs::create_dir_all(sibling.join(library_ops::VAULT_FOLDER)).unwrap();
+    let env = start_renaming(home);
+    assert!(!sibling.join(library::LIBRARY_FILE_NAME).exists());
+    assert_eq!(env.ok("library.status", json!({}))["state"], "missing");
+}
+
+/// A start cut short after the pointer was rewritten: the pointer is the evidence, even when the
+/// library file cannot say whose it is.
+#[test]
+fn a_pointer_that_already_names_the_sibling_is_evidence() {
+    let (home, _) = earlier_library(earlier_root, &[]);
+    let (old, new) = (earlier_root(home.path()), new_root(home.path()));
+    fs::rename(&old, &new).unwrap();
+    fs::remove_file(new.join(library::LIBRARY_FILE_NAME)).unwrap();
+    let pointer = home
+        .path()
+        .join("roaming")
+        .join(library_ops::LIBRARY_FOLDER)
+        .join(library_ops::POINTER_FILE);
+    fs::write(
+        &pointer,
+        serde_json::to_vec(
+            &json!({ "format": 1, "libraryRoot": new.to_string_lossy(), "updatedAt": 1 }),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let env = start_renaming(home);
+    assert_eq!(env.core.library_place().unwrap().root, new);
+}
+
+/// A project that is damaged or from a newer version keeps its name; the rest are renamed, and the
+/// scan is not recorded as finished while one is left.
+#[test]
+fn a_project_that_cannot_be_read_keeps_its_name() {
+    let (home, projects) = earlier_library(new_root, &["Film", "Damaged", "Later"]);
+    let manifest = |folder: &Path| folder.join(legacy_names::MANIFEST_FILE);
+    fs::write(manifest(&projects[1].0), "{ nope").unwrap();
+    let mut later: Value =
+        serde_json::from_slice(&fs::read(manifest(&projects[2].0)).unwrap()).unwrap();
+    later["formatVersion"] = json!(straft_domain::PROJECT_FORMAT_VERSION + 1);
+    fs::write(
+        manifest(&projects[2].0),
+        serde_json::to_vec(&later).unwrap(),
+    )
+    .unwrap();
+    let env = start_renaming(home);
+    assert!(projects[0].0.with_extension("straft").is_dir());
+    assert!(!projects[0].0.exists());
+    for (folder, _) in &projects[1..] {
+        assert!(manifest(folder).is_file());
+        assert!(!folder.with_extension("straft").exists());
+    }
+    assert!(!scan_done(&env));
+    assert_eq!(
+        env.err(
+            "project.open",
+            json!({ "path": projects[2].0.to_string_lossy() })
+        ),
+        "project_format.too_new"
+    );
+}
+
+fn scan_done(env: &TestEnv) -> bool {
+    env.core
+        .with_app_db(|c| {
+            Ok(c.query_row(
+                "SELECT EXISTS(SELECT 1 FROM sys_settings WHERE key = 'storage.earlier_projects_done')",
+                [],
+                |r| r.get(0),
+            )?)
+        })
+        .unwrap()
+}
+
+/// Once nothing is left, normal starts skip the scan. A project that turns up later waits to be opened.
+#[test]
+fn a_scan_that_finds_nothing_left_is_not_repeated() {
+    let (home, projects) = earlier_library(new_root, &["Film"]);
+    let (folder, _) = &projects[0];
+    let env = start_renaming(home);
+    assert!(scan_done(&env));
+    let home = stop(env);
+    let moved = folder.with_extension("straft");
+    fs::rename(&moved, folder).unwrap();
+    let _env = start_renaming(home);
+    assert!(folder.is_dir(), "left for when it is opened");
+    assert!(!moved.exists());
 }

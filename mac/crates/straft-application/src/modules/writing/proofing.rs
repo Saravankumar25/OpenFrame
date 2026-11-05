@@ -15,10 +15,10 @@
 use std::collections::HashSet;
 use std::time::{Duration, Instant};
 
-use straft_domain::{Actor, AppError, AppResult, Capability};
-use straft_platform::spelling::{self, Misspelling, SpellEngine, SpellError};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult, Capability};
+use straft_platform::spelling::{self, Misspelling, SpellEngine, SpellError};
 use ts_rs::TS;
 
 use super::{read_app_setting, require_local, write_app_setting};

@@ -24,9 +24,9 @@ use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Weak};
 use std::time::{Duration, Instant};
 
-use straft_domain::{AppError, AppResult};
 use parking_lot::{Condvar, Mutex};
 use serde::Serialize;
+use straft_domain::{AppError, AppResult};
 
 use crate::bundle::{ModelStamp, Pooling};
 use crate::client::{Endpoint, unavailable};
@@ -808,9 +808,7 @@ fn monitor(weak: Weak<Shared>, generation: u64) {
                 tracing::warn!("Straft AI runtime exited unexpectedly; restarting");
                 relaunch(&shared, &mut inner);
             } else {
-                tracing::error!(
-                    "Straft AI runtime exited and will not be restarted automatically"
-                );
+                tracing::error!("Straft AI runtime exited and will not be restarted automatically");
                 inner.last_error = Some(if was_serving {
                     "Straft AI stopped unexpectedly. Your project was not changed.".into()
                 } else {

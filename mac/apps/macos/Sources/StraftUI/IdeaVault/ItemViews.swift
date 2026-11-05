@@ -238,10 +238,10 @@ struct VaultItemCard: View {
         ZStack {
             RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme["accent-soft"])
             if item.itemType == .url || item.itemType == .audio || item.itemType == .voice || item.itemType == .video {
-                Image(systemName: VaultText.symbol(item.itemType)).foregroundStyle(theme["accent-ink"])
+                Image(systemName: VaultText.symbol(item.itemType)).foregroundStyle(theme["accent-d"])
             } else {
                 Text(item.itemType == .pdf ? "PDF" : VaultText.extLabel(item.asset?.originalName))
-                    .font(.caption2.weight(.bold)).foregroundStyle(theme["accent-ink"])
+                    .font(.caption2.weight(.bold)).foregroundStyle(theme["accent-d"])
             }
         }
         .frame(width: 38, height: 38)

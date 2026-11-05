@@ -18,7 +18,7 @@ Single files, moved on 2026-10-27 in the documentation sync with Windows `114dff
 | File | What it is | Moved from | Replaced by |
 |---|---|---|---|
 | [endgame-plan.md](endgame-plan.md) | The Windows W9 endgame session plan of 2026-10-17 | `docs/implementation/` | [windows-internal-release-gate.md](../release/windows-internal-release-gate.md) |
-| [final-polish-plan.md](final-polish-plan.md) | The Windows final polish plan of 2026-10-19 | `docs/implementation/` | [ux/change-log.md](../ux/change-log.md) |
+| [final-polish-plan.md](final-polish-plan.md) | The Windows final polish plan of 2026-10-19 | `docs/implementation/` | [ux/change-log.md](ux/change-log.md) (history since 2026-11-04) |
 | [2026-10-26-ai-answer-paths-five-lanes.md](2026-10-26-ai-answer-paths-five-lanes.md) | How a question ran through the five AI lanes, 2026-10-20 to 2026-10-26 | `docs/engineering/ai-answer-paths.md` | [ai-answer-paths.md](../engineering/ai-answer-paths.md), [ADR-0037](../adr/ADR-0037-conversational-assistant-focus-and-dossiers.md) |
 | [2026-10-24-ai-harness-rebuild-plan.md](2026-10-24-ai-harness-rebuild-plan.md) | The AI harness rebuild plan of 2026-10-24 (five lanes, briefings, code verifiers); ADR-0035 cites it | Windows `docs/specs/ai-harness-rebuild.md` (never in the Mac tree) | [ai-conversational-harness.md](../specs/ai-conversational-harness.md), ADR-0037 |
 | [specs/screenplay-formatting-standard-v4.md](specs/screenplay-formatting-standard-v4.md) | The screenplay formatting standard, version 4; the register and the specifications index cite it | Windows `docs/history/specs/` (never in the Mac tree) | [screenplay-formatting-standard-v5.md](../specs/screenplay-formatting-standard-v5.md) |
@@ -34,12 +34,24 @@ was moved unchanged:
 | [mac-ai-harness-port-orders.md](mac-ai-harness-port-orders.md) | The session orders to port the conversational AI to the Mac | `docs/roadmap/` | Finished: ported in the Mac sync of 2026-10-27 |
 | [evidence/ai-harness-2026-10-24/](evidence/ai-harness-2026-10-24) | Baseline and final runs of the five-lane AI harness (ADR-0035), measured on Windows | `docs/release/evidence/` | Superseded: the five lanes were retired for the conversational path of ADR-0037, measured in `release/evidence/ai-conversational-after-s8-2026-10-26/` |
 
+Moved on 2026-11-04 (owner order: `docs/` holds only the current state and current decisions). Each Markdown file starts with one
+added "Moved to history" line; the folders were moved unchanged:
+
+| File or folder | What it is | Moved from | Why |
+|---|---|---|---|
+| [specs/owner-issues-2026-10-24/](specs/owner-issues-2026-10-24) | The owner's issue list of 2026-10-24 (Word document) | `docs/specs/` | Finished source material, handled in the upgrade of that date |
+| [ux/windows-ux-audit.md](ux/windows-ux-audit.md) | The Windows UX audit of October 2026 | `docs/ux/` | Finished; its rules are in `ux/layout-and-scroll-contract.md` |
+| [ux/change-log.md](ux/change-log.md) | The change record of the Windows final polish | `docs/ux/` | Finished; later changes are in the progress log |
+| [ux/feature-preservation-matrix.md](ux/feature-preservation-matrix.md) | Windows routes before and after the final polish | `docs/ux/` | Finished; current coverage is in the feature status file |
+| [website-plan-2026-10-05.md](website-plan-2026-10-05.md) | The first website plan | `docs/website/README.md` | Superseded as a plan on 2026-10-15 by `roadmap/chapter-2-website.md` |
+| [evidence/ai-conversational-baseline-2026-10-26/](evidence/ai-conversational-baseline-2026-10-26), [evidence/ai-conversational-s4-2026-10-26/](evidence/ai-conversational-s4-2026-10-26), [evidence/ai-conversational-s5-2026-10-26/](evidence/ai-conversational-s5-2026-10-26), [evidence/ai-conversational-spike-2026-10-26/](evidence/ai-conversational-spike-2026-10-26) | The baseline, slice and first spike runs of the conversational assistant | `docs/release/evidence/` | Builds replaced by slice S8 and the section re-harness (ADR-0041) |
+
 The Windows tree also keeps the old `docs/archive/` files in its `docs/history/`. The Mac removed that folder on
 2026-10-19 (git history keeps it), so those files are not copied here.
 
 Evidence of the current Windows and Mac tracks (`w2` to `w9`, `mac`, `release`) stays in
 [release/evidence](../release/evidence): the feature status check requires proof files there and each phase adds new
-ones (the one exception is the five-lane harness folder above). Files were moved, not edited, so links inside them may point at the old places; the link check skips this folder.
+ones (the exceptions are the AI folders above). Files were moved, not edited, so links inside them may point at the old places; the link check skips this folder.
 
 What goes here from now on: a document or ADR that is superseded as a whole. A document that is superseded only in part
 keeps its place, with the old part marked SUPERSEDED in place.

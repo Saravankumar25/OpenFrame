@@ -21,6 +21,25 @@ pub fn open_read_only_shared(path: &Path) -> io::Result<File> {
     o.open(path)
 }
 
+/// True when the open `file` is still the file found at `path`: another program has not removed it,
+/// or put a new one in its place. Where the system does not name files by device and number, and an
+/// open file cannot be removed that way (Windows), the answer is always true.
+pub fn is_file_at(file: &File, path: &Path) -> bool {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        match (file.metadata(), std::fs::metadata(path)) {
+            (Ok(a), Ok(b)) => a.dev() == b.dev() && a.ino() == b.ino(),
+            _ => false,
+        }
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = (file, path);
+        true
+    }
+}
+
 /// True when `path` is a regular file (a link is not followed) that its owner may write.
 /// Always false where file modes do not exist (Windows).
 pub fn is_owner_writable_file(path: &Path) -> bool {
@@ -66,6 +85,20 @@ pub fn add_owner_write_no_follow(path: &Path) -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(unix)]
+    #[test]
+    fn an_open_file_that_was_removed_or_replaced_is_no_longer_the_file_at_its_path() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("turn");
+        std::fs::write(&path, b"").unwrap();
+        let open = File::open(&path).unwrap();
+        assert!(is_file_at(&open, &path));
+        std::fs::remove_file(&path).unwrap();
+        assert!(!is_file_at(&open, &path), "removed");
+        std::fs::write(&path, b"").unwrap();
+        assert!(!is_file_at(&open, &path), "another file at the same name");
+    }
 
     #[test]
     fn the_file_is_read_and_on_windows_cannot_be_written_while_held() {

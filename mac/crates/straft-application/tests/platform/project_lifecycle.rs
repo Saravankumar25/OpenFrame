@@ -6,10 +6,10 @@
 
 use std::path::{Path, PathBuf};
 
+use serde_json::{Value, json};
 use straft_application::AppConfig;
 use straft_application::modules::project::fault;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 fn test_trash() -> &'static Path {
     fault::trash_into(
@@ -201,8 +201,8 @@ fn a_new_project_in_a_fake_onedrive_folder_is_flagged_and_existing_projects_stay
 #[test]
 fn the_app_refuses_to_start_without_a_documents_folder() {
     let some = |p: &str| Some(PathBuf::from(p));
-    let e =
-        AppConfig::from_system_folders(some(r"C:\Data\Straft Studio"), None, None, "1.0").unwrap_err();
+    let e = AppConfig::from_system_folders(some(r"C:\Data\Straft Studio"), None, None, "1.0")
+        .unwrap_err();
     assert_eq!(e.code.0, "storage.documents_unknown");
     assert!(
         e.message.contains("can't find your Documents folder"),

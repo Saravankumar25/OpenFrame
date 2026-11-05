@@ -20,12 +20,12 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use straft_domain::{
     AppError, AppResult, OLDEST_PACKAGE_FORMAT_VERSION, PACKAGE_FORMAT_VERSION, new_id,
 };
 use straft_security::archive::{self, ArchiveLimits, EntrySource};
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use ts_rs::TS;
 
 pub const FORMAT_NAME: &str = "straft-package";
@@ -520,8 +520,7 @@ pub fn write_container(
 pub fn parse_manifest(bytes: &[u8]) -> AppResult<PackageManifest> {
     let raw: Value = serde_json::from_slice(bytes).map_err(|_| not_package())?;
     let format = raw.get("format").and_then(Value::as_str);
-    if format != Some(FORMAT_NAME)
-        && format != Some(straft_platform::legacy_names::PACKAGE_FORMAT)
+    if format != Some(FORMAT_NAME) && format != Some(straft_platform::legacy_names::PACKAGE_FORMAT)
     {
         return Err(not_package());
     }
@@ -945,12 +944,7 @@ mod hostile {
     fn checksums(entries: &[(&str, &[u8])]) -> Vec<u8> {
         let files: serde_json::Map<String, Value> = entries
             .iter()
-            .map(|(n, b)| {
-                (
-                    n.to_string(),
-                    Value::from(straft_security::sha256_bytes(b)),
-                )
-            })
+            .map(|(n, b)| (n.to_string(), Value::from(straft_security::sha256_bytes(b))))
             .collect();
         serde_json::to_vec(&serde_json::json!({ "algorithm": "sha256", "files": files })).unwrap()
     }

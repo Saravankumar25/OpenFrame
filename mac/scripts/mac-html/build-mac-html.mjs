@@ -15,6 +15,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
+import zlib from 'node:zlib';
 import { spawnSync } from 'node:child_process';
 
 const args = process.argv.slice(2).filter((a) => a !== '--both');
@@ -99,16 +100,63 @@ names.sort((a, b) => (light.pages.get(a).order ?? 0) - (light.pages.get(b).order
 const alias = new Map();
 const seen = new Map();
 const SIG_ROLES = new Set(['AXStaticText', 'AXHeading', 'AXButton', 'AXRadioButton', 'AXMenuItem', 'AXTextField', 'AXTextArea', 'AXCheckBox', 'AXPopUpButton']);
-names = names.filter((n) => {
-  const keys = [];
-  for (const m of [light.pages.get(n), dark.pages.get(n)]) {
-    keys.push(createHash('md5').update(fs.readFileSync(m.pngPath)).digest('hex'));
+// A repeat is a screen whose picture is byte for byte the same as an earlier one, or whose texts and controls are the
+// same and whose picture is nearly the same (a caret, a hover). Same text with a clearly different picture (a page that
+// turned dark, a mode that hid the panes) is a screen of its own.
+function readPng(file) {
+  const b = fs.readFileSync(file);
+  let o = 8, w = 0, h = 0, depth = 0, type = 0;
+  const idat = [];
+  while (o < b.length) {
+    const len = b.readUInt32BE(o), kind = b.toString('latin1', o + 4, o + 8);
+    if (kind === 'IHDR') { w = b.readUInt32BE(o + 8); h = b.readUInt32BE(o + 12); depth = b[o + 16]; type = b[o + 17]; }
+    if (kind === 'IDAT') idat.push(b.subarray(o + 8, o + 8 + len));
+    o += 12 + len;
   }
-  const p = light.pages.get(n);
-  const text = p.elements.filter((e) => SIG_ROLES.has(e.role)).map((e) => `${e.role}|${e.label}|${e.title}|${e.value}|${e.selected}`).join('\n');
-  keys.push('sig:' + createHash('md5').update(`${p.width}x${p.height}|${p.sheets}|` + text).digest('hex'));
-  for (const k of keys) if (seen.has(k)) { alias.set(n, seen.get(k)); return false; }
-  for (const k of keys) seen.set(k, n);
+  const bpp = type === 6 ? 4 : type === 2 ? 3 : 0;
+  if (!bpp || depth !== 8) return null;
+  const raw = zlib.inflateSync(Buffer.concat(idat));
+  const stride = w * bpp, out = Buffer.alloc(stride * h);
+  for (let y = 0; y < h; y++) {
+    const f = raw[y * (stride + 1)], src = y * (stride + 1) + 1, dst = y * stride;
+    for (let x = 0; x < stride; x++) {
+      const a = x >= bpp ? out[dst + x - bpp] : 0, up = y ? out[dst - stride + x] : 0, c = x >= bpp && y ? out[dst - stride + x - bpp] : 0;
+      let v = raw[src + x];
+      if (f === 1) v += a; else if (f === 2) v += up; else if (f === 3) v += (a + up) >> 1;
+      else if (f === 4) { const pp = a + up - c, pa = Math.abs(pp - a), pb = Math.abs(pp - up), pc = Math.abs(pp - c); v += pa <= pb && pa <= pc ? a : pb <= pc ? up : c; }
+      out[dst + x] = v & 255;
+    }
+  }
+  return { w, h, bpp, data: out };
+}
+// Share of pixels that differ by more than a few levels; 1 when the pictures cannot be compared.
+function pictureDiff(fa, fb) {
+  const a = readPng(fa), b = readPng(fb);
+  if (!a || !b || a.w !== b.w || a.h !== b.h || a.bpp !== b.bpp) return 1;
+  let n = 0;
+  for (let i = 0; i < a.data.length; i += a.bpp) {
+    if (Math.abs(a.data[i] - b.data[i]) > 8 || Math.abs(a.data[i + 1] - b.data[i + 1]) > 8 || Math.abs(a.data[i + 2] - b.data[i + 2]) > 8) n++;
+  }
+  return n / (a.data.length / a.bpp);
+}
+const SAME_PICTURE = 0.003;
+const bySig = new Map();
+names = names.filter((n) => {
+  const l = light.pages.get(n), d = dark.pages.get(n);
+  const hash = (m) => createHash('md5').update(fs.readFileSync(m.pngPath)).digest('hex');
+  const exact = `png:${hash(l)}:${hash(d)}`;
+  if (seen.has(exact)) { alias.set(n, seen.get(exact)); return false; }
+  const text = l.elements.filter((e) => SIG_ROLES.has(e.role)).map((e) => `${e.role}|${e.label}|${e.title}|${e.value}|${e.selected}`).join('\n');
+  const sig = createHash('md5').update(`${l.width}x${l.height}|${l.sheets}|` + text).digest('hex');
+  for (const earlier of bySig.get(sig) || []) {
+    if (pictureDiff(light.pages.get(earlier).pngPath, l.pngPath) < SAME_PICTURE && pictureDiff(dark.pages.get(earlier).pngPath, d.pngPath) < SAME_PICTURE) {
+      alias.set(n, earlier);
+      return false;
+    }
+  }
+  seen.set(exact, n);
+  if (!bySig.has(sig)) bySig.set(sig, []);
+  bySig.get(sig).push(n);
   return true;
 });
 const resolve = (n) => { while (n && alias.has(n)) n = alias.get(n); return n; };
@@ -511,6 +559,16 @@ main h2{margin:26px 0 10px;font-size:16px;border-bottom:1px solid var(--line);pa
 .card small{color:var(--mut);display:block}
 `;
 
+// Fit to the browser without script. At the window's own size or wider a page is shown 1:1 (one CSS pixel per point).
+// In a narrower browser the window is zoomed down in steps of 2 percent so that it always fits beside the page margins
+// (80 px) and a scroll bar (about 20 px): one media rule per step, the smallest matching step wins. Chrome, Safari and
+// Firefox all honour the zoom property and a media query on width, so this needs no script and no newer CSS.
+function fitCss(W) {
+  const rules = [];
+  for (let k = 49; k >= 5; k--) rules.push(`@media (max-width:${Math.ceil((W * (k + 1)) / 50) + 99}px){.win{zoom:${k / 50}}}`);
+  return rules.join('\n');
+}
+
 // 5. Write the pages.
 fs.rmSync(root, { recursive: true, force: true });
 const sizes = new Map();
@@ -559,7 +617,7 @@ for (const mode of ['light', 'dark']) {
     const winbg = /^#[0-9a-f]{3,8}$/i.test(p.bg || '') ? p.bg : dk ? '#1e1e1e' : '#f5f5f5';
     const html = `<!doctype html>
 <html lang="en"${mode === 'dark' ? ' class="dark"' : ''}><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(m.title)} (${mode}) - Straft Studio for Mac</title><style>${CSS}</style></head>
+<title>${esc(m.title)} (${mode}) - Straft Studio for Mac</title><style>${CSS}\n${fitCss(W)}</style></head>
 <body>
 <input type="checkbox" id="htmlonly" class="toggle">
 <div class="band">
@@ -639,7 +697,7 @@ ${meta.length} screens in ${groups.length} areas, each captured from the real ap
 WindowsHTML saved the Windows app's own DOM and CSS, because that app is a web view. The Mac app is native SwiftUI: there
 is no DOM to save. MacHTML is built from two things captured at the same moment for every screen:
 
-- the 2x picture of the window as the window server draws it (title bar, toolbar, sidebar, content, and any sheet or menu
+- the picture of the window as the window server draws it (title bar, toolbar, sidebar, content, and any sheet or menu
   at its real position), and
 - the full accessibility tree of the window: role, identifier, label, title, value, enabled, selected and focused state,
   and the frame of every element in points.
@@ -661,15 +719,19 @@ is no DOM to save. MacHTML is built from two things captured at the same moment 
 - The HTML only switch at the top of each page hides the picture and shows the HTML layer alone on the window colour.
 - A control that led to another captured screen is a link to that page. Each page also links to the same page in the
   other mode and to the index.
-- No page holds a script, and nothing is loaded from the network. The Light and Dark switch on the index and the HTML only
-  switch are plain CSS.
-- Commit of the app these came from: \`${commit || 'unknown'}\`, captured on ${captured} from the development build.
-- Theme: Screening Room, the default Mac theme, in Light and in Dark. The window is the full visible screen, frontmost
-  and active for every picture.
+- No page holds a script, and nothing is loaded from the network. In a browser narrower than the window, the window is
+  scaled down by CSS media rules (steps of 2 percent) so no edge is cropped; at the window's own width or wider it is
+  shown one CSS pixel per point.
+- The Light and Dark switch on the index and the HTML only switch are plain CSS.
+- Commit of the app these came from: \`${commit || 'unknown'}\`, captured on ${captured} from the installed internal build. The Library setup screens come from the development build of the same code, because only a debug build can be started on that screen.
+- Theme: Screening Room, the default Mac theme, in Light and in Dark. The window fills the whole visible frame of the
+  screen (below the menu bar, beside any Dock), is never resized to a chosen size, and is drawn in its active look for every picture (on a locked screen the driver
+  asks the app for that look; no other state changes).
+- The person is the sample name Maya Rao and the folders are under \`/Users/Shared/Straft Demo\`, or \`/Users/Shared/Straft Demo 2\` where Light and Dark were captured side by side.
 
 ## Window size
 
-The window is ${mainSize} points (shown at one CSS pixel per point; the pictures are 2x).${sizeList.length > 1 ? ` Some screens were captured at another size: ${sizeList.slice(1).map(([s, n]) => `${s} (${n} ${n === 1 ? 'screen' : 'screens'})`).join(', ')}.` : ''}
+The window fills the whole visible frame of the screen it was captured on: ${mainSize} points (shown at one CSS pixel per point; the pictures have the scale of that screen).${sizeList.length > 1 ? ` Some screens were captured at another size: ${sizeList.slice(1).map(([s, n]) => `${s} (${n} ${n === 1 ? 'screen' : 'screens'})`).join(', ')}.` : ''}
 
 ## Regenerate
 
@@ -688,8 +750,8 @@ without running the app:
 - Voice recording (needs the microphone and its permission dialog).
 - The print panel.
 - Forced crashes and disk failures.
-- Real AI answers and an Assistant memory with entries: the development build has no AI engine, so the Assistant screens
-  show the state without one.
+- Real AI answers and an Assistant memory with entries: the capture does not download a model, so the Straft AI screens
+  show the state before the download.
 - In Dark mode a sheet's rounded top corners show small white wedges: the capture lays the sheet window's transparent
   corners on white. The app draws them correctly.
 ${onlyOne.length ? `- Screens captured in one mode only: ${onlyOne.join(', ')}.\n` : ''}${skipped.length ? '- Steps the tour skipped (in both modes unless marked):\n' + skipped.map((s) => '  - ' + s.slice(0, 220)).join('\n') + '\n' : ''}

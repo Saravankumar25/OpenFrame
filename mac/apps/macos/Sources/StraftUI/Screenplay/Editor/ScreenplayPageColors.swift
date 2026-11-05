@@ -81,11 +81,11 @@ enum ScreenplayPageColors {
         }
     }
 
-    nonisolated(unsafe) static let ink = dynamic(light: light.ink, dark: dark.ink)
-    nonisolated(unsafe) static let paper = dynamic(light: light.paper, dark: dark.paper)
-    nonisolated(unsafe) static let muted = dynamic(light: light.muted, dark: dark.muted)
-    nonisolated(unsafe) static let faint = dynamic(light: light.faint, dark: dark.faint)
-    nonisolated(unsafe) static let rule = dynamic(light: light.rule, dark: dark.rule)
+    static let ink = dynamic(light: light.ink, dark: dark.ink)
+    static let paper = dynamic(light: light.paper, dark: dark.paper)
+    static let muted = dynamic(light: light.muted, dark: dark.muted)
+    static let faint = dynamic(light: light.faint, dark: dark.faint)
+    static let rule = dynamic(light: light.rule, dark: dark.rule)
 
     /// An sRGB colour from "#rrggbb".
     static func color(_ hex: String) -> NSColor {

@@ -380,7 +380,8 @@ pub fn paperwork(g: &Gold, ctx: &mut Ctx) {
         if let Some(locs) = doc["locations"].as_array_mut() {
             for l in locs.iter_mut() {
                 if s(&l["meetingPoint"]).is_empty() {
-                    l["meetingPoint"] = json!("Unit base; follow the yellow STRAFT STUDIO LTR signs");
+                    l["meetingPoint"] =
+                        json!("Unit base; follow the yellow STRAFT STUDIO LTR signs");
                 }
                 if s(&l["parking"]).is_empty() {
                     l["parking"] = json!("Crew cars at unit base only");

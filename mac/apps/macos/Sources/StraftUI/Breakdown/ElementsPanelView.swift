@@ -141,7 +141,7 @@ struct ElementsPanelView: View {
             } label: {
                 Label("Actions", systemImage: "ellipsis.circle")
             }
-            .menuStyle(.borderlessButton)
+            .borderlessAccentMenu()
             .menuIndicator(.hidden)
             .fixedSize()
             .accessibilityLabel("Actions for \(e.name)")
@@ -172,7 +172,7 @@ struct ElementsPanelView: View {
                 BDChip(text: "Suggested", tone: .yellow)
                 Text("\(s.displayName) (suggested)").font(.callout.weight(.semibold)).fixedSize(horizontal: false, vertical: true)
             }
-            Text("matched: \(BDText.quoted(s.evidence ?? ""))").font(.caption).foregroundStyle(theme["muted"]).lineLimit(2)
+            Text("matched: \(BDText.quoted(s.evidence ?? ""))").font(.caption).foregroundStyle(theme["ink2"]).lineLimit(2)
                 .help(s.evidence ?? "")
             if canEdit {
                 HStack(spacing: 6) {

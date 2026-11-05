@@ -111,7 +111,7 @@ private struct VaultDrawerContent: View {
             } label: {
                 Label("Close", systemImage: "xmark")
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.ofBorderless)
             .keyboardShortcut(.cancelAction)
             .help("Close")
             .accessibilityLabel("Close")
@@ -383,7 +383,7 @@ private struct VaultDrawerContent: View {
         .padding(.horizontal, 7)
         .padding(.vertical, 3)
         .background(theme["accent-soft"], in: Capsule())
-        .foregroundStyle(theme["accent-ink"])
+        .foregroundStyle(theme["accent-d"])
     }
 }
 
@@ -508,7 +508,7 @@ struct VaultPreview: View {
         HStack(spacing: 10) {
             ZStack {
                 RoundedRectangle(cornerRadius: 8, style: .continuous).fill(theme["accent-soft"])
-                Text(item.itemType == .pdf ? "PDF" : VaultText.extLabel(asset.originalName)).font(.caption.weight(.bold)).foregroundStyle(theme["accent-ink"])
+                Text(item.itemType == .pdf ? "PDF" : VaultText.extLabel(asset.originalName)).font(.caption.weight(.bold)).foregroundStyle(theme["accent-d"])
             }
             .frame(width: 44, height: 44)
             VStack(alignment: .leading, spacing: 2) {

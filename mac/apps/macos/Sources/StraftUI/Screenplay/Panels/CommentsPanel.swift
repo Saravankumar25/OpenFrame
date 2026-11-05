@@ -283,7 +283,7 @@ struct ThreadCard: View {
                         Button("Delete", role: .destructive) { Task { await comments.delete(c) } }
                     }
                 } label: { Label("Actions", systemImage: "ellipsis") }
-                .menuStyle(.borderlessButton)
+                .borderlessAccentMenu()
                 .fixedSize()
                 .accessibilityLabel("Comment actions")
             }
@@ -317,7 +317,7 @@ struct ThreadCard: View {
                         Spacer()
                         if r.isMine || permissions?.delete == true {
                             Button { Task { await comments.delete(r) } } label: { Label("Delete", systemImage: "xmark") }
-                                .buttonStyle(.borderless)
+                                .buttonStyle(.ofBorderless)
                                 .help("Delete reply")
                                 .accessibilityLabel("Delete reply")
                         }

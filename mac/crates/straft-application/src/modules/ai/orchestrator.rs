@@ -25,12 +25,12 @@
 
 use std::sync::Arc;
 
-use straft_ai::InferenceProvider;
-use straft_domain::auth::ActorOrigin;
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::Deserialize;
 use serde_json::{Value, json};
+use straft_ai::InferenceProvider;
+use straft_domain::auth::ActorOrigin;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id};
 use ts_rs::TS;
 
 use super::action;

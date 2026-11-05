@@ -7,13 +7,13 @@
 //! (Stale or Conflict) and change nothing; "Re-check & Review" must rebuild the proposal
 //! against the user's new data, and only then can it be applied, keeping the user's edit.
 
+use rusqlite::types::ValueRef;
+use serde_json::{Value, json};
 use straft_application::modules::ai::ChangeSetDraft;
 use straft_application::modules::ai::scope::ResolvedScope;
 use straft_application::modules::ai::toolbox::{self, ToolStep};
 use straft_application::modules::ai::{change_set, queries};
 use straft_test_support::TestEnv;
-use rusqlite::types::ValueRef;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ helpers
 

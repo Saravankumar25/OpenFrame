@@ -59,9 +59,16 @@ struct FilesScreen: View {
             if !model.loaded {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                HStack(alignment: .top, spacing: 14) {
-                    FolderPanel(model: model)
-                    content
+                PageWidthReader { pageWidth in
+                    let room = FileTableColumns.tableWidth(pageWidth: pageWidth)
+                    // In a very narrow page the folders go above the table, so the table keeps its name column.
+                    let layout = room >= FileTableColumns.smallest
+                        ? AnyLayout(HStackLayout(alignment: .top, spacing: FileTableColumns.gapToFolders))
+                        : AnyLayout(VStackLayout(alignment: .leading, spacing: FileTableColumns.gapToFolders))
+                    layout {
+                        FolderPanel(model: model)
+                        content(columns: FileTableColumns.fitting(room >= FileTableColumns.smallest ? room : FileTableColumns.columnWidth(pageWidth: pageWidth)))
+                    }
                 }
                 .pageColumn(maxWidth: PageSpacing.wideColumn)
                 .padding(.bottom, PageSpacing.medium)
@@ -78,10 +85,9 @@ struct FilesScreen: View {
             Task { await model.addPicked(files, mode: "copy") }
             return true
         } isTargeted: { model.dropping = $0 }
-        .inspector(isPresented: Binding(get: { model.current != nil }, set: { if !$0 { model.select(nil) } })) {
+        .sidePane("files", isPresented: model.current != nil, minimum: 320, ideal: 380, maximum: 520) {
             if let f = model.current {
                 FileDetailsView(files: model, id: f.id).id(f.id)
-                    .inspectorColumnWidth(min: 320, ideal: 380, max: 520)
             }
         }
         .themedSheet(item: $model.dialog) { dialogView($0) }
@@ -97,7 +103,7 @@ struct FilesScreen: View {
         HStack(spacing: 10) {
             HStack(spacing: 4) {
                 Image(systemName: "magnifyingglass").foregroundStyle(theme["muted"]).accessibilityHidden(true)
-                TextField("Search files", text: $model.text)
+                HintedTextField("Search files", text: $model.text)
                     .textFieldStyle(.plain)
                     .accessibilityLabel("Search files")
                     .accessibilityIdentifier("files-search")
@@ -114,7 +120,11 @@ struct FilesScreen: View {
             .frame(width: 120)
             .accessibilityLabel("View")
             .accessibilityIdentifier("files-view")
-            Text("Drag files here from Finder to add them.").font(.caption).foregroundStyle(theme["muted"])
+            PageWidthReader { pageWidth in
+                if pageWidth >= 640 {
+                    Text("Drag files here from Finder to add them.").font(.caption).foregroundStyle(theme["muted"])
+                }
+            }
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .padding(.horizontal, PageSpacing.large)
@@ -137,7 +147,7 @@ struct FilesScreen: View {
 
     // MARK: Content
 
-    @ViewBuilder private var content: some View {
+    @ViewBuilder private func content(columns: FileTableColumns) -> some View {
         if model.files.isEmpty {
             ContentUnavailableView {
                 Label("Keep project documents and attachments here.", systemImage: "folder")
@@ -158,7 +168,7 @@ struct FilesScreen: View {
                 .background(theme["panel"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .accessibilityIdentifier("files-none-shown")
         } else if view == .list {
-            Group { listView }
+            Group { listView(columns: columns) }
                 .focusable()
                 .focusEffectDisabled()
                 .onKeyPress(.delete) { deleteSelected() }
@@ -182,14 +192,14 @@ struct FilesScreen: View {
         return .handled
     }
 
-    private var listView: some View {
+    private func listView(columns: FileTableColumns) -> some View {
         PageCard {
-            HStack(spacing: 8) {
-                Text("Name").frame(maxWidth: .infinity, alignment: .leading)
-                Text("Type").frame(width: 90, alignment: .leading)
-                Text("Where").frame(width: 190, alignment: .leading)
-                Text("Modified").frame(width: 90, alignment: .leading)
-                Text("Actions").frame(width: 130, alignment: .trailing).opacity(0).accessibilityHidden(true)
+            HStack(spacing: FileTableColumns.gap) {
+                Text("Name").frame(minWidth: FileTableColumns.nameMinimum, maxWidth: .infinity, alignment: .leading)
+                if columns.kind { Text("Type").frame(width: FileTableColumns.kindWidth, alignment: .leading) }
+                if columns.place { Text("Where").frame(width: FileTableColumns.placeWidth, alignment: .leading) }
+                if columns.modified { Text("Modified").frame(width: FileTableColumns.modifiedWidth, alignment: .leading) }
+                Text("Actions").frame(width: FileTableColumns.actionsWidth, alignment: .trailing).opacity(0).accessibilityHidden(true)
             }
             .font(.caption.weight(.semibold))
             .foregroundStyle(theme["muted"])
@@ -198,7 +208,7 @@ struct FilesScreen: View {
             Divider().overlay(theme["line"])
             LazyVStack(spacing: 0) {
                 ForEach(model.shown, id: \.id) { f in
-                    FileRow(model: model, file: f)
+                    FileRow(model: model, file: f, columns: columns)
                     Divider().overlay(theme["line"])
                 }
             }
@@ -316,26 +326,71 @@ private func whereWord(_ f: ProjectFileDto) -> String {
     }
 }
 
+/// Which columns of the file table fit. The name never gives way to a fixed column: Modified, Type
+/// and Where appear in that order as the room allows (the details panel shows them all).
+struct FileTableColumns: Equatable {
+    static let gap: CGFloat = 8
+    static let rowPadding: CGFloat = 24
+    static let nameMinimum: CGFloat = 160
+    static let kindWidth: CGFloat = 90
+    static let placeWidth: CGFloat = 190
+    static let modifiedWidth: CGFloat = 90
+    static let actionsWidth: CGFloat = 130
+    /// The folder list and the space beside it.
+    static let foldersWidth: CGFloat = 210
+    static let gapToFolders: CGFloat = 14
+    /// A row with only the name and the actions.
+    static let smallest = rowPadding + nameMinimum + gap + actionsWidth
+
+    var kind: Bool
+    var place: Bool
+    var modified: Bool
+
+    /// The page column on a page this wide.
+    static func columnWidth(pageWidth: CGFloat) -> CGFloat {
+        min(PageSpacing.wideColumn, pageWidth - 2 * PageSpacing.large)
+    }
+
+    /// The table's width beside the folder list on a page this wide.
+    static func tableWidth(pageWidth: CGFloat) -> CGFloat {
+        columnWidth(pageWidth: pageWidth) - foldersWidth - gapToFolders
+    }
+
+    static func fitting(_ tableWidth: CGFloat) -> FileTableColumns {
+        var left = tableWidth - smallest
+        func take(_ width: CGFloat) -> Bool {
+            guard left >= width + gap else { return false }
+            left -= width + gap
+            return true
+        }
+        let modified = take(modifiedWidth)
+        let kind = modified && take(kindWidth)
+        let place = kind && take(placeWidth)
+        return FileTableColumns(kind: kind, place: place, modified: modified)
+    }
+}
+
 private struct FileRow: View {
     let model: FilesModel
     let file: ProjectFileDto
+    let columns: FileTableColumns
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
         let selected = model.selectedId == file.id
         let unavailable = FilesModel.whereOf(file) == .unavailable
         let kind = PageText.fileKind(mediaType: file.asset.mediaType, name: file.asset.originalName)
-        return HStack(spacing: 8) {
+        return HStack(spacing: FileTableColumns.gap) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(file.displayName).fontWeight(.semibold).lineLimit(1)
                 if case .all = model.folder, let fid = file.folderId {
                     Label(model.folderPath(fid), systemImage: "folder").font(.caption).foregroundStyle(theme["muted"]).lineLimit(1)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            Text(kind).frame(width: 90, alignment: .leading)
-            WhereChips(file: file).frame(width: 190, alignment: .leading)
-            Text(PageText.dayWord(ms: file.updatedAt)).frame(width: 90, alignment: .leading)
+            .frame(minWidth: FileTableColumns.nameMinimum, maxWidth: .infinity, alignment: .leading)
+            if columns.kind { Text(kind).frame(width: FileTableColumns.kindWidth, alignment: .leading) }
+            if columns.place { WhereChips(file: file).frame(width: FileTableColumns.placeWidth, alignment: .leading) }
+            if columns.modified { Text(PageText.dayWord(ms: file.updatedAt)).frame(width: FileTableColumns.modifiedWidth, alignment: .leading) }
             HStack(spacing: 4) {
                 if model.isUnavailableLink(file) {
                     Button { relink() } label: { Label("Relink", systemImage: "link") }
@@ -347,14 +402,14 @@ private struct FileRow: View {
                         .disabled(unavailable)
                         .accessibilityIdentifier("file-open-\(file.id)")
                 }
-                Menu { FileMenu(model: model, file: file) } label: { Label("More", systemImage: "ellipsis") }
-                    .menuStyle(.borderlessButton)
+                Menu { FileMenu(model: model, file: file) } label: { Label("More", systemImage: "ellipsis").labelStyle(.iconOnly) }
+                    .borderlessAccentMenu()
                     .menuIndicator(.hidden)
                     .frame(width: 28)
                     .accessibilityLabel("More actions for \(file.displayName)")
                     .accessibilityIdentifier("file-more-\(file.id)")
             }
-            .frame(width: 130, alignment: .trailing)
+            .frame(width: FileTableColumns.actionsWidth, alignment: .trailing)
         }
         .font(.callout)
         .padding(.horizontal, 12).padding(.vertical, 8)
@@ -436,13 +491,13 @@ private struct FolderPanel: View {
                     Button { model.dialog = .deleteFolder(f) } label: { Label("Delete", systemImage: "trash") }
                         .accessibilityIdentifier("folder-delete")
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.ofBorderless)
                 .controlSize(.small)
                 .padding(.top, 8).padding(.horizontal, 4)
             }
         }
         .padding(6)
-        .frame(width: 210, alignment: .topLeading)
+        .frame(width: FileTableColumns.foldersWidth, alignment: .topLeading)
         .background(theme["panel"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(theme["line"]))
         .accessibilityElement(children: .contain)
@@ -652,7 +707,7 @@ struct FileDetailsView: View {
             }
             Spacer()
             Button { Task { await details.close() } } label: { Label("Close", systemImage: "xmark") }
-                .buttonStyle(.borderless)
+                .buttonStyle(.ofBorderless)
                 .help("Close")
                 .keyboardShortcut(.cancelAction)
                 .accessibilityLabel("Close")
@@ -745,7 +800,8 @@ struct FileDetailsView: View {
 
     private func actions(_ f: ProjectFileDto) -> some View {
         let unavailable = FilesModel.whereOf(f) == .unavailable
-        return HStack {
+        // A narrow details panel wraps the buttons rather than cutting their names.
+        return BDFlowLayout(spacing: 8) {
             Button { Task { await files.reveal(f) } } label: { Label("Reveal in Finder", systemImage: "folder") }
                 .disabled(unavailable)
                 .accessibilityIdentifier("file-reveal")

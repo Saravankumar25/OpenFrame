@@ -61,7 +61,7 @@ The completion plan defines the states from Specified to Release-ready and the f
 - [ ] Create release evidence storage with immutable release identifiers.
 - [ ] Keep unfinished capabilities out of launch claims until they are Release-ready.
 
-The current evidence says the creative/production release declaration still marks major workspaces as in development/not usable, while Offline AI/assistant are implemented with retrieval-quality and hardware validation still pending.
+The current evidence says the creative/production release declaration still marks major workspaces as in development/not usable, while Straft AI/assistant are implemented with retrieval-quality and hardware validation still pending.
 
 # Architecture rules that never change
 
@@ -1423,7 +1423,7 @@ Names are the areas of the [build plan](../implementation/masterplan.md). Rows a
 | Shooting schedule and Day Out of Days | Schedule, DOOD, availability and conflicts. |
 | Call sheets, budget, templates, samples and exports | Call sheets, production documents and lightweight budget. |
 | Packages and backup | Import and export hardening and package portability. |
-| AI assistant quality and hardening; Security hardening | AI evaluation, security hardening, minimum-spec performance and tool coverage. |
+| Straft AI quality and hardening; Security hardening | AI evaluation, security hardening, minimum-spec performance and tool coverage. |
 | Platform adapter layer for Windows and Mac; Windows installer; Mac App Store package | Windows and Mac production hardening, installers, signing and clean-machine tests. |
 | Microsoft Store package | Microsoft Store certification and submission, and direct distribution readiness. |
 | Legal, privacy, website and support | Website, support, email, privacy and legal, marketing and social launch system. |
@@ -1502,7 +1502,7 @@ Requirements present in the owner's notes (`docs/history/notes/store-certificati
 
 | Key | Requirement | Importance | Where it is built |
 |---|---|---|---|
-| `STORE-007` | In-app way to report inappropriate AI output (Store policy for live generative AI); never sends project content automatically | Must ship | AI assistant quality and hardening |
+| `STORE-007` | In-app way to report inappropriate AI output (Store policy for live generative AI); never sends project content automatically | Must ship | Straft AI quality and hardening |
 | `STORE-008` | Store listing discloses live generative AI and the optional on-demand download | Must ship | Final review and submission |
 | `STORE-009` | Age rating (IARC) answered accurately for screenplays with mature themes or violence | Must ship | Final review and submission |
 | `STORE-010` | Notes for Certification: no login needed, how to test optional AI, network use, capability justification | Must ship | Final review and submission |
@@ -1513,7 +1513,7 @@ Requirements present in the owner's notes (`docs/history/notes/store-certificati
 | `STORE-015` | Supported Windows versions in manifest, listing and docs agree with what was tested | Must ship | Project controls and baseline |
 | `STORE-016` | Store policy version re-checked on the submission date | Should ship | Final review and submission |
 | `BETA-001` | Beta with real writers and production teams on a release candidate, with feedback channel and a closed list of findings | Must ship | Product-wide quality, accessibility and beta |
-| `BETA-002` | Windows hardware matrix (minimum, recommended, discrete GPU, high DPI, multi-monitor) | Must ship | AI assistant quality and hardening; Product-wide quality, accessibility and beta |
+| `BETA-002` | Windows hardware matrix (minimum, recommended, discrete GPU, high DPI, multi-monitor) | Must ship | Straft AI quality and hardening; Product-wide quality, accessibility and beta |
 | `GTM-011` | Launch trailer and Store media | Should ship | Certification, publication and launch |
 | `GTM-012` | Founder story and public narrative | Should ship | Certification, publication and launch |
 | `GTM-013` | 30-day content bank | Should ship | Certification, publication and launch |
@@ -1525,7 +1525,7 @@ Requirements present in the owner's notes (`docs/history/notes/store-certificati
 | `OPS-007` | Versioning strategy (SemVer app version, four-part MSIX version, schema versions) and changelog | Must ship | Microsoft Store package; Final review and submission |
 | `OPS-008` | Localization-ready architecture confirmed (English-only first release) | Should ship | Product-wide quality, accessibility and beta |
 | `OPS-009` | Public documentation and release notes | Should ship | Product-wide quality, accessibility and beta; Final review and submission |
-| `AI-011` | Store build bundles the runtime; weights downloaded on user click (ADR-0020) | Must ship | AI assistant quality and hardening |
+| `AI-011` | Store build bundles the runtime; weights downloaded on user click (ADR-0020) | Must ship | Straft AI quality and hardening |
 | `DATA-008` | Multi-operation AI Change Set apply is crash-safe (ADR-0019) | Must ship | Data safety and crash recovery |
 | `REL-011` | Desktop E2E is a required release gate | Must ship | Test infrastructure and quality gates |
 | `REL-012` | Supply-chain checks (cargo deny, npm audit, licence inventory) pass without bypass | Must ship | Project controls and baseline |

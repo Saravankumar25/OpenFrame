@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
+use parking_lot::Mutex;
 use straft_ai::{ChatRequest, InferenceProvider, ProviderCapabilities};
 use straft_domain::{AppError, AppResult};
 use straft_search::{Embedder, SearchError};
-use parking_lot::Mutex;
 
 use super::AnswerType::*;
 use super::*;

@@ -27,7 +27,7 @@ struct TemplatesView: View {
                 }
                 content
                 Text("Templates are optional. Every document can also start blank.")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption).foregroundStyle(.ofMuted)
                     .frame(maxWidth: .infinity)
             }
             .padding(.bottom, PageSpacing.large)
@@ -90,7 +90,7 @@ struct TemplatesView: View {
             } else {
                 VStack(spacing: 8) {
                     Text("Templates couldn't be loaded.").font(.headline)
-                    if let e = model.error { Text(e).foregroundStyle(.secondary).multilineTextAlignment(.center) }
+                    if let e = model.error { Text(e).foregroundStyle(.ofMuted).multilineTextAlignment(.center) }
                     Button("Try Again") { Task { await model.load() } }
                         .accessibilityIdentifier("templates-retry")
                 }
@@ -105,10 +105,10 @@ struct TemplatesView: View {
     private func section(_ title: String, _ sub: String, _ items: [TemplateDto], empty: String, id: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             SectionHeader(title)
-            Text(sub).font(.caption).foregroundStyle(.secondary).padding(.top, -PageSpacing.small)
+            Text(sub).font(.caption).foregroundStyle(.ofMuted).padding(.top, -PageSpacing.small)
             if items.isEmpty {
                 Text(empty)
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.callout).foregroundStyle(.ofMuted)
                     .padding(14).frame(maxWidth: .infinity, alignment: .leading)
                     .background(theme["panel"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(theme["line"]))
@@ -132,7 +132,7 @@ struct TemplatesView: View {
                         .overlay(Image(systemName: "doc.on.doc").foregroundStyle(theme["accent"]))
                     Text(t.name).fontWeight(.semibold).lineLimit(1)
                     Text(t.typeLabel + (t.description.map { $0.isEmpty ? "" : " \u{00B7} \($0)" } ?? ""))
-                        .font(.caption).foregroundStyle(.secondary).lineLimit(2)
+                        .font(.caption).foregroundStyle(.ofMuted).lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(12)
@@ -147,7 +147,7 @@ struct TemplatesView: View {
             } label: {
                 Label("Actions", systemImage: "ellipsis.circle")
             }
-            .menuStyle(.borderlessButton)
+            .borderlessAccentMenu()
             .menuIndicator(.hidden)
             .frame(width: 28, height: 28)
             .padding(18)
@@ -204,7 +204,7 @@ struct TemplatePreviewSheet: View {
             VStack(spacing: PageSpacing.tight) {
                 Text(template.name).font(.title2.weight(.semibold)).accessibilityIdentifier("template-preview-name")
                 Text("\(template.typeLabel) \u{00B7} \(TemplateKinds.scopeLabel(template.scope))")
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.callout).foregroundStyle(.ofMuted)
             }
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
@@ -212,7 +212,7 @@ struct TemplatePreviewSheet: View {
                 VStack(alignment: .leading, spacing: 12) {
                     if let d = template.description, !d.isEmpty { Text(d) }
                     if lists.isEmpty {
-                        Text("This template has no preset content yet.").foregroundStyle(.secondary)
+                        Text("This template has no preset content yet.").foregroundStyle(.ofMuted)
                             .accessibilityIdentifier("template-preview-empty")
                     } else {
                         ForEach(lists, id: \.key) { key, value in
@@ -292,7 +292,7 @@ struct TemplateEditSheet: View {
             VStack(spacing: PageSpacing.tight) {
                 Text(template == nil ? "Create Template" : "Edit Template").font(.title2.weight(.semibold))
                 Text(template == nil ? "A saved starting point for new documents." : "Changes apply to future use only.")
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.callout).foregroundStyle(.ofMuted)
             }
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
@@ -330,7 +330,7 @@ struct TemplateEditSheet: View {
                         .accessibilityLabel(def.listLabel)
                         .accessibilityIdentifier("template-lines")
                     Text("One per line. These become the \(def.listLabel.lowercased()) of new documents made from this template.")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(.ofMuted)
                 }
             }
             .formStyle(.columns)
@@ -383,14 +383,14 @@ struct TemplateApplySheet: View {
             VStack(spacing: PageSpacing.tight) {
                 Text(TemplateKinds.createLabel(type)).font(.title3.weight(.semibold))
                 Text("From \u{201C}\(template.name)\u{201D}. The new document is an independent copy.")
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.callout).foregroundStyle(.ofMuted)
             }
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
             if type == "call_sheet" {
                 if loaded && days.isEmpty {
                     Text("Every shooting day already has a call sheet, or the schedule has no shooting day yet.")
-                        .font(.callout).foregroundStyle(.secondary)
+                        .font(.callout).foregroundStyle(.ofMuted)
                         .accessibilityIdentifier("template-apply-no-days")
                 } else {
                     Picker("Shooting day", selection: Binding(get: { day }, set: { dayId = $0 })) {
@@ -402,7 +402,7 @@ struct TemplateApplySheet: View {
             if type == "shot_list" {
                 if loaded && scenes.isEmpty {
                     Text("Write or import a screenplay first; shots belong to a scene.")
-                        .font(.callout).foregroundStyle(.secondary)
+                        .font(.callout).foregroundStyle(.ofMuted)
                         .accessibilityIdentifier("template-apply-no-scenes")
                 } else {
                     Picker("Scene", selection: Binding(get: { scene }, set: { sceneId = $0 })) {

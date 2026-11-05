@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Straft Studio Offline AI benchmark (Local AI Runtime spec §4, §16; agentic AI spec §23).
+// Straft Studio Straft AI benchmark (Local AI Runtime spec §4, §16; agentic AI spec §23).
 //
 // Runs candidate chat-model files through the REAL runtime path — the pinned llama.cpp
 // `llama-server`, launched with the same flags Straft Studio's supervisor uses (loopback, random

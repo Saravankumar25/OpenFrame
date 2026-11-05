@@ -132,7 +132,7 @@ struct VisualSupportTests {
     @Test func theStoryboardGridFitsThePaneAtTheSmallestWindow() {
         // Three columns, as on Windows (repeat(3, 1fr)).
         #expect(StoryboardLayout.columns.count == 3)
-        // At the smallest window with the sidebar and the AI Assistant open the storyboard pane is
+        // At the smallest window with the sidebar and Straft AI open the storyboard pane is
         // 370 points wide (the E2E window fit check measured it); the page column keeps
         // PageSpacing.large on each side.
         #expect(StoryboardLayout.gridMinimumWidth + 2 * PageSpacing.large <= 370)

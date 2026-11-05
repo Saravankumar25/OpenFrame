@@ -35,7 +35,7 @@ struct SchedTabs<Value: Hashable>: View {
                     }
                     .font(.callout.weight(on ? .semibold : .regular))
                     .padding(.horizontal, 10).padding(.vertical, 4)
-                    .foregroundStyle(on ? theme["accent-ink"] : theme["ink2"])
+                    .foregroundStyle(on ? theme["accent-d"] : theme["ink2"])
                     .background(on ? theme["accent-soft"] : Color.clear, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                     .contentShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 }
@@ -213,7 +213,7 @@ struct SchedStripRow: View {
             Text(estimateText).font(.caption.monospacedDigit()).frame(minWidth: 34, alignment: .trailing).help("Estimated shooting time")
             Text(pagesText).font(.caption.monospacedDigit()).frame(minWidth: 30, alignment: .trailing)
                 .help(strip.pagesOverridden ? "Page count entered manually" : "Page count from the screenplay")
-            if let model { SchedStripMenu(model: model, strip: strip) }
+            if let model { SchedStripMenu(model: model, strip: strip, onStrip: true) }
         }
     }
 
@@ -281,6 +281,9 @@ struct SchedStripRow: View {
 struct SchedStripMenu: View {
     let model: ScheduleModel
     let strip: ScheduleStripDto
+    /// On a strip, whose paper colours are the same in every theme, as against a table row.
+    var onStrip = false
+    @Environment(\.ofTheme) private var theme
 
     var body: some View {
         Menu {
@@ -289,6 +292,9 @@ struct SchedStripMenu: View {
             Label("Actions", systemImage: "ellipsis")
         }
         .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+        // A strip has colours of its own, so the mark takes the strip's ink, not the accent.
+        .tint(onStrip ? stripInk : theme["ink"])
+        .foregroundStyle(onStrip ? stripInk : theme["ink"])
         .accessibilityLabel("Scene \(strip.number.map { String(Int($0)) } ?? "") actions")
         .accessibilityIdentifier("strip-actions-\(strip.number.map { String(Int($0)) } ?? strip.id)")
     }
@@ -347,7 +353,7 @@ struct SchedMarkerRow: View {
                 } label: {
                     Label("Actions", systemImage: "ellipsis")
                 }
-                .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+                .borderlessAccentMenu().menuIndicator(.hidden).fixedSize()
                 .accessibilityLabel("Break actions")
                 .accessibilityIdentifier("marker-actions-\(marker.id)")
             }
@@ -457,7 +463,7 @@ struct SchedDayMenu: View {
         } label: {
             Label("Actions", systemImage: "ellipsis.circle")
         }
-        .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+        .borderlessAccentMenu().menuIndicator(.hidden).fixedSize()
         .accessibilityLabel(detail ? "More day actions" : "\(day.label) actions")
         .accessibilityIdentifier(detail ? "day-more-actions" : "day-actions-\(day.number.map { String(Int($0)) } ?? day.id)")
     }

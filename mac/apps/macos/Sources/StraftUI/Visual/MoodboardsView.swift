@@ -30,11 +30,10 @@ struct MoodboardsView: View {
         }
         .task(id: app.changes.key(VisualTables.moodboard)) { await model.reload() }
         .themedSheet(item: $model.sheet) { MoodSheetHost(model: model, sheet: $0) }
-        .inspector(isPresented: Binding(get: { model.inspectId != nil }, set: { if !$0 { model.inspectId = nil } })) {
+        .sidePane("moodboards", isPresented: model.inspectId != nil, minimum: 300, ideal: 340, maximum: 460) {
             if let id = model.inspectId, let item = model.items.first(where: { $0.id == id }) {
                 MoodItemInspector(model: model, item: item)
                     .id(item.id)
-                    .inspectorColumnWidth(min: 300, ideal: 340, max: 460)
             }
         }
         .onProjectIntent("production.new_moodboard") { model.sheet = .newBoard }
@@ -146,7 +145,7 @@ private struct MoodBoardCanvas: View {
                 Button("From Idea Vault\u{2026}") { model.sheet = .vault }
                     .accessibilityIdentifier("moodboard-add-image-vault")
             } label: { Label("Add Image", systemImage: "photo.badge.plus") }
-                .menuStyle(.borderlessButton).fixedSize()
+                .borderlessAccentMenu().fixedSize()
                 .accessibilityIdentifier("moodboard-add-image")
             Button { model.sheet = .note } label: { Label("Add Note", systemImage: "note.text") }
                 .accessibilityIdentifier("moodboard-add-note")
@@ -256,7 +255,8 @@ private struct SelectionBar: View {
     let item: MoodboardItemDto
 
     var body: some View {
-        HStack(spacing: 6) {
+        // Beside an open panel the bar wraps rather than cutting the buttons' names.
+        BDFlowLayout(spacing: 6) {
             CommitField(label: "Caption", value: item.caption ?? "", prompt: "Caption: why this matters", identifier: "moodboard-caption") { v in
                 Task { await model.update(item, caption: v) }
             }
@@ -411,7 +411,7 @@ private struct MoodItemInspector: View {
                     }
                     Spacer()
                     Button { model.inspectId = nil } label: { Label("Close", systemImage: "xmark") }
-                        .buttonStyle(.borderless).accessibilityLabel("Close").accessibilityIdentifier("moodboard-inspector-close")
+                        .buttonStyle(.ofBorderless).accessibilityLabel("Close").accessibilityIdentifier("moodboard-inspector-close")
                 }
                 if item.kind == "image", let a = item.asset { Text(a.originalName).font(.caption).foregroundStyle(theme["muted"]) }
                 if item.kind == "note" {

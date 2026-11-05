@@ -15,7 +15,7 @@ enum BDTone {
     var tokens: (bg: String, fg: String) {
         switch self {
         case .plain: ("surface2", "ink2")
-        case .accent: ("accent-soft", "accent-ink")
+        case .accent: ("accent-soft", "accent-d")
         case .green: ("green-soft", "green-t")
         case .yellow: ("yellow-soft", "yellow-t")
         case .red: ("red-soft", "red-t")
@@ -97,7 +97,7 @@ struct BDSheetFrame<Content: View, Footer: View, Leading: View>: View {
         VStack(alignment: .leading, spacing: PageSpacing.medium) {
             VStack(spacing: PageSpacing.tight) {
                 Text(title).font(.title3.weight(.semibold)).multilineTextAlignment(.center).accessibilityAddTraits(.isHeader)
-                if let sub { Text(sub).font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true) }
+                if let sub { Text(sub).font(.callout).foregroundStyle(.ofMuted).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true) }
             }
             .frame(maxWidth: .infinity)
             content()
@@ -159,7 +159,7 @@ struct BDNoticeBar: View {
                             .accessibilityIdentifier("breakdown-notice-undo")
                     }
                     Button { hub.dismissNotice() } label: { Label("Dismiss", systemImage: "xmark") }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.ofBorderless)
                         .accessibilityLabel("Dismiss")
                 }
                 .font(.callout)
@@ -284,7 +284,7 @@ struct ContactField: View {
     var body: some View {
         if hidden {
             BDField(label: label) {
-                Text("Contact details are hidden for your role.").font(.callout).foregroundStyle(.secondary)
+                Text("Contact details are hidden for your role.").font(.callout).foregroundStyle(.ofMuted)
             }
         } else {
             BufferedField(id: id, label: label, value: value, disabled: !canEdit,
@@ -304,7 +304,7 @@ struct SceneChips: View {
 
     var body: some View {
         if scenes.isEmpty {
-            Text(empty).font(.callout).foregroundStyle(.secondary)
+            Text(empty).font(.callout).foregroundStyle(.ofMuted)
         } else {
             BDFlowLayout(spacing: 6) {
                 ForEach(scenes, id: \.sceneId) { s in
@@ -433,7 +433,7 @@ struct AvailabilityEditor: View {
                             Button {
                                 Task { busy = true; await hub.removeAvailability(owner: owner, ownerId: ownerId, existing: windows, windowId: w.id, name: name); busy = false }
                             } label: { Label("Remove", systemImage: "xmark") }
-                                .buttonStyle(.borderless)
+                                .buttonStyle(.ofBorderless)
                                 .disabled(busy)
                                 .accessibilityLabel("Remove \(AvailabilityDates.range(w))")
                         }
@@ -508,7 +508,7 @@ struct ReferencesNote: View {
             } else if let r = refs {
                 Text(r.consequence).font(.callout).fixedSize(horizontal: false, vertical: true)
                 if !r.scenes.isEmpty {
-                    Text("Used in").font(.caption).foregroundStyle(.secondary)
+                    Text("Used in").font(.caption).foregroundStyle(.ofMuted)
                     SceneChipsStatic(scenes: r.scenes)
                 }
                 ForEach(r.links, id: \.self) { Text("\u{2022} \($0)").font(.callout) }

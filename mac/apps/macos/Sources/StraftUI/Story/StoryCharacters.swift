@@ -357,7 +357,7 @@ private struct CharacterDetailView: View {
                     } label: {
                         Label("More", systemImage: "ellipsis.circle")
                     }
-                    .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+                    .borderlessAccentMenu().menuIndicator(.hidden).fixedSize()
                     .accessibilityLabel("More actions for \(c.name)")
                     .accessibilityIdentifier("story-character-more")
                 }
@@ -425,7 +425,7 @@ private struct CharacterDetailView: View {
                     Spacer()
                     Text(l.location).font(.caption).foregroundStyle(theme["muted"]).lineLimit(1)
                     Button { Task { await m.unlink(c.id, card: l.cardId) } } label: { Label("Unlink", systemImage: "xmark.circle") }
-                        .buttonStyle(.borderless).accessibilityLabel("Unlink card")
+                        .buttonStyle(.ofBorderless).accessibilityLabel("Unlink card")
                 }
             }
             LinkCardRow(m: m, characterId: c.id, options: m.linkableCards(for: d))
@@ -507,7 +507,7 @@ struct RelationshipList: View {
                     if let n = r.note, !n.isEmpty { Text("(\(n))").font(.caption).foregroundStyle(theme["muted"]) }
                     Spacer()
                     Button { Task { await m.removeRelationship(r.id) } } label: { Label("Remove", systemImage: "xmark.circle") }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.ofBorderless)
                         .accessibilityLabel("Remove relationship \(r.fromName) \(r.relationshipType) \(r.toName)")
                 }
                 .accessibilityElement(children: .combine)
@@ -540,7 +540,7 @@ private struct NewCharacterSheet: View {
                 field("Image") {
                     HStack {
                         Button(image == nil ? "Choose image\u{2026}" : "Change image\u{2026}") { picking = true }.controlSize(.small)
-                        if let image { Text(image.lastPathComponent).font(.caption).foregroundStyle(.secondary).lineLimit(1) }
+                        if let image { Text(image.lastPathComponent).font(.caption).foregroundStyle(.ofMuted).lineLimit(1) }
                     }
                 }
                 field("Short description") { TextField("Add later", text: $desc).accessibilityLabel("Short description") }
@@ -598,7 +598,7 @@ private struct EditCharacterSheet: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Name").font(.callout.weight(.medium))
                     TextField("Name", text: $name).textFieldStyle(.roundedBorder).focused($nameFocus).accessibilityLabel("Character name")
-                    Text("Renaming doesn't change screenplay text; use Find & Replace in the screenplay for that.").font(.caption).foregroundStyle(.secondary)
+                    Text("Renaming doesn't change screenplay text; use Find & Replace in the screenplay for that.").font(.caption).foregroundStyle(.ofMuted)
                 }
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Role / title").font(.callout.weight(.medium))
@@ -701,7 +701,7 @@ private struct DeleteCharacterSheet: View {
             StorySheetFrame(title: "\(c.name) is in use", width: 480) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("\(c.name) appears in \(uses.joined(separator: " and ")). Archiving removes the character from this list without breaking those links.")
-                    Text("Screenplay text is never changed. If you delete, the character goes to Recently Deleted and can be restored.").foregroundStyle(.secondary)
+                    Text("Screenplay text is never changed. If you delete, the character goes to Recently Deleted and can be restored.").foregroundStyle(.ofMuted)
                 }
             } footer: {
                 Button("Cancel") { m.sheet = nil }.keyboardShortcut(.cancelAction)
@@ -769,7 +769,7 @@ struct RelationshipMapView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Button { m.map = nil } label: { Label("Back to Characters", systemImage: "chevron.left") }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.ofBorderless)
                     .accessibilityIdentifier("story-map-back")
                 Text(title).font(.headline).accessibilityAddTraits(.isHeader)
                     .accessibilityIdentifier("story-map-title")

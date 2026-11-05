@@ -7,13 +7,13 @@
 //! people fields, availability windows, contact privacy by role and for the assistant, stable
 //! identity and explicit references, search coverage and the migration from schema 13.
 
+use rusqlite::params;
+use serde_json::{Value, json};
 use straft_application::MutationMeta;
 use straft_application::modules::ai::scope::ResolvedScope;
 use straft_application::modules::ai::toolbox::{self, ToolStep};
 use straft_domain::{Capability, Role, new_id, now_ms};
 use straft_test_support::TestEnv;
-use rusqlite::params;
-use serde_json::{Value, json};
 
 // ---------------------------------------------------------------- fixtures
 
@@ -709,10 +709,7 @@ fn locations_hold_call_sheet_fields_availability_notes_and_photos() {
         loc["emergencyContact"], "Station office 0861 222 333",
         "omitted fields are unchanged"
     );
-    let photo = env.write_file(
-        "platform.png",
-        &straft_test_support::stress::png(4, 4, 1),
-    );
+    let photo = env.write_file("platform.png", &straft_test_support::stress::png(4, 4, 1));
     let loc = env.ok(
         "locations.add_photos",
         json!({ "id": id, "paths": [photo] }),

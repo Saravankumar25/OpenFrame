@@ -21,10 +21,10 @@
 
 **Primary platform:** Windows 11 desktop application (Tauri v2 + React/TypeScript + Rust + SQLite)
 
-**Operating model:** Local-first, offline-capable, user-owned project files; **one optional local AI** (Offline AI) that
+**Operating model:** Local-first, offline-capable, user-owned project files; **one optional local AI** (Straft AI) that
 runs on the user's computer; no external AI, no API keys, no accounts, no telemetry.
 
-**Updated:** 30 September 2026 — rewritten for the implemented architecture: one Gemma 3 1B Offline AI, local
+**Updated:** 30 September 2026 — rewritten for the implemented architecture: one Gemma 3 1B Straft AI, local
 embeddings, a derived `intelligence.sqlite`, hybrid retrieval (FTS5 + sqlite-vec + context graph), a deterministic
 router, a universal toolbox, a bounded agent loop and Change Sets with human-only approval.
 
@@ -72,7 +72,7 @@ There is exactly one production AI profile, internal id `straft-local-ai-v1`:
 | Embedding model | **BGE small English v1.5**, GGUF Q8_0, 384 dimensions | Turns project passages and questions into vectors for meaning-based retrieval |
 | Runtime | Pinned `llama.cpp` `llama-server` (CPU or Vulkan build) | Two sidecar processes on 127.0.0.1, one per model |
 
-The user never picks a model, a quantization or a runtime. Component names appear only in Settings → Offline AI →
+The user never picks a model, a quantization or a runtime. Component names appear only in Settings → Straft AI →
 Technical details, third-party notices, the privacy policy, the user manual and engineering documents (runtime spec §1).
 
 ## 1.2 Core promise
@@ -109,7 +109,7 @@ Prompt wording is defence in depth only. Tool permissions and proposal-only muta
 # 3. Architecture
 
 ```text
-React (AI panel: conversation, sources, Proposed Changes)        Settings → Offline AI
+React (AI panel: conversation, sources, Proposed Changes)        Settings → Straft AI
       │ of_invoke: ai.ask · ai.history · ai.change_set.* · ai.index_status        │ ai.status/setup_info/install/…
       ▼                                                                         ▼
 straft-application  modules/ai
@@ -140,7 +140,7 @@ downloads and inference adapters.
 
 | Operation | Kind | Purpose | Exposed to the model |
 |---|---|---|---|
-| `ai.status`, `ai.setup_info`, `ai.diagnostics` | query | Offline AI state, exact download plan, technical details | No |
+| `ai.status`, `ai.setup_info`, `ai.diagnostics` | query | Straft AI state, exact download plan, technical details | No |
 | `ai.install`, `ai.cancel_install`, `ai.uninstall`, `ai.stop_runtime` | command | One-click install (background task), pause/cancel, remove, free memory | No |
 | `ai.ask` | command | One request → one bounded agent run → one AI Result | No (it is the entry point) |
 | `ai.history` | query | The user's own conversation history | No |
@@ -149,25 +149,25 @@ downloads and inference adapters.
 
 ---
 
-# 4. Offline AI installation (summary)
+# 4. Straft AI installation (summary)
 
 Full contract: runtime spec §1–§9, §14–§15.
 
-- **Not installed:** the AI panel shows "Offline AI is not installed." with **Enable Offline AI** — "Download the AI
+- **Not installed:** the AI panel shows "Straft AI is not installed." with **Enable Straft AI** — "Download the AI
   components required for Straft Studio's AI features. AI runs on this computer and project data is not sent to Straft Studio
   or an AI cloud service." — the exact download size, bytes already downloaded, free space needed and available, and
-  whether it will run on the graphics card or the processor. One button: **Download Offline AI**.
+  whether it will run on the graphics card or the processor. One button: **Download Straft AI**.
 - **Installing:** Checking device → Downloading → Verifying → Installing → Starting → Ready, one combined progress bar,
   **Pause** (keeps partial files, resumes later) and **Cancel** (discards them). Work continues meanwhile.
 - **Ready:** the header chip reads **AI Ready** (tooltip "Runs on this computer"). No restart is needed.
 - The download is 1,125,156,323 bytes on a processor-only computer (runtime + Gemma + BGE). It is fetched only when the
-  user clicks the button (or **Update Offline AI**); the signed manifest is fetched at that moment too. (Superseded
+  user clicks the button (or **Update Straft AI**); the signed manifest is fetched at that moment too. (Superseded
   2026-10-16 by ADR-0032: there is no manifest; the pinned files come from Hugging Face.)
-- **Remove Offline AI** (panel menu or Settings, with confirmation) stops both sidecars and deletes every model,
+- **Remove Straft AI** (panel menu or Settings, with confirmation) stops both sidecars and deletes every model,
   runtime and partial download. Projects and assistant history are unaffected.
 - The chat sidecar starts on the first request; the embedding sidecar starts when the background indexer first needs
-  embeddings (for example after a project is opened with Offline AI installed). Both unload after 15 idle minutes.
-  **Stop Offline AI (free memory)** stops them at once.
+  embeddings (for example after a project is opened with Straft AI installed). Both unload after 15 idle minutes.
+  **Stop Straft AI (free memory)** stops them at once.
 
 ---
 
@@ -229,7 +229,7 @@ the writer lock is released) enqueues the affected documents. A background worke
 at most 5 s under continuous typing), coalesces by document, reads the project on its own read-only connection and
 embeds in batches of 16 without holding any project lock. The canonical save never waits for indexing, and an indexing
 or embedding failure never fails a save. Index states: `Current`, `Updating`, `Stale`, `Rebuilding`, `Failed`,
-`Unavailable`. The worker starts at project open when Offline AI is installed, otherwise on the first retrieval or
+`Unavailable`. The worker starts at project open when Straft AI is installed, otherwise on the first retrieval or
 index request.
 
 ## 6.3 Context graph
@@ -334,7 +334,7 @@ set; locked drafts and earlier drafts are excluded and reported
 ## 7.4 What the AI cannot reach, and why
 
 Summarised from the generated matrix: accepting/rejecting/re-checking Change Sets (human-only); the assistant's own
-entry point and history; Offline AI install/runtime management; project lifecycle on disk (create, open, close,
+entry point and history; Straft AI install/runtime management; project lifecycle on disk (create, open, close,
 duplicate, archive, delete, locate); anything that reads or writes a user-picked file-system location (imports,
 exports, packages, adding files) or returns local file paths; permanent deletion; package review and apply (a human
 workflow); undo/redo/save/cancel task; per-user view state; manual visual arrangement; keystroke-level screenplay
@@ -384,9 +384,9 @@ Details that matter:
 - **Bounds.** Step reply ≤ 400 tokens and ≤ 4,000 characters; final answer ≤ 1,200 characters; recent history = 4
   turns, each side clipped to 400 characters, passed as data.
 - **Answers.** Exact results of deterministic tools are shown as **Exact · from project data**; text the model wrote
-  (`final_answer`, summaries, product answers) is marked **Inferred · written by Offline AI** and keeps the exact
+  (`final_answer`, summaries, product answers) is marked **Inferred · written by Straft AI** and keeps the exact
   facts alongside it. A model-written answer cites up to 6 retrieved sources.
-- **Stopping without a model.** If the model fails mid-run, what earlier steps found is returned with "Offline AI
+- **Stopping without a model.** If the model fails mid-run, what earlier steps found is returned with "Straft AI
   stopped before finishing. This is what I found so far."; with nothing found the result is Unavailable or Failed and
   "Nothing was changed."
 - **Denials.** A tool the user may not use is known to the loop only by name, so the reply can say "I can't do that."
@@ -485,7 +485,7 @@ No chain-of-thought and no copies of the assembled context are stored
 
 - Inference path: React → Rust → local context and retrieval → local `llama-server` → local Gemma → result. The
   inference client talks only to 127.0.0.1 (no proxy); `straft-ai` is the only crate with an HTTP client.
-- The AI subsystem uses the network only when the user clicks **Download Offline AI** or **Update Offline AI** (ADR-0026):
+- The AI subsystem uses the network only when the user clicks **Download Straft AI** or **Update Straft AI** (ADR-0026):
   the pinned model files from Hugging Face (ADR-0032; the signed manifest is superseded). Nothing is fetched in the background, at install, or as a repair.
 - No telemetry exists, so prompts, screenplay text, retrieved chunks, private notes and AI responses are never
   transmitted.
@@ -501,18 +501,18 @@ Ordinary workflow UI never shows: Gemma, GGUF, Q8_0, embedding model, sqlite-vec
 | Situation | Wording |
 |---|---|
 | Header chip | **AI Ready** (installed) · **Off** (not installed) |
-| Not installed | "Offline AI is not installed." · **Enable Offline AI** · **[Download Offline AI]** |
+| Not installed | "Straft AI is not installed." · **Enable Straft AI** · **[Download Straft AI]** |
 | Installing | Checking device · Downloading · Verifying · Installing · Starting · Ready; **Pause** / **Cancel download** |
 | Runtime failed | "AI is currently unavailable. Straft Studio's core workflows continue to work normally." + "Ask again to restart it." |
 | Index rebuilding | **Preparing project context…** "AI can still answer some questions while project context is being prepared." |
 | Working | "Working on it on this computer…" |
-| Answer labels | "Exact · from project data" · "Inferred · written by Offline AI" · "Suggested" |
+| Answer labels | "Exact · from project data" · "Inferred · written by Straft AI" · "Suggested" |
 | Proposal | **Proposed Changes** — summary, **Affected areas**, preview, exclusions, "N changes …, applied together as one step you can undo. If any part fails, nothing is changed." **[Reject] [Apply Changes]** |
 | Stale | "Proposed Changes — out of date", "The project changed after this suggestion was prepared. Review is required before applying it." **[Reject] [Re-check & Review]** |
 | After apply / reject | "Applied N changes. Use Undo to reverse it." · "Rejected. Nothing was changed." |
 
 Technical details (component names, versions, licences incl. the Gemma notice, sizes, SHA-256, backend, hardware,
-manifest channel, folders, log files) live in Settings → Offline AI → Technical details.
+manifest channel, folders, log files) live in Settings → Straft AI → Technical details.
 
 ---
 
@@ -520,7 +520,7 @@ manifest channel, folders, log files) live in Settings → Offline AI → Techni
 
 | Failure | Behaviour |
 |---|---|
-| Offline AI not installed | Setup view; every other workflow unaffected |
+| Straft AI not installed | Setup view; every other workflow unaffected |
 | Sidecar crash / timeout | Request ends as Unavailable; "Nothing was changed."; bounded automatic restart, explicit retry |
 | Malformed model output | One corrected retry, then stopped; never applied |
 | Unknown tool / oversized arguments | Refused before anything runs; fed back or ends the request |

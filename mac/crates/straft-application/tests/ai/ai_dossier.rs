@@ -2,13 +2,13 @@
 //! the facts each plan returns, the statements about what the project does not hold, and the
 //! guards. No model is used: the answer type is read by rules.
 
+use serde_json::{Value, json};
 use straft_application::modules::ai::dossier::{self, Dossier};
 use straft_application::modules::ai::index::{self, Focus};
 use straft_application::modules::ai::sections::{self, SectionPick};
 use straft_application::modules::ai::turn::{self, Aids, AnswerType, TurnInput};
 use straft_domain::{Actor, Role};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const SHORT: &[u8] = include_bytes!("../../../../templates/samples/Example-Short.fountain");
 

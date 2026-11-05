@@ -21,13 +21,13 @@
 
 mod pdf_golden_support;
 
-use straft_import_export::layout::{self, LineStyle};
-use straft_import_export::{Element, ElementKind, ExportOptions, Scene, ScreenplayDoc};
 use pdf_golden_support::compare::{self, TOLERANCE};
 use pdf_golden_support::{
     Case, LETTER_PT, TEXT_AREA, WITH_MARGIN_MARKS, clipping_violations, export_pdf,
     golden_mismatches, render, run_case,
 };
+use straft_import_export::layout::{self, LineStyle};
+use straft_import_export::{Element, ElementKind, ExportOptions, Scene, ScreenplayDoc};
 
 fn el(kind: ElementKind, text: &str) -> Element {
     Element::new(kind, text)

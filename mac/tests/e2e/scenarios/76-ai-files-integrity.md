@@ -1,4 +1,4 @@
-# Offline AI files: missing, damaged, whole again
+# Straft AI files: missing, damaged, whole again
 
 Spec: `tests/e2e/specs/76-ai-files-integrity.test.mjs`
 

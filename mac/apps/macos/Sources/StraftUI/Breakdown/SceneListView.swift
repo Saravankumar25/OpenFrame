@@ -86,7 +86,7 @@ struct SceneListView: View {
             } label: {
                 Label(filterLabel, systemImage: "line.3.horizontal.decrease.circle")
             }
-            .menuStyle(.borderlessButton)
+            .borderlessAccentMenu()
             .fixedSize()
             .accessibilityLabel("Filter scenes: \(model.saved.filter.title)\(model.saved.category.map { ", \($0.rawValue)" } ?? "")")
             .accessibilityIdentifier("scene-filter")

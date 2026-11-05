@@ -11,6 +11,18 @@ import Foundation
 
 extension Scenarios {
     static let storageGroup: [Scenario] = [
+        // Run by first-launch-old-data.sh on a private home that holds a copy of data from the earlier name.
+        Scenario("zz-old-data/first-launch-carries-the-work-over", timeout: 180) { ui, _, _ in
+            try await ui.waitHome()
+            try ui.expect(!ui.exists(id: "welcome-name"), "the person who used the earlier build is not asked for a name again")
+            try await ui.wait(id: "project-card-Udarsh", timeout: 30, "the project from the earlier library")
+            try ui.snapshot("old-data-home")
+            try await ui.press(id: "project-card-Udarsh")
+            try await ui.wait(id: "sidebar-home", timeout: 30, "the project opens")
+            try ui.expect(ui.windows.contains { $0.title.hasPrefix("Udarsh") }, "a window names the project: \(ui.windows.map(\.title))")
+            try ui.snapshot("old-data-project")
+            try await ui.closeProject()
+        },
         Scenario("71-storage/first-start-setup-then-straight-home", phases: 2) { ui, phase, ctx in
             if phase == 1 {
                 try await ui.wait(id: "library-setup", timeout: 30, "the library setup screen (run with STRAFT_LIBRARY_SETUP=1)")

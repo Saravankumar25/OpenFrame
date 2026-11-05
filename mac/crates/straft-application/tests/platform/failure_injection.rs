@@ -28,10 +28,10 @@
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
+use serde_json::{Value, json};
 use straft_application::events::AppEvent;
 use straft_domain::AppError;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------------------------ helpers
 

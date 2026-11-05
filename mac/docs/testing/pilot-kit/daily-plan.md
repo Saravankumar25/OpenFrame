@@ -56,7 +56,7 @@ Checklist:
 - [ ] The restored copy had all my work.
 - [ ] I wrote a report for every problem.
 
-## Day 3: AI assistant and stress
+## Day 3: Straft AI and stress
 
 Work (30 to 60 minutes):
 - Ask the assistant in English: list the scenes in one location, rename a character, make a task.

@@ -201,7 +201,7 @@ private struct AssignDaySheet: View {
                 TextField("Story Day", text: $day).textFieldStyle(.roundedBorder).focused($focused)
                     .accessibilityLabel("Story Day")
                     .onSubmit { assign() }
-                Text("For example 1, 2, 3, or a label such as Flashback.").font(.caption).foregroundStyle(.secondary)
+                Text("For example 1, 2, 3, or a label such as Flashback.").font(.caption).foregroundStyle(.ofMuted)
             }
         } footer: {
             Button("Clear Story Day") { Task { await m.assign(nil) } }

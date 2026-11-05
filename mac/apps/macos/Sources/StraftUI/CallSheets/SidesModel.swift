@@ -194,6 +194,9 @@ final class CSSidesModel {
     // MARK: Actions
 
     func openSnapshot(_ id: String) {
+        // The one already open stays as it is: the preview's key would not change, nothing would
+        // load it again, and clearing it left a spinner for good (a click on the open row after Save).
+        guard id != openId else { return }
         openId = id
         openSaved = nil
         openFailure = nil

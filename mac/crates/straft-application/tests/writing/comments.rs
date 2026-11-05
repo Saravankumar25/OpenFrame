@@ -1,10 +1,10 @@
 //! Comments (FSD §23, §94; FSD-SCRIPT-029..032) and Private Notes
 //! (FSD-SCRIPT-033; Security §8, §10.2) through the public operation registry.
 
+use serde_json::{Value, json};
 use straft_application::MutationMeta;
 use straft_domain::{Capability, Role, new_id};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 struct Ctx {
     env: TestEnv,

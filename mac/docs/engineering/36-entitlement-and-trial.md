@@ -333,7 +333,7 @@ due; the interface only shows it. Code: `crates/straft-entitlement/src/notices.r
 | 192 | "Checking your purchase" with **Not now**, **Buy full version** and **Try again**, naming the store; "Your projects stay open and can be exported. Nothing is deleted." | Either store, NeedsOnlineCheck | Yes (Not now, Escape or Close), ADR-0018 decision 6. Stays closed for the session while it is due |
 | 193 | "Your data, your responsibility": six points, the real root folder, **Show in File Explorer** or **Show in Finder**, a tick box, **OK, I understand** | Purchased and not yet acknowledged | No. The box enables only after the list is scrolled to its end; OK only after the box is ticked |
 | 194 to 197 | File safety tutorial, 4 steps; **Finish** needs all three boxes on step 4. Step 3 says how to install per channel: the App Store with the same Apple Account, the Microsoft Store with the same Microsoft account, or (internal build) just "Install Straft Studio on the new laptop." | Purchased, note acknowledged, tutorial not finished | No |
-| 198 | "Welcome to the Straft Studio family" with the eight community accounts and **OK** | Purchased, tutorial finished, welcome not shown | Yes |
+| 198 | "Welcome to the Straft Studio community" on the Mac (Windows still says "family") with the eight community accounts and **OK** | Purchased, tutorial finished, welcome not shown | Yes |
 
 **No price anywhere (ADR-0023).** No screen names a price, a currency, or a pricing model ("pay once", "subscription",
 "lifetime"). The button says "Buy full version" with no amount. The Vitest test
@@ -395,7 +395,7 @@ the person at this computer (`permission.denied` for the assistant and for packa
 "Show in File Explorer" and "Show in Finder" call the shell command `of_reveal_path` with the fixed kind `dataRoot`; the path never
 comes from the webview. The welcome links open only through `of_open_url` and only for fixed https addresses on the networks'
 own sites (`isFixedSocialUrl`). The owner has not sent the real handles yet, so every account has no address and none can be
-opened; the tiles show the placeholder handle `@openframestudio`.
+opened; the tiles show the placeholder handle `@straftstudio`.
 
 ### 10.5 Hand-set state for end-to-end tests
 

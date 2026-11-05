@@ -21,11 +21,11 @@
 
 use std::collections::{BTreeSet, HashMap, HashSet};
 
+use rusqlite::{Connection, OptionalExtension, params};
+use serde_json::{Map, Value, json};
 use straft_domain::AppResult;
 use straft_search::chunk;
 use straft_search::{ChunkInput, DocumentInput, EdgeInput, EdgeProvenance, NodeInput};
-use rusqlite::{Connection, OptionalExtension, params};
-use serde_json::{Map, Value, json};
 
 use crate::registry::{Registry, SearchDoc};
 

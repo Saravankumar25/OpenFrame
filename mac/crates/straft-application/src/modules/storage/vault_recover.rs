@@ -6,10 +6,10 @@
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use straft_domain::{Actor, AppError, AppResult};
-use straft_project_format as pf;
 use rusqlite::OpenFlags;
 use serde::Serialize;
+use straft_domain::{Actor, AppError, AppResult};
+use straft_project_format as pf;
 use ts_rs::TS;
 
 use super::library;

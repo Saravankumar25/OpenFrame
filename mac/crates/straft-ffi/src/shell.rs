@@ -158,8 +158,11 @@ pub fn open_url(url: &str) -> AppResult<()> {
     let url = straft_security::web_link(url)
         .ok_or_else(|| AppError::invalid_input("Only web links (http or https) can be opened."))?;
     straft_platform::shell::open_url(url).map_err(|e| {
-        AppError::new("internal.open_failed", "Straft Studio couldn't open that link.")
-            .with_detail(e.to_string())
+        AppError::new(
+            "internal.open_failed",
+            "Straft Studio couldn't open that link.",
+        )
+        .with_detail(e.to_string())
     })
 }
 
@@ -170,8 +173,11 @@ fn open_path(path: &Path, reveal: bool) -> AppResult<()> {
         straft_platform::shell::open_path(path)
     };
     r.map_err(|e| {
-        AppError::new("internal.open_failed", "Straft Studio couldn't open that file.")
-            .with_detail(e.to_string())
+        AppError::new(
+            "internal.open_failed",
+            "Straft Studio couldn't open that file.",
+        )
+        .with_detail(e.to_string())
     })
 }
 

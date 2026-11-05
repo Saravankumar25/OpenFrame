@@ -154,7 +154,7 @@ struct StoryActColumn: View {
                 Button { Task { await model.setCollapsed(act.id, !collapsed) } } label: {
                     Image(systemName: collapsed ? "chevron.right" : "chevron.down").frame(width: 14)
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.ofBorderless)
                 .accessibilityLabel(collapsed ? "Expand \(act.title)" : "Collapse \(act.title)")
                 if renaming {
                     InlineField(initial: act.title, label: "Act title",
@@ -172,7 +172,7 @@ struct StoryActColumn: View {
                 } label: {
                     Label("Options", systemImage: "ellipsis")
                 }
-                .menuStyle(.borderlessButton)
+                .borderlessAccentMenu()
                 .menuIndicator(.hidden)
                 .fixedSize()
                 .accessibilityLabel("Act options for \(act.title)")
@@ -237,7 +237,7 @@ struct StoryActColumn: View {
             Button { Task { await model.newBeat(in: .act(act.id)) } } label: { Label("Beat", systemImage: "plus") }
                 .accessibilityLabel("Add Beat")
         }
-        .buttonStyle(.borderless).font(.caption).padding(.top, 2)
+        .buttonStyle(.ofBorderless).font(.caption).padding(.top, 2)
     }
 }
 
@@ -296,7 +296,7 @@ struct StoryParkingColumn: View {
             HStack {
                 Label("Parking Lot", systemImage: "parkingsign").fontWeight(.semibold)
                 Spacer()
-                Text("\(board.parking.count)").font(.caption).foregroundStyle(theme["muted"])
+                Text("\(board.parking.count)").font(.caption).foregroundStyle(theme["ink2"])
                     .accessibilityLabel("\(board.parking.count) items")
             }
             .font(.system(size: 14 * zoom))
@@ -334,7 +334,7 @@ struct StoryParkingColumn: View {
             Button { Task { await model.newCard(in: .parking) } } label: { Label("Scene", systemImage: "plus") }
                 .accessibilityLabel("Add Scene to the Parking Lot")
         }
-        .buttonStyle(.borderless).font(.caption)
+        .buttonStyle(.ofBorderless).font(.caption)
     }
 }
 

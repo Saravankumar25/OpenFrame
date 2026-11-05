@@ -25,8 +25,8 @@
 //! - **Bounded work.** At most [`MAX_PER_RUN`] items are removed per open, so opening a project
 //!   never waits long; anything left is removed at the next open.
 
-use straft_domain::{Actor, AppResult, Capability, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
+use straft_domain::{Actor, AppResult, Capability, now_ms};
 
 use crate::store::{MutationMeta, Store, load_deleted, purge_deleted};
 

@@ -100,7 +100,7 @@ Each day takes about 90 minutes of focused testing plus normal use of the app fo
 4. Make a shooting schedule with two days. Move scenes between days. Add a meal break.
 5. Create a call sheet from a day. Change something in the schedule and see that the call sheet says it needs a refresh.
 6. Make a backup. Restore it as a copy. Check it is complete.
-7. Try the AI assistant: ask for a list of the scenes in one location, ask to rename a character, ask for a task. Read the
+7. Try Straft AI: ask for a list of the scenes in one location, ask to rename a character, ask for a task. Read the
    proposed changes. Apply one. Undo it. Reject another.
 
 ### Day 3: stress and finish

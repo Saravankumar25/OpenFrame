@@ -135,15 +135,23 @@ struct ProjectHomeView: View {
 
     // MARK: A project with work in it
 
+    /// Below this page width the two columns stack. Decided from the room the page has, not from the
+    /// columns' content: a column with a long line reported more than the page and pushed the page
+    /// off the window's edge.
+    static let twoColumnsFrom: CGFloat = 920
+
     private func active(_ h: ProjectHome) -> some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .top, spacing: PageSpacing.medium) {
-                leftColumn(h).frame(minWidth: 420, maxWidth: .infinity)
-                rightColumn(h).frame(minWidth: 300, maxWidth: 420)
-            }
-            VStack(alignment: .leading, spacing: PageSpacing.medium) {
-                leftColumn(h)
-                rightColumn(h)
+        PageWidthReader { pageWidth in
+            if pageWidth >= Self.twoColumnsFrom {
+                HStack(alignment: .top, spacing: PageSpacing.medium) {
+                    leftColumn(h).frame(minWidth: 420, maxWidth: .infinity)
+                    rightColumn(h).frame(minWidth: 300, maxWidth: 420)
+                }
+            } else {
+                VStack(alignment: .leading, spacing: PageSpacing.medium) {
+                    leftColumn(h)
+                    rightColumn(h)
+                }
             }
         }
     }
@@ -226,7 +234,7 @@ struct ProjectHomeView: View {
                         .font(.callout)
                     }
                     Button(files.count > 5 ? "All \(files.count) files" : "Open Files") { go(.files) }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.ofBorderless)
                 }
             }
             if !tasks.isEmpty {
@@ -247,7 +255,7 @@ struct ProjectHomeView: View {
                         }
                         .font(.callout)
                     }
-                    Button("Open Notes & Tasks") { go(.notes) }.buttonStyle(.borderless)
+                    Button("Open Notes & Tasks") { go(.notes) }.buttonStyle(.ofBorderless)
                 }
             }
         }
@@ -277,7 +285,7 @@ struct ProjectHomeView: View {
 
     private func small(_ title: String, _ symbol: String, _ action: @escaping () -> Void) -> some View {
         Button(action: action) { Label(title, systemImage: symbol) }
-            .buttonStyle(.borderless)
+            .buttonStyle(.ofBorderless)
             .font(.callout)
     }
 

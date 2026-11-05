@@ -23,7 +23,7 @@
 | Story Outline | `.story-canvas-outline` (focusable, so the keyboard scrolls it too) | vertical |
 | Screenplay page | `.spx-wrap > .spx-scroll` | vertical, sideways only when zoomed wider than the pane |
 | Scene list | `.spx-nav-list` | vertical |
-| AI Assistant | the conversation list | vertical |
+| Straft AI | the conversation list | vertical |
 | Dialogs | the dialog body; header and buttons stay put | vertical |
 
 Two-way scrolling is allowed only where the content is a two-dimensional surface: the Beat Board, the stripboard and

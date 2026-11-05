@@ -74,7 +74,7 @@ what a store script must do differently.
 
 | Rule | Evidence | Status |
 |---|---|---|
-| Data stays in the container (2.5.2) | `directories` reads `$HOME`, which the sandbox points at the container, so `~/Straft Studio` and Application Support resolve inside it; doc 40 section 7 records this | Ready; confirm on a sandboxed build |
+| Data stays in the container (2.5.2) | `directories` reads `$HOME`, which the sandbox points at the container, so `~/Straft Studio` and Application Support resolve inside it; doc 40 section 7 records this. A sandbox probe with the same file entitlements was refused every folder outside its container ([evidence](evidence/mac/store-sandbox-old-data-2026-11-04.md)), so a store build starts empty and cannot read data of an internal build | Ready; confirm on a signed store build |
 | Nothing written next to the app | `app_resources_dir()` only reads `Contents/Resources` | Ready |
 | No downloaded code (2.4.5, 2.5.2) | The engine and its libraries ship inside the app. The download fetches only `<model id>.gguf` weights from a pinned Hugging Face commit, checked by size and SHA-256 (`download.rs`, `install.rs`). Importing a model copies it into app storage | Ready; explain in the review notes |
 | Child processes do not outlive the app (2.4.5) | Kill-on-close guard and a `/bin/sh` watcher that ends the engine group within a second of the app ending (`straft-platform/src/process.rs`) | Ready; confirm the watcher and its signal work inside the sandbox |

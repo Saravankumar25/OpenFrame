@@ -6,10 +6,10 @@
 //! before it and the message, so it is written once, when the request is recorded. The newest request
 //! of the conversation holds the current focus. References only (ids), never text.
 
-use straft_domain::AppResult;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_domain::AppResult;
 
 use super::resolve::{How, Resolved};
 

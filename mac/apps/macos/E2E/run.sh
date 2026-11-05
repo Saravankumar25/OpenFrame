@@ -16,8 +16,17 @@ MACOS="$(cd "$HERE/.." && pwd)"
 ROOT="$(cd "$MACOS/../.." && pwd)"
 APP="${1:?usage: run.sh <app or executable> [filter]}"
 FILTER="${2:-}"
-WORK="$(mktemp -d "${TMPDIR:-/tmp}/straft-e2e.XXXXXX")"
-trap 'rm -rf "$WORK"; [[ -n "${TEST_ID:-}" ]] && defaults delete "$TEST_ID" >/dev/null 2>&1; true' EXIT
+# STRAFT_E2E_CLEAN_ROOT=<folder> (the capture tour, one runner only): the data and files of a scenario live in
+# <folder>/Straft and <folder>/Files, cleared before each scenario, so a path shown on a screen reads as a person's.
+CLEAN_ROOT="${STRAFT_E2E_CLEAN_ROOT:-}"
+if [[ -n "$CLEAN_ROOT" ]]; then
+  mkdir -p "$CLEAN_ROOT"
+  WORK="$CLEAN_ROOT/Files"
+  mkdir -p "$WORK"
+else
+  WORK="$(mktemp -d "${TMPDIR:-/tmp}/straft-e2e.XXXXXX")"
+fi
+trap 'rm -rf "$WORK"; [[ -n "$CLEAN_ROOT" ]] && rm -rf "$CLEAN_ROOT"; [[ -n "${TEST_ID:-}" ]] && defaults delete "$TEST_ID" >/dev/null 2>&1; true' EXIT
 if [[ -d "$APP" ]]; then
   # The release app has the hardened runtime, which refuses an injected library. Test a private
   # copy whose only difference is an ad hoc signature without it: same executable code, same
@@ -63,7 +72,7 @@ LIST="$WORK/list/scenarios.json"
 [[ -f "$LIST" ]] || { echo "the driver did not load into the app (hardened runtime or a wrong driver path?)" >&2; exit 3; }
 
 printf "scenario\tresult\tseconds\tmessage\n" > "$RUN/results.tsv"
-pass=0; fail=0; skip=0
+pass=0; fail=0; skip=0; blocked=0
 # A development build (bundle-dev-app.sh) honours the debug-only test switches; a release build
 # ignores them on purpose, so the scenarios that need one are skipped there, never failed.
 DEV_BUILD=false
@@ -75,6 +84,8 @@ while IFS=$'\t' read -r name phases timeout ends; do
   [[ -n "$FILTER" && "$name" != *"$FILTER"* ]] && continue
   # The capture tour (MacHTML) runs only when asked for by name.
   [[ "$name" == zz-capture/* && "$FILTER" != zz-capture* ]] && continue
+  # The old-data check runs from first-launch-old-data.sh, which prepares its home folder.
+  [[ "$name" == zz-old-data/* && -z "${STRAFT_E2E_OLD_DATA_HOME:-}" ]] && continue
   INDEX=$((INDEX + 1))
   (( (INDEX - SHARD_K) % SHARD_N == 0 )) || continue
   if [[ ( "$name" == 71-storage/first-start* || "$name" == zz-capture/*first-start* ) && "$DEV_BUILD" != true ]]; then
@@ -91,14 +102,19 @@ while IFS=$'\t' read -r name phases timeout ends; do
     fi
   fi
   safe="${name//\//__}"
-  OUT="$RUN/$safe"; DATA="$WORK/data-$safe"; mkdir -p "$OUT" "$DATA"
+  OUT="$RUN/$safe"; DATA="$WORK/data-$safe"
+  if [[ -n "$CLEAN_ROOT" ]]; then DATA="$CLEAN_ROOT/Straft"; rm -rf "$DATA"; fi
+  mkdir -p "$OUT" "$DATA"
   # Each scenario starts with no preferences (its own phases keep theirs).
   [[ -n "${TEST_ID:-}" ]] && { defaults delete "$TEST_ID" >/dev/null 2>&1 || true; }
   status=pass; msg=""; start=$(date +%s)
   IFS=',' read -r -a endlist <<< "$ends"
   for ((p = 1; p <= phases; p++)); do
     end="${endlist[$((p - 1))]}"
-    if [[ "${STRAFT_E2E_FRESH_HOME:-}" == 1 ]]; then
+    if [[ -n "${STRAFT_E2E_OLD_DATA_HOME:-}" ]]; then
+      HOME="$STRAFT_E2E_OLD_DATA_HOME" CFFIXED_USER_HOME="$STRAFT_E2E_OLD_DATA_HOME" STRAFT_E2E_WORK="$WORK" STRAFT_E2E_SCENARIO="$name" \
+        STRAFT_E2E_PHASE="$p" STRAFT_E2E_OUT="$OUT" DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >"$OUT/app-$p.log" 2>&1 &
+    elif [[ "${STRAFT_E2E_FRESH_HOME:-}" == 1 ]]; then
       mkdir -p "$DATA/home/Documents" "$DATA/home/Library"
       HOME="$DATA/home" CFFIXED_USER_HOME="$DATA/home" STRAFT_E2E_WORK="$WORK" STRAFT_E2E_SCENARIO="$name" \
         STRAFT_E2E_PHASE="$p" STRAFT_E2E_OUT="$OUT" DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >"$OUT/app-$p.log" 2>&1 &
@@ -130,11 +146,17 @@ while IFS=$'\t' read -r name phases timeout ends; do
         if [[ "$rs" == "pass" && $code -ne 0 ]]; then rs=fail; rm_="phase $p: the app exited with code $code on quit"; fi
       fi
     fi
-    if [[ "$rs" != "pass" ]]; then status=fail; msg="phase $p: $rm_"; break; fi
+    if [[ "$rs" != "pass" ]]; then
+      # A scenario this machine cannot run (a permission only the owner can give): neither passed nor a fault.
+      if [[ "$rm_" == *"BLOCKED:"* ]]; then status=blocked; else status=fail; fi
+      msg="phase $p: $rm_"; break
+    fi
   done
   secs=$(( $(date +%s) - start ))
   printf "%s\t%s\t%s\t%s\n" "$name" "$status" "$secs" "$msg" >> "$RUN/results.tsv"
-  if [[ "$status" == pass ]]; then pass=$((pass + 1)); echo "PASS  $name (${secs}s)"; else fail=$((fail + 1)); echo "FAIL  $name: $msg"; fi
+  if [[ "$status" == pass ]]; then pass=$((pass + 1)); echo "PASS  $name (${secs}s)"
+  elif [[ "$status" == blocked ]]; then blocked=$((blocked + 1)); echo "BLOCKED  $name: $msg"
+  else fail=$((fail + 1)); echo "FAIL  $name: $msg"; fi
 done < <(/usr/bin/python3 -c 'import json,sys
 for s in json.load(open(sys.argv[1])): print("\t".join([s["name"], str(s["phases"]), str(s["timeout"]), ",".join(s["ends"])]))' "$LIST")
 
@@ -145,11 +167,11 @@ for s in json.load(open(sys.argv[1])): print("\t".join([s["name"], str(s["phases
   [[ -d "$APP" ]] && echo "- Code directory hash of the shipped app: $(codesign -dvvv "$APP" 2>&1 | sed -n 's/^CDHash=//p'), of the copy under test: $(codesign -dvvv "${APP_UNDER_TEST:-$APP}" 2>&1 | sed -n 's/^CDHash=//p')"
   echo "- Machine: $(sw_vers -productName) $(sw_vers -productVersion), $(uname -m)"
   echo "- Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  echo "- Result: $pass passed, $fail failed"
+  echo "- Result: $pass passed, $fail failed, $blocked blocked, $skip skipped"
   echo
   echo "| Scenario | Result | Seconds | Message |"
   echo "|---|---|---|---|"
   tail -n +2 "$RUN/results.tsv" | awk -F'\t' '{printf "| %s | %s | %s | %s |\n", $1, $2, $3, $4}'
 } > "$RUN/summary.md"
-echo "$pass passed, $fail failed, $skip skipped. Results: $RUN"
+echo "$pass passed, $fail failed, $blocked blocked, $skip skipped. Results: $RUN"
 [[ $fail -eq 0 ]]

@@ -1,13 +1,13 @@
-//! Long-lived Offline AI service held by `AppCore` (the bundled AI and its two engines,
+//! Long-lived Straft AI service held by `AppCore` (the bundled AI and its two engines,
 //! ADR-0025). Created lazily on the first `ai.*` operation; the rest of Straft Studio never depends
 //! on it (FSD-AI-001).
 
 use std::sync::Arc;
 
-use straft_ai::{AiManager, InferenceProvider, ManagerConfig};
-use straft_domain::{AppError, AppResult};
 use parking_lot::RwLock;
 use serde_json::json;
+use straft_ai::{AiManager, InferenceProvider, ManagerConfig};
+use straft_domain::{AppError, AppResult};
 
 use crate::core::{AppConfig, AppCore};
 use crate::events::{AppEvent, EventSink};

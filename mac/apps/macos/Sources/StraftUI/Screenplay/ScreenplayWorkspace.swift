@@ -528,28 +528,32 @@ struct ScreenplayWorkspace: View {
     /// The scene list beside the page can be hidden to give the page room (Windows: Scenes).
     @AppStorage("straft.screenplay.scenesHidden") private var scenesHidden = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.pageWidth) private var pageWidth
-
-    /// The scene list (120) and the page (340) side by side; with less room (a 900-point window
-    /// with the sidebar and the assistant open) the list steps aside and the page keeps it all.
-    private var roomForScenes: Bool { pageWidth >= 120 + 1 + 340 }
-    private var scenesShown: Bool { !scenesHidden && roomForScenes }
+    /// The width the person dragged the scene list to, in the room the panes leave for it.
+    @AppStorage("straft.screenplay.sceneListWidth") private var sceneListWidth = Double(PaneFit.sceneListUsual)
+    @State private var sceneListDragStart: CGFloat?
 
     private static let contentTables = ["screenplay", "screenplay_draft", "screenplay_scene", "screenplay_element", "screenplay_custom_element", "comment"]
     private static let sourceTables = ["story_character", "cast_member", "location", "story_scene_card"]
 
     var body: some View {
         let focus = model.mode == .focus
+        // The width inside the side pane's page, which changes when the inspector opens.
+        PageWidthReader { pageWidth in
+        // With too little room for both (a 900-point window with the sidebar and the assistant or
+        // the inspector open) the list steps aside and the page keeps it all; Scenes says why.
+        let roomForScenes = PaneFit.sceneListFits(available: pageWidth)
+        let listWidth = !focus && !scenesHidden ? PaneFit.sceneList(available: pageWidth, preferred: CGFloat(sceneListWidth)) : nil
         VStack(spacing: 0) {
         if !focus {
-            pageBar
+            pageBar(roomForScenes: roomForScenes, scenesShown: listWidth != nil)
             Divider()
         }
-        HSplitView {
-            if !focus && scenesShown {
-                SceneNavigator(model: model, panels: panels, currentIndex: currentIndex)
-                    // Never wider than the page leaves room for, so the page pane keeps its minimum.
-                    .frame(minWidth: 120, idealWidth: 240, maxWidth: max(120, min(340, pageWidth - 1 - 340)))
+        HStack(spacing: 0) {
+            if let listWidth {
+                SceneNavigator(model: model, panels: panels, currentIndex: currentIndex, compact: listWidth < 230)
+                    .frame(width: listWidth)
+                    .overlay(alignment: .trailing) { sceneListHandle(current: listWidth, pageWidth: pageWidth) }
+                Divider()
             }
             VStack(spacing: 0) {
                 if model.showReplace && !focus { ScreenplayReplaceBar(model: model) }
@@ -562,10 +566,11 @@ struct ScreenplayWorkspace: View {
                     })
                 }
             }
-            // Small enough for a 900-point window with the sidebar and the scene list: a narrower
-            // pane scrolls the page sideways; with more room the page is centred.
-            .frame(minWidth: 340)
+            // Takes the width that is left: a narrower pane scrolls the page sideways; with more
+            // room the page is centred.
+            .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity)
             .overlay(alignment: .topTrailing) { if focus { focusBar } }
+        }
         }
         }
         .toolbar(focus ? .hidden : .automatic, for: .windowToolbar)
@@ -606,6 +611,7 @@ struct ScreenplayWorkspace: View {
         }
         .screenplayPanels(model: model, state: panels, caretIndex: currentIndex)
         .interchangeAnchor()
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("screenplay-workspace")
     }
 
@@ -622,7 +628,7 @@ struct ScreenplayWorkspace: View {
                 .controlSize(.small)
                 .accessibilityIdentifier("focus-exit")
             Text(model.syncStatus == "saved" ? "Saved" : model.syncStatus == "error" ? "Not saved" : "Saving")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption).foregroundStyle(.ofMuted)
                 .accessibilityIdentifier("focus-save-status")
         }
         .padding(.horizontal, PageSpacing.small + 4).padding(.vertical, PageSpacing.small - 2)
@@ -645,12 +651,40 @@ struct ScreenplayWorkspace: View {
         .opacity(0).allowsHitTesting(false).accessibilityHidden(true)
     }
 
+    /// Drag to give the scene list more or less of the room, double-click for the usual width.
+    private func sceneListHandle(current: CGFloat, pageWidth: CGFloat) -> some View {
+        let limit = PaneFit.sceneListLimit(available: pageWidth)
+        let choose: (CGFloat) -> Void = { sceneListWidth = Double(min(limit, max(PaneFit.sceneListMinimum, $0)).rounded()) }
+        return Color.clear
+            .frame(width: 6)
+            .contentShape(Rectangle())
+            .onHover { inside in if inside { NSCursor.resizeLeftRight.push() } else { NSCursor.pop() } }
+            .gesture(
+                DragGesture(minimumDistance: 1)
+                    .onChanged { g in
+                        let start = sceneListDragStart ?? current
+                        sceneListDragStart = start
+                        choose(start + g.translation.width)
+                    }
+                    .onEnded { _ in sceneListDragStart = nil }
+            )
+            .onTapGesture(count: 2) { sceneListWidth = Double(PaneFit.sceneListUsual) }
+            .help("Drag to resize the scene list. Double-click for the usual width.")
+            .accessibilityElement()
+            .accessibilityLabel("Resize scene list")
+            .accessibilityValue("\(Int(current)) points")
+            .accessibilityAdjustableAction { direction in
+                choose(current + (direction == .increment ? 24 : -24))
+            }
+            .accessibilityIdentifier("scene-list-resize")
+    }
+
     /// The screenplay's own controls in a row above the script; a narrow page wraps them.
-    private var pageBar: some View {
+    private func pageBar(roomForScenes: Bool, scenesShown: Bool) -> some View {
         BDFlowLayout(spacing: 8) {
             ScreenplayPanelButtons(state: panels, model: model)
             elementPicker
-            pageBarRest
+            pageBarRest(roomForScenes: roomForScenes, scenesShown: scenesShown)
         }
         .controlSize(.small)
         .padding(.horizontal, 12).padding(.vertical, 6)
@@ -690,7 +724,7 @@ struct ScreenplayWorkspace: View {
             .fixedSize()
     }
 
-    @ViewBuilder private var pageBarRest: some View {
+    @ViewBuilder private func pageBarRest(roomForScenes: Bool, scenesShown: Bool) -> some View {
             Button { scenesHidden.toggle() } label: {
                 Label("Scenes", systemImage: "list.bullet.rectangle").labelStyle(.titleAndIcon)
             }
@@ -764,14 +798,14 @@ struct ScreenplayWorkspace: View {
                 if let page = model.pageLabel {
                     Text(page)
                         .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.ofMuted)
                         .help("\(model.pagination?.paper ?? ""), \(Int(model.pagination?.linesPerPage ?? 0)) lines per page")
                         .accessibilityLabel(page)
                         .accessibilityIdentifier("editor-page-count")
                 }
                 Text(model.syncStatus == "saved" ? "Saved" : model.syncStatus == "error" ? "Not saved" : "Saving")
                     .font(.caption)
-                    .foregroundStyle(model.syncStatus == "error" ? theme["red-t"] : .secondary)
+                    .foregroundStyle(model.syncStatus == "error" ? theme["red-t"] : theme["muted"])
                     .accessibilityIdentifier("editor-save-status")
             }
             .fixedSize()
@@ -790,6 +824,8 @@ struct SceneNavigator: View {
     let model: ScreenplayWorkspaceModel
     let panels: ScreenplayPanelState
     let currentIndex: Int
+    /// A narrow list keeps its Columns button to the icon, so the title stays on one line.
+    var compact = false
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
@@ -798,8 +834,8 @@ struct SceneNavigator: View {
         let current = Self.sceneIndex(containing: currentIndex, in: scenes)
         VStack(spacing: 0) {
             HStack {
-                Text("Scenes (\(scenes.count))").font(.headline).accessibilityAddTraits(.isHeader)
-                Spacer()
+                Text("Scenes (\(scenes.count))").font(.headline).lineLimit(1).fixedSize().accessibilityAddTraits(.isHeader)
+                Spacer(minLength: 4)
                 Menu {
                     ForEach(NavigatorColumn.allCases, id: \.self) { c in
                         Toggle(NavigatorColumnData.menuTitle(c, chosen: model.navColumns, data: model.navData), isOn: Binding(
@@ -808,9 +844,13 @@ struct SceneNavigator: View {
                             .disabled(NavigatorColumnData.isDisabled(c, chosen: model.navColumns, data: model.navData))
                     }
                 } label: {
-                    Label("Columns", systemImage: "tablecells").labelStyle(.titleAndIcon)
+                    if compact {
+                        Label("Columns", systemImage: "tablecells").labelStyle(.iconOnly)
+                    } else {
+                        Label("Columns", systemImage: "tablecells").labelStyle(.titleAndIcon)
+                    }
                 }
-                .menuStyle(.borderlessButton)
+                .borderlessAccentMenu()
                 .fixedSize()
                 .help("Show or hide columns")
                 .accessibilityLabel("Navigator columns")
@@ -836,7 +876,7 @@ struct SceneNavigator: View {
                             model.textView?.window?.makeFirstResponder(model.textView)
                         } label: {
                             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                                Text(scene.label).font(.caption.monospacedDigit()).foregroundStyle(.secondary).frame(minWidth: 22, alignment: .trailing)
+                                Text(scene.label).font(.caption.monospacedDigit()).foregroundStyle(.ofMuted).frame(minWidth: 22, alignment: .trailing)
                                 // One line, so a row's height never follows the list's width.
                                 Text(scene.heading.isEmpty ? "Untitled scene" : scene.heading.uppercased())
                                     .font(.callout).lineLimit(1).truncationMode(.tail)
@@ -849,7 +889,7 @@ struct SceneNavigator: View {
                         .accessibilityIdentifier("scene-row-\(scene.id)")
                         ForEach(shown, id: \.self) { c in
                             if let cell = NavigatorColumnData.cell(c, model.navData?.rows[scene.id]) {
-                                Text(cell.value).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                                Text(cell.value).font(.caption.monospacedDigit()).foregroundStyle(.ofMuted)
                                     .frame(width: columnWidth(c), alignment: .trailing)
                                     .accessibilityLabel(cell.label)
                                     .accessibilityIdentifier("navigator-cell-\(c.rawValue)")
@@ -979,12 +1019,19 @@ struct ScreenplayEditorHost: NSViewRepresentable {
     }
 
     /// The text view is as wide as the visible area, or as the page with its scene numbers when
-    /// the pane is narrower.
+    /// the pane is narrower. Then the pane shows the middle of the page: the empty margins go out
+    /// of view first, not the start of every line.
     static func fitDocumentWidth(_ scroll: NSScrollView) {
         guard let view = scroll.documentView as? ScreenplayTextView else { return }
-        let width = max(scroll.contentView.bounds.width, view.pageWidthWithGutters)
+        let clip = scroll.contentView
+        let width = max(clip.bounds.width, view.pageWidthWithGutters)
         if abs(view.frame.width - width) > 0.5 {
-            view.setFrameSize(NSSize(width: width, height: max(view.frame.height, scroll.contentView.bounds.height)))
+            view.setFrameSize(NSSize(width: width, height: max(view.frame.height, clip.bounds.height)))
+        }
+        let middle = ((width - clip.bounds.width) / 2).rounded()
+        if abs(clip.bounds.origin.x - middle) > 0.5 {
+            clip.setBoundsOrigin(NSPoint(x: middle, y: clip.bounds.origin.y))
+            scroll.reflectScrolledClipView(clip)
         }
     }
 

@@ -133,7 +133,7 @@ struct PrivateNotesSection: View {
                 } label: {
                     Label("Actions", systemImage: "ellipsis.circle")
                 }
-                .menuStyle(.borderlessButton)
+                .borderlessAccentMenu()
                 .fixedSize()
                 .accessibilityLabel("Private note actions")
                 .accessibilityIdentifier("private-note-actions")

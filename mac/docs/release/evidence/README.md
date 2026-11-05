@@ -4,18 +4,19 @@ Note on names: the folders `M0` and `M1` (and the other milestone folders) and t
 
 > Created 2026-10-05 (masterplan M0.25). Evidence is what was **observed on a date** for a named commit: command
 > output, reports, screenshots, artifacts. It never states what *must* be true; specifications and ADRs do that
-> ([docs/README.md](../../README.md) §1, level 6). The progress log reports; this folder proves.
+> ([docs/README.md](../../README.md) §4, level 7). The progress log reports; this folder proves.
 
 ## 1. Layout
 
 ```text
 docs/release/evidence/
   README.md          this file: rules and the index template
-  M0/ ... M14/       one folder per masterplan milestone; each has an INDEX.md built from the template below
-  release/           the final release evidence package (launch register Appendix C, masterplan M13.09)
+  ai-*/              AI runs still cited by current decisions (spike S1b, after slice S8, the section re-harness)
+  w2/ ... w9/, mac/  one folder per phase of the Windows and Mac tracks
+  release/           the final release evidence package (launch register Appendix C)
 ```
 
-Inside a milestone folder, name files `<box>-<short-name>.<ext>`, for example `M0.18-verify.log`,
+The old milestone folders `M0` to `M14` and the earlier AI runs are in [history/evidence](../../history/evidence). Inside a folder, name files `<box>-<short-name>.<ext>`, for example `M0.18-verify.log`,
 `M1.04-migration-fixtures.txt`, `M0.20-visual-baseline/`. Large binaries (installers, videos, model files) are not
 committed; record their path, size and SHA-256 in the index instead.
 

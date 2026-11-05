@@ -2058,7 +2058,7 @@ The user may choose a scene and click:
 
 The application generates empty panels corresponding to shots the user wants to create.
 
-It should not automatically invent a complete visual sequence unless the user asks an AI assistant to help.
+It should not automatically invent a complete visual sequence unless the user asks Straft AI to help.
 
 This keeps the director in control.
 
@@ -2608,9 +2608,9 @@ Straft Studio does not need to own that communication channel.
 
 ---
 
-# 93. AI Assistant
+# 93. Straft AI
 
-The AI assistant is an optional **system-wide natural-language project assistant and command interface**. It should behave more like an Amazon Q-style assistant for Straft Studio than like a screenplay judge or autonomous filmmaker.
+Straft AI is an optional **system-wide natural-language project assistant and command interface**. It should behave more like an Amazon Q-style assistant for Straft Studio than like a screenplay judge or autonomous filmmaker.
 
 The assistant understands two kinds of authoritative context:
 
@@ -2621,7 +2621,7 @@ The assistant is a control layer over existing Straft Studio capabilities. It is
 
 ---
 
-# 94. AI Assistant — Allowed Capabilities
+# 94. Straft AI — Allowed Capabilities
 
 The assistant may, when the user explicitly asks:
 
@@ -2660,7 +2660,7 @@ These commands route to existing Straft Studio capabilities rather than creating
 
 ---
 
-# 95. AI Assistant — Not Allowed by Default
+# 95. Straft AI — Not Allowed by Default
 
 The AI must not silently:
 
@@ -3791,7 +3791,7 @@ The product should support multiple legitimate filmmaking workflows.
 | Storyboard | Optional | Yes | Yes |
 | Scheduling | Later | Yes | Yes |
 | Call Sheets | Later | Yes | Yes |
-| AI assistant | Optional | Optional | Optional |
+| Straft AI | Optional | Optional | Optional |
 
 ---
 
@@ -4372,7 +4372,7 @@ It should not expose production details unless useful.
 
 A compact `+` menu should allow:
 
-The shell may also expose an AI Assistant/Command entry. AI natural-language requests route to the same canonical application capabilities represented by Quick Actions and workspace controls; AI does not create a parallel action system.
+The shell may also expose Straft AI/Command entry. AI natural-language requests route to the same canonical application capabilities represented by Quick Actions and workspace controls; AI does not create a parallel action system.
 
 
 - New Idea.
@@ -4837,7 +4837,7 @@ PRD requirement IDs use `PRD-[MODULE]-NNN` and identify product-level capabiliti
 | PRD-COL-005 | Basic Local-Network Collaboration | 86–87, 131–133 | P0 |
 | PRD-COL-006 | Advanced Collaboration Conflict Handling | 131–132 | P1 |
 | PRD-OFF-001 | Offline Operation, Saving, Portability, External Storage and Backup | 105–108, 130 | P0 |
-| PRD-AI-001 | AI Assistant | 93–97 | P1 |
+| PRD-AI-001 | Straft AI | 93–97 | P1 |
 | PRD-AI-002 | More Advanced AI Project Assistance | 197 | P2 |
 | PRD-PROD-002 | Daily Production View | 156 | P1 |
 | PRD-PROD-003 | Basic Production Reports | 154 | P1 |
@@ -4868,7 +4868,7 @@ PRD requirement IDs use `PRD-[MODULE]-NNN` and identify product-level capabiliti
 | Priority | Straft Studio features |
 |---|---|
 | **P0** | Desktop Windows/macOS, local projects, global/project Idea Vault, media capture, collections, search, Beat Board, Acts, Sequences, Beats, Scene Cards, drag/drop, Parking Lot, screenplay editor, screenplay import/export, edit history, named drafts, draft comparison, comments, review packages, basic LAN collaboration, breakdown, breakdown suggestions, catalog, locations, cast/crew, shot lists, basic storyboards, moodboards, stripboard, basic schedule assistance, call sheets, project archive |
-| **P1** | Story timeline, script lock, production revision colors, Sides, better storyboard tools, advanced schedule conflicts, AI assistant, richer exchange controls, templates, lightweight tasks, Scene Hub, more export layouts, multi-monitor, Project Notes, Activity History, Daily Production View, Basic Production Reports, Lightweight Budget |
+| **P1** | Story timeline, script lock, production revision colors, Sides, better storyboard tools, advanced schedule conflicts, Straft AI, richer exchange controls, templates, lightweight tasks, Scene Hub, more export layouts, multi-monitor, Project Notes, Activity History, Daily Production View, Basic Production Reports, Lightweight Budget |
 | **P2** | More sophisticated scheduling assistance, advanced storyboard editing, richer search, more production reports, deeper episodic continuity, advanced AI assistance, additional file interchange formats |
 | **Deferred** | Accounting, payroll, full budgeting, VFX management, post-production tracking, distribution, festival management, talent marketplace, cloud media hosting, mobile app, enterprise administration |
 

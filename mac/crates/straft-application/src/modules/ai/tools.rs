@@ -9,11 +9,11 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use straft_domain::{Actor, AppError, AppResult, Capability};
 use rusqlite::{Connection, params};
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult, Capability};
 
 use super::queries::{self, DraftRef, SceneRow, join_and};
 use super::scope::ResolvedScope;
@@ -637,11 +637,10 @@ pub fn execute(ctx: &ToolCtx<'_>, name: &str, args: &Value) -> AppResult<ToolOut
             let a: PrivateArgs = parse_args(name, args)?;
             private_information(ctx, &a.whose)
         }
-        other => Err(AppError::ai(
-            "unknown_tool",
-            "That isn't something Straft AI can do yet.",
-        )
-        .with_detail(format!("tool {other}"))),
+        other => Err(
+            AppError::ai("unknown_tool", "That isn't something Straft AI can do yet.")
+                .with_detail(format!("tool {other}")),
+        ),
     }
 }
 
@@ -996,11 +995,10 @@ fn scene_fact(ctx: &ToolCtx<'_>, a: &SceneFactArgs) -> AppResult<ToolOutput> {
             }
         }
         other => {
-            return Err(AppError::ai(
-                "unknown_tool",
-                "That isn't something Straft AI can do yet.",
-            )
-            .with_detail(format!("scene fact {other}")));
+            return Err(
+                AppError::ai("unknown_tool", "That isn't something Straft AI can do yet.")
+                    .with_detail(format!("scene fact {other}")),
+            );
         }
     };
     let mut o = ToolOutput::exact(content);

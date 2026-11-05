@@ -18,6 +18,7 @@ straft-import-export.workspace = true
 straft-ai.workspace = true
 straft-search.workspace = true
 straft-ai-checks = { path = "../straft-ai-checks" }
+fs4.workspace = true
 rusqlite.workspace = true
 serde.workspace = true
 serde_json.workspace = true

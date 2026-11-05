@@ -2,9 +2,9 @@
 //! AI records are personal (filtered by user) and never undoable project edits.
 //! No hidden reasoning and no full-context copies are stored.
 
-use straft_domain::{Actor, AppResult, Capability, new_id, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::Value;
+use straft_domain::{Actor, AppResult, Capability, new_id, now_ms};
 
 use super::change_set;
 use super::types::*;

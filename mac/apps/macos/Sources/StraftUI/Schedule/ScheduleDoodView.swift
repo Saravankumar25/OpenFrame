@@ -182,7 +182,7 @@ struct SchedDoodScreen: View {
                 .underline(c.overridden, pattern: .dot)
                 .frame(minWidth: 36)
         }
-        .menuStyle(.borderlessButton).menuIndicator(.hidden)
+        .borderlessAccentMenu().menuIndicator(.hidden)
         .frame(minWidth: 52).padding(.vertical, 2)
         .background(d.isOffDay ? theme["line"] : (c.overridden ? theme["yellow-soft"] : Color.clear))
         .border(theme["line"], width: 0.5)

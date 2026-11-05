@@ -74,7 +74,7 @@ snippets, global merge) has no dedicated measurement yet; that belongs to the pl
   It supports Enter/Shift+Enter/Esc and replace (undoable, atomic).
 - ✅ **AI retrieval** (doc 18, `modules/ai/retrieval.rs`): the FTS5 index above is the lexical stage of the AI's
   hybrid retrieval, queried with an OR query of the question's significant terms (Global Search keeps its AND query).
-  Semantic (embedding) search — sqlite-vec over vectors from the Offline AI embedding model (BGE small English v1.5,
+  Semantic (embedding) search — sqlite-vec over vectors from Straft AI embedding model (BGE small English v1.5,
   computed on this computer) — and the context graph live in the separate, rebuildable `cache/intelligence.sqlite`
   (crate `straft-search`): never canonical, no vector or graph server. Global Search (Ctrl+K) stays exact and
   keyword-based and does not use embeddings. Retrieved text is passed to the model as *data*.

@@ -7,13 +7,13 @@
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+use rusqlite::{Connection, OptionalExtension, params};
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use straft_domain::enums::{ProjectStatus, ProjectType};
 use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use straft_persistence::undo::quote_ident;
 use straft_project_format::{self as pf, ProjectLayout, ProjectLock, ProjectManifest};
-use rusqlite::{Connection, OptionalExtension, params};
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use ts_rs::TS;
 
 use super::project_cover::{self, ProjectCover};
@@ -791,7 +791,11 @@ fn create(core: &AppCore, actor: &Actor, args: CreateProjectArgs) -> AppResult<O
 
 fn open(core: &AppCore, actor: &Actor, args: OpenProjectArgs) -> AppResult<OpenProjectResult> {
     let mut path = PathBuf::from(args.path.trim());
-    if path.file_name().and_then(|n| n.to_str()).is_some_and(pf::is_manifest_name) {
+    if path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .is_some_and(pf::is_manifest_name)
+    {
         path = path.parent().map(Path::to_path_buf).unwrap_or(path);
     }
     let path = crate::modules::storage::legacy_rename::project_on_open(core, &path);
@@ -949,7 +953,10 @@ pub(crate) fn open_at_unguarded(
         && let Err(e) = pf::write_manifest(&layout, &manifest)
     {
         // The earlier manifest keeps working, so this never stops the project from opening.
-        tracing::warn!(code = e.code_str(), "the project manifest could not be renewed yet");
+        tracing::warn!(
+            code = e.code_str(),
+            "the project manifest could not be renewed yet"
+        );
     }
     let session = Arc::new(ProjectSession::new(
         layout,
@@ -1387,7 +1394,11 @@ fn remove_recent(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResul
 
 fn locate(core: &AppCore, actor: &Actor, args: LocateArgs) -> AppResult<OpenProjectResult> {
     let mut path = PathBuf::from(args.path.trim());
-    if path.file_name().and_then(|n| n.to_str()).is_some_and(pf::is_manifest_name) {
+    if path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .is_some_and(pf::is_manifest_name)
+    {
         path = path.parent().map(Path::to_path_buf).unwrap_or(path);
     }
     // Validate before touching the filesystem or updating Recent Projects.

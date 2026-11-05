@@ -9,10 +9,10 @@
 use std::io::Read as _;
 use std::path::{Path, PathBuf};
 
+use serde_json::{Value, json};
 use straft_application::registry::{self, AiExposure, FsEffect, OpClass};
 use straft_domain::{Capability, Role};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const MARKERS: [&str; 12] = [
     "OFMARKERFOLDER7731",
@@ -220,17 +220,9 @@ fn write_logs(env: &TestEnv) {
             "{{\"level\":\"INFO\",\"fields\":{{\"message\":\"{}\"}}}}",
             "x".repeat(20_000) + MARKERS[4]
         ),
-        line(
-            "NOTICE",
-            "straft_application",
-            json!({ "message": leak }),
-        ),
+        line("NOTICE", "straft_application", json!({ "message": leak })),
     ];
-    std::fs::write(
-        dir.join("straft.2026-10-05.log"),
-        lines.join("\n") + "\n",
-    )
-    .unwrap();
+    std::fs::write(dir.join("straft.2026-10-05.log"), lines.join("\n") + "\n").unwrap();
     // An older day and an unrelated file in the logs folder.
     std::fs::write(
         dir.join("straft.2026-10-04.log"),

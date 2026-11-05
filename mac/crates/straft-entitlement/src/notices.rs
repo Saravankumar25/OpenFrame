@@ -15,6 +15,7 @@
 
 use std::io::Read;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
@@ -177,6 +178,10 @@ pub fn due(
 /// Reads and writes `entitlement/notices.json` under the app data folder.
 pub struct NoticeStore {
     path: PathBuf,
+    /// The last load could not read a file that is there. The file may be good, so no save may
+    /// replace it with a record built from nothing. A file that was read and found broken is
+    /// different: it is moved aside and then replaced.
+    unreadable: AtomicBool,
 }
 
 /// A record after [`NoticeStore::load`], with a flag for a file that was there but unusable.
@@ -193,6 +198,7 @@ impl NoticeStore {
     pub fn in_app_data(app_data_dir: &Path) -> Self {
         Self {
             path: app_data_dir.join("entitlement").join("notices.json"),
+            unreadable: AtomicBool::new(false),
         }
     }
 
@@ -201,8 +207,10 @@ impl NoticeStore {
     }
 
     /// Read the record. Never fails: missing means first run; locked, too large, not JSON or the
-    /// wrong shape gives an empty record with `replaced: true`.
+    /// wrong shape gives an empty record with `replaced: true`. A file that could not be read stays
+    /// where it is and saves are refused until a later load succeeds.
     pub fn load(&self) -> LoadedNotices {
+        self.unreadable.store(false, Ordering::SeqCst);
         let file = match std::fs::File::open(&self.path) {
             Ok(f) => f,
             Err(e)
@@ -217,21 +225,19 @@ impl NoticeStore {
                 };
             }
             Err(e) => {
-                tracing::warn!(kind = ?e.kind(), "the notice record could not be opened; screens may show again");
-                return LoadedNotices {
-                    record: NoticeRecord::default(),
-                    replaced: true,
-                };
+                tracing::warn!(kind = ?e.kind(), "the notice record could not be opened; screens may show again, nothing is saved this run");
+                return self.could_not_read();
             }
         };
         let mut bytes = Vec::with_capacity(256);
         let read = file.take(MAX_FILE_BYTES as u64 + 1).read_to_end(&mut bytes);
-        let record = match read {
-            Ok(_) if bytes.len() <= MAX_FILE_BYTES => {
-                serde_json::from_slice::<NoticeRecord>(&bytes).ok()
-            }
-            _ => None,
-        };
+        if let Err(e) = read {
+            tracing::warn!(kind = ?e.kind(), "the notice record could not be read; screens may show again, nothing is saved this run");
+            return self.could_not_read();
+        }
+        let record = (bytes.len() <= MAX_FILE_BYTES)
+            .then(|| serde_json::from_slice::<NoticeRecord>(&bytes).ok())
+            .flatten();
         match record {
             Some(record) => LoadedNotices {
                 record,
@@ -248,6 +254,16 @@ impl NoticeStore {
         }
     }
 
+    /// An empty record for a file that is there and may be good: it stays as it is, and saves are
+    /// refused until a later load reads it.
+    fn could_not_read(&self) -> LoadedNotices {
+        self.unreadable.store(true, Ordering::SeqCst);
+        LoadedNotices {
+            record: NoticeRecord::default(),
+            replaced: true,
+        }
+    }
+
     /// Keep an unusable record as `notices.json.bad` (an older one is replaced), so the next save
     /// starts clean and the bad bytes stay for support. A failure is only logged.
     fn set_aside(&self) {
@@ -259,7 +275,15 @@ impl NoticeStore {
     }
 
     /// Save the record with the shared atomic replace, so a crash never leaves half a file.
+    /// Refused after a load that could not read the file: the screens keep their in-memory state
+    /// for this run and the next launch reads the file again.
     pub fn write(&self, record: &NoticeRecord) -> std::io::Result<()> {
+        if self.unreadable.load(Ordering::SeqCst) {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::PermissionDenied,
+                "the saved record could not be read at launch, so it is not replaced",
+            ));
+        }
         if let Some(parent) = self.path.parent() {
             std::fs::create_dir_all(parent)?;
         }
@@ -546,6 +570,61 @@ mod tests {
         let store = NoticeStore::in_app_data(dir.path());
         assert!(!store.load().replaced);
         assert!(store.write(&NoticeRecord::default()).is_err());
+    }
+
+    #[test]
+    fn a_file_that_could_not_be_read_is_never_replaced_but_a_broken_one_is() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = NoticeStore::in_app_data(dir.path());
+        let r = NoticeRecord {
+            welcome_shown: true,
+            ..NoticeRecord::default()
+        };
+        // Opening a folder works on the Mac and reading it fails: a read error on a file that is
+        // there. It stays where it is, nothing goes aside, and nothing is saved over it.
+        std::fs::create_dir_all(store.path()).unwrap();
+        assert!(store.load().replaced);
+        assert!(
+            store.write(&r).is_err(),
+            "nothing is saved over a file that may be good"
+        );
+        assert!(store.path().is_dir(), "untouched");
+        let bad = store.path().with_file_name("notices.json.bad");
+        assert!(!bad.exists(), "a read error sets nothing aside");
+        std::fs::remove_dir_all(store.path()).unwrap();
+        // A good read lifts the refusal.
+        assert!(!store.load().replaced);
+        store.write(&r).unwrap();
+        // Garbage was read and found broken: moved aside, then it may be replaced.
+        std::fs::write(store.path(), b"not json").unwrap();
+        assert!(store.load().replaced);
+        assert_eq!(std::fs::read(&bad).unwrap(), b"not json");
+        store.write(&r).unwrap();
+        assert_eq!(store.load().record, r);
+    }
+
+    /// A file that cannot even be opened may be a good record too: the next save must not replace it.
+    #[cfg(unix)]
+    #[test]
+    fn a_file_that_could_not_be_opened_keeps_its_contents() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = tempfile::tempdir().unwrap();
+        let store = NoticeStore::in_app_data(dir.path());
+        let good = NoticeRecord {
+            tutorial_completed: true,
+            ..NoticeRecord::default()
+        };
+        store.write(&good).unwrap();
+        let locked = std::fs::Permissions::from_mode(0o000);
+        std::fs::set_permissions(store.path(), locked).unwrap();
+        if std::fs::File::open(store.path()).is_ok() {
+            return; // Running as root: the permission does not apply.
+        }
+        assert!(store.load().replaced);
+        assert!(store.write(&NoticeRecord::default()).is_err());
+        let open = std::fs::Permissions::from_mode(0o644);
+        std::fs::set_permissions(store.path(), open).unwrap();
+        assert_eq!(store.load().record, good);
     }
 
     #[test]

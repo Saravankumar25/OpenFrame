@@ -104,13 +104,13 @@ struct ScheduleCalendarView: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Button { model.shiftMonth(-1) } label: { Label("Previous", systemImage: "chevron.left") }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.ofBorderless)
                         .accessibilityLabel("Previous month")
                         .accessibilityIdentifier("calendar-previous")
                     Text(monthLabel).font(.headline).frame(minWidth: 150)
                         .accessibilityIdentifier("calendar-month")
                     Button { model.shiftMonth(1) } label: { Label("Next", systemImage: "chevron.right") }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.ofBorderless)
                         .accessibilityLabel("Next month")
                         .accessibilityIdentifier("calendar-next")
                 }

@@ -16,9 +16,9 @@
 
 use std::collections::HashMap;
 
-use straft_domain::AppResult;
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
+use straft_domain::AppResult;
 use ts_rs::TS;
 
 use super::board::{Board, DayRow, Item};

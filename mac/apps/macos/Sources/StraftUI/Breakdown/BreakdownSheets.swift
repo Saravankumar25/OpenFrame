@@ -64,13 +64,13 @@ struct SelectSourceSheet: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Straft Studio will create or initialise").font(.callout.weight(.semibold))
                     Text("\u{2022} Breakdown scenes: one per screenplay scene, numbered automatically\n\u{2022} Production catalog\n\u{2022} The scene list used by shot lists, storyboards and the schedule")
-                        .font(.callout).foregroundStyle(.secondary)
+                        .font(.callout).foregroundStyle(.ofMuted)
                     TextField("Why this draft? (optional)", text: $reason)
                         .textFieldStyle(.roundedBorder)
                         .accessibilityIdentifier("source-reason")
                 }
             }
-            Text("You will not recreate any scene by hand. Your screenplay is not changed.").font(.caption).foregroundStyle(.secondary)
+            Text("You will not recreate any scene by hand. Your screenplay is not changed.").font(.caption).foregroundStyle(.ofMuted)
         } footer: {
             Button("Cancel") { model.sheet = nil }.keyboardShortcut(.cancelAction)
             Button(active != nil ? "Review Production Update" : "Set as Production Source") {
@@ -139,7 +139,7 @@ struct UpdateSourceSheet: View {
                 HStack(spacing: 10) {
                     ForEach(tiles, id: \.0) { t in
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(t.0).font(.caption).foregroundStyle(.secondary)
+                            Text(t.0).font(.caption).foregroundStyle(.ofMuted)
                             Text("\(t.1)").font(.title2.weight(.semibold)).monospacedDigit()
                         }
                         .padding(10).frame(maxWidth: .infinity, alignment: .leading)
@@ -149,7 +149,7 @@ struct UpdateSourceSheet: View {
                 }
                 if p.moved > 0 || p.ambiguous > 0 {
                     Text((p.moved > 0 ? "\(p.moved.asInt) moved \u{00B7} " : "") + (p.ambiguous > 0 ? "\(p.ambiguous.asInt) need a manual match \u{00B7} " : "") + "\(p.unchanged.asInt) unchanged")
-                        .font(.callout).foregroundStyle(.secondary)
+                        .font(.callout).foregroundStyle(.ofMuted)
                 }
                 if p.changes.isEmpty {
                     BDBanner(.ok, "No scene changes. Breakdown data carries over as it is.")
@@ -162,14 +162,14 @@ struct UpdateSourceSheet: View {
                                 Divider()
                             }
                             if !showAll, p.changes.count > shown.count {
-                                Text("\u{2026}and \(p.changes.count - shown.count) more.").font(.callout).foregroundStyle(.secondary).padding(8)
+                                Text("\u{2026}and \(p.changes.count - shown.count) more.").font(.callout).foregroundStyle(.ofMuted).padding(8)
                             }
                         }
                     }
                     .frame(maxHeight: 260)
                 }
                 Text("Nothing is deleted: all \(p.elementsKept.asInt) breakdown elements are kept. Removed scenes keep their breakdown as history; changed scenes are flagged for review.")
-                    .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    .font(.callout).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true)
             } else {
                 ProgressView().frame(maxWidth: .infinity, minHeight: 80)
             }
@@ -199,7 +199,7 @@ struct UpdateSourceSheet: View {
                 Text(change.newNumber ?? change.oldNumber ?? "").font(.callout.weight(.semibold)).frame(width: 34, alignment: .leading)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(change.heading.isEmpty ? "(no heading)" : change.heading).font(.callout.weight(.semibold))
-                    Text(text).font(.caption).foregroundStyle(.secondary)
+                    Text(text).font(.caption).foregroundStyle(.ofMuted)
                 }
                 Spacer()
                 BDChip(text: label, tone: tone)
@@ -334,7 +334,7 @@ struct AddElementSheet: View {
                         .accessibilityIdentifier("add-notes")
                 }
                 if form.initial.span != nil {
-                    Text("The screenplay text is not changed; the tag marks the selected words in this scene.").font(.caption).foregroundStyle(.secondary)
+                    Text("The screenplay text is not changed; the tag marks the selected words in this scene.").font(.caption).foregroundStyle(.ofMuted)
                 }
             }
         } footer: {
@@ -364,7 +364,7 @@ struct EditSuggestionSheet: View {
             width: 560
         ) {
             VStack(alignment: .leading, spacing: 10) {
-                if let ev = e.evidence { Text("matched: \(BDText.quoted(ev))").font(.callout).foregroundStyle(.secondary) }
+                if let ev = e.evidence { Text("matched: \(BDText.quoted(ev))").font(.callout).foregroundStyle(.ofMuted) }
                 BDField(label: "Category") {
                     Picker("Category", selection: Binding(get: { form.category }, set: { form.setCategory($0) })) {
                         ForEach(BDCategory.all, id: \.self) { Text($0.rawValue).tag($0) }
@@ -379,7 +379,7 @@ struct EditSuggestionSheet: View {
                 }
                 CatalogChoiceList(name: form.name, finder: form.finder)
                 Text("If several items look similar you will see a list with distinguishing details and can choose one.")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption).foregroundStyle(.ofMuted)
             }
         } footer: {
             Button("Cancel") { form.model.sheet = nil }.keyboardShortcut(.cancelAction)
@@ -423,7 +423,7 @@ struct SuggestionReviewSheet: View {
             BDBanner(.warn, "Suggestions are not production data yet. Accept, edit or reject each one.")
             if pending.isEmpty {
                 Text("No pending suggestions for this scene. You can still tag text in the script or use Add Element.")
-                    .font(.callout).foregroundStyle(.secondary).padding(.vertical, 10)
+                    .font(.callout).foregroundStyle(.ofMuted).padding(.vertical, 10)
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 10) {
@@ -437,7 +437,7 @@ struct SuggestionReviewSheet: View {
                                 ForEach(g.suggestions, id: \.id) { s in row(s) }
                             }
                         }
-                        Text("Existing catalog matches are suggested where obvious; ambiguous matches open a chooser.").font(.caption).foregroundStyle(.secondary)
+                        Text("Existing catalog matches are suggested where obvious; ambiguous matches open a chooser.").font(.caption).foregroundStyle(.ofMuted)
                     }
                 }
                 .frame(maxHeight: 340)
@@ -457,7 +457,7 @@ struct SuggestionReviewSheet: View {
                 .accessibilityIdentifier("accept-all-safe")
             Button("Close") { model.sheet = nil }.keyboardShortcut(.cancelAction)
         } leading: {
-            Text("\(pending.count) suggested \u{00B7} \(selected.count) selected").font(.callout).foregroundStyle(.secondary)
+            Text("\(pending.count) suggested \u{00B7} \(selected.count) selected").font(.callout).foregroundStyle(.ofMuted)
         }
     }
 
@@ -508,7 +508,7 @@ struct SceneChangesSheet: View {
                     ForEach(Array(d.removedCandidates.enumerated()), id: \.offset) { _, c in candidate(c, "Removed candidate", .red) }
                     ForEach(Array(d.addedCandidates.enumerated()), id: \.offset) { _, c in candidate(c, "Added candidate", .green) }
                     if d.removedCandidates.isEmpty && d.addedCandidates.isEmpty {
-                        Text("No new or removed likely elements were found in the changed text.").font(.callout).foregroundStyle(.secondary).padding(8)
+                        Text("No new or removed likely elements were found in the changed text.").font(.callout).foregroundStyle(.ofMuted).padding(8)
                     }
                 }
                 .background(.quaternary.opacity(0.3), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
@@ -536,7 +536,7 @@ struct SceneChangesSheet: View {
     private func candidate(_ c: BreakdownCandidateDto, _ label: String, _ tone: BDTone) -> some View {
         HStack(spacing: 8) {
             BDChip(text: label, tone: tone)
-            (Text(c.name).bold() + Text(" (\(BDCategory.short(c.category))): \(BDText.quoted(c.evidence))").foregroundStyle(.secondary)).font(.callout)
+            (Text(c.name).bold() + Text(" (\(BDCategory.short(c.category))): \(BDText.quoted(c.evidence))").foregroundStyle(.ofMuted)).font(.callout)
             Spacer()
         }
         .padding(8)

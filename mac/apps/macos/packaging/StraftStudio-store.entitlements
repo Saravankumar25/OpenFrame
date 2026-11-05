@@ -6,7 +6,7 @@
      - files.user-selected.read-write: projects, imports and exports are files the person picks.
      - files.bookmarks.app-scope: reopen the linked files the person picked before (Files page,
        LinkedFileBookmarks). Library and project folders outside the container are not offered.
-     - network.client: the offline AI model download the person starts (ADR-0026) and the app's
+     - network.client: the Straft AI model download the person starts (ADR-0026) and the app's
        calls to its own engine on 127.0.0.1.
      - network.server: the AI engine helper listens on 127.0.0.1 only; it inherits this sandbox.
      - device.audio-input: voice notes in the Idea Vault, only while the person records.

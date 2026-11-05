@@ -11,10 +11,10 @@
 //! Today every role holds View (ADR-0009), so "a user without View reads nothing" is enforced by the
 //! same check: a role added without View is refused on every read by the first test.
 
+use serde_json::json;
 use straft_application::registry::OpKind;
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::json;
 
 const ROLES: [Role; 5] = [
     Role::Owner,

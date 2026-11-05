@@ -1,4 +1,4 @@
-# ADR-0033: On the Mac the offline AI engine is a helper process that uses Metal
+# ADR-0033: On the Mac the Straft AI engine is a helper process that uses Metal
 
 - **Status:** Accepted 2026-10-18 (owner delegated the decision on 2026-10-18; the lead agent of Mac phase M8 made it).
 - **Date:** 2026-10-18
@@ -54,6 +54,6 @@ tests, soak, crash and restart, scrubbed environment, per-launch hash check) was
   entries are unchanged, so the Windows evidence stays valid.
 - `scripts/prepare-ai-assets.mjs` and the lock check in the Rust crate know the `metal` backend.
 - The Intel Mac has no pinned engine yet. Its entry (the `macos-x64` asset, processor only) is added when phase M8 measures
-  the Intel Mac; until then the Offline AI says it is not available there.
+  the Intel Mac; until then Straft AI says it is not available there.
 - A Metal run uses unified memory: the 1B chat model plus its cache is about 1.5 GB. The hardware check in
   `selection.rs` is unchanged.

@@ -13,9 +13,9 @@
 
 use std::path::{Path, PathBuf};
 
+use rusqlite::Connection;
 use straft_domain::auth::ActorOrigin;
 use straft_domain::{Actor, AppError, AppResult, Capability, Role};
-use rusqlite::Connection;
 
 use crate::core::AppCore;
 use crate::registry::{Registry, TrashHandler};

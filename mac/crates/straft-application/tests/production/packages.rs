@@ -6,6 +6,7 @@
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
+use serde_json::{Value, json};
 use straft_application::events::AppEvent;
 use straft_application::modules::packages::backup::{
     DbSource, ProjectPackageOptions, ProjectPackageSource,
@@ -15,7 +16,6 @@ use straft_application::modules::packages::{PackageType, build_project_package};
 use straft_domain::{Role, new_id};
 use straft_security::archive::{self, ArchiveLimits, EntrySource};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ helpers
 
@@ -561,9 +561,9 @@ fn fsd_44_interrupted_backup_leaves_no_partial_file() {
         .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
         .collect();
     assert!(
-        !names.iter().any(|n| n.ends_with(".tmp")
-            || n.ends_with(".partial")
-            || n.ends_with(".straft-tmp")),
+        !names
+            .iter()
+            .any(|n| n.ends_with(".tmp") || n.ends_with(".partial") || n.ends_with(".straft-tmp")),
         "{names:?}"
     );
     // Background task end always clears the pending-package save state.
@@ -1750,10 +1750,7 @@ fn write_package_fixtures() {
         "harbour-reply.ofresponse",
     );
     std::fs::copy(&resp, p("harbour.ofresponse")).unwrap();
-    let current = fixtures_root().join(format!(
-        "format-{}",
-        straft_domain::PACKAGE_FORMAT_VERSION
-    ));
+    let current = fixtures_root().join(format!("format-{}", straft_domain::PACKAGE_FORMAT_VERSION));
     let v1 = fixtures_root().join("format-1");
     for dir in [&current, &v1] {
         std::fs::create_dir_all(dir).unwrap();
@@ -2699,7 +2696,7 @@ fn restored_private_notes_belong_to_the_restorer_and_stay_private() {
 
 /// ADR-0007: Straft Studio opens no listening socket. After the core package workflow (edit,
 /// backup, review round trip, restore on another installation) this process holds no listening
-/// TCP socket and no bound UDP socket. The Offline AI engine, which the user starts on purpose,
+/// TCP socket and no bound UDP socket. The Straft AI engine, which the user starts on purpose,
 /// is a separate process on 127.0.0.1 with a per-launch key and is not part of this workflow.
 #[cfg(windows)]
 #[test]

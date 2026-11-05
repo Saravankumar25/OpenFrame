@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scene Report filtered (light) - Straft Studio for Mac</title><style>
+:root{color-scheme:light;--page:#e4e4e8;--fg:#1d1d1f;--mut:#6b6b73;--card:#f7f7f9;--line:#c8c8ce;--acc:#b85f00}
+:root.dark{color-scheme:dark;--page:#232326;--fg:#f2f2f4;--mut:#a0a0a8;--card:#1c1c1f;--line:#3c3c42;--acc:#ff9f0a}
+*{box-sizing:border-box}
+html{background:var(--page)}
+body{margin:0;background:var(--page);color:var(--fg);font:14px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif}
+a{color:var(--acc)}
+.toggle{position:absolute;opacity:0;pointer-events:none}
+header.top{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--card)}
+header.top h1{font-size:17px;margin:0}
+header.top .meta{color:var(--mut);font-size:13px}
+header.top nav{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+header.top nav a,header.top label{padding:3px 10px;border:1px solid var(--line);border-radius:6px;text-decoration:none;color:var(--fg);font-size:13px;cursor:pointer;background:var(--page)}
+#htmlonly:checked~header label[for=htmlonly]{background:var(--acc);color:#fff;border-color:var(--acc)}
+#htmlonly:focus-visible~header label[for=htmlonly]{outline:2px solid var(--acc)}
+.leads{padding:8px 20px 0;font-size:13px;color:var(--mut)}
+.leads a{margin-right:10px}
+/* The band has a fixed height and the window a fixed left edge, so the picture always lands on whole points. */
+.band{height:104px;overflow:auto;border-bottom:1px solid var(--line);background:var(--card)}
+.band header.top{border-bottom:0}
+.wrap{padding:32px 40px 64px;overflow:auto}
+.win{position:relative;margin:0;border-radius:10px;background:var(--winbg);box-shadow:0 0 0 .5px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.28),0 24px 70px rgba(0,0,0,.22)}
+.region{position:absolute;display:block;margin:0;padding:0;border:0;background-repeat:no-repeat;color:inherit;max-width:none;max-height:none;list-style:none}
+.el{position:absolute;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:transparent;-webkit-text-fill-color:transparent;font:inherit;font-size:13px;line-height:1.2;text-align:left;
+ overflow:hidden;text-decoration:none;appearance:none;-webkit-appearance:none;outline:none;box-shadow:none;list-style:none;white-space:pre;caret-color:transparent;resize:none;min-width:0;min-height:0}
+.el::selection{background:rgba(255,149,0,.35)}
+.el .v{display:block;padding:0 4px}
+.el .key{float:right;padding:0 6px;opacity:.7}
+.statictext{cursor:text;user-select:text}
+.statictext[style*="line-height:16px"]{white-space:pre-wrap}
+textarea.el{white-space:pre-wrap}
+button.el,a.el,select.el,input[type=checkbox].el,input[type=radio].el{cursor:pointer}
+a.go{z-index:1}
+button.el:focus-visible,a.el:focus-visible,select.el:focus-visible,input.el:focus-visible,textarea.el:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.loose{pointer-events:none}
+/* HTML only: the picture is hidden and the HTML layer draws the screen on the window colour. */
+#htmlonly:checked~.wrap .region{background-image:none!important;background-color:var(--winbg);box-shadow:inset 0 0 0 .5px rgba(128,128,128,.35)}
+#htmlonly:checked~.wrap .win{background:var(--winbg);overflow:hidden}
+#htmlonly:checked~.wrap .region.sheet,#htmlonly:checked~.wrap .region.menu{border-radius:10px;box-shadow:0 0 0 1px rgba(128,128,128,.5),0 8px 30px rgba(0,0,0,.35)}
+#htmlonly:checked~.wrap .el{color:var(--winfg);-webkit-text-fill-color:var(--winfg);overflow:visible;text-overflow:ellipsis}
+#htmlonly:checked~.wrap button.el,#htmlonly:checked~.wrap a[role=button].el,#htmlonly:checked~.wrap select.el,#htmlonly:checked~.wrap input.el,#htmlonly:checked~.wrap textarea.el,#htmlonly:checked~.wrap .menubutton{
+ overflow:hidden;border:1px solid rgba(128,128,128,.45);border-radius:5px;background:rgba(128,128,128,.12);padding:0 5px;display:flex;align-items:center;font-size:12px}
+#htmlonly:checked~.wrap textarea.el{display:block;padding:4px 6px}
+#htmlonly:checked~.wrap .el.haskids{color:transparent;-webkit-text-fill-color:transparent}
+#htmlonly:checked~.wrap input[type=checkbox].el,#htmlonly:checked~.wrap input[type=radio].el{appearance:auto;-webkit-appearance:auto;border:0;background:none;padding:0;margin:0;width:14px!important;height:14px!important}
+#htmlonly:checked~.wrap [disabled].el,#htmlonly:checked~.wrap [aria-disabled=true].el{opacity:.45}
+#htmlonly:checked~.wrap [aria-selected=true].el{background:rgba(10,132,255,.22)}
+#htmlonly:checked~.wrap .el[data-focused]{outline:2px solid rgba(10,132,255,.7);outline-offset:-2px}
+#htmlonly:checked~.wrap a.el{color:var(--acc);-webkit-text-fill-color:var(--acc)}
+#htmlonly:checked~.wrap a.go{background:rgba(255,149,0,.08)}
+#htmlonly:checked~.wrap .scrollbar,#htmlonly:checked~.wrap .valueindicator{display:none}
+
+@media (max-width:1699px){.win{zoom:0.98}}
+@media (max-width:1667px){.win{zoom:0.96}}
+@media (max-width:1635px){.win{zoom:0.94}}
+@media (max-width:1603px){.win{zoom:0.92}}
+@media (max-width:1571px){.win{zoom:0.9}}
+@media (max-width:1539px){.win{zoom:0.88}}
+@media (max-width:1507px){.win{zoom:0.86}}
+@media (max-width:1475px){.win{zoom:0.84}}
+@media (max-width:1443px){.win{zoom:0.82}}
+@media (max-width:1411px){.win{zoom:0.8}}
+@media (max-width:1379px){.win{zoom:0.78}}
+@media (max-width:1347px){.win{zoom:0.76}}
+@media (max-width:1315px){.win{zoom:0.74}}
+@media (max-width:1283px){.win{zoom:0.72}}
+@media (max-width:1251px){.win{zoom:0.7}}
+@media (max-width:1219px){.win{zoom:0.68}}
+@media (max-width:1187px){.win{zoom:0.66}}
+@media (max-width:1155px){.win{zoom:0.64}}
+@media (max-width:1123px){.win{zoom:0.62}}
+@media (max-width:1091px){.win{zoom:0.6}}
+@media (max-width:1059px){.win{zoom:0.58}}
+@media (max-width:1027px){.win{zoom:0.56}}
+@media (max-width:995px){.win{zoom:0.54}}
+@media (max-width:963px){.win{zoom:0.52}}
+@media (max-width:931px){.win{zoom:0.5}}
+@media (max-width:899px){.win{zoom:0.48}}
+@media (max-width:867px){.win{zoom:0.46}}
+@media (max-width:835px){.win{zoom:0.44}}
+@media (max-width:803px){.win{zoom:0.42}}
+@media (max-width:771px){.win{zoom:0.4}}
+@media (max-width:739px){.win{zoom:0.38}}
+@media (max-width:707px){.win{zoom:0.36}}
+@media (max-width:675px){.win{zoom:0.34}}
+@media (max-width:643px){.win{zoom:0.32}}
+@media (max-width:611px){.win{zoom:0.3}}
+@media (max-width:579px){.win{zoom:0.28}}
+@media (max-width:547px){.win{zoom:0.26}}
+@media (max-width:515px){.win{zoom:0.24}}
+@media (max-width:483px){.win{zoom:0.22}}
+@media (max-width:451px){.win{zoom:0.2}}
+@media (max-width:419px){.win{zoom:0.18}}
+@media (max-width:387px){.win{zoom:0.16}}
+@media (max-width:355px){.win{zoom:0.14}}
+@media (max-width:323px){.win{zoom:0.12}}
+@media (max-width:291px){.win{zoom:0.1}}</style></head>
+<body>
+<input type="checkbox" id="htmlonly" class="toggle">
+<div class="band">
+<header class="top">
+<h1>Scene Report filtered</h1>
+<span class="meta">Reports &middot; page 444 of 771 &middot; light &middot; window 1600 &times; 792 points at 1x</span>
+<nav>
+<a href="../index.html">All pages</a>
+<a href="../dark/444-schedule-reports-filtered.html">Same page in dark</a>
+<a href="438-schedule-reports-scene.html">Back to Reports: Scene Report</a>
+<label for="htmlonly">HTML only</label>
+</nav>
+</header>
+
+</div>
+<div class="wrap"><div class="win" role="application" aria-label="Night Bus window" style="width:1600px;height:792px;--winbg:#fffeff;--winfg:#1d1d1f">
+<div class="el loose" data-role="AXGroup" data-id="production-workspace" style="left:0px;top:0px;width:1600px;height:792px"></div>
+<div class="el loose" data-role="AXGroup" data-id="production-tabs" aria-label="Production" style="left:397px;top:57px;width:1034px;height:25px"></div>
+<div class="el loose" data-role="AXScrollArea" data-id="reports-tab" style="left:456px;top:88px;width:1144px;height:704px"></div>
+<div class="el loose" data-role="AXGroup" data-id="reports-list" aria-label="Reports" style="left:353.5px;top:196.5px;width:1121px;height:183px"></div>
+<div class="el loose" data-role="AXScrollArea" data-id="reports-table" style="left:354px;top:470px;width:1120px;height:121px"></div>
+<main class="region content" data-region="content" aria-label="Content" style="left:0px;top:0px;width:804px;height:792px;background-image:url(assets/444-schedule-reports-filtered.png);background-size:1600px 792px;background-position:0px 0px">
+<div class="el group" data-role="AXGroup/AXHostingView" style="left:8px;top:8px;width:220px;height:776px"><span class="el statictext" data-id="sidebar-project-title" data-role="AXStaticText" style="left:16px;top:50px;width:63px;height:16px;font-size:12.16px;line-height:16px">Night Bus</span><div class="el scrollarea" data-role="AXScrollArea" style="left:0px;top:76px;width:220px;height:640px"><ul role="tree" class="el outline" data-role="AXOutline" aria-label="Sidebar" style="left:-1px;top:-1px;width:222px;height:642px"><li class="el item" role="treeitem" style="left:22px;top:9.04px;width:61px;height:16px"><span class="el statictext" data-id="sidebar-home" data-role="AXStaticText" style="left:0px;top:0px;width:61px;height:16px;font-size:12.16px;line-height:16px">Home</span><a class="el go" href="034-home-import-toast.html" aria-label="Home: Example screenplay imported, with its Undo toast" style="left:0px;top:0px;width:61px;height:16px"></a></li><li class="el item" role="treeitem" style="left:26px;top:40.58px;width:81px;height:16.42px"><span class="el statictext" data-id="sidebar-ideaVault" data-role="AXStaticText" style="left:0px;top:0px;width:81px;height:16.42px;font-size:12.48px;line-height:16.42px">Idea Vault</span><a class="el go" href="276-vault-empty.html" aria-label="Idea Vault: Idea Vault, empty" style="left:0px;top:0px;width:81px;height:16.42px"></a></li><li class="el item" role="treeitem" style="left:23px;top:73px;width:57px;height:16px"><span class="el statictext" data-id="sidebar-story" data-role="AXStaticText" style="left:0px;top:0px;width:57px;height:16px;font-size:12.16px;line-height:16px">Story</span><a class="el go" href="194-story-board-empty.html" aria-label="Story: Beat Board, nothing on it yet" style="left:0px;top:0px;width:57px;height:16px"></a></li><li class="el item" role="treeitem" style="left:25px;top:105.04px;width:90px;height:16px"><span class="el statictext" data-id="sidebar-screenplay" data-role="AXStaticText" style="left:0px;top:0px;width:90px;height:16px;font-size:12.16px;line-height:16px">Screenplay</span><a class="el go" href="068-screenplay-editor.html" aria-label="Screenplay: Screenplay editor with the example script" style="left:0px;top:0px;width:90px;height:16px"></a></li><li class="el item" role="treeitem" style="left:23px;top:137px;width:92px;height:16px"><span class="el statictext" data-id="sidebar-breakdown" data-role="AXStaticText" style="left:0px;top:0px;width:92px;height:16px;font-size:12.16px;line-height:16px">Breakdown</span><a class="el go" href="335-breakdown-no-source.html" aria-label="Breakdown: Breakdown, choose a screenplay source" style="left:0px;top:0px;width:92px;height:16px"></a></li><li class="el item" role="treeitem" style="left:23px;top:169px;width:91px;height:16px"><span class="el statictext" data-id="sidebar-production" data-role="AXStaticText" style="left:0px;top:0px;width:91px;height:16px;font-size:12.16px;line-height:16px">Production</span></li><li class="el item" role="treeitem" style="left:25px;top:201px;width:91px;height:17px"><span class="el statictext" data-id="sidebar-callSheets" data-role="AXStaticText" style="left:0px;top:0px;width:91px;height:17px;font-size:12.92px;line-height:17px">Call Sheets</span><a class="el go" href="447-callsheets-empty.html" aria-label="Call Sheets: Call Sheets, none yet" style="left:0px;top:0px;width:91px;height:17px"></a></li><li class="el item" role="treeitem" style="left:23px;top:233px;width:52px;height:16px"><span class="el statictext" data-id="sidebar-files" data-role="AXStaticText" style="left:0px;top:0px;width:52px;height:16px;font-size:12.16px;line-height:16px">Files</span><a class="el go" href="607-files-empty.html" aria-label="Files: Files, empty" style="left:0px;top:0px;width:52px;height:16px"></a></li></ul></div><span class="el statictext" data-role="AXStaticText" style="left:10px;top:734px;width:161px;height:13px;font-size:9.88px;line-height:13px">Project stored locally on this Mac</span><span class="el statictext" data-id="save-status" data-role="AXStaticText" aria-selected="true" style="left:11px;top:753px;width:47px;height:13px;font-size:9.88px;line-height:13px">Saved</span></div>
+<button type="button" class="el button" data-id="production-tab-overview" data-role="AXButton" aria-label="Overview" style="left:399px;top:59px;width:73px;height:21px">Overview</button>
+<button type="button" class="el button" data-id="production-tab-catalog" data-role="AXButton" aria-label="Catalog" style="left:474px;top:59px;width:64px;height:21px">Catalog</button>
+<button type="button" class="el button" data-id="production-tab-locations" data-role="AXButton" aria-label="Locations" style="left:540px;top:59px;width:75px;height:21px">Locations</button>
+<button type="button" class="el button" data-id="production-tab-castCrew" data-role="AXButton" aria-label="Cast &amp; Crew" style="left:617px;top:59px;width:91px;height:21px">Cast &amp; Crew</button>
+<button type="button" class="el button" data-id="production-tab-moodboards" data-role="AXButton" aria-label="Moodboards" style="left:710px;top:59px;width:92px;height:21px">Moodboards</button>
+<h2 class="el heading" data-role="AXHeading" aria-label="Reports" style="left:354px;top:120px;width:80px;height:26px;font-size:18.72px;line-height:26px">Reports</h2>
+<span class="el statictext" data-role="AXStaticText" style="left:354px;top:150px;width:356px;height:15px;font-size:11.4px;line-height:15px">What concise production information do I need to see or send?</span>
+<input type="text" class="el textfield" data-id="reports-filter" data-role="AXTextField" aria-label="Filter report rows" data-focused="true" value="1" style="left:375px;top:395px;width:360px;height:24px">
+<button type="button" class="el button" data-id="reports-filter-clear" data-role="AXButton" aria-label="Clear" style="left:741px;top:397px;width:48px;height:20px">Clear</button>
+<span class="el statictext" data-role="AXStaticText" style="left:354px;top:427px;width:87px;height:16px;font-size:12.16px;line-height:16px">Scene Report</span>
+<span class="el statictext" data-id="reports-generated" data-role="AXStaticText" style="left:354px;top:449px;width:454px;height:15px;font-size:11.4px;line-height:15px">Source: LOST PROPERTY: Example-Short (imported) · Generated 5 Nov at 02:18</span>
+<span class="el statictext" data-role="AXStaticText" style="left:364px;top:480px;width:15px;height:15px;font-size:11.4px;line-height:15px">Sc</span>
+<span class="el statictext" data-role="AXStaticText" style="left:393px;top:480px;width:50px;height:15px;font-size:11.4px;line-height:15px">Heading</span>
+<span class="el statictext" data-role="AXStaticText" style="left:774px;top:480px;width:47px;height:15px;font-size:11.4px;line-height:15px">I/E · D/N</span>
+<div class="el unknown" data-id="reports-row-0" data-role="AXUnknown" aria-label="1" style="left:364px;top:506px;width:6px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-0" data-role="AXUnknown" aria-label="INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT" style="left:393px;top:506px;width:367px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-0" data-role="AXUnknown" aria-label="INT · N" style="left:774px;top:506px;width:39px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-1" data-role="AXUnknown" aria-label="2" style="left:364px;top:526px;width:8px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-1" data-role="AXUnknown" aria-label="EXT. KESARGANJ JUNCTION - PLATFORM 3 - NIGHT" style="left:393px;top:526px;width:302px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-1" data-role="AXUnknown" aria-label="EXT · N" style="left:774px;top:526px;width:43px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-2" data-role="AXUnknown" aria-label="3" style="left:364px;top:546px;width:8px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-2" data-role="AXUnknown" aria-label="INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT" style="left:393px;top:546px;width:367px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-2" data-role="AXUnknown" aria-label="INT · N" style="left:774px;top:546px;width:39px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-3" data-role="AXUnknown" aria-label="10" style="left:364px;top:566px;width:14px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-3" data-role="AXUnknown" aria-label="EXT. KESARGANJ JUNCTION - FOOTBRIDGE - DAWN" style="left:393px;top:566px;width:303px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-3" data-role="AXUnknown" aria-label="EXT · D" style="left:774px;top:566px;width:42px;height:15px"></div>
+<button type="button" class="el button" data-id="sidebar-toggle" data-role="AXButton" aria-label="Hide Sidebar" style="left:232px;top:0px;width:136px;height:52px">Hide Sidebar</button>
+<button type="button" class="el button" data-id="close-project" data-role="AXButton" aria-label="All Projects" style="left:368px;top:0px;width:123px;height:52px">All Projects</button>
+<div class="el group" data-role="AXGroup" style="left:491px;top:0px;width:169px;height:52px"><div class="el group" data-role="AXGroup" style="left:4px;top:8px;width:161px;height:36px"><button type="button" class="el button" data-id="nav-back" data-role="AXButton/AXSegment" aria-label="Back" style="left:0px;top:0px;width:70px;height:36px">Back</button><button type="button" class="el button" data-id="nav-forward" data-role="AXButton/AXSegment" aria-label="Forward" style="left:71px;top:0px;width:90px;height:36px" disabled>Forward</button></div></div>
+<div class="el group" data-role="AXGroup" style="left:660px;top:0px;width:104px;height:52px"><button type="button" class="el menubutton" data-id="project-menu" data-role="AXMenuButton" aria-label="Project: Night Bus. Switch or manage projects" title="Project" style="left:3px;top:7px;width:98px;height:38px" aria-haspopup="menu">Project: Night Bus. Switch or manage projects</button></div>
+<button type="button" class="el button" data-role="AXButton/AXCloseButton" style="left:18px;top:18px;width:16px;height:16px"></button>
+<button type="button" class="el haskids button" data-role="AXButton/AXFullScreenButton" style="left:64px;top:18px;width:16px;height:16px"></button><div class="el group" data-role="AXGroup" style="left:65px;top:19px;width:14px;height:14px"></div>
+<button type="button" class="el button" data-role="AXButton/AXMinimizeButton" style="left:41px;top:18px;width:16px;height:16px"></button>
+</main>
+<aside class="region inspector" data-region="inspector" aria-label="Inspector" style="left:804px;top:0px;width:796px;height:792px;background-image:url(assets/444-schedule-reports-filtered.png);background-size:1600px 792px;background-position:-804px 0px">
+<button type="button" class="el button" data-id="production-tab-storyboards" data-role="AXButton" aria-label="Storyboards" style="left:0px;top:59px;width:90px;height:21px">Storyboards</button>
+<button type="button" class="el button" data-id="production-tab-shotLists" data-role="AXButton" aria-label="Shot Lists" style="left:92px;top:59px;width:77px;height:21px">Shot Lists</button>
+<button type="button" class="el button" data-id="production-tab-schedule" data-role="AXButton" aria-label="Schedule" style="left:171px;top:59px;width:73px;height:21px">Schedule</button>
+<button type="button" class="el button" data-id="production-tab-dayOutOfDays" data-role="AXButton" aria-label="Day Out of Days" style="left:246px;top:59px;width:112px;height:21px">Day Out of Days</button>
+<button type="button" class="el button" data-id="production-tab-daily" data-role="AXButton" aria-label="Daily View" style="left:360px;top:59px;width:79px;height:21px">Daily View</button>
+<button type="button" class="el button" data-id="production-tab-sides" data-role="AXButton" aria-label="Sides" style="left:441px;top:59px;width:52px;height:21px">Sides</button>
+<button type="button" class="el button" data-id="production-tab-reports" data-role="AXButton" aria-label="Reports" aria-selected="true" style="left:495px;top:59px;width:67px;height:21px">Reports</button>
+<button type="button" class="el button" data-id="production-tab-budget" data-role="AXButton" aria-label="Budget" style="left:564px;top:59px;width:61px;height:21px">Budget</button>
+<button type="button" class="el button" data-id="reports-save" data-role="AXButton" aria-label="Save snapshot" style="left:435px;top:120px;width:139px;height:28px">Save snapshot</button>
+<button type="button" class="el button" data-id="reports-export" data-role="AXButton" aria-label="Export" style="left:582px;top:121px;width:88px;height:26px">Export</button>
+<button type="button" class="el button" data-id="reports-type-scene" data-role="AXButton" aria-label="Scene Report" aria-selected="true" style="left:-442px;top:205px;width:1104px;height:26px">Scene Report</button>
+<button type="button" class="el button" data-id="reports-type-location" data-role="AXButton" aria-label="Location Report" style="left:-442px;top:233px;width:1104px;height:26px">Location Report</button>
+<button type="button" class="el button" data-id="reports-type-cast-scene" data-role="AXButton" aria-label="Cast Scene Report" style="left:-442px;top:261px;width:1104px;height:26px">Cast Scene Report</button>
+<button type="button" class="el button" data-id="reports-type-prop" data-role="AXButton" aria-label="Prop Report" style="left:-442px;top:289px;width:1104px;height:26px">Prop Report</button>
+<button type="button" class="el button" data-id="reports-type-schedule" data-role="AXButton" aria-label="Schedule Report" style="left:-442px;top:317px;width:1104px;height:26px">Schedule Report</button>
+<button type="button" class="el button" data-id="reports-type-breakdown-completeness" data-role="AXButton" aria-label="Breakdown Completeness" style="left:-442px;top:345px;width:1104px;height:26px">Breakdown Completeness</button>
+<span class="el statictext" data-role="AXStaticText" style="left:31px;top:480px;width:36px;height:15px;font-size:11.4px;line-height:15px">Pages</span>
+<span class="el statictext" data-role="AXStaticText" style="left:81px;top:480px;width:51px;height:15px;font-size:11.4px;line-height:15px">Location</span>
+<span class="el statictext" data-role="AXStaticText" style="left:330px;top:480px;width:27px;height:15px;font-size:11.4px;line-height:15px">Cast</span>
+<span class="el statictext" data-role="AXStaticText" style="left:405px;top:480px;width:63px;height:15px;font-size:11.4px;line-height:15px">Scheduled</span>
+<div class="el unknown" data-id="reports-row-0" data-role="AXUnknown" aria-label="6/8" style="left:31px;top:506px;width:19px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-0" data-role="AXUnknown" aria-label="Kesarganj Junction - Lost Property Office" style="left:81px;top:506px;width:235px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-0" data-role="AXUnknown" aria-label="Kiran, Devi" style="left:330px;top:506px;width:61px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-0" data-role="AXUnknown" aria-label="Shoot Day 1 · Mon 14 Jun 2027" style="left:405px;top:506px;width:175px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-1" data-role="AXUnknown" aria-label="1/8" style="left:31px;top:526px;width:17px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-1" data-role="AXUnknown" aria-label="Kesarganj Junction - Platform 3" style="left:81px;top:526px;width:179px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-1" data-role="AXUnknown" aria-label="Kiran" style="left:330px;top:526px;width:30px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-1" data-role="AXUnknown" aria-label="Shoot Day 1 · Mon 14 Jun 2027" style="left:405px;top:526px;width:175px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-2" data-role="AXUnknown" aria-label="2/8" style="left:31px;top:546px;width:19px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-2" data-role="AXUnknown" aria-label="Kesarganj Junction - Lost Property Office" style="left:81px;top:546px;width:235px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-2" data-role="AXUnknown" aria-label="Shoot Day 2 · Tue 15 Jun 2027" style="left:405px;top:546px;width:173px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-3" data-role="AXUnknown" aria-label="3/8" style="left:31px;top:566px;width:19px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-3" data-role="AXUnknown" aria-label="Kesarganj Junction - Footbridge" style="left:81px;top:566px;width:182px;height:15px"></div>
+<div class="el unknown" data-id="reports-row-3" data-role="AXUnknown" aria-label="Unscheduled" style="left:405px;top:566px;width:75px;height:15px"></div>
+<button type="button" class="el button" data-id="project-search-button" data-role="AXButton" aria-label="Search" style="left:-40px;top:0px;width:97px;height:52px">Search</button>
+<div class="el group" data-role="AXGroup" style="left:57px;top:0px;width:83px;height:52px"><button type="button" class="el menubutton" data-id="project-new-menu" data-role="AXMenuButton" aria-label="New" style="left:3px;top:7px;width:77px;height:38px" aria-haspopup="menu">New</button></div>
+<button type="button" class="el button" data-id="ai-toggle" data-role="AXButton" aria-label="Straft AI" style="left:140px;top:0px;width:104px;height:52px">Straft AI</button>
+<button type="button" class="el button" data-id="project-settings-button" data-role="AXButton" aria-label="Settings" style="left:244px;top:0px;width:104px;height:52px">Settings</button>
+</aside>
+</div></div>
+</body></html>

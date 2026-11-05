@@ -191,7 +191,7 @@ extension UI {
         NSApp.windows.first { $0.isVisible && $0.sheetParent == nil && a11yIsSettings($0) }
     }
 
-    /// Closes the Settings window and the AI Assistant panel so the next place starts clean.
+    /// Closes the Settings window and the Straft AI panel so the next place starts clean.
     func a11yCloseExtras() async {
         if let s = a11ySettingsWindow() {
             s.performClose(nil)
@@ -219,7 +219,7 @@ extension UI {
         try await wait(id: "screenplay-editor", timeout: 30, "the screenplay editor after the import")
     }
 
-    /// Command+J opens the AI Assistant panel. The key goes to the project window, which is made
+    /// Command+J opens the Straft AI panel. The key goes to the project window, which is made
     /// key first; it is tried again when the window was not ready. The toolbar button is not used:
     /// its accessibility press reports a failure although it toggles the panel, so a click after it
     /// would close the panel again.
@@ -403,24 +403,50 @@ extension UI {
     /// stops at text fields, text views and lists, so those are the controls that must be reached.
     /// The app cannot turn the setting on for itself, and the run never changes the person's
     /// system settings.
-    func a11yKeyCandidates(_ w: NSWindow) -> [String] {
+    func a11yKeyCandidates(_ w: NSWindow) -> [(key: String, name: String, container: String?)] {
         let roles: Set<String> = NSApp.isFullKeyboardAccessEnabled
             ? Self.a11yControlRoles.union(["AXOutline", "AXTable"])
             : ["AXTextField", "AXTextArea", "AXOutline", "AXTable"]
-        var out: [String] = []
-        func walk(_ e: Element, _ d: Int) {
+        var out: [(key: String, name: String, container: String?)] = []
+        func walk(_ e: Element, _ d: Int, _ container: String?) {
             guard d < 60 else { return }
             if e.role == "AXScrollBar" { return }
+            // The cancel and search buttons inside a search field belong to the field.
+            if e.role == "AXTextField" || e.role == "AXSearchField" {
+                if e.isEnabled, !out.contains(where: { $0.key == a11yStopKey(e) }) { out.append((a11yStopKey(e), a11yFocusName(e), container)) }
+                return
+            }
             let f = e.frame
             if roles.contains(e.role), !Self.a11ySystemSubroles.contains(e.subrole), e.isEnabled,
                f.width > 1, f.height > 1, w.frame.intersects(f) {
-                let n = a11yFocusName(e)
-                if !out.contains(n) { out.append(n) }
+                let key = a11yStopKey(e)
+                if !out.contains(where: { $0.key == key }) { out.append((key, a11yFocusName(e), container)) }
             }
-            for c in e.children { walk(c, d + 1) }
+            let inner = e.role == "AXOutline" || e.role == "AXTable" ? a11yStopKey(e) : container
+            for c in e.children { walk(c, d + 1, inner) }
+        }
+        walk(Element(obj: w), 0, nil)
+        return out
+    }
+
+    /// For each control, the other controls with the same parent in the accessibility tree.
+    func a11ySiblingKeys(_ w: NSWindow) -> [String: [String]] {
+        var out: [String: [String]] = [:]
+        func walk(_ e: Element, _ d: Int) {
+            guard d < 60 else { return }
+            let kids = e.children
+            let keys = kids.filter { Self.a11yControlRoles.contains($0.role) }.map(a11yStopKey)
+            for k in keys { out[k, default: []] += keys.filter { $0 != k } }
+            for c in kids { walk(c, d + 1) }
         }
         walk(Element(obj: w), 0)
         return out
+    }
+
+    /// What identifies one Tab stop. The same toolbar button can answer with a short title in the
+    /// tree and a longer label when focused, so an identifier wins over the name.
+    func a11yStopKey(_ e: Element) -> String {
+        e.identifier.isEmpty ? a11yFocusName(e) : "\(e.role) #\(e.identifier)"
     }
 
     /// Tab from nothing through the window, then Shift+Tab back: every stop is named, focus never
@@ -431,9 +457,13 @@ extension UI {
         guard let w = a11yMainWindow() else { throw DriverError("no project window") }
         NSApp.activate(ignoringOtherApps: true)
         w.makeKeyAndOrderFront(nil)
+        // A window left narrow would move toolbar items into the "more toolbar items" overflow menu.
+        widenWindow()
+        await idle(0.3)
         w.makeFirstResponder(nil)
         await idle(0.3)
         let candidates = a11yKeyCandidates(w)
+        var reached = Set<String>()
         var stops: [String] = []
         var problems: [String] = []
         var same = 0
@@ -460,6 +490,7 @@ extension UI {
             }
             if let first = stops.first, name == first, stops.count > 1 { wrapped = true; break }
             if stops.last != name { stops.append(name) }
+            if let at = a11yFocused() { reached.insert(a11yStopKey(at)) }
         }
         // Shift+Tab from where the walk ended goes back through the stops in reverse.
         let ring = stops.count > 1 ? stops : []
@@ -472,7 +503,37 @@ extension UI {
         for _ in expected { back.append(try await press([.shift]) ?? "nothing") }
         let backOK = back == expected
         if !backOK { problems.append("\(place): Shift+Tab does not retrace the Tab stops: back \(back), expected \(expected)") }
-        let missed = candidates.filter { !stops.contains($0) }
+        // A control that left the screen during the walk (a toast that timed out) has no stop to find.
+        let stillShown = Set(a11yKeyCandidates(w).map(\.key))
+        let reachedOutlines = Set(reached.filter { $0.hasPrefix("AXOutline") || $0.hasPrefix("AXTable") })
+        var unreached = candidates
+            .filter { stillShown.contains($0.key) && !reached.contains($0.key) }
+            // A row of a list or an outline is reached with the arrow keys once the list has focus.
+            .filter { c in c.container.map { !reachedOutlines.contains($0) } ?? true }
+        // The buttons of a control group and the choices of a segmented picker share one Tab stop, the
+        // macOS way: Tab goes to that stop again and the arrow keys must then reach each of them.
+        let siblings = a11ySiblingKeys(w)
+        var triedFrom = Set<String>()
+        for c in unreached {
+            guard let stop = siblings[c.key]?.first(where: { reached.contains($0) }), triedFrom.insert(stop).inserted else { continue }
+            w.makeFirstResponder(nil)
+            await idle(0.2)
+            for _ in 0..<60 {
+                _ = try await press([])
+                guard let at = a11yFocused(), a11yStopKey(at) == stop else { continue }
+                for _ in 0..<8 {
+                    try await key(String(UnicodeScalar(NSRightArrowFunctionKey)!), code: 124)
+                    await idle(0.3)
+                    guard let next = a11yFocused(), a11yStopKey(next) != stop else { break }
+                    reached.insert(a11yStopKey(next))
+                }
+                break
+            }
+            w.makeFirstResponder(nil)
+            await idle(0.2)
+        }
+        unreached.removeAll { reached.contains($0.key) }
+        let missed = unreached.map(\.name)
         if !missed.isEmpty { problems.append("\(place): Tab never reaches \(missed)") }
         var lines = ["", "\(place): \(stops.count) Tab stops, \(candidates.count) controls Tab should reach, \(missed.count) missed; Shift+Tab retraces: \(backOK)"]
         lines += stops.map { "  \($0)" }

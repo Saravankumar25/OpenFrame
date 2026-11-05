@@ -79,7 +79,7 @@ extension Scenarios {
                 try? await ui.capTypeIn("", into: "welcome-name")
                 await ui.capture("home-welcome", title: "Welcome, the name is still empty", area: "Home", via: "first-launch")
                 await ui.step("welcome filled") {
-                    try await ui.capTypeIn("E2E Tester", into: "welcome-name")
+                    try await ui.capTypeIn(UI.personName, into: "welcome-name")
                     await ui.capture("home-welcome-filled", title: "Welcome, a name typed", area: "Home", from: "home-welcome", via: "welcome-name")
                 }
             }
@@ -134,7 +134,7 @@ extension Scenarios {
                 await ui.capRecover()
             }
 
-            // The Settings window: General, Appearance, Keyboard Shortcuts, Offline AI, Diagnostics.
+            // The Settings window: General, Appearance, Keyboard Shortcuts, Straft AI, Diagnostics.
             await ui.step("settings general") {
                 try await ui.capAct(id: "home-settings")
                 try await ui.capWaitUntil("the Settings window", timeout: 8) { ui.homeSettingsWindow() != nil }
@@ -142,7 +142,7 @@ extension Scenarios {
                 await ui.capture("settings-general", title: "Settings: General", area: "Settings", from: "home-empty", via: "home-settings")
                 try await ui.capTypeIn("Asha Rao", into: "settings-display-name")
                 await ui.capture("settings-general-name-edited", title: "Settings: General, a new name ready to save", area: "Settings", from: "settings-general", via: "settings-display-name")
-                try await ui.capTypeIn("E2E Tester", into: "settings-display-name")
+                try await ui.capTypeIn(UI.personName, into: "settings-display-name")
             }
             await ui.step("settings appearance") {
                 try await ui.homeSettingsPage("Appearance")
@@ -201,7 +201,7 @@ extension Scenarios {
                 await ui.capture("settings-shortcut-recording", title: "Settings: Keyboard Shortcuts, waiting for the new keys", area: "Settings", from: "settings-shortcuts-filtered", via: add.identifier)
                 if let w = ui.homeSettingsWindow() { await ui.escapeTo(w) }
             }
-            await ui.step("settings offline ai") {
+            await ui.step("settings straft ai") {
                 try await ui.homeSettingsPage("Straft AI")
                 await ui.capture("settings-offline-ai", title: "Settings: Straft AI", area: "Settings", from: "settings-keyboard-shortcuts", via: "Straft AI")
             }

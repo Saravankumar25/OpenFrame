@@ -6,7 +6,7 @@
 > runtime ship in every package; the chat and embedding models download after install on the user's click from a signed
 > manifest. This reverses ADR-0025 (2026-10-08). The current build still bundles the models from
 > `packaging/ai/ai-assets.lock.json` until the download flow is rebuilt. Text below that
-> describes downloading, installing or removing Offline AI is history; never implement it.
+> describes downloading, installing or removing Straft AI is history; never implement it.
 
 
     **Product:** Straft Studio  
@@ -46,7 +46,7 @@ These decisions were explicitly approved for the first implementation baseline:
 | Core/business logic | Rust owns domain rules; React is presentation/input |
 | Local persistence | SQLite + filesystem assets |
 | Project UX | One `.straft` project concept; internal files are implementation detail |
-| Offline AI | One-click **Download Offline AI**; Straft Studio installs runtime + language model + embedding model in one download |
+| Straft AI | One-click **Download Straft AI**; Straft Studio installs runtime + language model + embedding model in one download |
 | Model selection | **One profile, no choice** (`straft-local-ai-v1`): Gemma 3 1B Instruct Q8_0 + BGE small English v1.5 (ADR-0013; supersedes the Qwen tiers) |
 | Model distribution | Straft Studio-controlled public model distribution endpoint/CDN, Ed25519-signed manifest |
 | AI providers | **Local AI only** for v1; no cloud AI provider integration |
@@ -95,7 +95,7 @@ The existing Straft Studio documents already define the product in depth. This p
 | 12 | `12_Straft_Local_Project_File_Format_Specification.md` | `.straft`, assets, packages and manifests |
 | 13 | `13_Straft_Rust_Domain_Command_Architecture_Specification.md` | Rust domain/application architecture and command model |
 | 14 | `14_Straft_Tauri_IPC_Frontend_Backend_Contract.md` | React ↔ Rust boundary |
-| 15 | `Straft_Local_AI_Runtime_Model_Management_Specification.md` (docs/specs) | Offline AI: one profile, signed manifest, download, sidecars, embeddings API, benchmark |
+| 15 | `Straft_Local_AI_Runtime_Model_Management_Specification.md` (docs/specs) | Straft AI: one profile, signed manifest, download, sidecars, embeddings API, benchmark |
 | 16 | `docs/engineering/16-search.md` | Canonical FTS5 search (Global Search and the AI's lexical stage) |
 | 17 | `17_Straft_Autosave_Undo_Recovery_Backup_Engineering_Specification.md` | Save/recovery durability |
 | 18 | `docs/engineering/18-retrieval-intelligence-index.md` | Derived intelligence index, embeddings, context graph, hybrid retrieval, §34 measurements. (The former LAN protocol document 18 is withdrawn, ADR-0007.) |
@@ -155,7 +155,7 @@ The existing Straft Studio documents already define the product in depth. This p
 - call sheets/reports/sides.
 
 ### Phase 5 — Local AI ✅ (merged 30 Sept 2026)
-- one-profile Offline AI (Gemma 3 1B + BGE small embeddings), one-click signed download, CPU/Vulkan.
+- one-profile Straft AI (Gemma 3 1B + BGE small embeddings), one-click signed download, CPU/Vulkan.
 - local `llama.cpp` chat and embedding sidecars.
 - derived intelligence index, hybrid retrieval and context graph.
 - operation metadata, universal toolbox and bounded agent loop.

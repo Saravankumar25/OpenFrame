@@ -1,9 +1,9 @@
 //! What a request reads and what its tools default to, built from the sections the person picked
 //! (ADR-0041). The picks are the only source: nothing here comes from the screen.
 
-use straft_domain::AppResult;
 use rusqlite::Connection;
 use serde_json::{Value, json};
+use straft_domain::AppResult;
 
 use super::queries::{self, DraftRef, SceneRow};
 use super::sections::{self, Selection};

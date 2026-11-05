@@ -2,9 +2,9 @@
 //! Deleted, Project Files, Notes & Tasks, project templates, comments, the
 //! user's own Private Notes and the project Idea Vault.
 
+use serde_json::{Value, json};
 use straft_domain::enums::VaultItemType;
 use straft_domain::{AppError, AppResult, Capability};
-use serde_json::{Value, json};
 
 use super::super::queries;
 use super::super::toolbox::resolve::{self as rv, Found};

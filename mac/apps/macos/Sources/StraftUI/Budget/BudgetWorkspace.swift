@@ -184,7 +184,7 @@ struct BudgetContent: View {
                     Button("View") { model.sheet = .snapshot(s.id) }.controlSize(.small)
                         .accessibilityIdentifier("budget-snapshot-view-\(s.id)")
                     Button { Task { await model.deleteSnapshot(s) } } label: { Label("Delete", systemImage: "trash") }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.ofBorderless)
                         .accessibilityLabel("Delete snapshot \(s.label ?? "")")
                         .accessibilityIdentifier("budget-snapshot-delete-\(s.id)")
                 }
@@ -295,12 +295,12 @@ struct BudgetTable: View {
                     // letter per line. The tooltip and the accessibility label carry the words.
                     HStack(spacing: 12) {
                         Button { onEdit?(l) } label: { Label("Edit", systemImage: "pencil") }
-                            .buttonStyle(.borderless).labelStyle(.iconOnly)
+                            .buttonStyle(.ofBorderless).labelStyle(.iconOnly)
                             .help("Edit")
                             .accessibilityLabel("Edit \(l.description)")
                             .accessibilityIdentifier("budget-edit-\(l.id)")
                         Button { onDelete?(l) } label: { Label("Delete", systemImage: "trash") }
-                            .buttonStyle(.borderless).labelStyle(.iconOnly)
+                            .buttonStyle(.ofBorderless).labelStyle(.iconOnly)
                             .help("Delete")
                             .accessibilityLabel("Delete \(l.description)")
                             .accessibilityIdentifier("budget-delete-\(l.id)")

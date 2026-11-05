@@ -5,9 +5,9 @@
 
 use std::collections::BTreeMap;
 
-use straft_domain::{Actor, AppError, AppResult};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult};
 
 use super::super::dossier::guard;
 use super::super::queries::{self, join_and};

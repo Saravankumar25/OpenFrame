@@ -12,12 +12,12 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::migrate::{self, Migration, MigrationPlan};
-use straft_persistence::undo::{self, Direction, RowChange, TableCatalog};
 use parking_lot::{Mutex, RwLock};
 use rusqlite::{Connection, OptionalExtension, TransactionBehavior, params};
 use serde::Serialize;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::migrate::{self, Migration, MigrationPlan};
+use straft_persistence::undo::{self, Direction, RowChange, TableCatalog};
 use ts_rs::TS;
 
 use crate::events::{AppEvent, EventSink, SaveState, SaveStatus, StoreKind};
@@ -426,9 +426,6 @@ impl Store {
     }
     pub fn db_path(&self) -> &Path {
         &self.db_path
-    }
-    pub fn save_tracker(&self) -> &SaveTracker {
-        &self.save
     }
     pub fn events(&self) -> &Arc<dyn EventSink> {
         &self.events

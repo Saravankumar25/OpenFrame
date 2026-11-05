@@ -294,7 +294,7 @@ struct DraftsSheet: View {
             } label: {
                 Label("Actions", systemImage: "ellipsis.circle")
             }
-            .menuStyle(.borderlessButton)
+            .borderlessAccentMenu()
             .fixedSize()
             .accessibilityLabel("Actions for \(d.name)")
         }
@@ -504,7 +504,7 @@ struct NewDraftSheet: View {
                 }
                 PanelField(label: "Note (optional)") { PanelTextArea(label: "Note", text: $note) }
                 Text("The source draft stays exactly as it is. The new draft becomes a separate version.")
-                    .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    .font(.callout).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true)
                 if let error { PanelBanner(tone: .err, text: error) }
             }
         } footer: {

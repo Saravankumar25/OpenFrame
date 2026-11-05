@@ -8,6 +8,8 @@
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
+use rusqlite::params;
+use serde_json::{Value, json};
 use straft_ai::{ChatRequest, InferenceProvider};
 use straft_application::MutationMeta;
 use straft_application::modules::ai::scope::ResolvedScope;
@@ -17,8 +19,6 @@ use straft_application::modules::ai::{
 use straft_domain::auth::ActorOrigin;
 use straft_domain::{Actor, AppError, AppResult, Capability, Role, new_id, now_ms};
 use straft_test_support::TestEnv;
-use rusqlite::params;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ fixtures
 

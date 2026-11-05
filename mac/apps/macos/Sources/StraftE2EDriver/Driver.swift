@@ -298,7 +298,7 @@ final class UI {
 
     /// Sends a key press to the key window, as the keyboard would.
     func key(_ chars: String, code: UInt16, modifiers: NSEvent.ModifierFlags = []) async throws {
-        guard let w = NSApp.keyWindow ?? windows.last else { throw DriverError("no window for a key press") }
+        guard let w = NSApp.keyWindow ?? windows.last else { throw DriverError("no window for a key press (app hidden \(NSApp.isHidden), active \(NSApp.isActive), front app \(NSWorkspace.shared.frontmostApplication?.localizedName ?? "none"))") }
         for type in [NSEvent.EventType.keyDown, .keyUp] {
             guard let ev = NSEvent.keyEvent(with: type, location: .zero, modifierFlags: modifiers,
                                             timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: w.windowNumber,
@@ -359,14 +359,20 @@ final class UI {
 
     // MARK: evidence
 
-    /// Saves a picture of every visible window, drawn by the app itself (no screen recording
-    /// permission needed).
+    /// Saves a picture of every visible window: the window server's picture when this run may read
+    /// it (the app's own drawing leaves materials and SwiftUI layers blank), else the app's drawing.
     func snapshot(_ name: String) throws {
         shot += 1
         for (i, w) in windows.enumerated() {
             guard let view = w.contentView?.superview ?? w.contentView else { continue }
-            guard let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { continue }
-            view.cacheDisplay(in: view.bounds, to: rep)
+            let rep: NSBitmapImageRep
+            if w.windowNumber > 0, let cg = CGWindowListCreateImage(.null, .optionIncludingWindow, CGWindowID(w.windowNumber), [.boundsIgnoreFraming, .bestResolution]), cg.width > 10 {
+                rep = NSBitmapImageRep(cgImage: cg)
+            } else {
+                guard let drawn = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { continue }
+                view.cacheDisplay(in: view.bounds, to: drawn)
+                rep = drawn
+            }
             guard let png = rep.representation(using: .png, properties: [:]) else { continue }
             let safe = name.replacingOccurrences(of: "/", with: "-")
             try png.write(to: artifacts.appendingPathComponent(String(format: "%02d-%@-w%d.png", shot, safe, i)))

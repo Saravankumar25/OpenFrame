@@ -1,5 +1,5 @@
 // The "Download Straft AI" card (Windows: ai/DownloadAi.tsx). Shown in the assistant panel and in
-// Settings, Offline AI, while Straft AI is not installed or a downloaded file is damaged.
+// Settings, Straft AI, while Straft AI is not installed or a downloaded file is damaged.
 // Before the click it shows the size, the free space needed and that the download uses the
 // internet; nothing touches the network until the click. Then: progress with Pause, Resume where
 // it stopped, a plain reason and Try again when it fails, and a way to import files the person has.

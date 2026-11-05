@@ -45,12 +45,12 @@ struct ScreenplayReplaceBar: View {
             Spacer(minLength: 0)
             Button {
                 model.showReplace = false
-                model.textView.map { $0.window?.makeFirstResponder($0) }
+                if let view = model.textView { view.window?.makeFirstResponder(view) }
             } label: {
                 Label("Close", systemImage: "xmark.circle.fill")
             }
             .buttonStyle(.plain)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.ofMuted)
             .keyboardShortcut(.cancelAction)
             .help("Close")
             .accessibilityLabel("Close replace")

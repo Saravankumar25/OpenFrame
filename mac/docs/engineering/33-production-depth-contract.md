@@ -83,8 +83,8 @@ Built (same area and migration):
   Available or Unavailable, at most 200 per owner, replaced as one undo step by `availability.set`. Dates must be
   ASCII digits in the form YYYY-MM-DD and real calendar days. Saving also touches the owner row, so the owner's
   search document (which lists the windows) is rebuilt on save, undo and redo, and other windows refresh it. The schedule reads
-  it through the typed read model `production::availability::availability_on` (Unavailable wins over an overlapping
-  Available window). Windows are removed with their owner when it is purged from Recently Deleted.
+  it through the typed read model `production::availability::unavailable_for_schedule` (only Unavailable windows, because
+  Unavailable wins over an overlapping Available window). Windows are removed with their owner when it is purged from Recently Deleted.
 - Contact privacy rule (`modules/production/privacy.rs`): `catalog_item.contact`, `location.contact`,
   `location.emergency_contact`, `cast_member.contact` and `crew_member.contact` are shown only to Owner and Editor
   (other roles get `contactHidden: true` and no value). The assistant's catalog and location reads leave them out and AI documents never

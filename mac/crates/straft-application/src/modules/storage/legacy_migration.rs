@@ -7,17 +7,32 @@
 //!    every file synced and read back against its hash. The earlier version may still be running, so
 //!    `app.sqlite` is taken as one consistent snapshot through a read-only connection, never as raw
 //!    files, and its side files are not copied. `engines.json` is not copied either: it would let
-//!    this start stop an engine the earlier version is still running.
+//!    this start stop an engine the earlier version is still running. The heavy folders
+//!    (`SHARED_NOT_COPIED`, the downloaded AI models) are hard linked into the sibling: gigabytes
+//!    would mean a long wait at start and twice the disk use. A link holds the same bytes, so there is
+//!    nothing to read back; the AI checks every model file against the sizes and hashes compiled into
+//!    the app before it uses it, and a set the app replaces is replaced by rename, never in place.
 //! 2. The sibling is renamed to the final name in one step. Until then the new folder holds no copied
 //!    data, so an interrupted copy leaves exactly what was there before and the next start begins
 //!    again. A new folder counts as in use only when it holds the real data (`app.sqlite`, or the
 //!    pointer file), never just because it exists: an earlier failed start may have left its log
 //!    folder there. Such a folder is renamed aside first and put back if the final rename fails;
 //!    only after that rename worked is what it holds taken into the new folder.
-//! 3. Only then are the heavy folders (`MOVED_NOT_COPIED`, the downloaded AI models) renamed across.
-//!    They are gigabytes and can be downloaded again, so they are never copied. A crash before this
-//!    step is finished by the next start; a rename that cannot work (another volume) leaves them in
-//!    the old folder and the person downloads the models again, which costs time and loses nothing.
+//! 3. A hard link that cannot work (another volume, a drive without them) leaves the models in the
+//!    old folder only, and the person downloads them again, which costs time and loses nothing.
+//!    Downloads in progress are not linked: they are appended to in place. The links arrive with the
+//!    rename or not at all, so there is no later step: a person who removes the AI from the new folder
+//!    never gets it back from the old one. A models folder that is itself a link (people move big
+//!    folders to another drive that way) is renamed across after the swap, so it keeps working.
+//!    An earlier Mac build renamed the models across instead of linking them. Such a person has the
+//!    models in the new folder and none in the old one, so there is nothing to do and nothing goes
+//!    wrong.
+//!
+//! Other links inside the old folder are not followed, so the copy can never reach outside it. Each
+//! one is logged, with the count: what it pointed at stays where it is, under the old folder.
+//!
+//! This runs before the shell's single-instance check, so two launches can reach it at once. A lock
+//! file beside the new folder makes them take turns, and a folder that holds real data is never moved.
 //!
 //! When the copy fails (full drive, unreadable file, no permission) the temporary folder is removed
 //! and this run **uses the old folder as it is**. That cannot lose anything: the person sees all their
@@ -44,9 +59,10 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
+use fs4::fs_std::FileExt;
 use parking_lot::Mutex;
 use straft_domain::{AppError, AppResult, now_ms};
-use straft_platform::{atomic, dirs, identity, legacy_names, process};
+use straft_platform::{atomic, dirs, files, identity, legacy_names, process};
 
 use super::tree;
 
@@ -54,13 +70,21 @@ use super::tree;
 const TEMP_MARKER: &str = ".migrating-";
 /// Marker in the name a new folder without real data has while the copy takes its place.
 const ASIDE_MARKER: &str = ".replaced-";
+/// Suffix of the lock file beside the new folder.
+const LOCK_SUFFIX: &str = ".migrate-lock";
 /// The app database, copied as a snapshot.
 const DATABASE: &str = "app.sqlite";
 /// Not copied: which engines the earlier version launched, and may still be running.
 const ENGINE_RECORD: &str = "engines.json";
 
-/// Top-level names of the app data folder that are renamed across, never copied.
-const MOVED_NOT_COPIED: &[&str] = &["models"];
+/// Top-level names of the app data folder that are hard linked, never copied.
+const SHARED_NOT_COPIED: &[&str] = &["models"];
+/// Inside those, left behind: downloads in progress are written in place, and a set-aside file is
+/// never used again.
+const NOT_SHARED: &[&str] = &["staging", "quarantine"];
+/// How long a second start waits for the first one to finish copying. After that it uses the earlier
+/// folder for this run, as for any copy that did not work.
+const LOCK_WAIT: Duration = Duration::from_secs(120);
 /// Top-level names copied when they can be: losing a log file never holds the person back.
 const BEST_EFFORT: &[&str] = &["logs"];
 /// Top-level names left behind: the import staging folder, rebuilt on demand.
@@ -69,7 +93,7 @@ const LEFT_BEHIND: &[&str] = &["tmp"];
 /// What to do about one pair of folders. Separate from the real locations for the tests.
 #[derive(Debug, Clone, Copy)]
 pub struct Plan<'a> {
-    pub moved_not_copied: &'a [&'a str],
+    pub shared_not_copied: &'a [&'a str],
     pub best_effort: &'a [&'a str],
     pub left_behind: &'a [&'a str],
     /// The file that shows a folder holds real data. Without it the new folder is not in use.
@@ -81,7 +105,7 @@ pub struct Plan<'a> {
 impl Plan<'_> {
     /// The app data folder.
     pub const APP_DATA: Plan<'static> = Plan {
-        moved_not_copied: MOVED_NOT_COPIED,
+        shared_not_copied: SHARED_NOT_COPIED,
         best_effort: BEST_EFFORT,
         left_behind: LEFT_BEHIND,
         in_use_marker: DATABASE,
@@ -89,7 +113,7 @@ impl Plan<'_> {
     };
     /// The library pointer folder: one small file.
     pub const POINTER: Plan<'static> = Plan {
-        moved_not_copied: &[],
+        shared_not_copied: &[],
         best_effort: &[],
         left_behind: &[],
         in_use_marker: super::library_ops::POINTER_FILE,
@@ -116,22 +140,81 @@ pub fn bring_over(old: &Path, new: &Path, plan: &Plan<'_>) -> Outcome {
         return Outcome::NoEarlierFolder;
     }
     remove_stale_temporaries(new, plan.stale_after);
-    let outcome = if in_use(new, plan) {
-        Outcome::AlreadyThere
-    } else {
-        match copy_to_new_name(old, new, plan) {
-            Ok(outcome) => outcome,
-            Err(e) => Outcome::UseEarlierFolder {
-                reason: reason_of(&e),
-            },
-        }
-    };
+    let outcome =
+        copy_unless_in_use(old, new, plan).unwrap_or_else(|e| Outcome::UseEarlierFolder {
+            reason: reason_of(&e),
+        });
     if !matches!(outcome, Outcome::UseEarlierFolder { .. }) {
-        for name in plan.moved_not_copied {
-            move_heavy_folder(old, new, name);
+        for name in plan.shared_not_copied {
+            move_heavy_link(old, new, name);
         }
     }
     outcome
+}
+
+fn copy_unless_in_use(old: &Path, new: &Path, plan: &Plan<'_>) -> AppResult<Outcome> {
+    if in_use(new, plan) {
+        return Ok(Outcome::AlreadyThere);
+    }
+    let _turn = TurnLock::wait(new)?;
+    // The start that held the lock before this one may have finished the job.
+    if in_use(new, plan) {
+        return Ok(Outcome::AlreadyThere);
+    }
+    copy_to_new_name(old, new, plan)
+}
+
+/// An exclusive lock on `<new>.migrate-lock`, held until dropped. The wait is bounded: a start that
+/// cannot get its turn must never hang before it has a window. The system releases the lock when a
+/// process ends, so a crash never leaves a start waiting, and the file it leaves is simply used.
+struct TurnLock {
+    file: fs::File,
+    path: PathBuf,
+}
+
+impl TurnLock {
+    fn wait(new: &Path) -> AppResult<TurnLock> {
+        let name = new
+            .file_name()
+            .ok_or_else(|| AppError::internal("the new folder has no name"))?
+            .to_string_lossy();
+        let path = new.with_file_name(format!("{name}{LOCK_SUFFIX}"));
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let started = std::time::Instant::now();
+        loop {
+            // Opened again each round: the start before this one removes the file when it finishes,
+            // and a lock on a removed file keeps nobody out.
+            let file = fs::OpenOptions::new()
+                .create(true)
+                .truncate(false)
+                .read(true)
+                .write(true)
+                .open(&path)?;
+            match FileExt::try_lock_exclusive(&file) {
+                Ok(true) if files::is_file_at(&file, &path) => return Ok(TurnLock { file, path }),
+                Ok(_) => {}
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {}
+                Err(e) => return Err(e.into()),
+            }
+            if started.elapsed() > LOCK_WAIT {
+                return Err(AppError::storage(
+                    "another start was still copying the earlier folder",
+                ));
+            }
+            std::thread::sleep(Duration::from_millis(50));
+        }
+    }
+}
+
+impl Drop for TurnLock {
+    fn drop(&mut self) {
+        // The file goes first and the lock after: a start waiting on this file then sees that it is
+        // gone and opens a new one. The other order could let two starts hold a lock at once.
+        let _ = fs::remove_file(&self.path);
+        let _ = FileExt::unlock(&self.file);
+    }
 }
 
 /// Logs carry the code and the detail of the error; neither holds a project name or user data
@@ -143,9 +226,19 @@ fn reason_of(e: &AppError) -> String {
     }
 }
 
-/// True when `new` holds real data. A link or a file at that name is not ours to replace either.
+/// True when `new` holds real data. A link or a file at that name is not ours to replace either, and
+/// a folder that cannot be looked into (no permission, say) counts as holding data.
 fn in_use(new: &Path, plan: &Plan<'_>) -> bool {
-    fs::symlink_metadata(new).is_ok_and(|m| !m.is_dir()) || new.join(plan.in_use_marker).exists()
+    let refused = |e: &std::io::Error| e.kind() == std::io::ErrorKind::PermissionDenied;
+    let not_a_folder = match fs::symlink_metadata(new) {
+        Ok(found) => !found.is_dir(),
+        Err(e) => refused(&e),
+    };
+    not_a_folder
+        || new
+            .join(plan.in_use_marker)
+            .try_exists()
+            .unwrap_or_else(|e| refused(&e))
 }
 
 /// After the swap: move what the folder set aside holds (the log folder of a failed start, say) into
@@ -174,8 +267,8 @@ fn temporary_prefix(new: &Path) -> Option<String> {
 
 /// Remove what an interrupted copy left beside `new`, at once when the process that made it is gone.
 /// While that process is alive it may be another start copying right now, so the folder waits for
-/// `stale_after` (the pid may have been reused). Links are never followed. The heavy folders are
-/// moved only after the final rename, so a temporary folder never holds them.
+/// `stale_after` (the pid may have been reused). Links are never followed. Removing a hard link leaves
+/// the old folder's file as it is.
 fn remove_stale_temporaries(new: &Path, stale_after: Duration) {
     let (Some(parent), Some(prefix)) = (new.parent(), temporary_prefix(new)) else {
         return;
@@ -222,21 +315,15 @@ fn copy_to_new_name(old: &Path, new: &Path, plan: &Plan<'_>) -> AppResult<Outcom
     let temp = parent.join(format!("{prefix}{}-{}", std::process::id(), now_ms()));
     fs::create_dir(&temp)?;
     let copied = fill_temporary(old, &temp, plan).and_then(|()| {
-        // Another start of the app may have finished first: then use its copy.
-        if in_use(new, plan) {
-            return Ok(Outcome::AlreadyThere);
-        }
         atomic::sync_folder(&temp);
-        swap_into_place(&temp, new, parent)
-            .map(|()| Outcome::Copied)
-            .or_else(|e| {
-                // Another start of the app may have finished in the same moment.
-                if in_use(new, plan) {
-                    Ok(Outcome::AlreadyThere)
-                } else {
-                    Err(e)
-                }
-            })
+        swap_into_place(&temp, new, parent, plan).or_else(|e| {
+            // Another start of the app may have finished in the same moment.
+            if in_use(new, plan) {
+                Ok(Outcome::AlreadyThere)
+            } else {
+                Err(e)
+            }
+        })
     });
     // A failed or lost rename leaves the temporary folder; success has renamed it away. Nothing of
     // the new folder is in it: that went aside and is back in place by now.
@@ -247,8 +334,12 @@ fn copy_to_new_name(old: &Path, new: &Path, plan: &Plan<'_>) -> AppResult<Outcom
 }
 
 /// Rename `temp` to `new`. A new folder that is already there (without real data) goes aside first
-/// and comes back if the rename fails, so a failure takes nothing away from it.
-fn swap_into_place(temp: &Path, new: &Path, parent: &Path) -> AppResult<()> {
+/// and comes back if the rename fails, so a failure takes nothing away from it. A folder that holds
+/// real data is never moved: another start finished first, and its copy is the one to use.
+fn swap_into_place(temp: &Path, new: &Path, parent: &Path, plan: &Plan<'_>) -> AppResult<Outcome> {
+    if in_use(new, plan) {
+        return Ok(Outcome::AlreadyThere);
+    }
     let name = new.file_name().unwrap_or_default().to_string_lossy();
     let aside = parent.join(format!(
         "{name}{ASIDE_MARKER}{}-{}",
@@ -275,7 +366,7 @@ fn swap_into_place(temp: &Path, new: &Path, parent: &Path) -> AppResult<()> {
             "some files of a folder set aside for the copy stay beside the new folder".into(),
         );
     }
-    Ok(())
+    Ok(Outcome::Copied)
 }
 
 /// Copied some other way or not at all: the database and its side files (see [`DATABASE`]), the
@@ -292,7 +383,7 @@ fn not_needed_file(rel: &str) -> bool {
 
 fn fill_temporary(old: &Path, temp: &Path, plan: &Plan<'_>) -> AppResult<()> {
     let skip: Vec<&str> = plan
-        .moved_not_copied
+        .shared_not_copied
         .iter()
         .chain(plan.best_effort)
         .chain(plan.left_behind)
@@ -300,6 +391,22 @@ fn fill_temporary(old: &Path, temp: &Path, plan: &Plan<'_>) -> AppResult<()> {
         .collect();
     let mut source = tree::walk(old, &skip)?;
     source.files.retain(|f| !not_needed_file(&f.rel));
+    // Names inside the app data folder: no project title or person's path.
+    for link in &source.links {
+        note(
+            Level::Warn,
+            format!("a link in the earlier folder was not followed: {link}"),
+        );
+    }
+    if !source.links.is_empty() {
+        note(
+            Level::Warn,
+            format!(
+                "{} links in the earlier folder were not copied",
+                source.links.len()
+            ),
+        );
+    }
     let quiet = |_: f64, _: &str| {};
     let never = || false;
     let copied = tree::copy(&source, temp, &quiet, &never)?;
@@ -309,6 +416,9 @@ fn fill_temporary(old: &Path, temp: &Path, plan: &Plan<'_>) -> AppResult<()> {
     }
     for name in plan.best_effort {
         copy_best_effort(&old.join(name), &temp.join(name));
+    }
+    for name in plan.shared_not_copied {
+        share_heavy_folder(&old.join(name), &temp.join(name));
     }
     if old.join(DATABASE).is_file() {
         straft_persistence::snapshot_database(&old.join(DATABASE), &temp.join(DATABASE))?;
@@ -357,16 +467,35 @@ fn copy_best_effort(from: &Path, to: &Path) {
     }
 }
 
-/// Rename `old/name` to `new/name` when the new folder has no such folder yet (or an empty one). A
-/// failure leaves everything where it is and is tried again at the next start.
-fn move_heavy_folder(old: &Path, new: &Path, name: &str) {
-    let (from, to) = (old.join(name), new.join(name));
-    if fs::symlink_metadata(&from).is_err() {
+/// Hard link a heavy folder into the temporary folder. Anything that stops it leaves no part of the
+/// folder behind: the person downloads the models again. A link at this name is not followed.
+fn share_heavy_folder(from: &Path, to: &Path) {
+    if !fs::symlink_metadata(from).is_ok_and(|m| m.is_dir()) {
         return;
     }
-    if fs::symlink_metadata(&to).is_ok() {
+    if let Err(e) = link_files(from, to, NOT_SHARED) {
+        let _ = fs::remove_dir_all(to);
+        note(
+            Level::Warn,
+            format!(
+                "the downloaded models stay in the earlier folder and can be downloaded again: {}",
+                e.kind()
+            ),
+        );
+    }
+}
+
+/// A heavy folder that is itself a link to another place: the link moves across after the swap, and
+/// the files stay where the person put them. A new folder that already has its own set is left alone,
+/// and a failure leaves the link where it is for the next start.
+fn move_heavy_link(old: &Path, new: &Path, name: &str) {
+    let (from, to) = (old.join(name), new.join(name));
+    if !fs::symlink_metadata(&from).is_ok_and(|m| m.file_type().is_symlink()) {
+        return;
+    }
+    if let Ok(m) = fs::symlink_metadata(&to) {
         // `remove_dir` only succeeds on an empty folder: a model set is never deleted here.
-        if fs::remove_dir(&to).is_err() {
+        if m.file_type().is_symlink() || fs::remove_dir(&to).is_err() {
             return;
         }
     }
@@ -374,15 +503,38 @@ fn move_heavy_folder(old: &Path, new: &Path, name: &str) {
         Ok(()) => {
             atomic::sync_folder(new);
             atomic::sync_folder(old);
+            note(
+                Level::Info,
+                "the link to the downloaded models moved across".into(),
+            );
         }
         Err(e) => note(
             Level::Warn,
             format!(
-                "the downloaded models were left in the earlier folder and can be downloaded again: {}",
+                "the link to the downloaded models stayed in the earlier folder: {}",
                 e.kind()
             ),
         ),
     }
+}
+
+/// The folders of `from` recreated in `to`, each of its real files linked. Links are skipped.
+fn link_files(from: &Path, to: &Path, skip: &[&str]) -> std::io::Result<()> {
+    fs::create_dir_all(to)?;
+    for entry in fs::read_dir(from)? {
+        let entry = entry?;
+        let name = entry.file_name();
+        if name.to_str().is_some_and(|n| skip.contains(&n)) {
+            continue;
+        }
+        let (kind, target) = (entry.file_type()?, to.join(&name));
+        if kind.is_dir() {
+            link_files(&entry.path(), &target, &[])?;
+        } else if kind.is_file() {
+            fs::hard_link(entry.path(), &target)?;
+        }
+    }
+    Ok(())
 }
 
 // ------------------------------------------------------------ the person's own folders
@@ -477,7 +629,7 @@ mod tests {
     use super::*;
 
     const NOW: Plan<'static> = Plan {
-        moved_not_copied: MOVED_NOT_COPIED,
+        shared_not_copied: SHARED_NOT_COPIED,
         best_effort: BEST_EFFORT,
         left_behind: LEFT_BEHIND,
         in_use_marker: "settings.txt",
@@ -541,7 +693,7 @@ mod tests {
     }
 
     #[test]
-    fn the_folder_is_copied_the_models_are_moved_and_the_old_folder_stays() {
+    fn the_folder_is_copied_the_models_are_linked_and_the_old_folder_stays() {
         let (dir, old, new) = folders();
         assert_eq!(bring_over(&old, &new, &NOW), Outcome::Copied);
         assert_eq!(
@@ -557,11 +709,25 @@ mod tests {
             ]
         );
         assert_eq!(fs::read(new.join("settings.txt")).unwrap(), b"settings");
-        // The old folder keeps everything except the models.
+        // The old folder keeps everything, the models too.
         assert!(old.join("settings.txt").is_file());
         assert!(old.join("tmp/x/half.bin").is_file());
-        assert!(!old.join("models").exists(), "moved, not copied");
+        assert!(old.join("models/m-abc/chat.gguf").is_file());
         assert!(temporaries(dir.path()).is_empty());
+        // One file with two names: no second copy, and taking one name away leaves the other.
+        let written_through = new.join("models/m-abc/chat.gguf");
+        fs::OpenOptions::new()
+            .append(true)
+            .open(&written_through)
+            .and_then(|mut f| std::io::Write::write_all(&mut f, b"!"))
+            .unwrap();
+        assert_eq!(
+            fs::read(old.join("models/m-abc/chat.gguf")).unwrap(),
+            b"gigabytes!",
+            "a hard link, not a copy"
+        );
+        fs::remove_file(&written_through).unwrap();
+        assert!(old.join("models/m-abc/chat.gguf").is_file());
     }
 
     #[test]
@@ -642,7 +808,7 @@ mod tests {
         fs::create_dir_all(new.join("logs")).unwrap();
         fs::write(new.join("logs/failed-start.log"), "kept").unwrap();
         // A temporary folder that is not there makes the real rename fail.
-        let result = swap_into_place(&dir.path().join("absent"), &new, dir.path());
+        let result = swap_into_place(&dir.path().join("absent"), &new, dir.path(), &NOW);
         assert!(result.is_err());
         assert_eq!(
             fs::read(new.join("logs/failed-start.log")).unwrap(),
@@ -676,21 +842,276 @@ mod tests {
         assert!(temporaries(dir.path()).is_empty());
     }
 
-    /// A crash after the final rename and before the models moved: the next start finishes it.
+    /// A person who removed the AI from the new folder does not get it back from the old one.
     #[test]
-    fn models_left_behind_by_a_crash_are_moved_at_the_next_start() {
+    fn a_new_folder_in_use_never_takes_the_models_again() {
         let (_dir, old, new) = folders();
-        fs::create_dir_all(&new).unwrap();
-        fs::write(new.join("settings.txt"), "copied").unwrap();
+        assert_eq!(bring_over(&old, &new, &NOW), Outcome::Copied);
+        fs::remove_dir_all(new.join("models")).unwrap();
         assert_eq!(bring_over(&old, &new, &NOW), Outcome::AlreadyThere);
-        assert!(new.join("models/m-abc/chat.gguf").is_file());
-        assert!(!old.join("models").exists());
-        // An empty models folder (the app made it before the move) is no obstacle either.
+        assert!(!new.join("models").exists());
+        assert!(old.join("models/m-abc/chat.gguf").is_file());
+    }
+
+    /// Downloads in progress are written in place, so they would write into the old folder too.
+    #[test]
+    fn a_download_in_progress_is_not_linked() {
         let (_dir, old, new) = folders();
-        fs::create_dir_all(new.join("models")).unwrap();
-        fs::write(new.join("settings.txt"), "copied").unwrap();
-        bring_over(&old, &new, &NOW);
-        assert!(new.join("models/active.json").is_file());
+        for sub in ["staging/m-next", "quarantine"] {
+            fs::create_dir_all(old.join("models").join(sub)).unwrap();
+        }
+        fs::write(old.join("models/staging/m-next/chat.gguf.partial"), "half").unwrap();
+        fs::write(old.join("models/quarantine/1-chat.gguf.bad"), "bad").unwrap();
+        assert_eq!(bring_over(&old, &new, &NOW), Outcome::Copied);
+        assert!(new.join("models/m-abc/chat.gguf").is_file());
+        assert!(!new.join("models/staging").exists());
+        assert!(!new.join("models/quarantine").exists());
+        assert!(
+            old.join("models/staging/m-next/chat.gguf.partial")
+                .is_file()
+        );
+    }
+
+    /// An earlier Mac build renamed the models across: they are in the new folder and not in the old
+    /// one. Nothing is linked, nothing is reported as wrong and nothing is migrated a second time.
+    #[test]
+    fn models_an_earlier_build_moved_across_keep_working() {
+        let (dir, old, new) = folders();
+        fs::create_dir_all(&new).unwrap();
+        fs::rename(old.join("models"), new.join("models")).unwrap();
+        fs::write(new.join("settings.txt"), "already in use").unwrap();
+        assert_eq!(bring_over(&old, &new, &NOW), Outcome::AlreadyThere);
+        assert_eq!(bring_over(&old, &new, &NOW), Outcome::AlreadyThere);
+        assert_eq!(
+            fs::read(new.join("models/m-abc/chat.gguf")).unwrap(),
+            b"gigabytes"
+        );
+        assert!(fs::symlink_metadata(old.join("models")).is_err());
+        assert_eq!(
+            fs::read(new.join("settings.txt")).unwrap(),
+            b"already in use"
+        );
+        assert!(temporaries(dir.path()).is_empty());
+        assert!(!dir.path().join(format!("New Name{LOCK_SUFFIX}")).exists());
+    }
+
+    /// A first start whose old folder has no models: the copy arrives without them, and the person
+    /// downloads them.
+    #[test]
+    fn an_earlier_folder_without_models_still_copies() {
+        let (_dir, old, new) = folders();
+        fs::remove_dir_all(old.join("models")).unwrap();
+        assert_eq!(bring_over(&old, &new, &NOW), Outcome::Copied);
+        assert_eq!(fs::read(new.join("settings.txt")).unwrap(), b"settings");
+        assert!(!new.join("models").exists());
+    }
+
+    /// Another volume, a drive without hard links: no part of the set stays, nothing else is lost.
+    #[test]
+    fn a_link_that_cannot_be_made_leaves_no_half_set() {
+        let (_dir, old, new) = folders();
+        let to = new.with_file_name("linked");
+        fs::create_dir_all(to.join("active.json")).unwrap();
+        share_heavy_folder(&old.join("models"), &to);
+        assert!(!to.exists());
+        assert!(old.join("models/m-abc/chat.gguf").is_file());
+    }
+
+    /// Two starts at once: they take turns, and the result is whole either way. The real age limit
+    /// applies here: with none, one start would remove the other's temporary folder as stale.
+    #[test]
+    fn two_starts_at_once_end_with_one_whole_folder() {
+        let plan = Plan {
+            stale_after: atomic::STALE_AFTER,
+            ..NOW
+        };
+        for _ in 0..8 {
+            let (dir, old, new) = folders();
+            let start = std::sync::Arc::new(std::sync::Barrier::new(2));
+            let runs: Vec<_> = (0..2)
+                .map(|_| {
+                    let (old, new, start) = (old.clone(), new.clone(), start.clone());
+                    std::thread::spawn(move || {
+                        start.wait();
+                        bring_over(&old, &new, &plan)
+                    })
+                })
+                .collect();
+            for run in runs {
+                let outcome = run.join().unwrap();
+                assert!(
+                    matches!(outcome, Outcome::Copied | Outcome::AlreadyThere),
+                    "{outcome:?}"
+                );
+            }
+            assert_eq!(fs::read(new.join("settings.txt")).unwrap(), b"settings");
+            assert!(new.join("models/m-abc/chat.gguf").is_file());
+            assert!(old.join("models/m-abc/chat.gguf").is_file());
+            assert!(temporaries(dir.path()).is_empty());
+        }
+    }
+
+    /// People move big folders to another drive with a link: the old folder itself is followed.
+    #[test]
+    fn an_earlier_folder_that_is_a_link_is_followed() {
+        let (dir, real, new) = folders();
+        let link = dir.path().join("Old Link");
+        straft_test_support_symlink(&real, &link).unwrap();
+        assert_eq!(bring_over(&link, &new, &NOW), Outcome::Copied);
+        assert_eq!(fs::read(new.join("settings.txt")).unwrap(), b"settings");
+        assert!(new.join("models/m-abc/chat.gguf").is_file());
+    }
+
+    /// A link inside it is not followed, so what it points at does not come across. It is reported.
+    #[test]
+    fn a_link_inside_the_earlier_folder_is_not_followed_and_is_reported() {
+        let (dir, old, new) = folders();
+        let outside = dir.path().join("private");
+        fs::create_dir_all(&outside).unwrap();
+        fs::write(outside.join("secret.txt"), "not ours").unwrap();
+        fs::remove_dir_all(old.join("covers")).unwrap();
+        straft_test_support_symlink(&outside, &old.join("covers")).unwrap();
+        straft_test_support_symlink(&outside, &old.join("ai/link")).unwrap();
+        let mut links = tree::walk(&old, &[]).unwrap().links;
+        links.sort();
+        assert_eq!(links, ["ai/link", "covers"]);
+        assert_eq!(bring_over(&old, &new, &NOW), Outcome::Copied);
+        assert!(!new.join("covers").exists());
+        assert!(!new.join("ai/link").exists());
+        assert!(new.join("ai/graphics.json").is_file());
+        assert!(outside.join("secret.txt").is_file());
+    }
+
+    /// Models moved to another drive with a link: the link comes across, so nothing is downloaded
+    /// again and the files stay where the person put them.
+    #[test]
+    fn a_models_folder_that_is_a_link_keeps_working() {
+        let (dir, old, new) = folders();
+        let drive = dir.path().join("Other Drive");
+        fs::rename(old.join("models"), &drive).unwrap();
+        straft_test_support_symlink(&drive, &old.join("models")).unwrap();
+        assert_eq!(bring_over(&old, &new, &NOW), Outcome::Copied);
+        assert_eq!(
+            fs::read(new.join("models/m-abc/chat.gguf")).unwrap(),
+            b"gigabytes"
+        );
+        assert!(
+            fs::symlink_metadata(new.join("models"))
+                .unwrap()
+                .file_type()
+                .is_symlink()
+        );
+        assert!(fs::symlink_metadata(old.join("models")).is_err());
+        assert!(drive.join("m-abc/chat.gguf").is_file());
+    }
+
+    /// A new folder with its own set keeps it; the old link waits where it is.
+    #[test]
+    fn a_models_link_never_replaces_a_set_in_the_new_folder() {
+        let (dir, old, new) = folders();
+        let drive = dir.path().join("Other Drive");
+        fs::rename(old.join("models"), &drive).unwrap();
+        straft_test_support_symlink(&drive, &old.join("models")).unwrap();
+        fs::create_dir_all(new.join("models/m-new")).unwrap();
+        fs::write(new.join("models/m-new/mine.gguf"), "mine").unwrap();
+        fs::write(new.join("settings.txt"), "new").unwrap();
+        assert_eq!(bring_over(&old, &new, &NOW), Outcome::AlreadyThere);
+        assert!(new.join("models/m-new/mine.gguf").is_file());
+        assert!(
+            fs::symlink_metadata(old.join("models"))
+                .unwrap()
+                .file_type()
+                .is_symlink()
+        );
+    }
+
+    /// A second start that lost the race never moves the winner's folder aside.
+    #[test]
+    fn a_folder_that_holds_real_data_is_never_swapped_out() {
+        let (dir, _old, new) = folders();
+        fs::create_dir_all(&new).unwrap();
+        fs::write(new.join("settings.txt"), "the first start's").unwrap();
+        fs::write(new.join("first.txt"), "written by the first start").unwrap();
+        let temp = dir.path().join("temp");
+        fs::create_dir_all(&temp).unwrap();
+        fs::write(temp.join("settings.txt"), "the second start's").unwrap();
+        assert_eq!(
+            swap_into_place(&temp, &new, dir.path(), &NOW).unwrap(),
+            Outcome::AlreadyThere
+        );
+        assert_eq!(
+            fs::read(new.join("settings.txt")).unwrap(),
+            b"the first start's"
+        );
+        assert!(new.join("first.txt").is_file());
+        assert!(temp.exists(), "nothing of the second start went into place");
+    }
+
+    /// A folder that cannot be looked into may hold real data, so it is left where it is.
+    #[cfg(unix)]
+    #[test]
+    fn a_folder_that_cannot_be_read_is_never_swapped_out() {
+        use std::os::unix::fs::PermissionsExt;
+        let (dir, _old, new) = folders();
+        fs::create_dir_all(&new).unwrap();
+        fs::write(new.join("settings.txt"), "real").unwrap();
+        fs::set_permissions(&new, fs::Permissions::from_mode(0o000)).unwrap();
+        let temp = dir.path().join("temp");
+        fs::create_dir_all(&temp).unwrap();
+        let outcome = swap_into_place(&temp, &new, dir.path(), &NOW);
+        fs::set_permissions(&new, fs::Permissions::from_mode(0o755)).unwrap();
+        assert_eq!(outcome.unwrap(), Outcome::AlreadyThere);
+        assert_eq!(fs::read(new.join("settings.txt")).unwrap(), b"real");
+    }
+
+    /// The second launch waits for its turn and then finds the first launch's folder.
+    #[test]
+    fn a_second_launch_waits_for_the_first_and_destroys_nothing() {
+        let (dir, old, new) = folders();
+        let first = TurnLock::wait(&new).unwrap();
+        let second = {
+            let (old, new) = (old.clone(), new.clone());
+            std::thread::spawn(move || bring_over(&old, &new, &NOW))
+        };
+        std::thread::sleep(Duration::from_millis(300));
+        assert!(!second.is_finished(), "it waits for its turn");
+        fs::create_dir_all(&new).unwrap();
+        fs::write(new.join("settings.txt"), "the first start's").unwrap();
+        drop(first);
+        assert_eq!(second.join().unwrap(), Outcome::AlreadyThere);
+        assert_eq!(
+            fs::read(new.join("settings.txt")).unwrap(),
+            b"the first start's"
+        );
+        assert!(!new.join("ai").exists(), "nothing was merged in");
+        assert!(temporaries(dir.path()).is_empty());
+        assert!(!dir.path().join(format!("New Name{LOCK_SUFFIX}")).exists());
+    }
+
+    /// A lock on a file the last start removed keeps nobody out, so it does not count as a turn.
+    #[test]
+    fn a_lock_file_the_last_start_removed_is_not_a_turn() {
+        let (dir, _old, new) = folders();
+        let path = dir.path().join(format!("New Name{LOCK_SUFFIX}"));
+        let first = TurnLock::wait(&new).unwrap();
+        let waiting = fs::File::open(&path).unwrap();
+        assert!(files::is_file_at(&waiting, &path));
+        drop(first);
+        assert!(!path.exists());
+        assert!(!files::is_file_at(&waiting, &path));
+        let second = TurnLock::wait(&new).unwrap();
+        assert!(path.exists());
+        drop(second);
+    }
+
+    /// A crash leaves the lock file behind but not the lock: the next start just uses it.
+    #[test]
+    fn a_lock_file_left_by_a_crash_does_not_stop_the_copy() {
+        let (dir, old, new) = folders();
+        let path = dir.path().join(format!("New Name{LOCK_SUFFIX}"));
+        fs::write(&path, "").unwrap();
+        assert_eq!(bring_over(&old, &new, &NOW), Outcome::Copied);
+        assert!(!path.exists());
     }
 
     /// A crash during the copy leaves a half-filled sibling and no new folder. The next start

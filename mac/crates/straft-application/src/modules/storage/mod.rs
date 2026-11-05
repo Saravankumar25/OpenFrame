@@ -17,9 +17,9 @@ mod vault_recover;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
+use serde::{Deserialize, Serialize};
 use straft_domain::{Actor, AppError, AppResult, Capability, new_id};
 use straft_project_format::{self as pf, ProjectLayout};
-use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use super::packages::backup::adopt_private_notes;
@@ -505,13 +505,16 @@ fn adopt_orphan_notes(
 /// `<name>.straft-staging-<digits>`, or the earlier marker on a folder an interrupted move left
 /// behind before the rename: the only folders start removes.
 fn is_staging_name(name: &str) -> bool {
-    [STAGING_MARKER, straft_platform::legacy_names::STAGING_MARKER]
-        .iter()
-        .any(|marker| {
-            name.rsplit_once(marker).is_some_and(|(_, millis)| {
-                !millis.is_empty() && millis.bytes().all(|b| b.is_ascii_digit())
-            })
+    [
+        STAGING_MARKER,
+        straft_platform::legacy_names::STAGING_MARKER,
+    ]
+    .iter()
+    .any(|marker| {
+        name.rsplit_once(marker).is_some_and(|(_, millis)| {
+            !millis.is_empty() && millis.bytes().all(|b| b.is_ascii_digit())
         })
+    })
 }
 
 /// The staging folder of the move or restore that is running, written to the app data folder

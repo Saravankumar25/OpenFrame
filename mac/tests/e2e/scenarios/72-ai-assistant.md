@@ -1,4 +1,4 @@
-# Offline AI assistant with the bundled model
+# Straft AI with the bundled model
 
 > Mac note (ADR-0041): the Mac assistant has no scope list and no Whole Project; the person picks up to 3 sections and the line reads "Using: <sections>". This scenario describes the Windows app; the Windows tree follows.
 
@@ -20,7 +20,7 @@ Before: an empty data folder of its own. The app carries the real bundled model 
 6. Check: no visible text says "download", "install offline AI", "gemma", "gguf", "llama", "q8_0" or "embedding".
 7. Check: the chat engine is not running yet (it starts on the first question).
 
-## Settings, Offline AI shows the installed parts and Remove, and offers no download while installed
+## Settings, Straft AI shows the installed parts and Remove, and offers no download while installed
 
 1. Click Offline AI settings, then choose Offline AI settings.
 2. Check: the "Offline AI" section shows "Straft AI runs on this computer after a one-time download".
@@ -72,7 +72,7 @@ Before: an empty data folder of its own. The app carries the real bundled model 
 7. Check: the result is an Answer.
 8. Check: no process of the app or its engines holds a connection to an address outside this computer, and none listens on an outside address.
 
-## Stop Offline AI frees the engines; the next question starts them again
+## Stop Straft AI frees the engines; the next question starts them again
 
 1. Open the AI Assistant if it is closed.
 2. Click Offline AI settings, then choose Stop Offline AI.

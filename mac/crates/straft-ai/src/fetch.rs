@@ -14,8 +14,8 @@ use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
-use straft_domain::{AppError, AppResult};
 use reqwest::{StatusCode, Url, header};
+use straft_domain::{AppError, AppResult};
 
 use crate::download::{FileEntry, huggingface_url_ok};
 

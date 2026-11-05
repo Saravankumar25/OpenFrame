@@ -6,7 +6,7 @@
 > runtime ship in every package; the chat and embedding models download after install on the user's click from a signed
 > manifest. This reverses ADR-0025 (2026-10-08). The current build still bundles the models from
 > `packaging/ai/ai-assets.lock.json` until the download flow is rebuilt. Text below that
-> describes downloading, installing or removing Offline AI is history; never implement it.
+> describes downloading, installing or removing Straft AI is history; never implement it.
 
 
 > **Revision notice (2026-10-05).** LAN permission, listener, pairing and session sections are **superseded** by ADR-0007; the
@@ -20,7 +20,7 @@
 
 **Platform:** Windows + macOS desktop application
 
-**Operating model:** Local-first, offline-capable, user-owned project files; optional local AI (Offline AI) only; file-based collaboration through packages; no mandatory Straft Studio cloud
+**Operating model:** Local-first, offline-capable, user-owned project files; optional local AI (Straft AI) only; file-based collaboration through packages; no mandatory Straft Studio cloud
 
 **Current source baseline reviewed:**
 - `Straft_Studio_Mega_PRD_Aligned_Updated(2).md`
@@ -37,7 +37,7 @@
 
 > This specification specializes security, privacy, and ownership behavior already implied by the product documents. It does not replace the PRD's product scope, the FSD's functional behavior, the UX/UI specification's presentation contract, the Domain/Data specification's logical model, the AI specification's AI boundary, or the specialized Import/Export and Offline/Collaboration specifications.
 
-> **AI amendment — 30 September 2026 (authoritative; ADR-0012 §5, ADR-0013).** Straft Studio ships exactly one AI: Offline AI, a local Gemma 3 1B Instruct model plus a local embedding model, both running on the user's computer. There is **no external AI provider path**. §16–§18 describe the implemented AI boundary; §19, §20 and §35 are retired. Every other passage of this document about external AI, provider disclosure, provider retention, "AI Provider Connected" or AI inside LAN sessions — including §1.5 (external part), §32.4, §38.4, §39.2 (AI part), §44.4, §47.3, §56.8, §63, SEC-020, SEC-021, SEC-022, SEC-023, SEC-025, SEC-060, SEC-AC-017, SEC-AC-018, SEC-AC-019, SEC-AC-049 and Scenario 2 — is retired and must not be implemented. Their protective intent is met by construction: project data never leaves the device through AI. LAN passages are retired by ADR-0007.
+> **AI amendment — 30 September 2026 (authoritative; ADR-0012 §5, ADR-0013).** Straft Studio ships exactly one AI: Straft AI, a local Gemma 3 1B Instruct model plus a local embedding model, both running on the user's computer. There is **no external AI provider path**. §16–§18 describe the implemented AI boundary; §19, §20 and §35 are retired. Every other passage of this document about external AI, provider disclosure, provider retention, "AI Provider Connected" or AI inside LAN sessions — including §1.5 (external part), §32.4, §38.4, §39.2 (AI part), §44.4, §47.3, §56.8, §63, SEC-020, SEC-021, SEC-022, SEC-023, SEC-025, SEC-060, SEC-AC-017, SEC-AC-018, SEC-AC-019, SEC-AC-049 and Scenario 2 — is retired and must not be implemented. Their protective intent is met by construction: project data never leaves the device through AI. LAN passages are retired by ADR-0007.
 
 ---
 
@@ -1063,7 +1063,7 @@ The application should not use Activity History as a mechanism to expose private
 
 ## 16.1 System-wide AI, bounded by Straft Studio
 
-The Straft AI (Offline AI) is one local language model (Gemma 3 1B Instruct) driven by one bounded agent loop, plus
+Straft AI is one local language model (Gemma 3 1B Instruct) driven by one bounded agent loop, plus
 a local embedding model used only for retrieval. It is not an autonomous filmmaker, not a database, not an
 authoritative project source, and has no file-system, SQL, shell or network authority.
 
@@ -1158,7 +1158,7 @@ Answers carry references (scene, card, character, location, …) that open the s
 ## 17.4 Exact facts
 
 Exact project facts come from deterministic tools over canonical data. Model-written text is labelled
-"Inferred · written by Offline AI".
+"Inferred · written by Straft AI".
 
 ## 17.5 Conversation context
 
@@ -1192,7 +1192,7 @@ file-system or network authority. Their output is validated by the application.
 
 ## 18.3 Network use
 
-The AI subsystem uses the network only when the user clicks **Download Offline AI** or **Update Offline AI**: the
+The AI subsystem uses the network only when the user clicks **Download Straft AI** or **Update Straft AI**: the
 model files the app pins, straight from Hugging Face, each checked by the size and SHA-256 compiled into the app
 before use (ADR-0032; the Ed25519-signed manifest is superseded). Nothing is fetched in the
 background. After installation AI works without internet. If AI is unavailable, core workflows continue.
@@ -2592,7 +2592,7 @@ This specification does not create new PRD scope. It specializes existing requir
 | PRD-COL-005 | LAN collaboration |
 | PRD-COL-006 | Collaboration conflict handling |
 | PRD-OFF-001 | Offline ownership, saving, portability, external storage, backup |
-| PRD-AI-001 | AI assistant, disclosure, permission, user control |
+| PRD-AI-001 | Straft AI, disclosure, permission, user control |
 | PRD-AI-002 | AI-oriented supporting behavior where applicable |
 
 ---

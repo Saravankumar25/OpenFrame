@@ -8,7 +8,7 @@
 //   - Section headings (side headings) start at the column's leading edge, all at the same
 //     inset, with the same space above and below (`SectionHeader`).
 //   - Spacing comes from `PageSpacing` (an 8-point grid), not from one-off numbers.
-//   - Groups of cards are centred as a group and wrap evenly (`CenteredCardGrid`).
+//   - Groups of cards are centred as a group and wrap evenly (`CenteredWrap`).
 
 import SwiftUI
 
@@ -103,6 +103,7 @@ extension PageHeader where Accessory == EmptyView {
 public struct SectionHeader<Trailing: View>: View {
     let title: String
     let trailing: Trailing
+    @Environment(\.ofTheme) private var theme
 
     public init(_ title: String, @ViewBuilder trailing: () -> Trailing) {
         self.title = title
@@ -116,7 +117,7 @@ public struct SectionHeader<Trailing: View>: View {
                 .textCase(.uppercase)
                 .font(.caption.weight(.bold))
                 .tracking(0.7)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(theme["muted"])
                 // VoiceOver reads the title as written, not letter by letter in capitals.
                 .accessibilityLabel(title)
                 .accessibilityAddTraits(.isHeader)
@@ -134,25 +135,3 @@ extension SectionHeader where Trailing == EmptyView {
     }
 }
 
-/// Cards of one width laid out in rows that are centred as a whole, so one card sits in the
-/// middle and a full row has equal space on both sides.
-public struct CenteredCardGrid<Content: View>: View {
-    let cardWidth: CGFloat
-    let spacing: CGFloat
-    let content: Content
-
-    public init(cardWidth: CGFloat = 220, spacing: CGFloat = PageSpacing.medium, @ViewBuilder content: () -> Content) {
-        self.cardWidth = cardWidth
-        self.spacing = spacing
-        self.content = content()
-    }
-
-    public var body: some View {
-        // A wrapping layout, not an adaptive grid: a grid pins a lone card or a short last row
-        // to the leading edge.
-        CenteredWrap(itemWidth: cardWidth, spacing: spacing) {
-            content
-        }
-        .frame(maxWidth: .infinity)
-    }
-}

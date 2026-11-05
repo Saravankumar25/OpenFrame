@@ -1,4 +1,4 @@
-//! Writable Offline AI data in the user's app data folder. The engine is a read-only app resource
+//! Writable Straft AI data in the user's app data folder. The engine is a read-only app resource
 //! (`bundle.rs`); the downloaded models live in `models/` (`install.rs`, ADR-0026 decision 6).
 //!
 //! ```text
@@ -12,8 +12,8 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use straft_domain::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
+use straft_domain::{AppError, AppResult};
 
 #[derive(Debug, Clone)]
 pub struct AiPaths {
