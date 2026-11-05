@@ -15,9 +15,10 @@
 
 ## Next items
 
-1. **Owner:** the three drag scenarios of `86-visual-planning/` passed by hand on build 259 but have never passed automatically. To automate them, allow computer control of `app.straftstudio.studio.e2e1` or turn on Accessibility for the app that starts the run.
-2. **Owner:** should the eight accounts also appear in the Help menu? Today they show only in the Welcome window, after purchase.
-3. **Owner:** the store steps in `docs/release/mac-store-test.md`, then the AI bar decision below.
+1. **Owner, first:** unlock the Mac and allow Documents access. Build 259 is open on real data and waits at "Opening Straft Studio" for that macOS prompt, which a new ad hoc signature asks again. A test run never touches Documents, so build 259 has not yet been seen on real data.
+2. **Owner:** the three drag scenarios of `86-visual-planning/` passed by hand on build 259 but have never passed automatically. To automate them, allow computer control of `app.straftstudio.studio.e2e1` or turn on Accessibility for the app that starts the run.
+3. **Owner:** should the eight accounts also appear in the Help menu? Today they show only in the Welcome window, after purchase.
+4. **Owner:** the store steps in `docs/release/mac-store-test.md`, then the AI bar decision below.
 
 ## Owner decisions open
 

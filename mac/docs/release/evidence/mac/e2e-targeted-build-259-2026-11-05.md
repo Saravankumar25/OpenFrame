@@ -56,5 +56,6 @@ first project.
 - The rest of the complete run. It rests on build 256 and the diff above.
 - The Welcome window on the installed app: it opens only after a purchase, in the store build or a scripted development
   run. Clicking an account through to a browser was not done.
+- Build 259 on the owner's real data. It waits at "Opening Straft Studio" for the macOS Documents prompt, which cannot be answered on a locked screen. A copy of the data was backed up first, and `library.json` was unchanged.
 - `cargo deny` and `cargo audit`: neither is installed on this Mac.
 - AI evaluation: not run after the name change.
