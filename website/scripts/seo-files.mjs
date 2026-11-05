@@ -96,6 +96,12 @@ export function headersFile(BOOT) {
   Content-Security-Policy: ${MOCK_CSP}
   X-Frame-Options: SAMEORIGIN
   X-Robots-Tag: noindex
+  Cache-Control: public, max-age=0, must-revalidate, no-transform
+/mockups/mac/assets/*
+  ! Cache-Control
+  Cache-Control: public, max-age=604800, no-transform
+/mockups/win/assets/*
+  ! Cache-Control
   Cache-Control: public, max-age=604800, no-transform
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

@@ -82,6 +82,8 @@ Capture sources: `windows/WindowsHTML` and `mac/MacHTML` on `main`. Put them in 
 `research/MacHTML-src`, then run the screens step. Start from an empty `.cache/shots`, so no page of an earlier capture stays. A screen name that disappears makes `npm run build` and
 `npm run check:content` fail and name it.
 
+Screen pages and their stylesheets revalidate on every load, because a new capture reuses their names. Mac pictures carry a content hash in their address and the shared assets are named by content, so they may be cached for a week. After a deploy that changes screens, a cache purge of the zone clears what edges held under an older rule.
+
 Repairs that survive a new capture are recorded in code: `WIN_REPAIRS` in `scripts/shots.mjs` for Windows pages and `scripts/mac-repairs.mjs` for Mac pictures; `docs/screen-defects-2026-11-05.md` lists them and what is still wrong, for the app work. `scripts/screen-scan.mjs` and `pack-screens.mjs` refuse to pack a page with a script, a network or `file:` reference, a missing file, a private name, a secret, or a developer path.
 
 Pictures are optimised at build time. Do not turn on any paid image service in Cloudflare to compensate for large
