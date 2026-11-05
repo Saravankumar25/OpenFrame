@@ -928,7 +928,7 @@ A temporary local-network project session with one host and participants.
 
 ## AI Request
 
-A user-initiated request to the optional system-wide AI assistant with explicit scope, intent, operation class and authorization context.
+A user-initiated request to the optional system-wide Straft AI with explicit scope, intent, operation class and authorization context.
 
 | Field | Meaning | Rule |
 |---|---|---|
@@ -1564,7 +1564,7 @@ The Domain/Data model was derived from the supplied PRD, FSD and UX/UI files. Th
 | Call sheets | PRD-CALL-001 | FSD-CALL-001..012 | Call Sheets / Finalize / Refresh | Call Sheet |
 | Collaboration | PRD-COL-001..006 | FSD-COL-001..022 | Exchange / LAN Collaboration | Exchange Package, Import Session, Collaboration Session, Application User |
 | Offline/recovery | PRD-OFF-001 | FSD-OFF-001..010 | Offline / Save / Recovery | Project, Project File, Snapshot, Deleted Item |
-| AI | PRD-AI-001..002 | FSD-AI-001..027 | AI Assistant / Global Command | AI Request, AI Result, AI Tool Invocation, Change Set, Snapshot |
+| AI | PRD-AI-001..002 | FSD-AI-001..027 | Straft AI / Global Command | AI Request, AI Result, AI Tool Invocation, Change Set, Snapshot |
 | Project support | PRD-PROD-002..007, PRD-TPL-001, PRD-UX-001 | FSD support requirements | Notes / Tasks / Activity / Reports / Budget / Templates | Project Note, Task, Activity Entry, Production Report, Daily Production View, Budget Snapshot, Template |
 
 ## 25.2 PRD requirement → domain concept traceability
@@ -1613,7 +1613,7 @@ The Domain/Data model was derived from the supplied PRD, FSD and UX/UI files. Th
 | PRD-COL-005 | Basic Local-Network Collaboration | P0 | Exchange Package, Import Session, Collaboration Session, Application User, Snapshot, Change Set |
 | PRD-COL-006 | Advanced Collaboration Conflict Handling | P1 | Exchange Package, Import Session, Collaboration Session, Application User, Snapshot, Change Set |
 | PRD-OFF-001 | Offline Operation, Saving, Portability, External Storage and Backup | P0 | Project, Project File, Snapshot, Deleted Item, Exchange Package |
-| PRD-AI-001 | AI Assistant | P1 | AI Request, AI Result, AI Tool Invocation, Change Set, Snapshot |
+| PRD-AI-001 | Straft AI | P1 | AI Request, AI Result, AI Tool Invocation, Change Set, Snapshot |
 | PRD-AI-002 | More Advanced AI Project Assistance | P2 | AI Request, AI Result, AI Tool Invocation, Change Set, Snapshot |
 | PRD-PROD-002 | Daily Production View | P1 | Catalog Item, Project Note, Task, Activity Entry, Production Report, Daily Production View, Budget Snapshot |
 | PRD-PROD-003 | Basic Production Reports | P1 | Catalog Item, Project Note, Task, Activity Entry, Production Report, Daily Production View, Budget Snapshot |

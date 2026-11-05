@@ -81,7 +81,7 @@ struct StoragePanelContent: View {
 
     private var dismiss: some View {
         Button { model.dismissMessages() } label: { Image(systemName: "xmark") }
-            .buttonStyle(.borderless)
+            .buttonStyle(.ofBorderless)
             .accessibilityLabel("Dismiss")
             .accessibilityIdentifier("storage-message-dismiss")
     }
@@ -168,7 +168,7 @@ struct StoragePanelContent: View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Private notes of a former owner").font(.callout.weight(.semibold))
             Text("These private notes belong to someone who is no longer a member of this project, often you under an earlier setup of Straft Studio. Only take them over if they are yours.")
-                .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.caption).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true)
             ForEach(model.orphanOwners, id: \.ownerUserId) { owner in
                 HStack(spacing: 8) {
                     Text(StorageRules.noteCount(owner.noteCount)).font(.callout)
@@ -210,7 +210,7 @@ struct StoragePlace<Buttons: View, Footer: View>: View {
                 .accessibilityLabel("Folder")
                 .accessibilityValue(path)
                 .accessibilityIdentifier("storage-\(id)-path")
-            Text(note).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            Text(note).font(.caption).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true)
             StorageButtonRow { buttons() }
                 .controlSize(.small)
             footer()

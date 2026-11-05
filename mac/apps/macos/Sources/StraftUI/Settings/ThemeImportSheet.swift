@@ -16,7 +16,7 @@ struct ThemeImportSheet: View {
                 Text(model.source == .text
                      ? "Paste the text of a Straft Studio theme file. It is checked before anything is saved."
                      : "Checked before anything is saved.")
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.callout).foregroundStyle(.ofMuted)
             }
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
@@ -77,7 +77,7 @@ struct ThemeImportSheet: View {
                     .font(.caption).foregroundStyle(theme["red-t"])
                     .accessibilityIdentifier("theme-import-toolarge")
             }
-            Text(model.sizeHint).font(.caption).foregroundStyle(.secondary)
+            Text(model.sizeHint).font(.caption).foregroundStyle(.ofMuted)
                 .accessibilityIdentifier("theme-import-size")
         }
     }
@@ -88,7 +88,7 @@ struct ThemeImportSheet: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(t.name).font(.headline).accessibilityIdentifier("theme-import-name")
                     Text("\(t.author.isEmpty ? "" : "By \(t.author). ")\(t.description)")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(.ofMuted)
                 }
                 if let preview = model.previewTheme {
                     let catalog = themes.catalog.withImported(themes.catalog.imported + [preview])
@@ -180,7 +180,7 @@ struct RenameThemeSheet: View {
                 .accessibilityLabel("Theme name")
                 .accessibilityIdentifier("theme-rename-name")
                 .onSubmit { commit() }
-            Text("Up to 60 characters.").font(.caption).foregroundStyle(.secondary)
+            Text("Up to 60 characters.").font(.caption).foregroundStyle(.ofMuted)
             if let error = model.error { SettingsErrorText(message: error) }
             HStack {
                 Spacer()

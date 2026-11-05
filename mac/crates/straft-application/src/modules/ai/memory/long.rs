@@ -8,9 +8,9 @@
 
 use std::collections::HashSet;
 
-use straft_domain::{AppResult, new_id, now_ms};
 use rusqlite::{Connection, Row, params};
 use serde::Serialize;
+use straft_domain::{AppResult, new_id, now_ms};
 use ts_rs::TS;
 
 use super::approx_tokens;

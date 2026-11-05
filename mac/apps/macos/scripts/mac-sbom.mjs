@@ -4,7 +4,7 @@
 //   node apps/macos/scripts/mac-sbom.mjs "<path to Straft Studio.app>"
 //
 // Components: the Rust crates linked into the core (normal dependency edges from straft-ffi
-// for aarch64-apple-darwin, from `cargo metadata --locked`), the offline AI engine files inside
+// for aarch64-apple-darwin, from `cargo metadata --locked`), the Straft AI engine files inside
 // the bundle with their SHA-256 (pinned in packaging/ai/ai-assets.lock.json), and the app
 // executable itself. The Swift package has no third-party dependencies. Apple system frameworks
 // are not listed (they ship with macOS).

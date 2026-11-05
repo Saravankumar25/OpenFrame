@@ -131,9 +131,8 @@ struct ScreenplayPanelsHost: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .inspector(isPresented: $state.inspectorShown) {
+            .sidePane("screenplay", isPresented: state.inspectorShown, minimum: 280, ideal: 340, maximum: 480) {
                 ScreenplayInspector(model: model, state: state, caretIndex: caretIndex)
-                    .inspectorColumnWidth(min: 280, ideal: 340, max: 480)
             }
             .themedSheet(item: $state.sheet) { sheet in
                 switch sheet {

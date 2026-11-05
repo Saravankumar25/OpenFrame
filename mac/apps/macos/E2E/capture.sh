@@ -12,6 +12,8 @@
 # the page (scripts/mac-html/check-pages.swift); the tables go at the end of README.md.
 # STRAFT_CAPTURE_SKIP_RUN=1 with STRAFT_CAPTURE_DIR=<an earlier capture folder holding light/ and dark/> only
 # rebuilds and checks the pages.
+# The pages show a person's name and a person's folders: STRAFT_E2E_PERSON sets the name typed at the welcome (default
+# Maya Rao), and with one runner the data lives in STRAFT_E2E_CLEAN_ROOT (default /Users/Shared/Straft Demo).
 # Needs: the driver library (swift build --product StraftE2EDriver), node and the Swift compiler.
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -21,6 +23,8 @@ OUT="${2:-$ROOT/MacHTML}"
 BASE="${STRAFT_CAPTURE_DIR:-$ROOT/release-out/capture/$(date +%Y%m%d-%H%M%S)}"
 RUNNER="$HERE/run.sh"
 [[ -n "${STRAFT_E2E_PARALLEL:-}" ]] && RUNNER="$HERE/run-parallel.sh"
+export STRAFT_E2E_PERSON="${STRAFT_E2E_PERSON:-Maya Rao}"
+if [[ -z "${STRAFT_E2E_PARALLEL:-}" ]]; then export STRAFT_E2E_CLEAN_ROOT="${STRAFT_E2E_CLEAN_ROOT:-/Users/Shared/Straft Demo}"; fi
 for MODE in light dark; do
   [[ "${STRAFT_CAPTURE_SKIP_RUN:-}" == 1 ]] && continue
   export STRAFT_CAPTURE_MODE="$MODE"
@@ -29,7 +33,7 @@ for MODE in light dark; do
   echo "Capturing the $MODE pass into $STRAFT_E2E_RUN_DIR with $(basename "$RUNNER")"
   "$RUNNER" "$APP" "zz-capture/" || echo "Some tour scenarios failed in the $MODE pass; the pages that were captured are still built."
 done
-COMMIT="$(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)"
+COMMIT="${STRAFT_CAPTURE_COMMIT:-$(git -C "$ROOT" rev-parse --short HEAD 2>/dev/null || echo unknown)}"
 node "$ROOT/scripts/mac-html/build-mac-html.mjs" --both "$BASE/light" "$BASE/dark" "$OUT" "$COMMIT" || exit 1
 
 MAX="${MACHTML_MAX_DIFF:-0.5}"

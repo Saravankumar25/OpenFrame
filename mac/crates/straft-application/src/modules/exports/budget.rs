@@ -5,14 +5,14 @@
 //! Budget view shows. A line without an Actual amount leaves the Actual and Difference cells
 //! empty and never counts as "under plan".
 
+use rusqlite::{Connection, OptionalExtension};
+use serde::Deserialize;
 use straft_domain::{Actor, AppError, AppResult};
 use straft_import_export::report::{
     Align, Block, Callout, CalloutCol, Cell, CellItem, Chip, Col, Column, Document, HeaderStyle,
     Masthead, Metric, Metrics, Rgb, Row, Section, Side, StyledTable, Table, Tone, Txt, pal,
     text_width,
 };
-use rusqlite::{Connection, OptionalExtension};
-use serde::Deserialize;
 use ts_rs::TS;
 
 use super::style::nb;

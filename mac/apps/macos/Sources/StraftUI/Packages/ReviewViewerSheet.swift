@@ -92,7 +92,7 @@ struct ReviewViewerSheet: View {
                     VStack(spacing: 6) {
                         Text(ws.typeLabel).font(.headline)
                         Text(ws.summary.map { "\(Int($0.count)) \($0.label.lowercased())" }.joined(separator: " \u{00B7} ") + " from \u{201C}\(ws.projectTitle)\u{201D}.")
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.ofMuted)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .accessibilityIdentifier("review-summary")
@@ -136,7 +136,7 @@ struct ReviewViewerSheet: View {
                     .accessibilityIdentifier("review-export-response")
                 }
                 Button { close() } label: { Label("Close", systemImage: "xmark") }
-                    .buttonStyle(.borderless).keyboardShortcut(.cancelAction)
+                    .buttonStyle(.ofBorderless).keyboardShortcut(.cancelAction)
                     .accessibilityLabel("Close review").accessibilityIdentifier("review-close")
             }
             if let p = model.exportedPath {
@@ -155,7 +155,7 @@ struct ReviewViewerSheet: View {
                     let on = model.scene?.id == s.id
                     Button { model.sceneId = s.id } label: {
                         HStack {
-                            Text(s.label).font(.caption).foregroundStyle(.secondary).frame(minWidth: 24, alignment: .leading)
+                            Text(s.label).font(.caption).foregroundStyle(.ofMuted).frame(minWidth: 24, alignment: .leading)
                             Text(s.heading.isEmpty ? "(untitled scene)" : s.heading).lineLimit(1).frame(maxWidth: .infinity, alignment: .leading)
                             if model.count(for: s.id) > 0 { IXChip(text: "\(model.count(for: s.id))") }
                         }
@@ -189,10 +189,10 @@ struct ReviewViewerSheet: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Comments on Scene \(model.scene?.label ?? "")").font(.callout.weight(.semibold))
-                if model.comments.isEmpty { Text("No comments on this scene yet.").font(.callout).foregroundStyle(.secondary) }
+                if model.comments.isEmpty { Text("No comments on this scene yet.").font(.callout).foregroundStyle(.ofMuted) }
                 ForEach(model.comments, id: \.id) { c in commentCard(c, ws) }
                 if ws.canComment, model.scene != nil { composer }
-                if !ws.canComment { Text("Read-only. Nothing here changes your project.").font(.caption).foregroundStyle(.secondary) }
+                if !ws.canComment { Text("Read-only. Nothing here changes your project.").font(.caption).foregroundStyle(.ofMuted) }
                 if let e = model.errorText { IXBanner(.err, e).accessibilityIdentifier("review-error") }
             }
             .padding(12)
@@ -208,17 +208,17 @@ struct ReviewViewerSheet: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(c.authorName).fontWeight(.semibold)
-                Text(PKText.day(ms: c.createdAt)).foregroundStyle(.secondary)
+                Text(PKText.day(ms: c.createdAt)).foregroundStyle(.ofMuted)
                 Spacer()
                 if c.mine { IXChip(text: "Yours", tone: .green) }
                 if c.mine && ws.canComment {
                     Button { Task { await model.deleteComment(c.id) } } label: { Label("Delete", systemImage: "trash") }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.ofBorderless)
                         .accessibilityLabel("Delete this comment").accessibilityIdentifier("review-delete-\(c.id)")
                 }
             }
             .font(.caption)
-            if let q = c.quotedText { Text("\u{201C}\(q)\u{201D}").font(.caption).italic().foregroundStyle(.secondary) }
+            if let q = c.quotedText { Text("\u{201C}\(q)\u{201D}").font(.caption).italic().foregroundStyle(.ofMuted) }
             Text(c.body).font(.callout).textSelection(.enabled)
         }
         .padding(10)
@@ -239,9 +239,9 @@ struct ReviewViewerSheet: View {
             }
             if !model.quote.isEmpty {
                 HStack {
-                    Text("\u{201C}\(model.quote)\u{201D}").font(.caption).italic().foregroundStyle(.secondary).lineLimit(3)
+                    Text("\u{201C}\(model.quote)\u{201D}").font(.caption).italic().foregroundStyle(.ofMuted).lineLimit(3)
                     Spacer()
-                    Button { model.removeQuote() } label: { Label("Remove", systemImage: "xmark") }.buttonStyle(.borderless)
+                    Button { model.removeQuote() } label: { Label("Remove", systemImage: "xmark") }.buttonStyle(.ofBorderless)
                         .accessibilityLabel("Remove quote").accessibilityIdentifier("review-remove-quote")
                 }
             }
@@ -255,7 +255,7 @@ struct ReviewViewerSheet: View {
                 .accessibilityLabel("Comment")
                 .accessibilityIdentifier("review-comment-field")
             HStack {
-                Text("Command+Return to add").font(.caption).foregroundStyle(.secondary)
+                Text("Command+Return to add").font(.caption).foregroundStyle(.ofMuted)
                 Spacer()
                 Button("Comment") { Task { await model.addComment() } }
                     .keyboardShortcut(.return, modifiers: .command)

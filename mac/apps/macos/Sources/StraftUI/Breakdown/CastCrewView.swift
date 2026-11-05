@@ -56,12 +56,12 @@ struct CastCrewView: View {
         .padding(.bottom, PageSpacing.medium)
         }
         .task(id: reloadKey) { await model.reload() }
-        .inspector(isPresented: Binding(get: { model.view == .cast ? model.castMember != nil : model.crewMember != nil },
-                                        set: { if !$0 { model.selectedCast = nil; model.selectedCrew = nil } })) {
+        .sidePane("cast-crew", isPresented: model.view == .cast ? model.castMember != nil : model.crewMember != nil,
+                  minimum: 340, ideal: 400, maximum: 540) {
             if model.view == .cast, let m = model.castMember {
-                CastInspector(model: model, member: m).inspectorColumnWidth(min: 340, ideal: 400, max: 540)
+                CastInspector(model: model, member: m)
             } else if model.view == .crew, let c = model.crewMember {
-                CrewInspector(model: model, member: c).inspectorColumnWidth(min: 340, ideal: 400, max: 540)
+                CrewInspector(model: model, member: c)
             }
         }
         .themedSheet(item: $model.sheet) { PeopleSheetHost(model: model, sheet: $0) }
@@ -232,7 +232,7 @@ struct CastInspector: View {
                     }.controlSize(.small)
                     if member.photo != nil {
                         Button { Task { await model.setCastPhoto(member.id, path: nil) } } label: { Label("Remove", systemImage: "xmark.circle") }
-                            .buttonStyle(.borderless).accessibilityLabel("Remove photo")
+                            .buttonStyle(.ofBorderless).accessibilityLabel("Remove photo")
                     }
                 }
             }
@@ -320,7 +320,7 @@ private struct PeopleSheetHost: View {
                            onConfirm: { Task { await model.delete(kind: kind, id: id, name: name) } }, onCancel: { model.sheet = nil }) {
                 VStack(alignment: .leading, spacing: 8) {
                     ReferencesNote(kind: kind == .crew ? .crewMember : .castMember, id: id)
-                    Text("Archiving is the better choice if they may return.").font(.callout).foregroundStyle(.secondary)
+                    Text("Archiving is the better choice if they may return.").font(.callout).foregroundStyle(.ofMuted)
                 }
             }
         }
@@ -365,7 +365,7 @@ private struct AssignSheet: View {
                 }
                 BDField(label: "Choose a character") {
                     if characters.isEmpty {
-                        Text("No characters found in the Production Source yet. Create one below.").font(.callout).foregroundStyle(.secondary)
+                        Text("No characters found in the Production Source yet. Create one below.").font(.callout).foregroundStyle(.ofMuted)
                     } else {
                         ScrollView {
                             VStack(spacing: 0) {
@@ -408,7 +408,7 @@ private struct AssignSheet: View {
                 if effectiveRole == "primary", hasOtherPrimary {
                     BDBanner(.info, "\(byId[current?.primaryCastId ?? ""] ?? "The current actor") becomes an alternate for \(chosen ?? "").")
                 }
-                Text("One character has one primary actor by default. Alternates or double-casting can be added when needed.").font(.caption).foregroundStyle(.secondary)
+                Text("One character has one primary actor by default. Alternates or double-casting can be added when needed.").font(.caption).foregroundStyle(.ofMuted)
             }
         } footer: {
             Button("Cancel") { model.sheet = nil }.keyboardShortcut(.cancelAction)

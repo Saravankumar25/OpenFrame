@@ -1802,7 +1802,7 @@ extension Scenarios {
     @MainActor static func walkTabs(_ ui: UI, workspace: String, into findings: inout [StopFinding]) async throws -> Int {
         guard let window = NSApp.keyWindow ?? NSApp.windows.first(where: { $0.isVisible }) else { throw DriverError("no window") }
         window.makeFirstResponder(nil)
-        var last: ObjectIdentifier?
+        var last: String?
         var same = 0
         var stops = 0
         for step in 1...80 {
@@ -1812,7 +1812,17 @@ extension Scenarios {
                 continue
             }
             stops += 1
-            let (what, name) = focusName(r)
+            var (what, name) = focusName(r)
+            // SwiftUI puts a private proxy view in the key view loop: the name and the identity of a
+            // stop are what a screen reader reads, the element the accessibility system reports as focused.
+            let seenByReader = ui.a11yFocused()
+            if let seenByReader {
+                what = ui.a11yFocusName(seenByReader)
+                name = what.hasSuffix("\"\"") ? "" : what
+                if !window.frame.intersects(seenByReader.frame) {
+                    findings.append(StopFinding(workspace: workspace, step: step, problem: "the focused element is outside the window", what: what))
+                }
+            }
             if let v = r as? NSView, v.isHiddenOrHasHiddenAncestor || v.window == nil {
                 findings.append(StopFinding(workspace: workspace, step: step, problem: "the focused element is not visible", what: what))
             }
@@ -1820,7 +1830,7 @@ extension Scenarios {
             if let v = r as? NSView, !(v.focusRingType != .none || v is NSTextView || v is NSTextField) {
                 findings.append(StopFinding(workspace: workspace, step: step, problem: "no focus mark", what: what))
             }
-            let id = ObjectIdentifier(r)
+            let id = what
             same = (id == last) ? same + 1 : 0
             last = id
             if same >= 3 { findings.append(StopFinding(workspace: workspace, step: step, problem: "focus stayed on the same element for four presses (a trap)", what: what)); break }
@@ -2048,8 +2058,6 @@ fileprivate extension UI {
             }
         }
     }
-
-    @MainActor final class TrackingFlag { var began = false }
 
     /// Presses a button once it is enabled: a dialog that is still loading its preview shows the button dimmed.
     func pressWhenEnabled(id: String, timeout: Double = 20) async throws {

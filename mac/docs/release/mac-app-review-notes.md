@@ -26,4 +26,4 @@ downloaded after install. The engine helper is sandboxed (inherits) and listens 
 **Clock check.** The app reads the Mac's clock to count the trial. If the clock is set back behind a date it already trusted,
 a screen asks to set the correct time. It clears by itself once the clock is right.
 
-**Support.** https://openframestudio.app/contact/ (Help, Contact Straft Studio Support).
+**Support.** https://straftstudio.com/contact/ (Help, Contact Straft Studio Support).

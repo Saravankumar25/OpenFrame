@@ -246,7 +246,7 @@ struct SearchPaletteView: View {
         @Bindable var model = model
         VStack(spacing: 0) {
             HStack(spacing: 10) {
-                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                Image(systemName: "magnifyingglass").foregroundStyle(.ofMuted)
                 TextField("Search scenes, ideas, characters, locations, files, or type a command", text: $model.query)
                     .textFieldStyle(.plain)
                     .font(.system(size: 16))
@@ -254,7 +254,7 @@ struct SearchPaletteView: View {
                     .onSubmit { chooseActive() }
                     .accessibilityIdentifier("palette-field")
                 if model.searching { ProgressView().controlSize(.small) }
-                Text("esc").font(.caption).foregroundStyle(.tertiary)
+                Text("esc").font(.caption).foregroundStyle(.ofMuted)
             }
             .padding(14)
             Divider()
@@ -292,7 +292,7 @@ struct SearchPaletteView: View {
             Text(failure).foregroundStyle(theme["red-t"]).padding(16)
         } else if rows.isEmpty {
             Text(model.searching ? "Searching\u{2026}" : "No matches. Search looks at titles, text, notes, file names and tags.")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.ofMuted)
                 .frame(maxWidth: .infinity)
                 .padding(20)
                 .accessibilityIdentifier("palette-empty")
@@ -327,7 +327,7 @@ struct SearchPaletteView: View {
                     Image(systemName: c.symbol).frame(width: 22).foregroundStyle(theme["accent"])
                     Text(c.title)
                     Spacer()
-                    if let hint = c.hint { Text(hint).font(.caption).foregroundStyle(.tertiary) }
+                    if let hint = c.hint { Text(hint).font(.caption).foregroundStyle(.ofMuted) }
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("Command: \(c.title)")
@@ -335,17 +335,17 @@ struct SearchPaletteView: View {
                 HStack(alignment: .firstTextBaseline, spacing: 12) {
                     Text(SearchRouting.label(for: h.entityType))
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(theme["accent-ink"])
+                        .foregroundStyle(theme["accent-d"])
                         .padding(.horizontal, 7).padding(.vertical, 2)
                         .background(theme["accent-soft"], in: Capsule())
                         .frame(width: 110, alignment: .leading)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(h.title.isEmpty ? "Untitled" : h.title).fontWeight(.medium).lineLimit(1)
                         Text(SearchRouting.highlighted(h.snippet))
-                            .font(.callout).foregroundStyle(.secondary).lineLimit(1)
+                            .font(.callout).foregroundStyle(.ofMuted).lineLimit(1)
                     }
                     Spacer(minLength: 8)
-                    Text(h.context).font(.caption).foregroundStyle(.tertiary).lineLimit(1)
+                    Text(h.context).font(.caption).foregroundStyle(.ofMuted).lineLimit(1)
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("\(SearchRouting.label(for: h.entityType)): \(h.title.isEmpty ? "Untitled" : h.title)")

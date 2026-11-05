@@ -23,9 +23,12 @@ extension UI {
         try await waitHome()
     }
 
+    /// The name typed at the welcome. The capture tour sets a person's name; the pages show it.
+    nonisolated static var personName: String { ProcessInfo.processInfo.environment["STRAFT_E2E_PERSON"] ?? "E2E Tester" }
+
     /// The first launch asks for the person's name (spec 01, case 1). Every scenario answers
-    /// 'E2E Tester' like the Windows suite.
-    func answerWelcome(_ name: String = "E2E Tester") async throws {
+    /// 'E2E Tester' like the Windows suite, unless the run names a person.
+    func answerWelcome(_ name: String = UI.personName) async throws {
         let deadline = Date().addingTimeInterval(4)
         while Date() < deadline {
             if exists(id: "welcome-name") {

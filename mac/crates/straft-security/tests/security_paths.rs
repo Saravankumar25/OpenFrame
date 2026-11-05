@@ -205,6 +205,14 @@ fn only_plain_web_links_reach_the_browser() {
         Some("https://example.com/a?b=1")
     );
     assert!(web_link("HTTP://Example.com").is_some());
+    // The Mac welcome window's accounts: an @ in the path is not a user name.
+    for official in [
+        "https://www.youtube.com/@StraftStudio",
+        "https://www.threads.com/@straftstudio/",
+        "https://straftstudio.com/discord",
+    ] {
+        assert_eq!(web_link(official), Some(official));
+    }
     for bad in [
         "javascript:alert(1)",
         "file:///C:/Windows/System32/calc.exe",

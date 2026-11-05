@@ -17,11 +17,11 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::Child;
 
-use straft_domain::{AppError, AppResult};
-use straft_platform::process::{ProcessStamp, SweepOutcome, stamp, stop_if_same};
 use parking_lot::Mutex;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use straft_domain::{AppError, AppResult};
+use straft_platform::process::{ProcessStamp, SweepOutcome, stamp, stop_if_same};
 
 use crate::bundle::PinnedFile;
 

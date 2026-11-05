@@ -1,4 +1,4 @@
-// AI assistant: the model driven exactly as the view drives it. Most tests use a real core on a
+// Straft AI: the model driven exactly as the view drives it. Most tests use a real core on a
 // temporary folder with no engine and no model files: every state the core reports without a model
 // (engine missing, nothing downloaded), that a failed request never loses the typed question, the
 // section picker (ADR-0041) and the change set review calls (scenario 74). The
@@ -57,7 +57,7 @@ private func set(_ id: String, state: String) -> AiChangeSetDto {
         targets: [], operationCount: 1, createdAt: 0, appliedOperations: 1, partCount: 1, requiresConfirmation: false)
 }
 
-@Suite("AI assistant", .serialized)
+@Suite("Straft AI", .serialized)
 @MainActor
 struct AIAssistantTests {
     // MARK: Scenario 76: the engine is missing

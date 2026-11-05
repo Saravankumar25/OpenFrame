@@ -43,7 +43,7 @@ struct ProductionWorkspace: View {
 }
 
 /// The Production tabs: labelled buttons in the style of the other Mac tab strips, on one line.
-/// When the pane is too narrow for all thirteen (a small window with the AI Assistant open), the
+/// When the pane is too narrow for all thirteen (a small window with Straft AI open), the
 /// strip becomes a menu that names the tab shown, so the page keeps its height.
 struct ProductionTabBar: View {
     @Binding var selection: ProductionTab
@@ -77,7 +77,7 @@ struct ProductionTabBar: View {
                         .lineLimit(1)
                         .fixedSize()
                         .padding(.horizontal, 10).padding(.vertical, 3)
-                        .foregroundStyle(on ? theme["accent-ink"] : theme["ink2"])
+                        .foregroundStyle(on ? theme["accent-d"] : theme["ink2"])
                         .background(on ? theme["accent-soft"] : Color.clear, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                         .contentShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 }

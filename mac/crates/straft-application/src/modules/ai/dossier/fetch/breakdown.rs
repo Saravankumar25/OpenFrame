@@ -4,8 +4,8 @@
 
 use std::collections::BTreeMap;
 
-use straft_domain::AppResult;
 use rusqlite::OptionalExtension;
+use straft_domain::AppResult;
 
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
 use crate::modules::ai::dossier::words::{Msg, clip, numbers};

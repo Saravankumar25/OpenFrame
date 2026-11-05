@@ -10,11 +10,11 @@
 //! * Build Screenplay asks for a heading or for the card to be left out, never invents one;
 //! * a batch delete restores in the original order whichever entry comes back first.
 
+use serde_json::{Value, json};
 use straft_application::modules::ai::scope::ResolvedScope;
 use straft_application::modules::ai::toolbox::{self, ToolStep};
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------ helpers
 

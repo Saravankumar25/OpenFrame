@@ -60,7 +60,7 @@ All people, companies and contacts are invented; phone numbers and `.example` ad
 - **Workspace**: project notes, tasks linked to records, templates (built-in, personal and
   project), files (copied and linked), history with undo and redo, Recently Deleted with restores
   and a purge, search, appearance theme, keyboard shortcuts, proofing languages and dictionary.
-- **Offline AI** (when the build inputs are present): the real Gemma 3 model installed with the
+- **Straft AI** (when the build inputs are present): the real Gemma 3 model installed with the
   app's own import path, real questions, three proposals (applied and undone, rejected, applied
   and kept), and the AI report.
 - **Packages**: a backup, the full project package, exchange packages for script review, story,
@@ -71,7 +71,7 @@ All people, companies and contacts are invented; phone numbers and `.example` ad
 
 ```sh
 RUSTC_WRAPPER= cargo run -p straft-gold-project            # about 1.5 minutes with the AI
-RUSTC_WRAPPER= cargo run -p straft-gold-project -- --no-ai # without the Offline AI
+RUSTC_WRAPPER= cargo run -p straft-gold-project -- --no-ai # without Straft AI
 ```
 
 `RUSTC_WRAPPER=` turns off sccache on a Mac without it. The AI phase needs
@@ -116,3 +116,12 @@ E2E/run.sh .build/debug/StraftStudio gold/
 
 The program is `crates/straft-gold-project`. It records every call; COVERAGE.md is written from
 those counts, never by hand.
+
+## Building a demo project from another film
+
+`demo_project` is a second binary in the same crate. It builds a full project from a content folder that lives outside
+the repository, through the same core operations, and holds no film text of its own:
+
+    RUSTC_WRAPPER= cargo run -p straft-gold-project --bin demo_project -- <content folder> <empty output folder> [--no-ai]
+
+Film content stays out of the repository, which is public. `release-out/` is git-ignored and is the place for it.

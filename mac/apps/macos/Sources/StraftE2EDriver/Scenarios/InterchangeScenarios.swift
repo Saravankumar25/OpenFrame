@@ -1,4 +1,4 @@
-// Real-app scenarios for import, export, packages, PDF and the offline AI.
+// Real-app scenarios for import, export, packages, PDF and Straft AI.
 
 import AppKit
 import Foundation
@@ -563,7 +563,14 @@ extension Scenarios {
             try await ui.waitText("Opened as a copy.", timeout: 60)
             try await ui.tap(id: "open-project-close")
             try await ui.waitGone(id: "open-project-sheet")
-            let title = NSApp.windows.filter(\.isVisible).map(\.title).joined(separator: " | ")
+            // The project window opens a moment after the sheet closes.
+            var title = ""
+            let opened = Date().addingTimeInterval(20)
+            repeat {
+                title = NSApp.windows.filter(\.isVisible).map(\.title).joined(separator: " | ")
+                if title.contains("Harbour Lights (copy)") { break }
+                await ui.idle(0.3)
+            } while Date() < opened
             f.check(title.contains("Harbour Lights (copy)"), "the window title names the copy: \(title)")
             try ui.quiet("after the restore:")
             try f.finish()
@@ -647,6 +654,55 @@ fileprivate extension UI {
         await idle(0.5)
     }
 
+    /// A drag the window server sees, as a hand makes it. A SwiftUI gesture or `draggable` answers only
+    /// to real mouse events, which an event sent straight to the window is not. It needs the
+    /// Accessibility permission of the app that started the run, or a helper outside the run:
+    /// STRAFT_E2E_DRAG_DIR names a folder where the scenario writes drag-request.txt
+    /// ("x1 y1 x2 y2" in top-left screen points) and waits for drag-done. Without either the scenario
+    /// is reported as blocked: not passed, and not a fault of the app.
+    func dragWithSystemMouse(from a: NSPoint, to b: NSPoint, steps: Int = 24) async throws {
+        let helper = ProcessInfo.processInfo.environment["STRAFT_E2E_DRAG_DIR"].map { URL(fileURLWithPath: $0, isDirectory: true) }
+        guard AXIsProcessTrusted() || helper != nil else {
+            throw DriverError("BLOCKED: a real mouse drag needs the Accessibility permission (System Settings, Privacy and Security, Accessibility) for the app that started this run")
+        }
+        guard let w = NSApp.orderedWindows.first(where: { $0.isVisible && $0.frame.contains(a) }) else { throw DriverError("no window under the drag start \(a)") }
+        await bringAppToFront()
+        w.makeKeyAndOrderFront(nil)
+        await idle(0.5)
+        let top = NSScreen.screens.first?.frame.maxY ?? 0
+        func point(_ p: NSPoint) -> CGPoint { CGPoint(x: p.x, y: top - p.y) }
+        if let helper {
+            let done = helper.appendingPathComponent("drag-done")
+            try? FileManager.default.removeItem(at: done)
+            let (from, to) = (point(a), point(b))
+            try "\(Int(from.x)) \(Int(from.y)) \(Int(to.x)) \(Int(to.y))".write(to: helper.appendingPathComponent("drag-request.txt"), atomically: true, encoding: .utf8)
+            log("waiting for the drag from \(from) to \(to)")
+            let until = Date().addingTimeInterval(600)
+            while !FileManager.default.fileExists(atPath: done.path), Date() < until { await idle(0.5) }
+            try expect(FileManager.default.fileExists(atPath: done.path), "the helper made the drag")
+            try? FileManager.default.removeItem(at: done)
+            try? FileManager.default.removeItem(at: helper.appendingPathComponent("drag-request.txt"))
+            await idle(0.8)
+            return
+        }
+        func post(_ type: CGEventType, _ p: NSPoint) {
+            guard let ev = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: point(p), mouseButton: .left) else { return }
+            ev.post(tap: .cghidEventTap)
+        }
+        post(.mouseMoved, a)
+        await idle(0.2)
+        post(.leftMouseDown, a)
+        await idle(0.5)
+        for i in 1...steps {
+            let t = CGFloat(i) / CGFloat(steps)
+            post(.leftMouseDragged, NSPoint(x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t))
+            await idle(0.05)
+        }
+        await idle(0.5)
+        post(.leftMouseUp, b)
+        await idle(0.8)
+    }
+
     func center(_ e: Element) -> NSPoint { NSPoint(x: e.frame.midX, y: e.frame.midY) }
 
     /// Moodboards and Storyboards are Production tabs (as on Windows).
@@ -681,16 +737,21 @@ fileprivate extension UI {
     func noteTileBounds() async throws -> CGRect {
         guard let w = NSApp.windows.first(where: { $0.isVisible && $0.canBecomeMain }), let screen = w.screen ?? NSScreen.main,
               let view = w.contentView?.superview ?? w.contentView,
-              let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { throw DriverError("no window to look at") }
-        view.cacheDisplay(in: view.bounds, to: rep)
+              // The window server's picture: drawing the views ourselves leaves the SwiftUI layers blank.
+              let shot = CGWindowListCreateImage(.null, .optionIncludingWindow, CGWindowID(w.windowNumber), [.boundsIgnoreFraming, .bestResolution]),
+              shot.width > 10 else { throw DriverError("no window to look at") }
+        let rep = NSBitmapImageRep(cgImage: shot)
         let scale = CGFloat(rep.pixelsWide) / view.bounds.width
         func color(_ x: CGFloat, _ y: CGFloat) -> NSColor { (rep.colorAt(x: Int(x * scale), y: Int(y * scale)) ?? .black).usingColorSpace(.sRGB) ?? .black }
+        // Inside the canvas, a little in from its border. The canvas has no accessibility frame of its
+        // own (it reports its content), so these are the page's measures.
+        let right = min(view.bounds.width - 30, 1480), lower = min(view.bounds.height - 24, 830)
         let bg = color(480, 215)
         var minX = CGFloat.infinity, minY = CGFloat.infinity, maxX = -CGFloat.infinity, maxY = -CGFloat.infinity
         var y: CGFloat = 215
-        while y < 830 {
+        while y < lower {
             var x: CGFloat = 480
-            while x < min(view.bounds.width - 30, 1480) {
+            while x < right {
                 let c = color(x, y)
                 if abs(c.redComponent - bg.redComponent) > 0.03 || abs(c.greenComponent - bg.greenComponent) > 0.03 || abs(c.blueComponent - bg.blueComponent) > 0.03 {
                     minX = min(minX, x); maxX = max(maxX, x); minY = min(minY, y); maxY = max(maxY, y)
@@ -707,12 +768,16 @@ fileprivate extension UI {
 
     func dragNoteTile() async throws -> (before: CGRect, after: CGRect) {
         _ = try await wait(label: "Note: Cold blue light, warm windows", timeout: 15)
+        // The toasts lie over the canvas until they time out.
+        let clear = Date().addingTimeInterval(15)
+        while exists(label: "Dismiss"), Date() < clear { await idle(0.3) }
+        await idle(0.5)
         let before = try await noteTileBounds()
         // Cocoa screen points have the origin at the bottom left; the hit test uses the top left.
         let screenH = (NSApp.windows.first?.screen ?? NSScreen.main)?.frame.maxY ?? 0
         let start = NSPoint(x: before.midX, y: screenH - before.midY)
         log("drag start \(start) tile \(before) screenH \(screenH) windows \(NSApp.orderedWindows.filter { $0.isVisible && $0.frame.contains(start) }.map { "\(Swift.type(of: $0)) \($0.frame)" })")
-        try await dragAlong(from: start, to: NSPoint(x: start.x + 160, y: start.y - 90))
+        try await dragWithSystemMouse(from: start, to: NSPoint(x: start.x + 160, y: start.y - 90))
         let after = try await noteTileBounds()
         return (before, after)
     }
@@ -769,7 +834,7 @@ extension Scenarios {
             try ui.expect(ui.panelKinds() == ["picture", "empty", "empty"], "the panels are picture, empty, empty: \(ui.panelKinds())")
             let panels = ui.all().filter { $0.identifier.hasPrefix("panel-") && !$0.identifier.hasPrefix("panel-shot") && $0.label.hasPrefix("Panel ") }
             guard let third = panels.first(where: { $0.label.hasPrefix("Panel 3") }), let first = panels.first(where: { $0.label.hasPrefix("Panel 1") }) else { throw DriverError("panels 1 and 3 not found: \(panels)") }
-            try await ui.dragAlong(from: ui.center(third), to: ui.center(first))
+            try await ui.dragWithSystemMouse(from: ui.center(third), to: ui.center(first))
             try await ui.idle(1.0)
             let after = ui.panelKinds()
             try ui.expect(after.first == "empty", "the first panel is now an empty one: \(after)")
@@ -793,7 +858,7 @@ extension Scenarios {
                 try await ui.waitText("Panel 3", timeout: 15)
                 let panels = ui.all().filter { $0.identifier.hasPrefix("panel-") && !$0.identifier.hasPrefix("panel-shot") && $0.label.hasPrefix("Panel ") }
                 guard let third = panels.first(where: { $0.label.hasPrefix("Panel 3") }), let first = panels.first(where: { $0.label.hasPrefix("Panel 1") }) else { throw DriverError("panels not found") }
-                try await ui.dragAlong(from: ui.center(third), to: ui.center(first))
+                try await ui.dragWithSystemMouse(from: ui.center(third), to: ui.center(first))
                 try await ui.idle(1.0)
                 try ui.expect(ui.panelKinds() == ["empty", "picture", "empty"], "order before restart: \(ui.panelKinds())")
                 try await ui.closeToHome()
@@ -914,22 +979,6 @@ fileprivate extension UI {
 // MARK: AI (72, 73, 74, 75, 76, 78)
 
 extension UI {
-    /// Presses a button of an alert or confirmation dialog on screen, by its title, as a click does.
-    func pressAlertButton(_ title: String) async throws {
-        func buttons(_ v: NSView) -> [NSButton] { (v as? NSButton).map { [$0] } ?? [] + v.subviews.flatMap(buttons) }
-        for w in NSApp.windows where w.isVisible && String(describing: Swift.type(of: w)).contains("Alert") {
-            if let b = w.contentView.map(buttons)?.first(where: { $0.title == title }) {
-                log("press \(title) in the dialog (window \(w.title), key \(w.isKeyWindow), button enabled \(b.isEnabled), target \(String(describing: b.target)) action \(String(describing: b.action)))")
-                w.makeKeyAndOrderFront(nil)
-                await idle(0.3)
-                b.performClick(nil)
-                await idle(0.5)
-                return
-            }
-        }
-        throw DriverError("no dialog button \(title)")
-    }
-
     /// An installed model file of this run's data folder, found by a part of its name.
     func modelFile(_ part: String, _ ctx: Context) -> URL? {
         guard let walker = FileManager.default.enumerator(at: ctx.dataRoot, includingPropertiesForKeys: nil) else { return nil }
@@ -967,6 +1016,12 @@ extension UI {
         for leaf in leaves {
             _ = try await wait(id: "ai-section-chip-\(leaf)", timeout: 8, "the chip of \(leaf)")
         }
+    }
+
+    /// A request about tasks reads the Tasks section: outside the picks the assistant only points to it (ADR-0041).
+    func pickTasksSection() async throws {
+        try await openAssistant()
+        try await pickSections(["notes/tasks"])
     }
 
     /// A question needs a section. A scenario that is not about the picker reads the screenplay.
@@ -1085,15 +1140,21 @@ extension UI {
         let deadline = Date().addingTimeInterval(5)
         while !exists(id: "ai-input"), Date() < deadline { await idle(0.3) }
         guard let input = query(id: "ai-input").first, input.isEnabled else { return }
-        try await ensureSection()
-        try await focusByClick(input)
-        try await type(q, into: "ai-input")
-        try await enter()
+        do {
+            try await ensureSection()
+            try await focusByClick(input)
+            try await type(q, into: "ai-input")
+            try await enter()
+        } catch {
+            // The start's file check can take the box away at any point of this.
+            if !exists(id: "ai-input") { return }
+            throw error
+        }
     }
 
     func lastAnswerText() -> String { query(id: "ai-answer-text").last?.text ?? "" }
 
-    /// Processes of the offline AI engine that run from an app bundle's ai folder.
+    /// Processes of the Straft AI engine that run from an app bundle's ai folder.
     func engines(anyData: Bool = false) -> [String] {
         let root = ProcessInfo.processInfo.environment["STRAFT_DATA_ROOT"] ?? "/nonexistent"
         return run("/bin/ps", ["-axo", "pid=,command="]).split(separator: "\n").map(String.init)
@@ -1342,6 +1403,7 @@ extension Scenarios {
             let mark = ctx.work.appendingPathComponent("change-count-75.txt")
             if phase == 1 {
                 try await aiStart(ui, ctx)
+                try await ui.pickTasksSection()
                 let kind = try await ui.ask("Create a task to scout the railway station.")
                 try ui.expect(kind == "proposal", "the result is a Proposal, is \(kind)")
                 let n = ui.cardCount()
@@ -1385,6 +1447,7 @@ extension Scenarios {
                 ui.log("engines gone \(Int(Date().timeIntervalSince(t0))) s after the relaunch began")
                 try await ui.startApp(ctx)
                 try await ui.openProject("Night Bus")
+                try await ui.pickTasksSection()
                 let kind = try await ui.ask("Create a task to check the bus timetable.")
                 try ui.expect(["proposal", "answer", "clarify"].contains(kind), "the result is a Proposal, an Answer or a Clarify, is \(kind)")
             }
@@ -1409,7 +1472,8 @@ extension Scenarios {
                 try await ui.closeAISettings()
                 try await ui.goTasks()
                 try await ui.tap(id: "new-task")
-                try await ui.type("Confirm pier permit", into: "task-title")
+                try await ui.focusByClick(try await ui.wait(id: "task-title"))
+                try await ui.typeHere("Confirm pier permit")
                 try await ui.tap(label: "Add Task", role: "AXButton")
                 try await ui.waitText("Added task", timeout: 15)
                 await ui.idle(1)
@@ -1572,25 +1636,31 @@ extension Scenarios {
             try await ui.openSettings(tab: "Straft AI")
             try await ui.tap(id: "settings-ai-remove")
             try await ui.wait(id: "settings-ai-remove-confirm", timeout: 15)
-            try await ui.pressAlertButton("Remove")
+            try await ui.tap(id: "settings-ai-remove-confirm")
             let removedBy = Date().addingTimeInterval(20)
             while !ui.screenText().contains("Straft AI was removed."), Date() < removedBy { await ui.idle(0.3) }
             if !ui.screenText().contains("Straft AI was removed.") {
+                ui.log("after Remove the screen says: \(ui.screenText())")
                 f.add("Remove Straft AI…, then Remove did not remove anything and showed no message within 20 s (the confirmation button was pressed)")
                 // Carry on from the state the step should have made: nothing downloaded.
                 try? FileManager.default.removeItem(at: ctx.dataRoot.appendingPathComponent("appdata/models"))
                 try await ui.idle(5)
             }
             f.check(ui.screenText().contains("Not downloaded"), "the screen shows Not downloaded")
-            // A language model file with one byte changed, offered to the card: it must be set aside.
+            // The Windows case has a test host send a damaged file, which is set aside (crates/straft-ai/tests/bundled.rs
+            // proves that here too). This run has no such host, so the same file is offered to the card: an import is
+            // refused and the file left where it is (ADR-0032 decision 5).
             let bad = ctx.work.appendingPathComponent("damaged-gemma-78.gguf")
             try? FileManager.default.removeItem(at: bad)
             _ = ui.run("/bin/cp", ["-c", UI.modelFiles[0].path, bad.path])
             try ui.changeOneByte(bad)
             try await ui.choosing(bad) { try await ui.tap(id: "ai-download-import") }
-            try await ui.idle(5)
-            let screen = ui.screenText()
-            f.check(screen.contains("damaged and has been set aside"), "the card shows \"damaged and has been set aside\": \(ui.query(id: "ai-download-error").map(\.text) + ui.query(id: "ai-download-problem").map(\.text))")
+            // The import reads the whole file before it can say so.
+            let refused = "This file is not a Straft AI model file, so it was not used."
+            let checkedBy = Date().addingTimeInterval(90)
+            while !ui.screenText().contains(refused), Date() < checkedBy { await ui.idle(0.5) }
+            f.check(ui.screenText().contains(refused), "the card says the file is not a model file and was not used")
+            f.check(FileManager.default.fileExists(atPath: bad.path), "the person's file stays where it was")
             try await ui.tap(id: "ai-download-start")
             try await ui.waitText("Downloading:", timeout: 120)
             try await ui.tap(id: "ai-download-pause")
@@ -1608,6 +1678,7 @@ extension Scenarios {
             try await ui.goTasks()
             f.check(ui.openTasks().isEmpty, "there are no open tasks: \(ui.openTasks())")
             try await ui.openAssistant()
+            try await ui.pickTasksSection()
             let kind = try await ui.ask("Create a task to scout the railway station.")
             f.check(kind == "proposal", "the result is a Proposal, is \(kind)")
             f.check(ui.exists(label: "Proposed Changes"), "a Proposed Changes card shows")
@@ -1621,6 +1692,7 @@ extension Scenarios {
         Scenario("74-ai-change-sets/apply-undo-redo", timeout: 600) { ui, _, ctx in
             let f = Findings()
             try await aiStart(ui, ctx)
+            try await ui.pickTasksSection()
             try await ui.ask("Create a task to scout the railway station.")
             let n = ui.cardCount()
             try await ui.tap(id: "ai-apply")
@@ -1647,6 +1719,7 @@ extension Scenarios {
             try await ui.goTasks()
             let before = ui.openTasks()
             try await ui.openAssistant()
+            try await ui.pickTasksSection()
             let kind = try await ui.ask("Create a task to book the bus for the night shoot.")
             f.check(kind == "proposal", "the result is a Proposal, is \(kind)")
             try await ui.tap(id: "ai-reject")
@@ -1662,10 +1735,12 @@ extension Scenarios {
             try await aiStart(ui, ctx)
             try await ui.goTasks()
             try await ui.tap(id: "new-task")
-            try await ui.type("Confirm pier permit", into: "task-title")
+            try await ui.focusByClick(try await ui.wait(id: "task-title"))
+                try await ui.typeHere("Confirm pier permit")
             try await ui.tap(label: "Add Task", role: "AXButton")
             try await ui.waitText("Added task", timeout: 15)
             try await ui.openAssistant()
+            try await ui.pickTasksSection()
             let kind = try await ui.ask("Mark the task Confirm pier permit as done.")
             f.check(kind == "proposal", "the result is a Proposal, is \(kind)")
             try await ui.goTasks()

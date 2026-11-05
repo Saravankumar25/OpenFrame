@@ -40,7 +40,7 @@ impl Adapter {
     }
 }
 
-/// Settings, Offline AI, Graphics card (ADR-0029 decision 6).
+/// Settings, Straft AI, Graphics card (ADR-0029 decision 6).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Setting {
     Automatic,
@@ -150,9 +150,7 @@ impl CpuReason {
             CpuReason::NoVulkanLoader => {
                 "This computer's graphics driver does not offer what Straft AI needs."
             }
-            CpuReason::NoVulkanRuntime => {
-                "This copy of Straft Studio has no graphics card engine."
-            }
+            CpuReason::NoVulkanRuntime => "This copy of Straft Studio has no graphics card engine.",
             CpuReason::NoAdapter | CpuReason::OnlySoftware => "No graphics card was found.",
             CpuReason::NotEnoughMemory => {
                 "The graphics card does not have enough memory for Straft AI."
@@ -164,7 +162,7 @@ impl CpuReason {
     }
 }
 
-/// Settings, Offline AI, Graphics card, and what the probes on this computer found
+/// Settings, Straft AI, Graphics card, and what the probes on this computer found
 /// (`<app data>/ai/graphics.json`).
 #[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]

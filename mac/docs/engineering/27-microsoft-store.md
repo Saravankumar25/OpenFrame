@@ -198,18 +198,18 @@ services" = No.
 6. **Start a submission.**
    - *Pricing and availability:* markets (default: all), audience public, free, release schedule.
    - *Properties:* category **Photo & video** (alternative: Productivity), privacy policy URL,
-     website, support contact, system requirements (x64; memory/disk for the AI assistant),
+     website, support contact, system requirements (x64; memory/disk for Straft AI),
      product declarations.
    - *Age ratings:* answer the IARC questionnaire honestly. Straft Studio has no violence, no sharing of
      user content with other users, no chat, no purchases and no location use. Content is written by
-     the user and stays on the device. If the AI assistant ships, answer the generative-AI questions
+     the user and stays on the device. If Straft AI ships, answer the generative-AI questions
      accordingly. The expected result is a general-audience rating, but the questionnaire decides.
    - *Packages:* upload `Straft-Studio-<ver>-x64.msix`. Device family: Windows Desktop, with the manifest minimum set to Windows 11 (`10.0.22000.0`).
    - *Store listings (en-US):* text from `docs/store/listing.md`, 4 to 8 screenshots (§9), and the
      recommended 300 × 300 app tile icon.
    - *Submission options:* restricted capability justification (§7). Notes for certification:
      "No account or sign-in is required. Create a project from the home screen (New project).
-     The AI assistant runs entirely on this computer with the AI components included in the package;
+     Straft AI runs entirely on this computer with the AI components included in the package;
      the AI model is downloaded only after a click, and the app works fully without using it."
 7. **Submit for certification.** Certification usually takes a few business days. Fix any report
    items and resubmit with a higher version.
@@ -276,7 +276,7 @@ remain and `…\Packages\<family>` is gone.
    download host is named in the policy again, with what it receives (ADR-0026).
 5. Listing details: support contact or website, the screenshots themselves, category choice, and
    the IARC questionnaire answers (the account holder must submit them).
-6. Offline AI: the pinned AI files on the build machine or runner (`STRAFT_AI_ASSETS_DIR`), the Gemma Terms of Use
+6. Straft AI: the pinned AI files on the build machine or runner (`STRAFT_AI_ASSETS_DIR`), the Gemma Terms of Use
    redistribution check, the package size recorded, and a report-inappropriate-content channel (policy 11.16). Full
    list: 23-release-migration.md §7. The models download from Hugging Face at pinned commits; no model host or key is needed (ADR-0032).
 
@@ -309,7 +309,7 @@ cleanup, and a WACK run (§8).
 ## 12. Certification pre-flight and known blockers (added 2026-10-05)
 
 Source: the 2026-10-02 Store readiness audit (`docs/history/audits/`) and the owner's certification notes (`docs/archive/notes/`). Tracked in the
-build plan (areas: Project controls and baseline, AI assistant quality and hardening, Microsoft Store package, Final review and submission) and register Appendix F. Re-check Microsoft Store Policies and Partner Center requirements on the submission date.
+build plan (areas: Project controls and baseline, Straft AI quality and hardening, Microsoft Store package, Final review and submission) and register Appendix F. Re-check Microsoft Store Policies and Partner Center requirements on the submission date.
 
 **Common first-submission failures, and the answer for Straft Studio**
 

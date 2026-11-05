@@ -9,7 +9,7 @@
 - **Amended 2026-10-05:** the Change Set apply step is amended by
   [ADR-0019](ADR-0019-crash-safe-change-set-apply.md) (durable apply journal, compensation on project open).
 - **Decision 2 superseded 2026-10-08** by [ADR-0025](../history/adr/ADR-0025-offline-ai-bundled-in-every-package.md): the runtime,
-  both models and the tokenizer ship inside every package; there is no Offline AI download.
+  both models and the tokenizer ship inside every package; there is no Straft AI download.
 - **Date:** 2026-09-30
 - **Related:** `straft_ai_agentic_rag_spec_prompt.md` (the agentic AI + hybrid RAG spec);
   `Straft_Studio_AI_Specification_Updated.md`; `Straft_Local_AI_Runtime_Model_Management_Specification.md`;
@@ -26,12 +26,12 @@ above the user's.
 
 ## Decision
 
-1. **One model, one profile.** Offline AI has exactly one production profile, internal id `straft-local-ai-v1`:
+1. **One model, one profile.** Straft AI has exactly one production profile, internal id `straft-local-ai-v1`:
    Google **Gemma 3 1B Instruct** (GGUF Q8_0, chosen by a benchmark on the real runtime path; runtime spec §4) plus the
    **BGE small English v1.5** embedding model (MIT, 384 dimensions), both served by pinned `llama.cpp` `llama-server`
    sidecars on 127.0.0.1. There is no model picker and no user-loaded model. The manifest format 2 describes runtime +
    chat model + embedding model; format 1 (the Qwen tiers) is refused.
-2. **Reinstated 2026-10-15 by ADR-0026.** **One download.** **Download Offline AI** fetches the runtime and both models as one combined, resumable,
+2. **Reinstated 2026-10-15 by ADR-0026.** **One download.** **Download Straft AI** fetches the runtime and both models as one combined, resumable,
    SHA-256-verified download from the signed manifest, activates atomically, health-checks both sidecars and is usable
    without a restart. Components are stored once per Windows user, never per project.
 3. **Derived intelligence index.** Each project gets `cache/intelligence.sqlite` (crate `straft-search`): semantic
@@ -66,12 +66,12 @@ above the user's.
 
 ## Consequences
 
-- The Offline AI download is 1,125,156,323 bytes (since ADR-0025 this is roughly the size the bundled AI adds to each package) on a processor-only computer (runtime 19.2 MB + Gemma 1,069.3 MB +
+- The Straft AI download is 1,125,156,323 bytes (since ADR-0025 this is roughly the size the bundled AI adds to each package) on a processor-only computer (runtime 19.2 MB + Gemma 1,069.3 MB +
   BGE 36.7 MB), instead of the 1–5 GB range of the tiered design.
 - A 1B model choosing among many tools in one shot is weak (≈39% tool + argument accuracy in the benchmark). Exact
   facts therefore come from deterministic tools, the catalogue offered per request is small and route-relevant, and
   every model reply is schema-constrained (100% valid JSON in the benchmark).
-- Gemma is distributed under the Gemma Terms of Use: the notice is shown in Settings → Offline AI → Technical details
+- Gemma is distributed under the Gemma Terms of Use: the notice is shown in Settings → Straft AI → Technical details
   and in `THIRD_PARTY_LICENSES.md`, and redistribution through the Straft Studio endpoint must pass the terms on (release
   prerequisite, 23-release-migration.md §7).
 - Retrieval quality has not yet been measured against an evaluation set (Recall@K / MRR, spec §35); only the

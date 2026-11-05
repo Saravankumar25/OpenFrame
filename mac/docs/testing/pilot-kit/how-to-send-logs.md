@@ -16,7 +16,7 @@ It does not hold: your script, project text, project names, file paths, your use
 
 ## AI report
 
-1. Open Settings, then **Offline AI**. Find the **AI health** card.
+1. Open Settings, then **Straft AI**. Find the **AI health** card.
 2. Click **Export AI report**.
 3. Choose where to save the file.
 

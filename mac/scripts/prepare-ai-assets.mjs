@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Offline AI engine: verify the build inputs against the committed lock and stage the engine for
+// Straft AI engine: verify the build inputs against the committed lock and stage the engine for
 // the Tauri bundle (ADR-0026 decision 1).
 //
 // Input:  packaging/ai/ai-assets.lock.json (committed: every engine and model file by path, bytes
@@ -20,7 +20,7 @@
 //   node scripts/prepare-ai-assets.mjs --check         verify only, stage nothing
 //   node scripts/prepare-ai-assets.mjs --optional      development runs: when the build inputs are
 //                                                      absent, stage an empty folder (the app then
-//                                                      shows its "Offline AI is missing" state)
+//                                                      shows its "Straft AI is missing" state)
 //                                                      instead of failing; a wrong file still fails
 //   Options: --target <os-arch> (windows-x86_64, macos-aarch64)  --source <dir>  --out <dir>
 //
@@ -78,11 +78,11 @@ export function readLock(lockPath = LOCK_PATH) {
   try {
     lock = JSON.parse(fs.readFileSync(lockPath, "utf8"));
   } catch (e) {
-    fail(`The Offline AI lock file ${path.relative(ROOT, lockPath)} cannot be read: ${e.message}`);
+    fail(`The Straft AI lock file ${path.relative(ROOT, lockPath)} cannot be read: ${e.message}`);
   }
-  if (lock.lockVersion !== 1) fail("The Offline AI lock file has an unsupported lockVersion (expected 1).");
-  if (lock.bundleId !== "straft-local-ai-v1" || !SAFE_ID.test(lock.bundleVersion ?? "")) fail("The Offline AI lock file names an unknown bundle.");
-  if (!Array.isArray(lock.runtimes) || !Array.isArray(lock.models)) fail("The Offline AI lock file lists no runtimes or models.");
+  if (lock.lockVersion !== 1) fail("The Straft AI lock file has an unsupported lockVersion (expected 1).");
+  if (lock.bundleId !== "straft-local-ai-v1" || !SAFE_ID.test(lock.bundleVersion ?? "")) fail("The Straft AI lock file names an unknown bundle.");
+  if (!Array.isArray(lock.runtimes) || !Array.isArray(lock.models)) fail("The Straft AI lock file lists no runtimes or models.");
   const ids = new Set();
   for (const r of lock.runtimes) {
     const where = `runtime ${r.runtimeId}`;
@@ -111,7 +111,7 @@ export function readLock(lockPath = LOCK_PATH) {
     if (m.tokenizer !== "embedded") fail(`${where}: the tokenizer must be embedded in the model file (or listed as its own file)`);
     checkFileEntry(m.file, where);
   }
-  if (roles.chat !== 1 || roles.embedding !== 1 || roles.multilingualEmbedding > 1) fail("The Offline AI lock file must list exactly one language model, one search model and at most one multilingual search model.");
+  if (roles.chat !== 1 || roles.embedding !== 1 || roles.multilingualEmbedding > 1) fail("The Straft AI lock file must list exactly one language model, one search model and at most one multilingual search model.");
   return lock;
 }
 
@@ -125,7 +125,7 @@ export function bundledFiles(lock, target) {
   const ok = count("cpu") + count("metal") === 1 && count("vulkan") <= 1;
   if (!ok) {
     fail(
-      `No Offline AI engine is pinned for ${target}. Every package contains the Offline AI engine (ADR-0026 decision 1), so this build stops. ` +
+      `No Straft AI engine is pinned for ${target}. Every package contains the Straft AI engine (ADR-0026 decision 1), so this build stops. ` +
         "Add the engine for this platform to packaging/ai/ai-assets.lock.json and its files to .ai-assets.",
     );
   }
@@ -185,7 +185,7 @@ export function findSource(explicit) {
   for (const c of candidates) {
     const abs = path.resolve(c);
     if (fs.existsSync(abs) && fs.statSync(abs).isDirectory()) return abs;
-    if (c === explicit || c === process.env.STRAFT_AI_ASSETS_DIR) fail(`The Offline AI build inputs folder ${abs} does not exist.`);
+    if (c === explicit || c === process.env.STRAFT_AI_ASSETS_DIR) fail(`The Straft AI build inputs folder ${abs} does not exist.`);
   }
   return null;
 }
@@ -222,20 +222,20 @@ export function prepare({ target = currentTarget(), source, out = DEFAULT_OUT, c
   const src = findSource(source);
   if (!src) {
     const msg =
-      "The Offline AI build inputs are missing. Every package contains the Offline AI engine (ADR-0026 decision 1), so the build stops. " +
+      "The Straft AI build inputs are missing. Every package contains the Straft AI engine (ADR-0026 decision 1), so the build stops. " +
       "Put the pinned files in .ai-assets (see packaging/ai/ai-assets.lock.json) or set STRAFT_AI_ASSETS_DIR.";
     if (!optional) fail(msg);
-    log(`Offline AI: build inputs not found; staging an empty folder for this development run (${path.relative(ROOT, out)}).`);
+    log(`Straft AI: build inputs not found; staging an empty folder for this development run (${path.relative(ROOT, out)}).`);
     if (!check) resetOut(out, null);
     return { out, files, bytes, staged: false };
   }
-  log(`Offline AI: verifying ${files.length} pinned files (${(bytes / 1048576).toFixed(0)} MB) for ${target} in ${src}`);
+  log(`Straft AI: verifying ${files.length} pinned files (${(bytes / 1048576).toFixed(0)} MB) for ${target} in ${src}`);
   const problems = verifyFiles(src, files);
   if (problems.length) {
-    fail(`The Offline AI build inputs do not match the lock, so the build stops (nothing was staged):\n  - ${problems.join("\n  - ")}`);
+    fail(`The Straft AI build inputs do not match the lock, so the build stops (nothing was staged):\n  - ${problems.join("\n  - ")}`);
   }
   if (check) {
-    log("Offline AI: every pinned file matches the lock.");
+    log("Straft AI: every pinned file matches the lock.");
     return { out, files, bytes, staged: false };
   }
   resetOut(out, src);
@@ -244,8 +244,8 @@ export function prepare({ target = currentTarget(), source, out = DEFAULT_OUT, c
   // The staged files are checked again in full (a copy that failed half way, or a hard-linked input
   // changed after its check, never reaches the bundle).
   const staged = verifyFiles(out, files);
-  if (staged.length) fail(`Staging the Offline AI failed, so the build stops:\n  - ${staged.join("\n  - ")}`);
-  log(`Offline AI: staged in ${path.relative(ROOT, out) || out}`);
+  if (staged.length) fail(`Staging Straft AI failed, so the build stops:\n  - ${staged.join("\n  - ")}`);
+  log(`Straft AI: staged in ${path.relative(ROOT, out) || out}`);
   return { out, files, bytes, staged: true };
 }
 

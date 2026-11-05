@@ -82,9 +82,7 @@ mod tests {
 
     #[test]
     fn family_name_validation() {
-        assert!(is_valid_package_family_name(
-            "Straft.Studio_8wekyb3d8bbwe"
-        ));
+        assert!(is_valid_package_family_name("Straft.Studio_8wekyb3d8bbwe"));
         assert!(!is_valid_package_family_name(""));
         assert!(!is_valid_package_family_name("NoUnderscore"));
         assert!(!is_valid_package_family_name("..\\..\\escape_x"));
@@ -92,9 +90,7 @@ mod tests {
         assert!(!is_valid_package_family_name("has space_x"));
         assert!(!is_valid_package_family_name("Trailing._8wekyb3d8bbwe"));
         assert!(!is_valid_package_family_name("Straft.Studio_short"));
-        assert!(!is_valid_package_family_name(
-            "Straft.Studio_8WEKYB3D8BBWE"
-        ));
+        assert!(!is_valid_package_family_name("Straft.Studio_8WEKYB3D8BBWE"));
         assert!(!is_valid_package_family_name("a_8wekyb3d8bbwe"));
         // Package names never contain an underscore; only the publisher separator does.
         assert!(!is_valid_package_family_name("Name_x_8wekyb3d8bbwe"));

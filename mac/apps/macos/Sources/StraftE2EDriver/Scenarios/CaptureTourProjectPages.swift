@@ -457,7 +457,12 @@ extension Scenarios {
             await ui.idle(0.8)
             try await ui.pagesNewTask("Call the second bus company")
             guard let row = ui.all().first(where: { $0.identifier.hasPrefix("task-row-") && $0.label.contains("second bus company") }) else { throw DriverError("no task row") }
-            try await ui.press(row)
+            // A press right after the save did not always open the task, so press again until it opens.
+            await ui.idle(1.0)
+            for _ in 0..<3 where !ui.exists(id: "task-title") {
+                if let again = ui.all().first(where: { $0.identifier.hasPrefix("task-row-") && $0.label.contains("second bus company") }) { try await ui.press(again) }
+                await ui.idle(1.5)
+            }
             _ = try await ui.wait(id: "task-title", timeout: 8)
             try await ui.capAct(id: "task-delete")
             await ui.idle(0.8)

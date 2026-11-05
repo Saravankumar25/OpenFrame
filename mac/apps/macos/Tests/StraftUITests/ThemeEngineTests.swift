@@ -216,6 +216,25 @@ private enum Fixtures {
             #expect(r.has("control-tint"), "\(mode) control tint for white-text controls")
         }
     }
+
+    /// Text the app draws reads on the surfaces it sits on, in every built-in theme and mode; the
+    /// shared palette is lifted where it falls short (`ThemeEngine.keepTextReadable`).
+    @MainActor @Test func everyThemeKeepsTextReadable() throws {
+        let mac = ThemeStore().catalog
+        for theme in mac.builtIn {
+            for mode in [ColorMode.light, .dark] {
+                let r = ThemeEngine.resolve(themeId: theme.id, mode: mode, themes: mac, forScreen: true)
+                for surface in ["bg", "panel", "surface2", "surface3"] {
+                    #expect(r.contrast("muted", surface) >= 4.5, "\(theme.id) \(mode) muted on \(surface)")
+                    #expect(r.contrast("accent-d", surface) >= 4.5, "\(theme.id) \(mode) strong accent on \(surface)")
+                }
+                #expect(r.contrast("accent-d", "accent-soft") >= 4.5, "\(theme.id) \(mode) strong accent on the soft accent")
+                let tint = try #require(r.tokenColor("control-tint"), "\(theme.id) \(mode) control tint")
+                let fill = OKLab(srgb: tint.r, tint.g, tint.b)
+                #expect(ColorMath.contrast(fill, OKLab(srgb: 1, 1, 1)) >= 4.5, "\(theme.id) \(mode) white on the control tint")
+            }
+        }
+    }
 }
 
 extension ResolvedTheme {

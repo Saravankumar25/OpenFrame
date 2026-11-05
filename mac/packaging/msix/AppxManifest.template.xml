@@ -12,9 +12,9 @@
     runFullTrust    (restricted) required for every packaged Win32 desktop app. Straft Studio is a
                     Tauri (Rust + WebView2) desktop app, not a UWP app. Justification text is in
                     docs/engineering/27-microsoft-store.md section 7.
-    No internetClient: the Offline AI ships inside the package (ADR-0025) and nothing is
+    No internetClient: Straft AI ships inside the package (ADR-0025) and nothing is
                     downloaded, Store builds have no in-app updater, and links open in the user's
-                    browser. The Offline AI engine talks to Straft Studio over loopback only.
+                    browser. The Straft AI engine talks to Straft Studio over loopback only.
 -->
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"

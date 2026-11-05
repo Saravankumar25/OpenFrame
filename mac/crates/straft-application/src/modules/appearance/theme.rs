@@ -338,7 +338,8 @@ pub fn parse_theme(text: &str, origin: Origin) -> Result<Theme, Vec<String>> {
     }
     let value: Value = serde_json::from_str(text).map_err(|_| {
         vec![
-            "This is not a theme file. Straft Studio theme files are small JSON documents.".to_string(),
+            "This is not a theme file. Straft Studio theme files are small JSON documents."
+                .to_string(),
         ]
     })?;
     parse_value(&value, origin)

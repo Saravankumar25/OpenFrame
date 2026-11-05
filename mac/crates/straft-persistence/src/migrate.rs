@@ -7,9 +7,9 @@
 //! structural integrity, and only then commits. A failure leaves the database
 //! exactly as it was.
 
-use straft_domain::{AppError, AppResult, now_ms};
 use rusqlite::{Connection, params};
 use sha2::{Digest, Sha256};
+use straft_domain::{AppError, AppResult, now_ms};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Migration {
@@ -657,8 +657,11 @@ mod tests {
 
     #[test]
     fn a_windows_checkout_of_the_earlier_text_is_accepted_too() {
-        let crlf: &'static str =
-            Box::leak(earlier_appearance_sql().replace('\n', "\r\n").into_boxed_str());
+        let crlf: &'static str = Box::leak(
+            earlier_appearance_sql()
+                .replace('\n', "\r\n")
+                .into_boxed_str(),
+        );
         let mut c = crate::open_in_memory().unwrap();
         apply(&mut c, &[M1, appearance(crlf)]).unwrap();
         let shipped = [M1, appearance(APPEARANCE_NOW)];
@@ -716,7 +719,11 @@ mod tests {
     fn the_allow_list_names_exactly_the_files_the_rename_changed() {
         assert_eq!(RENAMED_MIGRATIONS.len(), 11);
         for r in RENAMED_MIGRATIONS {
-            assert!(r.before != r.now && r.before != r.before_crlf, "{}", r.version);
+            assert!(
+                r.before != r.now && r.before != r.before_crlf,
+                "{}",
+                r.version
+            );
         }
     }
 

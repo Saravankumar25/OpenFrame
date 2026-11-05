@@ -10,6 +10,7 @@ use std::path::Path;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 
+use serde_json::{Value, json};
 use straft_application::events::RecordingSink;
 use straft_application::modules::ai::toolbox;
 use straft_application::registry::{self, AiExposure};
@@ -25,7 +26,6 @@ use straft_entitlement::mac::{
     RevalidateReason, StoreEnvironment, StoreKitBridge, StoreProducts, SystemWallClock,
     VerifiedTransaction,
 };
-use serde_json::{Value, json};
 
 const DAY_SECONDS: u64 = 24 * 60 * 60;
 /// 2027-01-15, a fixed purchase date for the Mac fakes.

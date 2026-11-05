@@ -1,4 +1,4 @@
-// Settings > Offline AI > Assistant memory (Windows: workspaces/settings/AssistantMemory.tsx).
+// Settings > Straft AI > Assistant memory (Windows: workspaces/settings/AssistantMemory.tsx).
 // What the assistant remembers about the person in the open project: facts and preferences they
 // stated outright, or answers they confirmed. Kept on this Mac, never shared, each entry
 // deletable. The list and the delete come from the core (`ai.memory_list`, `ai.memory_delete`),

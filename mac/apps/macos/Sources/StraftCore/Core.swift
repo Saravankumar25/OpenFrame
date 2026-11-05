@@ -54,7 +54,7 @@ public struct CoreStartOptions: Sendable {
     /// The first-start library setup tests: the test folder starts like a new computer. Honoured
     /// by the core only in a debug build on a test folder.
     public var testLibrarySetup = false
-    /// Temperature 0 and a fixed seed for the Offline AI in the automated tests. Honoured by the
+    /// Temperature 0 and a fixed seed for Straft AI in the automated tests. Honoured by the
     /// core only in a debug build on a test folder.
     public var testAIDeterministic = false
 

@@ -78,7 +78,7 @@ pub enum Capability {
     Import,
     /// Accept/apply a Change Set (AI, import, review response).
     ApplyChangeSet,
-    /// Ask the AI assistant read/compute/navigate questions.
+    /// Ask Straft AI read/compute/navigate questions.
     UseAi,
 }
 

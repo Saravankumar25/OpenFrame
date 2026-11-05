@@ -16,8 +16,8 @@ pub mod undo;
 use std::path::Path;
 use std::time::Duration;
 
-use straft_domain::{AppError, AppResult};
 use rusqlite::{Connection, OpenFlags};
+use straft_domain::{AppError, AppResult};
 
 pub use rusqlite;
 
@@ -198,7 +198,9 @@ const SNAPSHOT_WAIT: Duration = Duration::from_secs(30);
 pub fn snapshot_database(source: &Path, dest: &Path) -> AppResult<()> {
     let from = open_sqlite(
         source,
-        OpenFlags::SQLITE_OPEN_READ_ONLY | OpenFlags::SQLITE_OPEN_NO_MUTEX | OpenFlags::SQLITE_OPEN_URI,
+        OpenFlags::SQLITE_OPEN_READ_ONLY
+            | OpenFlags::SQLITE_OPEN_NO_MUTEX
+            | OpenFlags::SQLITE_OPEN_URI,
     )?;
     from.busy_timeout(Duration::from_secs(5))?;
     let mut to = open_sqlite(dest, OpenFlags::default())?;
@@ -333,10 +335,16 @@ mod tests {
         let dest = dir.path().join("copy.sqlite");
         snapshot_database(&crashed, &dest).unwrap();
 
-        assert_eq!(std::fs::read(side(&crashed, "-wal")).unwrap(), log, "not folded");
+        assert_eq!(
+            std::fs::read(side(&crashed, "-wal")).unwrap(),
+            log,
+            "not folded"
+        );
         assert_eq!(std::fs::read(&crashed).unwrap(), main, "not written");
         let copy = open_connection(&dest, false).unwrap();
-        let n: i64 = copy.query_row("SELECT count(*) FROM t", [], |r| r.get(0)).unwrap();
+        let n: i64 = copy
+            .query_row("SELECT count(*) FROM t", [], |r| r.get(0))
+            .unwrap();
         assert_eq!(n, 1, "the row only in the log came along");
     }
 
@@ -393,9 +401,7 @@ mod tests {
             .unwrap()
             .flatten()
             .map(|e| e.file_name().to_string_lossy().into_owned())
-            .filter(|n| {
-                n.contains(straft_platform::atomic::TEMP_SUFFIX) || n.ends_with(".partial")
-            })
+            .filter(|n| n.contains(straft_platform::atomic::TEMP_SUFFIX) || n.ends_with(".partial"))
             .collect();
         assert!(left.is_empty(), "staging files left behind: {left:?}");
     }

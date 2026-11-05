@@ -1,4 +1,4 @@
-// Settings, Offline AI (Windows: Settings, Offline AI). The engine ships inside the app; the models
+// Settings, Straft AI (Windows: Settings, Straft AI). The engine ships inside the app; the models
 // are a one-time download the person starts here or in the AI panel. This page shows the status,
 // the download while Straft AI is not installed, a way to free memory, Remove, the graphics
 // card choice, the technical details ordinary screens never show, the AI health card with Export

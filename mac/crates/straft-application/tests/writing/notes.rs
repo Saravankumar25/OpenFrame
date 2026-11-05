@@ -1,9 +1,9 @@
 //! Notes, Tasks and Templates (FSD §59, §106, §113, §158, §159) through the
 //! public operation registry.
 
+use serde_json::{Value, json};
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 fn ids(v: &Value) -> Vec<String> {
     v.as_array()

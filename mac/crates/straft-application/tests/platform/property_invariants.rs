@@ -29,10 +29,10 @@
 
 use std::collections::BTreeMap;
 
+use serde_json::{Value, json};
 use straft_import_export::fdx::{self, FdxOptions};
 use straft_import_export::{ScreenplayDoc, fountain};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 // ------------------------------------------------------------------------------ generator
 

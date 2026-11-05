@@ -84,12 +84,6 @@ impl AppError {
             format!("You don't have permission to {action} in this project."),
         )
     }
-    pub fn private_content() -> Self {
-        Self::new(
-            "permission.private",
-            "The requested information is private and cannot be accessed in this context.",
-        )
-    }
     pub fn locked_draft() -> Self {
         Self::new(
             "permission.locked_draft",

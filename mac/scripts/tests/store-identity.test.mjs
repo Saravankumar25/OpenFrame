@@ -99,7 +99,7 @@ test("the build number must rise above the last upload", () => {
 test("no licence server is left in the shipped addresses or the workflows", () => {
   const addresses = read("scripts/app-addresses.json");
   assert.ok(!/licence\.straft|licence-sandbox/.test(addresses));
-  assert.ok(addresses.includes("https://openframestudio.app/contact/"));
+  assert.ok(addresses.includes("https://straftstudio.com/contact/"));
   for (const wf of ["release.yml", "mac-core.yml", "ci.yml"]) {
     assert.ok(!/LICENCE_SIGNING|licence-server/.test(read(`.github/workflows/${wf}`)), wf);
   }

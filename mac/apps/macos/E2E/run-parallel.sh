@@ -21,16 +21,18 @@ for p in "${pids[@]}"; do wait "$p"; done
 printf "scenario\tresult\tseconds\tmessage\n" > "$RUN/results.tsv"
 for k in $(seq 1 "$N"); do tail -n +2 "$RUN/shard-$k/results.tsv" 2>/dev/null >> "$RUN/results.tsv"; done
 pass=$(awk -F'\t' 'NR>1 && $2=="pass"' "$RUN/results.tsv" | wc -l | tr -d ' ')
-fail=$(awk -F'\t' 'NR>1 && $2!="pass"' "$RUN/results.tsv" | wc -l | tr -d ' ')
+fail=$(awk -F'\t' 'NR>1 && $2=="fail"' "$RUN/results.tsv" | wc -l | tr -d ' ')
+blocked=$(awk -F'\t' 'NR>1 && $2=="blocked"' "$RUN/results.tsv" | wc -l | tr -d ' ')
+skip=$(awk -F'\t' 'NR>1 && $2=="skip"' "$RUN/results.tsv" | wc -l | tr -d ' ')
 {
   echo "# End-to-end run on the real app ($N runners side by side)"
   echo
   sed -n '3,6p' "$RUN/shard-1/summary.md" 2>/dev/null
-  echo "- Result: $pass passed, $fail failed"
+  echo "- Result: $pass passed, $fail failed, $blocked blocked, $skip skipped"
   echo
   echo "| Scenario | Result | Seconds | Message |"
   echo "|---|---|---|---|"
   tail -n +2 "$RUN/results.tsv" | sort | awk -F'\t' '{printf "| %s | %s | %s | %s |\n", $1, $2, $3, $4}'
 } > "$RUN/summary.md"
-echo "$pass passed, $fail failed. Results: $RUN"
+echo "$pass passed, $fail failed, $blocked blocked, $skip skipped. Results: $RUN"
 [[ $fail -eq 0 ]]

@@ -5,6 +5,7 @@
 //! assistant never deletes one; the 30-day purge removes it. Through the public operation
 //! registry, the same path as the interface.
 
+use serde_json::{Value, json};
 use straft_application::MutationMeta;
 use straft_application::modules::ai::toolbox;
 use straft_application::modules::retention::{self, MAX_PER_RUN};
@@ -12,7 +13,6 @@ use straft_application::registry::{self, AiExposure};
 use straft_application::store::fault::{CommitFault, fail_commits};
 use straft_domain::{Capability, Role, new_id, now_ms};
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const DAY: i64 = 24 * 60 * 60 * 1000;
 

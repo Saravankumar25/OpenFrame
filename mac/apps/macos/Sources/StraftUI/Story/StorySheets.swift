@@ -178,7 +178,7 @@ struct DeleteLinkedSheet: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text(Self.message(count: refs.count, scene: scene))
                 Text("\(single ? "The card moves" : "They move") to Recently Deleted. You can restore \(single ? "it" : "them") or use Undo.")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.ofMuted)
             }
         } footer: {
             Button("Cancel") { model.sheet = nil }.keyboardShortcut(.cancelAction)
@@ -211,13 +211,13 @@ struct MoveSheet: View {
         let dests = model.board.map { StoryLogic.moveDestinations($0, kinds: Set(refs.map(\.kind))) } ?? []
         StorySheetFrame(title: refs.count == 1 ? "Move to\u{2026}" : "Move \(refs.count) items to\u{2026}", width: 400) {
             if dests.isEmpty {
-                Text("Add an Act first.").foregroundStyle(.secondary)
+                Text("Add an Act first.").foregroundStyle(.ofMuted)
             } else {
                 VStack(alignment: .leading, spacing: 4) {
                     Picker("Destination", selection: $dest) {
                         ForEach(dests) { d in Text("\(d.depth > 0 ? "    \u{203A} " : "")\(d.label)").tag(d.id) }
                     }
-                    Text("Items are added at the end and keep their order.").font(.caption).foregroundStyle(.secondary)
+                    Text("Items are added at the end and keep their order.").font(.caption).foregroundStyle(.ofMuted)
                 }
             }
         } footer: {
@@ -306,7 +306,7 @@ struct CardDisplaySheet: View {
                         }
                     }
                     Text("Ticking a box switches to Custom. Open a card to read and edit everything it holds.")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(.caption).foregroundStyle(.ofMuted)
                 }
             } else {
                 ProgressView()
@@ -364,7 +364,7 @@ struct ApplyOrderSheet: View {
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             }
                             .frame(maxHeight: 200)
-                            Text("Production planning, if any, is not reordered automatically.").font(.caption).foregroundStyle(.secondary)
+                            Text("Production planning, if any, is not reordered automatically.").font(.caption).foregroundStyle(.ofMuted)
                         }
                     }
                 } else if let f = m?.failure {

@@ -1,4 +1,4 @@
-// Download Straft AI and the Offline AI settings, with a real core and no network: nothing is
+// Download Straft AI and the Straft AI settings, with a real core and no network: nothing is
 // downloaded here. Covers the not-installed state before the click, remove, import of a bad file,
 // the health card, Export AI report (scenarios 76 and 78 without a host).
 

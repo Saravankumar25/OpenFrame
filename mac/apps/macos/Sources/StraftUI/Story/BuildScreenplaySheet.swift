@@ -15,7 +15,7 @@ struct BuildScreenplaySheet: View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(spacing: PageSpacing.tight) {
                 Text("Build Screenplay from Beat Board").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                Text("Preview the order before anything is created.").font(.callout).foregroundStyle(.secondary)
+                Text("Preview the order before anything is created.").font(.callout).foregroundStyle(.ofMuted)
             }
             .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
@@ -51,7 +51,7 @@ struct BuildScreenplaySheet: View {
                 destinationChoices(b).frame(maxWidth: .infinity, alignment: .leading)
             }
             HStack {
-                Text(b.summary).font(.callout).foregroundStyle(.secondary).accessibilityIdentifier("build-summary")
+                Text(b.summary).font(.callout).foregroundStyle(.ofMuted).accessibilityIdentifier("build-summary")
                 Spacer()
                 Button("Cancel") { model.sheet = nil }.keyboardShortcut(.cancelAction)
                 Button("Build Screenplay") { Task { await b.build() } }

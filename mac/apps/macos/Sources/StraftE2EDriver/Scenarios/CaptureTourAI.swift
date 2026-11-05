@@ -1,6 +1,6 @@
-// Capture tour section: AI Assistant, packages and licence screens. Primitives and helpers are in CaptureTour.swift.
+// Capture tour section: Straft AI, packages and licence screens. Primitives and helpers are in CaptureTour.swift.
 //
-// The development app carries no Offline AI engine (Contents/Resources/ai is absent), so the
+// The development app carries no Straft AI engine (Contents/Resources/ai is absent), so the
 // assistant panel shows its "not available" state; the conversation, the download card and the
 // answers cannot be reached in this build. Packages run end to end: the driver answers the Save
 // and Open panels with files in the scenario's own work folder (see Panels.swift).
@@ -19,7 +19,7 @@ extension Scenarios {
             }
             await ui.step("ai panel") {
                 try await ui.aiOpen()
-                await ui.capture("ai-panel", title: "Straft AI, not available in this build", area: area, from: "ai-closed-home", via: "ai-toggle")
+                await ui.capture("ai-panel", title: "Straft AI, first open", area: area, from: "ai-closed-home", via: "ai-toggle")
             }
             await ui.capMenu(id: "ai-settings-menu", name: "ai-settings-menu", title: "Straft AI, settings menu", area: area, from: "ai-panel")
             await ui.step("ai offline settings") {

@@ -15,11 +15,11 @@
 
 use std::collections::HashMap;
 
-use straft_domain::enums::BreakdownCategory;
-use straft_domain::{AppError, AppResult};
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{Connection, OptionalExtension};
 use serde::Serialize;
+use straft_domain::enums::BreakdownCategory;
+use straft_domain::{AppError, AppResult};
 use ts_rs::TS;
 
 use crate::registry::Registry;

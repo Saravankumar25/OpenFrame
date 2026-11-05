@@ -1,4 +1,4 @@
-// Settings > Offline AI > Assistant memory (Windows: workspaces/settings/AssistantMemory.test.tsx).
+// Settings > Straft AI > Assistant memory (Windows: workspaces/settings/AssistantMemory.test.tsx).
 // The list and delete answers come from a stand-in for the core (AITestSupport.swift): entries are
 // saved only by a real model turn, which these tests do not run. The real `ai.memory_list` of an
 // open project is checked once, and the card without a project.
@@ -13,7 +13,7 @@ private func entry(_ id: String, _ text: String, _ kind: AiMemoryKind) -> AiMemo
     AiMemoryEntry(id: id, text: text, kind: kind, entityRefs: [], sourceRequestId: "r1", createdAt: Date().timeIntervalSince1970 * 1000)
 }
 
-@Suite("AI assistant memory", .serialized)
+@Suite("Straft AI memory", .serialized)
 @MainActor
 struct AIMemoryTests {
     private func project() async throws -> (URL, AppModel) {

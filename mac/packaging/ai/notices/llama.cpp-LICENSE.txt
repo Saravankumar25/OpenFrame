@@ -1,4 +1,4 @@
-llama.cpp (the Offline AI engine, build b11259)
+llama.cpp (the Straft AI engine, build b11259)
 https://github.com/ggml-org/llama.cpp
 
 MIT License

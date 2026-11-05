@@ -18,8 +18,8 @@
 
 use std::path::{Path, PathBuf};
 
-use straft_test_support::TestEnv;
 use serde_json::{Value, json};
+use straft_test_support::TestEnv;
 
 const UPDATE_ENV: &str = "STRAFT_UPDATE_GOLDEN";
 const BRAND: &str = "Created using Straft Studio";

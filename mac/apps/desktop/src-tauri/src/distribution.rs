@@ -22,10 +22,8 @@ pub const WEBVIEW2_DOWNLOAD_URL: &str =
 /// Build-channel marker. It is logged at startup, so it stays in the executable, and
 /// `scripts/build-msix.mjs --store` refuses to package an executable that doesn't contain the
 /// `store` marker.
-pub const CHANNEL_MARKER: &str = concat!(
-    "straft-distribution-channel:",
-    env!("STRAFT_DISTRIBUTION")
-);
+pub const CHANNEL_MARKER: &str =
+    concat!("straft-distribution-channel:", env!("STRAFT_DISTRIBUTION"));
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Channel {

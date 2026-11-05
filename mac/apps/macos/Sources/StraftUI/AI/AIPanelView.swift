@@ -1,4 +1,4 @@
-// The AI Assistant panel (Windows: ai/AiPanel.tsx). It docks beside the page as an inspector, so
+// The Straft AI panel (Windows: ai/AiPanel.tsx). It docks beside the page as an inspector, so
 // opening it narrows the page and never covers a control. Until Straft AI is downloaded, and
 // when a downloaded file is missing or damaged, it offers the download; a missing or damaged
 // engine says to reinstall. Everything else in Straft Studio works without it.
@@ -55,22 +55,33 @@ struct AIPanelView: View {
     // MARK: Header
 
     private var header: some View {
+        // At the panel's narrowest the Close button keeps only its mark, so no word breaks in two.
+        ViewThatFits(in: .horizontal) {
+            headerRow(closeTitle: true)
+            headerRow(closeTitle: false)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+    }
+
+    private func headerRow(closeTitle: Bool) -> some View {
         HStack(spacing: 8) {
             Image(systemName: "sparkles").accessibilityHidden(true)
-            Text("Straft AI").font(.headline)
-            Spacer()
+            Text("Straft AI").font(.headline).lineLimit(1).fixedSize()
+            Spacer(minLength: 0)
             BDChip(text: model?.status?.mode ?? "Off", tone: model?.status?.available == true ? .green : .plain)
+                .fixedSize()
                 .help(model?.status?.available == true ? "Runs on this computer" : "Straft AI is off")
                 .accessibilityIdentifier("ai-mode-chip")
-            if model?.status != nil { settingsMenu }
-            Button(action: onClose) { Label("Close", systemImage: "xmark") }
-                .buttonStyle(.borderless)
+            if model?.status != nil { settingsMenu.fixedSize() }
+            Button(action: onClose) {
+                if closeTitle { Label("Close", systemImage: "xmark").lineLimit(1).fixedSize() } else { Image(systemName: "xmark") }
+            }
+                .buttonStyle(.ofBorderless)
                 .help("Close Straft AI")
                 .accessibilityLabel("Close Straft AI")
                 .accessibilityIdentifier("ai-close")
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
     }
 
     private var settingsMenu: some View {
@@ -85,7 +96,7 @@ struct AIPanelView: View {
         } label: {
             Label("Settings", systemImage: "ellipsis.circle")
         }
-        .menuStyle(.borderlessButton)
+        .borderlessAccentMenu()
         .fixedSize()
         .help("Straft AI settings")
         .accessibilityLabel("Straft AI settings")

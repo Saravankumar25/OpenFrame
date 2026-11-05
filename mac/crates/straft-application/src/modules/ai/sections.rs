@@ -8,10 +8,10 @@
 //!
 //! No model decides anything here: the leaves come from the person, everything after them is code.
 
-use straft_domain::{Actor, AppError, AppResult, Capability};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult, Capability};
 use ts_rs::TS;
 
 use super::dossier::fetch::{

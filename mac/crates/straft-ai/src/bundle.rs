@@ -1,4 +1,4 @@
-//! The Offline AI of this installation (ADR-0026).
+//! Straft AI of this installation (ADR-0026).
 //!
 //! The package carries the engine: the llama.cpp server and the libraries it loads, pinned in the
 //! committed lock `packaging/ai/ai-assets.lock.json` by path, bytes and SHA-256 with its licence
@@ -22,9 +22,9 @@
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
 
-use straft_domain::{AppError, AppResult, now_ms};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use straft_domain::{AppError, AppResult, now_ms};
 
 use crate::engines::{EngineFiles, hash_file, is_code};
 
@@ -32,7 +32,7 @@ use crate::engines::{EngineFiles, hash_file, is_code};
 pub const LOCK_JSON: &str = include_str!("../../../packaging/ai/ai-assets.lock.json");
 /// Folder of the app resources that holds the bundled AI (`scripts/prepare-ai-assets.mjs`).
 pub const RESOURCE_FOLDER: &str = "ai";
-/// The single production Offline AI bundle (internal id; never shown in the normal UI).
+/// The single production Straft AI bundle (internal id; never shown in the normal UI).
 pub const BUNDLE_ID: &str = "straft-local-ai-v1";
 /// Format of the lock this build understands.
 pub const LOCK_VERSION: u32 = 1;
@@ -80,8 +80,7 @@ pub fn unsupported() -> AppError {
 }
 
 fn invalid_lock(detail: impl Into<String>) -> AppError {
-    AppError::internal("Straft AI lock compiled into this build is invalid")
-        .with_detail(detail)
+    AppError::internal("Straft AI lock compiled into this build is invalid").with_detail(detail)
 }
 
 /// One pinned file: a single path component (or `a/b` inside the engine folder), size and hash.
@@ -179,7 +178,7 @@ pub struct ModelEntry {
     pub license_url: String,
     /// Context window the runtime is started with.
     pub context_tokens: u32,
-    /// Below this much memory Offline AI is not expected to work.
+    /// Below this much memory Straft AI is not expected to work.
     pub min_ram_bytes: u64,
     /// Memory for comfortable processor inference.
     pub recommended_ram_bytes: u64,
@@ -575,7 +574,7 @@ impl InstalledModels {
     }
 }
 
-/// The Offline AI of this installation: the engine in the read-only resource folder, the lock, and
+/// Straft AI of this installation: the engine in the read-only resource folder, the lock, and
 /// the downloaded model set when there is one.
 #[derive(Debug, Clone)]
 pub struct BundledAi {

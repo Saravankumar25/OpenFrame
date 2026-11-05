@@ -6,8 +6,8 @@
 //! JSON Schema the builders produce; model output that does not match is refused
 //! (and never "repaired" into something else).
 
-use straft_domain::{AppError, AppResult};
 use serde_json::{Map, Value, json};
+use straft_domain::{AppError, AppResult};
 
 /// Upper bound for the serialized arguments of one tool call.
 pub const MAX_ARGS_BYTES: usize = 8 * 1024;

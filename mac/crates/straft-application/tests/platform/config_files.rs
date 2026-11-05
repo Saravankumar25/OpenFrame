@@ -6,9 +6,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+use serde_json::json;
 use straft_application::events::RecordingSink;
 use straft_application::{AppConfig, AppCore};
-use serde_json::json;
 
 /// Where a file lives and which configuration puts it there.
 struct Case {

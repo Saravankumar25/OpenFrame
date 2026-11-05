@@ -25,9 +25,9 @@ use std::fs::{self, File, OpenOptions};
 use std::path::{Path, PathBuf};
 
 use fs4::fs_std::FileExt;
+use serde::{Deserialize, Serialize};
 use straft_domain::{AppError, AppResult, PROJECT_FORMAT_VERSION, now_ms};
 use straft_platform::legacy_names;
-use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 pub const PROJECT_EXTENSION: &str = "straft";
@@ -393,11 +393,6 @@ pub fn default_projects_dir() -> Option<PathBuf> {
     straft_platform::dirs::user_content_dir().map(|d| d.join("Projects"))
 }
 
-/// Default location for the user's Global Idea Vault (user content, so it lives in Documents).
-pub fn default_global_vault_dir() -> Option<PathBuf> {
-    straft_platform::dirs::user_content_dir().map(|d| d.join("Global Idea Vault"))
-}
-
 /// Application-private data (`%LOCALAPPDATA%\Straft` on Windows,
 /// `~/Library/Application Support/Straft` on macOS): settings, recents, models, logs.
 pub fn app_data_dir() -> Option<PathBuf> {
@@ -491,8 +486,7 @@ mod tests {
                 .unwrap();
         fs::write(&left, b"half").unwrap();
         let left_root =
-            straft_platform::atomic::unique_temp_path(layout.root(), &layout.manifest())
-                .unwrap();
+            straft_platform::atomic::unique_temp_path(layout.root(), &layout.manifest()).unwrap();
         fs::write(&left_root, b"half").unwrap();
         // A staging file this new may belong to a write in progress and is kept.
         assert_eq!(remove_stale_temps(&layout), 0);
@@ -622,7 +616,10 @@ mod tests {
         assert!(layout.manifest().is_file());
         assert!(!layout.legacy_manifest().exists());
         let back = read_manifest(&layout).unwrap();
-        assert_eq!((back.title.as_str(), back.project_id.as_str()), ("Renamed", id.as_str()));
+        assert_eq!(
+            (back.title.as_str(), back.project_id.as_str()),
+            ("Renamed", id.as_str())
+        );
         let on_disk: serde_json::Value =
             serde_json::from_slice(&fs::read(layout.manifest()).unwrap()).unwrap();
         assert_eq!(on_disk["format"], MANIFEST_FORMAT);

@@ -4,8 +4,8 @@
 
 use std::sync::LazyLock;
 
-use straft_domain::AppResult;
 use regex::Regex;
+use straft_domain::AppResult;
 
 use crate::modules::ai::dossier::asked::{best_rows, names_row, row_words};
 use crate::modules::ai::dossier::ctx::{FetchCtx, SceneRef, safe};

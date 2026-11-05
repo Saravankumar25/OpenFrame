@@ -1,4 +1,4 @@
-//! The Offline AI with the real models: installed through the app's own "use a model file I
+//! Straft AI with the real models: installed through the app's own "use a model file I
 //! already have" path, then real questions, proposals applied, rejected and undone.
 
 use serde_json::{Value, json};

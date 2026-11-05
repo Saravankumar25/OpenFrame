@@ -410,11 +410,7 @@ mod tests {
         fs::write(&fresh, b"being written").unwrap();
         fs::write(dir.path().join("a.txt"), b"user").unwrap();
         fs::write(dir.path().join("notes.straft-tmp.txt"), b"user too").unwrap();
-        fs::write(
-            dir.path().join(".draft.straft-tmp"),
-            b"user, wrong shape",
-        )
-        .unwrap();
+        fs::write(dir.path().join(".draft.straft-tmp"), b"user, wrong shape").unwrap();
         let old = SystemTime::now() - STALE_AFTER - Duration::from_secs(60);
         OpenOptions::new()
             .write(true)

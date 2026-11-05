@@ -6,9 +6,9 @@
 
 use std::time::Duration;
 
-use straft_domain::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_domain::{AppError, AppResult};
 
 /// Where the running sidecar listens (loopback only) and its per-launch key.
 #[derive(Clone)]

@@ -154,7 +154,7 @@ struct StoreLicenceTests {
         var opened: [URL] = []
         rig.licence.openAddress = { opened.append($0) }
         rig.licence.openContact()
-        #expect(opened.map(\.absoluteString) == ["https://openframestudio.app/contact/"])
+        #expect(opened.map(\.absoluteString) == ["https://straftstudio.com/contact/"])
     }
 
     @Test func aClockTurnedBackLocksAndClearsByItselfWithNoClick() async throws {
@@ -502,11 +502,23 @@ struct LicenceRulesTests {
         #expect(LicenceRules.lockBody(revoked: true, price: nil).contains("no longer shows a purchase"))
     }
 
-    @Test func releaseBuildsHideSocialHandlesWithoutARealAddress() {
-        #expect(LicenceRules.visibleSocialLinks(release: true).isEmpty)
-        #expect(LicenceRules.visibleSocialLinks(release: false).count == 8)
-        let real = LicenceRules.SocialLink(name: "X", short: "X", handle: "@a", url: "https://x.com/a")
-        #expect(LicenceRules.visibleSocialLinks(release: true, links: [real]) == [real])
+    @Test func theEightOfficialAccountsHaveTheirExactAddresses() {
+        #expect(SocialLinks.all.map(\.id) == ["youtube", "facebook", "instagram", "x", "threads", "linkedin", "reddit", "discord"])
+        #expect(SocialLinks.all.map(\.url) == [
+            "https://www.youtube.com/@StraftStudio",
+            "https://www.facebook.com/straftstudio/",
+            "https://www.instagram.com/straftstudio/",
+            "https://x.com/straftstudio/",
+            "https://www.threads.com/@straftstudio/",
+            "https://www.linkedin.com/company/straftstudio/",
+            "https://www.reddit.com/user/straftstudio/",
+            "https://straftstudio.com/discord",
+        ])
+        for link in SocialLinks.all {
+            #expect(link.openableURL?.absoluteString == link.url, "\(link.name) opens")
+            #expect(!link.handle.isEmpty && !link.mark.isEmpty, "\(link.name) shows a handle and a mark")
+            #expect(!SocialMark(commands: link.mark).path(in: CGRect(x: 0, y: 0, width: 24, height: 24)).isEmpty, "\(link.name) draws")
+        }
     }
 
     @Test func theLicencesSheetNamesThePublisherAndReadsTheShippedFiles() throws {
@@ -532,13 +544,15 @@ struct LicenceRulesTests {
         #expect(LicenceRules.localDay(d, calendar: cal) == "2026-10-09")
     }
 
-    @Test func onlyFixedSocialAddressesOpen() {
-        #expect(!LicenceRules.isFixedSocialURL(nil))
-        #expect(LicenceRules.isFixedSocialURL("https://www.instagram.com/openframestudio"))
-        #expect(!LicenceRules.isFixedSocialURL("http://www.instagram.com/x"))
-        #expect(!LicenceRules.isFixedSocialURL("https://evil.example.com/x"))
-        #expect(!LicenceRules.isFixedSocialURL("https://user:pw@x.com/a"))
-        #expect(!LicenceRules.isFixedSocialURL("https://x.com:8443/a"))
-        #expect(LicenceRules.socialLinks.allSatisfy { $0.url == nil })
+    @Test func onlyOfficialAddressesOpen() {
+        #expect(!SocialLinks.isOfficial(nil))
+        #expect(SocialLinks.isOfficial("https://www.instagram.com/straftstudio/"))
+        #expect(!SocialLinks.isOfficial("http://www.instagram.com/straftstudio/"))
+        #expect(!SocialLinks.isOfficial("https://evil.example.com/x"))
+        #expect(!SocialLinks.isOfficial("https://user:pw@x.com/a"))
+        #expect(!SocialLinks.isOfficial("https://x.com:8443/a"))
+        // Discord only through the branded address, never an invite written into the app.
+        #expect(!SocialLinks.isOfficial("https://discord.gg/AuQRHDpzP4"))
+        #expect(SocialLinks.isOfficial("https://straftstudio.com/discord"))
     }
 }

@@ -77,9 +77,9 @@ struct LocationsView: View {
             guard !Task.isCancelled else { return }
             await model.reload()
         }
-        .inspector(isPresented: Binding(get: { model.selected != nil }, set: { if !$0 { model.selectedId = nil } })) {
+        .sidePane("locations", isPresented: model.selected != nil, minimum: 340, ideal: 420, maximum: 560) {
             if let loc = model.selected {
-                LocationInspector(model: model, loc: loc).inspectorColumnWidth(min: 340, ideal: 420, max: 560)
+                LocationInspector(model: model, loc: loc)
             }
         }
         .themedSheet(item: $model.sheet) { LocationSheetHost(model: model, sheet: $0) }
@@ -95,7 +95,7 @@ struct LocationsView: View {
             BDBanner(tone: .err, content: { Text(f.message) }, actions: { Button("Try Again") { Task { await model.reload() } } })
         } else if model.locations.isEmpty {
             if model.isFiltered {
-                Text("No locations match.").foregroundStyle(.secondary).padding(12)
+                Text("No locations match.").foregroundStyle(.ofMuted).padding(12)
             } else {
                 ContentUnavailableView {
                     Label("No locations yet.", systemImage: "mappin.and.ellipse")
@@ -230,7 +230,7 @@ struct LocationInspector: View {
                                         Button { Task { await model.removePhoto(p.id) } } label: { Label("Remove", systemImage: "trash") }
                                             .accessibilityLabel("Remove photo")
                                     }
-                                    .buttonStyle(.borderless).controlSize(.mini).font(.caption2)
+                                    .buttonStyle(.ofBorderless).controlSize(.mini).font(.caption2)
                                     .padding(2)
                                     .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
                                     .padding(2)
@@ -363,7 +363,7 @@ private struct ReplaceLocationSheet: View {
                     }
                 }
                 Text("This updates production associations only. The screenplay text (which still says \(loc.name.uppercased())) is not changed; edit the script yourself if you want that.")
-                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    .font(.caption).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true)
             }
         } footer: {
             Button("Cancel") { model.sheet = nil }.keyboardShortcut(.cancelAction)

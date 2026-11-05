@@ -3,8 +3,8 @@
 
 use std::collections::{BTreeSet, HashMap};
 
-use straft_domain::AppResult;
 use rusqlite::Connection;
+use straft_domain::AppResult;
 
 use super::{Entity, EntityIndex, Kind, Relation, ScreenplayInfo};
 use crate::modules::ai::queries::normalize_cue;

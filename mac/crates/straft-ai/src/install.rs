@@ -20,9 +20,9 @@
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
-use straft_domain::{AppError, AppResult, now_ms};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use straft_domain::{AppError, AppResult, now_ms};
 
 use crate::bundle::{InstalledModels, PinnedFile, models_damaged};
 use crate::download::{FileEntry, Tier};

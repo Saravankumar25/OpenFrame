@@ -19,7 +19,7 @@ struct ReviewQueueSheet: View {
                     } else if model.items.isEmpty {
                         VStack(spacing: 2) {
                             Text("Nothing waiting").font(.headline)
-                            Text("When an imported comment can't be matched safely, it waits here for you.").foregroundStyle(.secondary)
+                            Text("When an imported comment can't be matched safely, it waits here for you.").foregroundStyle(.ofMuted)
                         }
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
@@ -57,10 +57,10 @@ private struct QueueRow: View {
     var body: some View {
         let attached = item.status == "Attached"
         VStack(alignment: .leading, spacing: 4) {
-            (Text("\u{201C}\(item.body)\u{201D}").bold() + Text(" from \(item.authorName)").foregroundStyle(.secondary)).font(.callout)
-            if let q = item.quotedText { Text("on \u{201C}\(q)\u{201D}").font(.caption).italic().foregroundStyle(.secondary) }
+            (Text("\u{201C}\(item.body)\u{201D}").bold() + Text(" from \(item.authorName)").foregroundStyle(.ofMuted)).font(.callout)
+            if let q = item.quotedText { Text("on \u{201C}\(q)\u{201D}").font(.caption).italic().foregroundStyle(.ofMuted) }
             Text([item.sourceLabel, item.reason].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " \u{00B7} "))
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption).foregroundStyle(.ofMuted)
             if attached {
                 HStack { IXChip(text: "Attached", tone: .green); Text(item.attachedLabel ?? "").font(.caption) }
             } else {
@@ -88,7 +88,7 @@ private struct QueueRow: View {
                         Button("Attach") { Task { await model.attach(item, to: target) } }
                             .controlSize(.small).buttonStyle(.ofProminent).disabled(target.isEmpty || model.busyItem == item.id)
                             .accessibilityIdentifier("queue-attach-chosen-\(item.id)")
-                        Button("Cancel") { choosing = false }.controlSize(.small).buttonStyle(.borderless)
+                        Button("Cancel") { choosing = false }.controlSize(.small).buttonStyle(.ofBorderless)
                     }
                 }
             }
@@ -167,12 +167,12 @@ struct PackageHistorySheet: View {
                 row {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(s.fileName).fontWeight(.semibold)
-                        Text("\(s.typeLabel) \u{00B7} from \u{201C}\(s.sourceProjectTitle)\u{201D}").font(.caption).foregroundStyle(.secondary)
+                        Text("\(s.typeLabel) \u{00B7} from \u{201C}\(s.sourceProjectTitle)\u{201D}").font(.caption).foregroundStyle(.ofMuted)
                         if let m = s.message { Text(m).font(.caption) }
                     }
                     Spacer()
                     IXChip(text: PKText.resultLabel(s.status), tone: PackageHistoryModel.resultTone(s.status))
-                    Text(PKText.day(ms: s.createdAt)).font(.caption).foregroundStyle(.secondary).frame(width: 130, alignment: .trailing)
+                    Text(PKText.day(ms: s.createdAt)).font(.caption).foregroundStyle(.ofMuted).frame(width: 130, alignment: .trailing)
                     if s.canUndo {
                         Button("Undo") { Task { await model.undo(s) } }.controlSize(.small)
                             .accessibilityIdentifier("history-undo-\(s.id)")
@@ -196,11 +196,11 @@ struct PackageHistorySheet: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(r.title).fontWeight(.semibold)
                         Text("from \u{201C}\(r.sourceProjectTitle)\u{201D} \u{00B7} \(Int(r.commentCount)) comments \u{00B7} kept \(PKText.day(ms: r.createdAt))")
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(.caption).foregroundStyle(.ofMuted)
                     }
                     Spacer()
                     Button("View") { openRecord(r.id) }.controlSize(.small).accessibilityIdentifier("history-record-view-\(r.id)")
-                    Button("Delete") { model.deleting = r }.controlSize(.small).buttonStyle(.borderless)
+                    Button("Delete") { model.deleting = r }.controlSize(.small).buttonStyle(.ofBorderless)
                         .accessibilityIdentifier("history-record-delete-\(r.id)")
                 }
                 .accessibilityIdentifier("history-record-\(r.id)")
@@ -218,7 +218,7 @@ struct PackageHistorySheet: View {
                         Text("\(r.projectTitle): \(r.draftName)").fontWeight(.semibold)
                         Text("from \(r.exportedBy) \u{00B7} \(Int(r.myCommentCount)) of your comments"
                              + (r.responseExportedAt.map { " \u{00B7} response exported \(PKText.day(ms: $0))" } ?? ""))
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(.caption).foregroundStyle(.ofMuted)
                     }
                     Spacer()
                     Button("Open") { openReview(r.packageId) }.controlSize(.small).accessibilityIdentifier("history-review-open-\(r.packageId)")
@@ -238,7 +238,7 @@ struct PackageHistorySheet: View {
                         .frame(width: 70, alignment: .leading)
                     Text(l.summary).font(.callout)
                     Spacer()
-                    Text(PKText.day(ms: l.at) + (l.actorName.map { " \u{00B7} \($0)" } ?? "")).font(.caption).foregroundStyle(.secondary)
+                    Text(PKText.day(ms: l.at) + (l.actorName.map { " \u{00B7} \($0)" } ?? "")).font(.caption).foregroundStyle(.ofMuted)
                 }
                 .accessibilityIdentifier("history-log-\(l.id)")
             }
@@ -248,7 +248,7 @@ struct PackageHistorySheet: View {
     private func empty(_ title: String, detail: String? = nil, id: String) -> some View {
         VStack(spacing: 2) {
             Text(title).font(.headline)
-            if let detail { Text(detail).foregroundStyle(.secondary) }
+            if let detail { Text(detail).foregroundStyle(.ofMuted) }
         }
         .multilineTextAlignment(.center)
         .frame(maxWidth: .infinity)

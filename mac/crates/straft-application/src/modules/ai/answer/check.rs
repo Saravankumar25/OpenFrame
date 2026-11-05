@@ -32,8 +32,8 @@
 use std::collections::HashSet;
 use std::sync::LazyLock;
 
-use straft_ai_checks as checks;
 use regex::Regex;
+use straft_ai_checks as checks;
 
 use super::super::text;
 use super::super::turn::LengthClass;

@@ -2,10 +2,10 @@
 //! Plain local full-text matching over indexed projections of canonical rows.
 //! Private documents are only returned to their owner (Security §10.2).
 
-use straft_domain::{Actor, AppError, AppResult, Capability};
 use rusqlite::{Connection, params};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use straft_domain::{Actor, AppError, AppResult, Capability};
 use ts_rs::TS;
 
 use crate::core::AppCore;

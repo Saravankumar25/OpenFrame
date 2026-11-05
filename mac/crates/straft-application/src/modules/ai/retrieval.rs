@@ -17,9 +17,9 @@
 //! stale or tampered with. Retrieved text is DATA: the prompt places it inside the untrusted-data
 //! boundary.
 
-use straft_domain::{Actor, AppError, AppResult, Capability};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult, Capability};
 use ts_rs::TS;
 
 use super::intelligence::{self, assembler, retriever};

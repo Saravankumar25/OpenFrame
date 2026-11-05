@@ -5,9 +5,9 @@
 //! screenplay, the people) and what kind of answer it was, so a long conversation keeps its thread
 //! without a second model call.
 
-use straft_domain::{Actor, AppResult};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde_json::Value;
+use straft_domain::{Actor, AppResult};
 
 use super::approx_tokens;
 use super::rules;

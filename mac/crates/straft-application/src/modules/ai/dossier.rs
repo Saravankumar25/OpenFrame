@@ -35,9 +35,9 @@ mod words;
 
 use std::fmt::Write as _;
 
-use straft_domain::Actor;
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
+use straft_domain::Actor;
 
 use super::index::{EntityIndex, Focus, Resolved};
 use super::queries;

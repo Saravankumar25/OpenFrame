@@ -8,12 +8,12 @@
 
 use std::collections::BTreeSet;
 
-use straft_domain::enums::ElementType;
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::rows::{opt_text, place_at, sibling_ids, text, update_fields};
 use regex::RegexBuilder;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::enums::ElementType;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::rows::{opt_text, place_at, sibling_ids, text, update_fields};
 use ts_rs::TS;
 
 use super::{bump_seq, drafts, editable_draft, live_scene_ids, scene_number};

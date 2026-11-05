@@ -13,7 +13,7 @@
 
 ## Context
 
-The AI assistant has a strong safety design (it can only propose, a person applies, an interrupted apply is undone) and
+Straft AI has a strong safety design (it can only propose, a person applies, an interrupted apply is undone) and
 almost no quality measurement. The small model is weak at choosing tools, English-centred, and slow on a processor. The
 owner wants the best output a small model can give, strong English first, other languages strong too, a harness that
 learns from each user, and a loop that re-checks weak output up to three times.

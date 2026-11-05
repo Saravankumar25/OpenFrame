@@ -16,7 +16,7 @@ struct WelcomeNameView: View {
                     .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
                     .accessibilityIdentifier("welcome-title")
-                Text("What should we call you?").font(.callout).foregroundStyle(.secondary)
+                Text("What should we call you?").font(.callout).foregroundStyle(.ofMuted)
             }
             .frame(maxWidth: .infinity)
             VStack(alignment: .leading, spacing: 4) {
@@ -37,7 +37,7 @@ struct WelcomeNameView: View {
                 }
             }
             Text("Your name appears on notes, tasks and project activity. There is no account. It stays on this computer and you can change it any time in Settings.")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption).foregroundStyle(.ofMuted)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity)
                 .fixedSize(horizontal: false, vertical: true)

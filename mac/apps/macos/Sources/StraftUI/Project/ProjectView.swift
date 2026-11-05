@@ -13,11 +13,12 @@ struct ProjectView: View {
     /// "<project id>|<workspace>": the window comes back to the workspace it showed for this
     /// project; another project (a new one, or one opened from Home) starts on Project Home.
     @SceneStorage("workspace") private var stored: String = ""
-    /// The AI Assistant panel docks beside the page; it stays as the person left it.
+    /// The Straft AI panel docks beside the page; it stays as the person left it.
     /// Open or closed is remembered for the person across quits (Windows spec 72: the docked panel
     /// remembers whether it was open when the window loads again); scene storage came back only
     /// when macOS restored the window.
-    @AppStorage("straft.ai.open") private var assistantOpen = false
+    static let assistantOpenKey = "straft.ai.open"
+    @AppStorage(ProjectView.assistantOpenKey) private var assistantOpen = false
     /// The width the person dragged the AI panel to (kept for this Mac).
     @AppStorage("straft.ai.width") private var assistantPreferred: Double = Double(ProjectView.assistantDefaultWidth)
     /// The width at the start of a drag.
@@ -37,6 +38,9 @@ struct ProjectView: View {
     @State private var columns: NavigationSplitViewVisibility = .all
     /// The sidebar was hidden by Screenplay Focus (not by the person), so leaving Focus shows it.
     @State private var hiddenForFocus = false
+    /// When the sidebar button last ran, so one accessibility press counts once.
+    @State private var lastSidebarPress = Date.distantPast
+    @State private var lastAssistantPress = Date.distantPast
     /// The project as the core has it now (title and status change from rename, undo and redo).
     @State private var live: ProjectSummary?
     @State private var renaming: RecentProject?
@@ -89,16 +93,17 @@ struct ProjectView: View {
             .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 300)
         } detail: {
             // The panel docks after the page in a row (as on Windows), so opening it narrows the page
-            // and never covers a control. A row, not an inspector: workspaces use inspectors of their own.
+            // and never covers a control. A row, like the side panes workspaces have inside the page.
             // The reader gives the page exactly the room left: a page never reports a minimum
-            // larger than the window, which would grow the window past the screen.
+            // larger than the window, which would grow the window past the screen, and a page that
+            // overflows runs off its far side, never back under the project sidebar.
             GeometryReader { geo in
                 let panelShown = assistantOpen && !focus
                 let pageWidth = geo.size.width
                     - (panelShown ? Self.assistantWidth(for: geo.size.width, preferred: assistantPreferred) + 1 : 0)
                 HStack(spacing: 0) {
-                    detail(selection ?? .home)
-                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                    PaneFill { detail(selection ?? .home) }
+                        .frame(width: max(0, pageWidth), height: geo.size.height)
                         .environment(\.pageWidth, pageWidth.rounded(.down))
                     if panelShown {
                         Divider()
@@ -117,7 +122,7 @@ struct ProjectView: View {
             .environment(hubs)
         }
         .toolbar {
-            ToolbarItem(placement: .navigation) { sidebarButton }
+            ToolbarItem(placement: .navigation) { sidebarButton }.plainToolbarBackground()
             ToolbarItem(placement: .navigation) {
                 Button {
                     Task { await app.closeProject() }
@@ -128,12 +133,13 @@ struct ProjectView: View {
                 .help("Close this project and show all projects")
                 .accessibilityIdentifier("close-project")
             }
-            ToolbarItem(placement: .navigation) { backForward }
-            ToolbarItem(placement: .primaryAction) { projectMenu }
-            ToolbarItem(placement: .primaryAction) { searchButton }
-            ToolbarItem(placement: .primaryAction) { newMenu }
-            ToolbarItem(placement: .primaryAction) { assistantButton }
-            ToolbarItem(placement: .primaryAction) { projectSettingsButton }
+            .plainToolbarBackground()
+            ToolbarItem(placement: .navigation) { backForward }.plainToolbarBackground()
+            ToolbarItem(placement: .primaryAction) { projectMenu }.plainToolbarBackground()
+            ToolbarItem(placement: .primaryAction) { searchButton }.plainToolbarBackground()
+            ToolbarItem(placement: .primaryAction) { newMenu }.plainToolbarBackground()
+            ToolbarItem(placement: .primaryAction) { assistantButton }.plainToolbarBackground()
+            ToolbarItem(placement: .primaryAction) { projectSettingsButton }.plainToolbarBackground()
         }
         .toolbar(focus ? .hidden : .automatic, for: .windowToolbar)
         .modifier(ToolbarWithoutTitle())
@@ -251,14 +257,17 @@ struct ProjectView: View {
         .controlGroupStyle(.navigation)
     }
 
-    /// The AI Assistant panel is 360 points wide, narrower in a narrow window so the page keeps
+    /// The Straft AI panel is 360 points wide, narrower in a narrow window so the page keeps
     /// room (at least 260 points for the panel).
     /// Opens or closes the AI panel. In a window too narrow for the sidebar, the page and the
     /// panel side by side, opening the panel hides the sidebar (as macOS split views do); the
     /// sidebar button brings it back.
     private func toggleAssistant() {
-        assistantOpen.toggle()
-        if assistantOpen, columns != .detailOnly,
+        // Read from the store: the shortcut's action can hold the value from when the toolbar was last
+        // drawn, so after the panel's own Close button Command+J would "close" it again and do nothing.
+        let opening = !UserDefaults.standard.bool(forKey: Self.assistantOpenKey)
+        assistantOpen = opening
+        if opening, columns != .detailOnly,
            let width = NSApp.keyWindow?.contentLayoutRect.width ?? NSApp.mainWindow?.contentLayoutRect.width,
            width < 1040 {
             columns = .detailOnly
@@ -310,9 +319,13 @@ struct ProjectView: View {
     /// Shows and hides the workspace sidebar (also View > Hide Sidebar, Command+Control+S).
     private var sidebarButton: some View {
         let shown = columns != .detailOnly
-        // The target state is fixed when the button is drawn: an accessibility press on a toolbar
-        // button runs its action twice, which a plain toggle would undo.
+        // An accessibility press on a toolbar button (VoiceOver, for one) runs its action twice. The
+        // button may be drawn again in between with the opposite target, so the second run within
+        // a moment of the first is dropped instead of undoing it.
         return Button {
+            let now = Date()
+            guard now.timeIntervalSince(lastSidebarPress) > 0.5 else { return }
+            lastSidebarPress = now
             setSidebar(shown: !shown)
         } label: {
             Label(shown ? "Hide Sidebar" : "Show Sidebar", systemImage: "sidebar.left").labelStyle(.titleAndIcon)
@@ -396,9 +409,13 @@ struct ProjectView: View {
         }
     }
 
-    /// Opens and closes the AI Assistant panel (Windows: the Assistant button and Ctrl+J).
+    /// Opens and closes the Straft AI panel (Windows: the Assistant button and Ctrl+J).
     private var assistantButton: some View {
+        // The same double run of an accessibility press as the sidebar button's: it opened and shut the panel.
         Button {
+            let now = Date()
+            guard now.timeIntervalSince(lastAssistantPress) > 0.5 else { return }
+            lastAssistantPress = now
             toggleAssistant()
         } label: {
             Label("Straft AI", systemImage: "sparkles").labelStyle(.titleAndIcon)
@@ -500,7 +517,7 @@ struct SaveStatusView: View {
             Spacer(minLength: 0)
         }
         .font(.caption)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(theme["ink2"])
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("save-status")
     }

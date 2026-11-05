@@ -12,6 +12,7 @@
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
+use serde_json::{Value, json};
 use straft_application::events::RecordingSink;
 use straft_application::modules::ai::toolbox;
 use straft_application::registry::{self, AiExposure, OpClass};
@@ -22,7 +23,6 @@ use straft_entitlement::Channel;
 use straft_entitlement::adapters::{
     StoreAppLicence, StoreLicenceError, StoreLicenceSource, StorePurchaseStatus,
 };
-use serde_json::{Value, json};
 
 const DAY_SECONDS: u64 = 24 * 60 * 60;
 
@@ -596,10 +596,8 @@ impl straft_entitlement::mac::StoreKitBridge for FakeBridge {
     }
     fn app_transaction(
         &self,
-    ) -> Result<
-        straft_entitlement::mac::AppTransactionInfo,
-        straft_entitlement::mac::BridgeError,
-    > {
+    ) -> Result<straft_entitlement::mac::AppTransactionInfo, straft_entitlement::mac::BridgeError>
+    {
         Err(straft_entitlement::mac::BridgeError::StoreUnavailable)
     }
     fn environment(&self) -> straft_entitlement::mac::StoreEnvironment {
@@ -607,8 +605,7 @@ impl straft_entitlement::mac::StoreKitBridge for FakeBridge {
     }
     fn load_products(
         &self,
-    ) -> Result<straft_entitlement::mac::StoreProducts, straft_entitlement::mac::BridgeError>
-    {
+    ) -> Result<straft_entitlement::mac::StoreProducts, straft_entitlement::mac::BridgeError> {
         Ok(straft_entitlement::mac::StoreProducts {
             lifetime_display_price: "{test price}".to_string(),
         })
@@ -616,10 +613,7 @@ impl straft_entitlement::mac::StoreKitBridge for FakeBridge {
     fn load_guard(&self) -> Result<Option<String>, straft_entitlement::mac::BridgeError> {
         Ok(None)
     }
-    fn save_guard(
-        &self,
-        _record_json: &str,
-    ) -> Result<(), straft_entitlement::mac::BridgeError> {
+    fn save_guard(&self, _record_json: &str) -> Result<(), straft_entitlement::mac::BridgeError> {
         Ok(())
     }
 }
@@ -770,8 +764,8 @@ fn plat_014_a_mac_trial_that_ended_locks_open_edit_and_export_and_a_restore_unlo
 
 #[test]
 fn plat_014_with_the_store_bridge_startup_asks_nothing_and_the_background_check_decides() {
-    use straft_entitlement::mac::RevalidateReason;
     use std::sync::atomic::Ordering;
+    use straft_entitlement::mac::RevalidateReason;
 
     let dir = tempfile::tempdir().unwrap();
     let bridge = FakeBridge::new(vec![lifetime_tx("2000000009", false)]);
@@ -935,4 +929,58 @@ fn plat_009_status_takes_no_arguments() {
         .dispatch(&core.local_actor(), "entitlement.status", json!({ "x": 1 }))
         .unwrap_err();
     assert_eq!(e.code.0, "validation.invalid_input");
+}
+
+/// A refused change says what it waits for: a check of the purchase, or the trial to start.
+#[test]
+fn a_refused_change_on_the_mac_says_what_it_waits_for() {
+    use straft_application::modules::entitlement::{EDIT_LOCKED_MESSAGE, EDIT_NEEDS_TRIAL_MESSAGE};
+    let dir = tempfile::tempdir().unwrap();
+    let core = start(AppConfig {
+        entitlement_debug_controls: true,
+        ..AppConfig::isolated(dir.path())
+    });
+    make_project(&core, "Waiting Room", "A card");
+    for (state, message) in [
+        ("needsOnlineCheck", EDIT_LOCKED_MESSAGE),
+        ("trialNotStarted", EDIT_NEEDS_TRIAL_MESSAGE),
+    ] {
+        call(
+            &core,
+            "entitlement.debug_set",
+            json!({ "channel": "macAppStore", "state": { "state": state } }),
+        );
+        let e = core
+            .dispatch(
+                &core.local_actor(),
+                "story.page.save",
+                json!({ "text": "x", "expectedRev": 0 }),
+            )
+            .unwrap_err();
+        assert_eq!(e.code_str(), "permission.licence_required", "{state}");
+        assert_eq!(e.message, message, "{state}");
+    }
+}
+
+/// The lock may hold for a long time, so what was saved goes into the database file itself.
+#[test]
+fn the_end_of_the_flush_window_folds_the_open_project_into_its_database_file() {
+    let dir = tempfile::tempdir().unwrap();
+    let core = start(AppConfig {
+        entitlement_debug_controls: true,
+        ..AppConfig::isolated(dir.path())
+    });
+    let path = make_project(&core, "Harbour Lights", "Meena waits at the pier");
+    let wal = Path::new(&path).join("project.sqlite-wal");
+    assert!(
+        std::fs::metadata(&wal).unwrap().len() > 0,
+        "the card is still in the log"
+    );
+    call(
+        &core,
+        "entitlement.debug_set",
+        json!({ "channel": "macAppStore", "state": { "state": "revoked" } }),
+    );
+    call(&core, "entitlement.lock_ready", json!({}));
+    assert_eq!(std::fs::metadata(&wal).unwrap().len(), 0);
 }

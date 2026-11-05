@@ -27,7 +27,7 @@ public enum LicenceRules {
     }
 
     /// The address "Contact us" opens in the browser. The app has no form and sends nothing.
-    public static let contactAddress = "https://openframestudio.app/contact/"
+    public static let contactAddress = "https://straftstudio.com/contact/"
     public static let contactLink = "Need help? Contact us"
 
     /// The corner chip, shown from trial day 1 until the purchase. `nil` in every other state.
@@ -109,53 +109,6 @@ public enum LicenceRules {
     }
 
     public static let revealLabel = "Show in Finder"
-
-    public struct SocialLink: Equatable, Identifiable, Sendable {
-        public var name: String
-        public var short: String
-        public var handle: String
-        /// `nil` until the owner sends the real addresses: such an account cannot be opened, and a
-        /// release build does not show it.
-        public var url: String?
-        public var id: String { name }
-    }
-
-    public static let socialLinks: [SocialLink] = [
-        SocialLink(name: "Instagram", short: "IG", handle: "@openframestudio"),
-        SocialLink(name: "YouTube", short: "YT", handle: "@openframestudio"),
-        SocialLink(name: "X", short: "X", handle: "@openframestudio"),
-        SocialLink(name: "Facebook", short: "f", handle: "@openframestudio"),
-        SocialLink(name: "LinkedIn", short: "in", handle: "@openframestudio"),
-        SocialLink(name: "Reddit", short: "Rd", handle: "@openframestudio"),
-        SocialLink(name: "Discord", short: "Dc", handle: "@openframestudio"),
-        SocialLink(name: "Threads", short: "Th", handle: "@openframestudio"),
-    ]
-
-    /// The rows the welcome popup shows. These handles are placeholders, so a release build shows
-    /// only rows with a real address; a debug or test build keeps them all for the mocks.
-    public static func visibleSocialLinks(release: Bool, links: [SocialLink] = socialLinks) -> [SocialLink] {
-        release ? links.filter { isFixedSocialURL($0.url) } : links
-    }
-
-    #if DEBUG
-    public static let isReleaseBuild = false
-    #else
-    public static let isReleaseBuild = true
-    #endif
-
-    private static let socialHosts: Set<String> = [
-        "www.instagram.com", "instagram.com", "www.youtube.com", "youtube.com", "x.com",
-        "www.facebook.com", "facebook.com", "www.linkedin.com", "linkedin.com",
-        "www.reddit.com", "reddit.com", "discord.gg", "discord.com", "www.threads.net", "threads.net",
-    ]
-
-    /// A fixed social address: https, a known social site, no user name or password, no port.
-    public static func isFixedSocialURL(_ url: String?) -> Bool {
-        guard let url, let u = URL(string: url), u.scheme == "https", u.user == nil, u.password == nil,
-              u.port == nil, let host = u.host
-        else { return false }
-        return socialHosts.contains(host)
-    }
 
     public static let buyFailed = "Straft Studio could not start the purchase right now. Everything keeps working."
 

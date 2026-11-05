@@ -44,7 +44,7 @@ struct LibrarySetupView: View {
                 choiceCard
 
                 if model.storeBuild {
-                    Text(StorageRules.storeBuildNote).font(.caption).foregroundStyle(.secondary)
+                    Text(StorageRules.storeBuildNote).font(.caption).foregroundStyle(.ofMuted)
                         .accessibilityIdentifier("library-setup-store-note")
                 }
                 if let error = model.error {
@@ -75,7 +75,7 @@ struct LibrarySetupView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(f.libraryRoot ?? f.path).font(.callout).textSelection(.enabled)
                             .fixedSize(horizontal: false, vertical: true)
-                        Text(StorageRules.foundText(f)).font(.caption).foregroundStyle(.secondary)
+                        Text(StorageRules.foundText(f)).font(.caption).foregroundStyle(.ofMuted)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     Spacer(minLength: 8)
@@ -98,14 +98,14 @@ struct LibrarySetupView: View {
                 Text(model.status.suggested).font(.callout).textSelection(.enabled)
                     .accessibilityIdentifier("library-setup-suggested")
                 Text("This folder is in your own home folder, outside Documents. iCloud Drive does not sync it with Desktop & Documents, so cloud syncing can never lock or replace your files while you work. Back up this folder.")
-                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    .font(.caption).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true)
                 Button("Create Library Here") { Task { await model.useDefault() } }
                     .buttonStyle(.ofProminent)
                     .disabled(model.busy)
                     .accessibilityIdentifier("library-setup-create-default")
             case .newLocation:
                 Text("Choose a folder. Straft Studio makes a folder named Straft Studio inside it for your library.")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption).foregroundStyle(.ofMuted)
                 Button { Task { await model.pickParent() } } label: { Label("Choose Folder\u{2026}", systemImage: "folder") }
                     .disabled(model.busy)
                     .accessibilityIdentifier("library-setup-choose-parent")
@@ -123,7 +123,7 @@ struct LibrarySetupView: View {
                 }
             case .locate:
                 Text("After a reinstall, or when you moved your library or brought it from another drive, choose its folder. Straft Studio shows what it found before connecting anything, and never makes an empty library in its place.")
-                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    .font(.caption).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true)
                 Button { Task { await model.pickExisting() } } label: { Label("Choose Folder\u{2026}", systemImage: "folder") }
                     .disabled(model.busy)
                     .accessibilityIdentifier("library-setup-choose-existing")

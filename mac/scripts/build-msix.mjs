@@ -3,7 +3,7 @@
 //
 // Input: the Tauri release build (target/release/straft-desktop.exe; the frontend is embedded in
 // the executable), packaging/msix/AppxManifest.template.xml, packaging/msix/store.config.json, the
-// visual assets in packaging/msix/Assets and the Offline AI engine (ADR-0026 decision 1): the pinned
+// visual assets in packaging/msix/Assets and the Straft AI engine (ADR-0026 decision 1): the pinned
 // engine files are verified against packaging/ai/ai-assets.lock.json by scripts/prepare-ai-assets.mjs
 // and placed in the package as `ai/` next to the executable, where the app reads them read-only. The
 // models are downloaded after install (ADR-0026). A missing or altered file stops the build; CI fails
@@ -369,12 +369,12 @@ async function main() {
   fs.mkdirSync(stage, { recursive: true });
   fs.copyFileSync(exe, path.join(stage, EXECUTABLE));
   copyDir(ASSETS_DIR, path.join(stage, "Assets"));
-  // Bundled Offline AI (ADR-0025): verified, staged, copied, and verified again in the layout.
+  // Bundled Straft AI (ADR-0025): verified, staged, copied, and verified again in the layout.
   const ai = prepare({ target: "windows-x86_64", log: (m) => console.log(`  ${m}`) });
   copyDir(ai.out, path.join(stage, RESOURCE_FOLDER));
   const aiProblems = verifyFiles(path.join(stage, RESOURCE_FOLDER), ai.files);
-  if (aiProblems.length) throw new Error(`the bundled Offline AI in the package layout does not match the lock: ${aiProblems.join("; ")}`);
-  console.log(`• Bundled Offline AI: ${ai.files.length} pinned files, ${(ai.bytes / 1048576).toFixed(0)} MB, verified in the package layout`);
+  if (aiProblems.length) throw new Error(`the bundled Straft AI in the package layout does not match the lock: ${aiProblems.join("; ")}`);
+  console.log(`• Bundled Straft AI: ${ai.files.length} pinned files, ${(ai.bytes / 1048576).toFixed(0)} MB, verified in the package layout`);
   for (const f of ["LICENSE", "LICENSE.md", "LICENSE.txt", "THIRD_PARTY_LICENSES.md"]) {
     if (fs.existsSync(path.join(ROOT, f))) fs.copyFileSync(path.join(ROOT, f), path.join(stage, f));
   }

@@ -4,12 +4,12 @@
 //! Marking a task done never changes the related object. Deleting is recoverable.
 //! No dependencies, Gantt, time tracking or sprints.
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::rows::{int, next_position, opt_int, opt_text, text, update_fields};
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::rows::{int, next_position, opt_int, opt_text, text, update_fields};
 use ts_rs::TS;
 
 use crate::core::AppCore;

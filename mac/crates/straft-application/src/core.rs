@@ -8,14 +8,14 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, OnceLock, Weak};
 
+use parking_lot::{Mutex, RwLock};
+use rusqlite::{Connection, OptionalExtension, params};
+use serde::Serialize;
 use straft_domain::auth::ActorOrigin;
 use straft_domain::{Actor, AppError, AppResult, Role, new_id, now_ms};
 use straft_entitlement::Channel;
 use straft_entitlement::mac::MacInputs;
 use straft_project_format::{ProjectLayout, ProjectLock, ProjectManifest};
-use parking_lot::{Mutex, RwLock};
-use rusqlite::{Connection, OptionalExtension, params};
-use serde::Serialize;
 use ts_rs::TS;
 
 use crate::events::{AppEvent, EventSink, StoreKind, TaskProgress};
@@ -31,7 +31,7 @@ use crate::store::{SaveTracker, Store};
 pub struct AppConfig {
     /// `%LOCALAPPDATA%/Straft`: settings, recents, AI records, logs.
     pub app_data_dir: PathBuf,
-    /// The read-only Offline AI engine (`<app resources>/ai`, ADR-0026), named by the platform
+    /// The read-only Straft AI engine (`<app resources>/ai`, ADR-0026), named by the platform
     /// adapter. `None` when the platform cannot name it and in tests: AI then reports itself
     /// missing and everything else works.
     pub ai_bundle_dir: Option<PathBuf>,
@@ -39,7 +39,7 @@ pub struct AppConfig {
     /// test host a test build names. `None` in tests and when a test build names an invalid host:
     /// Straft AI cannot be downloaded then, and an installed set still works.
     pub ai_model_source: Option<straft_ai::ModelSource>,
-    /// Temperature 0 and a fixed seed for the Offline AI. Only the end-to-end suite turns it on
+    /// Temperature 0 and a fixed seed for Straft AI. Only the end-to-end suite turns it on
     /// (a debug build on an isolated test data root); never in a release build.
     pub ai_deterministic: bool,
     /// Mac App Store build: the engine is signed, so its code files are checked by code
@@ -124,8 +124,7 @@ impl AppConfig {
         let (app_data_dir, pointer_dir) =
             crate::modules::storage::legacy_migration::folders_for_current_user();
         let mut config = Self::at_user_folders(app_data_dir, pointer_dir, app_version)?;
-        config.rename_earlier_names =
-            crate::modules::storage::legacy_migration::allowed_here();
+        config.rename_earlier_names = crate::modules::storage::legacy_migration::allowed_here();
         Ok(config)
     }
 
@@ -208,7 +207,7 @@ impl AppConfig {
         })
     }
 
-    /// Where this installation keeps the Offline AI engine: the `ai` folder of the app
+    /// Where this installation keeps the Straft AI engine: the `ai` folder of the app
     /// resources, named by the platform adapter (next to the executable on Windows, including
     /// MSIX; `Contents/Resources` in a Mac app bundle).
     pub fn installed_ai_bundle_dir() -> Option<PathBuf> {
@@ -387,9 +386,6 @@ impl TaskHandle {
         } else {
             self.emit("failed", None, None, Some(err.clone()), None);
         }
-    }
-    pub fn cancel_flag(&self) -> Arc<AtomicBool> {
-        self.cancelled.clone()
     }
 }
 
@@ -1070,28 +1066,34 @@ impl AppCore {
         match event {
             PowerEvent::Suspending => {
                 intelligence::set_asleep(self, true);
-                let project = self.project_opt();
-                let global = self.global.lock().clone();
-                let stores = project
-                    .as_ref()
-                    .map(|p| &p.store)
-                    .into_iter()
-                    .chain(global.as_deref());
-                for store in stores {
-                    if let Err(e) = store.with_writer(straft_persistence::checkpoint) {
-                        tracing::warn!(code = e.code_str(), "checkpoint before sleep failed");
-                    }
-                }
+                self.checkpoint_open_stores("sleep");
                 self.stop_background_engines();
-                tracing::info!(
-                    "background work held and data folded into the database files before sleep"
-                );
+                tracing::info!("background work held before sleep");
             }
             PowerEvent::Resumed => {
                 intelligence::set_asleep(self, false);
                 tracing::info!("computer woke from sleep; background work goes on");
             }
         }
+    }
+
+    /// Fold the write-ahead logs of the open project and of the Global Idea Vault into their
+    /// database files, so what is committed is in the main file. `why` is for the log only.
+    /// Errors are logged, never raised.
+    pub fn checkpoint_open_stores(&self, why: &str) {
+        let project = self.project_opt();
+        let global = self.global.lock().clone();
+        let stores = project
+            .as_ref()
+            .map(|p| &p.store)
+            .into_iter()
+            .chain(global.as_deref());
+        for store in stores {
+            if let Err(e) = store.with_writer(straft_persistence::checkpoint) {
+                tracing::warn!(code = e.code_str(), why, "checkpoint failed");
+            }
+        }
+        tracing::info!(why, "data folded into the database files");
     }
 
     /// Stop the AI engines only background work uses. An engine still busy with the last call of

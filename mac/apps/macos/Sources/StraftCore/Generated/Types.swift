@@ -374,7 +374,7 @@ public struct AiConversationExportArgs: Codable, Sendable, Hashable {
     }
 }
 
-/// Technical details for Settings > Offline AI (never shown in ordinary workflow UI).
+/// Technical details for Settings > Straft AI (never shown in ordinary workflow UI).
 public struct AiDiagnosticsDto: Codable, Sendable, Hashable {
     public var bundleId: String
     public var bundleVersion: String
@@ -396,7 +396,7 @@ public struct AiDiagnosticsDto: Codable, Sendable, Hashable {
     public var logFile: String
     /// Where the chat engine runs, in one plain sentence (ADR-0029).
     public var placement: String
-    /// Settings, Offline AI, Graphics card: Off.
+    /// Settings, Straft AI, Graphics card: Off.
     public var graphicsOff: Bool
 
     public init(bundleId: String, bundleVersion: String, bundleState: String, problem: String? = nil, components: [AiComponentDto], chatState: String, searchState: String, memoryBytes: Double, processor: String, processorThreads: Double, likelySlow: Bool, warnings: [String], bundleDir: String, bundleBytes: Double, logFile: String, placement: String, graphicsOff: Bool) {
@@ -970,7 +970,7 @@ public struct AiSectionsArgs: Codable, Sendable, Hashable {
 }
 
 public struct AiStatusDto: Codable, Sendable, Hashable {
-    /// Offline AI can be used: the bundled AI is present and not known to be damaged.
+    /// Straft AI can be used: the bundled AI is present and not known to be damaged.
     public var available: Bool
     /// Header chip: "AI Ready" or "Off".
     public var mode: String
@@ -982,7 +982,7 @@ public struct AiStatusDto: Codable, Sendable, Hashable {
     public var runtimeState: String
     /// Plain-language reason when the engine stopped after a problem.
     public var runtimeMessage: String?
-    /// Offline AI processes everything on this computer.
+    /// Straft AI processes everything on this computer.
     public var localOnly: Bool
 
     public init(available: Bool, mode: String, bundleState: String, problem: AppError? = nil, runtimeState: String, runtimeMessage: String? = nil, localOnly: Bool) {

@@ -11,10 +11,10 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
-use straft_project_format::{self as pf, ProjectLayout};
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
+use straft_project_format::{self as pf, ProjectLayout};
 use ts_rs::TS;
 
 use super::vault_archive::check_vault_database;

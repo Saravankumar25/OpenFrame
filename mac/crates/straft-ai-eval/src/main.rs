@@ -16,7 +16,7 @@
 //! see `dossier_only.rs`. It reads the answer type the way `--turn-only` does, so it needs the same
 //! models.
 //!
-//! Needs the Offline AI engine staged by `node scripts/prepare-ai-assets.mjs` (STRAFT_AI_BUNDLE_DIR,
+//! Needs the Straft AI engine staged by `node scripts/prepare-ai-assets.mjs` (STRAFT_AI_BUNDLE_DIR,
 //! default `.build-cache/ai-bundle`) and the pinned models in the build inputs (STRAFT_AI_ASSETS_DIR,
 //! default `.ai-assets`), which it installs in its own app data as a finished download would
 //! (ADR-0026). Deterministic sampling (temperature 0, fixed seed). One app
@@ -32,6 +32,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use serde_json::{Value, json};
 use straft_ai::client::build_body;
 use straft_ai::{ChatRequest, InferenceProvider, ProviderCapabilities, Usage};
 use straft_ai_eval::{
@@ -45,7 +46,6 @@ use straft_application::modules::ai::{
 };
 use straft_application::modules::schedule;
 use straft_domain::AppResult;
-use serde_json::{Value, json};
 
 struct Args {
     gold: PathBuf,

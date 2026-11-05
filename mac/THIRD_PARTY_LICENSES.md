@@ -13,7 +13,7 @@ Straft Studio's own license has **not been selected yet**. See `LICENSE-PENDING.
 - Copyleft or unknown (blocking until resolved): **0**
 - Weak copyleft / needs review: **5**
 
-## Offline AI components (bundled in every package)
+## Straft AI components (bundled in every package)
 
 Part of every package (ADR-0025). The build checks each file against the SHA-256 hashes pinned in `packaging/ai/ai-assets.lock.json`, and the app checks them again before it first starts the engine. They run only on the user's computer and never use the network. Their notices ship in the app's `ai/notices` folder and must also be shown in the product's About / third-party notices.
 
@@ -22,6 +22,10 @@ Part of every package (ADR-0025). The build checks each file against the SHA-256
 | llama.cpp server (runtime, windows x86_64, processor build) | b11259 | MIT | https://github.com/ggml-org/llama.cpp/releases/download/b11259/llama-b11259-bin-win-cpu-x64.zip | Includes the LLVM OpenMP runtime (Apache-2.0 WITH LLVM-exception); its licence text ships next to it. |
 | Gemma 3 1B Instruct (language model, Q8_0 GGUF, tokenizer embedded) | f9c28bc | Gemma-Terms-of-Use | https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/f9c28bcd85737ffc5aef028638d3341d49869c27/gemma-3-1b-it-Q8_0.gguf | Terms: https://ai.google.dev/gemma/terms. Required notice: "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms." Use is subject to the Gemma Prohibited Use Policy; redistribution must pass these terms on. |
 | BGE small English v1.5 (search/embedding model, Q8_0 GGUF, tokenizer embedded) | f2068ed | MIT | https://huggingface.co/ggml-org/bge-small-en-v1.5-Q8_0-GGUF/resolve/f2068edd9b54f2a369549ccc71f70ed273a2a801/bge-small-en-v1.5-q8_0.gguf | Licence: https://huggingface.co/BAAI/bge-small-en-v1.5. |
+
+## Platform marks (compiled into the Mac app)
+
+The eight marks of the social platforms in the Mac welcome window come from [Simple Icons](https://simpleicons.org) 13.21.0 (CC0-1.0). The names and marks are trademarks of their owners and only point to Straft Studio's own accounts.
 
 ## Bundled fonts (compiled into the app)
 

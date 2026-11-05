@@ -382,7 +382,10 @@ fn feedback_names_the_exact_offenders_in_the_spike_wording() {
         "{f}"
     );
     assert!(f.contains("names not in the project: Silvanus"), "{f}");
-    assert!(f.contains("missing, quoted from the facts as data: \u{201C}Rekha Thomas\u{201D}"), "{f}");
+    assert!(
+        f.contains("missing, quoted from the facts as data: \u{201C}Rekha Thomas\u{201D}"),
+        "{f}"
+    );
     assert!(f.contains("numbers not in the project: 99"), "{f}");
     assert!(f.ends_with("Answer in at most 80 words."), "{f}");
 }
@@ -402,7 +405,10 @@ fn a_required_value_from_project_text_cannot_pass_for_an_instruction_in_the_feed
 #[test]
 fn an_attempt_that_denies_a_required_value_is_recognised_as_denying_it() {
     let missing = vec!["Harbour permit".to_string()];
-    assert!(check::states_absence("There is no harbour permit.", &missing));
+    assert!(check::states_absence(
+        "There is no harbour permit.",
+        &missing
+    ));
     assert!(!check::states_absence("The boat yard is ready.", &missing));
 }
 

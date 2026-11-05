@@ -26,10 +26,10 @@ pub use store::StoreKitCallbacks;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use parking_lot::Mutex;
 use straft_application::events::{AppEvent, EventSink};
 use straft_application::{AppConfig, AppCore};
 use straft_domain::AppError;
-use parking_lot::Mutex;
 
 uniffi::setup_scaffolding!();
 
@@ -73,7 +73,7 @@ pub struct CoreConfig {
     /// Vault, deleted projects). Set by the automated tests so they never touch the person's own
     /// data (ADR-0031). `None`: the person's own folders.
     pub isolated_data_root: Option<String>,
-    /// The folder inside the app bundle that holds the Offline AI engine (`Contents/Resources/ai`).
+    /// The folder inside the app bundle that holds the Straft AI engine (`Contents/Resources/ai`).
     pub ai_bundle_dir: Option<String>,
     /// Write the JSON log files under the app data folder.
     pub write_logs: bool,
@@ -87,7 +87,7 @@ pub struct CoreConfig {
     /// only by a debug build on a test folder, like `STRAFT_LIBRARY_SETUP=1` on Windows.
     #[uniffi(default = false)]
     pub test_library_setup: bool,
-    /// Temperature 0 and a fixed seed for the Offline AI in the automated tests. Honoured only by
+    /// Temperature 0 and a fixed seed for Straft AI in the automated tests. Honoured only by
     /// a debug build on a test folder, like `STRAFT_AI_DETERMINISTIC=1` on Windows.
     #[uniffi(default = false)]
     pub test_ai_deterministic: bool,
@@ -388,10 +388,7 @@ mod tests {
             channel_for(false),
             straft_entitlement::Channel::DirectInstaller
         );
-        assert_eq!(
-            channel_for(true),
-            straft_entitlement::Channel::MacAppStore
-        );
+        assert_eq!(channel_for(true), straft_entitlement::Channel::MacAppStore);
     }
 
     #[test]

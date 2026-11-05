@@ -45,7 +45,7 @@ struct NewProjectSheet: View {
                         Text(parentDir?.path ?? app.info?.projectsDir ?? "Documents/Straft Studio/Projects")
                             .lineLimit(1)
                             .truncationMode(.middle)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.ofMuted)
                         Button("Choose…") { chooseFolder() }
                     }
                 }

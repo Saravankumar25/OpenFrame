@@ -8,12 +8,12 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use base64::Engine;
+use serde_json::{Value, json};
 use straft_application::events::{AppEvent, RecordingSink};
 use straft_application::modules::storage::{library, library_ops};
 use straft_application::{AppConfig, AppCore};
 use straft_domain::AppError;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 /// A computer where Straft Studio starts for the first time: everything lives under `dir`.
 fn fresh(dir: tempfile::TempDir) -> TestEnv {

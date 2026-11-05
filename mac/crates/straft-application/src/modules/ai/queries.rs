@@ -4,9 +4,9 @@
 
 use std::collections::{BTreeMap, HashMap};
 
+use rusqlite::{Connection, OptionalExtension, params};
 use straft_domain::{AppError, AppResult};
 use straft_persistence::undo::quote_ident;
-use rusqlite::{Connection, OptionalExtension, params};
 
 pub fn table_exists(c: &Connection, name: &str) -> AppResult<bool> {
     Ok(c.query_row(

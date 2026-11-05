@@ -48,6 +48,9 @@ final class CSReportsModel {
     }
 
     func openSnapshot(_ id: String) {
+        // The one already open stays as it is: the key would not change, nothing would load it
+        // again, and clearing it left a spinner for good (a click on the open row after Save).
+        guard id != savedId else { return }
         savedId = id
         saved = nil
         savedFailure = nil

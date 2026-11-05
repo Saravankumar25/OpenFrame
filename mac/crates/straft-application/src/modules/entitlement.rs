@@ -34,13 +34,12 @@
 //! assistant's change sets and package imports), so the webview cannot get around it. The
 //! projects stay on disk untouched. The internal installer build never locks, and
 //! NeedsOnlineCheck never locks (ADR-0018 decision 6), but on the Mac it and TrialNotStarted refuse
-//! changes to a project ([`EntitlementService::check_edit`]). Work never gets lost to the lock: when the
-//! state turns to a lock while the app is open, [`EntitlementService::check_operation`] lets the
-//! shell's last saves through until it says it has flushed (`entitlement.lock_ready`), with
-//! [`LOCK_FLUSH_GRACE`] as the upper bound. Editing alone is not yet gated in the
-//! other states (NeedsOnlineCheck, TrialNotStarted): the status reports whether editing would be
-//! allowed (`can_edit`), and gating it per operation is the open plan item "Enforce
-//! Permission::Edit in the Rust operation path".
+//! changes to a project ([`EntitlementService::check_edit`], in the same dispatch path), while
+//! opening, exporting, closing and `entitlement.*` keep working. The status reports the same answer
+//! as `can_edit`. Work never gets lost to the lock: when the state turns to a lock while the app is
+//! open, [`EntitlementService::check_operation`] lets the shell's last saves through until it says
+//! it has flushed (`entitlement.lock_ready`, which also folds the write-ahead logs into the database
+//! files), with [`LOCK_FLUSH_GRACE`] as the upper bound.
 //!
 //! The trial, purchase and first-run safety screens (owner mocks 182 to 198) are driven from here:
 //! `entitlement.notice` says which screen is due ([`straft_entitlement::notices::due`]),
@@ -53,6 +52,8 @@
 use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
+use parking_lot::Mutex;
+use serde::{Deserialize, Serialize};
 use straft_domain::auth::ActorOrigin;
 use straft_domain::{Actor, AppError, AppResult};
 use straft_entitlement::adapters::{self, StoreLicenceSource};
@@ -61,8 +62,6 @@ use straft_entitlement::notices::{self, CalendarDay, Notice, NoticeRecord, Notic
 use straft_entitlement::{
     Channel, ChannelAdapter, EntitlementState, Permission, PurchaseFailure, TRIAL_DAYS,
 };
-use parking_lot::Mutex;
-use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::core::{AppConfig, AppCore};
@@ -539,9 +538,13 @@ impl EntitlementService {
 /// None of them reads or writes a project.
 pub const ALLOWED_WHILE_LOCKED: &[&str] = &["app.info", "appearance.get"];
 
-/// Plain words for a change refused while the Mac App Store build waits for a purchase check or for
-/// the trial to start (package file 02, section 2). Opening and exporting keep working.
+/// Plain words for a change refused while the Mac App Store build waits for a purchase check
+/// (package file 02, section 2). Opening and exporting keep working.
 pub const EDIT_LOCKED_MESSAGE: &str = "Straft Studio needs to check your purchase before you can change anything. Your projects can still be opened and exported.";
+
+/// Plain words for a change refused before the free trial has started.
+pub const EDIT_NEEDS_TRIAL_MESSAGE: &str =
+    "Start your free trial to edit. You can still open your projects and export them.";
 
 /// Commands that keep working while editing waits for a check: opening and closing a project and
 /// settling a recovery, because Open must work.
@@ -552,7 +555,8 @@ pub const COMMANDS_ALLOWED_WITHOUT_EDIT: &[&str] =
 pub const NEW_PROJECT_COMMANDS: &[&str] = &["project.create", "project.duplicate"];
 
 /// Plain words for an operation refused by the Mac lock.
-pub const LOCKED_MESSAGE: &str = "Buy Straft Studio or restore your purchase to open your projects again. Nothing is deleted.";
+pub const LOCKED_MESSAGE: &str =
+    "Buy Straft Studio or restore your purchase to open your projects again. Nothing is deleted.";
 
 impl EntitlementService {
     /// True while the whole app waits for a purchase or a restore (the Mac lock, ADR-0022).
@@ -589,10 +593,13 @@ impl EntitlementService {
         {
             return Ok(());
         }
-        Err(
-            AppError::new("permission.licence_required", EDIT_LOCKED_MESSAGE)
-                .with_detail(format!("{op} refused: {}", state_name(self.state()))),
-        )
+        let message = if self.state() == EntitlementState::TrialNotStarted {
+            EDIT_NEEDS_TRIAL_MESSAGE
+        } else {
+            EDIT_LOCKED_MESSAGE
+        };
+        Err(AppError::new("permission.licence_required", message)
+            .with_detail(format!("{op} refused: {}", state_name(self.state()))))
     }
 }
 
@@ -848,6 +855,7 @@ fn start_trial(core: &AppCore, actor: &Actor, _args: StartTrialArgs) -> AppResul
 
 fn lock_ready(core: &AppCore, actor: &Actor, _args: LockReadyArgs) -> AppResult<EntitlementStatus> {
     require_local(actor, "Only the person using this computer can do this.")?;
+    core.checkpoint_open_stores("lock");
     core.entitlement.lock_ready();
     Ok(core.entitlement.status())
 }

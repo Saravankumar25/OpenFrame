@@ -2,7 +2,7 @@
 
 > Rewritten 2026-10-15. Chapter 2 starts when Chapter 1 has closed (both the Windows and the Mac track). This page records
 > what is decided and what the plan must cover. The implementation plan with phases is written when Chapter 1 closes; no
-> website work is started before then. The earlier plan is in the archive.
+> website work is started before then. The earlier plan is in [history](../history/website-plan-2026-10-05.md).
 
 ## 1. What the owner has said
 
@@ -33,8 +33,8 @@ help, and what the legal terms are.
 ## 4. Rules that already hold
 
 - **Faithful screens.** Recreations come from the running application with the invented demo project, one fixed window size
-  per platform, and are checked against a screenshot of the same state. The source is `WindowsHTML/` (captured from the real app);
-  the old `HTML_Mockups/` folder was removed on 2026-10-21.
+  per platform, and are checked against a screenshot of the same state. The source is `WindowsHTML/` in the Windows tree and `MacHTML/` here,
+  both captured from the real app. `HTML_Mockups/` is old design reference; it left the Windows tree on 2026-10-21.
 - **The claims rule.** Nothing is advertised unless it is Verified on the exact build people download. GPU wording follows
   [ADR-0029](../adr/ADR-0029-gpu-acceleration.md) decision 8; language wording follows [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) decision 9.
 - **No analytics unless disclosed**, per [ADR-0021](../adr/ADR-0021-diagnostics-telemetry-analytics-policy.md).

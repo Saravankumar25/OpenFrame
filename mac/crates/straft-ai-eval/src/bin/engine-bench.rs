@@ -341,10 +341,8 @@ fn start_embed(exe: &Path, model: &Path, pooling: &str) -> Result<Engine, String
 /// language and places meaning, not words). Returns top-1 hits and the mean margin per language.
 fn embed_pairs(model: &Path, pooling: &str, prefix: &str) -> Result<Value, String> {
     let pairs: Value = serde_json::from_str(
-        &std::fs::read_to_string(
-            root().join("crates/straft-ai-eval/bench/translation-pairs.json"),
-        )
-        .map_err(|e| e.to_string())?,
+        &std::fs::read_to_string(root().join("crates/straft-ai-eval/bench/translation-pairs.json"))
+            .map_err(|e| e.to_string())?,
     )
     .map_err(|e| e.to_string())?;
     let _e = start_embed(&server_exe(false)?, model, pooling)?;

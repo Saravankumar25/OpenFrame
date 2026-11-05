@@ -3,11 +3,11 @@
 use std::collections::HashMap;
 use std::path::Path;
 
-use straft_domain::enums::VaultItemType;
-use straft_domain::{Actor, AppError, AppResult};
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{Connection, OptionalExtension, params_from_iter};
 use serde::{Deserialize, Serialize};
+use straft_domain::enums::VaultItemType;
+use straft_domain::{Actor, AppError, AppResult};
 use ts_rs::TS;
 
 use super::read_vault;

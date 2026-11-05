@@ -6,6 +6,35 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-11-04: document sweep and dead code (owner order)
+
+Owner order: `docs/` holds only the current state and current decisions; dead code goes. Plain moves, nothing deleted. This replaces the
+"considered and kept" note of 2026-10-27 for the UX audit pages and the owner issue list. No ADR is superseded as a whole (ADR-0020, 0024,
+0030, 0031 and 0035 keep decisions in force), so no ADR moved. Index: [history/README.md](../history/README.md).
+
+| What | From | To | Why |
+|---|---|---|---|
+| Owner issue list of 2026-10-24 | `specs/owner-issues-2026-10-24/` | `history/specs/owner-issues-2026-10-24/` | Finished source material |
+| Windows UX audit, change log, feature preservation matrix | `ux/` | `history/ux/` | Finished records of the October polish |
+| First website plan | `website/README.md` | `history/website-plan-2026-10-05.md` | Superseded on 2026-10-15 by the Chapter 2 page |
+| Conversational baseline, slices S4 and S5, first spike | `release/evidence/ai-conversational-*` | `history/evidence/` | Builds replaced by slice S8 and ADR-0041. Spike S1b stays: `answer/prompt.rs` cites it for the shipped policies |
+
+| Stale statement | Where | Resolution |
+|---|---|---|
+| Team password minimum is the current rule | Register section 2 | Points to ADR-0039 |
+| Specifications "await" ADR-0014, 0015, 0016, 0021; runtime has a single Gemma profile | `specs/README.md` | Status words corrected |
+| Mac shell still to be built, Mac adapter never run, engine pinned for Windows only | `architecture/README.md` | Corrected from the code |
+| Chapter 3 has no plan yet; Intel MacBook in use; missing ADR-0040, 0041, 0042 | `docs/README.md`, `chapter-1b-mac-phases.md` | Corrected |
+| `--release=gated` | `ux/visual-regression-matrix.md` | `--release=internal`, the switch `tests/e2e/run.mjs` takes |
+| Schedule reads `availability_on`; reason `STANDALONE_PAGE` | Engineering 33, parity page | The code uses `unavailable_for_schedule` and `FREE_WRITING`; the unused symbols are deleted |
+| Milestone folders listed under release evidence; precedence pointers to section 1 | `release/evidence/README.md`, `adr/README.md`, `specs/README.md` | Corrected |
+
+Records left as written: the progress log, this log, and the link to the baseline in `release/evidence/ai-conversational-after-s8-2026-10-26/README.md`.
+
+Dead code removed (no reference in crates, apps, tests or scripts): Rust `Item::is_strip`, `cancel_flag`, `default_global_vault_dir`, `needs_embedded_fonts`,
+`object_count`, `AppError::private_content`, `save_tracker`, `availability_on` with `DayAvailability`, `tables_to_xlsx_at`, the hidden reason `STANDALONE_PAGE` and the
+unused `straft-ai` dependency of `straft-gold-project`; Swift `CenteredCardGrid`, `ThemeColor`, `showsProject` and the E2E driver helpers `TrackingFlag`, `pressAlertButton`, `refreshHome`.
+
 ## 2026-11-04: product renamed to Straft Studio, names changed across the documents
 
 Owner decision of 2026-11-04 ([ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md)). The product name, the assistant name
@@ -229,8 +258,8 @@ The approved requests and expected results are unchanged; `gold/REVIEW.md` still
 ## 2026-10-17: overnight W4 to W8 session
 
 - Corrected stale statements: `knowledge.md` (the assistant still told people the AI comes installed with no download);
-  feature rows "Offline AI bundled in every package" (rewritten for the download design) and "Every package bundles the
-  complete offline AI" (Removed); the hardware benchmark row (scope set by the owner on 2026-10-16); scenarios and specs 72
+  feature rows "Straft AI bundled in every package" (rewritten for the download design) and "Every package bundles the
+  complete Straft AI" (Removed); the hardware benchmark row (scope set by the owner on 2026-10-16); scenarios and specs 72
   and 76 (bundled-era expectations).
 - Marked superseded in place: the W5 bake-off, the W6 two model tiers and the W7 borrowed-laptop benchmarks in the Windows
   phase page; the masterplan box "Remove the download flow and model host code" (N/A, superseded by the rebuilt flow).

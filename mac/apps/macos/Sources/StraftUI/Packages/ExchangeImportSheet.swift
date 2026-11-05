@@ -30,10 +30,10 @@ struct ExchangeImportSheet: View {
     private var chooseView: some View {
         IXSheetFrame(title: "Import Exchange Package", sub: "What exactly will this imported package change?", width: 540, idPrefix: "exchange-import-sheet") {
             VStack(spacing: 10) {
-                Image(systemName: "square.and.arrow.down").font(.system(size: 28)).foregroundStyle(.secondary).accessibilityHidden(true)
+                Image(systemName: "square.and.arrow.down").font(.system(size: 28)).foregroundStyle(.ofMuted).accessibilityHidden(true)
                 Text("Choose a package").font(.headline)
                 Text("Review, response, Beat Board, Breakdown, Shot List, Schedule or Call Sheet review packages. The package is validated first; nothing changes until you choose what to import.")
-                    .font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    .font(.callout).foregroundStyle(.ofMuted).multilineTextAlignment(.center)
                 if let e = model.errorText { IXBanner(.err, e).accessibilityIdentifier("exchange-import-error") }
                 Button(model.busy ? "Validating\u{2026}" : "Choose Package\u{2026}") {
                     if let url = picker.openFile(title: "Import Exchange Package", extensions: PKInfo.extensions(PKInfo.exchangeOpenTypes)) {
@@ -59,7 +59,7 @@ struct ExchangeImportSheet: View {
             sub: "Staleness does not mean rejection: the package needs review.", width: 540, idPrefix: "exchange-stale-sheet"
         ) {
             VStack(alignment: .leading, spacing: 8) {
-                Text("This package was created from an older project state.").font(.callout).foregroundStyle(.secondary)
+                Text("This package was created from an older project state.").font(.callout).foregroundStyle(.ofMuted)
                 ForEach(model.staleOptions, id: \.choice) { o in
                     Button { model.staleChoice = o.choice } label: {
                         HStack(alignment: .top, spacing: 8) {
@@ -67,7 +67,7 @@ struct ExchangeImportSheet: View {
                                 .foregroundStyle(model.staleChoice == o.choice ? theme["accent"] : theme["muted"]).accessibilityHidden(true)
                             VStack(alignment: .leading, spacing: 2) {
                                 HStack { Text(o.title).fontWeight(.semibold); if o.isDefault { IXChip(text: "Default", tone: .green) } }
-                                Text(o.hint).font(.callout).foregroundStyle(.secondary)
+                                Text(o.hint).font(.callout).foregroundStyle(.ofMuted)
                             }
                             Spacer()
                         }
@@ -106,7 +106,7 @@ struct ExchangeImportSheet: View {
                     IXFact(label: "Source project", value: s.sourceProjectTitle, id: "exchange-fact-project")
                     IXFact(label: "Source version", value: s.sourceVersion, detail: "Yours: \(s.hostVersion)", id: "exchange-fact-version")
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Compatibility").font(.caption).foregroundStyle(.secondary)
+                        Text("Compatibility").font(.caption).foregroundStyle(.ofMuted)
                         IXChip(text: s.compatibility, tone: PKText.compatibilityTone(s.compatibility))
                     }
                     .padding(10).frame(maxWidth: .infinity, alignment: .leading)
@@ -116,7 +116,7 @@ struct ExchangeImportSheet: View {
                     .accessibilityIdentifier("exchange-fact-compatibility")
                 }
                 Text("Exported by \(s.exportedBy) \u{00B7} \(PKText.day(ms: s.exportedAt)) \u{00B7} \(s.fileName)")
-                    .font(.caption).foregroundStyle(.secondary).accessibilityIdentifier("exchange-import-exported-by")
+                    .font(.caption).foregroundStyle(.ofMuted).accessibilityIdentifier("exchange-import-exported-by")
                 banner(s, result)
                 ForEach(s.warnings, id: \.self) { IXBanner(.info, $0) }
                 if model.onlyText {
@@ -131,7 +131,7 @@ struct ExchangeImportSheet: View {
                         Toggle("Create Backup Before Import", isOn: $model.backup).toggleStyle(.checkbox)
                             .accessibilityIdentifier("exchange-import-backup")
                         Text("Ambiguous and unmatched notes go to the Review Queue; nothing is discarded. Conflicts are never applied unless you select them.")
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(.caption).foregroundStyle(.ofMuted)
                     }
                 }
                 if let e = model.errorText { IXBanner(.err, e).accessibilityIdentifier("exchange-import-error") }
@@ -139,7 +139,7 @@ struct ExchangeImportSheet: View {
         } footer: {
             footer(s, result)
         } leading: {
-            Text("Validation happened before anything was changed.").font(.caption).foregroundStyle(.secondary)
+            Text("Validation happened before anything was changed.").font(.caption).foregroundStyle(.ofMuted)
         }
     }
 
@@ -148,7 +148,7 @@ struct ExchangeImportSheet: View {
             let tone: IXBannerTone = r.status == "Failed" ? .err : (r.status == "Applied" || r.status == "Undone") ? .ok : .info
             VStack(alignment: .leading, spacing: 2) {
                 IXBanner(tone: tone, text: Text("\(PKText.resultLabel(r.status)).").bold() + Text(" " + r.message))
-                if let b = r.safetyBackup { Text("Backup before import: \(b)").font(.caption).foregroundStyle(.secondary).textSelection(.enabled) }
+                if let b = r.safetyBackup { Text("Backup before import: \(b)").font(.caption).foregroundStyle(.ofMuted).textSelection(.enabled) }
             }
             .accessibilityIdentifier("exchange-import-result")
         } else if let rej = s.rejection {
@@ -170,7 +170,7 @@ struct ExchangeImportSheet: View {
                 Text("State").frame(width: 150, alignment: .leading)
                 Text("Apply").frame(width: 60)
             }
-            .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            .font(.caption.weight(.semibold)).foregroundStyle(.ofMuted)
             .padding(.horizontal, 10).padding(.vertical, 6)
             .background(theme["surface2"])
             Divider()
@@ -201,7 +201,7 @@ struct ExchangeImportSheet: View {
         return HStack {
             HStack(spacing: 6) {
                 Button { model.toggleExpanded(g.key) } label: { Image(systemName: open ? "chevron.down" : "chevron.right").frame(width: 14) }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.ofBorderless)
                     .accessibilityLabel("\(open ? "Hide" : "Show") \(g.label)")
                     .accessibilityIdentifier("exchange-expand-\(g.key)")
                 Text(g.label).fontWeight(.semibold)
@@ -216,12 +216,12 @@ struct ExchangeImportSheet: View {
                     } label: {
                         Image(systemName: sel == .all ? "checkmark.square.fill" : sel == .some ? "minus.square.fill" : "square")
                     }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.ofBorderless)
                     .accessibilityLabel("Apply \(g.label)")
                     .accessibilityValue(sel == .all ? "all" : sel == .some ? "some" : "none")
                     .accessibilityIdentifier("exchange-apply-group-\(g.key)")
                 } else {
-                    Text("None").font(.caption).foregroundStyle(.secondary)
+                    Text("None").font(.caption).foregroundStyle(.ofMuted)
                 }
             }
             .frame(width: 60)
@@ -235,9 +235,9 @@ struct ExchangeImportSheet: View {
         return HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(c.label)
-                if let d = c.detail { Text(d).font(.caption).foregroundStyle(.secondary) }
+                if let d = c.detail { Text(d).font(.caption).foregroundStyle(.ofMuted) }
                 if !c.candidates.isEmpty {
-                    Text("Possible places: " + c.candidates.map(\.label).joined(separator: " \u{00B7} ")).font(.caption).foregroundStyle(.secondary)
+                    Text("Possible places: " + c.candidates.map(\.label).joined(separator: " \u{00B7} ")).font(.caption).foregroundStyle(.ofMuted)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading).padding(.leading, 28)

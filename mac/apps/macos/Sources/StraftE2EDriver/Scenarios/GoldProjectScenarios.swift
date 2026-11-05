@@ -33,8 +33,8 @@ fileprivate extension UI {
     /// A second picture through the window server: some workspaces draw their content in layers
     /// that the view cache used by `snapshot` leaves transparent. Needs Screen Recording access;
     /// without it the system returns nothing and only the first picture exists.
-    func windowPicture(_ name: String) {
-        guard let w = NSApp.windows.first(where: { $0.isVisible && $0.title.contains("Low Tide Radio") }),
+    func windowPicture(_ name: String, title: String = "Low Tide Radio") {
+        guard let w = NSApp.windows.first(where: { $0.isVisible && $0.title.contains(title) }),
               let image = CGWindowListCreateImage(.null, .optionIncludingWindow, CGWindowID(w.windowNumber), [.boundsIgnoreFraming, .bestResolution])
         else { return }
         let rep = NSBitmapImageRep(cgImage: image)
@@ -106,5 +106,53 @@ extension Scenarios {
             try await ui.checkWorkspace("Recently Deleted", ["Costume (moved to the wardrobe file)", "Breakwater (old thumbnails)", "Rough one-liner"], f)
             try f.finish()
         },
+
+        // A demo project built by `demo_project` from a film outside this repository. Runs only when
+        // STRAFT_E2E_DEMO_PACKAGE names its .ofproject and STRAFT_E2E_DEMO_TITLE its title.
+        Scenario("gold/open-demo-package", timeout: 900) { ui, _, ctx in
+            let env = ProcessInfo.processInfo.environment
+            guard let built = env["STRAFT_E2E_DEMO_PACKAGE"], let title = env["STRAFT_E2E_DEMO_TITLE"] else {
+                try await ui.startApp(ctx)
+                return
+            }
+            let f = Findings()
+            let incoming = ctx.dataRoot.appendingPathComponent("Incoming", isDirectory: true)
+            try FileManager.default.createDirectory(at: incoming, withIntermediateDirectories: true)
+            let pkg = incoming.appendingPathComponent(URL(fileURLWithPath: built).lastPathComponent)
+            try? FileManager.default.removeItem(at: pkg)
+            try FileManager.default.copyItem(at: URL(fileURLWithPath: built), to: pkg)
+
+            try await ui.startApp(ctx)
+            try await ui.menu(["File", "Restore Backup or Package\u{2026}"])
+            try await ui.wait(id: "open-project-choose", timeout: 20, "the Restore Backup or Package sheet")
+            try await ui.choosing(pkg) { try await ui.press(id: "open-project-choose") }
+            try await ui.wait(id: "open-project-no-collision", timeout: 120, "the package check")
+            try await ui.press(id: "open-project-confirm")
+            try await ui.wait(id: "open-project-done", timeout: 300, "Project opened.")
+            try await ui.press(id: "open-project-close")
+            try await ui.wait(id: "project-home", timeout: 60, "Project Home of \(title)")
+            f.check(ui.screenText().contains(title), "Project Home names \(title)")
+
+            try await ui.go("Screenplay")
+            let tv = try await ui.editor(timeout: 60)
+            f.check(tv.string.count > 50_000, "Screenplay: the editor holds the script, \(tv.string.count) characters")
+            ui.log("Screenplay: \(tv.string.count) characters in the editor")
+
+            for name in windowFitWorkspaces {
+                try await ui.go(name)
+                await ui.idle(1.5)
+                let screen = ui.screenText()
+                f.check(!screen.contains("Something went wrong"), "\(name): no error on screen")
+                f.check(screen.count > 40, "\(name): the page shows content: \(screen.prefix(80))")
+                ui.log("\(name): \(screen.count) characters on screen")
+                try ui.snapshot("demo-\(Self.workspaceFileName(name))")
+                ui.windowPicture("demo-\(Self.workspaceFileName(name))", title: title)
+            }
+            try f.finish()
+        },
     ]
+
+    private static func workspaceFileName(_ name: String) -> String {
+        name.lowercased().map { $0.isLetter || $0.isNumber ? String($0) : "-" }.joined()
+    }
 }

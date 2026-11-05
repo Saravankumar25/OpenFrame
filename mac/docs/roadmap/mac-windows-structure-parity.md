@@ -29,7 +29,7 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | Notes and Tasks, Activity, Recently Deleted | Project menu | Project menu and the Go menu | Done |
 | Back and Forward | Toolbar arrows, Alt+Left and Alt+Right, 50 pages | Toolbar Back and Forward, Go > Back and Forward, Command+[ and Command+], 50 pages | Done (Mac shortcuts) |
 | Logo to all projects (item 17) | Logo button | Toolbar button "All Projects" with its name | Exception: the Mac toolbar has no logo; the same action is labelled |
-| Settings gear (item 6) | Home: Appearance, Keyboard shortcuts, About; project: Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance | Project Settings sheet with the same seven pages in the same order; at Home the Mac Settings window (Command+Comma) | Done; the Home window keeps General and Diagnostics (Exception: macOS Settings window) |
+| Settings gear (item 6) | Home: Appearance, Keyboard shortcuts, About; project: Project settings, Writing, Keyboard shortcuts, Templates, Straft AI, Advanced, Appearance | Project Settings sheet with the same seven pages in the same order; at Home the Mac Settings window (Command+Comma) | Done; the Home window keeps General and Diagnostics (Exception: macOS Settings window) |
 | Writing settings | Spell check on or off, main and second language, project dictionary | New page; the editor follows the on/off choice and language; words checked by the macOS spelling service | Done |
 | Focus mode (item 13) | Only the page | Hides the toolbar, the sidebar and the AI panel | Done |
 | Reload keeps the page (item 1) | Route kept in session storage | Window keeps the project's page (scene storage) | Same |
@@ -73,7 +73,7 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | Daily View export named "Shoot Day N - Daily view", with what the page shows | Done in the core (`schedule.export_daily`, PDF, CSV, XLSX) and on both apps (owner decision 2026-10-20: the new document only; the schedule export's day-first variant is removed) |
 | Area not scrollable (Story outline) | Mac outline scrolls; Same |
 | Compare top glitch | Mac compare is its own sheet; Same |
-| Offline AI technical details overlapping | Mac shows it as a list in the AI settings; Same |
+| Straft AI technical details overlapping | Mac shows it as a list in the AI settings; Same |
 | Find navigates the scene list but not the screenplay | Same: the Mac Find is the macOS find bar of the script itself, so it selects and scrolls to the match in the screenplay |
 | Stripboard colour codes | Same (INT Day white, EXT Day yellow, INT Night blue, EXT Night green) |
 | Story Board columns and Parking Lot like the reference | Done (whole card text, columns scroll on their own) |
@@ -96,7 +96,7 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | Catalog and Locations filter rows past the page with the assistant open | Fixed: the row of filter buttons becomes a pop-up menu when the page is narrow |
 | Screenplay scene list over the sidebar at 900 points with the assistant open | Fixed: the scene list steps aside when the page has no room for it (the Scenes button says why) |
 | Smallest window taller than a 720-point screen | Fixed: the minimum is checked again when the toolbar changes height |
-| Settings button did nothing | Fixed: the Home Settings button and "Offline AI settings" used a message recent macOS ignores; they now use SwiftUI's openSettings action, and the window-fit scenario clicks the button |
+| Settings button did nothing | Fixed: the Home Settings button and "Straft AI settings" used a message recent macOS ignores; they now use SwiftUI's openSettings action, and the window-fit scenario clicks the button |
 | Page and section headers | Done: every page header has the Windows layout (title and line on the left, actions on the right, under the title in a narrow page); section titles are small grey capitals; Home cards carry the five Windows previews |
 
 ## 4. AI (StraftAI.docx and the Windows AI brief)
@@ -113,7 +113,7 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | Local only | Same |
 | Starting questions | Done on the Mac: an empty conversation offers "Try asking" questions for the page you are on |
 | Copy an answer | Done on the Mac: Copy under each answer (the answer text only) |
-| The Story page stays private to the writer | Done: the assistant can neither read nor change it (`story.page.get`, `story.page.save` and `story.page.export`, the Windows names since the 2026-10-27 sync, hidden from the AI, reason `STANDALONE_PAGE`) |
+| The Story page stays private to the writer | Done: no assistant tool reads or changes it (`story.page.get`, `story.page.save` and `story.page.export`, the Windows names since the 2026-10-27 sync, hidden from the AI, reason `FREE_WRITING`). Its text reaches Straft AI only when the person picks the Story Page section (ADR-0041) |
 | Requests the model planned wrongly | *Superseded 2026-10-27: the Windows conversational path of [ADR-0037](../adr/ADR-0037-conversational-assistant-focus-and-dossiers.md) replaced these routes in the core sync ([port orders](../history/mac-ai-harness-port-orders.md)).* Was: seven deterministic routes (task due date, set dressing, characters for a scene, a shot for scene N, product terms, parking lot cards). English evaluation on the Mac: tool and arguments 94.4 to 98.1 percent, end state 87.3 to 89.9, safety 46 of 46 |
 | Meaning search measured on the Mac | Fixed in the evaluation tool: a relative engine folder made the search engine fail to start, so every retrieval case measured word matching and waited ten minutes. The tool now resolves the folders, checks the search model before the first case and stops waiting when the index reports an error. The index now records why embedding failed (the snapshot's `error`) instead of only "updating" |
 

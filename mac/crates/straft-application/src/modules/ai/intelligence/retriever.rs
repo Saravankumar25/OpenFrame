@@ -10,11 +10,11 @@
 use std::collections::{BTreeMap, HashSet};
 use std::time::Instant;
 
+use rusqlite::{Connection, params};
 use straft_domain::{Actor, AppResult};
 use straft_search::graph::{self, TraversalLimits};
 use straft_search::rank::{self, Candidate, RankWeights};
 use straft_search::{SemanticIndex, SqliteVecIndex, docs};
-use rusqlite::{Connection, params};
 
 use super::documents::DocKey;
 use super::indexer::{IndexSnapshot, ProjectIndex};

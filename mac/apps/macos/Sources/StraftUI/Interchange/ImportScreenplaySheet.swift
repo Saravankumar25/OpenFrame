@@ -72,7 +72,7 @@ struct ImportScreenplaySheet: View {
             Image(systemName: model.path == nil ? "folder" : "doc.text").font(.system(size: 26)).accessibilityHidden(true)
             Text(model.pathName ?? "Choose a file").font(.body.weight(.semibold)).lineLimit(2)
                 .accessibilityIdentifier("import-file-name")
-            Text(IXImportFilter.summary).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
+            Text(IXImportFilter.summary).font(.caption).foregroundStyle(.ofMuted).multilineTextAlignment(.center)
             HStack {
                 Button("Browse\u{2026}") {
                     if let url = picker.openFile(title: "Choose a screenplay to import", extensions: IXImportFilter.extensions) {
@@ -81,7 +81,7 @@ struct ImportScreenplaySheet: View {
                 }
                 .accessibilityIdentifier("import-browse")
                 if model.path != nil {
-                    Button("Clear") { model.clearFile() }.buttonStyle(.borderless)
+                    Button("Clear") { model.clearFile() }.buttonStyle(.ofBorderless)
                         .accessibilityIdentifier("import-clear")
                 }
             }
@@ -117,7 +117,7 @@ struct ImportScreenplaySheet: View {
                 .accessibilityIdentifier("import-paste")
             if model.pasted.isEmpty && model.path == nil && model.sample == nil {
                 Text("INT. POLICE STATION - NIGHT, then the action, then a character name and the line.")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption).foregroundStyle(.ofMuted)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -127,7 +127,7 @@ struct ImportScreenplaySheet: View {
         VStack(alignment: .leading, spacing: 6) {
             Label("Or open a sample script", systemImage: "book").font(.callout.weight(.semibold))
             Text("Fictional scripts written and owned by Straft Studio, for learning the app.")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption).foregroundStyle(.ofMuted)
             HStack {
                 ForEach(model.samples, id: \.id) { s in
                     Button(s.title) { model.toggleSample(s.id) }
@@ -181,7 +181,7 @@ struct ImportScreenplaySheet: View {
                     destination(p)
                     if !p.canCreateScreenplay {
                         Text("Screenplays in a series live inside episodes. Add an episode first, then import the script into it.")
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(.caption).foregroundStyle(.ofMuted)
                     }
                     HStack(alignment: .bottom, spacing: 16) {
                         VStack(alignment: .leading, spacing: 3) {
@@ -191,7 +191,7 @@ struct ImportScreenplaySheet: View {
                                 .onChange(of: model.draftName) { _, v in if v.count > 120 { model.draftName = String(v.prefix(120)) } }
                                 .accessibilityIdentifier("import-draft-name")
                             Text(model.mode == .newDraft ? "Leave empty to name it after the file. Existing drafts are not changed." : "Leave empty to name it after the file.")
-                                .font(.caption).foregroundStyle(.secondary)
+                                .font(.caption).foregroundStyle(.ofMuted)
                         }
                         Toggle(p.sourceFormat == "pasted" ? "Keep the pasted text in Project Files" : "Keep the original file in Project Files",
                                isOn: $model.keepSource)
@@ -221,14 +221,14 @@ struct ImportScreenplaySheet: View {
                 Text("Detected scene heading").frame(maxWidth: .infinity, alignment: .leading)
                 Text("Status").frame(width: 150, alignment: .leading)
             }
-            .font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            .font(.caption.weight(.semibold)).foregroundStyle(.ofMuted)
             .padding(.horizontal, 10).padding(.vertical, 6)
             .background(theme["surface2"])
             Divider()
             ScrollView {
                 LazyVStack(spacing: 0) {
                     if p.scenes.isEmpty {
-                        Text("No scenes were detected.").foregroundStyle(.secondary).padding(10).frame(maxWidth: .infinity, alignment: .leading)
+                        Text("No scenes were detected.").foregroundStyle(.ofMuted).padding(10).frame(maxWidth: .infinity, alignment: .leading)
                     }
                     ForEach(Array(p.scenes.enumerated()), id: \.offset) { i, s in
                         let status = IXLabels.sceneStatus(s.status)
@@ -238,11 +238,11 @@ struct ImportScreenplaySheet: View {
                             Text(heading.isEmpty ? "" : "\(number)").frame(width: 36, alignment: .leading)
                             VStack(alignment: .leading, spacing: 1) {
                                 if heading.isEmpty {
-                                    Text("(material before the first scene)").foregroundStyle(.secondary)
+                                    Text("(material before the first scene)").foregroundStyle(.ofMuted)
                                 } else {
                                     Text(heading)
                                 }
-                                if let n = s.sourceNumber { Text("numbered \(n) in the source").font(.caption).foregroundStyle(.secondary) }
+                                if let n = s.sourceNumber { Text("numbered \(n) in the source").font(.caption).foregroundStyle(.ofMuted) }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             IXChip(text: status.label, tone: status.tone).frame(width: 150, alignment: .leading)

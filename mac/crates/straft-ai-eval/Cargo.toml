@@ -1,6 +1,6 @@
 [package]
 name = "straft-ai-eval"
-description = "Offline AI evaluation harness: runs the gold cases through the real assistant pipeline and scores them with deterministic checks (ADR-0028 decision 1; Windows phase W5). Development only; never shipped."
+description = "Straft AI evaluation harness: runs the gold cases through the real assistant pipeline and scores them with deterministic checks (ADR-0028 decision 1; Windows phase W5). Development only; never shipped."
 version.workspace = true
 edition.workspace = true
 license.workspace = true

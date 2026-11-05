@@ -61,7 +61,7 @@ struct CallSheetListView: View {
             CenteredWrap(spacing: 12, lineSpacing: PageSpacing.small) {
                 HStack(spacing: 4) {
                     Image(systemName: "magnifyingglass").foregroundStyle(theme["muted"]).accessibilityHidden(true)
-                    TextField("Search", text: $model.text)
+                    HintedTextField("Search", text: $model.text)
                         .textFieldStyle(.plain)
                         .accessibilityLabel("Search call sheets")
                         .accessibilityIdentifier("callsheet-search")
@@ -139,7 +139,7 @@ struct CallSheetListView: View {
                 } label: {
                     Label("Actions", systemImage: "ellipsis.circle")
                 }
-                .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
+                .borderlessAccentMenu().menuIndicator(.hidden).fixedSize()
                 .accessibilityLabel("\(r.title) actions")
                 .accessibilityIdentifier("callsheet-actions-\(r.id)")
             }

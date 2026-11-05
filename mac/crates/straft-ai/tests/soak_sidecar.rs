@@ -292,7 +292,7 @@ fn sidecar_soak(total: Duration) {
         assert_eq!(chat(&rt, &sup, &ep, "after cancel"), "ready");
 
         if rounds % 5 == 0 {
-            // Explicit stop and start (Settings → Stop Offline AI, then the next request).
+            // Explicit stop and start (Settings → Stop Straft AI, then the next request).
             sup.stop();
             stops += 1;
             assert_eq!(sup.state(), RuntimeState::Installed);

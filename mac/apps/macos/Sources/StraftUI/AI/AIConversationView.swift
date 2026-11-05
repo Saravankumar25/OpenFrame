@@ -38,13 +38,13 @@ struct AIConversationView: View {
                 Button { Task { await model.saveForReview() } } label: {
                     Label(AIText.saveConversation, systemImage: "square.and.arrow.down").labelStyle(.iconOnly)
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.ofBorderless)
                 .help(AIText.saveConversation)
                 .disabled(model.conversationId == nil)
                 .accessibilityLabel(AIText.saveConversation)
                 .accessibilityIdentifier("ai-save-conversation")
                 Button("New") { model.newConversation() }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.ofBorderless)
                     .help("Start a new conversation")
                     .disabled(model.pending != nil)
                     .accessibilityIdentifier("ai-new-conversation")
@@ -249,7 +249,7 @@ struct AIResultView: View {
                 } label: {
                     Label("Copy", systemImage: "doc.on.doc")
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.ofBorderless)
                 .font(.caption)
                 .help("Copy this answer, with its list if it has one")
                 .accessibilityIdentifier("ai-copy")
@@ -367,7 +367,7 @@ struct AIItemList: View {
             }
             if result.items.count > AILogic.previewItems {
                 Button(allItems ? "Show fewer" : "Show all \(result.items.count)") { allItems.toggle() }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.ofBorderless)
                     .font(.caption)
                     .accessibilityValue(allItems ? "expanded" : "collapsed")
                     .accessibilityIdentifier("ai-items-show-all")

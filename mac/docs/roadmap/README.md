@@ -35,7 +35,7 @@ The progress numbers come from `npm run plan:status`; this table never repeats t
 | 5. Test infrastructure and quality gates | W1, W4 | Release-build suite, shared scenario list |
 | 6. Security hardening | W3 | Fuzzing, property tests, supply chain |
 | 7. Platform adapter layer | W1 for Windows; M1 to M3 for the Mac | The Mac adapter first runs in M3 |
-| 8. AI assistant quality and hardening | W5, W6, W7, W8; M8 on the Mac | Evaluation, harness, GPU, download flow |
+| 8. Straft AI quality and hardening | W5, W6, W7, W8; M8 on the Mac | Evaluation, harness, GPU, download flow |
 | 9. Beat Board and Idea Vault | W4; M5 | |
 | 10. Writing comfort | W4; M4 | |
 | 11. Screenplay engine and file formats | W4; M4, M7 | |

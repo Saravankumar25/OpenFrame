@@ -158,7 +158,7 @@ struct SchedWarningsDrawer: View {
             footer: "Warnings never block you and nothing is fixed automatically.", onClose: { model.drawer = nil }
         ) {
             if all.isEmpty {
-                Text("No warnings. The schedule looks consistent.").font(.callout).foregroundStyle(.secondary)
+                Text("No warnings. The schedule looks consistent.").font(.callout).foregroundStyle(.ofMuted)
                     .multilineTextAlignment(.center).frame(maxWidth: .infinity)
                     .accessibilityIdentifier("warnings-empty")
             }

@@ -1,8 +1,8 @@
 //! Production: locations (and where a scene is shot), tasks, permits and call sheet status.
 //! Reads `location`, `catalog_item`, `breakdown_element`, `task`, `call_sheet`.
 
-use straft_domain::AppResult;
 use serde_json::Value;
+use straft_domain::AppResult;
 
 use super::{files, schedule};
 use crate::modules::ai::dossier::asked::{self, best_rows, names_row, row_words};

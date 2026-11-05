@@ -1,5 +1,5 @@
 //! Local hardware inspection (Local AI Runtime spec §5): memory and processor, shown in
-//! Settings > Offline AI > Technical details and used for the "may be slow" hint. Collected
+//! Settings > Straft AI > Technical details and used for the "may be slow" hint. Collected
 //! locally and never transmitted. Graphics adapters are read by the platform layer
 //! (`straft_platform::graphics`) and judged by `gpu::decide` (ADR-0029).
 

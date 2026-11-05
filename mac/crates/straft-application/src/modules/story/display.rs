@@ -6,9 +6,9 @@
 //! a scene or the screenplay, never enters the undo history and never reaches an exchange
 //! package. The assistant does not see or change it (it is view state).
 
-use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
 use ts_rs::TS;
 
 use crate::core::AppCore;

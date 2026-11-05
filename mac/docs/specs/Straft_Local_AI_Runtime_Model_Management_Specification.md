@@ -5,8 +5,8 @@
     **Product:** Straft Studio  
     **Document class:** Implementation / engineering specification  
     **Baseline:** Windows 11 production architecture, v1  
-    **Updated:** 30 September 2026 (single Offline AI profile: Gemma 3 1B Instruct + BGE small embeddings; supersedes the three-tier Qwen design)  
-    **Purpose:** Define a zero-technical-setup, local-only AI subsystem where filmmakers click **Download Offline AI** and Straft Studio manages everything else.
+    **Updated:** 30 September 2026 (single Straft AI profile: Gemma 3 1B Instruct + BGE small embeddings; supersedes the three-tier Qwen design)  
+    **Purpose:** Define a zero-technical-setup, local-only AI subsystem where filmmakers click **Download Straft AI** and Straft Studio manages everything else.
 
 > **Current decision: [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (2026-10-15).** The download after
 > install described below is the target design again. The runtime ships in every package; the chat and embedding models
@@ -44,7 +44,7 @@ If an implementation detail conflicts with an authoritative product rule, the im
 | Initial OS | Windows 11 first; preserve macOS-ready boundaries |
 | Desktop shell | Tauri v2 |
 | Core/business logic | Rust owns domain rules; React is presentation/input |
-| Offline AI | One-click **Download Offline AI**; Straft Studio installs runtime + models |
+| Straft AI | One-click **Download Straft AI**; Straft Studio installs runtime + models |
 | AI profile | Exactly **one** production profile, internal id `straft-local-ai-v1`; no model picker |
 | Language model | Google **Gemma 3 1B Instruct**, GGUF **Q8_0** (chosen by benchmark, §4.2) |
 | Embedding model | **BGE small English v1.5**, GGUF Q8_0, 384 dimensions, CLS pooling (MIT) |
@@ -53,7 +53,7 @@ If an implementation detail conflicts with an authoritative product rule, the im
 | AI providers | **Local AI only**; no cloud AI, no API keys, no Ollama |
 | Accounts / telemetry | None / none |
 | Collaboration | File packages only (LAN collaboration removed) |
-| Store build | Microsoft Store builds compile the app updater out; Offline AI downloads are user-initiated |
+| Store build | Microsoft Store builds compile the app updater out; Straft AI downloads are user-initiated |
 
 
 ## 1. Product rule
@@ -63,9 +63,9 @@ The user must never be required to install Ollama, Python, CUDA tooling, model m
 ```text
 AI feature clicked
       ↓
-"Offline AI is not installed."   + exact download size + free-space check
+"Straft AI is not installed."   + exact download size + free-space check
       ↓
-[Download Offline AI]            (one button, no choices)
+[Download Straft AI]            (one button, no choices)
       ↓
 Checking device → Downloading → Verifying → Installing → Starting → Ready
       ↓
@@ -76,20 +76,20 @@ User-facing wording (spec §1, §24, §36):
 
 | Situation | Wording |
 |---|---|
-| Offer | **Enable Offline AI** — "Download the AI components required for Straft Studio's AI features. AI runs on this computer and project data is not sent to Straft Studio or an AI cloud service." |
-| Not installed | "Offline AI is not installed." + **[Download Offline AI]** |
+| Offer | **Enable Straft AI** — "Download the AI components required for Straft Studio's AI features. AI runs on this computer and project data is not sent to Straft Studio or an AI cloud service." |
+| Not installed | "Straft AI is not installed." + **[Download Straft AI]** |
 | Installed | **AI Ready** (header chip) |
 | Steps | Checking device · Downloading · Verifying · Installing · Starting · Ready |
 | Paused / failed | "Paused. You can resume the download at any time." / plain reason + **[Retry]** |
 
-The words Gemma, GGUF, Q8_0, embedding model, llama.cpp, sqlite-vec, RRF or context graph never appear in ordinary workflow UI. They appear only in **Settings → Offline AI → Technical details** (component names, versions, licences, sizes, SHA-256, backend, hardware, manifest channel, store folder, log file), in third-party notices, the privacy policy, the user manual and technical documentation. Tests enforce this (`crates/straft-application/tests/ai.rs`, `apps/desktop/src/ai/OfflineAiSetup.test.tsx`, E2E journey).
+The words Gemma, GGUF, Q8_0, embedding model, llama.cpp, sqlite-vec, RRF or context graph never appear in ordinary workflow UI. They appear only in **Settings → Straft AI → Technical details** (component names, versions, licences, sizes, SHA-256, backend, hardware, manifest channel, store folder, log file), in third-party notices, the privacy policy, the user manual and technical documentation. Tests enforce this (`crates/straft-application/tests/ai.rs`, `apps/desktop/src/ai/OfflineAiSetup.test.tsx`, E2E journey).
 
 After a successful download, AI use requires no internet.
 
 ## 2. Components
 
 ```text
-React: OfflineAiSetup (panel + Settings)       Settings → Offline AI → Technical details
+React: OfflineAiSetup (panel + Settings)       Settings → Straft AI → Technical details
    ↓ ai.status / ai.setup_info / ai.install / ai.cancel_install / ai.uninstall / ai.stop_runtime / ai.diagnostics
 straft-application  modules/ai/offline.rs (+ service.rs: install task, progress events)
    ↓
@@ -147,7 +147,7 @@ Machine: Intel Core Ultra 5 125H (14 cores / 18 threads), 16 GB RAM, Intel Arc i
 
 Embedding model (BGE small en v1.5 Q8_0, 35 MB): 384 dimensions, returned vectors L2-normalised, cosine(similar scene pair) 0.859 vs cosine(unrelated) 0.473, 32 chunks of ~600 characters in 9.9 s under the same load, 67 MB peak memory. An input over the 512-token window is refused by the server (HTTP 500), so Straft Studio bounds inputs to 1 500 characters and retries a refused input shorter (§9.1).
 
-**Decision: Q8_0.** It is best on priority 1 (tool + arguments 38.9% vs 33.3% / 22.2%, raw JSON 94.4%) and on latency (Q8_0 dequantisation is cheap on CPU), with memory equal to the QAT file; the cost is priority 4 (≈330 MB larger download). Full Offline AI download: **1 125 156 323 bytes** (runtime 19.2 MB + Gemma 1 069.3 MB + BGE 36.7 MB) on a processor-only computer.
+**Decision: Q8_0.** It is best on priority 1 (tool + arguments 38.9% vs 33.3% / 22.2%, raw JSON 94.4%) and on latency (Q8_0 dequantisation is cheap on CPU), with memory equal to the QAT file; the cost is priority 4 (≈330 MB larger download). Full Straft AI download: **1 125 156 323 bytes** (runtime 19.2 MB + Gemma 1 069.3 MB + BGE 36.7 MB) on a processor-only computer.
 
 Findings for the agent layer (owned by the orchestrator, recorded here because they came out of the benchmark), and how the merged code applies them:
 - **Key order matters.** llama.cpp emits properties in schema order; `serde_json` sorts keys, so the captured planner schema listed `"arguments"` before `"tool"` and the model filled in arguments before choosing the tool. The benchmark puts `"tool"` first. *Applied:* the step schema names the tool with the key `"action"`, which sorts before `"arguments"`, so the model names the tool first (`orchestrator::step_schema`; `"tool"` is still accepted when parsing older transcripts).
@@ -161,7 +161,7 @@ The Vulkan build is chosen only when a real (non-software) adapter has **dedicat
 
 Collected locally, never transmitted: OS/arch, total/available RAM, logical/physical CPUs, GPU adapters and dedicated memory (DXGI), Vulkan loader presence, free disk space.
 
-`ai.setup_info` returns, before anything is downloaded: exact bytes still to download (partial downloads excluded), full size, bytes already downloaded, free space needed (remaining download + 3 × runtime archive + 512 MB margin), free space on the drive, "Graphics card" / "Processor", and plain warnings ("may take a while" below 8 GB RAM or 4 threads; "less memory than Offline AI normally needs" below 4 GB). Low-memory computers are warned, not refused. Nothing is downloaded when space is short.
+`ai.setup_info` returns, before anything is downloaded: exact bytes still to download (partial downloads excluded), full size, bytes already downloaded, free space needed (remaining download + 3 × runtime archive + 512 MB margin), free space on the drive, "Graphics card" / "Processor", and plain warnings ("may take a while" below 8 GB RAM or 4 threads; "less memory than Straft AI normally needs" below 4 GB). Low-memory computers are warned, not refused. Nothing is downloaded when space is short.
 
 ## 6. Manifest (format 2)
 
@@ -242,7 +242,7 @@ Owned by the orchestrator / retrieval / tool layers and specified in `Straft_Stu
 
 | Failure | Required behavior |
 |---|---|
-| Not installed | "Offline AI is not installed." + Download Offline AI; core app unaffected |
+| Not installed | "Straft AI is not installed." + Download Straft AI; core app unaffected |
 | Manifest unverifiable | Nothing downloaded or run; clear message |
 | Offline during download | Retries, then fails safely; partial file kept and resumable |
 | Hash mismatch | Quarantined; previous install untouched and still active |
@@ -255,11 +255,11 @@ Owned by the orchestrator / retrieval / tool layers and specified in `Straft_Stu
 
 ## 15. Update and removal
 
-(Superseded by ADR-0032: a model update is a new app version with new pins.) A newer signed manifest whose profile version or model ids differ shows **Update Offline AI** (panel menu and Settings). Only changed components are downloaded (exact size shown first). The current install keeps working until the new one passes its health check; only then does `active.json` switch, and only then are superseded model/runtime folders (and retired-profile leftovers) deleted. Nothing is updated silently.
+(Superseded by ADR-0032: a model update is a new app version with new pins.) A newer signed manifest whose profile version or model ids differ shows **Update Straft AI** (panel menu and Settings). Only changed components are downloaded (exact size shown first). The current install keeps working until the new one passes its health check; only then does `active.json` switch, and only then are superseded model/runtime folders (and retired-profile leftovers) deleted. Nothing is updated silently.
 
 **Import a model file** (ADR-0032 decision 6; Settings and the download card, also when this copy cannot download): the person picks a `.gguf` file; the app copies it, never moves it, and uses it only when its size and SHA-256 match a file the app pins. A file that matches no pin is refused with a plain message and left where it was. When the last pinned file is in place the set is activated and health-checked like a download.
 
-**Remove Offline AI** (Settings / panel menu, with confirmation) stops both sidecars and deletes every model, runtime and partial download; links/junctions inside the AI folders are removed without following them; nothing outside `models/` and `runtimes/llama/` is touched. Projects and assistant history are unaffected; Offline AI can be downloaded again.
+**Remove Straft AI** (Settings / panel menu, with confirmation) stops both sidecars and deletes every model, runtime and partial download; links/junctions inside the AI folders are removed without following them; nothing outside `models/` and `runtimes/llama/` is touched. Projects and assistant history are unaffected; Straft AI can be downloaded again.
 
 ## 16. Verification
 
@@ -272,7 +272,7 @@ Real-component validation, 30 Sept 2026 (same machine, under build load, files s
 ## 17. Licensing
 
 - llama.cpp — MIT (Windows build also contains the LLVM OpenMP runtime, Apache-2.0 WITH LLVM-exception).
-- Gemma 3 1B Instruct — Gemma Terms of Use (https://ai.google.dev/gemma/terms) and the Gemma Prohibited Use Policy. Straft Studio must show the notice "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms." (Settings → Offline AI → Technical details and THIRD_PARTY_LICENSES.md) and pass the terms on when redistributing through its own endpoint.
+- Gemma 3 1B Instruct — Gemma Terms of Use (https://ai.google.dev/gemma/terms) and the Gemma Prohibited Use Policy. Straft Studio must show the notice "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms." (Settings → Straft AI → Technical details and THIRD_PARTY_LICENSES.md) and pass the terms on when redistributing through its own endpoint.
 - BGE small English v1.5 — MIT.
 
 `npm run licenses` lists these components (from the manifest) in `THIRD_PARTY_LICENSES.md`.

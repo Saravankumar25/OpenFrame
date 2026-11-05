@@ -20,13 +20,13 @@
 //! Call Sheet, Shot List, Moodboard and Lightweight Budget. The daily production
 //! report is a report type, not a template.
 
-use straft_domain::auth::ActorOrigin;
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::rows::{text, update_fields};
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_domain::auth::ActorOrigin;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::rows::{text, update_fields};
 use ts_rs::TS;
 
 use crate::core::AppCore;

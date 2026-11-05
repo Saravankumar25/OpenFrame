@@ -6,11 +6,11 @@
 //!   Specification §50): every step a Final Draft user takes, except reopening the export in a
 //!   licensed copy of Final Draft, which is a manual check.
 
+use serde_json::{Value, json};
 use straft_application::modules::ai::scope::ResolvedScope;
 use straft_application::modules::ai::toolbox::{self, ToolStep};
 use straft_domain::new_id;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const TELUGU: &str = "మీరా రైలు స్టేషన్\u{200C}లో వేచి ఉంది. క్షమించండి!";
 const HINDI: &str = "मीरा ने कहा, “क्षमा करें, ट्रेन देर से है।”";

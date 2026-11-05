@@ -6,9 +6,9 @@
 //! holds the requesting user's own exchanges of one conversation, loaded through the same filter as
 //! `ai.history`, so another person's conversation or private material can never appear.
 
-use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
 use serde::Deserialize;
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
 use ts_rs::TS;
 
 use super::trace::{self, AiReportResult};
@@ -28,9 +28,7 @@ pub struct AiConversationExportArgs {
 }
 
 fn nothing_to_save() -> AppError {
-    AppError::invalid_input(
-        "There is no conversation to save yet. Ask Straft AI something first.",
-    )
+    AppError::invalid_input("There is no conversation to save yet. Ask Straft AI something first.")
 }
 
 /// Write one conversation of the requesting user to a file the person chose. `rows` is the number

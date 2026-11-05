@@ -20,7 +20,7 @@ struct VaultSidebar: View {
                 row("Recently added", "clock", .recentlyAdded)
                 row("Recently modified", "pencil", .recentlyModified)
             }
-            Section("Collections") {
+            Section {
                 ForEach(model.collections, id: \.id) { c in
                     row(c.name, "square.stack.3d.up", .collection(collectionId: c.id), count: c.itemCount)
                         .contextMenu {
@@ -34,8 +34,8 @@ struct VaultSidebar: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(theme["accent"])
                     .accessibilityIdentifier("vault-new-collection")
-            }
-            Section("Folders") {
+            } header: { sectionTitle("Collections") }
+            Section {
                 ForEach(VaultFolders.tree(model.folders), id: \.folder.id) { entry in
                     row(entry.folder.name, "folder", .folder(folderId: entry.folder.id), count: entry.folder.itemCount)
                         .padding(.leading, CGFloat(entry.depth) * 12)
@@ -46,13 +46,13 @@ struct VaultSidebar: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(theme["accent"])
                     .accessibilityIdentifier("vault-new-folder")
-            }
+            } header: { sectionTitle("Folders") }
             if let tags = model.overview?.tags, !tags.isEmpty {
-                Section("Tags") {
+                Section {
                     ForEach(tags, id: \.tag) { t in
                         row(t.tag, "number", .tag(tag: t.tag), count: t.count)
                     }
-                }
+                } header: { sectionTitle("Tags") }
             }
         }
         .listStyle(.sidebar)
@@ -66,6 +66,11 @@ struct VaultSidebar: View {
         if model.mode == .folder { return model.folderCursor }
         if case let .folder(id) = model.view { return id }
         return nil
+    }
+
+    /// The system's sidebar section titles are too faint to read on most themes.
+    private func sectionTitle(_ title: String) -> some View {
+        Text(title).font(.caption.weight(.semibold)).foregroundStyle(theme["muted"])
     }
 
     private func row(_ title: String, _ symbol: String, _ view: VaultView, count: Double? = nil) -> some View {

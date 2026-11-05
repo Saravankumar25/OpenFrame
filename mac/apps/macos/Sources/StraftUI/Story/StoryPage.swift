@@ -364,8 +364,14 @@ struct StoryPageView: View {
 
     private func page(_ m: StoryPageModel, _ loaded: StoryPageModel.Loaded) -> some View {
         VStack(spacing: 6) {
-            StoryPageToolbar(model: m, darkPage: $darkPage, zoom: zoom, setZoom: { storedZoom = StoryPagePrefs.clamp($0) })
-                .padding(.horizontal, PageSpacing.large)
+            // In a narrow page the toolbar scrolls sideways; its full width would push the page under the next pane.
+            ViewThatFits(in: .horizontal) {
+                StoryPageToolbar(model: m, darkPage: $darkPage, zoom: zoom, setZoom: { storedZoom = StoryPagePrefs.clamp($0) })
+                ScrollView(.horizontal, showsIndicators: false) {
+                    StoryPageToolbar(model: m, darkPage: $darkPage, zoom: zoom, setZoom: { storedZoom = StoryPagePrefs.clamp($0) })
+                }
+            }
+            .padding(.horizontal, PageSpacing.large)
             StoryPageEditor(model: m, initial: loaded, dark: darkPage, zoom: zoom, setZoom: { storedZoom = StoryPagePrefs.clamp($0) })
                 .background(theme["well"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .padding(.horizontal, PageSpacing.large)
@@ -454,7 +460,7 @@ struct StoryPageToolbar: View {
                     .accessibilityLabel("Zoom in")
                     .accessibilityIdentifier("story-page-zoom-in")
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.ofBorderless)
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Page zoom")
         }
@@ -469,7 +475,7 @@ struct StoryPageToolbar: View {
 
     private func tool(_ label: String, _ symbol: String, _ keys: String, on: Bool, action: @escaping (StoryPageTextView) -> Void) -> some View {
         Button { run(action) } label: { Image(systemName: symbol).frame(width: 18) }
-            .buttonStyle(.borderless)
+            .buttonStyle(.ofBorderless)
             .padding(4)
             .background(on ? theme["accent-soft"] : Color.clear, in: RoundedRectangle(cornerRadius: 6))
             .foregroundStyle(on ? theme["accent-d"] : theme["ink"])
@@ -504,7 +510,7 @@ struct StoryPageToolbar: View {
             } label: {
                 Image(systemName: "chevron.down").font(.system(size: 9))
             }
-            .menuStyle(.borderlessButton)
+            .borderlessAccentMenu()
             .menuIndicator(.hidden)
             .fixedSize()
             .help("\(label) colour")

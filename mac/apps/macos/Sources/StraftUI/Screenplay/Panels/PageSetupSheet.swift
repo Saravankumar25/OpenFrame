@@ -179,7 +179,7 @@ struct PageSetupSheet: View {
             }
         }
         .padding(PageSpacing.large)
-        .frame(width: page == .page ? 560 : 860, height: 640)
+        .sheetSize(width: page == .page ? 560 : 860, height: 640)
         .background(theme["panel"])
         .task {
             page = initialPage
@@ -205,7 +205,7 @@ struct PageSetupSheet: View {
                                 Button(p.name) { model.apply(p) }
                                 if !p.builtIn, model.canEdit {
                                     Button { Task { await model.deletePreset(p) } } label: { Label("Delete", systemImage: "xmark.circle") }
-                                        .buttonStyle(.borderless)
+                                        .buttonStyle(.ofBorderless)
                                         .accessibilityLabel("Delete the preset \(p.name)")
                                 }
                             }

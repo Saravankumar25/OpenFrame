@@ -9,6 +9,11 @@
 > 5355dc7 build, which still had the gate. For the next build, S2 is Not applicable, the review in S1 and the scan in S4
 > no longer cover a gate or a password, and Q3 runs without the gate cases.
 
+> **Update 2026-11-05.** Build 259 (`Straft-12.dmg`, commit `0d048fd3`) adds the official accounts to the Welcome window and was
+> tested where it changed ([results](evidence/mac/e2e-targeted-build-259-2026-11-05.md)). The complete run is on build 256:
+> 221 passed, 0 failed, 3 blocked, 9 skipped ([results](evidence/mac/e2e-final-build-256-2026-11-05.md)). The three blocked drags
+> passed by hand on build 259. The rows below still record the 5355dc7 build.
+
 Status words: Open, Pass, Fail, Exception (owner approved), Exception (waiting for the owner).
 
 The owner's word for this build: "build the next phases M6 to M10, properly test them end to end and then give me the

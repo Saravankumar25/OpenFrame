@@ -139,7 +139,7 @@ struct RenameProjectSheet: View {
                 Text(error).font(.callout).foregroundStyle(.red)
             }
             Text("Renaming changes the name shown everywhere. The project folder and its contents stay where they are.")
-                .font(.callout).foregroundStyle(.secondary)
+                .font(.callout).foregroundStyle(.ofMuted)
                 .fixedSize(horizontal: false, vertical: true)
             HStack {
                 Spacer()
@@ -203,7 +203,7 @@ struct DeleteProjectSheet: View {
                     .onSubmit { Task { await remove() } }
                     .accessibilityIdentifier("delete-confirm-field")
                 Text("Archiving instead keeps everything and simply hides the project from your recent list.")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption).foregroundStyle(.ofMuted)
             }
             if let error { Text(error).font(.callout).foregroundStyle(.red) }
             HStack {
@@ -258,7 +258,7 @@ struct UnavailableProjectSheet: View {
                 Text("Last known location: \(project.path)").textSelection(.enabled)
             }
             .font(.callout)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.ofMuted)
             Text("Straft Studio has not created a replacement project. Reconnect the drive and try again, or locate another copy of the project.")
                 .font(.callout)
                 .fixedSize(horizontal: false, vertical: true)

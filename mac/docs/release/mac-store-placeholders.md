@@ -14,7 +14,7 @@ internal builds ignore them. Status on 2026-11-03: all open, because Apple Devel
 | `REPLACE_WITH_ASC_API_KEY_ID`, `..._ISSUER_ID`, `..._KEY` | CI secrets `ASC_API_KEY_ID`, `ASC_API_ISSUER_ID`, `ASC_API_KEY_P8_B64` | App Store Connect, Users and Access, Integrations | Open |
 | `REPLACE_WITH_APPLE_APP_ID` | No review or rate link exists in the app, so nothing uses it yet | App Store Connect, the app, App Information | Not needed yet |
 | Certificates for CI | CI secrets `MAC_APPLICATION_CERT_P12`, `MAC_INSTALLER_CERT_P12` and their passwords | Apple Developer, Certificates | Open |
-| Social addresses (8) | `socialLinks` in `apps/macos/Sources/StraftUI/Store/LicenceRules.swift` | The owner sends the real accounts. Until then each `url` is `nil` and a release build hides the row. Each real address also goes in `scripts/app-addresses.json` | Open |
+| Social addresses (8) | `all` in `apps/macos/Sources/StraftUI/Store/SocialLinks.swift`, and each in `scripts/app-addresses.json` | The owner sent the real accounts on 2026-11-05. Discord uses `https://straftstudio.com/discord`, a redirect the website must serve | Done |
 | Lifetime price | Never in code. The Mac reads `Product.displayPrice` at run time | Set in App Store Connect | Open |
 
 The Windows values (`REPLACE_WITH_PACKAGE_IDENTITY_NAME`, the publisher and its display name) stay in

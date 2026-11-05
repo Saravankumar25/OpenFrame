@@ -2,7 +2,7 @@
 import type { AiComponentDto } from "./AiComponentDto";
 
 /**
- * Technical details for Settings > Offline AI (never shown in ordinary workflow UI).
+ * Technical details for Settings > Straft AI (never shown in ordinary workflow UI).
  */
 export type AiDiagnosticsDto = { bundleId: string, bundleVersion: string, 
 /**
@@ -22,6 +22,6 @@ bundleDir: string, bundleBytes: number, logFile: string,
  */
 placement: string, 
 /**
- * Settings, Offline AI, Graphics card: Off.
+ * Settings, Straft AI, Graphics card: Off.
  */
 graphicsOff: boolean, };

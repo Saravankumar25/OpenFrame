@@ -5,8 +5,8 @@
 
 use std::sync::{Arc, Mutex};
 
-use straft_ffi::{CoreConfig, CoreError, CoreHandle, EventListener};
 use serde_json::{Value, json};
+use straft_ffi::{CoreConfig, CoreError, CoreHandle, EventListener};
 
 #[derive(Clone, Default)]
 struct Recorder(Arc<Mutex<Vec<Value>>>);

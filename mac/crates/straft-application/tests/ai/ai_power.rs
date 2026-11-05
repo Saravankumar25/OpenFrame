@@ -9,6 +9,7 @@ use std::collections::VecDeque;
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, Instant};
 
+use serde_json::json;
 use straft_ai::{ChatRequest, InferenceProvider};
 use straft_application::modules::ai::intelligence::{IndexSettings, ProjectIndex};
 use straft_application::modules::ai::{self, intelligence};
@@ -17,7 +18,6 @@ use straft_platform::power::PowerEvent;
 use straft_search::Embedder;
 use straft_test_support::TestEnv;
 use straft_test_support::embedder::ConceptEmbedder;
-use serde_json::json;
 
 const SHORT: &[u8] = include_bytes!("../../../../templates/samples/Example-Short.fountain");
 

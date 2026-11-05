@@ -469,7 +469,7 @@ Permissions apply consistently across:
 - import;
 - export.
 
-An AI assistant operates within the current user's effective permission boundary.
+Straft AI operates within the current user's effective permission boundary.
 
 A participant cannot use AI to bypass their role.
 

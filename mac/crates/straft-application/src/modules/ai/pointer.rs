@@ -21,10 +21,10 @@
 
 use std::sync::LazyLock;
 
-use straft_domain::Actor;
 use regex::Regex;
 use rusqlite::{Connection, params};
 use serde_json::{Value, json};
+use straft_domain::Actor;
 
 use super::answer::language_of;
 use super::commands;

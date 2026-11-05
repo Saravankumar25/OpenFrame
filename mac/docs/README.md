@@ -1,6 +1,6 @@
 # Straft Studio documentation map
 
-> Rewritten 2026-10-15 around the three chapters and the owner's 25 decisions. Start here. It says where every document
+> Rewritten 2026-10-15 around the three chapters and the owner's 25 decisions; swept on 2026-11-04. Start here. It says where every document
 > lives, which one wins when two disagree, what is current and what is history, and what must be updated when the code
 > changes. Records of the past are in [history/](history/README.md).
 
@@ -33,14 +33,14 @@ docs/
   specs/                     product and engineering specifications (+ README with the status of each)
   adr/                       decisions; README is the decision register
   engineering/               implementation documents 11 to 40, AI answer paths, AI tool coverage (generated)
-  ux/                        Windows UX audit, layout and scroll contract, feature preservation and visual matrices
+  ux/                        Windows layout and scroll contract, visual regression matrix
   implementation/            build plan, feature status, owner decisions, handoff, progress and reconciliation logs
   release/                   launch readiness register, evidence folders
   store/                     Microsoft Store listing and privacy policy drafts (Chapter 3)
-  website/                   website source notes and supplied prompts (Chapter 2)
+  website/                   supplied prompts (Chapter 2, method only)
   manual/                    user manual (.docx, .pdf), manual testing guide (.docx, .csv), test-data/ sample files
-  history/                   records of the past: old evidence, audits, reports, superseded ADRs, finished plans and
-                             session prompts, old log sections (do not edit)
+  history/                   records of the past: old evidence, audits, reports, superseded ADRs, finished plans,
+                             session prompts and UX records, old log sections (do not edit)
   development-storage-policy.md
 HTML_Mockups/                design reference mock-ups (some show removed features); removed from the Windows tree on 2026-10-21
 MacHTML/                     every Mac screen as an HTML page (see its README); the Windows tree has WindowsHTML/ instead
@@ -51,10 +51,10 @@ MacHTML/                     every Mac screen as an HTML page (see its README); 
 | Chapter | Active documents | Reference documents |
 |---|---|---|
 | 1. Complete, test and validate | [roadmap/chapter-1](roadmap/chapter-1-complete-test-validate.md), [Windows phases](roadmap/chapter-1a-windows-phases.md), [Mac phases](roadmap/chapter-1b-mac-phases.md), [testing/](testing), [masterplan.md](implementation/masterplan.md) areas 1 to 17 and 20, [feature-status.md](implementation/feature-status.md), [development-storage-policy.md](development-storage-policy.md), ADR-0027 to 0030 | Specifications, engineering documents 11 to 26, 30 to 39, ADRs |
-| 2. Website | [roadmap/chapter-2](roadmap/chapter-2-website.md), [writing standard](engineering/35-writing-standard.md) | [website/README.md](website/README.md), [website/prompts/](website/prompts) (method only), [store/privacy-policy.md](store/privacy-policy.md) |
-| 3. Commercial distribution | [roadmap/chapter-3](roadmap/chapter-3-commercial-distribution.md), masterplan areas 18 to 26 | [release/launch-readiness-register.md](release/launch-readiness-register.md), [release/mac-app-store-readiness.md](release/mac-app-store-readiness.md), [store/](store), engineering documents [24](engineering/24-windows-packaging-updater.md), [27](engineering/27-microsoft-store.md), [36](engineering/36-entitlement-and-trial.md), [38](engineering/38-mac-app-store-trial.md), ADR-0017, 0018, 0022, 0023 |
+| 2. Website | [roadmap/chapter-2](roadmap/chapter-2-website.md), [writing standard](engineering/35-writing-standard.md) | [website/prompts/](website/prompts) (method only), [store/privacy-policy.md](store/privacy-policy.md) |
+| 3. Commercial distribution | [roadmap/chapter-3](roadmap/chapter-3-commercial-distribution.md), masterplan areas 18 to 26 | [release/launch-readiness-register.md](release/launch-readiness-register.md), [release/mac-app-store-readiness.md](release/mac-app-store-readiness.md), [store/](store), engineering documents [24](engineering/24-windows-packaging-updater.md), [27](engineering/27-microsoft-store.md), [36](engineering/36-entitlement-and-trial.md), [38](engineering/38-mac-app-store-trial.md), ADR-0017, 0018, 0022, 0023, 0040 |
 
-Chapters 2 and 3 have no implementation plan yet by decision; each is written when the chapter before it closes.
+Chapter 2 has no implementation plan yet by decision; it is written when Chapter 1 closes. The owner started Chapter 3 on 2026-11-03 with the release package (`Straft_Release_Package/`, [owner-decisions.md](implementation/owner-decisions.md)), which wins over earlier decisions where they differ.
 
 ## 3. By kind of document
 
@@ -95,22 +95,24 @@ Highest first. A lower item never silently overrides a higher one.
 
 Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answers: [owner-decisions.md](implementation/owner-decisions.md).
 
+- **Name:** the product is Straft Studio and its assistant is Straft AI ([ADR-0042](adr/ADR-0042-product-renamed-to-straft-studio.md)).
 - **Audience:** one application for writers, screenwriters and production teams ([vision](product/vision-and-scope.md)).
 - **Chapters:** 1 complete, test and validate (Windows track, then Mac track), 2 website, 3 store distribution, in that
-  strict order ([ADR-0030](adr/ADR-0030-verification-ladder-and-release-flow.md)).
+  order ([ADR-0030](adr/ADR-0030-verification-ladder-and-release-flow.md)), except that the owner started Chapter 3 on 2026-11-03.
 - **Architecture:** one Rust core; Tauri and React on Windows; a SwiftUI shell on the Mac through UniFFI
   ([ADR-0027](adr/ADR-0027-rust-core-two-ui-shells.md)); SQLite per project, UUIDv7 identities, one mutation pipeline, undo,
   recovery (ADR-0001 to 0005, 0011).
 - **AI:** local only; measured first, two model tiers, verifier-guided loop, memory, English release bar, eleven further
-  languages ([ADR-0028](adr/ADR-0028-ai-quality-program-and-harness.md)); lanes decided by code, code-built briefings, code verifiers and the shorter agent loop ([ADR-0035](adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md), lane choice superseded in part); one conversational path with focus, memory and per-turn context, deterministic answers cut to the few that need exactness or safety ([ADR-0037](adr/ADR-0037-conversational-assistant-focus-and-dossiers.md), detail in [specs/ai-conversational-harness.md](specs/ai-conversational-harness.md)); Vulkan graphics-card path with a first-run probe
+  languages ([ADR-0028](adr/ADR-0028-ai-quality-program-and-harness.md)); progress lines, Cancel and Save conversation ([ADR-0035](adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md); its lanes and briefings are gone, replaced by ADR-0037); one conversational path with focus, memory and per-turn context, deterministic answers cut to the few that need exactness or safety ([ADR-0037](adr/ADR-0037-conversational-assistant-focus-and-dossiers.md), detail in [specs/ai-conversational-harness.md](specs/ai-conversational-harness.md)); the person picks up to 3 sections and code answers from those only ([ADR-0041](adr/ADR-0041-section-scoped-assistant.md)); Vulkan graphics-card path on Windows, Metal on the Mac ([ADR-0033](adr/ADR-0033-mac-ai-engine-helper-process-metal.md)); the Vulkan path with a first-run probe
   ([ADR-0029](adr/ADR-0029-gpu-acceleration.md)); the runtime ships in the package and the models download after install
   ([ADR-0026](adr/ADR-0026-offline-ai-download-after-install.md)); human-only Change Sets, crash-safe apply (ADR-0013 as
   amended, ADR-0019).
 - **Exports and layout:** production PDFs follow the design package v2 ([ADR-0036](adr/ADR-0036-production-pdf-design-system-v2.md)); the screenplay follows formatting standard v5 ([specs/screenplay-formatting-standard-v5.md](specs/screenplay-formatting-standard-v5.md), ADR-0008 note).
 - **Collaboration:** file-based Exchange, Review and Response packages only (ADR-0007).
-- **Platforms:** Windows 11 and Apple silicon only (ADR-0017). The Intel MacBook is for development.
-- **Business model (target, not final):** paid with a 7-day free trial; stores run the trial; internal builds have no trial,
-  price or lock (ADR-0018, 0022, 0023, 0024).
+- **Platforms:** Windows 11 and Apple silicon only (ADR-0017). The Mac track runs on an Apple M1.
+- **Business model:** paid with a 7-day free trial, target price 3,000 rupees, 89 dollars, 89 euros; the Microsoft Store runs
+  its trial, the Mac trial is counted offline with no licence server ([ADR-0040](adr/ADR-0040-offline-mac-trial-no-licence-server.md)); internal
+  builds have no trial, price or lock (ADR-0018, 0022, 0023, 0024).
 - **Internal builds:** unsigned `.exe` and `.dmg` that open without a password (the team password was removed on
   2026-10-27), tested by the team before the next stage (ADR-0024, ADR-0030).
 - **Nothing sent automatically** (ADR-0021).
@@ -126,7 +128,7 @@ Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answer
 | Screenplay depth, production depth, themes (newest) | [Revision 1](specs/Straft_Studio_Screenplay_and_Production_Depth_Specification.md) |
 | Offline and packages (LAN removed) | [Offline and Collaboration](specs/Straft_Studio_Offline_Collaboration_Specification.md) |
 | Formats | [Import and Export](specs/Straft_Studio_Import_Export_Specification.md) |
-| What AI may do | [Conversational assistant](specs/ai-conversational-harness.md) (newest, with [ADR-0037](adr/ADR-0037-conversational-assistant-focus-and-dossiers.md)), [AI spec](specs/Straft_Studio_AI_Specification_Updated.md), [agent behaviour](specs/straft_ai_agentic_rag_spec_prompt.md), [runtime](specs/Straft_Local_AI_Runtime_Model_Management_Specification.md) |
+| What AI may do | [Conversational assistant](specs/ai-conversational-harness.md) (newest, with [ADR-0037](adr/ADR-0037-conversational-assistant-focus-and-dossiers.md) and [ADR-0041](adr/ADR-0041-section-scoped-assistant.md)), [AI spec](specs/Straft_Studio_AI_Specification_Updated.md), [agent behaviour](specs/straft_ai_agentic_rag_spec_prompt.md), [runtime](specs/Straft_Local_AI_Runtime_Model_Management_Specification.md) |
 | What leaves the computer | [Security, Privacy, Data Ownership](specs/Straft_Studio_Security_Privacy_Data_Ownership_Specification.md) |
 | How engineering builds it | [ESD](specs/Straft_ESD_Technical_Architecture.md), [Engineering Package Index](specs/Straft_Studio_Engineering_Package_Index.md), [engineering/](engineering) |
 

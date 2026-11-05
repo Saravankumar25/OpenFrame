@@ -250,7 +250,7 @@ describe("rules", () => {
   });
 
   it("accepts only fixed https addresses on known social sites", () => {
-    expect(isFixedSocialUrl("https://www.instagram.com/openframestudio")).toBe(true);
+    expect(isFixedSocialUrl("https://www.instagram.com/straftstudio")).toBe(true);
     expect(isFixedSocialUrl("https://discord.gg/abc")).toBe(true);
     for (const bad of [
       null,
@@ -580,10 +580,10 @@ describe("file safety tutorial and welcome", () => {
     const welcome = await screen.findByRole("dialog", { name: "Welcome to the Straft Studio family" });
     expect(within(welcome).getByText("Thank you for backing independent filmmaking. Be a part of our community.")).toBeInTheDocument();
     for (const name of ["Instagram", "YouTube", "X", "Facebook", "LinkedIn", "Reddit", "Discord", "Threads"]) {
-      expect(within(welcome).getByLabelText(`${name} @openframestudio`)).toBeInTheDocument();
+      expect(within(welcome).getByLabelText(`${name} @straftstudio`)).toBeInTheDocument();
     }
     // Placeholder handles have no address, so nothing is a link.
-    expect(within(welcome).getAllByRole("button").map((b) => b.textContent)).not.toContain("Instagram@openframestudio");
+    expect(within(welcome).getAllByRole("button").map((b) => b.textContent)).not.toContain("Instagram@straftstudio");
     await userEvent.click(within(welcome).getByRole("button", { name: "OK" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(ops("entitlement.record_notice").map((c) => c.args.notice)).toEqual(["tutorial", "welcome"]);

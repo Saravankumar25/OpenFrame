@@ -45,7 +45,7 @@ struct ExportScreenplaySheet: View {
             IXSheetFrame(title: "Export Screenplay", width: 520, idPrefix: "export-sheet") {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("No screenplay to export yet").font(.headline)
-                    Text("Write or import a screenplay first. Exports are made from a screenplay draft.").foregroundStyle(.secondary)
+                    Text("Write or import a screenplay first. Exports are made from a screenplay draft.").foregroundStyle(.ofMuted)
                 }
                 .accessibilityIdentifier("export-empty")
             } footer: {
@@ -77,7 +77,7 @@ struct ExportScreenplaySheet: View {
                 }
                 .toggleStyle(.checkbox)
                 if model.scope == .selected && model.sceneNumbers {
-                    Text("Selected scenes keep their numbers from the full draft.").font(.caption).foregroundStyle(.secondary)
+                    Text("Selected scenes keep their numbers from the full draft.").font(.caption).foregroundStyle(.ofMuted)
                 }
                 if let e = model.error { IXBanner(.err, e).accessibilityIdentifier("export-error") }
                 IXBanner(tone: .priv, text: Text("Private notes excluded.").bold() + Text(" Export creates a snapshot; your project does not change."))
@@ -118,7 +118,7 @@ struct ExportScreenplaySheet: View {
                 }
                 IXChip(text: choice.status, tone: IXLabels.statusTone(choice.status))
                 if let r = choice.revision { IXChip(text: r, tone: .yellow) }
-                Text("\(choice.sceneCount) scene\(choice.sceneCount == 1 ? "" : "s")").font(.caption).foregroundStyle(.secondary)
+                Text("\(choice.sceneCount) scene\(choice.sceneCount == 1 ? "" : "s")").font(.caption).foregroundStyle(.ofMuted)
             }
         }
     }
@@ -133,7 +133,7 @@ struct ExportScreenplaySheet: View {
                             .foregroundStyle(model.format == f ? theme["accent"] : theme["muted"])
                             .accessibilityHidden(true)
                         Text(f.label).fontWeight(.semibold)
-                        if let h = f.hint { Text(h).font(.caption).foregroundStyle(.secondary) }
+                        if let h = f.hint { Text(h).font(.caption).foregroundStyle(.ofMuted) }
                     }
                 }
                 .buttonStyle(.plain)
@@ -163,7 +163,7 @@ struct ExportScreenplaySheet: View {
                                 .accessibilityIdentifier("export-scene-\(s.id)")
                         }
                         if !model.scenesLoading && model.scenes.isEmpty {
-                            Text("This draft has no scenes yet.").font(.caption).foregroundStyle(.secondary)
+                            Text("This draft has no scenes yet.").font(.caption).foregroundStyle(.ofMuted)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -252,14 +252,14 @@ struct PrintPreviewSheet: View {
                 } else if let e = model.error {
                     IXBanner(.err, e).padding(20)
                 } else if model.blocking {
-                    Text("The PDF preview is not available for this draft.").foregroundStyle(.secondary)
+                    Text("The PDF preview is not available for this draft.").foregroundStyle(.ofMuted)
                 } else {
                     ProgressView("Preparing the preview\u{2026}")
                 }
             }
             .frame(minWidth: 480, maxWidth: .infinity, minHeight: 300, maxHeight: .infinity)
             Divider()
-            side.frame(width: 240)
+            side.frame(width: 270)
         }
         .sheetSize(width: 820, height: 640)
         .background(theme["panel"])
@@ -274,7 +274,7 @@ struct PrintPreviewSheet: View {
     private var side: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Print Preview").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
-            if !model.sourceLabel.isEmpty { Text(model.sourceLabel).font(.callout).foregroundStyle(.secondary) }
+            if !model.sourceLabel.isEmpty { Text(model.sourceLabel).font(.callout).foregroundStyle(.ofMuted) }
             Text("Preview settings").font(.callout.weight(.semibold))
             VStack(alignment: .leading, spacing: 6) {
                 Toggle("Title page", isOn: $model.titlePage).accessibilityIdentifier("print-title-page")
@@ -284,19 +284,23 @@ struct PrintPreviewSheet: View {
             .toggleStyle(.checkbox)
             Divider()
             HStack {
-                Button { model.previous() } label: { Label("Previous", systemImage: "chevron.left") }
+                Button { model.previous() } label: { Label("Previous", systemImage: "chevron.left").labelStyle(.iconOnly) }
                     .disabled(model.currentPage <= 0)
+                    .help("Previous page")
                     .accessibilityLabel("Previous page").accessibilityIdentifier("print-previous")
                 IXChip(text: model.pageCount > 0 ? model.pageLabel : "\u{2026}").accessibilityIdentifier("print-page-label")
-                Button { model.next() } label: { Label("Next", systemImage: "chevron.right") }
+                Button { model.next() } label: { Label("Next", systemImage: "chevron.right").labelStyle(.iconOnly) }
                     .disabled(model.currentPage >= model.pageCount - 1)
+                    .help("Next page")
                     .accessibilityLabel("Next page").accessibilityIdentifier("print-next")
             }
             HStack {
-                Button { model.zoomOut() } label: { Label("Zoom Out", systemImage: "minus") }
+                Button { model.zoomOut() } label: { Label("Zoom Out", systemImage: "minus").labelStyle(.iconOnly) }
+                    .help("Zoom out")
                     .disabled(!model.canZoomOut).accessibilityLabel("Zoom out").accessibilityIdentifier("print-zoom-out")
                 IXChip(text: "Zoom \(model.zoomLabel)").accessibilityIdentifier("print-zoom-label")
-                Button { model.zoomIn() } label: { Label("Zoom In", systemImage: "plus") }
+                Button { model.zoomIn() } label: { Label("Zoom In", systemImage: "plus").labelStyle(.iconOnly) }
+                    .help("Zoom in")
                     .disabled(!model.canZoomIn).accessibilityLabel("Zoom in").accessibilityIdentifier("print-zoom-in")
             }
             Divider()
@@ -304,7 +308,7 @@ struct PrintPreviewSheet: View {
             if let e = model.exportError { IXBanner(.err, e).accessibilityIdentifier("print-export-error") }
             if let r = model.exported { IXBanner(.ok, "Exported \(r.fileName).").accessibilityIdentifier("print-exported") }
             Text("The PDF numbers pages from page 2. Changing these settings affects only the outgoing document, never the screenplay itself.")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption).foregroundStyle(.ofMuted)
             Spacer()
             Button("Print\u{2026}") { model.print(from: window) }
                 .keyboardShortcut("p", modifiers: .command)

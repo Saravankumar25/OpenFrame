@@ -1,7 +1,7 @@
 # Visual regression matrix (Windows)
 
 > Written 2026-10-20. What automation checks, at which sizes, in which states, and where the evidence is. All runs use
-> the debug build through `tests/e2e/run.mjs`; release runs add `--release=gated`.
+> the debug build through `tests/e2e/run.mjs`; release runs add `--release=internal`.
 
 | Check | Screens | Window sizes | AI panel | Themes | Data | Evidence |
 |---|---|---|---|---|---|---|

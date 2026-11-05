@@ -10,13 +10,13 @@
 
 use std::collections::HashSet;
 
+use serde::Deserialize;
 use straft_domain::{Actor, AppError, AppResult};
 use straft_import_export::report::{
     Align, Block, Cell, CellItem, Chip, Col, Column, Document, FactLine, FactRun, HeaderStyle,
     Legend, LegendItem, Masthead, Metric, Metrics, Rgb, Row, Side, StyledTable, Table, TableBand,
     Tone, Txt, pal,
 };
-use serde::Deserialize;
 use ts_rs::TS;
 
 use super::style::{long_date, nb};

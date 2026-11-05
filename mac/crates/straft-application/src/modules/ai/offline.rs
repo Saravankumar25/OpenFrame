@@ -1,4 +1,4 @@
-//! Offline AI status and download operations (agentic AI spec §1, §12, §36; Local AI Runtime spec;
+//! Straft AI status and download operations (agentic AI spec §1, §12, §36; Local AI Runtime spec;
 //! ADR-0026). Application-level: no project is needed, and nothing else in Straft Studio depends on
 //! these operations (Straft Studio stays fully usable without AI).
 //!
@@ -12,12 +12,12 @@
 //! - `ai.download.remove`: delete the downloaded models (AI is off until the next download);
 //! - `ai.graphics.set`: Settings, Graphics card, Automatic or Off (ADR-0029);
 //! - `ai.stop_runtime`: free memory (the engines start again on the next request);
-//! - `ai.diagnostics`: technical details for Settings > Offline AI (model names, versions,
+//! - `ai.diagnostics`: technical details for Settings > Straft AI (model names, versions,
 //!   licences, hashes, where the bundle is installed, this computer).
 
+use serde::{Deserialize, Serialize};
 use straft_ai::{BundleState, ComponentKind, DownloadPhase, RuntimeState};
 use straft_domain::{Actor, AppError, AppResult};
-use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use super::service::service;
@@ -29,7 +29,7 @@ use crate::core::AppCore;
 #[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct AiStatusDto {
-    /// Offline AI can be used: the bundled AI is present and not known to be damaged.
+    /// Straft AI can be used: the bundled AI is present and not known to be damaged.
     pub available: bool,
     /// Header chip: "AI Ready" or "Off".
     pub mode: String,
@@ -41,7 +41,7 @@ pub struct AiStatusDto {
     pub runtime_state: String,
     /// Plain-language reason when the engine stopped after a problem.
     pub runtime_message: Option<String>,
-    /// Offline AI processes everything on this computer.
+    /// Straft AI processes everything on this computer.
     pub local_only: bool,
 }
 
@@ -89,7 +89,7 @@ pub struct AiDownloadDto {
     pub problem: Option<AppError>,
 }
 
-/// Technical details for Settings > Offline AI (never shown in ordinary workflow UI).
+/// Technical details for Settings > Straft AI (never shown in ordinary workflow UI).
 #[derive(Debug, Clone, Serialize, TS)]
 #[ts(export)]
 #[serde(rename_all = "camelCase")]
@@ -116,7 +116,7 @@ pub struct AiDiagnosticsDto {
     pub log_file: String,
     /// Where the chat engine runs, in one plain sentence (ADR-0029).
     pub placement: String,
-    /// Settings, Offline AI, Graphics card: Off.
+    /// Settings, Straft AI, Graphics card: Off.
     pub graphics_off: bool,
 }
 

@@ -7,9 +7,9 @@
 //!     dood_design::write -- --ignored --nocapture
 //! ```
 
+use serde_json::{Value, json};
 use straft_import_export::report::text_width;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 use super::call_sheet_design::{Run, export, keep_sample, read};
 use super::pdf_samples::{Film, build_film, id_of, strip_id};

@@ -62,8 +62,8 @@ struct NotesScreen: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(theme["bg"])
-        .inspector(isPresented: Binding(get: { drawerOpen }, set: { if !$0 { model.closeDrawer() } })) {
-            drawer.inspectorColumnWidth(min: 340, ideal: 400, max: 540)
+        .sidePane("notes", isPresented: drawerOpen, minimum: 340, ideal: 400, maximum: 540) {
+            drawer
         }
         .task(id: model.app.changes.key(["project_note", "project_member", "task", "search_doc", "deleted_item"]) &+ model.appliedNoteText.hashValue &+ model.owner.hashValue) {
             await model.reload()
@@ -110,7 +110,7 @@ struct NotesScreen: View {
                 Spacer()
                 HStack(spacing: 4) {
                     Image(systemName: "magnifyingglass").foregroundStyle(theme["muted"]).accessibilityHidden(true)
-                    TextField("Search notes", text: $model.noteText)
+                    HintedTextField("Search notes", text: $model.noteText)
                         .textFieldStyle(.plain)
                         .frame(width: 170)
                         .accessibilityLabel("Search notes")
@@ -415,7 +415,7 @@ private struct NoteDrawer: View {
             }
             Spacer()
             Button { Task { await editor.close() } } label: { Label("Close", systemImage: "xmark") }
-                .buttonStyle(.borderless)
+                .buttonStyle(.ofBorderless)
                 .help("Close")
                 .keyboardShortcut(.cancelAction)
                 .accessibilityLabel("Close")
@@ -455,7 +455,7 @@ private struct TaskDrawer: View {
                 }
                 Spacer()
                 Button { notes.closeDrawer() } label: { Label("Close", systemImage: "xmark") }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.ofBorderless)
                     .help("Close")
                     .accessibilityLabel("Close")
                     .accessibilityIdentifier("task-close")
@@ -479,30 +479,10 @@ private struct TaskDrawer: View {
                             }
                         }
                     }
-                    HStack(alignment: .top, spacing: 12) {
-                        labelled("Due date") {
-                            HStack {
-                                Toggle("Set a due date", isOn: $editor.hasDue)
-                                    .accessibilityIdentifier("task-has-due")
-                                if editor.hasDue {
-                                    DatePicker("Due date", selection: $editor.due, displayedComponents: .date)
-                                        .labelsHidden()
-                                        .accessibilityLabel("Due date")
-                                        .accessibilityIdentifier("task-due")
-                                }
-                            }
-                        }
-                        labelled("Owner") {
-                            Picker("Owner", selection: $editor.owner) {
-                                Text("No owner").tag("")
-                                ForEach(notes.members, id: \.userId) { m in
-                                    Text(m.isYou ? "\(m.displayName) (you)" : m.displayName).tag(m.userId)
-                                }
-                            }
-                            .labelsHidden()
-                            .accessibilityLabel("Owner")
-                            .accessibilityIdentifier("task-owner")
-                        }
+                    // Side by side when they fit; a narrow panel stacks them rather than wrapping the toggle's name.
+                    ViewThatFits(in: .horizontal) {
+                        HStack(alignment: .top, spacing: 12) { dueField; ownerField }
+                        VStack(alignment: .leading, spacing: 12) { dueField; ownerField }
                     }
                     labelled("Related to") { relatedPicker }
                     labelled("Notes") {
@@ -527,6 +507,36 @@ private struct TaskDrawer: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Task")
         .accessibilityIdentifier("task-drawer")
+    }
+
+    private var dueField: some View {
+        labelled("Due date") {
+            HStack {
+                Toggle("Set a due date", isOn: $editor.hasDue)
+                    .fixedSize()
+                    .accessibilityIdentifier("task-has-due")
+                if editor.hasDue {
+                    DatePicker("Due date", selection: $editor.due, displayedComponents: .date)
+                        .labelsHidden()
+                        .accessibilityLabel("Due date")
+                        .accessibilityIdentifier("task-due")
+                }
+            }
+        }
+    }
+
+    private var ownerField: some View {
+        labelled("Owner") {
+            Picker("Owner", selection: $editor.owner) {
+                Text("No owner").tag("")
+                ForEach(notes.members, id: \.userId) { m in
+                    Text(m.isYou ? "\(m.displayName) (you)" : m.displayName).tag(m.userId)
+                }
+            }
+            .labelsHidden()
+            .accessibilityLabel("Owner")
+            .accessibilityIdentifier("task-owner")
+        }
     }
 
     private var footer: some View {

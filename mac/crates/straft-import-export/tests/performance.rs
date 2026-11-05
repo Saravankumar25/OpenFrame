@@ -97,13 +97,8 @@ fn feature_length_script_round_trips_quickly() {
     let t = Instant::now();
     let dir = tempfile::tempdir().unwrap();
     let p = dir.path().join("long.docx");
-    straft_import_export::export_to_path(
-        &doc,
-        ExportFormat::Docx,
-        &ExportOptions::default(),
-        &p,
-    )
-    .unwrap();
+    straft_import_export::export_to_path(&doc, ExportFormat::Docx, &ExportOptions::default(), &p)
+        .unwrap();
     assert_eq!(
         import_file(&p, None).unwrap().doc.headed_scene_count(),
         SCENES

@@ -14,9 +14,9 @@
 //! The stored id is never rewritten here (reads stay reads); it remains the record of which scene
 //! the card created.
 
-use straft_domain::AppResult;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::Serialize;
+use straft_domain::AppResult;
 use ts_rs::TS;
 
 /// A live screenplay scene a card currently points at.

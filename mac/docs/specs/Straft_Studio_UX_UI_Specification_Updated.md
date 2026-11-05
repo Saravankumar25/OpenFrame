@@ -3136,9 +3136,9 @@ If package validation fails, abort before project mutation.
 ## Cross-module connections
 This is the highest-level user-owned portability workflow.
 
-# 71. AI Assistant
+# 71. Straft AI
 
-The AI assistant is an optional system-wide natural-language assistant and command surface. It is optional and must never become an autonomous project editor.
+Straft AI is an optional system-wide natural-language assistant and command surface. It is optional and must never become an autonomous project editor.
 
 ## Primary question
 
@@ -3156,7 +3156,7 @@ The AI assistant is an optional system-wide natural-language assistant and comma
 Right-side panel, docked beside the page (owner decision 2026-10-08): opening it narrows the page so no control is covered, closing it gives the space back, and open or closed is remembered per user.
 
 ```text
-AI Assistant
+Straft AI
 ────────────────────────
 Scope: [Current Scene ▾]
 
@@ -4062,8 +4062,8 @@ A finalized call sheet shows a clear `Finalized` badge and reduced editing affor
 |PRD-COL-005|P0|FSD-COL-017, FSD-COL-018, FSD-COL-019, FSD-COL-021, FSD-COL-022|LAN Host/Participant|
 |PRD-COL-006|P1|FSD-COL-020|LAN Presence/Conflict|
 |PRD-OFF-001|P0|FSD-OFF-001, FSD-OFF-002, FSD-OFF-003, FSD-OFF-004, FSD-OFF-005, FSD-OFF-006, FSD-OFF-007, FSD-OFF-008, FSD-OFF-009, FSD-OFF-010|Offline/Recovery; Full Project Portability|
-|PRD-AI-001|P1|FSD-AI-001..FSD-AI-027|AI Assistant; AI External Disclosure; AI Global Command|
-|PRD-AI-002|P2||AI Assistant advanced area|
+|PRD-AI-001|P1|FSD-AI-001..FSD-AI-027|Straft AI; AI External Disclosure; AI Global Command|
+|PRD-AI-002|P2||Straft AI advanced area|
 |PRD-PROD-002|P1|FSD-PROD-022|Daily Production View|
 |PRD-PROD-003|P1|FSD-PROD-023|Reports|
 |PRD-PROD-004|P1|FSD-PROD-024|Sides|
@@ -4286,33 +4286,33 @@ The FSD contains 232 canonical functional requirement rows. The table below prov
 |FSD-OFF-008|PRD-OFF-001|P0|Full project portability|Offline/Recovery; Full Project Portability|
 |FSD-OFF-009|PRD-OFF-001|P0|External drive|Offline/Recovery; Full Project Portability|
 |FSD-OFF-010|PRD-OFF-001|P0|Drive loss|Offline/Recovery; Full Project Portability|
-|FSD-AI-001|PRD-AI-001|P1|Optional|AI Assistant; AI External Disclosure|
-|FSD-AI-002|PRD-AI-001|P1|Context selector|AI Assistant; AI External Disclosure|
-|FSD-AI-003|PRD-AI-001|P1|Question answering|AI Assistant; AI External Disclosure|
-|FSD-AI-004|PRD-AI-001|P1|Scene card suggestion|AI Assistant; AI External Disclosure|
-|FSD-AI-005|PRD-AI-001|P1|Breakdown suggestion|AI Assistant; AI External Disclosure|
-|FSD-AI-006|PRD-AI-001|P1|Synopsis|AI Assistant; AI External Disclosure|
-|FSD-AI-007|PRD-AI-001|P1|Schedule advice|AI Assistant; AI External Disclosure|
-|FSD-AI-008|PRD-AI-001|P1|Mutation preview|AI Assistant; AI External Disclosure|
-|FSD-AI-009|PRD-AI-001|P1|Accept/reject|AI Assistant; AI External Disclosure|
-|FSD-AI-010|PRD-AI-001|P1|No silent rewrite|AI Assistant; AI External Disclosure|
-|FSD-AI-011|PRD-AI-001|P1|External disclosure|AI Assistant; AI External Disclosure|
-|FSD-AI-012|PRD-AI-001|P1|AI failure safety|AI Assistant; AI External Disclosure|
-|FSD-AI-013|PRD-AI-001|P1|System-wide natural-language command interface|AI Assistant; Global Command/Search|
-|FSD-AI-014|PRD-AI-001|P1|Deterministic project statistics and exact queries|AI Assistant|
-|FSD-AI-015|PRD-AI-001|P1|Cross-module relationship queries|AI Assistant; Scene Hub; Production|
-|FSD-AI-016|PRD-AI-001|P1|Natural-language navigation and application routing|AI Assistant; Global Command/Search|
-|FSD-AI-017|PRD-AI-001|P1|Structured project-wide rename/replace|AI Assistant; Mutation Preview|
-|FSD-AI-018|PRD-AI-001|P1|Batch mutation preparation and review|AI Assistant; Mutation Preview|
-|FSD-AI-019|PRD-AI-001|P1|Permission inheritance|AI Assistant; Permissions|
-|FSD-AI-020|PRD-AI-001|P1|Locked/private/approval state enforcement|AI Assistant; Screenplay; Review|
-|FSD-AI-021|PRD-AI-001|P1|Change Set base-version validation|AI Assistant; Mutation Preview; Stale State|
-|FSD-AI-022|PRD-AI-001|P1|Application tool boundary and validation|AI Assistant; Error/Recovery|
-|FSD-AI-023|PRD-AI-001|P1|Product knowledge access|AI Assistant; Help/Command Access|
-|FSD-AI-024|PRD-AI-001|P1|Scope/provenance disclosure|AI Assistant; AI External Disclosure|
-|FSD-AI-025|PRD-AI-001|P1|AI lifecycle/activity integration|AI Assistant; Activity History; Undo/Redo|
-|FSD-AI-026|PRD-AI-001|P1|Conversation/session context|AI Assistant|
-|FSD-AI-027|PRD-AI-001|P1|Cross-project/episodic scope control|AI Assistant; Episodic/Season/Episode|
+|FSD-AI-001|PRD-AI-001|P1|Optional|Straft AI; AI External Disclosure|
+|FSD-AI-002|PRD-AI-001|P1|Context selector|Straft AI; AI External Disclosure|
+|FSD-AI-003|PRD-AI-001|P1|Question answering|Straft AI; AI External Disclosure|
+|FSD-AI-004|PRD-AI-001|P1|Scene card suggestion|Straft AI; AI External Disclosure|
+|FSD-AI-005|PRD-AI-001|P1|Breakdown suggestion|Straft AI; AI External Disclosure|
+|FSD-AI-006|PRD-AI-001|P1|Synopsis|Straft AI; AI External Disclosure|
+|FSD-AI-007|PRD-AI-001|P1|Schedule advice|Straft AI; AI External Disclosure|
+|FSD-AI-008|PRD-AI-001|P1|Mutation preview|Straft AI; AI External Disclosure|
+|FSD-AI-009|PRD-AI-001|P1|Accept/reject|Straft AI; AI External Disclosure|
+|FSD-AI-010|PRD-AI-001|P1|No silent rewrite|Straft AI; AI External Disclosure|
+|FSD-AI-011|PRD-AI-001|P1|External disclosure|Straft AI; AI External Disclosure|
+|FSD-AI-012|PRD-AI-001|P1|AI failure safety|Straft AI; AI External Disclosure|
+|FSD-AI-013|PRD-AI-001|P1|System-wide natural-language command interface|Straft AI; Global Command/Search|
+|FSD-AI-014|PRD-AI-001|P1|Deterministic project statistics and exact queries|Straft AI|
+|FSD-AI-015|PRD-AI-001|P1|Cross-module relationship queries|Straft AI; Scene Hub; Production|
+|FSD-AI-016|PRD-AI-001|P1|Natural-language navigation and application routing|Straft AI; Global Command/Search|
+|FSD-AI-017|PRD-AI-001|P1|Structured project-wide rename/replace|Straft AI; Mutation Preview|
+|FSD-AI-018|PRD-AI-001|P1|Batch mutation preparation and review|Straft AI; Mutation Preview|
+|FSD-AI-019|PRD-AI-001|P1|Permission inheritance|Straft AI; Permissions|
+|FSD-AI-020|PRD-AI-001|P1|Locked/private/approval state enforcement|Straft AI; Screenplay; Review|
+|FSD-AI-021|PRD-AI-001|P1|Change Set base-version validation|Straft AI; Mutation Preview; Stale State|
+|FSD-AI-022|PRD-AI-001|P1|Application tool boundary and validation|Straft AI; Error/Recovery|
+|FSD-AI-023|PRD-AI-001|P1|Product knowledge access|Straft AI; Help/Command Access|
+|FSD-AI-024|PRD-AI-001|P1|Scope/provenance disclosure|Straft AI; AI External Disclosure|
+|FSD-AI-025|PRD-AI-001|P1|AI lifecycle/activity integration|Straft AI; Activity History; Undo/Redo|
+|FSD-AI-026|PRD-AI-001|P1|Conversation/session context|Straft AI|
+|FSD-AI-027|PRD-AI-001|P1|Cross-project/episodic scope control|Straft AI; Episodic/Season/Episode|
 
 # 100. Cross-Module UX Event Presentation
 
@@ -4538,7 +4538,7 @@ The application is ready for UX acceptance for a feature when the intended scree
 |Scheduling|Core|Stripboard + simple assistance|
 |Call sheets|Core|Source from shooting day, editable snapshot|
 |Budget snapshot|P1|Simple planning only|
-|AI assistant|P1|Optional, scoped, user-approved mutation|
+|Straft AI|P1|Optional, scoped, user-approved mutation|
 |Exchange packages|P0/P1 by type|Portable file workflow, preview before apply|
 |LAN collaboration|P0/P1 by capability|Optional local session|
 |Cloud sync|Excluded|No mandatory cloud|

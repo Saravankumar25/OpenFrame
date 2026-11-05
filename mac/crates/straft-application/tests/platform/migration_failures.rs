@@ -23,11 +23,11 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use rusqlite::{Connection, OpenFlags};
+use serde_json::{Value, json};
 use straft_application::schema::PROJECT_MIGRATIONS;
 use straft_domain::AppError;
 use straft_test_support::TestEnv;
-use rusqlite::{Connection, OpenFlags};
-use serde_json::{Value, json};
 
 /// Schema the fixtures go back to. Migration 11 only adds `sys_ai_apply_journal` and its index;
 /// migration 12 only adds `story_scene_card.long_description` and `vault_item.research_flag`;

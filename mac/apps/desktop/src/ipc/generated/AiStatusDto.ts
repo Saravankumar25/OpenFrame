@@ -3,7 +3,7 @@ import type { AppError } from "./AppError";
 
 export type AiStatusDto = { 
 /**
- * Offline AI can be used: the bundled AI is present and not known to be damaged.
+ * Straft AI can be used: the bundled AI is present and not known to be damaged.
  */
 available: boolean, 
 /**
@@ -27,6 +27,6 @@ runtimeState: string,
  */
 runtimeMessage: string | null, 
 /**
- * Offline AI processes everything on this computer.
+ * Straft AI processes everything on this computer.
  */
 localOnly: boolean, };

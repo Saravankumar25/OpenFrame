@@ -31,8 +31,8 @@ pub mod schema;
 
 use std::collections::BTreeSet;
 
-use straft_domain::{Actor, AppError, AppResult, Capability};
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppError, AppResult, Capability};
 
 use super::catalog::{self, PropCtx, ProposalSpec};
 use super::queries;
@@ -117,11 +117,8 @@ fn lookup(name: &str) -> Option<Tool> {
 }
 
 fn unknown(name: &str) -> AppError {
-    AppError::ai(
-        "unknown_tool",
-        "That isn't something Straft AI can do yet.",
-    )
-    .with_detail(format!("tool {}", queries::truncate_chars(name, 64)))
+    AppError::ai("unknown_tool", "That isn't something Straft AI can do yet.")
+        .with_detail(format!("tool {}", queries::truncate_chars(name, 64)))
 }
 
 fn retrieve_schema() -> Value {

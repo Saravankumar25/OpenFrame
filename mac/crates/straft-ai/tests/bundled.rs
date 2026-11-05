@@ -1,4 +1,4 @@
-//! The Offline AI end to end (ADR-0026): nothing is downloaded until the person starts it; the
+//! Straft AI end to end (ADR-0026): nothing is downloaded until the person starts it; the
 //! download fetches the pinned files from a local test host at their Hugging Face paths, resumes
 //! after a cut,
 //! refuses and sets aside a damaged file, keeps the last good set until the new one passes its
@@ -773,6 +773,25 @@ fn a_damaged_set_of_the_same_version_is_removed_before_it_is_downloaded_again() 
     assert!(ask(&m).is_ok());
 }
 
+/// The screens show the AI as ready while an import still checks its file and starts the engine.
+/// Remove pressed in that moment waits for it instead of asking the person to pause a download.
+fn remove_waits_for_an_import_that_is_finishing() {
+    let f = Fixture::new();
+    let m = f.manager();
+    let source = f.data.with_extension("import-copy");
+    std::fs::copy(f.model_file(0), &source).unwrap();
+    for _ in 0..5 {
+        let importing = m.clone();
+        let file = source.clone();
+        let import = std::thread::spawn(move || {
+            let _ = importing.import_model_file(&file);
+        });
+        m.remove_models().unwrap();
+        import.join().unwrap();
+    }
+    let _ = std::fs::remove_file(&source);
+}
+
 fn remove_turns_the_ai_off_and_frees_the_space() {
     let f = Fixture::new();
     let m = f.manager();
@@ -1197,7 +1216,7 @@ fn a_model_cannot_be_changed_while_straft_uses_it() {
     let f = Fixture::new();
     let m = f.manager();
     assert!(ask(&m).is_ok());
-    // The engine is unloaded (inactivity or Stop Offline AI); another program tries to change or
+    // The engine is unloaded (inactivity or Stop Straft AI); another program tries to change or
     // delete the model meanwhile.
     m.stop_runtime();
     std::thread::sleep(Duration::from_millis(20));
@@ -1348,6 +1367,10 @@ fn main() {
         (
             "remove_turns_the_ai_off_and_frees_the_space",
             remove_turns_the_ai_off_and_frees_the_space,
+        ),
+        (
+            "remove_waits_for_an_import_that_is_finishing",
+            remove_waits_for_an_import_that_is_finishing,
         ),
         (
             "a_build_that_cannot_download_still_uses_an_installed_set",

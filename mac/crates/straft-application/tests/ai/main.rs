@@ -1,4 +1,4 @@
-//! Offline AI: assistant, agent, retrieval, toolbox, stale proposals and the real-model checks.
+//! Straft AI: assistant, agent, retrieval, toolbox, stale proposals and the real-model checks.
 //!
 //! One test binary per area instead of one per file: each binary links the whole application
 //! crate, so fewer binaries build faster and use less disk (Windows phase W1, storage hygiene).

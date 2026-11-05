@@ -193,14 +193,14 @@ struct StorageTaskSheet: View {
             HStack {
                 Text(t.message).font(.callout.weight(.semibold))
                 Spacer()
-                Text("\(t.percent)%").font(.caption).foregroundStyle(.secondary)
+                Text("\(t.percent)%").font(.caption).foregroundStyle(.ofMuted)
             }
             ProgressView(value: Double(t.percent), total: 100)
                 .accessibilityLabel("Progress")
                 .accessibilityValue("\(t.percent) percent")
             HStack {
                 Text("Nothing changes until the copy is checked. Cancel leaves everything where it was.")
-                    .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    .font(.caption).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true)
                 Spacer()
                 Button("Cancel") { model.cancel() }
                     .controlSize(.small)

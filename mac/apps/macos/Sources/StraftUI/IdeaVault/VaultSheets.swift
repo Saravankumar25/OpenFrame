@@ -142,7 +142,7 @@ struct AddURLSheet: View {
                         .accessibilityIdentifier("add-url-note")
                 }
                 SheetError(message: error)
-                Text("Straft Studio stores the link as you entered it. Nothing is downloaded.").font(.caption).foregroundStyle(.secondary)
+                Text("Straft Studio stores the link as you entered it. Nothing is downloaded.").font(.caption).foregroundStyle(.ofMuted)
             }
         } footer: {
             Button("Cancel", role: .cancel, action: close).keyboardShortcut(.cancelAction)
@@ -526,7 +526,7 @@ struct TagSheet: View {
                     .focused($focused)
                     .onSubmit { Task { await submit() } }
                     .accessibilityLabel("Tags")
-                Text("Separate tags with commas.").font(.caption).foregroundStyle(.secondary)
+                Text("Separate tags with commas.").font(.caption).foregroundStyle(.ofMuted)
                 SheetError(message: error)
             }
         } footer: {
@@ -616,7 +616,7 @@ struct NameSheet: View {
                     .onSubmit { Task { await go() } }
                     .accessibilityLabel(label)
                     .accessibilityIdentifier("name-sheet-field")
-                if let hint { Text(hint).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }
+                if let hint { Text(hint).font(.caption).foregroundStyle(.ofMuted).fixedSize(horizontal: false, vertical: true) }
                 SheetError(message: error)
             }
         } footer: {

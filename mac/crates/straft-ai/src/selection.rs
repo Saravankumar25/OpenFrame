@@ -1,4 +1,4 @@
-//! How well this computer suits the bundled Offline AI (Local AI Runtime spec §5). There is no
+//! How well this computer suits the bundled Straft AI (Local AI Runtime spec §5). There is no
 //! model picker and, since ADR-0025, no choice of engine build: this module only says whether
 //! answers are likely to be slow, in plain language without model or file names.
 

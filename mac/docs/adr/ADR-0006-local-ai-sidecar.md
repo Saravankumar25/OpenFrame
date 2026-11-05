@@ -10,14 +10,14 @@
   itself superseded. The runtime ships in the package; the models and tokenizer download after a user click from a
   signed manifest. The "Bundling the model in the installer" rejection stays rejected.
 - **Date:** 2026-09-30
-- **Related:** Engineering Index locked decisions (Offline AI, Local AI only, no Ollama); ESD §3, §10;
+- **Related:** Engineering Index locked decisions (Straft AI, Local AI only, no Ollama); ESD §3, §10;
   Straft_Local_AI_Runtime_Model_Management_Specification.md; ADR-0012 (resolution of external-AI passages)
 
 ## Context
 
 The PRD and AI spec describe an assistant that answers project questions, navigates, computes and proposes changes.
 The approved build decision is **local AI only**: no cloud providers, API keys, Ollama or accounts. The user must
-never install runtimes or models by hand ("one-click **Download Offline AI**"). AI must never be required for core
+never install runtimes or models by hand ("one-click **Download Straft AI**"). AI must never be required for core
 work, must never mutate directly, and must treat project text as untrusted data (prompt injection).
 
 ## Decision
@@ -27,7 +27,7 @@ work, must never mutate directly, and must treat project text as untrusted data 
    generic file and shell agent features are disabled. The sidecar process is placed in a Windows **Job Object** with
    kill-on-close, so it cannot outlive Straft Studio. It is started on demand, never at app startup.
 2. **Reinstated 2026-10-15 by [ADR-0026](ADR-0026-offline-ai-download-after-install.md)** (it was superseded 2026-10-08 by
-   ADR-0025). **Delivery:** the runtime and the model are delivered by **Download Offline AI** from the Straft Studio-controlled
+   ADR-0025). **Delivery:** the runtime and the model are delivered by **Download Straft AI** from the Straft Studio-controlled
    distribution base URL (build-time `MODEL_DISTRIBUTION_BASE_URL`), described by a **signed manifest**. The manifest
    signature is Ed25519, verified with a public key compiled into the app. TLS alone is not trusted. Each artifact's
    SHA-256 and size are pinned in the manifest. Downloads go to `*.partial` with HTTP range resume and a disk-space

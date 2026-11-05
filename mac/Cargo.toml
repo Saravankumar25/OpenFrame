@@ -80,7 +80,6 @@ unicode-segmentation = "1"
 # rustybuzz is a pure-Rust HarfBuzz port (MIT); subsetter is the Typst subsetter (MIT OR Apache-2.0).
 rustybuzz = "0.20"
 subsetter = { version = "0.2", default-features = false }
-anyhow = "1"
 # Vector KNN for the derived intelligence index, compiled into the binary (SQLITE_CORE; no
 # runtime extension loading). MIT OR Apache-2.0.
 sqlite-vec = "0.1.9"

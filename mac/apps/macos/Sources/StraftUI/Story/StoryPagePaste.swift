@@ -158,7 +158,8 @@ enum StoryPagePaste {
         case "strong", "b": s.bold = true
         case "em", "i": s.italic = true
         case "u": s.underline = StoryPageDocument.inPalette(StoryPageDocument.underlines, dataColor)
-        case "mark", "span" where e.attribute(forName: "data-of-mark") != nil: s.highlight = StoryPageDocument.inPalette(StoryPageDocument.highlights, dataColor)
+        case "mark",
+             "span" where e.attribute(forName: "data-of-mark") != nil: s.highlight = StoryPageDocument.inPalette(StoryPageDocument.highlights, dataColor)
         default: break
         }
         if let w = css["font-weight"], w == "bold" || ["600", "700", "800", "900"].contains(w) { s.bold = true }

@@ -102,7 +102,7 @@ struct SchedDaySheet: View {
             }
             if case let .date(d) = mode, d.callSheet != nil {
                 Text("Changing the date marks this day's call sheet as needing a refresh. The call sheet itself is not rewritten.")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(.caption).foregroundStyle(.ofMuted)
             }
             if creating {
                 BDField(label: offDay ? "Note" : "Day notes") {
@@ -263,7 +263,7 @@ struct SchedSettingsSheet: View {
             Toggle("Strict validation: ask before keeping a change that creates a warning", isOn: $strict)
                 .accessibilityIdentifier("settings-strict")
             Text("Warnings never block you by default. With strict validation, a change that creates a new warning needs an explicit \u{201C}Keep Anyway\u{201D}.")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption).foregroundStyle(.ofMuted)
             if let error {
                 Text(error).font(.callout).foregroundStyle(.red).accessibilityIdentifier("settings-error")
             }
@@ -365,7 +365,7 @@ struct SchedKeepAnywaySheet: View {
         BDSheetFrame(title: "This change creates a schedule warning", width: 460) {
             Text(pending.message).fixedSize(horizontal: false, vertical: true).accessibilityIdentifier("keep-anyway-message")
             Text("Strict validation is on for this schedule. Nothing was changed yet; the choice is yours.")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(.caption).foregroundStyle(.ofMuted)
         } footer: {
             Button("Change the schedule instead") { model.cancelKeep() }
                 .keyboardShortcut(.cancelAction)

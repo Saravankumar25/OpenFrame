@@ -11,13 +11,13 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use rusqlite::{Connection, OpenFlags, OptionalExtension, params};
+use serde::{Deserialize, Serialize};
 use straft_domain::{
     Actor, AppError, AppResult, Capability, PACKAGE_FORMAT_VERSION, new_id, now_ms,
 };
 use straft_persistence::undo::quote_ident;
 use straft_project_format::{self as pf, ProjectLayout, ProjectLock, ProjectManifest};
-use rusqlite::{Connection, OpenFlags, OptionalExtension, params};
-use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use super::format::{
@@ -432,10 +432,7 @@ pub(crate) fn backup_preview(core: &AppCore, actor: &Actor) -> AppResult<BackupP
             |r| r.get(0),
         )?;
         Ok(BackupPreview {
-            base_name: straft_security::sanitize_file_name(&format!(
-                "{title} {}",
-                local_stamp()
-            )),
+            base_name: straft_security::sanitize_file_name(&format!("{title} {}", local_stamp())),
             project_title: title.clone(),
             default_dir: core
                 .projects_dir()
@@ -742,8 +739,7 @@ fn external_status_here(refs: Vec<ExternalRef>) -> Vec<BackupFileEntry> {
                     .external_path
                     .as_deref()
                     .map(|p| {
-                        straft_security::is_local_disk_path(Path::new(p))
-                            && Path::new(p).is_file()
+                        straft_security::is_local_disk_path(Path::new(p)) && Path::new(p).is_file()
                     })
                     .unwrap_or(false) =>
                 {
@@ -1056,8 +1052,7 @@ pub fn import_project_package(
                     .external_path
                     .as_deref()
                     .map(|p| {
-                        straft_security::is_local_disk_path(Path::new(p))
-                            && Path::new(p).is_file()
+                        straft_security::is_local_disk_path(Path::new(p)) && Path::new(p).is_file()
                     })
                     .unwrap_or(false);
                 if !here {

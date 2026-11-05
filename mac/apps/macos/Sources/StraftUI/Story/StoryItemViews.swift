@@ -346,7 +346,7 @@ struct StorySequenceBlock: View {
                 Button { Task { await model.setCollapsed(seq.id, !collapsed) } } label: {
                     Image(systemName: collapsed ? "chevron.right" : "chevron.down").frame(width: 14)
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.ofBorderless)
                 .accessibilityLabel(collapsed ? "Expand \(seq.title)" : "Collapse \(seq.title)")
                 if renaming {
                     InlineField(initial: seq.title, label: "Sequence name",
@@ -395,7 +395,7 @@ struct StorySequenceBlock: View {
                         Text("Drop scenes here.").font(.caption).foregroundStyle(theme["muted"])
                     }
                     Button { Task { await model.newCard(in: .sequence(seq.id)) } } label: { Label("Add scene", systemImage: "plus") }
-                        .buttonStyle(.borderless).font(.caption)
+                        .buttonStyle(.ofBorderless).font(.caption)
                 }
                 .padding(.horizontal, 8).padding(.bottom, 8)
                 .reading(size: $bodySize)

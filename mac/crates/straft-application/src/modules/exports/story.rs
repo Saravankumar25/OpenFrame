@@ -7,13 +7,13 @@
 
 use std::collections::{HashMap, HashSet};
 
+use rusqlite::Connection;
+use serde::Deserialize;
 use straft_domain::{Actor, AppError, AppResult};
 use straft_import_export::report::{
     Block, Board, BoardComment, BoardCount, BoardExtra, BoardItem, BoardItems, BoardKey,
     BoardLayout, Column, Document, Masthead, Rgb, Side, Table, Txt, pal,
 };
-use rusqlite::Connection;
-use serde::Deserialize;
 use ts_rs::TS;
 
 use super::style::nb;

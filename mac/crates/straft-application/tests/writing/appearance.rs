@@ -3,11 +3,11 @@
 //! untrusted parser. Every hostile input must change nothing: no preference, no saved theme, no
 //! project.
 
+use serde_json::{Value, json};
 use straft_application::modules::appearance::theme::{self, MAX_THEME_BYTES};
 use straft_application::registry::{self, AiExposure};
 use straft_domain::Role;
 use straft_test_support::TestEnv;
-use serde_json::{Value, json};
 
 const VALID: &str = r#"{
   "formatVersion": 1,

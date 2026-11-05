@@ -5,9 +5,9 @@
 
 use std::collections::{BTreeMap, HashMap, HashSet};
 
-use straft_domain::{AppError, AppResult};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::Serialize;
+use straft_domain::{AppError, AppResult};
 use ts_rs::TS;
 
 use super::availability::{self, Availability, DayNeeds};
@@ -375,9 +375,6 @@ impl Item<'_> {
             Item::Strip(s) => &s.id,
             Item::Marker(m) => &m.id,
         }
-    }
-    pub fn is_strip(&self) -> bool {
-        matches!(self, Item::Strip(_))
     }
 }
 

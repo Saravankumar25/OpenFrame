@@ -253,7 +253,7 @@ extension Scenarios {
             try ui.expect(rows().count == 1, "only the applied task was created: \(rows())")
         },
 
-        // A fact the person states is remembered; Settings > Offline AI lists it and Delete forgets it.
+        // A fact the person states is remembered; Settings > Straft AI lists it and Delete forgets it.
         Scenario("77-ai-conversation/assistant-memory-entry-deleted", timeout: 900) { ui, _, ctx in
             try await aiStart(ui, ctx)
             try await ui.convAsk("I'm the assistant director.")

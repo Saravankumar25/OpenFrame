@@ -10,7 +10,7 @@ import Foundation
 private let day = 86_400_000.0
 private let trialID = "app.straftstudio.studio.trial7"
 private let lifetimeID = "app.straftstudio.studio.lifetime"
-private let contact = "https://openframestudio.app/contact/"
+private let contact = "https://straftstudio.com/contact/"
 
 @MainActor private struct FakeStore {
     let root: URL
@@ -133,7 +133,10 @@ extension Scenarios {
                 for _ in 0..<3 { try await ui.press(id: "licence-next", role: "AXButton"); await ui.idle(0.2) }
                 for i in 1...3 { try await ui.press(id: "licence-check-\(i)") }
                 try await ui.press(id: "licence-finish", role: "AXButton")
-                try await ui.waitText("Welcome to the Straft Studio family", timeout: 15)
+                try await ui.waitText("Welcome to the Straft Studio community", timeout: 15)
+                for id in ["youtube", "facebook", "instagram", "x", "threads", "linkedin", "reddit", "discord"] {
+                    try ui.expect(ui.exists(id: "licence-social-\(id)"), "the welcome shows \(id)")
+                }
                 try await ui.press(id: "licence-ok", role: "AXButton")
                 try await ui.waitGone(id: "licence-ok", timeout: 15)
                 try await ui.closeProject()
@@ -203,7 +206,7 @@ extension Scenarios {
             for _ in 0..<3 { try await ui.press(id: "licence-next", role: "AXButton"); await ui.idle(0.2) }
             for i in 1...3 { try await ui.press(id: "licence-check-\(i)") }
             try await ui.press(id: "licence-finish", role: "AXButton")
-            try await ui.waitText("Welcome to the Straft Studio family", timeout: 15)
+            try await ui.waitText("Welcome to the Straft Studio community", timeout: 15)
             try await ui.press(id: "licence-ok", role: "AXButton")
             try await ui.waitGone(id: "licence-ok", timeout: 15)
             // The text is on disk: closing and opening reads it back from the project.
@@ -224,7 +227,7 @@ extension Scenarios {
             for _ in 0..<3 { try await ui.press(id: "licence-next", role: "AXButton"); await ui.idle(0.2) }
             for i in 1...3 { try await ui.press(id: "licence-check-\(i)") }
             try await ui.press(id: "licence-finish", role: "AXButton")
-            try await ui.waitText("Welcome to the Straft Studio family", timeout: 15)
+            try await ui.waitText("Welcome to the Straft Studio community", timeout: 15)
             try await ui.press(id: "licence-ok", role: "AXButton")
             try await ui.waitGone(id: "licence-ok", timeout: 15)
             try await ui.settleBehindLicence()

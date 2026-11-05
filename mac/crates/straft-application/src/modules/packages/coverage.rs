@@ -22,8 +22,8 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use straft_domain::AppResult;
 use rusqlite::Connection;
+use straft_domain::AppResult;
 
 use super::format::PackageType;
 

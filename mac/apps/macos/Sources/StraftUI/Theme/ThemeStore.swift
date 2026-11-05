@@ -57,7 +57,7 @@ public final class ThemeStore {
         }
         let key = CacheKey(themeId: themeId, mode: mode)
         if let hit = cache[key] { return hit }
-        let resolved = ThemeEngine.resolve(themeId: themeId, mode: mode, themes: catalog)
+        let resolved = ThemeEngine.resolve(themeId: themeId, mode: mode, themes: catalog, forScreen: true)
         cache[key] = resolved
         return resolved
     }
@@ -99,19 +99,19 @@ extension View {
     }
 }
 
+/// The theme's muted text colour as a shape style, for text that the system's `.secondary` would draw
+/// under 4.5 to 1. It reads the theme where it is drawn, so any view can use it.
+public struct MutedTextStyle: ShapeStyle {
+    public func resolve(in environment: EnvironmentValues) -> Color { environment.ofTheme["muted"] }
+}
+
+extension ShapeStyle where Self == MutedTextStyle {
+    public static var ofMuted: MutedTextStyle { MutedTextStyle() }
+}
+
 extension Color {
     /// A token of the current theme, for example `Color.of("accent", in: theme)`.
     public static func of(_ token: String, in theme: ResolvedTheme) -> Color { theme[token] }
-}
-
-/// Reads one token from the environment theme: `ThemeColor("accent")` as a view or `.foregroundStyle`.
-public struct ThemeColor: View {
-    private let token: String
-    @Environment(\.ofTheme) private var theme
-
-    public init(_ token: String) { self.token = token }
-
-    public var body: some View { theme[token] }
 }
 
 extension ResolvedTheme {

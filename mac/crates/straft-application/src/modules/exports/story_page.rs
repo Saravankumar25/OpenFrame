@@ -6,10 +6,10 @@
 //! written, with its bold, italic, underline, highlight and sizes; blank lines keep their height.
 //! An empty page gives a valid document that holds only the heading.
 
+use serde::Deserialize;
 use straft_domain::{Actor, AppResult};
 use straft_import_export::docx::prose_lines_to_bytes;
 use straft_import_export::report::{Block, Document};
-use serde::Deserialize;
 use ts_rs::TS;
 
 use super::{Fmt, Job, Output, deliver, destination, footer, plural, require_export, subtitle};

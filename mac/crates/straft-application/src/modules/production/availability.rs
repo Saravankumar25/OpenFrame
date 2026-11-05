@@ -2,14 +2,14 @@
 //!
 //! A window is an inclusive range of calendar days marked Available or Unavailable, with an
 //! optional note ("exams", "station closed for repairs"). Availability is advisory data the
-//! schedule reads through [`availability_on`]; it never moves a scene by itself. The free-text
+//! schedule reads through [`unavailable_for_schedule`]; it never moves a scene by itself. The free-text
 //! availability note on cast and crew stays for anything a date range cannot say.
 
 use std::collections::HashMap;
 
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use ts_rs::TS;
 
 use crate::core::AppCore;
@@ -77,16 +77,6 @@ pub struct AvailabilitySetArgs {
     pub owner_type: AvailabilityOwner,
     pub owner_id: String,
     pub windows: Vec<AvailabilityWindowInput>,
-}
-
-/// The availability of an owner on one day, for schedule warnings.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum DayAvailability {
-    /// No window covers the day.
-    Unknown,
-    Available,
-    /// An Unavailable window covers the day (it wins over an overlapping Available one).
-    Unavailable(Option<String>),
 }
 
 /// Parse a calendar day; rejects impossible dates such as 2027-02-30.
@@ -170,34 +160,6 @@ pub(crate) fn windows_for(
         .map(|r| r.map(|(_, w)| w))
         .collect::<Result<Vec<_>, _>>()?;
     Ok(rows)
-}
-
-/// Typed read model for the schedule: availability of an owner on a day ("YYYY-MM-DD").
-pub fn availability_on(
-    c: &Connection,
-    owner: AvailabilityOwner,
-    owner_id: &str,
-    day: &str,
-) -> AppResult<DayAvailability> {
-    parse_day(day, "date")?;
-    let day = day.trim();
-    let mut stmt = c.prepare(
-        "SELECT kind, note FROM availability_window
-         WHERE owner_type = ?1 AND owner_id = ?2 AND start_date <= ?3 AND end_date >= ?3",
-    )?;
-    let hits: Vec<(String, Option<String>)> = stmt
-        .query_map(params![owner.as_str(), owner_id, day], |r| {
-            Ok((r.get(0)?, r.get(1)?))
-        })?
-        .collect::<Result<_, _>>()?;
-    if let Some((_, note)) = hits.iter().find(|(k, _)| k == "Unavailable") {
-        return Ok(DayAvailability::Unavailable(note.clone()));
-    }
-    Ok(if hits.is_empty() {
-        DayAvailability::Unknown
-    } else {
-        DayAvailability::Available
-    })
 }
 
 /// One Unavailable window, for the schedule's warnings.

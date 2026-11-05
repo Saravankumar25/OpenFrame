@@ -4,10 +4,10 @@
 
 use std::collections::BTreeMap;
 
-use straft_domain::{Actor, AppError, AppResult, Capability};
-use straft_persistence::rows::{opt_text, update_fields};
 use rusqlite::{Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppError, AppResult, Capability};
+use straft_persistence::rows::{opt_text, update_fields};
 use ts_rs::TS;
 
 use super::build::screenplays_in_scope;

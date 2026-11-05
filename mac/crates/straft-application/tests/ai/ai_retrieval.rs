@@ -5,6 +5,8 @@
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use rusqlite::{Connection, params};
+use serde_json::json;
 use straft_application::MutationMeta;
 use straft_application::events::AppEvent;
 use straft_application::modules::ai::intelligence::{self, IndexSettings};
@@ -16,8 +18,6 @@ use straft_domain::{Actor, Capability, Role, new_id, now_ms};
 use straft_search::Embedder;
 use straft_test_support::TestEnv;
 use straft_test_support::embedder::ConceptEmbedder;
-use rusqlite::{Connection, params};
-use serde_json::json;
 
 // ------------------------------------------------------------------ fixture
 

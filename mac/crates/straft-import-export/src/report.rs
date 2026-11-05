@@ -38,8 +38,8 @@ use std::collections::HashMap;
 use std::io::{Cursor, Write};
 use std::sync::OnceLock;
 
-use straft_domain::{AppError, AppResult};
 use pdf_writer::Content;
+use straft_domain::{AppError, AppResult};
 use unicode_segmentation::UnicodeSegmentation;
 
 #[cfg(test)]
@@ -735,16 +735,10 @@ pub fn tables_to_xlsx(tables: &[&Table]) -> AppResult<Vec<u8>> {
     xlsx(tables, None, None)
 }
 
-/// Like [`tables_to_xlsx`], with the workbook's creation date fixed to `created`
-/// (Unix seconds). The file then holds no clock time, so the same tables always
-/// give a byte-identical file (reproducible exports).
-pub fn tables_to_xlsx_at(tables: &[&Table], created: Option<i64>) -> AppResult<Vec<u8>> {
-    xlsx(tables, None, created)
-}
-
 /// Workbook that says where it came from without touching the data: the document
 /// properties name Straft Studio and the first sheet prints `line` in its footer.
-/// `created` fixes the creation date as in [`tables_to_xlsx_at`].
+/// `created` fixes the creation date (Unix seconds): the file then holds no clock time, so the
+/// same tables always give a byte-identical file (reproducible exports).
 pub fn tables_to_xlsx_branded(
     tables: &[&Table],
     line: &str,

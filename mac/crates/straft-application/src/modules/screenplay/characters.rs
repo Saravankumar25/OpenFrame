@@ -7,12 +7,12 @@
 
 use std::collections::HashMap;
 
-use straft_domain::enums::ElementType;
-use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
-use straft_persistence::rows::{opt_text, update_fields};
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
+use straft_domain::enums::ElementType;
+use straft_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use straft_persistence::rows::{opt_text, update_fields};
 use ts_rs::TS;
 
 use super::{load_draft, load_scenes, load_screenplay};

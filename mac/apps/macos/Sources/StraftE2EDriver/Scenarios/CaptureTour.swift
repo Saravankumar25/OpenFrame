@@ -112,7 +112,7 @@ extension UI {
         guard CaptureState.names.insert(name).inserted else { log("capture \(name): already taken"); return }
         // An app in the background draws its windows dimmed. Bring it forward without changing the key window,
         // which would close an open popover.
-        if !NSApp.isActive { NSApp.activate(ignoringOtherApps: true); await idle(0.4) }
+        if !NSApp.isActive { await bringAppToFront(); await idle(0.4) }
         guard let primary = capturePrimary() else { log("capture \(name): no window"); return }
         let overlays = captureOverlays(primary)
         // Runners share one screen: a window covered by another app's window stops drawing its content and the
@@ -839,7 +839,8 @@ extension UI {
                 let before = screenText()
                 try await capMenuButton(id: id, item: t)
                 await idle(0.7)
-                if hasOverlay || screenText() != before {
+                // These two change the picture but not the text, so the text check alone would skip them.
+                if hasOverlay || screenText() != before || ["Dark page", "Example-Short (imported)"].contains(t) {
                     await capture("\(prefix)-\(slug(t))", title: "\(area): \(t)", area: area, from: "\(prefix)-menu", via: id)
                 }
                 await capRecover()
@@ -881,6 +882,9 @@ extension Scenarios {
             try await ui.wait(label: "Scene \(n) breakdown", timeout: 15)
             try await ui.capAct(id: "suggest-elements")
             try await ui.waitText("Nothing is added to production until you accept.")
+            // The rows can appear a moment after the text; without this wait the scene was left unaccepted.
+            let rowsBy = Date().addingTimeInterval(6)
+            while capAccepts(ui).isEmpty, Date() < rowsBy { await ui.idle(0.2) }
             var guardCount = 0
             while guardCount < 30, let b = capAccepts(ui).first {
                 try await ui.press(b)

@@ -287,7 +287,7 @@ struct ScriptPaneView: View {
                         Label("Tag Selection as", systemImage: "tag")
                     }
                 }
-                .menuStyle(.borderlessButton)
+                .borderlessAccentMenu()
                 .fixedSize()
                 .disabled(model.selection == nil)
                 .help("Select words in the script, then choose a category")

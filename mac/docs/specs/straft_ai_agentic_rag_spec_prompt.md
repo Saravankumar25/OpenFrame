@@ -5,7 +5,7 @@
 > **Current decision: [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (2026-10-15).** The app and the AI
 > runtime ship in every package; the models download after install on the user's click from a signed manifest. This
 > reverses ADR-0025 (2026-10-08). The current build still bundles the models from `packaging/ai/ai-assets.lock.json`. Text below that
-> describes downloading, installing or removing Offline AI is history; never implement it.
+> describes downloading, installing or removing Straft AI is history; never implement it.
 
 
 ## Purpose
@@ -41,7 +41,7 @@ The application UI must **not expose model-selection complexity** to ordinary us
 
 The user-facing interaction should be approximately:
 
-> Enable Offline AI  
+> Enable Straft AI  
 > Download the AI components required for Straft Studio's AI features. AI runs on this computer and project data is not sent to Straft Studio or an AI cloud service.
 
 The exact model/vendor/quantization/runtime details belong in:
@@ -582,13 +582,13 @@ Requirements:
 - embedding dimension stored;
 - model version part of index metadata.
 
-The embedding model may be distributed through the same signed-manifest/download infrastructure as Offline AI.
+The embedding model may be distributed through the same signed-manifest/download infrastructure as Straft AI.
 
 Do not expose embedding-model details in normal UI.
 
 The user should see one product action:
 
-> Download Offline AI
+> Download Straft AI
 
 That installation may fetch:
 
@@ -1063,7 +1063,7 @@ Public builds must not trust the development signing key.
 
 ---
 
-# 24. One-Click Offline AI Installation
+# 24. One-Click Straft AI Installation
 
 User flow:
 
@@ -1071,10 +1071,10 @@ User flow:
 AI feature clicked
       |
       v
-"Offline AI is not installed."
+"Straft AI is not installed."
       |
       v
-[Download Offline AI]
+[Download Straft AI]
       |
       v
 Checking device
@@ -1555,10 +1555,10 @@ in ordinary workflow UI.
 User-facing language:
 
 ```text
-Offline AI
+Straft AI
 AI runs on this computer.
 
-[Download Offline AI]
+[Download Straft AI]
 ```
 
 After installation:
@@ -1821,7 +1821,7 @@ Implement in this order.
 
 Do not stop after the audit.
 
-## Phase 1 — Single-model Offline AI
+## Phase 1 — Single-model Straft AI
 
 - replace 3-tier model choice with one production AI package;
 - Gemma 3 1B;
@@ -1881,7 +1881,7 @@ Do not stop after the audit.
 
 ## Phase 7 — UI
 
-- Download Offline AI;
+- Download Straft AI;
 - Ready/Installing/Failed;
 - agent conversation;
 - context/provenance affordances;
@@ -1910,7 +1910,7 @@ The implementation is complete only when all of these are true.
 ## Installation
 
 - Fresh Straft Studio install contains no mandatory AI model.
-- User can click one button to download Offline AI.
+- User can click one button to download Straft AI.
 - Required runtime/model/embedding components install automatically.
 - Downloads are resumable and integrity-verified.
 - AI becomes usable without app restart.

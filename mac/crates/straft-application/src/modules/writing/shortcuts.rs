@@ -14,9 +14,9 @@
 
 use std::collections::{BTreeMap, HashSet};
 
-use straft_domain::{Actor, AppError, AppResult};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use straft_domain::{Actor, AppError, AppResult};
 use ts_rs::TS;
 
 use super::{read_app_setting, require_local, write_app_setting};

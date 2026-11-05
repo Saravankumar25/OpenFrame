@@ -133,7 +133,10 @@ mod tests {
     fn a_fake_onedrive_root_and_the_other_services_are_found_by_name() {
         let root = tempfile::tempdir().unwrap();
         let cases = [
-            ("OneDrive/Documents/Straft Studio", Some(CloudService::OneDrive)),
+            (
+                "OneDrive/Documents/Straft Studio",
+                Some(CloudService::OneDrive),
+            ),
             (
                 "OneDrive - Contoso Films/Scripts",
                 Some(CloudService::OneDrive),

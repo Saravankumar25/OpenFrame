@@ -1,4 +1,4 @@
-//! Offline AI façade used by the application layer (Local AI Runtime spec; agentic AI spec
+//! Straft AI façade used by the application layer (Local AI Runtime spec; agentic AI spec
 //! §12, §23; ADR-0026): the engine that ships with the app, the models downloaded after install,
 //! their integrity check before the first engine start, and the two managed engines (chat and
 //! embeddings).
@@ -21,9 +21,9 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
-use straft_domain::{AppError, AppResult};
 use parking_lot::{Mutex, RwLock};
 use serde::Serialize;
+use straft_domain::{AppError, AppResult};
 
 use crate::bundle::{self, AssetLock, BundledAi, ModelRole, ModelStamp, Pooling};
 use crate::client::{self, EMBED_BATCH};
@@ -51,10 +51,12 @@ pub const MAX_EMBED_INPUT_CHARS: usize = 1_500;
 const EARLY_START_HEADROOM_MB: u64 = 1536;
 /// Per-request timeout for one embedding batch.
 const EMBED_TIMEOUT: Duration = Duration::from_secs(120);
+/// How long Remove waits for an import that is still checking its file and starting the engine.
+const REMOVE_WAITS_FOR_IMPORT: Duration = Duration::from_secs(120);
 /// Sampling seed of deterministic runs (the end-to-end suite).
 pub const DETERMINISTIC_SEED: u32 = 42;
 
-/// Errors of the Offline AI subsystem (the application-wide error type).
+/// Errors of the Straft AI subsystem (the application-wide error type).
 pub type AiError = AppError;
 
 #[derive(Clone)]
@@ -112,7 +114,7 @@ impl ManagerConfig {
     }
 }
 
-/// Where the Offline AI stands on this installation.
+/// Where Straft AI stands on this installation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum BundleState {
     /// No model set has been downloaded (or it was removed).
@@ -170,7 +172,7 @@ pub enum ComponentKind {
     EmbeddingModel,
 }
 
-/// Technical details for Settings > Offline AI (never the normal UI).
+/// Technical details for Settings > Straft AI (never the normal UI).
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ComponentDiagnostics {
@@ -203,7 +205,7 @@ pub struct Diagnostics {
     pub log_file: String,
     /// Where the chat engine runs, in one plain sentence.
     pub placement: String,
-    /// Settings, Offline AI, Graphics card is Off.
+    /// Settings, Straft AI, Graphics card is Off.
     pub graphics_off: bool,
 }
 
@@ -876,7 +878,7 @@ impl AiManager {
         placement::describe(&self.placement.lock())
     }
 
-    /// Settings, Offline AI, Graphics card: `off` keeps the AI on the processor. The engine
+    /// Settings, Straft AI, Graphics card: `off` keeps the AI on the processor. The engine
     /// restarts in its new place on the next request.
     pub fn set_graphics_off(&self, off: bool) -> AppResult<()> {
         let _one = self.placement_lock.lock();
@@ -1244,11 +1246,18 @@ impl AiManager {
     /// Remove the downloaded models (the Remove button). AI is off afterwards until the next
     /// download; the projects are not touched.
     pub fn remove_models(&self) -> AppResult<()> {
-        if !self.download.claim() {
-            return Err(AppError::ai(
-                "download_running",
-                "Pause the Straft AI download before removing it.",
-            ));
+        // An imported file is checked and started before its import lets go of the slot, and the
+        // screens already show the AI as ready by then: that ends by itself, so Remove waits for it.
+        // A real download only ends when the person pauses it, so Remove says so at once.
+        let deadline = std::time::Instant::now() + REMOVE_WAITS_FOR_IMPORT;
+        while !self.download.claim() {
+            if self.download.is_fetching() || std::time::Instant::now() >= deadline {
+                return Err(AppError::ai(
+                    "download_running",
+                    "Pause the Straft AI download before removing it.",
+                ));
+            }
+            std::thread::sleep(std::time::Duration::from_millis(100));
         }
         self.unload();
         let r = model_download::models_dir(&self.cfg.app_data_dir).remove_all();
@@ -1373,7 +1382,7 @@ impl AiManager {
 
     // ----------------------------------------------------------- diagnostics
 
-    /// Technical details for Settings > Offline AI.
+    /// Technical details for Settings > Straft AI.
     pub fn diagnostics(&self) -> Diagnostics {
         let lock = &self.cfg.lock;
         let st = self.state();

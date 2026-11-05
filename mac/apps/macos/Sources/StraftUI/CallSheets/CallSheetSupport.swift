@@ -182,7 +182,7 @@ struct CSSheetFrame<Content: View, Footer: View, Leading: View>: View {
         VStack(alignment: .leading, spacing: PageSpacing.medium) {
             VStack(spacing: PageSpacing.tight) {
                 Text(title).font(.title3.weight(.semibold)).multilineTextAlignment(.center).accessibilityAddTraits(.isHeader)
-                if let sub { Text(sub).font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true) }
+                if let sub { Text(sub).font(.callout).foregroundStyle(.ofMuted).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true) }
             }
             .frame(maxWidth: .infinity)
             content()

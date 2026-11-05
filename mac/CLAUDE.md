@@ -2,7 +2,7 @@
 
 Straft Studio is a local-first desktop app for writers, screenwriters and production teams. Everyone uses the same
 application. Stack: one Rust core over SQLite; Tauri v2 with React and TypeScript on Windows; a native SwiftUI shell on the Mac through
-UniFFI (ADR-0027); an offline AI run by llama.cpp behind a provider interface (Gemma 3 as incumbent, models downloaded
+UniFFI (ADR-0027); Straft AI run by llama.cpp behind a provider interface (Gemma 3 as incumbent, models downloaded
 after install, ADR-0026 and ADR-0028). Windows 11 and Apple silicon only. The goal is the complete product, tested end to
 end, with no known security hole.
 
@@ -79,7 +79,7 @@ process control, settings, imports and anything that touches payment or licence 
 
 ### Writing standard (permanent)
 The product is **Straft Studio** and its assistant is **Straft AI** (ADR-0042). Use no other name in text, code or file
-names; the only kept legacy names are the website domain and the Instagram account. No em dashes and no AI-sounding
+names; old spellings stay only behind the `LEGACY` marker and in the Cloudflare project names. The domain is `straftstudio.com`. No em dashes and no AI-sounding
 writing anywhere: app screens, errors, exports, installers, listings, website, manual, documents, code comments, commit
 and pull request text. Rules and banned phrases: `docs/engineering/35-writing-standard.md`.
 `npm run check:writing` is a ratchet that fails when a count goes up. When you touch a file, fix its hits.

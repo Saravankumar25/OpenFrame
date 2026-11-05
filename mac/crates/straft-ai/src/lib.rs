@@ -1,4 +1,4 @@
-//! Straft Studio Offline AI subsystem (Local AI Runtime & Model Management spec; agentic AI spec
+//! Straft Studio Straft AI subsystem (Local AI Runtime & Model Management spec; agentic AI spec
 //! §12, §23; ADR-0026).
 //!
 //! ```text

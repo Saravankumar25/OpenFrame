@@ -1,6 +1,6 @@
 // Window fit: the whole app stays inside the window and the window stays inside the screen, at the
 // smallest window, the first-launch size, a maximised (zoomed) window and a laptop-sized window.
-// Every workspace is visited with the sidebar shown and hidden and the AI Assistant open and
+// Every workspace is visited with the sidebar shown and hidden and Straft AI open and
 // closed. At each step every control a person can use must be inside the window, or inside a
 // scroll area that can bring it into view. Each problem is listed with the workspace, the size and
 // the control, and the scenario fails with the whole list.
@@ -28,11 +28,13 @@ extension Scenarios {
             var report = FitReport()
             await ui.fitLaunchCheck(&report)
             try await ui.fitSize(.minimum, &report)
+            await ui.fitSettle()
             ui.fitCheck("Home", &report)
             // New Project sheet on Home.
             try await ui.menu(["File", "New Project…"])
             try await ui.wait(id: "new-project-title", timeout: 15)
             await ui.idle(0.8) // the sheet finishes sliding in
+            await ui.fitSettle()
             ui.fitCheck("New Project sheet", &report)
             try? ui.snapshot("new-project-sheet")
             try await ui.fitCloseSheet()
@@ -51,37 +53,42 @@ extension Scenarios {
             try await ui.menu([NSApp.mainMenu?.items.first?.title ?? "Straft Studio", "Project Settings\u{2026}"])
             try await ui.wait(id: "project-settings-tab-general", timeout: 15)
             await ui.idle(0.8) // the sheet finishes sliding in
+            await ui.fitSettle()
             ui.fitCheck("Project Settings sheet", &report)
             try? ui.snapshot("project-settings-sheet")
             try await ui.fitCloseSheet()
             try await ui.menu(["File", "Import Screenplay…"])
             try await ui.wait(id: "import-paste", timeout: 15)
             await ui.idle(0.8) // the sheet finishes sliding in
+            await ui.fitSettle()
             ui.fitCheck("Import Screenplay sheet", &report)
             try? ui.snapshot("import-screenplay-sheet")
             try await ui.fitCloseSheet()
             try await ui.menu(["File", "Export Screenplay…"])
             try await ui.wait(id: "export-confirm", timeout: 20)
             await ui.idle(0.8) // the sheet finishes sliding in
+            await ui.fitSettle()
             ui.fitCheck("Export Screenplay sheet", &report)
             try? ui.snapshot("export-screenplay-sheet")
             try await ui.fitCloseSheet()
             try await ui.menu(["Help", "Keyboard Shortcuts…"])
             await ui.idle(0.8)
             await ui.idle(0.8) // the sheet finishes sliding in
+            await ui.fitSettle()
             ui.fitCheck("Keyboard Shortcuts sheet", &report)
             try? ui.snapshot("keyboard-shortcuts-sheet")
             try await ui.fitCloseSheet()
             try await ui.menu(["Edit", "Search and Commands…"])
             await ui.idle(0.8)
             // The palette floats over the page on purpose; its list may cover the page's lists.
+            await ui.fitSettle()
             ui.fitCheck("Search palette", overlaps: false, &report)
             try await ui.escape()
             try report.finish(ui, "dialogs")
         },
 
         // Resizing must never send the window into a layout loop (AppKit ends the app when one
-        // constraint pass keeps asking for another). Every workspace, with the AI Assistant closed
+        // constraint pass keeps asking for another). Every workspace, with Straft AI closed
         // and open, goes 20 times between the smallest window and the whole screen, with sizes in
         // between, then must still fit.
         Scenario("95-reachability/window-fits-resize-stress", timeout: 900) { ui, _, ctx in
@@ -108,6 +115,7 @@ extension Scenarios {
                         await ui.idle(0.12)
                     }
                     await ui.idle(0.6)
+                    await ui.fitSettle()
                     ui.fitCheck("\(ws) after 20 resizes, assistant \(assistant ? "open" : "closed")", &report)
                 }
             }
@@ -124,8 +132,10 @@ extension Scenarios {
                 // The toolbar button, View > Hide Sidebar and Show Sidebar, and Command+Control+S
                 // each hide or show the sidebar; it is hidden when the app quits.
                 try await ui.fitSidebar(false, via: .toolbar)
+                await ui.fitSettle()
                 ui.fitCheck("Screenplay", sidebar: false, &report)
                 try await ui.fitSidebar(true, via: .shortcut)
+                await ui.fitSettle()
                 ui.fitCheck("Screenplay", sidebar: true, &report)
                 try await ui.fitSidebar(false, via: .menu)
                 try await ui.fitSidebar(true, via: .toolbar)
@@ -134,6 +144,7 @@ extension Scenarios {
                 try await ui.openProject("Night Bus")
                 // After a relaunch the window fits the screen and the sidebar is back.
                 try await ui.waitUntilFit("the sidebar shows after a relaunch", timeout: 10) { ui.fitSidebarShown() }
+                await ui.fitSettle()
                 ui.fitCheck("Screenplay after relaunch", sidebar: true, &report)
             }
             try report.finish(ui, "sidebar-relaunch-\(phase)")
@@ -146,6 +157,7 @@ extension Scenarios {
             var report = FitReport()
             await ui.fitLaunchCheck(&report)
             try await ui.fitSize(size, &report)
+            await ui.fitSettle()
             ui.fitCheck("Home", &report)
             try await ui.fitSeed()
             try await ui.fitSize(size, &report)
@@ -163,6 +175,7 @@ extension Scenarios {
                         try await ui.go(ws)
                         await ui.idle(0.5)
                         let place = "\(ws), sidebar \(sidebar ? "shown" : "hidden"), assistant \(assistant ? "open" : "closed")"
+                        await ui.fitSettle()
                         ui.fitCheck(place, sidebar: sidebar, assistant: assistant, &report)
                         if ws == "Project Home" || ws == "Screenplay" || ws == "Schedule" {
                             try? ui.snapshot("\(size.rawValue)-\(ws)-sidebar-\(sidebar)-assistant-\(assistant)")
@@ -349,7 +362,7 @@ extension UI {
             guard let tab = query(label: page).first(where: { ["AXRadioButton", "AXButton", "AXTab"].contains($0.role) }) else {
                 report.add("Settings", "no \(page) page button"); continue
             }
-            try await fitPress(tab)
+            try await fitPress(tab, in: fitSettingsWindow)
             await idle(0.8)
             guard let sw = fitSettingsWindow else { report.add("Settings: \(page)", "the Settings window closed"); continue }
             fitCheckWindow("Settings: \(page)", window: sw, &report)
@@ -361,12 +374,14 @@ extension UI {
     /// Presses a control; one that refuses the accessibility press gets a mouse click put in the
     /// event queue (a toolbar item tracks the mouse until the button comes up, so a click sent
     /// straight to the window would wait for ever).
-    func fitPress(_ e: Element) async throws {
+    /// `window` names the window that owns the control: when the app is not frontmost, or the window
+    /// sits behind another, the frontmost window under the point is not the right one.
+    func fitPress(_ e: Element, in window: NSWindow? = nil) async throws {
         log("press \(e.identifier.isEmpty ? e.label : e.identifier)")
         if e.performPress() { await idle(); return }
         let f = e.frame
         let center = NSPoint(x: f.midX, y: f.midY)
-        guard let w = NSApp.orderedWindows.first(where: { $0.isVisible && $0.frame.contains(center) }) else { throw DriverError("no window under \(e)") }
+        guard let w = window ?? NSApp.orderedWindows.first(where: { $0.isVisible && $0.frame.contains(center) }) else { throw DriverError("no window under \(e)") }
         w.makeKeyAndOrderFront(nil)
         let local = w.convertPoint(fromScreen: center)
         for t in [NSEvent.EventType.leftMouseDown, .leftMouseUp] {
@@ -440,6 +455,28 @@ extension UI {
 
     // MARK: the check
 
+    /// The side panes and the sidebar move with a spring: a check during the movement reads frames the
+    /// settled layout does not have. Waits until the scroll areas stop moving (at most 6 seconds).
+    func fitSettle() async {
+        guard let w = fitMain else { return }
+        var last = ""
+        var still = 0
+        for _ in 0..<40 {
+            var frames: [String] = []
+            func walk(_ e: Element, _ depth: Int) {
+                guard depth < 60 else { return }
+                if e.role == "AXScrollArea" { frames.append(e.frame.short) }
+                for c in e.children { walk(c, depth + 1) }
+            }
+            walk(Element(obj: w), 0)
+            let now = frames.joined(separator: " ") + " \(w.frame.short)"
+            still = now == last ? still + 1 : 0
+            if still >= 2 { return }
+            last = now
+            await idle(0.15)
+        }
+    }
+
     func fitCheck(_ place: String, sidebar: Bool? = nil, assistant: Bool? = nil, overlaps: Bool = true, _ report: inout FitReport) {
         guard let w = fitMain else { report.add(place, "no main window"); return }
         report.checks += 1
@@ -454,7 +491,9 @@ extension UI {
             for p in fitProblems(in: sheet) { report.add(place, "in the sheet: \(p)") }
             return
         }
-        for p in fitProblems(in: w, skipSidebar: sidebar == false, overlaps: overlaps) { report.add(place, p) }
+        let found = fitProblems(in: w, skipSidebar: sidebar == false, overlaps: overlaps)
+        for p in found { report.add(place, p) }
+        if !found.isEmpty { try? snapshot("fit-problem-\(place)") }
         if sidebar == true {
             let content = w.convertToScreen(w.contentLayoutRect)
             let sidebarList = query(label: "Sidebar", role: "AXOutline").first { $0.identifier.isEmpty && $0.frame.width > 1 }?.frame

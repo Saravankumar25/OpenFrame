@@ -100,6 +100,7 @@ struct IdeaVaultScreen: View {
         Group {
             if model.page == .deleted {
                 VaultDeletedView(model: model)
+                    .accessibilityIdentifier("idea-vault")
             } else {
                 vault
             }
@@ -118,6 +119,7 @@ struct IdeaVaultScreen: View {
         .onReceive(NotificationCenter.default.publisher(for: .straftQuickCapture)) { _ in
             if model.page == .vault { model.dialog = .quick }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("idea-vault")
     }
 
@@ -126,16 +128,15 @@ struct IdeaVaultScreen: View {
     private var vault: some View {
         GeometryReader { geo in
             HStack(spacing: 0) {
-                // A narrow window (or the AI Assistant beside the vault) leaves the items more room.
+                // A narrow window (or Straft AI beside the vault) leaves the items more room.
                 VaultSidebar(model: model).frame(width: geo.size.width < 640 ? 170 : 214)
                 Divider().overlay(theme["line"])
                 main
             }
         }
-        .inspector(isPresented: Binding(get: { model.openId != nil }, set: { if !$0 { model.closeDrawer() } })) {
+        .sidePane("idea-vault", isPresented: model.openId != nil, minimum: 320, ideal: 380, maximum: 520) {
             if let id = model.openId {
                 VaultDrawer(model: model, id: id)
-                    .inspectorColumnWidth(min: 320, ideal: 380, max: 520)
             }
         }
         .searchable(text: $model.searchText, placement: .toolbar, prompt: "Search ideas, tags, filenames…")
@@ -183,7 +184,7 @@ struct IdeaVaultScreen: View {
                     .font(.caption.weight(.medium))
                     .padding(.horizontal, 8).padding(.vertical, 2)
                     .background(model.isGlobal ? theme["purple-soft"] : theme["accent-soft"], in: Capsule())
-                    .foregroundStyle(model.isGlobal ? theme["purple-t"] : theme["accent-ink"])
+                    .foregroundStyle(model.isGlobal ? theme["purple-t"] : theme["accent-d"])
                     .accessibilityLabel(model.isGlobal ? "Global Idea Vault" : "Project Idea Vault")
             }
             Text(model.isGlobal
@@ -446,7 +447,7 @@ struct IdeaVaultScreen: View {
             if let label = model.copyLabel { Button(label) { model.dialog = .copy(xs) } }
             Button("Delete", role: .destructive) { Task { await model.delete(xs) } }
             Button { model.selection = [] } label: { Label("Clear", systemImage: "xmark").labelStyle(.titleAndIcon) }
-                .buttonStyle(.borderless)
+                .buttonStyle(.ofBorderless)
                 .accessibilityLabel("Clear selection")
         }
         .controlSize(.small)
@@ -465,7 +466,7 @@ struct IdeaVaultScreen: View {
             Text("Drop to add to the \(model.isGlobal ? "Global Vault" : "Project Vault")").font(.headline)
             Text("No categories needed. They will be stored exactly as they are.").font(.callout)
         }
-        .foregroundStyle(theme["accent-ink"])
+        .foregroundStyle(theme["accent-d"])
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(theme["accent-soft"].opacity(0.92))
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(theme["accent"], style: StrokeStyle(lineWidth: 2, dash: [6])))
@@ -493,7 +494,7 @@ struct IdeaVaultScreen: View {
                     .buttonStyle(.link)
                 }
                 Button { model.dismissNotice() } label: { Label("Dismiss", systemImage: "xmark").labelStyle(.titleAndIcon) }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.ofBorderless)
                     .accessibilityLabel("Dismiss")
             }
             .font(.callout)

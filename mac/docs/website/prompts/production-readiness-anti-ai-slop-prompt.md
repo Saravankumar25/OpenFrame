@@ -1,6 +1,6 @@
 > **SUPPLIED PROMPT, kept for reference (2026-10-05).** Method only; it is not a specification. Tool and repository names
 > in it are **unverified**: install nothing from a name alone, check source, licence and permissions first, and do not send source code to
-> third-party model providers. Plan and rules that apply to this repository: [../README.md](../README.md).
+> third-party model providers. Plan and rules that apply to this repository: [the Chapter 2 plan](../../roadmap/chapter-2-website.md).
 
 # Claude Code Production-Readiness + Anti-AI-Slop Prompt
 

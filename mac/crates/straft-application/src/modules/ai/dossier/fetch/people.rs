@@ -5,8 +5,8 @@
 
 use std::sync::LazyLock;
 
-use straft_domain::AppResult;
 use regex::Regex;
+use straft_domain::AppResult;
 
 use crate::modules::ai::dossier::ctx::{FetchCtx, safe};
 use crate::modules::ai::dossier::guard;

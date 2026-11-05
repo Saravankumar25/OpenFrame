@@ -17,10 +17,10 @@ mod short;
 #[cfg(test)]
 mod tests;
 
-use straft_domain::{Actor, AppResult, Capability};
 use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use straft_domain::{Actor, AppResult, Capability};
 use ts_rs::TS;
 
 use crate::core::{AppCore, ProjectSession};
@@ -89,10 +89,7 @@ pub fn prepare(i: &Input<'_>) -> AppResult<TurnMemory> {
         long::homed_in(e, i.sections, i.names)
     })
     .unwrap_or_else(|e| {
-        tracing::warn!(
-            code = e.code_str(),
-            "Straft AI's memory could not be read"
-        );
+        tracing::warn!(code = e.code_str(), "Straft AI's memory could not be read");
         Vec::new()
     });
     Ok(TurnMemory {

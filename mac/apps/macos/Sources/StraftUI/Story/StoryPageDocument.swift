@@ -201,9 +201,9 @@ enum StoryPageDocument {
         ScreenplayPageColors.dynamic(light: light, dark: dark)
     }
 
-    nonisolated(unsafe) static let ink = pageColor(light: lightSheet.ink, dark: darkSheet.ink)
-    nonisolated(unsafe) static let highlightColors = Dictionary(uniqueKeysWithValues: highlights.map { ($0.name, pageColor(light: $0.light, dark: $0.dark)) })
-    nonisolated(unsafe) static let underlineColors = Dictionary(uniqueKeysWithValues: underlines.map { ($0.name, pageColor(light: $0.light, dark: $0.dark)) })
+    static let ink = pageColor(light: lightSheet.ink, dark: darkSheet.ink)
+    static let highlightColors = Dictionary(uniqueKeysWithValues: highlights.map { ($0.name, pageColor(light: $0.light, dark: $0.dark)) })
+    static let underlineColors = Dictionary(uniqueKeysWithValues: underlines.map { ($0.name, pageColor(light: $0.light, dark: $0.dark)) })
 
     /// Arial, as the Windows sheet and the exported PDF.
     static func font(size: Double, bold: Bool, italic: Bool) -> NSFont {
@@ -271,7 +271,7 @@ enum StoryPageDocument {
         return (text, json)
     }
 
-    nonisolated(unsafe) private static let encoder: JSONEncoder = {
+    private static let encoder: JSONEncoder = {
         let e = JSONEncoder()
         e.outputFormatting = [.withoutEscapingSlashes]
         return e

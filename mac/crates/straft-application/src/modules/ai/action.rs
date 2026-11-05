@@ -30,10 +30,10 @@
 use std::collections::BTreeSet;
 use std::sync::Arc;
 
+use serde_json::{Value, json};
 use straft_ai::InferenceProvider;
 use straft_ai::client::{ChatMessage, ChatRequest, SLOT_ANSWER, malformed};
 use straft_domain::{Actor, AppError, AppResult, Role, enums::BreakdownCategory};
-use serde_json::{Value, json};
 
 use super::index::Resolved;
 use super::orchestrator::{
@@ -84,8 +84,7 @@ Rules you must always follow:
 const NEXT_STEP: &str = "Choose the next step: another tool, or \"final_answer\" when the results above answer the request. Reply with one JSON object.";
 const REPEATED_NOTE: &str =
     "I stopped because the same step was requested twice. This is what I found so far.";
-const MODEL_STOPPED_NOTE: &str =
-    "Straft AI stopped before finishing. This is what I found so far.";
+const MODEL_STOPPED_NOTE: &str = "Straft AI stopped before finishing. This is what I found so far.";
 
 /// The arguments of a tool as one readable list: `query: string, limit?: integer, kind: "a"|"b"`.
 /// Required arguments come first, then the optional ones by name (`?` marks them). The step grammar

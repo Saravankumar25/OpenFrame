@@ -4,8 +4,8 @@
 
 use std::collections::BTreeMap;
 
-use straft_import_export::model::ElementKind;
 use serde_json::{Value, json};
+use straft_import_export::model::ElementKind;
 
 use crate::Ctx;
 use crate::gold::{Gold, arr, s};
