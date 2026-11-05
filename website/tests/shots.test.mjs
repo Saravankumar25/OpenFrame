@@ -3,7 +3,7 @@
 import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, existsSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { chromium } from 'playwright';
@@ -26,6 +26,13 @@ test('cards are inert lazy frames of /mockups/ pages: no pictures, no "Open this
     }
   }
   assert.ok(cards > 500, `only ${cards} cards found`);
+});
+
+test('Mac pictures have a content hash in their address, so a new capture never shows a cached old picture', { skip: SKIP }, () => {
+  const dir = path.join(DIST, 'mockups', 'mac', 'dark');
+  const sheets = readdirSync(dir).filter((f) => f.endsWith('.css'));
+  assert.ok(sheets.length > 500);
+  for (const f of sheets) for (const m of read(path.join(dir, f)).matchAll(/url\("?([^")]*\.png[^")]*)"?\)/g)) assert.match(m[1], /\.png\?v=[0-9a-f]{10}$/, f);
 });
 
 test('no feature page lists "More screens" or leaves a Mac screen as a placeholder (owner decision 2026-11-01)', { skip: SKIP }, () => {
