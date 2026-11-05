@@ -10,13 +10,13 @@ export default {
     `Templates live in Project settings. Click Templates on Project Home, or open Project settings and choose the Templates tab.`,
   ],
   layout: [
-    { name: `Settings tabs`, text: `At the top of the window: Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance and Storage. Templates is chosen. Done closes the window.` },
+    { name: `Settings tabs`, text: `At the top of the window: Project settings, Writing, Keyboard shortcuts, Templates, Straft AI, Advanced, Appearance and Storage. Templates is chosen. Done closes the window.` },
     { name: `Header`, text: `The title Templates, the question Would a saved starting point help me begin faster? and the Create Template button.` },
     { name: `Built-in`, text: `The section BUILT-IN: Starting points that come with Straft. Use one to copy it into this project. One card per template, with its kind and a short description.` },
     { name: `Yours`, text: `The section YOURS: Kept on this computer and available in every project. It holds templates you saved to My Templates.` },
     { name: `This project`, text: `The section THIS PROJECT: Copies kept inside this project. Changing a template never changes anything already made from it.` },
     { name: `Card actions`, text: `Each card has an actions button (three dots). Clicking the card itself opens a preview.` },
-    { name: `Footer`, text: `A note that Offline AI, Appearance and Keyboard shortcuts apply to every project on this Mac, and the App Settings… button.` },
+    { name: `Footer`, text: `A note that Straft AI, Appearance and Keyboard shortcuts apply to every project on this Mac, and the App Settings… button.` },
   ],
   workflows: [
     {

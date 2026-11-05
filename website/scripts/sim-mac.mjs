@@ -1,12 +1,12 @@
-// Simulated Mac screens (owner decision 2026-11-01): the Mac captures never ran the AI assistant (the build had no Offline AI), so the
-// AI chat, proposals and the Offline AI details have no real Mac screen. Each simulated screen is a real Mac capture (window, sidebar,
-// toolbar) whose AI panel or Offline AI pane is redrawn as live HTML in the Mac look, with the same words as the Windows screens.
-// The captured screens stay as they are (the Mac manual describes them); the simulated ones are new screens. Run after shots.mjs: node scripts/sim-mac.mjs
-// Writes: .cache/shots/pages/mac/<theme>/sim-*.html, manifest entries, and the records appended to research/screens-mac.json (sim: true).
+// Simulated Mac screens (owner decision 2026-11-01): the Mac capture of 2026-11-05 has no AI model installed, so the AI chat, the proposals and the
+// Straft AI settings while it runs have no real Mac screen, and a few dialogs were never reached. Each simulated screen is a real Mac capture (window, sidebar,
+// toolbar) with its AI panel, settings pane or dialog redrawn as live HTML in the Mac look, with the words of the Mac source.
+// The captured screens stay as they are. Run after shots.mjs: node scripts/sim-mac.mjs
+// Writes: .cache/shots/pages/mac/<theme>/sim-*.html, manifest entries, and the records appended to research/screens-mac.json (sim: true). Safe to run again.
 import fs from 'node:fs'; import path from 'node:path'; import sharp from 'sharp';
 import { chromium } from 'playwright'; import { pathToFileURL } from 'node:url';
 import { SIMS, SIM_AREA, panelCss, settingsCss, TOKENS } from './sim-mac-screens.mjs';
-import { FREE_SIMS, freeCss, ACCENT } from './sim-mac-free.mjs';
+import { FREE_SIMS, freeCss } from './sim-mac-free.mjs';
 import { rebrand, rebrandDeep } from '../src/lib/brand.mjs'; // product name as on the website (the base pages are already renamed)
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -19,34 +19,41 @@ const byName = new Map(cat.map((s) => [s.name, s]));
 const hex = (p) => '#' + [...p].map((v) => v.toString(16).padStart(2, '0')).join('');
 const rgba = (h) => ({ r: parseInt(h.slice(1, 3), 16), g: parseInt(h.slice(3, 5), 16), b: parseInt(h.slice(5, 7), 16), alpha: 1 });
 
-// positions, in window CSS px, of the AI panel parts of a processed Mac page
-async function rects(page, file) {
-  await page.goto(pathToFileURL(file).href); await page.waitForTimeout(150);
-  return page.evaluate(() => {
+// positions, in window CSS px, of the parts of a Mac page; extra is { name: selector } for a sim's own measures
+async function rects(page, file, extra = {}) {
+  await page.goto(pathToFileURL(file).href);
+  return page.evaluate((qs) => {
     const w = document.querySelector('.win').getBoundingClientRect();
     const r = (q) => { const e = document.querySelector(q); if (!e) return null; const b = e.getBoundingClientRect(); return [b.x - w.x, b.y - w.y, b.width, b.height].map(Math.round); };
-    return { win: [Math.round(w.width), Math.round(w.height)], panel: r('[data-id=ai-panel]'), chip: r('[data-id=ai-mode-chip]'), close: r('[data-id=ai-close]') };
-  });
-}
-// the most saturated opaque pixel of a region: the accent colour of the text there
-async function accentOf(png, box, s) {
-  const { data, info } = await sharp(png).extract({ left: Math.round(box[0] * s), top: Math.round(box[1] * s), width: Math.round(box[2] * s), height: Math.round(box[3] * s) }).raw().toBuffer({ resolveWithObject: true });
-  let best = [0, 0, 0], bs = -1;
-  for (let i = 0; i < data.length; i += info.channels) { const sc = Math.max(data[i], data[i + 1], data[i + 2]) - Math.min(data[i], data[i + 1], data[i + 2]); if (data[i + 3] > 200 && sc > bs) { bs = sc; best = [data[i], data[i + 1], data[i + 2]]; } }
-  return `rgb(${best.join(',')})`;
+    const body = '[data-id=ai-panel] .scrollarea', pane = '[data-id=settings-ai]';
+    return { win: [Math.round(w.width), Math.round(w.height)], chip: r('[data-id=ai-mode-chip]'), body: r(body), bodyHtml: document.querySelector(body)?.outerHTML, pane: r(pane), paneHtml: document.querySelector(pane)?.outerHTML, m: Object.fromEntries(Object.entries(qs).map(([k, q]) => [k, r(q)])) };
+  }, extra);
 }
 async function pixel(png, x, y, s) {
   const { data } = await sharp(png).extract({ left: Math.round(x * s), top: Math.round(y * s), width: 1, height: 1 }).raw().toBuffer({ resolveWithObject: true });
   return data.slice(0, 3);
 }
-// flat colour over rects given in window CSS px
+// flat colour over rects in window CSS px; "atop" keeps the picture's alpha, so the window's rounded corners stay exactly as captured
 async function paint(png, s, list, color) {
-  const ov = await Promise.all(list.map(async ([x, y, w, h]) => ({ input: await sharp({ create: { width: Math.round(w * s), height: Math.round(h * s), channels: 4, background: color } }).png().toBuffer(), left: Math.round(x * s), top: Math.round(y * s) })));
+  const ov = await Promise.all(list.map(async ([x, y, w, h]) => ({ input: await sharp({ create: { width: Math.round(w * s), height: Math.round(h * s), channels: 4, background: color } }).png().toBuffer(), left: Math.round(x * s), top: Math.round(y * s), blend: 'atop' })));
   return sharp(png).composite(ov).png({ compressionLevel: 9 }).toBuffer();
 }
-const dropUnavailable = (html) => html
-  .replace(/<div class="el group _s\d+" data-id="ai-unavailable"[^>]*>.*?<\/div>/s, '')
-  .replace(/(<span class="el statictext _s\d+" data-id="ai-mode-chip"[^>]*>)Off(<\/span>)/, '$1AI Ready$2');
+// moves a part of the picture down (a banner pushes the page below it)
+async function shiftDown(png, s, [x, y, w, h], dy) {
+  const part = await sharp(png).extract({ left: Math.round(x * s), top: Math.round(y * s), width: Math.round(w * s), height: Math.round(h * s) }).png().toBuffer();
+  return sharp(png).composite([{ input: part, left: Math.round(x * s), top: Math.round((y + dy) * s) }]).png({ compressionLevel: 9 }).toBuffer();
+}
+// a real sheet: the window dimmed, with the traffic lights as a real capture draws them under a sheet
+async function dimWindow(png, s, theme, tk, win) {
+  const lights = path.join(PAGES, 'assets', theme, path.basename(byName.get('breakdown-export-sheet').picture));
+  const box = { left: Math.round(12 * s), top: Math.round(14 * s), width: Math.round(72 * s), height: Math.round(24 * s) };
+  const dimmed = await paint(png, s, [[0, 0, win[0], win[1]]], tk.dimColor);
+  return sharp(dimmed).composite([{ input: await sharp(lights).extract(box).png().toBuffer(), left: box.left, top: box.top }]).png({ compressionLevel: 9 }).toBuffer();
+}
+const without = (html, part, name) => {
+  if (!part || !html.includes(part)) throw new Error(`sim ${name}: the part to replace was not found in its base page`);
+  return html.replace(part, '');
+};
 
 // One simulated page from its base page, in one theme.
 async function build(page, sim, theme) {
@@ -55,33 +62,32 @@ async function build(page, sim, theme) {
   const stem = base.file.replace(/\.html$/, '');
   const dir = path.join(PAGES, theme), asDir = path.join(PAGES, 'assets', theme);
   const baseHtml = path.join(dir, base.file), basePng = path.join(asDir, path.basename(base.picture));
-  const g = await rects(page, baseHtml);
+  const g = await rects(page, baseHtml, sim.measure);
   const tk = TOKENS[theme];
   const png0 = fs.readFileSync(basePng);
   const s = (await sharp(png0).metadata()).width / g.win[0];
+  const [W, H] = g.win;
   let png = png0, html = fs.readFileSync(baseHtml, 'utf8'), body, css;
   if (sim.kind === 'panel') {
-    const [px, py] = g.panel, [W, H] = g.win;
-    const bg = hex(await pixel(png, px + 40, py + 120, s)), hdr = hex(await pixel(png, px + 30, py + 70, s));
-    const acc = await accentOf(png, g.close, s);
-    const top = py + 86, left = px + 6, right = W - 12, bottom = H - 12; // 6 px margin: the window edge and its rounded corner stay as captured
-    png = await paint(png, s, [[left, top, right - left, bottom - top]], rgba(bg));
-    png = await paint(png, s, [[g.chip[0] - 34, g.chip[1] - 3, g.chip[2] + 38, g.chip[3] + 6]], rgba(hdr));
-    const chip = `<span class="sim-chip" style="left:${g.chip[0] + g.chip[2] - 62}px;top:${g.chip[1] - 1}px">${sim.chip || 'AI Ready'}</span>`;
-    body = `<div class="sim-panel" style="left:${left}px;top:${top}px;width:${right - left}px;height:${bottom - top}px">${sim.panel(tk)}</div>${chip}${sim.over ? sim.over(tk, { left, top, right, bottom }) : ''}`;
-    css = panelCss(tk, bg, hdr, acc);
-    html = dropUnavailable(html);
+    const [x, y, w, h] = g.body, c = g.chip;
+    png = await paint(png, s, [[x, y, w, h]], rgba(hex(await pixel(png, x + 40, H - 60, s))));
+    png = await paint(png, s, [[c[0] - 4, c[1] - 2, c[2] + 8, c[3] + 4]], rgba(hex(await pixel(png, c[0] - 12, c[1] + 8, s))));
+    const chip = `<span class="sim-root sim-chip m-chip green" style="right:${W - c[0] - c[2]}px;top:${c[1]}px">${sim.chip || 'AI Ready'}</span>`;
+    body = `<div class="sim-root sim-panel" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">${sim.panel()}</div>${chip}${sim.over ? sim.over(g) : ''}`;
+    css = panelCss(tk);
+    html = without(html, g.bodyHtml, sim.name).replace(/(data-id="ai-mode-chip"[^>]*>)Off(<\/span>)/, '$1AI Ready$2');
   } else if (sim.kind === 'free') {
-    // a dialog over the dimmed window, or a notice painted into a flat area of the capture
-    for (const [rect, [sx, sy]] of sim.paint || []) png = await paint(png, s, [rect], rgba(hex(await pixel(png, sx, sy, s))));
-    body = sim.html();
-    css = freeCss(tk, ACCENT[theme]);
+    if (sim.shift) { const { rect, dy } = sim.shift(g); png = await shiftDown(png, s, rect, dy); }
+    for (const [rect, [sx, sy]] of sim.paint ? sim.paint(g) : []) png = await paint(png, s, [rect], rgba(hex(await pixel(png, sx, sy, s))));
+    if (sim.sheet) png = await dimWindow(png, s, theme, tk, g.win);
+    body = sim.html(g);
+    css = freeCss(tk);
   } else {
-    const [W, H] = g.win;
-    const bg = hex(await pixel(png, 6, 130, s));
-    png = await paint(png, s, [[2, 90, W - 4, H - 94]], rgba(bg));
-    body = `<div class="sim-set" style="left:2px;top:90px;width:${W - 4}px;height:${H - 94}px">${sim.panel(tk)}</div>${sim.over ? sim.over(tk, { W, H }) : ''}`;
-    css = settingsCss(tk, bg, await accentOf(png0, [W / 2 - 70, 30, 140, 70], s));
+    const [x, y, w, h] = g.pane;
+    png = await paint(png, s, [[x, y, w, h]], rgba(hex(await pixel(png, 8, H - 40, s))));
+    body = `<div class="sim-root sim-set" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px">${sim.panel()}</div>${sim.over ? sim.over(g) : ''}`;
+    css = settingsCss(tk);
+    html = without(html, g.paneHtml, sim.name);
   }
   const name = `sim-${sim.name}`, newPng = `${name}.png`;
   fs.writeFileSync(path.join(asDir, newPng), png);
@@ -92,8 +98,12 @@ async function build(page, sim, theme) {
   fs.writeFileSync(path.join(dir, `${name}.html`), rebrand(html));
 }
 
+// re-runnable: a sim that was removed leaves nothing behind
+for (const theme of ['light', 'dark']) for (const dir of [path.join(PAGES, theme), path.join(PAGES, 'assets', theme)]) for (const f of fs.readdirSync(dir)) if (f.startsWith('sim-')) fs.rmSync(path.join(dir, f));
+for (const [k, v] of Object.entries(manifest.mac)) if (v.sim) delete manifest.mac[k];
+
 const browser = await chromium.launch();
-const page = await (await browser.newContext({ viewport: { width: 1500, height: 900 } })).newPage();
+const page = await (await browser.newContext({ viewport: { width: 1800, height: 1000 } })).newPage();
 const records = [];
 let n = 900;
 for (const sim of [...SIMS, ...FREE_SIMS.map((f) => ({ ...f, kind: 'free' }))]) {

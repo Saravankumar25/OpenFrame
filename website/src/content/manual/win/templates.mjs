@@ -7,10 +7,10 @@ export default {
     `A template is a saved starting point for a new document, so you do not begin from a blank page. The Templates page asks: Would a saved starting point help me begin faster? Templates are optional. Every document can also start blank.`,
     `Straft comes with eight built-in templates: Feature Film Screenplay, Short Film Screenplay, Episodic / Series, Simple Beat Board, Indie Call Sheet, Shot List, Moodboard and Lightweight Budget. You can also make your own, and keep them for this project only or for every project.`,
     `The page has three groups. BUILT-IN holds the templates that come with Straft. YOURS holds your own templates, kept on this computer and available in every project. THIS PROJECT holds copies kept inside this project. Changing a template never changes anything already made from it, and a document made from a template is an independent copy.`,
-    `Templates is a tab of Project settings. Open it from the project menu (click the project name at the top and choose Templates), or open Project settings and click the Templates tab. The other tabs sit beside it: Project settings, Writing, Keyboard shortcuts, Offline AI, Advanced, Appearance and Storage.`,
+    `Templates is a tab of Project settings. Open it from the project menu (click the project name at the top and choose Templates), or open Project settings and click the Templates tab. The other tabs sit beside it: Project settings, Writing, Keyboard shortcuts, Straft AI, Advanced, Appearance and Storage.`,
   ],
   layout: [
-    { name: `Tabs`, text: `Across the top of the page: Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance and Storage. Templates is selected.` },
+    { name: `Tabs`, text: `Across the top of the page: Project settings, Writing, Keyboard shortcuts, Templates, Straft AI, Advanced, Appearance and Storage. Templates is selected.` },
     { name: `Header`, text: `The title Templates, the line Would a saved starting point help me begin faster? and, at the right, Create Template.` },
     { name: `BUILT-IN`, text: `Eight cards, with the line Starting points that come with Straft. Use one to copy it into this project. Each card shows the name, the kind of template and a short description, for example Screenplay starter · Feature film · three acts.` },
     { name: `YOURS`, text: `Your own templates, with the line Kept on this computer and available in every project. Empty, it says: Save a project template to My Templates, or create one, to reuse it in every project.` },

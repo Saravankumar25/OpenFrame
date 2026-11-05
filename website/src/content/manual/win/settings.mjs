@@ -4,17 +4,17 @@ export default {
   order: 30,
   part: `Project and data`,
   intro: [
-    `Settings is where you set up one project and how Straft looks and behaves on this computer. Open a project and click the Settings gear at the top right (the project menu also has Project settings and Appearance). A row of tabs runs along the top: Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance and Storage.`,
-    `Some settings belong to the project and some belong to this computer. Project settings holds the project's title, type and details. Spell checking and its languages are kept with the project. Your keyboard shortcuts, your personal dictionary, your mode and theme and your Offline AI choices apply to Straft on this computer, in every project. Everything stays on this computer. Nothing here is sent anywhere.`,
+    `Settings is where you set up one project and how Straft looks and behaves on this computer. Open a project and click the Settings gear at the top right (the project menu also has Project settings and Appearance). A row of tabs runs along the top: Project settings, Writing, Keyboard shortcuts, Templates, Straft AI, Advanced, Appearance and Storage.`,
+    `Some settings belong to the project and some belong to this computer. Project settings holds the project's title, type and details. Spell checking and its languages are kept with the project. Your keyboard shortcuts, your personal dictionary, your mode and theme and your Straft AI choices apply to Straft on this computer, in every project. Everything stays on this computer. Nothing here is sent anywhere.`,
     `The gear on Application Home opens a smaller Settings dialog for the settings that do not need a project: Appearance, Keyboard shortcuts, Storage and About and support. The Application Home chapter covers it. This chapter covers the full Settings page inside a project.`,
     `The Templates tab has its own chapter, Templates. Every other tab is taught here.`,
   ],
   layout: [
-    { name: `Tab row`, text: `Eight tabs under the top bar: Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance and Storage. The tab you are on is underlined. The status bar at the bottom names the page, for example Project settings · Writing.` },
+    { name: `Tab row`, text: `Eight tabs under the top bar: Project settings, Writing, Keyboard shortcuts, Templates, Straft AI, Advanced, Appearance and Storage. The tab you are on is underlined. The status bar at the bottom names the page, for example Project settings · Writing.` },
     { name: `Project settings tab`, text: `A form with Title *, Type *, Language, Genre, Creator, Status, Logline and Project notes, and a Save button at the top right. To its right, a Stored on this computer card with Open project location and Move or back up…. Below the form are three sections: LICENCE, ABOUT STRAFT STUDIO and SUPPORT, with Export Diagnostics….` },
     { name: `Writing tab`, text: `A SPELLING card with the Check spelling as I write checkbox, Main language and Second language, and a PERSONAL DICTIONARY card with an Add a word box, an Add button, a Filter words box and a list of your words.` },
     { name: `Keyboard shortcuts tab`, text: `A Filter commands or keys box with a count of commands, Restore all defaults at the top right, and a table with the columns COMMAND, DEFAULT, CURRENT and CONFLICT. Commands are grouped under General, Project list, Idea Vault, Screenplay and Screenplay elements. Each row ends with Add and Restore default.` },
-    { name: `Offline AI tab`, text: `Three cards side by side: OFFLINE AI (status, Stop Offline AI (free memory), Remove Straft AI… and the Graphics card choice), AI HEALTH (figures and Export AI report) and ASSISTANT MEMORY (what Straft AI remembers). Below them a TECHNICAL DETAILS section that opens and closes.` },
+    { name: `Straft AI tab`, text: `Three cards: STRAFT AI (status, Stop Straft AI (free memory), Remove Straft AI… and the Graphics card choice), STRAFT AI HEALTH (figures and Export Straft AI report) and STRAFT AI MEMORY (what Straft AI remembers). Below them a TECHNICAL DETAILS section that opens and closes.` },
     { name: `Advanced tab`, text: `The Breakdown category colours and icons, one row per category, with twelve colour dots and sixteen icons on each row, and Restore Defaults at the top right.` },
     { name: `Appearance tab`, text: `MODE (Light, Dark, System), THEME (seventeen theme cards) and My Themes, with Import Theme File… and Paste Theme….` },
     { name: `Storage tab`, text: `Where Straft keeps your work on this computer: your library, the folder for new projects, the Global Idea Vault, the open project and app data, each with its folder and buttons.` },
@@ -44,7 +44,7 @@ export default {
         },
         {
           screen: `settings-offline-ai-ready`,
-          do: `Click Offline AI.`,
+          do: `Click Straft AI.`,
           explain: `This tab shows whether Straft AI is ready, lets you stop or remove it, and shows how it is doing. The AI is optional. Straft works normally without it.`,
         },
         {
@@ -420,12 +420,12 @@ export default {
       title: `Check that the offline AI is ready`,
       purpose: `Read the status of Straft AI and open its technical details.`,
       level: `Beginner`,
-      prerequisites: [`A project is open and you are on the Offline AI tab.`],
+      prerequisites: [`A project is open and you are on the Straft AI tab.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
-          do: `Read the OFFLINE AI card.`,
-          explain: `A green chip says AI Ready when Straft AI can answer. The text says: Straft AI runs on this computer after a one-time download. Your project data is not sent to Straft or to an AI cloud service. The card ends with: Straft works normally without Straft AI. Other states you may see are Not downloaded, Checking its files…, Needs a new download, Needs a reinstall and Not available on this computer. When it is not downloaded the page offers the download. Straft AI chapter walks through it.`,
+          do: `Read the STRAFT AI card.`,
+          explain: `A green chip says Ready when Straft AI can answer. The text says: Straft AI runs on this computer after a one-time download. Your project data is not sent to Straft or to an AI cloud service. The card ends with: Straft works normally without Straft AI. Other states you may see are Not downloaded, Checking its files…, Needs a new download, Needs a reinstall and Not available on this computer. When it is not downloaded the page offers the download. Straft AI chapter walks through it.`,
         },
         {
           screen: `settings-offline-ai-technical-details`,
@@ -444,17 +444,17 @@ export default {
       title: `Free memory or choose how the AI runs`,
       purpose: `Stop Straft AI to free memory, and choose whether it may use the graphics card.`,
       level: `Intermediate`,
-      prerequisites: [`Straft AI is downloaded and shows AI Ready.`],
+      prerequisites: [`Straft AI is downloaded and shows Ready.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
-          do: `Click Stop Offline AI (free memory).`,
+          do: `Click Stop Straft AI (free memory).`,
           explain: `Straft AI keeps its models in memory so answers start fast. Stopping releases that memory.`,
         },
         {
           screen: `settings-offline-ai-stopped-toast`,
           do: `Read the message at the bottom.`,
-          explain: `It says Offline AI stopped. It starts again when you ask something. You do not need to start it yourself. Click Dismiss to close the message.`,
+          explain: `It says Straft AI stopped. It starts again when you ask something. You do not need to start it yourself. Click Dismiss to close the message.`,
         },
         {
           screen: `settings-offline-ai-ready`,
@@ -478,7 +478,7 @@ export default {
       title: `Remove the offline AI to free disk space`,
       purpose: `Delete the downloaded AI models from this computer.`,
       level: `Intermediate`,
-      prerequisites: [`Straft AI is downloaded and shows AI Ready.`],
+      prerequisites: [`Straft AI is downloaded and shows Ready.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
@@ -488,7 +488,7 @@ export default {
         {
           screen: `settings-offline-ai-remove-confirm`,
           do: `Read Remove Straft AI? and click Remove.`,
-          explain: `It says: This frees the space the AI models use on this computer. AI stays off until you download it again. Your projects are not changed. Cancel closes it and keeps the AI.`,
+          explain: `It says: This frees the space the Straft AI models use on this computer. Straft AI stays off until you download it again. Your projects are not changed. Cancel closes it and keeps the AI.`,
         },
       ],
       result: `The models are gone, a message says Straft AI was removed, and the page offers the download again.`,
@@ -499,19 +499,19 @@ export default {
     },
     {
       id: `settings-offline-ai-health`,
-      title: `Read AI health and export an AI report`,
+      title: `Read Straft AI health and export a Straft AI report`,
       purpose: `See how Straft AI has been doing, and save the figures to a file.`,
       level: `Intermediate`,
-      prerequisites: [`The Offline AI tab is open.`],
+      prerequisites: [`The Straft AI tab is open.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
-          do: `Read the AI HEALTH card.`,
+          do: `Read the STRAFT AI HEALTH card.`,
           explain: `Before you use Straft AI it says: No requests yet. The figures appear after you use Straft AI. Afterwards it lists Requests counted, Typical answer time, Proposals applied, Checks per answer, Errors, Runs on and Weakest tool. Only numbers are kept: no questions, answers or project text, and nothing is sent.`,
         },
         {
           screen: `settings-offline-ai-ready`,
-          do: `Click Export AI report and choose where to save the JSON file.`,
+          do: `Click Export Straft AI report and choose where to save the JSON file.`,
           explain: `The Windows save window suggests straft-ai-report.json. When it is saved, a message says Saved with the file name and the number of requests. Share the file only if you want to.`,
         },
       ],
@@ -526,11 +526,11 @@ export default {
       title: `See and delete what Straft AI remembers`,
       purpose: `Review the facts and preferences Straft AI has kept about you in this project and delete any of them.`,
       level: `Intermediate`,
-      prerequisites: [`The Offline AI tab is open.`],
+      prerequisites: [`The Straft AI tab is open.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
-          do: `Read the ASSISTANT MEMORY card.`,
+          do: `Read the STRAFT AI MEMORY card.`,
           explain: `When nothing is kept it says: Nothing is remembered yet. Straft AI keeps a fact or preference only when you state it outright, or confirm one of its answers. Entries it has kept are listed with the words Fact or Preference and the date they were saved. Click Delete beside an entry and a message says Forgotten. The card ends with: Saved on this computer, in this project, for you only. Delete an entry and Straft AI forgets it.`,
         },
       ],
@@ -752,11 +752,11 @@ export default {
     'settings-shortcut-restore-all-confirm': `The Restore all keyboard shortcuts? dialog with a red Restore all defaults and Cancel. Used in settings-restore-shortcuts.`,
     'settings-shortcuts-restored-toast': `The table after Restore all defaults. A message reads All shortcuts are back to their defaults. Used in settings-restore-shortcuts.`,
     'settings-shortcuts-conflict-banner': `The table with a yellow banner: Some shortcuts are used by two commands. Search and Save now both show Ctrl+K and each says Also used by the other in CONFLICT. Used in settings-shortcut-conflicts.`,
-    'settings-offline-ai-ready': `The Offline AI tab with Straft AI ready: the OFFLINE AI card with an AI Ready chip, Stop Offline AI (free memory), Remove Straft AI… and Graphics card (Automatic, Off), the AI HEALTH card, the ASSISTANT MEMORY card and a closed TECHNICAL DETAILS section. Used in settings-open-and-tour, settings-offline-ai-status, settings-offline-ai-stop-graphics, settings-offline-ai-remove, settings-offline-ai-health and settings-assistant-memory.`,
+    'settings-offline-ai-ready': `The Straft AI tab with Straft AI ready: the STRAFT AI card with an Ready chip, Stop Straft AI (free memory), Remove Straft AI… and Graphics card (Automatic, Off), the STRAFT AI HEALTH card, the STRAFT AI MEMORY card and a closed TECHNICAL DETAILS section. Used in settings-open-and-tour, settings-offline-ai-status, settings-offline-ai-stop-graphics, settings-offline-ai-remove, settings-offline-ai-health and settings-assistant-memory.`,
     'settings-offline-ai-remove-confirm': `The Remove Straft AI? dialog with Cancel and a red Remove. Used in settings-offline-ai-remove.`,
-    'settings-offline-ai-technical-details': `The Offline AI tab with TECHNICAL DETAILS open: the component table (Component, Licence, Size), the model licence note and the lines about the package, this computer, the engine and the log. Used in settings-offline-ai-status.`,
-    'settings-offline-ai-stopped-toast': `The Offline AI tab after Stop Offline AI. A message reads Offline AI stopped. It starts again when you ask something. Used in settings-offline-ai-stop-graphics.`,
-    'settings-offline-ai-graphics-off': `The Offline AI tab with Graphics card set to Off. A message reads Straft AI will run on the processor. Used in settings-offline-ai-stop-graphics.`,
+    'settings-offline-ai-technical-details': `The Straft AI tab with TECHNICAL DETAILS open: the component table (Component, Licence, Size), the model licence note and the lines about the package, this computer, the engine and the log. Used in settings-offline-ai-status.`,
+    'settings-offline-ai-stopped-toast': `The Straft AI tab after Stop Straft AI. A message reads Straft AI stopped. It starts again when you ask something. Used in settings-offline-ai-stop-graphics.`,
+    'settings-offline-ai-graphics-off': `The Straft AI tab with Graphics card set to Off. A message reads Straft AI will run on the processor. Used in settings-offline-ai-stop-graphics.`,
     'settings-advanced': `The Advanced tab: one row for each Breakdown category with twelve colour dots and sixteen icons, and Restore Defaults at the top right. Used in settings-open-and-tour and settings-category-look.`,
     'settings-advanced-changed-toast': `The Advanced tab after Cast was given another colour and icon. Its row shows a Changed chip and a message reads Changed the look of Cast with Undo. Used in settings-category-look.`,
     'settings-advanced-restored-toast': `The Advanced tab after Restore Defaults. A message reads Restored the default category colours and icons with Undo. Used in settings-category-look.`,
@@ -793,7 +793,7 @@ export default {
   limits: [
     `A command can have at most four shortcuts.`,
     `A shortcut must include Ctrl or Alt unless it is a function key. Ctrl+A, Ctrl+C, Ctrl+V and Ctrl+X, and Ctrl+Alt+1 to Ctrl+Alt+9, cannot be assigned.`,
-    `Shortcuts, your personal dictionary, the mode and theme and the Offline AI choices apply to this computer. Spell checking languages and the Breakdown category looks belong to the project.`,
+    `Shortcuts, your personal dictionary, the mode and theme and the Straft AI choices apply to this computer. Spell checking languages and the Breakdown category looks belong to the project.`,
     `Spell checking uses the dictionaries installed in Windows. Words in a writing system with no installed dictionary are never underlined.`,
     `A theme file or pasted theme can be at most 10 KB, and a theme with text that is too hard to read is refused. Themes change colours on screen only.`,
     `Settings has no cloud sync. Nothing in Settings is sent anywhere. The diagnostics bundle and the AI report are files you save and share yourself.`,
@@ -829,12 +829,12 @@ export default {
       fix: `The command already has four shortcuts, or a key is being recorded on it. Remove a key with the x, or press Esc to stop recording.`,
     },
     {
-      problem: `Straft AI does not show AI Ready.`,
-      fix: `Read the chip on the OFFLINE AI card. Not downloaded means the models have not been downloaded yet, and the page offers the download. Needs a new download means the files were damaged. Open TECHNICAL DETAILS for the line that explains the state.`,
+      problem: `Straft AI does not show Ready.`,
+      fix: `Read the chip on the STRAFT AI card. Not downloaded means the models have not been downloaded yet, and the page offers the download. Needs a new download means the files were damaged. Open TECHNICAL DETAILS for the line that explains the state.`,
     },
     {
       problem: `Straft AI is slow or my screen stutters while it works.`,
-      fix: `Under Graphics card click Off so Straft AI runs on the processor, or click Stop Offline AI (free memory) to release memory. It starts again when you ask something.`,
+      fix: `Under Graphics card click Off so Straft AI runs on the processor, or click Stop Straft AI (free memory) to release memory. It starts again when you ask something.`,
     },
     {
       problem: `My imported theme was refused.`,

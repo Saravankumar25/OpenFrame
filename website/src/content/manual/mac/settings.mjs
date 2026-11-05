@@ -5,17 +5,17 @@ export default {
   part: `Project and data`,
   intro: [
     `Settings holds everything that belongs to you and to this Mac, not to one project: your display name, the look of the app, your keyboard shortcuts, where Straft keeps your work, the optional offline AI and a support bundle. What you change here applies in every project.`,
-    `Open the Settings window from the Settings button on Application Home, from the Straft Studio menu in the menu bar, or by pressing Command+, (comma). It is a normal Mac window with six tabs along the top: General, Appearance, Keyboard Shortcuts, Storage, Offline AI and Diagnostics.`,
+    `Open the Settings window from the Settings button on Application Home, from the Straft Studio menu in the menu bar, or by pressing Command+, (comma). It is a normal Mac window with six tabs along the top: General, Appearance, Keyboard Shortcuts, Storage, Straft AI and Diagnostics.`,
     `Settings for one project, such as its title, status, spelling dictionary and breakdown colours, are a separate place called Project Settings. Inside a project, the App Settings… button at the bottom of Project Settings brings you back here. The Keyboard Shortcuts list can also be opened as a sheet from the Help menu, with a Done button, without opening the whole Settings window.`,
     `Everything stays on this Mac. Nothing in Settings sends anything anywhere: the AI health figures are saved to a file only when you ask, and you choose where.`,
   ],
   layout: [
-    { name: `Tab bar`, text: `Six tabs under the window title: General, Appearance, Keyboard Shortcuts, Storage, Offline AI and Diagnostics. The title of the window changes to the name of the tab you are on.` },
+    { name: `Tab bar`, text: `Six tabs under the window title: General, Appearance, Keyboard Shortcuts, Storage, Straft AI and Diagnostics. The title of the window changes to the name of the tab you are on.` },
     { name: `General`, text: `The You card has a Display name box and a Save Name button. The Version card lists Straft Studio and Core with their version numbers.` },
     { name: `Appearance`, text: `Mode (System, Light or Dark), then Theme cards in a grid, then My Themes with Import Theme File…, Paste Theme… and Export Selected Theme….` },
     { name: `Keyboard Shortcuts`, text: `A Filter commands or keys box, a count of commands (23 commands), Restore all defaults, then the commands in groups. Each command shows where it is on screen, its Current keys with a Remove button, its Default keys, a Conflict note, an Add button and Restore default.` },
     { name: `Storage`, text: `Cards for Your Straft library, Folder for new projects, Global Idea Vault and This project. Each shows a folder and the buttons that act on it.` },
-    { name: `Offline AI`, text: `The Offline AI card with its state, AI health with Export AI report…, and Assistant memory.` },
+    { name: `Straft AI`, text: `The Straft AI card with its state, the Download Straft AI card until the download is done, AI health with Export AI report…, Straft AI memory and Technical details.` },
     { name: `Diagnostics`, text: `A short explanation and the list of files a diagnostics bundle includes.` },
   ],
   workflows: [
@@ -29,7 +29,7 @@ export default {
         {
           screen: `settings-general`,
           do: `Click Settings on Application Home, or choose Settings from the Straft Studio menu, or press Command+,.`,
-          explain: `The Settings window opens on General. It is a separate window, so your project stays open behind it. The tabs are General, Appearance, Keyboard Shortcuts, Storage, Offline AI and Diagnostics.`,
+          explain: `The Settings window opens on General. It is a separate window, so your project stays open behind it. The tabs are General, Appearance, Keyboard Shortcuts, Storage, Straft AI and Diagnostics.`,
         },
         {
           screen: `settings-appearance`,
@@ -43,7 +43,7 @@ export default {
         },
         {
           screen: `settings-offline-ai`,
-          do: `Click Offline AI for Straft AI's engine, health figures and memory, and Diagnostics for the support bundle.`,
+          do: `Click Straft AI for Straft AI's engine, health figures and memory, and Diagnostics for the support bundle.`,
           explain: `Storage, the tab between them, shows where your library and projects are kept. Each has its own workflow below.`,
         },
       ],
@@ -356,15 +356,15 @@ export default {
     },
     {
       id: `settings-offline-ai`,
-      title: `Check the offline AI and its health figures`,
-      purpose: `See whether the offline AI is ready, export its health figures and review what Straft AI remembers.`,
+      title: `Check Straft AI and its health figures`,
+      purpose: `See whether Straft AI is ready, export its health figures and review what Straft AI remembers.`,
       level: `Intermediate`,
       prerequisites: [`The Settings window is open.`],
       steps: [
         {
           screen: `settings-offline-ai`,
-          do: `Click Offline AI.`,
-          explain: `The first card shows the state beside the title, here Needs a reinstall. The text says Straft AI runs on this computer after a one-time download, and that your project data is not sent to Straft or to an AI cloud service. When the engine is missing, a red message says: Offline AI is missing from this installation, so it can't start. Reinstall Straft Studio to repair it. Your projects were not changed. The card ends: Straft works normally without Straft AI.`,
+          do: `Click Straft AI.`,
+          explain: `The first card shows the state beside the title, here Not downloaded. The text says Straft AI runs on this computer after a one-time download, and that your project data is not sent to Straft Studio or to an AI cloud service. The card ends: Straft Studio works normally without Straft AI. Until the download is done, a Download Straft AI card with Import a model file… sits under it.`,
         },
         {
           screen: `settings-offline-ai`,
@@ -378,11 +378,11 @@ export default {
         },
         {
           screen: `settings-offline-ai`,
-          do: `Look at Assistant memory.`,
+          do: `Look at Straft AI memory.`,
           explain: `With no project open it says: Open a project to see what Straft AI remembers in it. Memory is saved on this Mac, in the project, for you only, and only when you state a fact or confirm an answer. Delete an entry and Straft AI forgets it.`,
         },
       ],
-      result: `You know the state of the offline AI and can export the figures.`,
+      result: `You know the state of Straft AI and can export the figures.`,
       cautions: [
         `Straft AI is optional. Every other part of the app works without it.`,
         `If it says Needs a reinstall, reinstall Straft Studio. Your projects are not changed.`,
@@ -404,7 +404,7 @@ export default {
         {
           screen: `settings-diagnostics`,
           do: `Read the list under What the bundle includes.`,
-          explain: `The bundle holds a list of its files, the app and system versions, recent error codes with how often they occurred, how long slow operations took, and the most recent log lines. ai-status.json holds the offline AI status, with no folders or file paths. Each entry shows its size.`,
+          explain: `The bundle holds a list of its files, the app and system versions, recent error codes with how often they occurred, how long slow operations took, and the most recent log lines. ai-status.json holds Straft AI status, with no folders or file paths. Each entry shows its size.`,
         },
       ],
       result: `You know what a bundle would contain.`,
@@ -429,7 +429,7 @@ export default {
     'settings-shortcuts-filtered': `Keyboard Shortcuts filtered by the word project, 5 commands, with Search projects showing two keys. Used in Find a command and Change, add or remove keys.`,
     'settings-shortcuts-none': `Keyboard Shortcuts when no command matches the filter, with a message and 0 commands. Used in Find a command and see its keys.`,
     'settings-shortcut-recording': `A command waiting for new keys: Press the new keys. Escape cancels. Used in Change, add or remove keys for a command.`,
-    'settings-offline-ai': `The Offline AI tab with the state card, AI health with Export AI report… and Assistant memory. Used in Check the offline AI.`,
+    'settings-offline-ai': `The Straft AI tab with the state Not downloaded, the Download Straft AI card, AI health with Export AI report… and Straft AI memory. Used in Check Straft AI and its health figures.`,
     'settings-diagnostics': `The Diagnostics tab with its explanation and the list of files a bundle includes. Used in Read what a diagnostics bundle includes.`,
     'project-shortcuts-sheet': `The Keyboard Shortcuts sheet opened over a project. It is the same list as in Settings. Used in Find a command and see its keys.`,
     'project-settings-storage': `The Storage tab, shown inside Project Settings: Your Straft library, Folder for new projects and Global Idea Vault with their buttons. Used in the Storage workflows.`,
@@ -458,7 +458,7 @@ export default {
     { problem: `A shortcut does not work after I changed it.`, fix: `Open Keyboard Shortcuts and check the Conflict note on its row. Remove the clash or click Restore default.` },
     { problem: `Save Name is greyed out.`, fix: `It is ready only after you change the Display name. Type a different name first.` },
     { problem: `The pasted theme is refused.`, fix: `Read the list in the sheet. It names the missing parts, such as formatVersion, id or seeds. Click Edit the text, fix it or paste a new copy.` },
-    { problem: `Offline AI says Needs a reinstall.`, fix: `The engine is missing from this installation. Reinstall Straft Studio. Your projects are not changed and the rest of the app keeps working.` },
+    { problem: `Straft AI says Needs a reinstall.`, fix: `The engine is missing from this installation. Reinstall Straft Studio. Your projects are not changed and the rest of the app keeps working.` },
     { problem: `I cannot find a project's title or spelling dictionary here.`, fix: `Those are in Project Settings. Open a project and press Shift+Command+, or click its Settings button.` },
   ],
 };

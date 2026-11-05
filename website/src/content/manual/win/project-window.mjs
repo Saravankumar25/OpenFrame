@@ -14,7 +14,7 @@ export default {
     { name: `Search box`, text: `Search this project… with the shortcut Ctrl+K. Searches scenes, ideas, characters, locations and files.` },
     { name: `Create (+)`, text: `Opens the CREATE menu for new ideas, acts, beats, scene cards, characters, locations, shot lists, moodboards, notes and tasks, and for Import Screenplay… and New Project….` },
     { name: `Back and Forward`, text: `Two arrows that move through the pages you have visited. Their tooltips are Back (Alt+Left) and Forward (Alt+Right). An arrow is greyed out when there is nowhere to go.` },
-    { name: `Assistant`, text: `The sparkle button that opens or closes Straft AI. Its tooltip is Assistant (Ctrl+J).` },
+    { name: `Straft AI`, text: `The sparkle button that opens or closes Straft AI. The shortcut is Ctrl+J.` },
     { name: `Settings and avatar`, text: `The gear opens settings. The round avatar with your initials opens the Your name dialog.` },
     { name: `Left rail`, text: `Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets and Files. The current section is orange. At the bottom, Project stored locally on this PC and the Collapse button.` },
     { name: `Project Home`, text: `The project title, its type and when you last opened it; the status chip and Project settings at the top right; CONTINUE with Continue screenplay; QUICK ACCESS buttons; RECENT activity; and on the right PRODUCTION STATUS, PROJECT FILES and TASKS.` },

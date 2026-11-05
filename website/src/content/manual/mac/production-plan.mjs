@@ -1097,6 +1097,11 @@ export default {
           do: `Click Characters beside the Characters box.`,
           explain: `The menu lists the characters of this scene, here KIRAN and DEVI. A line also says In this scene. You can instead type a character and press Return.`,
         },
+        {
+          screen: `plan-shots-list-details`,
+          do: `Go back to the shot list and read the row.`,
+          explain: `Shot 1A shows Wide beside its letter, and Static and Eye level at the right. Shots 1B and 1C have no details, so their rows show only the description.`,
+        },
       ],
       result: `The shot carries the camera details you gave it, and nothing more.`,
       cautions: [
@@ -1183,6 +1188,7 @@ export default {
     },
   ],
   screens: {
+    'plan-shots-list-details': `The shot list of Scene 1 with three shots. Shot 1A shows the labels Wide, Static and Eye level. Used in production-plan-shot-details.`,
     'plan-overview-empty': `The Production Overview before a Production Source is chosen. It shows Start Production Setup, a note about choosing a draft, and five cards at zero. Used in production-plan-open-production.`,
     'plan-catalog-empty': `The Catalog with no items. It has Add Item, a search box, the category filter and Show archived, and says The catalog is empty. Used in production-plan-browse-catalog.`,
     'plan-catalog-add-empty': `The Add Item sheet with no name, so Add Item is off. It has Category, Name, Status and Description (optional). Used in production-plan-add-catalog-item.`,

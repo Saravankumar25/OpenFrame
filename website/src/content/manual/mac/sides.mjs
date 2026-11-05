@@ -157,9 +157,9 @@ export default {
       prerequisites: [`At least one set of sides is saved.`],
       steps: [
         {
-          screen: `schedule-sides-snapshot`,
+          screen: `schedule-sides-saved`,
           do: `Under Saved sides, click the entry, for example Sides: Shoot Day 1.`,
-          explain: `Each entry shows its name, how many scenes it holds and when it was saved, for example 2 scenes · 28 Oct at 08:29. The preview area shows a spinner while the saved pages load.`,
+          explain: `Each entry shows its name, how many scenes it holds and when it was saved, for example 2 scenes · 5 Nov at 02:17. A bar above the preview names the saved snapshot. A line says Saved sides are snapshots. Later script edits don't change them.`,
         },
         {
           screen: `schedule-sides-saved`,
@@ -167,7 +167,7 @@ export default {
           explain: `Export PDF in the same bar exports the snapshot. Back to live preview shows the pages as the screenplay is now.`,
         },
         {
-          screen: `schedule-sides-snapshot`,
+          screen: `schedule-sides-saved`,
           do: `To remove a snapshot, click Delete beside its entry.`,
           explain: `The button is named Delete followed by the sides name, for example Delete Sides: Shoot Day 1.`,
         },
@@ -211,7 +211,6 @@ export default {
     'schedule-sides-cover': `Sides with Include call-sheet cover page ticked. The preview starts with a CALL SHEET COVER block showing the day, the locations and the cast, with Needs input where a value is missing. Used in sides-cover-page and sides-save.`,
     'schedule-sides-export': `The Export Sides sheet over the cover-page preview. It describes the PDF, names the source, shows the suggested file name and the snapshot note, with Cancel and Export…. Used in sides-export.`,
     'schedule-sides-saved': `Sides right after Save Sides. A message says Saved sides, a bar above the preview names the saved snapshot and offers Export PDF and Back to live preview, and Saved sides lists the entry with Delete. Used in sides-save and sides-open-saved.`,
-    'schedule-sides-snapshot': `The Sides page while a saved snapshot loads. Setup and the Saved sides entry with its Delete button are shown, and the preview area shows a spinner. Used in sides-open-saved.`,
   },
   shortcuts: [],
   limits: [

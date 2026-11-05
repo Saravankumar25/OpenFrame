@@ -5,12 +5,12 @@ export default {
   part: `Project and data`,
   intro: [
     `Project Settings is where one project keeps its identity and its working preferences: title, type, status, logline and notes, the spelling language and dictionary, the colours and icons of the breakdown categories, and where the project is stored. It opens as a sheet over the project, so you never leave your place.`,
-    `Open it with the Project settings button in the toolbar of the project, or press Shift+Command+,. Click Done at the top right to close it. A row of eight tabs runs along the top: Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance and Storage.`,
-    `Some tabs are about this project only: Project settings, Writing, Advanced and the project part of Storage. Others, Keyboard shortcuts, Offline AI and Appearance, show the same settings as the Settings window and apply to every project on this Mac. The line at the bottom of the sheet says so: Offline AI, Appearance and Keyboard shortcuts apply to every project on this Mac. The App Settings… button next to it opens the Settings window.`,
+    `Open it with the Project settings button in the toolbar of the project, or press Shift+Command+,. Click Done at the top right to close it. A row of eight tabs runs along the top: Project settings, Writing, Keyboard shortcuts, Templates, Straft AI, Advanced, Appearance and Storage.`,
+    `Some tabs are about this project only: Project settings, Writing, Advanced and the project part of Storage. Others, Keyboard shortcuts, Straft AI and Appearance, show the same settings as the Settings window and apply to every project on this Mac. The line at the bottom of the sheet says so: Straft AI, Appearance and Keyboard shortcuts apply to every project on this Mac. The App Settings… button next to it opens the Settings window.`,
     `Everything is stored on this Mac, in the project folder. The project works fully offline.`,
   ],
   layout: [
-    { name: `Tab row`, text: `Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance and Storage. The tab you are on is highlighted. Done is at the right end of the row.` },
+    { name: `Tab row`, text: `Project settings, Writing, Keyboard shortcuts, Templates, Straft AI, Advanced, Appearance and Storage. The tab you are on is highlighted. Done is at the right end of the row.` },
     { name: `Project settings tab`, text: `The heading Project settings with the line Project identity fields., and Revert and Save at the right. A form with Title, Type, Language, Genre, Creator, Status, Logline and Project notes, and a card on the right, Stored on this computer.` },
     { name: `Stored on this computer card`, text: `The folder of the project, Open project location, Move or back up…, the dates Created and Last changed, and the note that the project works fully offline and everything stays in this folder.` },
     { name: `Writing tab`, text: `SPELLING with the check box Check spelling as I write, Main language and Second language. PROJECT DICTIONARY with an Add a word box and Add Word.` },
@@ -37,7 +37,7 @@ export default {
         },
         {
           screen: `pages-settings-shortcuts`,
-          do: `Click Keyboard shortcuts, then Offline AI and Appearance when you need them.`,
+          do: `Click Keyboard shortcuts, then Straft AI and Appearance when you need them.`,
           explain: `These three show the same pages as the Settings window. A change here applies to every project on this Mac.`,
         },
         {
@@ -238,7 +238,7 @@ export default {
     },
     {
       id: `project-settings-appearance`,
-      title: `See Appearance, Keyboard shortcuts and Offline AI from a project`,
+      title: `See Appearance, Keyboard shortcuts and Straft AI from a project`,
       purpose: `Reach the app wide settings without leaving the project.`,
       level: `Beginner`,
       prerequisites: [`Project Settings is open.`],
@@ -255,8 +255,8 @@ export default {
         },
         {
           screen: `pages-settings-offline-ai`,
-          do: `Click Offline AI.`,
-          explain: `The state of the offline AI, AI health and Assistant memory. Here Assistant memory shows what Straft AI remembers in this project. At the bottom, Technical details can be opened for more.`,
+          do: `Click Straft AI.`,
+          explain: `The state of Straft AI, AI health and Straft AI memory. Here Straft AI memory shows what Straft AI remembers in this project. At the bottom, Technical details can be opened for more.`,
         },
       ],
       result: `You changed or checked an app setting without leaving the project.`,
@@ -275,7 +275,7 @@ export default {
         {
           screen: `pages-settings-general`,
           do: `Click App Settings… at the bottom right of the sheet.`,
-          explain: `The Settings window opens with General, Appearance, Keyboard Shortcuts, Storage, Offline AI and Diagnostics. It is the place for your display name and for the diagnostics list.`,
+          explain: `The Settings window opens with General, Appearance, Keyboard Shortcuts, Storage, Straft AI and Diagnostics. It is the place for your display name and for the diagnostics list.`,
         },
       ],
       result: `The Settings window is open.`,
@@ -308,10 +308,10 @@ export default {
     'pages-settings-status-menu': `The Status menu open with the eight statuses and a tick on the current one. Used in Edit the title, type, status and other details.`,
     'pages-settings-saved': `The tab after Save, with the message Updated project settings, Undo and Dismiss. Used in Edit the title, type, status and other details.`,
     'pages-settings-writing': `The Writing tab: Check spelling as I write, Main language, Second language and an empty PROJECT DICTIONARY. Used in Turn spelling on and choose the languages.`,
-    'pages-settings-shortcuts': `The Keyboard shortcuts tab inside Project Settings. It is the same list as in the Settings window. Used in See Appearance, Keyboard shortcuts and Offline AI from a project.`,
-    'pages-settings-offline-ai': `The Offline AI tab inside Project Settings with the state card, AI health, Assistant memory and Technical details. Used in See Appearance, Keyboard shortcuts and Offline AI from a project.`,
+    'pages-settings-shortcuts': `The Keyboard shortcuts tab inside Project Settings. It is the same list as in the Settings window. Used in See Appearance, Keyboard shortcuts and Straft AI from a project.`,
+    'pages-settings-offline-ai': `The Straft AI tab inside Project Settings with the state card, AI health, Straft AI memory and Technical details. Used in See Appearance, Keyboard shortcuts and Straft AI from a project.`,
     'pages-settings-advanced': `The Advanced tab, Categories: each breakdown category with twelve colours and sixteen icons, and Restore Defaults. Used in Change the colour and icon of a breakdown category.`,
-    'pages-settings-appearance': `The Appearance tab inside Project Settings with Mode and the Theme cards. Used in See Appearance, Keyboard shortcuts and Offline AI from a project.`,
+    'pages-settings-appearance': `The Appearance tab inside Project Settings with Mode and the Theme cards. Used in See Appearance, Keyboard shortcuts and Straft AI from a project.`,
     'pages-settings-writing-word': `The Writing tab with a word in the project dictionary and its Remove button. Used in Add a word to the project dictionary.`,
     'pages-settings-language-menu': `The Main language menu open with the list of languages. Used in Turn spelling on and choose the languages.`,
   },
@@ -321,7 +321,7 @@ export default {
   limits: [
     `Title and type are required. Every other field on Project settings is optional.`,
     `The project dictionary belongs to one project.`,
-    `Keyboard shortcuts, Offline AI and Appearance in this sheet are app wide, not project only.`,
+    `Keyboard shortcuts, Straft AI and Appearance in this sheet are app wide, not project only.`,
     `Spelling uses the languages installed on your Mac.`,
   ],
   troubleshooting: [
