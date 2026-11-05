@@ -3,7 +3,7 @@
 // toolbar) with its AI panel, settings pane or dialog redrawn as live HTML in the Mac look, with the words of the Mac source.
 // The captured screens stay as they are. Run after shots.mjs: node scripts/sim-mac.mjs
 // Writes: .cache/shots/pages/mac/<theme>/sim-*.html, manifest entries, and the records appended to research/screens-mac.json (sim: true). Safe to run again.
-import fs from 'node:fs'; import path from 'node:path'; import sharp from 'sharp';
+import crypto from 'node:crypto'; import fs from 'node:fs'; import path from 'node:path'; import sharp from 'sharp';
 import { chromium } from 'playwright'; import { pathToFileURL } from 'node:url';
 import { SIMS, SIM_AREA, panelCss, settingsCss, TOKENS } from './sim-mac-screens.mjs';
 import { FREE_SIMS, freeCss } from './sim-mac-free.mjs';
@@ -92,7 +92,8 @@ async function build(page, sim, theme) {
   const name = `sim-${sim.name}`, newPng = `${name}.png`;
   fs.writeFileSync(path.join(asDir, newPng), png);
   const re = new RegExp(path.basename(base.picture).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
-  fs.writeFileSync(path.join(dir, `${name}.css`), fs.readFileSync(path.join(dir, `${stem}.css`), 'utf8').replace(re, newPng));
+  const version = crypto.createHash('sha1').update(png).digest('hex').slice(0, 10); // as in shots.mjs: a changed picture gets a new address
+  fs.writeFileSync(path.join(dir, `${name}.css`), fs.readFileSync(path.join(dir, `${stem}.css`), 'utf8').replace(re, newPng).replace(/\?v=[0-9a-f]+/g, `?v=${version}`));
   html = html.replace(`href="${stem}.css"`, `href="${name}.css"`).replace(/<title>.*?<\/title>/, `<title>${sim.title.replace(/&/g, '&amp;')}</title>`);
   html = html.replace('</head>', `<style>${css}</style></head>`).replace(/<\/div><\/div><\/body>/, `${body}</div></div></body>`);
   fs.writeFileSync(path.join(dir, `${name}.html`), rebrand(html));

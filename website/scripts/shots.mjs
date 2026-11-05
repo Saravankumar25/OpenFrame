@@ -159,13 +159,15 @@ html,body{margin:0!important;padding:0!important;background:transparent!importan
   writeFile(pagePath('mac', theme, rec.file), `<!doctype html>
 <html lang="en" class="${r.cls}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(rebrand(rec.title))}</title><link rel="stylesheet" href="../assets/${name}"><link rel="stylesheet" href="${stem}.css"></head><body>${r.html}</body></html>
 `);
-  writeFile(path.join(PAGES, 'mac', theme, stem + '.css'), r.css);
+  const source = path.join(MAC_SRC, theme, rec.picture), repaired = await macRepair(rec.name, theme, source);
+  // pictures are cached for a week under their name, and a new capture reuses names: the content hash in the address brings the new one at once
+  const version = crypto.createHash('sha1').update(repaired || fs.readFileSync(source)).digest('hex').slice(0, 10);
+  writeFile(path.join(PAGES, 'mac', theme, stem + '.css'), r.css.replace(/\.png(["')])/g, `.png?v=${version}$1`));
   const dest = path.join(PAGES, 'mac', 'assets', theme, path.basename(rec.picture));
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.rmSync(dest, { force: true }); // an older hard link would keep the picture of an earlier capture
-  const repaired = await macRepair(rec.name, theme, path.join(MAC_SRC, theme, rec.picture));
   if (repaired) { fs.writeFileSync(dest, repaired); return; }
-  try { fs.linkSync(path.join(MAC_SRC, theme, rec.picture), dest); } catch { fs.copyFileSync(path.join(MAC_SRC, theme, rec.picture), dest); }
+  try { fs.linkSync(source, dest); } catch { fs.copyFileSync(source, dest); }
 }
 
 async function macOne(page, rec) {
