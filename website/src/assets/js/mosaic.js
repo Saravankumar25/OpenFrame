@@ -158,6 +158,8 @@ if (matchMedia('(prefers-reduced-motion: reduce)').matches || repeat || saveData
   root.classList.add('mos-intro');
   mos.classList.add('on');
   imgs.forEach(function (el) { el.loading = 'eager'; });
+  /* the photograph on screen first is the page's largest paint, so it jumps the queue ahead of the other photographs and the app frames */
+  imgs[FEATURED - 1].fetchPriority = 'high';
   layout();
   draw(0);
   var decoded = imgs.map(function (el) { return el.decode ? el.decode().catch(function () {}) : Promise.resolve(); });

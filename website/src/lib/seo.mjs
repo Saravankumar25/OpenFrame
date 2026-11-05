@@ -2,7 +2,8 @@
 // gets correct meta tags, Open Graph, Twitter/X cards, robots rules and JSON-LD without extra work.
 import { esc } from './html.mjs';
 import { FOUNDERS } from '../content/founders.mjs';
-import { SITE_URL, SITE_NAME } from '../../site.config.mjs';
+import { SUPPORT_EMAIL } from '../content/nav.mjs';
+import { SITE_URL, SITE_NAME, STORE } from '../../site.config.mjs';
 
 export const OG = { path: '/og.png', width: 1200, height: 630, type: 'image/png',
   alt: 'Straft Studio logo, the headline "A film production software for all your needs" and the app Home screen.' };
@@ -12,13 +13,16 @@ const DESC = 'A local-first desktop app for writers, screenwriters and film prod
 // ---------- structured data builders (info.mjs re-exports ORG and APP for the pages)
 export const ORG = (ctx = { SITE_URL }) => ({ '@context': 'https://schema.org', '@type': 'Organization', '@id': ID.org, name: SITE_NAME, url: ctx.SITE_URL + '/',
   logo: { '@type': 'ImageObject', url: ctx.SITE_URL + '/icon-512.png', width: 512, height: 512 },
-  slogan: 'From film lovers, to film lovers across the world.',
+  slogan: 'From film lovers, to film lovers across the world.', email: SUPPORT_EMAIL,
+  contactPoint: { '@type': 'ContactPoint', contactType: 'customer support', email: SUPPORT_EMAIL, availableLanguage: 'English' },
   founder: FOUNDERS.map((f) => ({ '@type': 'Person', name: f.name, jobTitle: f.role, description: f.text[0], ...(f.link ? { url: f.link, sameAs: [f.link] } : {}) })) });
+// Availability is stated only once a store listing exists (site.config.mjs STORE); until then no claim is made that it can be bought.
+const AVAIL = STORE.win || STORE.mac ? { availability: 'https://schema.org/InStock' } : {};
 // India pays in rupees, Europe in euros, the USA and other countries in US dollars; all one-time launch prices. No priceValidUntil: no end date is set.
 const OFFERS = (url) => [
-  { '@type': 'Offer', price: '3999', priceCurrency: 'INR', eligibleRegion: { '@type': 'Country', name: 'IN' }, url, availability: 'https://schema.org/InStock', description: 'One-time purchase at the launch price after a 7-day free trial. India.' },
-  { '@type': 'Offer', price: '89', priceCurrency: 'EUR', eligibleRegion: { '@type': 'Place', name: 'Europe' }, url, availability: 'https://schema.org/InStock', description: 'One-time purchase at the launch price after a 7-day free trial. Europe.' },
-  { '@type': 'Offer', price: '89', priceCurrency: 'USD', ineligibleRegion: [{ '@type': 'Country', name: 'IN' }, { '@type': 'Place', name: 'Europe' }], url, availability: 'https://schema.org/InStock', description: 'One-time purchase at the launch price after a 7-day free trial. USA and other countries.' }];
+  { '@type': 'Offer', price: '3999', priceCurrency: 'INR', eligibleRegion: { '@type': 'Country', name: 'IN' }, url, ...AVAIL, description: 'One-time purchase at the launch price after a 7-day free trial. India.' },
+  { '@type': 'Offer', price: '89', priceCurrency: 'EUR', eligibleRegion: { '@type': 'Place', name: 'Europe' }, url, ...AVAIL, description: 'One-time purchase at the launch price after a 7-day free trial. Europe.' },
+  { '@type': 'Offer', price: '89', priceCurrency: 'USD', ineligibleRegion: [{ '@type': 'Country', name: 'IN' }, { '@type': 'Place', name: 'Europe' }], url, ...AVAIL, description: 'One-time purchase at the launch price after a 7-day free trial. USA and other countries.' }];
 export const APP = (ctx = { SITE_URL }, os, p = '/') => ({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', '@id': ID.app, name: SITE_NAME, url: ctx.SITE_URL + p,
   applicationCategory: 'MultimediaApplication', applicationSubCategory: 'Screenwriting and film production planning', operatingSystem: os,
   description: DESC, image: ctx.SITE_URL + OG.path, inLanguage: 'en',

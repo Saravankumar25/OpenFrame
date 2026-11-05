@@ -15,7 +15,9 @@
     "deploy": "node scripts/deploy.mjs",
     "domain:ensure": "node scripts/cloudflare-ops.mjs ensure",
     "domain:verify": "node scripts/cloudflare-ops.mjs verify",
-    "shots": "node scripts/shots.mjs"
+    "shots": "node scripts/shots.mjs",
+    "seo:monitor": "node scripts/seo-monitor.mjs",
+    "seo:indexnow": "node scripts/indexnow.mjs"
   },
   "keywords": [],
   "author": "",
