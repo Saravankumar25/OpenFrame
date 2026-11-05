@@ -45,7 +45,7 @@ The rules in `../02_TRIAL_AND_LICENSING_SPEC.md` win over this note if the two e
 | 195 | `195-lic-tut-2.html` | Tutorial step 2: back up to Google Drive |
 | 196 | `196-lic-tut-3.html` | Tutorial step 3: moving to a new laptop |
 | 197 | `197-lic-tut-4.html` | Tutorial step 4: final check |
-| 198 | `198-lic-welcome.html` | Welcome to the Straft Studio family (shown once) |
+| 198 | `198-lic-welcome.html` | Welcome to the Straft Studio community (shown once) |
 | 199 | `199-lic-win-home.html` | Windows: chip on Application Home |
 | 200 | `200-lic-mac-home.html` | Mac: chip on Application Home |
 | 201 | `201-lic-mac-clock.html` | Mac: the clock looks wrong (cannot be closed) |
@@ -68,7 +68,7 @@ The rules in `../02_TRIAL_AND_LICENSING_SPEC.md` win over this note if the two e
 
 **Tutorial:** step 1 where your data lives; step 2 back up to Google Drive (or an external disk); step 3 moving to a new laptop (including linked external files); step 4 final check with 3 confirmations.
 
-**Welcome popup:** "Welcome to the Straft Studio family. Thank you for backing independent filmmaking. Be a part of our community." then the social rows, then OK. The handles are placeholders. In a release build, rows without a real URL are hidden (file 07).
+**Welcome popup:** "Welcome to the Straft Studio community. Thank you for backing independent filmmaking. Be a part of our community." then the eight social buttons with their real addresses (file 07, superseded 2026-11-05), then OK.
 
 ## 5. Logo: details and code (supports global themes)
 
@@ -116,6 +116,6 @@ Working files: `assets/straft.css` (rules `.brandlogo`), `assets/themes.css`, `a
 1. The data note and tutorial appear only after purchase (trial users skip them).
 2. Reminder days are days 5, 6 and 7 of 7.
 3. Prices are never typed in Straft. The Mac shows the StoreKit price on two screens; Windows shows none.
-4. All wording is draft text. Social handles are placeholders.
+4. All wording is draft text. Social addresses are real since 2026-11-05 (file 07).
 5. Screen 186 is a Store-owned message; we do not build it.
 6. The Word manual's screenshots were not regenerated and still show an earlier placeholder mark.

@@ -61,6 +61,8 @@ const SKIP_PREFIXES = [
   "docs/website/prompts/premium-website-design-motion-prompt.md",
   "docs/website/prompts/production-readiness-anti-ai-slop-prompt.md",
   "THIRD_PARTY_LICENSES.md",
+  // Generated: other authors' licence texts, word for word.
+  "apps/desktop/src/workspaces/settings/third-party-notices.json",
   // The AI answer washing lists "delve" so it can remove it from model-written answers.
   "crates/straft-application/src/modules/ai/text.rs",
 ];

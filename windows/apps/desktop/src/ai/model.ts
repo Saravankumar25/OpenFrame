@@ -9,6 +9,11 @@ import type { AiProvenance } from "../ipc/generated/AiProvenance";
 import type { AiStepDto } from "../ipc/generated/AiStepDto";
 import type { AiStatusDto } from "../ipc/generated/AiStatusDto";
 
+/** The notice the Gemma Terms of Use require wherever Gemma is passed on (section 3.1), word for word. */
+export const GEMMA_NOTICE = "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms.";
+/** The use restrictions that come with Gemma (Gemma Terms of Use section 3.2). */
+export const GEMMA_POLICY = "Its use must follow the Gemma Prohibited Use Policy found at ai.google.dev/gemma/prohibited_use_policy.";
+
 const KNOWN_WORKSPACES: WorkspaceId[] = [
   "home", "vault", "story", "screenplay", "breakdown", "production", "callsheets", "files", "trash", "activity", "notes", "settings",
 ];

@@ -9,8 +9,6 @@
 #   WINDOWS_CERTIFICATE_PASSWORD        password for the .pfx
 #   TAURI_SIGNING_PRIVATE_KEY           Tauri updater signing key (minisign), content or path
 #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD  password for the updater key
-#   STRAFT_TEAM_PASSWORD             team password of the internal build (ADR-0024); build.rs embeds
-#                                       only its Argon2id hash, and the build fails without it
 # Required repository variables:
 #   WINDOWS_TIMESTAMP_URL               RFC 3161 timestamp server of the chosen CA
 #   STRAFT_AI_ASSETS_DIR             folder on the runner holding the pinned Offline AI build inputs
@@ -103,7 +101,11 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           WINDOWS_TIMESTAMP_URL: ${{ vars.WINDOWS_TIMESTAMP_URL }}
           STRAFT_AI_ASSETS_DIR: ${{ vars.STRAFT_AI_ASSETS_DIR }}
-        run: node scripts/release-validate.mjs --tag "${{ env.RELEASE_TAG }}"
+        shell: pwsh
+        # The tag reaches the shell as a variable and is checked first, never pasted into the script (workflow input injection).
+        run: |
+          if ($env:RELEASE_TAG -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$') { throw "The release tag is not a version tag." }
+          node scripts/release-validate.mjs --tag "$env:RELEASE_TAG"
 
       - name: Install cargo-deny
         run: cargo install cargo-deny --version 0.20.2 --locked
@@ -235,7 +237,6 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          STRAFT_TEAM_PASSWORD: ${{ secrets.STRAFT_TEAM_PASSWORD }}
           STRAFT_AI_ASSETS_DIR: ${{ vars.STRAFT_AI_ASSETS_DIR }}
           # Never the test host in a build for people (ADR-0032; build.rs refuses it).
           STRAFT_TEST_MODEL_SOURCE: ""
@@ -341,7 +342,11 @@ jobs:
           MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
           STORE_PRIVACY_POLICY_URL: ${{ vars.STORE_PRIVACY_POLICY_URL }}
           STRAFT_AI_ASSETS_DIR: ${{ vars.STRAFT_AI_ASSETS_DIR }}
-        run: node scripts/release-validate.mjs --store --tag "${{ env.RELEASE_TAG }}"
+        shell: pwsh
+        # The tag reaches the shell as a variable and is checked first, never pasted into the script (workflow input injection).
+        run: |
+          if ($env:RELEASE_TAG -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.-]+)?$') { throw "The release tag is not a version tag." }
+          node scripts/release-validate.mjs --store --tag "$env:RELEASE_TAG"
 
       - name: Install cargo-deny
         run: cargo install cargo-deny --version 0.20.2 --locked

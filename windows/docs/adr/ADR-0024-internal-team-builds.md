@@ -1,5 +1,6 @@
 # ADR-0024: Four release files, internal team builds behind a password
 
+- **SUPERSEDED in part 2026-11-05 by [ADR-0043](ADR-0043-team-password-removed.md):** the team password is removed. Decisions 3, 4, 5 and 6 below, and every sentence about the password, its hash, the wait after wrong tries and `STRAFT_TEAM_PASSWORD`, are history and must not be implemented. The internal builds open straight to the app. The rest of this record stands.
 - **Amended 2026-10-15 by [ADR-0030](ADR-0030-verification-ladder-and-release-flow.md):** the minimum team password length the build accepts is 8 characters, not 12. Wherever this record says 12, read 8. The code enforces 8 since Windows phase W1 (`MIN_PASSWORD_CHARS` in `build_hash.rs`). The gate stays a door lock for the pilot; stronger protection is a Chapter 3 decision.
 - **Status:** Accepted 2026-10-07 (owner answers in chat the same day).
 - **Amended 2026-10-08 (owner, in chat):** the internal `.exe` and `.dmg` stay unsigned for now; Developer ID signing
@@ -25,14 +26,14 @@ both internal builds to be protected by one team password, while the two store p
      deferred to the store and public step by the 2026-10-08 amendment; until then the `.dmg` is unsigned.*
 2. **Internal builds** have no trial, payment, Buy button, reminders or store lock, and say "Internal build, not for
    sale" in About and Settings > Licence.
-3. **Team password on every launch** of an internal build. Nothing in the app opens until the password is right.
-4. **Wrong tries:** after 5 wrong passwords in a row the app waits 1 minute before the next try; each further run of 5
+3. **SUPERSEDED (ADR-0043): Team password on every launch** of an internal build. Nothing in the app opens until the password is right.
+4. **SUPERSEDED (ADR-0043): Wrong tries:** after 5 wrong passwords in a row the app waits 1 minute before the next try; each further run of 5
    wrong tries doubles the wait, up to 30 minutes. The count survives a restart. A right password resets it.
-5. **The password is never stored in the source, the repository, documents, logs or the built app.** The build reads
+5. **SUPERSEDED (ADR-0043): The password is never stored in the source, the repository, documents, logs or the built app.** The build reads
    it from an environment variable on the build machine and embeds only an Argon2id hash with a random salt and strong
    cost settings. The check runs in the Rust core with a constant-time comparison. A build without the variable fails
    instead of shipping an unprotected internal file. Changing the password means setting the variable and rebuilding.
-6. Store packages never contain the team password check or its hash.
+6. **SUPERSEDED (ADR-0043):** Store packages never contain the team password check or its hash. (Now no build contains one.)
 
 ## Consequences
 

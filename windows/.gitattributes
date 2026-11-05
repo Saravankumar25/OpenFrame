@@ -1,1 +1,3 @@
 graphify-out/graph.json merge=graphify
+# A migration's text is hashed into every database, so every checkout must hold the same bytes.
+migrations/**/*.sql text eol=lf

@@ -68,10 +68,12 @@ export default async function (t) {
     return all[all.length - 1];
   };
   /** Ask in a fresh conversation. Returns the result, or null when no answer came (recorded as a failed state). */
-  const ask = async (q, doneName, { workingName, typedName, after } = {}) => {
+  const ask = async (q, doneName, { sections = ["Scenes"], workingName, typedName, after } = {}) => {
     try {
       await openPanel();
       await newConversation();
+      // Send stays off until the person has picked what the assistant may read (ADR-0040).
+      await pickSections(sections);
       const before = (await results(b)).length;
       if (typedName) await t.state(typedName, () => typeQuestion(q));
       else await typeQuestion(q);
@@ -130,6 +132,7 @@ export default async function (t) {
 
     // A list answer from the Scenes and Cast & Crew sections.
     await ask("List the characters.", "ai-answer-characters", {
+      sections: ["Characters"],
       typedName: "ai-question-typed",
       workingName: "ai-working",
       after: () => t.state("ai-answer-characters-sources", async () => {
@@ -146,6 +149,7 @@ export default async function (t) {
     });
     await pickSections(["Scenes"]);
     await ask("Which locations are used in the screenplay?", "ai-answer-locations", {
+      sections: ["Locations"],
       after: async () => {
         const has = await b.$(`${PANEL}//details[contains(@class,"ai-details")]`);
         if (await has.isExisting()) await t.state("ai-answer-locations-sources-open", openSources);
@@ -155,11 +159,11 @@ export default async function (t) {
 
     // Proposed changes: reject one, apply a harmless one and undo it.
     await pickSections(["Scenes", "Tasks"]);
-    const first = await ask("Create a task to scout the railway station.", "ai-proposed-changes");
+    const first = await ask("Create a task to scout the railway station.", "ai-proposed-changes", { sections: ["Tasks"] });
     if (first?.kind === "Proposal" && (await panelHas("Reject"))) {
       await t.state("ai-proposal-rejected", () => t.press("Reject", PANEL));
     }
-    const second = await ask("Create a task to book the bus for the night shoot.", "ai-proposed-changes-second");
+    const second = await ask("Create a task to book the bus for the night shoot.", "ai-proposed-changes-second", { sections: ["Tasks"] });
     if (second?.kind === "Proposal" && (await panelHas("Apply Changes"))) {
       await t.state("ai-proposal-applied", async () => {
         await t.press("Apply Changes", PANEL);
@@ -220,7 +224,7 @@ export default async function (t) {
   };
 
   const packagesPart = async () => {
-    await t.state("pkg-project-menu", () => t.go('//button[starts-with(@aria-label,"Project: ")]'), { blur: false });
+    await t.state("pkg-project-menu", () => t.go('//header//button[contains(@class,"projsel")]'), { blur: false });
     await t.closeOverlays();
 
     await t.state("pkg-backup-dialog", async () => {
@@ -359,7 +363,9 @@ export default async function (t) {
       }, { keepToasts: true });
 
       await t.state("licence-trial-reminder", async () => {
-        await setLicence("microsoftStore", { state: "trialActive", days_left: 3 }, { resetNotices: true });
+        // No reload: the page hears the change at once and remembers the reminder as soon as it shows,
+        // so a reload right after would find it already shown today.
+        await t.op("entitlement.debug_set", { channel: "microsoftStore", state: { state: "trialActive", days_left: 3 }, resetNotices: true });
         await licenceDialog("Trial reminder");
         await t.waitText("Your free trial ends in 3 days");
       });
@@ -402,7 +408,7 @@ export default async function (t) {
       });
       await t.state("licence-welcome-family", async () => {
         await t.press("Finish", DIALOG);
-        await licenceDialog("Welcome to the Straft Studio family");
+        await licenceDialog("Welcome to the Straft Studio community");
         await t.waitText("Be a part of our community.");
       });
       await t.press("OK", DIALOG);

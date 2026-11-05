@@ -27,6 +27,12 @@ import { dockedLayout } from "../lib/ai.mjs";
 let browser;
 const step = stepper(() => browser, "journey");
 const $ = (sel) => browser.$(sel);
+// The switcher's name is built from sr-only spans, so find it by its class.
+const openProjectSwitcher = async () => {
+  const el = await browser.$("header button.projsel");
+  await el.scrollIntoView({ block: "center" }).catch(() => undefined);
+  await el.click();
+};
 const main = () => browser.execute(() => document.querySelector("main")?.innerText ?? "");
 const dialog = () => browser.$('//*[@role="dialog"]');
 const inDialog = (name) => click(browser, name, { within: '//*[@role="dialog"]' });
@@ -352,7 +358,7 @@ describe("desktop journey", () => {
         await btn.click();
       }
       await browser.waitUntil(async () => !(await cards()).includes("Bus stop reunion in the rain"), { timeout: 10_000 });
-      await click(browser, "Project: Night Bus. Switch or manage projects");
+      await openProjectSwitcher();
       await menuItem("Recently Deleted");
       await click(browser, "Restore Bus stop reunion in the rain");
       await openBeatBoard(browser);
@@ -406,7 +412,7 @@ describe("desktop journey", () => {
         await visit(`Story › ${t}`);
       }
       for (const page of ["Notes & Tasks", "Activity", "Recently Deleted", "Project settings"]) {
-        await click(browser, "Project: Night Bus. Switch or manage projects");
+        await openProjectSwitcher();
         await menuItem(page);
         await visit(page);
       }
@@ -424,7 +430,7 @@ describe("desktop journey", () => {
 
   test("close the project cleanly → Application Home lists it", async () => {
     await step("close", async () => {
-      await click(browser, "Project: Night Bus. Switch or manage projects");
+      await openProjectSwitcher();
       await menuItem("Close project");
       await waitForText(browser, "Your projects");
       assert.match(await pageText(browser), /Night Bus/);

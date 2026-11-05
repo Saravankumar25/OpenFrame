@@ -88,11 +88,11 @@ function serialize() {
       c.appendChild(m);
       scroll.push({ top: el.scrollTop, left: el.scrollLeft, positioned });
     }
-    // Pixels a static page cannot rebuild from markup: canvas, video, and images from the app's own
-    // asset protocol or blob URLs. They become an <img> the generator fills with the same pixels cut
-    // from the screenshot.
+    // Pixels a static page cannot rebuild from markup: canvas, video, audio players, and images from
+    // the app's own asset protocol or blob URLs. They become an <img> the generator fills with the
+    // same pixels cut from the screenshot, so no page keeps a reference to a file of the capture run.
     const src = el instanceof HTMLImageElement ? el.currentSrc || el.src : "";
-    if (el instanceof HTMLCanvasElement || el instanceof HTMLVideoElement || (src && !src.startsWith("data:"))) {
+    if (el instanceof HTMLCanvasElement || el instanceof HTMLMediaElement || (src && !src.startsWith("data:"))) {
       let img = c;
       if (!(el instanceof HTMLImageElement)) {
         img = document.createElement("img");

@@ -87,7 +87,7 @@ export function SceneList({ rows, total, counts, selected, filter, category, onF
           {counts.complete} of {counts.all} complete
         </div>
       )}
-      <div ref={listRef} role="listbox" aria-label="Scenes in the Production Source" onKeyDown={onKey}>
+      <div ref={listRef} role={rows.length > 0 ? "listbox" : undefined} aria-label={rows.length > 0 ? "Scenes in the Production Source" : undefined} onKeyDown={onKey}>
         {rows.map((r) => (
           <button
             key={r.sceneId}
@@ -118,8 +118,8 @@ export function SceneList({ rows, total, counts, selected, filter, category, onF
             )}
           </button>
         ))}
-        {rows.length === 0 && <div className="sm muted" style={{ padding: 8 }}>No scenes match this filter.</div>}
       </div>
+      {rows.length === 0 && <div className="sm muted" style={{ padding: 8 }}>No scenes match this filter.</div>}
       {(reviewCount > 0 || historicalCount > 0) && (
         <div className="navfoot">
           {reviewCount > 0 && (

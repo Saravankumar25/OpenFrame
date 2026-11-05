@@ -2,6 +2,6 @@
 
 export type StoryLinkedScene = { sceneId: string, screenplayId: string, screenplayTitle: string, draftId: string, draftName: string, 
 /**
- * Derived from screenplay order; never stored.
+ * The scene number the Screenplay workspace shows, for example "12A".
  */
-number: number, heading: string, };
+number: string, heading: string, };

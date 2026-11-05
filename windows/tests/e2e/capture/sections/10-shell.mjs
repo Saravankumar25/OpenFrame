@@ -1,10 +1,10 @@
 // WindowsHTML capture section: Project shell and Project Home: nav rail (collapsed too), project menu, Create menu, search overlay, status panel and recovery dialogs, toasts, display name, status menu, project settings dialog, back and forward.
 // See tests/e2e/capture/kit.mjs for the toolkit and the rules every section follows.
 
-const PROJECT_BTN = '//button[starts-with(@aria-label,"Project: ")]';
+const PROJECT_BTN = '//header//button[contains(@class,"projsel")]';
 const STATUS_CHIP = '//main//button[starts-with(@aria-label,"Status:")]';
 const SAVE_BTN = '//footer//button[starts-with(@aria-label,"Save status")]';
-const NAME_BTN = '//header//button[starts-with(@aria-label,"Your name:")]';
+const NAME_BTN = '//header//button[contains(@class,"avatar")]';
 
 export default async function (t) {
   const dialog = '//*[@role="dialog"]';
@@ -25,7 +25,7 @@ export default async function (t) {
     await t.keys(["Control", "z"]);
     await t.sleep(500);
   };
-  const openSearch = () => t.go('//button[@aria-label="Search this project"]');
+  const openSearch = () => t.go('//header//button[contains(@class,"search")]');
   const searchFor = async (text) => {
     await t.type('//input[@aria-label="Search"]', text);
     await t.sleep(900);

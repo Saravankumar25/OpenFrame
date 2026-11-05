@@ -326,7 +326,6 @@ function FileCard({ file, selected, menu, onSelect, onKeyDown }: { file: Project
       <div
         ref={setNodeRef}
         className="card filecard"
-        aria-selected={selected}
         aria-label={file.displayName}
         onClick={onSelect}
         onDoubleClick={() => whereOf(file) !== "unavailable" && void openFile(file)}
@@ -335,6 +334,7 @@ function FileCard({ file, selected, menu, onSelect, onKeyDown }: { file: Project
         {...listeners}
         {...attributes}
         role="button"
+        aria-pressed={selected}
       >
         <span className={`fic ${badge.cls}`} aria-hidden>{badge.text}</span>
         <div className="grow sm" style={{ minWidth: 0 }}>

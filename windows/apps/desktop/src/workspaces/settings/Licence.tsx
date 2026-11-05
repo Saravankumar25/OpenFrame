@@ -1,7 +1,8 @@
 // Settings > Project settings > Licence (build plan area "Payment and free trial in all three
 // channels", items "Shared entitlement interface" and "No data loss on expiry"; ADR-0018, ADR-0022
 // and ADR-0023). Shows the free-trial or licence state the Rust core computed, the release channel
-// in plain words and why a channel cannot answer yet, with a "Restore purchase" action. The
+// in plain words and why a channel cannot answer yet, with a "Restore purchase" action and links to
+// the website's Refunds and Terms pages (store refunds run through the store). The
 // internal installer build says "Internal build, not for sale." and has nothing to restore. No
 // price, currency or pricing model is ever shown.
 
@@ -11,6 +12,7 @@ import { RefreshCw } from "lucide-react";
 import { Banner, Button, Skeleton } from "../../design-system";
 import { call, OpError } from "../../ipc/client";
 import { reportError } from "../../ipc/query";
+import { LegalLinks } from "../../features/legal/LegalLinks";
 import type { Channel } from "../../ipc/generated/Channel";
 import type { EntitlementStatus } from "../../ipc/generated/EntitlementStatus";
 
@@ -96,14 +98,20 @@ export function LicenceSection() {
         </div>
       )}
       {status?.channel !== "directInstaller" && (
-        <Button icon={<RefreshCw size={14} />} disabled={busy} onClick={() => void restore()}>
-          {busy ? "Checking…" : "Restore purchase"}
-        </Button>
-      )}
-      {checked && !busy && (
-        <span role="status" className="xs muted" style={{ marginLeft: 10 }}>
-          Checked again.
-        </span>
+        <>
+          <Button icon={<RefreshCw size={14} />} disabled={busy} onClick={() => void restore()}>
+            {busy ? "Checking…" : "Restore purchase"}
+          </Button>
+          {checked && !busy && (
+            <span role="status" className="xs muted" style={{ marginLeft: 10 }}>
+              Checked again.
+            </span>
+          )}
+          <p className="xs muted" style={{ margin: "10px 0 4px" }}>
+            Purchases and refunds are handled by the store you bought from.
+          </p>
+          <LegalLinks only={["refunds", "terms"]} />
+        </>
       )}
     </section>
   );

@@ -42,10 +42,17 @@ function netLogOutsideHosts(file) {
 /** Collects every socket of the app's WebView2 processes over several samples. */
 function tracer() {
   const use = { tcp: [], udp: [] };
+  // Every process seen in any sample, with its Chromium role, so a refused socket names its holder.
+  const roles = {};
   let procs = [];
   return {
     sample() {
       procs = webViewProcesses();
+      for (const p of procs) {
+        const type = /--type=([a-z-]+)/.exec(p.commandLine ?? "")?.[1] ?? "browser";
+        const sub = /--utility-sub-type=([\w.]+)/.exec(p.commandLine ?? "")?.[1];
+        roles[p.pid] = sub ? `${type}:${sub}` : type;
+      }
       const now = networkUse(procs.map((p) => p.pid));
       use.tcp.push(...now.tcp);
       use.udp.push(...now.udp);
@@ -66,26 +73,39 @@ function tracer() {
       const outside = externalConnections(use);
       const runtimeUpload = (c) => c.pid === main.pid && c.port === 443 && c.state !== "Listen" && "remote" in c;
       const tolerated = outside.filter(runtimeUpload);
-      const refused = outside.filter((c) => !runtimeUpload(c));
+      const refused = outside.filter((c) => !runtimeUpload(c)).map((c) => ({ ...c, role: roles[c.pid] ?? "unknown" }));
+      const browsers = Object.keys(roles).filter((pid) => roles[pid] === "browser");
       const dir = join(import.meta.dirname, "..", "artifacts");
       mkdirSync(dir, { recursive: true });
-      writeFileSync(
-        join(dir, `${name}.json`),
-        JSON.stringify(
-          {
-            at: new Date().toISOString(),
-            release: process.env.E2E_RELEASE ?? "debug",
-            browserCommandLine: main.commandLine,
-            processes: procs.map(({ pid, parent, name }) => ({ pid, parent, name })),
-            use,
-            refused,
-            toleratedRuntimeDiagnosticUpload: [...new Set(tolerated.map((c) => `${c.remote}:${c.port}`))],
-          },
-          null,
-          2,
-        ),
+      const report = JSON.stringify(
+        {
+          at: new Date().toISOString(),
+          release: process.env.E2E_RELEASE ?? "debug",
+          browserCommandLine: main.commandLine,
+          processes: procs.map(({ pid, parent, name }) => ({ pid, parent, name })),
+          roles,
+          use,
+          refused,
+          toleratedRuntimeDiagnosticUpload: [...new Set(tolerated.map((c) => `${c.remote}:${c.port}`))],
+        },
+        null,
+        2,
       );
+      writeFileSync(join(dir, `${name}.json`), report);
+      // Which name each outside address answered to, while the DNS cache still holds it.
+      const remotes = [...new Set(outside.map((c) => c.remote).filter(Boolean))];
+      if (remotes.length > 0) {
+        const names = spawnSync(
+          "powershell.exe",
+          ["-NoProfile", "-NonInteractive", "-Command", `Get-DnsClientCache | Where-Object { @('${remotes.join("','")}') -contains $_.Data } | ForEach-Object { "$($_.Entry) $($_.Data)" }`],
+          { encoding: "utf8", windowsHide: true },
+        ).stdout;
+        writeFileSync(join(dir, `${name}-outside-hosts-${Date.now()}.txt`), `${remotes.join("\n")}\n---\n${names}`);
+      }
+      // The next run overwrites the file above; a refusal keeps its own copy as the evidence.
+      if (refused.length > 0 || browsers.length !== 1) writeFileSync(join(dir, `${name}-refused-${Date.now()}.json`), report);
       for (const arg of APP_WEBVIEW_ARGS) assert.ok(main.commandLine.includes(arg), `the web view did not get ${arg}: ${main.commandLine}`);
+      assert.equal(browsers.length, 1, `one app, one WebView2 browser process; seen: ${JSON.stringify(roles)}`);
       assert.deepEqual(refused, [], `the web view used the network: ${JSON.stringify(refused)}`);
     },
   };

@@ -62,8 +62,8 @@ export function AvailabilityEditor({ ownerType, ownerId, windows, canEdit, name 
   const prefix = `av-${ownerType}`;
   return (
     <Field label="Availability" hint="Dates are advisory: the schedule warns about them and never moves a scene by itself.">
-      <div role="list" aria-label={`Availability of ${name}`}>
-        {windows.length === 0 && <div className="xs muted">No dates entered.</div>}
+      {windows.length === 0 && <div className="xs muted">No dates entered.</div>}
+      <div role={windows.length > 0 ? "list" : undefined} aria-label={windows.length > 0 ? `Availability of ${name}` : undefined}>
         {windows.map((w) => (
           <div key={w.id} role="listitem" className="row" style={{ gap: 6, marginBottom: 4 }}>
             <Chip tone={w.kind === "Unavailable" ? "r" : "g"}>{w.kind === "Unavailable" ? "Not available" : "Available"}</Chip>

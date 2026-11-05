@@ -930,6 +930,61 @@ fn deleted_target_makes_the_change_set_a_conflict() {
     assert_eq!(r["state"], "Rejected");
 }
 
+/// Security audit 2026-10-31 (ported): a Change Set stored in a received or edited project can
+/// carry a preview without the deletion row. The extra confirmation follows the operations too.
+#[test]
+fn a_stored_preview_cannot_hide_a_deletion_from_the_confirmation() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    let loc = env.ok("locations.create", json!({ "name": "Railway Station" }));
+    let id = loc["id"].as_str().unwrap().to_string();
+    let draft = ChangeSetDraft {
+        title: "Tidy".into(),
+        summary: "Test".into(),
+        operations: vec![OpCall {
+            op: "locations.delete".into(),
+            args: json!({ "id": id }),
+            label: "Tidy".into(),
+        }],
+        preview: vec![PreviewRow::normal("Impact", "Nothing important")],
+        exclusions: Vec::new(),
+        targets: Vec::new(),
+        modules: vec!["Locations".into()],
+        base_rows: Vec::new(),
+        source_tool: "propose_delete_location".into(),
+        source_args: json!({}),
+        sources: Vec::new(),
+    };
+    let cs = change_set::create(&env.core, &env.actor(), &draft).unwrap();
+    assert!(cs.requires_confirmation, "the review card asks for it");
+    assert!(
+        cs.rows.iter().any(|r| r.tone == "destructive"),
+        "the card shows the deletion the preview hid"
+    );
+    assert_eq!(
+        env.err("ai.change_set.accept", json!({ "id": cs.id })),
+        "validation.confirmation_required"
+    );
+    assert_eq!(
+        count(
+            &env,
+            &format!("SELECT count(*) FROM location WHERE id='{id}' AND deleted_at IS NULL")
+        ),
+        1,
+        "nothing was deleted without the confirmation"
+    );
+    // A harmless set still needs no extra confirmation.
+    let plain = ChangeSetDraft {
+        operations: vec![OpCall {
+            op: "locations.create".into(),
+            args: json!({ "name": "Harbour" }),
+            label: "Add".into(),
+        }],
+        ..draft
+    };
+    let cs = change_set::create(&env.core, &env.actor(), &plain).unwrap();
+    assert!(!cs.requires_confirmation);
+}
+
 #[test]
 fn ai_spec_20_4_change_set_applies_all_operations_or_none() {
     let env = TestEnv::with_project("Railway", "Feature Film");
@@ -1343,6 +1398,50 @@ fn a_conversation_is_saved_for_review_only_on_the_persons_call_and_only_their_ow
         let bad = json!({ "conversationId": conv, "path": path });
         assert!(env.call("ai.export_conversation", bad).is_err(), "{path}");
     }
+
+    // Security audit 2026-10-31 (ported): the save follows the export rules, so it can never
+    // replace a file of the open project (its manifest), the app data folder or what lives there.
+    let manifest = env
+        .core
+        .project()
+        .unwrap()
+        .layout
+        .root()
+        .join("straft.json");
+    let before = std::fs::read(&manifest).unwrap();
+    let app_data = env.core.config.app_data_dir.join("report.json");
+    let models_pointer = env
+        .core
+        .config
+        .app_data_dir
+        .join("models")
+        .join("active.json");
+    for path in [&manifest, &app_data, &models_pointer] {
+        assert!(
+            env.call("ai.export_conversation", args(path)).is_err(),
+            "{}",
+            path.display()
+        );
+        assert!(
+            env.call(
+                "ai.export_report",
+                json!({ "path": path.to_string_lossy() })
+            )
+            .is_err(),
+            "{}",
+            path.display()
+        );
+    }
+    assert_eq!(
+        std::fs::read(&manifest).unwrap(),
+        before,
+        "the manifest is untouched"
+    );
+    assert!(!app_data.exists() && !models_pointer.exists());
+    // A normal name outside the protected folders still saves.
+    let ok = env.dir.path().join("normal-report.json");
+    env.ok("ai.export_report", json!({ "path": ok.to_string_lossy() }));
+    assert!(ok.exists());
 }
 
 #[test]

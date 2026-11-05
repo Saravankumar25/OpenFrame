@@ -2,16 +2,14 @@
 //
 //   * debug (default): `tauri build --debug --no-bundle`, the build every spec can drive, with the
 //     debug-only test switches (deterministic AI, own AI folder, hand-set licence state);
-//   * release (`--release=gated` or `--release=open`, Windows phase W4, ADR-0030 proof level 3):
-//     `tauri build --no-bundle`, the hardened executable that goes into the installer, built through
-//     scripts/with-msvc-linker.mjs. Never an installer or bundle. "gated" is the internal team build
-//     with the team password screen, made with a throwaway password that exists only in this run's
-//     memory (never the real team password); "open" is the same executable built as the store
-//     channel, which has no team password screen. A store build is the Microsoft Store channel
-//     even outside its package, so an open run starts on "Checking your purchase" (the Store
-//     cannot answer unpackaged; lib/app.mjs closes it) and editing is refused in Rust: use it for
-//     what the store channel shows and keeps working, and the gated build for editing specs. Both honour STRAFT_DATA_ROOT for file
-//     locations only (ADR-0031).
+//   * release (`--release=open`, Windows phase W4, ADR-0030 proof level 3): `tauri build --no-bundle`,
+//     the hardened executable, built through scripts/with-msvc-linker.mjs. Never an installer or
+//     bundle. It is built as the store channel (STRAFT_DISTRIBUTION=store). A store build is the
+//     Microsoft Store channel even outside its package, so an open run starts on "Checking your
+//     purchase" (the Store cannot answer unpackaged; lib/app.mjs closes it) and editing is refused
+//     in Rust: use it for what the store channel shows and keeps working. The internal build as it
+//     ships (opens straight to the app, ADR-0043) is driven installed: `--release=open --app=<exe>`
+//     in run.mjs. Both honour STRAFT_DATA_ROOT for file locations only (ADR-0031).
 //
 // Every build goes through the machine-wide build queue (scripts/cargo-queued.cmd as Tauri's cargo
 // runner). The build carries the Straft AI engine exactly like the package does:
@@ -45,24 +43,14 @@ export function appAiDir(release = false) {
 export const APP_BINARY = appBinary(false);
 export const APP_AI_DIR = appAiDir(false);
 
-/**
- * Build the app. `release` is false (debug), "gated" or "open"; `gatePassword` is the throwaway
- * password of a gated build.
- */
-export function buildApp({ release = false, gatePassword } = {}) {
+/** Build the app. `release` is false (debug) or "open" (the release executable, store channel). */
+export function buildApp({ release = false } = {}) {
   prepare();
   console.log(`Building Straft Studio (${release ? `release, ${release}` : "debug"}, embedded UI, Straft AI engine, test model host)…`);
   // STRAFT_TEST_BUILD lets the release profile accept the loopback test host (build.rs).
   const env = { ...process.env, STRAFT_TEST_MODEL_SOURCE: MODEL_HOST_URL, STRAFT_TEST_BUILD: "1" };
-  // The debug and open builds never see the build machine's team password, even when it is set.
-  delete env.STRAFT_TEAM_PASSWORD;
   delete env.STRAFT_DISTRIBUTION;
-  if (release === "gated") {
-    if (!gatePassword) throw new Error("A gated release build needs its throwaway test password.");
-    env.STRAFT_TEAM_PASSWORD = gatePassword; // secret-scan: allow (a random value made in run.mjs for this run only)
-  } else if (release === "open") {
-    env.STRAFT_DISTRIBUTION = "store";
-  }
+  if (release === "open") env.STRAFT_DISTRIBUTION = "store";
   // Models from builds before ADR-0026 would linger next to the executable; the package has none.
   rmSync(join(appAiDir(Boolean(release)), "models"), { recursive: true, force: true });
   const tauri = `npm --workspace apps/desktop run tauri -- build ${release ? "" : "--debug "}--no-bundle --runner "${QUEUE_RUNNER}" --config src-tauri/tauri.bundled-ai.conf.json`;

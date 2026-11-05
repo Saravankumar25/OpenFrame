@@ -68,7 +68,7 @@ Before: an empty data folder of its own. The app is the internal test build (no 
 23. Check: Finish becomes enabled.
 24. Check: the screen is quiet.
 25. Click Finish.
-26. Check: the dialog "Welcome to the Straft Studio family" shows with "Be a part of our community." (the test build is a debug build, so the placeholder rows show; a release build shows only the thank-you text and OK)
+26. Check: the dialog "Welcome to the Straft Studio community" shows with "Be a part of our community." and eight account buttons: Instagram, YouTube, X, Facebook, LinkedIn, Reddit, Discord and Threads
 27. Check: the screen is quiet.
 28. Click OK in the dialog.
 29. Check: the dialog closes.

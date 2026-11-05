@@ -344,7 +344,7 @@ pub struct AiReportResult {
 
 /// Every trace row (numbers and ids only) and the health figures, to a file the person chose.
 pub fn export_report(core: &AppCore, _actor: &Actor, a: AiReportArgs) -> AppResult<AiReportResult> {
-    let dest = destination(&a.path)?;
+    let dest = destination(core, &a.path)?;
     let (rows, health) =
         core.with_app_db(|c| Ok((trace_json(c, None)?, health_from(&rows(c, HEALTH_WINDOW)?))))?;
     let doc = json!({
@@ -415,7 +415,16 @@ pub(super) fn request_numbers(c: &Connection, request_id: &str) -> AppResult<Val
         }))
 }
 
-pub(super) fn destination(raw: &str) -> AppResult<PathBuf> {
+/// The file an AI report or conversation goes to: a `.json` path that passes the same output
+/// rules as every other export, so it can never replace a file inside the open project, the app
+/// data folder or the Global Idea Vault (for example `straft.json` or the models' `active.json`).
+pub(super) fn destination(core: &AppCore, raw: &str) -> AppResult<PathBuf> {
+    let p = json_path(raw)?;
+    crate::util::check_output_file(core, &p)?;
+    Ok(p)
+}
+
+fn json_path(raw: &str) -> AppResult<PathBuf> {
     let raw = raw.trim();
     let mut p = PathBuf::from(raw);
     if raw.is_empty() || !p.is_absolute() {
@@ -512,10 +521,10 @@ mod tests {
 
     #[test]
     fn the_report_goes_only_to_an_absolute_json_path() {
-        assert!(destination("relative/report.json").is_err());
-        assert!(destination("").is_err());
+        assert!(json_path("relative/report.json").is_err());
+        assert!(json_path("").is_err());
         let base = std::env::temp_dir();
-        let p = destination(&base.join("ai report").to_string_lossy()).unwrap();
+        let p = json_path(&base.join("ai report").to_string_lossy()).unwrap();
         assert_eq!(p.extension().unwrap(), "json");
     }
 }

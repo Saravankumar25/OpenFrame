@@ -21,10 +21,15 @@ Engineers and agents must not write the agreement or pick a license. The decisio
   dependency. Currently none are copyleft or unknown. Five crates are MPL-2.0 (file-level copyleft, reached
   through Tauri and `directories`): `cssparser`, `cssparser-macros`, `dtoa-short`, `selectors` and `option-ext`.
   Unmodified use of these is compatible with a closed-source product. The shipped notices page must list them.
-- **Local AI artifacts.** Model and engine redistribution has its own notices (Local AI Runtime spec section 17).
-  The license of the `llama.cpp` engine, of Gemma 3 1B Instruct (Gemma Terms of Use, redistribution rules in
-  `docs/engineering/23-release-migration.md` section 7) and of BGE small English v1.5 must be verified per artifact.
-  Model weights are downloaded after install, but Straft's distribution endpoint still redistributes them.
+- **Local AI artifacts.** Model and engine redistribution has its own notices (Local AI Runtime spec section 17,
+  `packaging/ai/notices/`, Settings > About > Third-party licences). The engine is `llama.cpp` (MIT, with vendored
+  MIT and public-domain code and the LLVM OpenMP runtime). The models are Gemma 3 1B Instruct (Gemma Terms of Use),
+  BGE small English v1.5 (MIT) and Multilingual E5 small (MIT). The models are downloaded after install straight
+  from Hugging Face at pinned revisions (ADR-0032); Straft hosts no copy. The Gemma Terms of Use section 3.1 ask
+  that an agreement governing Gemma's use carries the section 3.2 use restrictions (the Gemma Prohibited Use Policy)
+  as an enforceable provision, and that each recipient gets a copy of the Gemma Terms of Use. Whether the app's
+  download counts as Straft distributing Gemma is an open legal question in
+  `docs/audits/2026-10-31-licence-and-attribution-audit.md`; the safe course is to put both in the agreement.
 - **Three channels.** The Microsoft Store and the Mac App Store each have a standard license terms page. The agreement for
   the Windows installer must say what happens at the end of the trial and what a purchase covers.
 - **Refunds and the trial.** The agreement and the store listings must say the same thing (ADR-0018, still open: price and refunds).

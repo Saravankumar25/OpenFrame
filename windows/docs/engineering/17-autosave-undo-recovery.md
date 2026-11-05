@@ -82,7 +82,7 @@ the container is gone (FSD §52.5). ~~There is no auto-purge and no retention ti
 **30-day removal** (owner decision 2026-10-07, ADR-0012 amendment). `modules/retention.rs` removes an item for good 30 days
 after its delete (`deleted_item.deleted_at`), exactly at the 30-day mark. It runs, with no network, when a project opens (the
 project's Recently Deleted, which also holds the project's Idea Vault items) and when the Global Idea Vault first opens in a
-session, which the desktop shell does at app start (after the team password on the internal builds). Each item is removed in
+session, which the desktop shell does at app start. Each item is removed in
 its own `Store::mutate` (quiet, not undoable), so a crash, a full drive or a kill leaves every item whole or gone and the next
 open carries on; at most 500 items per run. Inside the transaction the record is read again and the item is removed only when
 the registered table matches and the object there still has `deleted_at`: a live object behind a stale or crafted record is

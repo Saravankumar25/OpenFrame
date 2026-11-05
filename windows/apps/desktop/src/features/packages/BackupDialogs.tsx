@@ -91,8 +91,8 @@ export function BackupDialog({ onClose }: { onClose: () => void }) {
         )
       ) : (
         <>
-          <Field label="Backup name" hint="Project name, date and time, and an optional label.">
-            <TextInput value={name} readOnly aria-readonly />
+          <Field label="Backup name" htmlFor="backup-name" hint="Project name, date and time, and an optional label.">
+            <TextInput id="backup-name" value={name} readOnly aria-readonly />
           </Field>
           <Field label="Label (optional)">
             <TextInput value={label} maxLength={80} placeholder="e.g. before-rewrite" onChange={(e) => setLabel(e.target.value)} />

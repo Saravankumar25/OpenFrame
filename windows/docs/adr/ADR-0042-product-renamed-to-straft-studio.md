@@ -61,7 +61,7 @@ so the window to do this closes at the first release.
 - The website moved in text to `straftstudio.com`. Connecting that domain in Cloudflare is a manual owner action. The earlier
   domain is not deleted: the owner repoints or retires it. Anything already registered with it (a Partner Center or Apple
   contact, for example) needs updating by hand.
-- CI needs the repository variable `STRAFT_AI_ASSETS_DIR` and the secret `STRAFT_TEAM_PASSWORD` before it can run
+- CI needs the repository variable `STRAFT_AI_ASSETS_DIR` and (until 2026-11-05, ADR-0043) the secret `STRAFT_TEAM_PASSWORD` before it can run
   ([owner-decisions.md](../implementation/owner-decisions.md), manual work).
 - Trademark and name clearance for "Straft" is still the owner's open task before brand spend.
 - The package extensions `.ofproject`, `.ofbackup` and the other `.of*` ones do not spell the old name, and changing them

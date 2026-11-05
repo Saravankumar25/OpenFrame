@@ -18,8 +18,6 @@ export const SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 
 export const HIGHLIGHT_COLORS = ["yellow", "green", "blue", "pink", "orange", "purple"] as const;
 /** Underline colours; "ink" is the colour of the text. Rust: UNDERLINES in prose.rs. */
 export const UNDERLINE_COLORS = ["ink", "red", "blue", "green", "orange", "purple"] as const;
-export type HighlightColor = (typeof HIGHLIGHT_COLORS)[number];
-export type UnderlineColor = (typeof UNDERLINE_COLORS)[number];
 
 /** `key` when it is in the palette, else the palette's default. */
 const inPalette = <T extends string>(list: readonly T[], key: unknown): T =>

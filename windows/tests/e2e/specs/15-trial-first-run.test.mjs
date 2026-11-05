@@ -164,7 +164,7 @@ describe("trial and first-run screens", () => {
       await assertQuiet(browser, "tutorial");
       await finish.click();
 
-      const welcome = await dialog("Welcome to the Straft Studio family");
+      const welcome = await dialog("Welcome to the Straft Studio community");
       await welcome.waitForDisplayed({ timeout: 10_000 });
       await waitForText(browser, "Be a part of our community.");
       await assertQuiet(browser, "welcome");

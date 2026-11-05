@@ -137,7 +137,7 @@ export function makeKit(getBrowser, cap) {
     },
     /** Open the project menu and choose an item (Project settings, Notes & Tasks, ...). */
     async projectMenu(item) {
-      await t.go('//button[starts-with(@aria-label,"Project: ")]');
+      await t.go('//header//button[contains(@class,"projsel")]');
       await t.menuItem(item);
       await sleep(400);
     },

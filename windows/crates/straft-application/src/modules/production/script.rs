@@ -2,8 +2,8 @@
 //! columns). Production reads screenplay scenes of the selected Production
 //! Source; it never writes screenplay tables (FSD §1.4, §53, §124).
 //!
-//! Display scene numbers are never stored: they are derived from `position`
-//! within a draft (Domain §2.2).
+//! Display scene numbers come from the screenplay's own numbering
+//! (`screenplay::numbering::draft_labels`), so 120A reads 120A here too.
 
 use std::collections::HashMap;
 
@@ -98,7 +98,7 @@ pub fn newer_draft(
 pub struct SceneRow {
     pub id: String,
     pub lineage_id: String,
-    /// Derived display number (1-based order within the draft).
+    /// Production number as the Screenplay workspace shows it (12, 12A, A1).
     pub number: String,
     pub heading: String,
     pub omitted: bool,
@@ -123,14 +123,16 @@ pub fn draft_scenes(c: &Connection, draft_id: &str) -> AppResult<Vec<SceneRow>> 
             ))
         })?
         .collect::<Result<Vec<_>, _>>()?;
+    let labels = crate::modules::screenplay::numbering::draft_labels(c, draft_id)?;
     Ok(rows
         .into_iter()
+        .zip(labels)
         .enumerate()
         .map(
-            |(i, (id, lineage_id, heading, omitted, updated_at))| SceneRow {
+            |(i, ((id, lineage_id, heading, omitted, updated_at), (_, number)))| SceneRow {
                 id,
                 lineage_id,
-                number: (i + 1).to_string(),
+                number,
                 heading,
                 omitted,
                 index: i,

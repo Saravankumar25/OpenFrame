@@ -92,7 +92,7 @@ fn strip(env: &TestEnv, number: i64) -> String {
         }
     }
     all.iter()
-        .find(|s| s["number"] == number)
+        .find(|s| s["number"].as_str() == Some(number.to_string().as_str()))
         .unwrap_or_else(|| panic!("scene {number} not on board"))["id"]
         .as_str()
         .unwrap()
@@ -114,7 +114,13 @@ fn day_numbers(v: &Value, id: &str) -> Vec<i64> {
         .unwrap()
         .iter()
         .filter(|i| i["kind"] == "strip")
-        .map(|i| i["strip"]["number"].as_i64().unwrap())
+        .map(|i| {
+            i["strip"]["number"]
+                .as_str()
+                .unwrap()
+                .parse::<i64>()
+                .unwrap()
+        })
         .collect()
 }
 
@@ -165,7 +171,7 @@ fn fsd_sch_001_all_scenes_enter_unscheduled() {
     );
     assert_eq!(
         un.iter()
-            .map(|s| s["number"].as_i64().unwrap())
+            .map(|s| s["number"].as_str().unwrap().parse::<i64>().unwrap())
             .collect::<Vec<_>>(),
         vec![1, 2, 3, 4]
     );
@@ -1047,7 +1053,7 @@ fn fsd_56_script_changes_flag_strips_and_never_delete() {
         .as_array()
         .unwrap()
         .iter()
-        .find(|s| s["number"] == 4)
+        .find(|s| s["number"] == "4")
         .unwrap()
         .clone();
     assert_eq!(new_one["sourceState"], "New");
@@ -1701,4 +1707,276 @@ fn add_section_is_searchable_undoable_and_needs_edit_rights() {
         ),
         "conflict.call_sheet_final"
     );
+}
+
+// ------------------------------------------------------------------ real scene numbers, hospital
+
+/// Scene 1 is "1", scene 2 is "1A", scene 3 is "2", scene 4 is "3": the order alone would say 1, 2, 3, 4.
+fn number_the_script(env: &TestEnv) {
+    exec(
+        env,
+        "UPDATE screenplay_scene SET production_number='1' WHERE id='s1';
+         UPDATE screenplay_scene SET production_number='1A' WHERE id='s2';
+         UPDATE screenplay_scene SET production_number='2' WHERE id='s3';
+         UPDATE screenplay_scene SET production_number='3' WHERE id='s4';",
+    );
+}
+
+#[test]
+fn schedule_breakdown_call_sheet_daily_view_and_sides_show_the_screenplay_scene_numbers() {
+    let env = TestEnv::with_project("Black Rain", "Feature Film");
+    seed(&env);
+    number_the_script(&env);
+    let sched = env.ok("schedule.create", json!({}))["id"]
+        .as_str()
+        .unwrap()
+        .to_string();
+    let d1 = new_day(&env, &sched, Some("2027-06-14"));
+    for id in ["s2", "s3"] {
+        let strip_id = view(&env)["unscheduled"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|s| s["sceneId"] == id)
+            .unwrap()["id"]
+            .as_str()
+            .unwrap()
+            .to_string();
+        env.ok(
+            "schedule.move_strip",
+            json!({ "stripId": strip_id, "dayId": d1 }),
+        );
+    }
+    // Schedule: the strips on the day and the ones still waiting.
+    let v = view(&env);
+    let on_day: Vec<&str> = day(&v, &d1)["items"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|i| i["kind"] == "strip")
+        .map(|i| i["strip"]["number"].as_str().unwrap())
+        .collect();
+    assert_eq!(on_day, vec!["1A", "2"]);
+    let waiting: Vec<&str> = v["unscheduled"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s["number"].as_str().unwrap())
+        .collect();
+    assert_eq!(waiting, vec!["1", "3"]);
+    // Breakdown.
+    let b = env.ok("breakdown.scenes", json!({}));
+    let rows: Vec<&str> = b["scenes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|r| r["number"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        rows,
+        vec!["1", "1A", "2", "3", "3A"],
+        "the omitted scene keeps its place and an inserted label"
+    );
+    // Call sheet scene schedule, daily view and sides.
+    let cs = env
+        .ok("callsheets.create", json!({ "dayId": d1 }))
+        .as_str()
+        .unwrap()
+        .to_string();
+    let doc = env.ok("callsheets.get", json!({ "id": cs }))["document"].clone();
+    let sheet: Vec<&str> = doc["scenes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|x| x["kind"] == "")
+        .map(|x| x["number"].as_str().unwrap())
+        .collect();
+    assert_eq!(sheet, vec!["1A", "2"]);
+    let daily = env.ok("schedule.daily", json!({ "dayId": d1 }));
+    let daily_numbers: Vec<&str> = daily["day"]["scenes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s["number"].as_str().unwrap())
+        .collect();
+    assert_eq!(daily_numbers, vec!["1A", "2"]);
+    let sides = env.ok("sides.preview", json!({ "dayId": d1 }));
+    let side_numbers: Vec<&str> = sides["scenes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|s| s["number"].as_str().unwrap())
+        .collect();
+    assert_eq!(side_numbers, vec!["1A", "2"]);
+}
+
+#[test]
+fn a_scene_with_no_stored_number_keeps_the_order_number_everywhere() {
+    let env = TestEnv::with_project("Black Rain", "Feature Film");
+    seed(&env);
+    env.ok("schedule.create", json!({}));
+    assert_eq!(
+        view(&env)["unscheduled"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|s| s["number"].as_str().unwrap())
+            .collect::<Vec<_>>(),
+        vec!["1", "2", "3", "4"]
+    );
+}
+
+fn hospital_of(env: &TestEnv, cs: &str, place: &str) -> String {
+    let doc = env.ok("callsheets.get", json!({ "id": cs }))["document"].clone();
+    doc["locations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|l| l["name"] == place)
+        .unwrap()["hospital"]
+        .as_str()
+        .unwrap()
+        .to_string()
+}
+
+#[test]
+fn a_call_sheet_shows_the_location_hospital_and_a_typed_one_survives_a_refresh() {
+    let env = TestEnv::with_project("Black Rain", "Feature Film");
+    seed(&env);
+    exec(
+        &env,
+        "UPDATE location SET nearest_hospital='City Hospital, 2 km, 040 1234' WHERE id='loc_police';",
+    );
+    let sched = env.ok("schedule.create", json!({}))["id"]
+        .as_str()
+        .unwrap()
+        .to_string();
+    let d1 = new_day(&env, &sched, Some("2027-06-14"));
+    move_to(&env, 1, Some(&d1));
+    move_to(&env, 2, Some(&d1));
+    // A new sheet starts with the hospital of each location, empty where the record has none.
+    let cs = env
+        .ok("callsheets.create", json!({ "dayId": d1 }))
+        .as_str()
+        .unwrap()
+        .to_string();
+    assert_eq!(
+        hospital_of(&env, &cs, "Police Station"),
+        "City Hospital, 2 km, 040 1234"
+    );
+    assert_eq!(hospital_of(&env, &cs, "Old Railway Station"), "");
+
+    // A sheet that has not overridden the value follows the location record when refreshed.
+    exec(
+        &env,
+        "UPDATE location SET nearest_hospital='General Hospital' WHERE id='loc_police';",
+    );
+    let s = env.ok("callsheets.get", json!({ "id": cs }));
+    assert_eq!(s["status"], "Needs refresh");
+    assert!(
+        s["stale"]["areas"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|a| a == "Locations")
+    );
+    env.ok("callsheets.refresh", json!({ "id": cs }));
+    assert_eq!(hospital_of(&env, &cs, "Police Station"), "General Hospital");
+
+    // A hospital typed on the sheet stays through the next refresh.
+    let mut doc = env.ok("callsheets.get", json!({ "id": cs }))["document"].clone();
+    let i = doc["locations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .position(|l| l["name"] == "Police Station")
+        .unwrap();
+    doc["locations"][i]["hospital"] = json!("Typed Clinic");
+    env.ok("callsheets.update", json!({ "id": cs, "document": doc }));
+    exec(
+        &env,
+        "UPDATE location SET nearest_hospital='Another Hospital' WHERE id='loc_police';",
+    );
+    env.ok("callsheets.refresh", json!({ "id": cs }));
+    assert_eq!(hospital_of(&env, &cs, "Police Station"), "Typed Clinic");
+}
+
+#[test]
+fn a_call_sheet_made_before_the_hospital_was_known_is_not_stale_until_a_hospital_is_set() {
+    let env = TestEnv::with_project("Black Rain", "Feature Film");
+    seed(&env);
+    let sched = env.ok("schedule.create", json!({}))["id"]
+        .as_str()
+        .unwrap()
+        .to_string();
+    let d1 = new_day(&env, &sched, Some("2027-06-14"));
+    move_to(&env, 1, Some(&d1));
+    let cs = env
+        .ok("callsheets.create", json!({ "dayId": d1 }))
+        .as_str()
+        .unwrap()
+        .to_string();
+    assert_eq!(
+        env.ok("callsheets.get", json!({ "id": cs }))["status"],
+        "Draft"
+    );
+}
+
+#[test]
+fn home_counts_the_current_draft_the_active_source_and_the_newest_schedule_only() {
+    let env = TestEnv::with_project("Black Rain", "Feature Film");
+    seed(&env);
+    // An older draft of the same script, an older (deleted) schedule's days and an older source's items.
+    exec(
+        &env,
+        "UPDATE screenplay SET current_draft_id='d1' WHERE id='sp';
+         INSERT INTO screenplay_draft(id,screenplay_id,name,status,created_at,updated_at) VALUES ('d0','sp','Draft 5','Draft',0,0);
+         INSERT INTO screenplay_scene(id,draft_id,lineage_id,position,heading,created_at,updated_at) VALUES
+            ('o1','d0','L1',1,'INT. POLICE STATION - NIGHT',0,0),
+            ('o2','d0','L2',2,'EXT. OLD RAILWAY STATION - DAY',0,0);
+         INSERT INTO production_source(id,draft_id,active,selected_at,created_at,updated_at) VALUES ('ps0','d0',0,0,0,0);
+         INSERT INTO breakdown_element(id,source_id,scene_id,scene_lineage_id,category,catalog_item_id,display_name,confirmation_state,created_at,updated_at) VALUES
+            ('old1','ps0','o1','L1','Cast','ci_arjun','Arjun','Confirmed',0,0);",
+    );
+    let sched = env.ok("schedule.create", json!({}))["id"]
+        .as_str()
+        .unwrap()
+        .to_string();
+    new_day(&env, &sched, Some("2027-06-14"));
+    new_day(&env, &sched, Some("2027-06-15"));
+    let off = new_day(&env, &sched, Some("2027-06-16"));
+    env.ok(
+        "schedule.set_off_day",
+        json!({ "dayId": off, "offDay": true }),
+    );
+    exec(
+        &env,
+        "INSERT INTO shooting_schedule(id,source_id,name,created_at,updated_at,deleted_at) VALUES ('old','ps0','Old',0,0,1);
+         INSERT INTO shooting_day(id,schedule_id,position,created_at,updated_at) VALUES ('od1','old',1,0,0),('od2','old',2,0,0);",
+    );
+    let home = env.ok("project.home", json!({}));
+    let count = |key: &str| {
+        home["counts"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["key"] == key)
+            .map_or(0, |c| c["count"].as_i64().unwrap())
+    };
+    assert_eq!(
+        count("scenes"),
+        4,
+        "the current draft without its omitted scene, not the older draft's rows"
+    );
+    assert_eq!(
+        count("shootingDays"),
+        2,
+        "shoot days of the newest schedule, off days and the deleted schedule not counted"
+    );
+    assert_eq!(
+        count("breakdownItems"),
+        9,
+        "confirmed items of the active source only"
+    );
+    assert_eq!(count("drafts"), 2, "every draft is still a draft");
 }

@@ -142,19 +142,16 @@ pub(crate) fn scene_ref(
 
 /// Sort scene refs: source scenes by number, then historical ones.
 pub(crate) fn sort_refs(refs: &mut [ProductionSceneRef]) {
-    refs.sort_by(|a, b| {
-        let na = a
-            .number
-            .as_deref()
-            .and_then(|n| n.parse::<u32>().ok())
-            .unwrap_or(u32::MAX);
-        let nb = b
-            .number
-            .as_deref()
-            .and_then(|n| n.parse::<u32>().ok())
-            .unwrap_or(u32::MAX);
-        na.cmp(&nb).then_with(|| a.heading.cmp(&b.heading))
-    });
+    // 12 < 12A < 12B < 13: the digits first, then the letters (shortcut: a label with no leading digit, like A1, sorts last).
+    let key = |r: &ProductionSceneRef| {
+        let n = r.number.as_deref().unwrap_or("");
+        let digits = n.chars().take_while(char::is_ascii_digit).count();
+        (
+            n[..digits].parse::<u32>().unwrap_or(u32::MAX),
+            n[digits..].to_string(),
+        )
+    };
+    refs.sort_by(|a, b| key(a).cmp(&key(b)).then_with(|| a.heading.cmp(&b.heading)));
 }
 
 /// Scene usage per catalog item, derived from production breakdown rows

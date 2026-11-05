@@ -42,8 +42,6 @@ These short forms appear in many files.
 
 **Do the first launch** (with a name and a title): check the screen shows "Welcome to Straft Studio"; select all text in the name field and type the name; click Continue in the dialog; click Create Project; type the title in the project title field; click Create in the dialog; check the Workspaces navigation shows and the window title is "<title> - Straft Studio".
 
-**Team password** (gated release run only): every start of the app first shows the team password screen. Type the run's password in the team password field and click Open Straft Studio; check the screen closes.
-
 **Check: the screen is quiet**: no console error or warning was recorded since the last check, every visible control has an accessible name (a label, a title or visible text), and neither the window nor the workspace scrolls sideways.
 
 **Check: the Straft AI docks cleanly**: the panel is open, covers no part of the page, does not run past the window, and no control of the page is cut off beside it.
@@ -52,7 +50,7 @@ These short forms appear in many files.
 
 **Click the project row "Open X"**: on Application Home, click the project row whose name starts with "Open X", check the Workspaces navigation shows, wait about 1 second, and check no recovery question ("We found a recovery state") shows, because the project was closed cleanly.
 
-**Open the project menu and choose X**: click the button whose name starts with "Project: " in the top bar, then choose the menu item that starts with X.
+**Open the project menu and choose X**: click the project switcher in the top bar (the button that shows the project title), then choose the menu item that starts with X.
 
 **Move focus off any text field**: the global Ctrl+Z and Ctrl+Y skip text fields, so focus leaves the field first.
 
@@ -137,6 +135,7 @@ Meera waits for the late train with a red umbrella.
 | `61-schedule.md` | `61-schedule.test.mjs` | 9 | None |
 | `62-call-sheets-exports.md` | `62-call-sheets-exports.test.mjs` | 10 | None |
 | `63-every-export.md` | `63-every-export.test.mjs` | 3 | System Save dialogs skipped |
+| `64-real-scene-numbers.md` | `64-real-scene-numbers.test.mjs` | 4 | None |
 | `70-packages.md` | `70-packages.test.mjs` | 6 | Windows file dialogs through UI Automation |
 | `71-storage.md` | `71-storage.test.mjs` | 4 | System folder dialogs skipped |
 | `72-ai-assistant.md` | `72-ai-assistant.test.mjs` | 9 | `llama-server.exe` processes and sockets |
@@ -156,4 +155,4 @@ Meera waits for the late train with a red umbrella.
 | `98-layout-geometry.md` | `98-layout-geometry.test.mjs` | 2 | Window sizes set through WebDriver; geometry read from the WebView2 page |
 | `zz-capture.md` | `zz-capture.test.mjs` | 1 | Development tool, skipped unless E2E_CAPTURE=1; Windows WebView2 screenshots |
 
-Total: 209 scenarios in 45 files.
+Total: 213 scenarios in 46 files.

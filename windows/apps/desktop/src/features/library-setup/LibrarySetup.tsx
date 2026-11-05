@@ -1,6 +1,6 @@
 // "Set up your Straft library": the first start of a new computer, or a library that went
-// missing (docs/engineering/40-storage-locations-and-recovery.md section 1). Shown after the team
-// password and before Home whenever library.status is not ready. It cannot be dismissed: closing
+// missing (docs/engineering/40-storage-locations-and-recovery.md section 1). Shown before Home
+// whenever library.status is not ready. It cannot be dismissed: closing
 // the window closes the app. The Rust core refuses everything else until a choice succeeds, so
 // this screen is not the only gate.
 

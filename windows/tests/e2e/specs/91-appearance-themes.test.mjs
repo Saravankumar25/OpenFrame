@@ -120,7 +120,7 @@ async function audit() {
 }
 
 async function projectPage(label) {
-  const trigger = await browser.$('//button[starts-with(@aria-label,"Project: ")]');
+  const trigger = await browser.$('//header//button[contains(@class,"projsel")]');
   await trigger.waitForClickable({ timeout: 10_000 });
   await trigger.click();
   const el = await browser.$(`//*[@role="menuitem"][starts-with(normalize-space(.),"${label}")]`);

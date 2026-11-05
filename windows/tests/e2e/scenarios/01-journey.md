@@ -171,7 +171,7 @@ Before: the shared journey data folder is empty. The app starts for the first ti
 3. Press Delete.
 4. If a dialog asks to confirm (the card already built a screenplay scene), click its Delete or Move button.
 5. Check: the card "Bus stop reunion in the rain" is gone.
-6. Click the project button "Project: Night Bus. Switch or manage projects", then choose Recently Deleted.
+6. Click the project switcher (top left, shows the project title), then choose Recently Deleted.
 7. Click Restore Bus stop reunion in the rain.
 8. Click Story in the Workspaces navigation, then click the Board tab.
 9. Check: the card "Bus stop reunion in the rain" is back.
@@ -203,7 +203,7 @@ Before: the shared journey data folder is empty. The app starts for the first ti
 
 ## Close the project cleanly, and Application Home lists it
 
-1. Click the project button "Project: Night Bus. Switch or manage projects", then choose Close project.
+1. Click the project switcher (top left, shows the project title), then choose Close project.
 2. Check: the screen shows "Your projects".
 3. Check: the screen shows "Night Bus".
 4. Check: the screen is quiet.

@@ -7,7 +7,7 @@ function strip(id: string, over: Partial<ScheduleStripDto> = {}): ScheduleStripD
     id,
     sceneId: `sc-${id}`,
     lineageId: `L-${id}`,
-    number: Number(id.replace(/\D/g, "")) || 1,
+    number: String(Number(id.replace(/\D/g, "")) || 1),
     heading: "INT. POLICE STATION - NIGHT",
     intExt: "INT",
     dayNight: "N",

@@ -1,7 +1,7 @@
 # ADR-0023: Microsoft Store trial, internal Windows installer, no price in the app
 
 - **Status:** Accepted 2026-10-07 (owner answers in chat the same day). Decision 3 extended to an internal Mac `.dmg`, with a
-  team password on both internal builds, by [ADR-0024](ADR-0024-internal-team-builds.md).
+  team password on both internal builds, by [ADR-0024](ADR-0024-internal-team-builds.md) (the password was removed 2026-11-05, [ADR-0043](ADR-0043-team-password-removed.md)).
 - **Date:** 2026-10-07
 - **Related:** [ADR-0017](ADR-0017-cross-platform-windows-and-macos.md) (decision 1, release files);
   [ADR-0018](ADR-0018-distribution-licensing-commerce.md) (decision 3, purchase proof per channel);

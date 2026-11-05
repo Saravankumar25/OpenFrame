@@ -15,7 +15,7 @@ import { Banner, Button } from "../design-system";
 import { toast } from "../app/toast";
 import type { AiDownloadDto } from "../ipc/generated/AiDownloadDto";
 import type { AiImportResult } from "../ipc/generated/AiImportResult";
-import { formatBytes } from "./model";
+import { GEMMA_NOTICE, GEMMA_POLICY, formatBytes } from "./model";
 
 const RUNNING = new Set(["Checking", "Downloading", "Installing"]);
 
@@ -185,6 +185,13 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
             <p className="xs muted">
               The download uses the internet once. After it, Straft AI works on this computer without the internet, and your projects are never sent
               anywhere.
+            </p>
+          )}
+          {!running && (
+            // Shown before the click: the Gemma Terms of Use require this notice and the use restrictions
+            // to reach the person who receives the model (section 3.1).
+            <p className="xs muted">
+              {GEMMA_NOTICE} {GEMMA_POLICY} The other models use the MIT License. Settings, About, Third-party licences lists every licence.
             </p>
           )}
           <div className="row">

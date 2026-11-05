@@ -74,15 +74,10 @@ pub struct AppConfig {
     /// licence state and channel by hand. The desktop shell turns it on only in a debug build with
     /// an isolated test data root; release builds never do (tested in the shell).
     pub entitlement_debug_controls: bool,
-    /// True in a debug build. The core tells the page through `EntitlementNotice.debug_build`, so
-    /// a release build hides the placeholder social rows (ADR-0039 item 12). The shell sets it;
-    /// false everywhere else.
+    /// True in a debug build. The core tells the page through `EntitlementNotice.debug_build`.
+    /// No screen depends on it now: the welcome popup shows every social row in every build. The
+    /// shell sets it; false everywhere else.
     pub debug_build: bool,
-    /// The internal builds' team password hash (Argon2id PHC string, ADR-0024), embedded by the
-    /// desktop build script from `STRAFT_TEAM_PASSWORD` on the build machine. When set, nothing
-    /// but the password screen runs until the password is right. `None` in store packages, which
-    /// carry no gate and no hash, and in tests.
-    pub team_password_hash: Option<String>,
     /// Rename the person's own library and project folders that still have the product's earlier
     /// name (`modules::storage::legacy_rename`). Off everywhere except a real start on real data.
     pub rename_earlier_names: bool,
@@ -108,7 +103,6 @@ impl std::fmt::Debug for AppConfig {
                 &self.entitlement_debug_controls,
             )
             .field("debug_build", &self.debug_build)
-            .field("team_password_hash", &self.team_password_hash.is_some())
             .field("rename_earlier_names", &self.rename_earlier_names)
             .finish()
     }
@@ -204,7 +198,6 @@ impl AppConfig {
             entitlement_debug_controls: false,
             debug_build: false,
             rename_earlier_names: false,
-            team_password_hash: None,
         })
     }
 
@@ -233,7 +226,6 @@ impl AppConfig {
             entitlement_debug_controls: false,
             debug_build: false,
             rename_earlier_names: false,
-            team_password_hash: None,
         }
     }
 
@@ -890,11 +882,6 @@ impl AppCore {
     /// setup, off the main thread. Never fails: a vault that cannot open now is opened (and
     /// cleaned) on first use instead.
     pub fn startup_maintenance(&self) {
-        // Internal builds: nothing opens before the team password is right. The unlock runs this
-        // again once the gate opens.
-        if self.entitlement.team_gate_locked() {
-            return;
-        }
         // Before the library is set up there is nothing to clean, and nothing may be created.
         // Setting it up runs this again.
         if !self.library_ready() {

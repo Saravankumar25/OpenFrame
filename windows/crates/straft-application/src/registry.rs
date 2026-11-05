@@ -181,6 +181,7 @@ pub mod hidden {
     pub const DUPLICATE: &str = "Alternative UI entry point for a change the assistant already prepares through an equivalent operation.";
     pub const APPEARANCE: &str = "Display appearance (category colours and icons) with no content meaning; the user customises it in Settings.";
     pub const WHOLE_SCREENPLAY: &str = "Deleting a whole screenplay (every draft, locked draft and production number in it) stays a deliberate human action (owner decision 2026-10-08); the assistant can propose deleting one draft or restoring a screenplay from Recently Deleted.";
+    pub const CARD_SCENE_LINK: &str = "Linking a Scene Card to an existing screenplay scene is a direct choice in the card drawer; the assistant reads the link through the story card tools.";
     pub const STRUCTURED_FORM: &str = "Edited in a structured form (date ranges) the user fills in directly; the assistant reads these facts through its production read tools and records availability as notes through the cast and crew proposals.";
 }
 

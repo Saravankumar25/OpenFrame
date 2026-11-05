@@ -7,6 +7,8 @@ import { useOp } from "../../ipc/query";
 import type { AppInfo } from "../../ipc/generated/AppInfo";
 import type { EntitlementStatus } from "../../ipc/generated/EntitlementStatus";
 import { openContact } from "../../features/licensing/licence";
+import { LegalLinks } from "../../features/legal/LegalLinks";
+import { ThirdPartyNotices } from "./ThirdPartyNotices";
 import licenceText from "../../../../../THIRD_PARTY_LICENSES.md?raw";
 
 /** The words for the internal team builds, the same as the Licence card. */
@@ -42,7 +44,10 @@ export function AboutSection() {
         <Button size="sm" onClick={openContact}>Contact us</Button>
         <Button size="sm" onClick={() => setLicencesOpen(true)}>Third-party licences</Button>
       </div>
+      <LegalLinks />
       <Dialog open={licencesOpen} onOpenChange={setLicencesOpen} title="Third-party licences" size="xl">
+        <ThirdPartyNotices />
+        <h3 className="sm" style={{ margin: "16px 0 4px" }}>Inventory</h3>
         <pre className="sm selectable-text" tabIndex={0} aria-label="Licence text" style={{ whiteSpace: "pre-wrap", maxHeight: "60vh", overflow: "auto", margin: 0 }}>
           {licenceText}
         </pre>

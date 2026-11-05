@@ -46,9 +46,9 @@ import {
   revealLabel,
   storeName,
   trialEndLine,
-  visibleSocialLinks,
   type SocialLink,
 } from "./rules";
+import { COMMUNITY_ICONS } from "./CommunityIcons";
 import "./licensing.css";
 
 const BUY_FAILED = "Straft could not start the purchase right now. Everything keeps working.";
@@ -160,7 +160,7 @@ export function LicenceScreens() {
     case "tutorial":
       return <TutorialDialog dataRoot={dataRoot} platform={platform} channel={channel} />;
     case "welcome":
-      return <WelcomeDialog links={visibleSocialLinks(SOCIAL_LINKS, q.data.debugBuild)} />;
+      return <WelcomeDialog />;
     case "macFirstLaunch":
       return <MacFirstLaunchDialog />;
     case "locked":
@@ -541,7 +541,7 @@ export function WelcomeDialog({ links = SOCIAL_LINKS }: { links?: readonly Socia
     <Dialog
       open
       onOpenChange={(v) => !v && !busy && void close()}
-      title="Welcome to the Straft Studio family"
+      title="Welcome to the Straft Studio community"
       size="lg"
       footer={
         <Button variant="primary" disabled={busy} onClick={() => void close()}>
@@ -552,33 +552,19 @@ export function WelcomeDialog({ links = SOCIAL_LINKS }: { links?: readonly Socia
       <div style={{ textAlign: "center" }}>
         <Brand />
         <p className="muted" style={{ margin: "8px 0 12px" }}>
-          Thank you for backing independent filmmaking.{links.length > 0 && " Be a part of our community."}
+          Thank you for backing independent filmmaking. Be a part of our community.
         </p>
       </div>
-      {links.length > 0 && (
       <ul className="grid g4" aria-label="Our community" style={{ gap: 12, listStyle: "none", padding: 0, margin: 0 }}>
-        {links.map((l) => {
-          const content = (
-            <>
-              <i aria-hidden>{l.short}</i>
+        {links.filter((l) => isFixedSocialUrl(l.url)).map((l) => (
+          <li key={l.name}>
+            <button type="button" className="soc" aria-label={`${l.name}, opens in your browser`} onClick={() => open(l)}>
+              <i aria-hidden>{COMMUNITY_ICONS[l.name]}</i>
               {l.name}
-              <span className="muted" style={{ fontWeight: 500 }}>{l.handle}</span>
-            </>
-          );
-          return (
-            <li key={l.name}>
-              {isFixedSocialUrl(l.url) ? (
-                <button type="button" className="soc" aria-label={`${l.name} ${l.handle}, opens in your browser`} onClick={() => open(l)}>
-                  {content}
-                </button>
-              ) : (
-                <div className="soc" aria-label={`${l.name} ${l.handle}`}>{content}</div>
-              )}
-            </li>
-          );
-        })}
+            </button>
+          </li>
+        ))}
       </ul>
-      )}
     </Dialog>
   );
 }

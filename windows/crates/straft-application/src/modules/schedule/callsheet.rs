@@ -533,6 +533,7 @@ pub fn prefill(src: &CallSheetSource, crew: &[CrewRef]) -> CallSheetDocument {
                 parking: l.parking.clone().unwrap_or_default(),
                 access: l.access.clone().unwrap_or_default(),
                 emergency_contact: l.contact.clone().unwrap_or_default(),
+                hospital: l.hospital.clone().unwrap_or_default(),
                 ..Default::default()
             })
             .collect(),
@@ -627,7 +628,8 @@ pub fn merge(
                         access: derived(|x| &x.access),
                         emergency_contact: derived(|x| &x.emergency_contact),
                         meeting_point: prev.meeting_point.clone(),
-                        hospital: prev.hospital.clone(),
+                        // A hospital typed on the sheet stays; one from the location record follows it.
+                        hospital: derived(|x| &x.hospital),
                         notes: prev.notes.clone(),
                         ..l.clone()
                     }

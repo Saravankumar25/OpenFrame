@@ -28,6 +28,17 @@ describe("About", () => {
   // Braces: a function returned from beforeEach is run as a clean-up hook after each test.
   beforeEach(() => {
     callMock.mockReset();
+    vi.mocked(openUrl).mockClear();
+  });
+
+  it("offers the legal pages, each opening the live site", async () => {
+    callMock.mockImplementation(
+      answerFrom({ "app.info": { appVersion: "0.4.2" }, "entitlement.status": status("directInstaller") }),
+    );
+    renderWithClient(<AboutSection />);
+    const legal = await screen.findByRole("navigation", { name: "Legal" });
+    await userEvent.click(within(legal).getByRole("button", { name: /Privacy Policy/ }));
+    expect(vi.mocked(openUrl)).toHaveBeenCalledWith(expect.stringContaining("https://straftstudio.com/legal/"));
   });
 
   it("shows the version and says an internal build is not for sale", async () => {
@@ -80,5 +91,17 @@ describe("About", () => {
     await userEvent.click(await screen.findByRole("button", { name: "Third-party licences" }));
     const dialog = await screen.findByRole("dialog", { name: "Third-party licences" });
     expect(within(dialog).getByText(/Third-Party Licenses: Straft Studio/)).toBeInTheDocument();
+  });
+
+  it("shows the Gemma notice in the licences dialog and opens a full licence text from it", async () => {
+    callMock.mockImplementation(answerFrom({ "app.info": { appVersion: "0.4.2" }, "entitlement.status": status("microsoftStore") }) as typeof call);
+    renderWithClient(<AboutSection />);
+    await userEvent.click(await screen.findByRole("button", { name: "Third-party licences" }));
+    const dialog = await screen.findByRole("dialog", { name: "Third-party licences" });
+    expect(within(dialog).getByText(/Its use must follow the Gemma Prohibited Use Policy found at ai\.google\.dev\/gemma\/prohibited_use_policy/)).toBeInTheDocument();
+    await userEvent.click(within(dialog).getByRole("button", { name: "Show licences and notices" }));
+    const engine = (await within(dialog).findByText(/^llama\.cpp \(the Straft AI engine/)).closest("details")!;
+    await userEvent.click(within(engine).getByText(/^llama\.cpp \(the Straft AI engine/));
+    expect(await within(engine).findByText(/MIT License/)).toBeInTheDocument();
   });
 });

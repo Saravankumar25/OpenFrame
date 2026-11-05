@@ -72,8 +72,7 @@ describe("closing the window keeps the last typed text", () => {
           await newLineAtEnd();
           await typeKeys(sentence);
           const typedAt = Date.now();
-          await closer.go();
-          const elapsed = Date.now() - typedAt;
+          const elapsed = (await closer.go()) - typedAt;
           assert.ok(elapsed < CLOSE_WITHIN_MS, `the close was sent ${elapsed} ms after the last key, not within ${CLOSE_WITHIN_MS} ms`);
           await waitForExit();
 

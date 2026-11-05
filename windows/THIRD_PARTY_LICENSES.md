@@ -2,30 +2,32 @@
 
 <!-- GENERATED FILE. Do not edit by hand. Regenerate with `npm run licenses` (scripts/license-inventory.mjs). -->
 
-This is an inventory of the third-party packages that are compiled into, or shipped with, the Straft Studio desktop application (Rust target `x86_64-pc-windows-msvc`, normal dependencies only; npm production dependencies only). Build tools, test tooling and dev-only packages are excluded. This inventory is not a substitute for the full license texts, which the release pipeline must bundle with the installer.
+This is an inventory of the third-party packages that are compiled into, or shipped with, the Straft Studio desktop application (Rust target `x86_64-pc-windows-msvc`, normal dependencies only; npm production dependencies only). Build tools, test tooling and dev-only packages are excluded. This list names each package; the full licence texts are in the app, under Settings > About > Third-party licences.
 
 Straft Studio's own license has **not been selected yet**. See `LICENSE-PENDING.md`.
 
 ## Summary
 
-- Rust crates: **405**
-- npm packages: **72**
+- Rust crates: **401**
+- npm packages: **69**
 - Copyleft or unknown (blocking until resolved): **0**
 - Weak copyleft / needs review: **5**
 
-## Straft AI components (bundled in every package)
+## Straft AI components (engine in the package, models downloaded after install)
 
-Part of every package (ADR-0025). The build checks each file against the SHA-256 hashes pinned in `packaging/ai/ai-assets.lock.json`, and the app checks them again before it first starts the engine. They run only on the user's computer and never use the network. Their notices ship in the app's `ai/notices` folder and must also be shown in the product's About / third-party notices.
+Every file is pinned by size and SHA-256 in `packaging/ai/ai-assets.lock.json`. The engine ships in the package and the build checks it against the lock (ADR-0026). The models are not packaged: the person downloads them once, after install, straight from the public Hugging Face repositories at the commit revisions the lock pins, and the app uses a file only when its size and SHA-256 match (ADR-0032). They run only on the user's computer. Their notices ship in the app's `ai/notices` folder and are shown in Settings > About > Third-party licences.
 
 | Component | Version | License | Source | Notes |
 |---|---|---|---|---|
-| llama.cpp server (runtime, windows x86_64, processor build) | b11259 | MIT | https://github.com/ggml-org/llama.cpp/releases/download/b11259/llama-b11259-bin-win-cpu-x64.zip | Includes the LLVM OpenMP runtime (Apache-2.0 WITH LLVM-exception); its licence text ships next to it. |
-| Gemma 3 1B Instruct (language model, Q8_0 GGUF, tokenizer embedded) | f9c28bc | Gemma-Terms-of-Use | https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/f9c28bcd85737ffc5aef028638d3341d49869c27/gemma-3-1b-it-Q8_0.gguf | Terms: https://ai.google.dev/gemma/terms. Required notice: "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms." Use is subject to the Gemma Prohibited Use Policy; redistribution must pass these terms on. |
-| BGE small English v1.5 (search/embedding model, Q8_0 GGUF, tokenizer embedded) | f2068ed | MIT | https://huggingface.co/ggml-org/bge-small-en-v1.5-Q8_0-GGUF/resolve/f2068edd9b54f2a369549ccc71f70ed273a2a801/bge-small-en-v1.5-q8_0.gguf | Licence: https://huggingface.co/BAAI/bge-small-en-v1.5. |
+| llama.cpp server (engine in the package, windows x86_64, processor build) | b11259 | MIT | https://github.com/ggml-org/llama.cpp/releases/download/b11259/llama-b11259-bin-win-cpu-x64.zip | Includes the LLVM OpenMP runtime (Apache-2.0 WITH LLVM-exception); its licence text ships next to it. |
+| llama.cpp server (engine in the package, windows x86_64, graphics card build, Vulkan) | b11259 | MIT | https://github.com/ggml-org/llama.cpp/releases/download/b11259/llama-b11259-bin-win-vulkan-x64.zip | Includes the LLVM OpenMP runtime (Apache-2.0 WITH LLVM-exception); its licence text ships next to it. |
+| Gemma 3 1B Instruct (language model, Q8_0 GGUF, tokenizer embedded, downloaded after install) | f9c28bc | Gemma-Terms-of-Use | https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/f9c28bcd85737ffc5aef028638d3341d49869c27/gemma-3-1b-it-Q8_0.gguf | Terms: https://ai.google.dev/gemma/terms. Required notice: "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms." Use is subject to the Gemma Prohibited Use Policy (ai.google.dev/gemma/prohibited_use_policy). Distribution must pass the use restrictions on in the end-user agreement and give each recipient a copy of the Gemma Terms of Use. |
+| BGE small English v1.5 (search/embedding model, Q8_0 GGUF, tokenizer embedded, downloaded after install) | f2068ed | MIT | https://huggingface.co/ggml-org/bge-small-en-v1.5-Q8_0-GGUF/resolve/f2068edd9b54f2a369549ccc71f70ed273a2a801/bge-small-en-v1.5-q8_0.gguf | Licence: https://huggingface.co/BAAI/bge-small-en-v1.5. |
+| Multilingual E5 small (search/embedding model, Q8_0 GGUF, tokenizer embedded, downloaded after install) | b6cac96 | MIT | https://huggingface.co/TwinSunsLLC/multilingual-e5-small-gguf/resolve/b6cac9615d4ecce28d7f22539b7322d695fc2886/multilingual-e5-small-q8_0.gguf | Licence: https://huggingface.co/intfloat/multilingual-e5-small. |
 
 ## Bundled fonts (compiled into the app)
 
-Screenplay and document PDFs embed subsets of these fonts (ADR-0016) so text in Telugu, Hindi, Tamil, Malayalam, Kannada and other scripts prints without depending on the computer's fonts. The files ship unmodified under the SIL Open Font License 1.1; the licence texts sit next to them and must be bundled with the installer.
+Screenplay and document PDFs embed subsets of these fonts (ADR-0016) so text in Telugu, Hindi, Tamil, Malayalam, Kannada and other scripts prints without depending on the computer's fonts. The files ship unmodified under the SIL Open Font License 1.1; the licence texts sit next to them and are shown in Settings > About > Third-party licences.
 
 | Font file | Family and style | Version | License | Source | SHA-256 |
 |---|---|---|---|---|---|
@@ -56,9 +58,9 @@ None.
 
 | License expression | Packages |
 |---|---:|
-| MIT OR Apache-2.0 | 199 |
-| MIT | 140 |
-| Apache-2.0 OR MIT | 40 |
+| MIT OR Apache-2.0 | 198 |
+| MIT | 137 |
+| Apache-2.0 OR MIT | 37 |
 | MIT/Apache-2.0 | 18 |
 | Unicode-3.0 | 18 |
 | Unlicense OR MIT | 10 |
@@ -99,7 +101,6 @@ None.
 | alloc-stdlib | 0.2.4 | BSD-3-Clause | permissive | https://github.com/dropbox/rust-alloc-no-stdlib |
 | alloc-stdlib | 0.3.0 | BSD-3-Clause | permissive | https://github.com/dropbox/rust-alloc-no-stdlib |
 | anyhow | 1.0.104 | MIT OR Apache-2.0 | permissive | https://github.com/dtolnay/anyhow |
-| argon2 | 0.6.0 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/password-hashes |
 | atomic-waker | 1.1.2 | Apache-2.0 OR MIT | permissive | https://github.com/smol-rs/atomic-waker |
 | base64 | 0.22.1 | MIT OR Apache-2.0 | permissive | https://github.com/marshallpierce/rust-base64 |
 | base64 | 0.23.1 | MIT OR Apache-2.0 | permissive | https://github.com/marshallpierce/rust-base64 |
@@ -108,7 +109,6 @@ None.
 | bit-vec | 0.8.0 | Apache-2.0 OR MIT | permissive | https://github.com/contain-rs/bit-vec |
 | bitflags | 1.3.2 | MIT/Apache-2.0 | permissive | https://github.com/bitflags/bitflags |
 | bitflags | 2.13.2 | MIT OR Apache-2.0 | permissive | https://github.com/bitflags/bitflags |
-| blake2 | 0.11.0 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/hashes |
 | block-buffer | 0.10.4 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
 | block-buffer | 0.12.1 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
 | block-padding | 0.4.2 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
@@ -130,7 +130,6 @@ None.
 | chacha20 | 0.10.2 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/stream-ciphers |
 | chrono | 0.4.45 | MIT OR Apache-2.0 | permissive | https://github.com/chronotope/chrono |
 | cipher | 0.5.2 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/traits |
-| cmov | 0.5.4 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/utils |
 | color_quant | 1.1.0 | MIT | permissive | https://github.com/image-rs/color_quant |
 | const-oid | 0.10.2 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/formats |
 | const-oid | 0.9.6 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/formats/tree/master/const-oid |
@@ -152,7 +151,6 @@ None.
 | csv | 1.4.0 | Unlicense/MIT | permissive | https://github.com/BurntSushi/rust-csv |
 | csv-core | 0.1.13 | Unlicense/MIT | permissive | https://github.com/BurntSushi/rust-csv |
 | ctor | 1.0.13 | Apache-2.0 OR MIT | permissive | https://github.com/mmastrac/linktime |
-| ctutils | 0.4.3 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/utils |
 | curve25519-dalek | 4.1.3 | BSD-3-Clause | permissive | https://github.com/dalek-cryptography/curve25519-dalek/tree/main/curve25519-dalek |
 | curve25519-dalek-derive | 0.1.1 | MIT/Apache-2.0 | permissive | https://github.com/dalek-cryptography/curve25519-dalek |
 | darling | 0.24.1 | MIT | permissive | https://github.com/TedDriggs/darling |
@@ -278,10 +276,8 @@ None.
 | option-ext | 0.2.0 | MPL-2.0 | weak copyleft / review | https://github.com/soc/option-ext |
 | parking_lot | 0.12.5 | MIT OR Apache-2.0 | permissive | https://github.com/Amanieu/parking_lot |
 | parking_lot_core | 0.9.12 | MIT OR Apache-2.0 | permissive | https://github.com/Amanieu/parking_lot |
-| password-hash | 0.6.1 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/traits |
 | pdf-writer | 0.13.0 | MIT OR Apache-2.0 | permissive | https://github.com/typst/pdf-writer |
 | percent-encoding | 2.3.2 | MIT OR Apache-2.0 | permissive | https://github.com/servo/rust-url/ |
-| phc | 0.6.1 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/formats |
 | phf | 0.13.1 | MIT | permissive | https://github.com/rust-phf/rust-phf |
 | phf_generator | 0.13.1 | MIT | permissive | https://github.com/rust-phf/rust-phf |
 | phf_macros | 0.13.1 | MIT | permissive | https://github.com/rust-phf/rust-phf |
@@ -322,11 +318,11 @@ None.
 | rfd | 0.16.0 | MIT | permissive | https://github.com/PolyMeilex/rfd |
 | ring | 0.17.14 | Apache-2.0 AND ISC | permissive | https://github.com/briansmith/ring |
 | rusqlite | 0.37.0 | MIT | permissive | https://github.com/rusqlite/rusqlite |
-| rust_xlsxwriter | 0.90.2 | MIT OR Apache-2.0 | permissive | https://github.com/jmcnamara/rust_xlsxwriter |
+| rust_xlsxwriter | 0.100.0 | MIT OR Apache-2.0 | permissive | https://github.com/jmcnamara/rust_xlsxwriter |
 | rustc-hash | 2.1.3 | Apache-2.0 OR MIT | permissive | https://github.com/rust-lang/rustc-hash |
 | rustls | 0.23.46 | Apache-2.0 OR ISC OR MIT | permissive | https://github.com/rustls/rustls |
 | rustls-pki-types | 1.15.1 | MIT OR Apache-2.0 | permissive | https://github.com/rustls/pki-types |
-| rustls-webpki | 0.103.15 | ISC | permissive | https://github.com/rustls/webpki |
+| rustls-webpki | 0.103.16 | ISC | permissive | https://github.com/rustls/webpki |
 | rustybuzz | 0.20.1 | MIT | permissive | https://github.com/harfbuzz/rustybuzz |
 | ryu | 1.0.23 | Apache-2.0 OR BSL-1.0 | permissive | https://github.com/dtolnay/ryu |
 | same-file | 1.0.6 | Unlicense/MIT | permissive | https://github.com/BurntSushi/same-file |
@@ -387,6 +383,7 @@ None.
 | tauri-runtime | 2.12.0 | Apache-2.0 OR MIT | permissive | https://github.com/tauri-apps/tauri |
 | tauri-runtime-wry | 2.12.0 | Apache-2.0 OR MIT | permissive | https://github.com/tauri-apps/tauri |
 | tauri-utils | 2.10.0 | Apache-2.0 OR MIT | permissive | https://github.com/tauri-apps/tauri |
+| tempfile | 3.27.0 | MIT OR Apache-2.0 | permissive | https://github.com/Stebalien/tempfile |
 | tendril | 0.5.1 | MIT OR Apache-2.0 | permissive | https://github.com/servo/html5ever |
 | termcolor | 1.4.1 | Unlicense OR MIT | permissive | https://github.com/BurntSushi/termcolor |
 | thiserror | 2.0.21 | MIT OR Apache-2.0 | permissive | https://github.com/dtolnay/thiserror |
@@ -397,7 +394,7 @@ None.
 | time-macros | 0.2.32 | MIT OR Apache-2.0 | permissive | https://github.com/time-rs/time |
 | tinystr | 0.8.4 | Unicode-3.0 | permissive | https://github.com/unicode-org/icu4x |
 | tinyvec | 1.13.3 | Zlib OR Apache-2.0 OR MIT | permissive | https://github.com/Lokathor/tinyvec |
-| tokio | 1.53.1 | MIT | permissive | https://github.com/tokio-rs/tokio |
+| tokio | 1.54.1 | MIT | permissive | https://github.com/tokio-rs/tokio |
 | tokio-macros | 2.7.2 | MIT | permissive | https://github.com/tokio-rs/tokio |
 | tokio-rustls | 0.26.6 | MIT OR Apache-2.0 | permissive | https://github.com/rustls/tokio-rustls |
 | tokio-util | 0.7.19 | MIT | permissive | https://github.com/tokio-rs/tokio |
@@ -422,6 +419,7 @@ None.
 | ts-rs | 11.1.0 | MIT | permissive | https://github.com/Aleph-Alpha/ts-rs |
 | ts-rs-macros | 11.1.0 | MIT | permissive | https://github.com/Aleph-Alpha/ts-rs |
 | ttf-parser | 0.25.1 | MIT OR Apache-2.0 | permissive | https://github.com/harfbuzz/ttf-parser |
+| typed-path | 0.12.3 | MIT OR Apache-2.0 | permissive | https://github.com/chipsenkbeil/typed-path |
 | typeid | 1.0.3 | MIT OR Apache-2.0 | permissive | https://github.com/dtolnay/typeid |
 | typenum | 1.20.1 | MIT OR Apache-2.0 | permissive | https://github.com/paholg/typenum |
 | unicode-bidi | 0.3.18 | MIT OR Apache-2.0 | permissive | https://github.com/servo/unicode-bidi |
@@ -441,7 +439,7 @@ None.
 | want | 0.3.1 | MIT | permissive | https://github.com/seanmonstar/want |
 | web_atoms | 0.2.6 | MIT OR Apache-2.0 | permissive | https://github.com/servo/html5ever |
 | web-time | 1.1.0 | MIT OR Apache-2.0 | permissive | https://github.com/daxpedda/web-time |
-| webpki-roots | 1.0.9 | CDLA-Permissive-2.0 | permissive | https://github.com/rustls/webpki-roots |
+| webpki-roots | 1.0.11 | CDLA-Permissive-2.0 | permissive | https://github.com/rustls/webpki-roots |
 | webview2-com | 0.39.1 | MIT | permissive | https://github.com/wravery/webview2-rs |
 | webview2-com-macros | 0.8.1 | MIT | permissive | https://github.com/wravery/webview2-rs |
 | webview2-com-sys | 0.39.1 | MIT | permissive | https://github.com/wravery/webview2-rs |
@@ -490,7 +488,7 @@ None.
 | zerotrie | 0.2.5 | Unicode-3.0 | permissive | https://github.com/unicode-org/icu4x |
 | zerovec | 0.11.8 | Unicode-3.0 | permissive | https://github.com/unicode-org/icu4x |
 | zerovec-derive | 0.11.6 | Unicode-3.0 | permissive | https://github.com/unicode-org/icu4x |
-| zip | 4.6.1 | MIT | permissive | https://github.com/zip-rs/zip2 |
+| zip | 9.0.4 | MIT | permissive | https://github.com/zip-rs/zip2 |
 | zlib-rs | 0.6.8 | Zlib | permissive | https://github.com/trifectatechfoundation/zlib-rs |
 | zmij | 1.0.23 | MIT | permissive | https://github.com/dtolnay/zmij |
 | zopfli | 0.8.3 | Apache-2.0 | permissive | https://github.com/zopfli-rs/zopfli |
@@ -523,14 +521,12 @@ None.
 | @radix-ui/react-focus-scope | 1.1.16 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-focus-scope/-/react-focus-scope-1.1.16.tgz |
 | @radix-ui/react-id | 1.1.4 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-id/-/react-id-1.1.4.tgz |
 | @radix-ui/react-menu | 2.1.24 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-menu/-/react-menu-2.1.24.tgz |
-| @radix-ui/react-popover | 1.1.23 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-popover/-/react-popover-1.1.23.tgz |
 | @radix-ui/react-popper | 1.3.7 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-popper/-/react-popper-1.3.7.tgz |
 | @radix-ui/react-portal | 1.1.17 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-portal/-/react-portal-1.1.17.tgz |
 | @radix-ui/react-presence | 1.1.10 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-presence/-/react-presence-1.1.10.tgz |
 | @radix-ui/react-primitive | 2.1.10 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-primitive/-/react-primitive-2.1.10.tgz |
 | @radix-ui/react-roving-focus | 1.1.19 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-roving-focus/-/react-roving-focus-1.1.19.tgz |
 | @radix-ui/react-slot | 1.3.3 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-slot/-/react-slot-1.3.3.tgz |
-| @radix-ui/react-tooltip | 1.2.16 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-tooltip/-/react-tooltip-1.2.16.tgz |
 | @radix-ui/react-use-callback-ref | 1.1.4 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-use-callback-ref/-/react-use-callback-ref-1.1.4.tgz |
 | @radix-ui/react-use-controllable-state | 1.2.6 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-use-controllable-state/-/react-use-controllable-state-1.2.6.tgz |
 | @radix-ui/react-use-effect-event | 0.0.5 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-use-effect-event/-/react-use-effect-event-0.0.5.tgz |
@@ -538,7 +534,6 @@ None.
 | @radix-ui/react-use-layout-effect | 1.1.4 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-use-layout-effect/-/react-use-layout-effect-1.1.4.tgz |
 | @radix-ui/react-use-rect | 1.1.4 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-use-rect/-/react-use-rect-1.1.4.tgz |
 | @radix-ui/react-use-size | 1.1.4 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-use-size/-/react-use-size-1.1.4.tgz |
-| @radix-ui/react-visually-hidden | 1.2.11 | MIT | permissive | https://registry.npmjs.org/@radix-ui/react-visually-hidden/-/react-visually-hidden-1.2.11.tgz |
 | @radix-ui/rect | 1.1.3 | MIT | permissive | https://registry.npmjs.org/@radix-ui/rect/-/rect-1.1.3.tgz |
 | @tanstack/query-core | 5.104.0 | MIT | permissive | https://registry.npmjs.org/@tanstack/query-core/-/query-core-5.104.0.tgz |
 | @tanstack/react-query | 5.104.0 | MIT | permissive | https://registry.npmjs.org/@tanstack/react-query/-/react-query-5.104.0.tgz |

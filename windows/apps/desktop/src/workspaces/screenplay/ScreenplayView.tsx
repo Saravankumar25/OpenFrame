@@ -578,7 +578,7 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onImpor
             <button type="button" className="elind spx-elind" aria-label={`Element type: ${ELEMENT_META[type]?.label ?? type}. Change element type`}>
               <FileText size={12} aria-hidden />
               <b>{ELEMENT_META[type]?.short ?? type}</b>
-              {doc.data.canEdit ? <span style={{ opacity: 0.6 }}>· Enter → {ELEMENT_META[nextOnEnter(type)].short}</span> : <span style={{ opacity: 0.6 }}>· Read only</span>}
+              {doc.data.canEdit ? <span>· Enter → {ELEMENT_META[nextOnEnter(type)].short}</span> : <span>· Read only</span>}
               <ChevronDown size={11} aria-hidden />
             </button>
           }

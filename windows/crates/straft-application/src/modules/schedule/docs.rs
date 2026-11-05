@@ -203,7 +203,7 @@ pub(crate) fn build_sides(
         let Some(sc) = board.scene(s) else { continue };
         scenes.push(ScheduleSidesScene {
             scene_id: sc.id.clone(),
-            number: sc.number.to_string(),
+            number: sc.label.clone(),
             heading: sc.heading.clone(),
             elements: source::scene_elements(c, &sc.id)?
                 .into_iter()
@@ -618,7 +618,7 @@ pub(crate) fn build_report(
                 .iter()
                 .map(|sc| {
                     vec![
-                        sc.number.to_string(),
+                        sc.label.clone(),
                         sc.heading.clone(),
                         format!(
                             "{} · {}",
@@ -662,7 +662,7 @@ pub(crate) fn build_report(
                             Vec::new(),
                         )
                     });
-                    e.3.push(sc.number.to_string());
+                    e.3.push(sc.label.clone());
                     if let Some(d) = day_key(&sc.id)
                         && !e.4.iter().any(|x| x.1 == d.1)
                     {
@@ -689,7 +689,7 @@ pub(crate) fn build_report(
                             Vec::new(),
                         )
                     });
-                    e.2.push(sc.number.to_string());
+                    e.2.push(sc.label.clone());
                     if let Some(d) = day_key(&sc.id)
                         && !e.3.iter().any(|x| x.1 == d.1)
                     {
@@ -728,7 +728,7 @@ pub(crate) fn build_report(
                     by.entry(it.name.to_lowercase())
                         .or_insert_with(|| (it.name.clone(), Vec::new()))
                         .1
-                        .push(sc.number.to_string());
+                        .push(sc.label.clone());
                 }
             }
             (
@@ -803,7 +803,7 @@ pub(crate) fn build_report(
                         _ => "In progress",
                     };
                     vec![
-                        sc.number.to_string(),
+                        sc.label.clone(),
                         sc.heading.clone(),
                         conf.to_string(),
                         sug.to_string(),

@@ -49,9 +49,12 @@ export async function menuItem(browser, startsWith) {
 
 /** Open the project menu and choose a page or command. */
 export async function projectMenu(browser, item) {
-  const trigger = await browser.$('//button[starts-with(@aria-label,"Project: ")]');
+  const trigger = await browser.$('//header//button[contains(@class,"projsel")]');
   await trigger.waitForClickable({ timeout: 10_000 });
   await trigger.click();
+  // A data refresh right after a save can close the menu just opened; a person clicks again.
+  const opened = await browser.$('//*[@role="menu"]').waitForDisplayed({ timeout: 3_000 }).catch(() => false);
+  if (!opened) await trigger.click();
   await menuItem(browser, item);
 }
 
@@ -190,17 +193,6 @@ export async function keepNewName(browser, name) {
     timeout: 5_000,
     timeoutMsg: "Esc did not close the suggestion list",
   });
-}
-
-/** Breakdown › Select Source › choose the draft whose label starts with `draftLabel` › Set as Production Source. */
-export async function setProductionSource(browser, draftLabel) {
-  await openWorkspace(browser, "Breakdown");
-  await click(browser, "Select Source");
-  const opt = await browser.$(`//*[@role="dialog"]//button[starts-with(normalize-space(.),${xq(draftLabel)})]`);
-  await opt.waitForClickable({ timeout: 10_000 });
-  await opt.click();
-  await inDialog(browser, "Set as Production Source");
-  await waitForText(browser, `Production Source: ${draftLabel}`);
 }
 
 /** Production › tab. */

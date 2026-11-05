@@ -28,7 +28,6 @@ import {
   storeName,
   trialChip,
   trialEndLine,
-  visibleSocialLinks,
   type SocialLink,
 } from "./rules";
 
@@ -40,6 +39,18 @@ type State =
 type Notice =
   | { kind: "none" | "dataNote" | "tutorial" | "welcome" | "macFirstLaunch" | "locked" | "checkNeeded" | "clockChanged" }
   | { kind: "reminder"; daysLeft: number };
+
+/** The approved community addresses, written out again here on purpose: a change in the config must fail this test. */
+const EXPECTED_COMMUNITY = [
+  ["Instagram", "https://www.instagram.com/straftstudio/"],
+  ["YouTube", "https://www.youtube.com/@StraftStudio"],
+  ["X", "https://x.com/straftstudio/"],
+  ["Facebook", "https://www.facebook.com/straftstudio/"],
+  ["LinkedIn", "https://www.linkedin.com/company/straftstudio/"],
+  ["Reddit", "https://www.reddit.com/user/straftstudio/"],
+  ["Discord", "https://straftstudio.com/discord"],
+  ["Threads", "https://www.threads.com/@straftstudio/"],
+];
 
 const NOT_CONNECTED = "The Microsoft Store connection is not available in this build.";
 
@@ -261,13 +272,8 @@ describe("rules", () => {
     expect(trialEndLine(undefined)).toBeNull();
   });
 
-  it("keeps the contact address in one place and hides placeholder social rows in a release build", () => {
+  it("keeps the contact address in one place", () => {
     expect(CONTACT_URL).toBe("https://straftstudio.com/contact/");
-    expect(visibleSocialLinks(SOCIAL_LINKS, true)).toHaveLength(8);
-    expect(visibleSocialLinks(SOCIAL_LINKS, false)).toEqual([]);
-    const real: SocialLink = { name: "Instagram", short: "IG", handle: "@a", url: "https://www.instagram.com/a" };
-    const bad: SocialLink = { name: "Bad", short: "B", handle: "@b", url: "https://evil.example/b" };
-    expect(visibleSocialLinks([real, bad, ...SOCIAL_LINKS], false)).toEqual([real]);
   });
 
   it("names each store the way the screens say it", () => {
@@ -306,7 +312,7 @@ describe("rules", () => {
 
   it("accepts only fixed https addresses on known social sites", () => {
     expect(isFixedSocialUrl("https://www.instagram.com/straftstudio")).toBe(true);
-    expect(isFixedSocialUrl("https://discord.gg/abc")).toBe(true);
+    expect(isFixedSocialUrl("https://straftstudio.com/discord")).toBe(true);
     for (const bad of [
       null,
       "",
@@ -317,12 +323,15 @@ describe("rules", () => {
       "https://x.com:8443/a",
       "file:///C:/Windows",
       "https://www.instagram.com.evil.example/",
+      "https://discord.gg/wPKGPf5mm",
+      "https://discord.com/invite/abc",
+      "https://www.threads.net/@straftstudio",
+      "https://instagram.com/straftstudio/",
     ]) {
       expect(isFixedSocialUrl(bad)).toBe(false);
     }
-    // The owner has not sent the real handles yet: nothing can be opened.
     expect(SOCIAL_LINKS).toHaveLength(8);
-    expect(SOCIAL_LINKS.every((l) => l.url === null)).toBe(true);
+    expect(SOCIAL_LINKS.every((l) => isFixedSocialUrl(l.url))).toBe(true);
   });
 
   it("names the file manager of each system", () => {
@@ -712,13 +721,19 @@ describe("file safety tutorial and welcome", () => {
     expect(finish).toBeEnabled();
     await userEvent.click(finish);
 
-    const welcome = await screen.findByRole("dialog", { name: "Welcome to the Straft Studio family" });
+    const welcome = await screen.findByRole("dialog", { name: "Welcome to the Straft Studio community" });
     expect(within(welcome).getByText("Thank you for backing independent filmmaking. Be a part of our community.")).toBeInTheDocument();
-    for (const name of ["Instagram", "YouTube", "X", "Facebook", "LinkedIn", "Reddit", "Discord", "Threads"]) {
-      expect(within(welcome).getByLabelText(`${name} @straftstudio`)).toBeInTheDocument();
+    expect(within(welcome).queryByText(/family/)).toBeNull();
+    // All eight accounts are buttons that open the approved address and nothing else.
+    for (const [name, url] of EXPECTED_COMMUNITY) {
+      await userEvent.click(within(welcome).getByRole("button", { name: `${name}, opens in your browser` }));
+      expect(open).toHaveBeenLastCalledWith(url);
     }
-    // Placeholder handles have no address, so nothing is a link.
-    expect(within(welcome).getAllByRole("button").map((b) => b.textContent).filter(Boolean)).toEqual(["OK"]);
+    expect(open).toHaveBeenCalledTimes(8);
+    expect(within(welcome).getAllByRole("button").map((b) => b.textContent).filter(Boolean)).toEqual([
+      ...EXPECTED_COMMUNITY.map(([name]) => name),
+      "OK",
+    ]);
     await userEvent.click(within(welcome).getByRole("button", { name: "OK" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(ops("entitlement.record_notice").map((c) => c.args.notice)).toEqual(["tutorial", "welcome"]);
@@ -726,36 +741,30 @@ describe("file safety tutorial and welcome", () => {
 
   it("opens a welcome link only through the safe path and only for a fixed https address", async () => {
     const links: SocialLink[] = [
-      { name: "Instagram", short: "IG", handle: "@a", url: "https://www.instagram.com/a" },
-      { name: "Bad", short: "B", handle: "@b", url: "http://www.instagram.com/b" },
-      { name: "Evil", short: "E", handle: "@c", url: "https://evil.example/c" },
+      { name: "Instagram", url: "https://www.instagram.com/a" },
+      { name: "Bad", url: "http://www.instagram.com/b" },
+      { name: "Evil", url: "https://evil.example/c" },
     ];
     renderWithClient(<WelcomeDialog links={links} />);
-    await userEvent.click(screen.getByRole("button", { name: "Instagram @a, opens in your browser" }));
+    await userEvent.click(screen.getByRole("button", { name: "Instagram, opens in your browser" }));
     expect(open).toHaveBeenCalledWith("https://www.instagram.com/a");
     expect(screen.queryByRole("button", { name: /Bad/ })).toBeNull();
     expect(screen.queryByRole("button", { name: /Evil/ })).toBeNull();
   });
 
-  it("a release build hides the placeholder rows; with none visible it is the thank-you text and OK", async () => {
+  it("shows the eight community accounts with the exact addresses and no old value, in any build", async () => {
     core.state = { state: "purchased" };
     core.flags = { dataNote: true, tutorial: true, welcome: false };
-    core.debugBuild = false;
-    renderWithClient(<LicenceScreens />);
-    const welcome = await screen.findByRole("dialog", { name: "Welcome to the Straft Studio family" });
-    expect(within(welcome).getByText("Thank you for backing independent filmmaking.")).toBeInTheDocument();
-    expect(within(welcome).queryByText(/community/)).toBeNull();
-    expect(within(welcome).queryByRole("list")).toBeNull();
-    expect(within(welcome).queryByLabelText(/@straftstudio/)).toBeNull();
-    expect(within(welcome).getAllByRole("button").map((b) => b.textContent).filter(Boolean)).toEqual(["OK"]);
-  });
-
-  it("a debug build keeps showing the eight rows", async () => {
-    core.state = { state: "purchased" };
-    core.flags = { dataNote: true, tutorial: true, welcome: false };
-    renderWithClient(<LicenceScreens />);
-    const welcome = await screen.findByRole("dialog", { name: "Welcome to the Straft Studio family" });
-    expect(within(welcome).getAllByRole("listitem")).toHaveLength(8);
+    for (const debugBuild of [true, false]) {
+      core.debugBuild = debugBuild;
+      const r = renderWithClient(<LicenceScreens />);
+      const welcome = await screen.findByRole("dialog", { name: "Welcome to the Straft Studio community" });
+      expect(within(welcome).getAllByRole("listitem")).toHaveLength(8);
+      expect(within(welcome).queryByText(/@straftstudio/)).toBeNull();
+      r.unmount();
+    }
+    expect(JSON.stringify(SOCIAL_LINKS)).not.toMatch(/wPKGPf5mm|discord.gg|threads.net|openframe|placeholder/i);
+    expect(SOCIAL_LINKS.map((l) => [l.name, l.url])).toEqual(EXPECTED_COMMUNITY);
   });
 
   it("trial users see none of the three screens", async () => {
@@ -1005,7 +1014,7 @@ describe("what the interface draws for each answer", () => {
       [{ kind: "checkNeeded" }, "Checking your purchase"],
       [{ kind: "dataNote" }, "Your data, your responsibility"],
       [{ kind: "tutorial" }, "File safety tutorial"],
-      [{ kind: "welcome" }, "Welcome to the Straft Studio family"],
+      [{ kind: "welcome" }, "Welcome to the Straft Studio community"],
       [{ kind: "reminder", daysLeft: 2 }, "Trial reminder"],
     ] as const;
     for (const [notice, title] of cases) {
@@ -1040,7 +1049,7 @@ describe("no price, currency or pricing model on any licensing screen", () => {
         [{ kind: "checkNeeded" }, "Checking your purchase", { state: "needsOnlineCheck" }],
         [{ kind: "macFirstLaunch" }, "Welcome to Straft Studio", { state: "trialNotStarted" }],
         [{ kind: "dataNote" }, "Your data, your responsibility", { state: "purchased" }],
-        [{ kind: "welcome" }, "Welcome to the Straft Studio family", { state: "purchased" }],
+        [{ kind: "welcome" }, "Welcome to the Straft Studio community", { state: "purchased" }],
         [{ kind: "clockChanged" }, "Your Mac's clock looks wrong", { state: "clockChanged" }],
       ] as const) {
         core.fixedNotice = notice;

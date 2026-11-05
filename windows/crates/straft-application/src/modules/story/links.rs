@@ -13,11 +13,36 @@
 //!
 //! The stored id is never rewritten here (reads stay reads); it remains the record of which scene
 //! the card created.
+//!
+//! A writer can also link a card to a scene that already exists (written by hand or imported from
+//! Final Draft, Fountain, PDF and so on) with `story.link_scene`. It stores the same
+//! `screenplay_scene_id`, so every rule above applies to it unchanged. `story.linkable_scenes`
+//! lists the scenes that can be picked: the scenes of the current draft of every live screenplay,
+//! whichever way the screenplay was made.
+
+use std::collections::HashMap;
 
 use rusqlite::{Connection, OptionalExtension, params};
-use serde::Serialize;
-use straft_domain::AppResult;
+use serde::{Deserialize, Serialize};
+use straft_domain::{Actor, AppError, AppResult, Capability, now_ms};
 use ts_rs::TS;
+
+use super::board::{StoryScopeArgs, linked_scene};
+use super::ensure_live;
+use crate::core::AppCore;
+use crate::modules::screenplay::numbering;
+use crate::registry::Registry;
+use crate::store::MutationMeta;
+
+pub fn register(r: &mut Registry) {
+    use crate::registry::{OperationMetadata as M, hidden as h};
+    r.query("story.linkable_scenes", linkable_scenes)
+        .meta(M::read("Screenplay scenes a Scene Card can be linked to.").hidden(h::UI_FLOW));
+    r.command("story.link_scene", link_scene).meta(
+        M::edit("Link a Scene Card to an existing screenplay scene, or clear the link.")
+            .hidden(h::CARD_SCENE_LINK),
+    );
+}
 
 /// A live screenplay scene a card currently points at.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -145,4 +170,97 @@ pub(crate) fn scene_status(c: &Connection, s: &ResolvedScene) -> AppResult<Story
         shots,
         storyboards,
     })
+}
+
+// ------------------------------------------------------------ link to an existing scene
+
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub struct StoryLinkableScene {
+    pub scene_id: String,
+    pub screenplay_id: String,
+    pub screenplay_title: String,
+    pub draft_id: String,
+    pub draft_name: String,
+    /// The number the Screenplay workspace shows, for example "12A".
+    pub label: String,
+    pub heading: String,
+}
+
+#[derive(Debug, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct StoryLinkSceneArgs {
+    pub card_id: String,
+    /// None clears the link.
+    #[serde(default)]
+    pub scene_id: Option<String>,
+}
+
+fn linkable_scenes(
+    core: &AppCore,
+    actor: &Actor,
+    _: StoryScopeArgs,
+) -> AppResult<Vec<StoryLinkableScene>> {
+    actor.require(Capability::View, "view the Beat Board")?;
+    core.project()?.store.read(|c| {
+        let drafts: Vec<(String, String, String, String)> = c
+            .prepare(
+                "SELECT p.id, p.title, d.id, d.name FROM screenplay p JOIN screenplay_draft d ON d.id = p.current_draft_id
+                 WHERE p.deleted_at IS NULL AND d.deleted_at IS NULL ORDER BY p.created_at, p.id",
+            )?
+            .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)))?
+            .collect::<Result<_, _>>()?;
+        let mut out = Vec::new();
+        for (screenplay_id, screenplay_title, draft_id, draft_name) in drafts {
+            let scenes: HashMap<String, (String, bool)> = c
+                .prepare("SELECT id, heading, omitted FROM screenplay_scene WHERE draft_id=?1 AND deleted_at IS NULL")?
+                .query_map([&draft_id], |r| Ok((r.get(0)?, (r.get(1)?, r.get::<_, i64>(2)? != 0))))?
+                .collect::<Result<_, _>>()?;
+            // Labels come in script order; omitted scenes are out of the script and not offered.
+            for (scene_id, label) in numbering::draft_labels(c, &draft_id)? {
+                let Some((heading, omitted)) = scenes.get(&scene_id) else { continue };
+                if *omitted {
+                    continue;
+                }
+                out.push(StoryLinkableScene {
+                    scene_id,
+                    screenplay_id: screenplay_id.clone(),
+                    screenplay_title: screenplay_title.clone(),
+                    draft_id: draft_id.clone(),
+                    draft_name: draft_name.clone(),
+                    label,
+                    heading: heading.clone(),
+                });
+            }
+        }
+        Ok(out)
+    })
+}
+
+fn link_scene(core: &AppCore, actor: &Actor, a: StoryLinkSceneArgs) -> AppResult<()> {
+    core.project()?.store.mutate(
+        actor,
+        MutationMeta::new(
+            "story.link_scene",
+            if a.scene_id.is_some() { "Linked Scene Card to a screenplay scene" } else { "Cleared the screenplay scene link" },
+            Capability::Edit,
+        )
+        .target("story_scene_card", &a.card_id),
+        |tx| {
+            let c = tx.conn();
+            ensure_live(c, "story_scene_card", &a.card_id, "scene card")?;
+            if let Some(scene_id) = &a.scene_id
+                && linked_scene(c, scene_id)?.is_none()
+            {
+                return Err(AppError::not_found("screenplay scene"));
+            }
+            c.execute(
+                "UPDATE story_scene_card SET screenplay_scene_id=?1, rev=rev+1, updated_at=?2 WHERE id=?3",
+                params![a.scene_id, now_ms(), a.card_id],
+            )?;
+            Ok(())
+        },
+    )
 }

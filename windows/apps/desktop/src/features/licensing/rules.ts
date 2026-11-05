@@ -4,6 +4,7 @@
 
 import type { Channel } from "../../ipc/generated/Channel";
 import type { EntitlementState } from "../../ipc/generated/EntitlementState";
+import { COMMUNITY_LINKS } from "./communityLinks";
 
 /** The one contact address (ADR-0039 item 11). Opened in the browser; the app sends nothing. */
 export const CONTACT_URL = "https://straftstudio.com/contact/";
@@ -86,53 +87,18 @@ export function isAppShortcut(e: Pick<KeyboardEvent, "key" | "ctrlKey" | "metaKe
   return !clipboard;
 }
 
-/** Social accounts on the welcome popup. The owner has not sent the real handles or addresses yet
- * (placeholders, 2026-10-07), so no account has an address and none can be opened. When the real
- * ones arrive, each `url` is a fixed https address on that network's own site. */
+/** One community account on the welcome popup: its name and its fixed https address. */
 export interface SocialLink {
   name: string;
-  short: string;
-  handle: string;
-  url: string | null;
+  url: string;
 }
 
-export const SOCIAL_LINKS: readonly SocialLink[] = [
-  { name: "Instagram", short: "IG", handle: "@straftstudio", url: null },
-  { name: "YouTube", short: "YT", handle: "@straftstudio", url: null },
-  { name: "X", short: "X", handle: "@straftstudio", url: null },
-  { name: "Facebook", short: "f", handle: "@straftstudio", url: null },
-  { name: "LinkedIn", short: "in", handle: "@straftstudio", url: null },
-  { name: "Reddit", short: "Rd", handle: "@straftstudio", url: null },
-  { name: "Discord", short: "Dc", handle: "@straftstudio", url: null },
-  { name: "Threads", short: "Th", handle: "@straftstudio", url: null },
-];
+export const SOCIAL_LINKS: readonly SocialLink[] = COMMUNITY_LINKS;
 
-/** A release build hides the rows that have no address yet (ADR-0039 item 12); a debug build shows
- * them all, so the mocks and tests still work. */
-export function visibleSocialLinks(links: readonly SocialLink[], debugBuild: boolean): readonly SocialLink[] {
-  return debugBuild ? links : links.filter((l) => isFixedSocialUrl(l.url));
-}
+/** The only sites a welcome link may open: the hosts of the eight addresses in `communityLinks.ts`. */
+const SOCIAL_HOSTS: ReadonlySet<string> = new Set(COMMUNITY_LINKS.map((l) => new URL(l.url).hostname));
 
-/** The only sites a welcome link may open. */
-const SOCIAL_HOSTS = new Set([
-  "www.instagram.com",
-  "instagram.com",
-  "www.youtube.com",
-  "youtube.com",
-  "x.com",
-  "www.facebook.com",
-  "facebook.com",
-  "www.linkedin.com",
-  "linkedin.com",
-  "www.reddit.com",
-  "reddit.com",
-  "discord.gg",
-  "discord.com",
-  "www.threads.net",
-  "threads.net",
-]);
-
-/** A fixed social address: https, a known social site, no user name or password, no port. */
+/** A fixed social address: https, one of the community sites, no user name or password, no port. */
 export function isFixedSocialUrl(url: string | null): url is string {
   if (!url) return false;
   let u: URL;

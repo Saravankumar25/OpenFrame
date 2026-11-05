@@ -9,7 +9,6 @@ publish.workspace = true
 [dependencies]
 directories.workspace = true
 rand.workspace = true
-tracing.workspace = true
 
 [target.'cfg(windows)'.dependencies]
 # Job Objects (no orphan child processes) and the handle types they need; the Windows Spell

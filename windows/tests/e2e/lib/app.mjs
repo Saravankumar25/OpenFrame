@@ -42,30 +42,22 @@ export async function launchApp() {
   browser.setTimeout({ implicit: 0 });
   await browser.waitUntil(async () => (await browser.execute(() => document.readyState)) === "complete", { timeout: 30_000 });
   await installConsoleProbe(browser);
-  if (process.env.E2E_TEAM_PASSWORD) await unlockTeamGate(browser, process.env.E2E_TEAM_PASSWORD);
-  if (process.env.E2E_RELEASE === "open") await closeCheckScreen(browser);
+  if (process.env.E2E_CHECK_SCREEN === "1") await closeCheckScreen(browser);
   return browser;
 }
 
 /**
- * An open release run (run.mjs `--release=open`) drives the store-channel executable outside its
- * package. The Microsoft Store cannot answer there, so the app starts on "Checking your purchase"
- * (state NeedsOnlineCheck: opening and exporting work, editing is refused in Rust). Close it the
- * way a person does, with "Not now". The store read can take up to 40 seconds, hence the wait.
+ * An open release run that builds (run.mjs `--release=open`, which sets E2E_CHECK_SCREEN) drives the
+ * store-channel executable outside its package. The Microsoft Store cannot answer there, so the app
+ * starts on "Checking your purchase" (state NeedsOnlineCheck: opening and exporting work, editing is
+ * refused in Rust). Close it the way a person does, with "Not now". The store read can take up to 40
+ * seconds, hence the wait. An installed internal build (`--app`) shows no such screen and is not
+ * given E2E_CHECK_SCREEN.
  */
 export async function closeCheckScreen(browser) {
   const notNow = await button(browser, "Not now", { timeout: 60_000 });
   await notNow.click();
   await notNow.waitForExist({ reverse: true, timeout: 15_000, timeoutMsg: "The purchase check screen did not close" });
-}
-
-/** A gated release run (run.mjs `--release=gated`): pass the team password screen the way a tester does. */
-export async function unlockTeamGate(browser, password) {
-  const input = await browser.$("#team-password");
-  await input.waitForDisplayed({ timeout: 30_000, timeoutMsg: "The team password screen did not show on the gated build" });
-  await input.setValue(password);
-  await click(browser, "Open Straft Studio");
-  await input.waitForExist({ reverse: true, timeout: 30_000, timeoutMsg: "The team password screen did not close" });
 }
 
 /** Record console errors/warnings and uncaught errors inside the webview. */
@@ -176,9 +168,17 @@ export async function button(browser, name, { timeout = 10_000, within = "" } = 
 }
 
 export async function click(browser, name, opts) {
-  const el = await button(browser, name, opts);
-  await el.scrollIntoView({ block: "center" }).catch(() => undefined);
-  await el.click();
+  // A re-render between finding and clicking replaces the element, not the control: find it again.
+  for (let attempt = 0; ; attempt++) {
+    const el = await button(browser, name, opts);
+    await el.scrollIntoView({ block: "center" }).catch(() => undefined);
+    try {
+      await el.click();
+      return;
+    } catch (e) {
+      if (attempt >= 2 || !/stale element/i.test(String(e))) throw e;
+    }
+  }
 }
 
 /** A text field by its label, aria-label or placeholder. */

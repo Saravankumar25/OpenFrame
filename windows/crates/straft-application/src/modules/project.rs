@@ -1604,6 +1604,21 @@ pub fn recent_activity(c: &Connection, limit: i64) -> AppResult<Vec<ActivityEntr
     Ok(rows)
 }
 
+// Home counts what the person is working on, the same rows the Screenplay, Breakdown and Schedule
+// workspaces show. Older drafts, older sources and older schedules stay in the project but are not
+// added up (a project with five drafts of 130 scenes is not a 650 scene film).
+/// Scenes of each live screenplay's current draft; an omitted scene is not shot, so it is not counted.
+const CURRENT_SCENES: &str = "omitted = 0 AND draft_id IN (
+    SELECT COALESCE(p.current_draft_id, (SELECT d.id FROM screenplay_draft d WHERE d.screenplay_id = p.id
+        AND d.deleted_at IS NULL ORDER BY d.created_at DESC, d.id DESC LIMIT 1))
+    FROM screenplay p WHERE p.deleted_at IS NULL)";
+/// Confirmed breakdown items of the active Production Source, as the Breakdown workspace lists them.
+const ACTIVE_BREAKDOWN: &str = "confirmation_state IN ('Confirmed','Manual') AND archived = 0
+    AND source_id IN (SELECT id FROM production_source WHERE active = 1)";
+/// Shoot days (off days are not numbered) of the schedule the Schedule workspace opens, the newest live one.
+const CURRENT_SHOOT_DAYS: &str = "is_off_day = 0 AND schedule_id = (
+    SELECT id FROM shooting_schedule WHERE deleted_at IS NULL ORDER BY created_at DESC, id DESC LIMIT 1)";
+
 fn home(core: &AppCore, actor: &Actor, _: Empty) -> AppResult<ProjectHome> {
     actor.require(Capability::View, "view this project")?;
     let s = core.project()?;
@@ -1617,11 +1632,11 @@ fn home(core: &AppCore, actor: &Actor, _: Empty) -> AppResult<ProjectHome> {
             ("sceneCards", "Scene cards", "story_scene_card", ""),
             ("characters", "Characters", "story_character", ""),
             ("drafts", "Screenplay drafts", "screenplay_draft", ""),
-            ("scenes", "Screenplay scenes", "screenplay_scene", ""),
-            ("breakdownItems", "Breakdown items", "breakdown_element", "confirmation_state IN ('Confirmed','Manual')"),
+            ("scenes", "Screenplay scenes", "screenplay_scene", CURRENT_SCENES),
+            ("breakdownItems", "Breakdown items", "breakdown_element", ACTIVE_BREAKDOWN),
             ("locations", "Locations", "location", ""),
             ("shots", "Shots", "shot", ""),
-            ("shootingDays", "Shooting days", "shooting_day", ""),
+            ("shootingDays", "Shooting days", "shooting_day", CURRENT_SHOOT_DAYS),
             ("callSheets", "Call sheets", "call_sheet", ""),
         ];
         let mut counts = Vec::new();

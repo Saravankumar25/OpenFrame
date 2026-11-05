@@ -323,15 +323,17 @@ function TopBar({ project, undoScope }: { project: ProjectSummary | null; undoSc
   const name = info.data?.profile.displayName ?? "";
   return (
     <header className="topbar">
-      <button type="button" className="brand brand-btn" aria-label="All projects" title="All projects" onClick={() => leaveToHome(project)}>
+      <button type="button" className="brand brand-btn" aria-label="Straft Studio, all projects" title="Straft Studio, all projects" onClick={() => leaveToHome(project)}>
         <BrandLogo />
       </button>
       <Menu
         trigger={
-          <button className="projsel" aria-label={`Project: ${project?.title ?? ""}. Switch or manage projects`}>
+          <button className="projsel">
             <span className="col" style={{ gap: 0, alignItems: "flex-start", minWidth: 0 }}>
+              <span className="sr-only">Project: </span>
               <span title={project?.title} style={{ maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{project?.title ?? "…"}</span>
               <small>{project?.projectType}</small>
+              <span className="sr-only">. Switch or manage projects</span>
             </span>
             <span className="grow" />
             <ChevronDown size={14} />
@@ -339,7 +341,7 @@ function TopBar({ project, undoScope }: { project: ProjectSummary | null; undoSc
         }
         items={projectMenu}
       />
-      <button className="search" onClick={() => setSearchOpen(true)} aria-label="Search this project" style={{ cursor: "text" }}>
+      <button className="search" onClick={() => setSearchOpen(true)} style={{ cursor: "text" }}>
         <Search size={15} />
         <span className="grow" style={{ textAlign: "left" }}>Search this project…</span>
         {keys.search && <kbd>{keys.search}</kbd>}
@@ -361,8 +363,8 @@ function TopBar({ project, undoScope }: { project: ProjectSummary | null; undoSc
         <button className="iconbtn" aria-label="Settings" title="Settings" onClick={() => go({ workspace: "settings" })}>
           <Settings size={16} />
         </button>
-        <button className="avatar" style={{ border: 0 }} aria-label={`Your name: ${name}. Change`} title={`${name}: change your name`} onClick={() => setNameOpen(true)}>
-          {initials(name)}
+        <button className="avatar" style={{ border: 0 }} title={`${name}: change your name`} onClick={() => setNameOpen(true)}>
+          {initials(name)}<span className="sr-only">. Your name: {name}. Change</span>
         </button>
       </div>
       {nameOpen && info.data && <DisplayNameDialog firstRun={false} current={info.data.profile.displayName} onClose={() => setNameOpen(false)} />}

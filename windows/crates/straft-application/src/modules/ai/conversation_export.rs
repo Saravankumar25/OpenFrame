@@ -42,7 +42,7 @@ pub fn export_conversation(
     if !orchestrator::valid_conversation_id(&a.conversation_id) {
         return Err(nothing_to_save());
     }
-    let dest = trace::destination(&a.path)?;
+    let dest = trace::destination(core, &a.path)?;
     let s = core.project()?;
     let exchanges = s
         .store

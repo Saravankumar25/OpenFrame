@@ -30,8 +30,8 @@ pub struct SceneRow {
     pub id: String,
     pub lineage_id: String,
     pub draft_id: String,
-    /// 1-based order within its draft (the displayed scene number).
-    pub number: i64,
+    /// The scene number the Screenplay workspace shows (12, 120A).
+    pub number: String,
     pub heading: String,
     pub omitted: bool,
     /// Screenplay title when several screenplays (episodes) are in the source.
@@ -126,12 +126,13 @@ impl SceneCtx {
                     ))
                 })?
                 .collect::<Result<Vec<_>, _>>()?;
-            for (i, (id, lineage_id, heading, omitted)) in rows.into_iter().enumerate() {
+            let labels = crate::modules::screenplay::numbering::draft_labels(c, draft_id)?;
+            for ((id, lineage_id, heading, omitted), (_, number)) in rows.into_iter().zip(labels) {
                 scenes.push(SceneRow {
                     id,
                     lineage_id,
                     draft_id: draft_id.clone(),
-                    number: i as i64 + 1,
+                    number,
                     heading,
                     omitted,
                     group: multi.then(|| title.clone()),
@@ -191,7 +192,7 @@ impl SceneCtx {
 
     /// Display number, e.g. "12" (prefixed with the episode title when several screenplays are planned).
     pub fn number_label(&self, s: &SceneRow) -> String {
-        s.number.to_string()
+        s.number.clone()
     }
 
     /// Content fingerprint of a scene (heading, omitted state and every element) and

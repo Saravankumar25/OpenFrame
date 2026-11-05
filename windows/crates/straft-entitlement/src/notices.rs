@@ -169,7 +169,7 @@ pub enum Notice {
     DataNote,
     /// The 4-step file safety tutorial (mocks 194 to 197). Must be finished.
     Tutorial,
-    /// "Welcome to the Straft Studio family" (mock 198). Shown once.
+    /// "Welcome to the Straft Studio community" (mock 198). Shown once.
     Welcome,
     /// Mac App Store: first launch, free trial or buy (mock 187). Blocks until the user chooses.
     MacFirstLaunch,

@@ -42,7 +42,7 @@ public static System.IntPtr AppWindow(int processId) {
 public static string Fire(System.IntPtr hWnd, bool altF4) {
   if (!altF4) {
     PostMessage(hWnd, 0x0112, (System.IntPtr)0xF060, System.IntPtr.Zero);
-    return "sent";
+    return "sent " + System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
   }
   // Keys go to whatever window is in front: never press Alt+F4 unless it is the app's window.
   // Windows may refuse a plain SetForegroundWindow (its foreground lock); a key press first is the
@@ -60,7 +60,7 @@ public static string Fire(System.IntPtr hWnd, bool altF4) {
   keybd_event(0x73, 0, 0, System.UIntPtr.Zero);
   keybd_event(0x73, 0, 2, System.UIntPtr.Zero);
   keybd_event(0x12, 0, 2, System.UIntPtr.Zero);
-  return "sent";
+  return "sent " + System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 }
 '@
 $deadline = (Get-Date).AddSeconds(20)
@@ -78,8 +78,8 @@ if ($altF4) { [void][OfE2e.Close]::SetForegroundWindow($hwnd) }
 [Console]::Out.Flush()
 [void][Console]::In.ReadLine()
 $result = [OfE2e.Close]::Fire($hwnd, $altF4)
-if ($result -ne 'sent') { throw 'The app window is not in front; Alt+F4 was not sent.' }
-[Console]::Out.WriteLine('sent')
+if (-not $result.StartsWith('sent')) { throw 'The app window is not in front; Alt+F4 was not sent.' }
+[Console]::Out.WriteLine($result)
 [Console]::Out.Flush()
 `;
 
@@ -97,19 +97,22 @@ export function prepareClose(method) {
   let err = "";
   const waitFor = (word) =>
     new Promise((resolve, reject) => {
-      const check = () => out.includes(word) && resolve();
+      const has = () => (word instanceof RegExp ? word.test(out) : out.includes(word));
+      const check = () => has() && resolve();
       p.stdout.on("data", (d) => {
         out += d;
         check();
       });
       p.stderr.on("data", (d) => (err += d));
-      p.once("exit", (code) => (out.includes(word) ? resolve() : reject(new Error(`close helper ended (${code}): ${err.trim()}`))));
+      p.once("exit", (code) => (has() ? resolve() : reject(new Error(`close helper ended (${code}): ${err.trim()}`))));
       check();
     });
   return waitFor("ready").then(() => ({
     go: () => {
       p.stdin.write("go\n");
-      return waitFor("sent");
+      // The helper names the moment the close left, so the way back through its pipe is not counted.
+      const SENT = /sent (\d+)\r?\n/;
+      return waitFor(SENT).then(() => Number(SENT.exec(out)[1]));
     },
   }));
 }

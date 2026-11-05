@@ -311,23 +311,6 @@ impl<'a> FetchCtx<'a> {
         *self.days.borrow_mut() = Some(days.clone());
         days
     }
-
-    /// Day number and date of the shooting day of a scene, when the scene is scheduled.
-    pub fn day_of_scene(&self, scene_id: &str) -> Option<(u32, Option<String>)> {
-        let day_id: String = self
-            .conn
-            .query_row(
-                "SELECT day_id FROM schedule_strip
-                 WHERE scene_id = ?1 AND deleted_at IS NULL AND archived = 0 AND day_id IS NOT NULL LIMIT 1",
-                [scene_id],
-                |r| r.get(0),
-            )
-            .optional()
-            .ok()??;
-        let d = self.days();
-        let d = d.iter().find(|d| d.id == day_id)?;
-        Some((d.number? as u32, d.date.clone()))
-    }
 }
 
 /// Run a read that may fail; a failure adds no facts and is logged, never shown.

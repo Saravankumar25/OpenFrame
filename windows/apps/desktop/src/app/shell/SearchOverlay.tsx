@@ -96,7 +96,7 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
             <span className="grow" />
             {debounced && <span className="muted sm">{res.isFetching ? "Searching…" : `${hits.length} result${hits.length === 1 ? "" : "s"}`}</span>}
           </div>
-          <div className="db" ref={listRef} role="listbox" aria-label="Results" style={{ maxHeight: 460, padding: "4px 10px 12px" }}>
+          <div className="db" ref={listRef} role={hits.length > 0 ? "listbox" : undefined} aria-label={hits.length > 0 ? "Results" : undefined} style={{ maxHeight: 460, padding: "4px 10px 12px" }}>
             {debounced && !res.isFetching && hits.length === 0 && (
               <div className="muted" style={{ padding: 16, textAlign: "center" }}>No matches. Search looks at titles, text, notes, file names and tags.</div>
             )}

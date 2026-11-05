@@ -78,6 +78,11 @@ pub struct CallSheetSourceLocation {
     pub access: Option<String>,
     #[serde(default)]
     pub contact: Option<String>,
+    /// The location record's nearest hospital. Left out of the stored source when empty, so a source
+    /// saved before this field existed keeps its fingerprint until a hospital is really set.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub hospital: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq)]
@@ -343,17 +348,20 @@ pub struct LocationDetail {
     pub parking: Option<String>,
     pub access: Option<String>,
     pub contact: Option<String>,
+    pub hospital: Option<String>,
 }
 
-/// Parking, access and contact of every location record, by location id.
+/// Parking, access, contact and nearest hospital of every location record, by location id.
 pub fn load_location_details(c: &Connection) -> AppResult<HashMap<String, LocationDetail>> {
-    let mut st =
-        c.prepare("SELECT id, contact, notes_json FROM location WHERE deleted_at IS NULL")?;
+    let mut st = c.prepare(
+        "SELECT id, contact, notes_json, nearest_hospital FROM location WHERE deleted_at IS NULL",
+    )?;
     let rows = st.query_map([], |r| {
         Ok((
             r.get::<_, String>(0)?,
             r.get::<_, Option<String>>(1)?,
             r.get::<_, String>(2)?,
+            r.get::<_, Option<String>>(3)?,
         ))
     })?;
     let clean = |v: Option<&serde_json::Value>| {
@@ -364,7 +372,7 @@ pub fn load_location_details(c: &Connection) -> AppResult<HashMap<String, Locati
     };
     let mut out = HashMap::new();
     for row in rows {
-        let (id, contact, notes) = row?;
+        let (id, contact, notes, hospital) = row?;
         let notes: serde_json::Value = serde_json::from_str(&notes).unwrap_or_default();
         out.insert(
             id,
@@ -372,6 +380,9 @@ pub fn load_location_details(c: &Connection) -> AppResult<HashMap<String, Locati
                 parking: clean(notes.get("parking")),
                 access: clean(notes.get("access")),
                 contact: contact
+                    .map(|s| s.trim().to_string())
+                    .filter(|s| !s.is_empty()),
+                hospital: hospital
                     .map(|s| s.trim().to_string())
                     .filter(|s| !s.is_empty()),
             },
@@ -497,7 +508,7 @@ pub fn build(board: &Board, d: &DayRow) -> CallSheetSource {
         match item {
             Item::Strip(s) => {
                 let sc = board.scene(s);
-                let number = sc.map(|x| x.number.to_string()).unwrap_or_default();
+                let number = sc.map(|x| x.label.clone()).unwrap_or_default();
                 let scene_cast = board.cast(s);
                 let scene_locs = board.locations(s);
                 scenes.push(CallSheetSourceScene {
@@ -549,6 +560,7 @@ pub fn build(board: &Board, d: &DayRow) -> CallSheetSource {
                             parking: detail.parking,
                             access: detail.access,
                             contact: detail.contact,
+                            hospital: detail.hospital,
                         });
                     }
                 }
