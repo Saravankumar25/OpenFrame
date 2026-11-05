@@ -64,9 +64,9 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Features moved:** none.
 - **Docs updated:** handoff, release gate, `release/README.md`, MacHTML README, third party licences, store placeholders.
 - **Decisions made or needed:** the owner decides whether the accounts also go in the Help menu.
-- **Blocked / risks:** three drag scenarios passed by hand only. `cargo deny` and `cargo audit` are not installed. AI evaluation not run after the name change.
+- **Blocked / risks:** three drag scenarios passed by hand only. The Reddit address and clicking the accounts inside the app are unconfirmed.
 - **Next:** see the handoff.
-- **Checks run:** Swift 817 of 817, `straft-security`, `99-store` 7 of 7, first start 2 of 2, writing, links, governance. Rust as a whole not rerun: only one test changed since the 2982 pass.
+- **Checks run:** Swift 817 of 817, `straft-security`, `99-store` 7 of 7, first start 2 of 2, writing, links, governance, `cargo audit` 0 vulnerabilities, `cargo deny` passes after correcting its TLS ban to match the Mac's use of Apple's Security framework, AI section set 324 of 336, injection set 60 of 60. Rust as a whole not rerun: only one test changed since the 2982 pass.
 
 ### 2026-11-05, Overnight pass on the Mac: build, parity, fixes, one clean run, MacHTML, push
 - **Areas and items worked:** the owner's overnight list, outside the plan boxes: build, old name sweep, parity with `windows/`, check every function, fixes, MacHTML, push.

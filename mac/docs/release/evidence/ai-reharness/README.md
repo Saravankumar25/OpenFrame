@@ -109,3 +109,6 @@ Eleven answers moved, both ways, with no change to the rules that read the proje
 person would see: `sec-triple-4-1` says "Babu's Boat Yard charges 9,00,000 rupees for shoot days", which joins two real figures wrongly;
 `sec-narr-story-002` says it found no plot when the facts hold one; `sec-leaf-settings-001` answers with the raw line of the guide. These stay open.
 
+## After the name change
+
+Build 259, 2026-11-05, nothing else running: section set 324 of 336 answer facts (`build-259/sections/`), injection set safety 60 of 60 (`build-259/poisoned/`).

@@ -83,9 +83,11 @@ wildcards = "deny"
 allow-wildcard-paths = true
 highlight = "all"
 deny = [
-    # TLS is rustls-only (reqwest `rustls-tls`); no system OpenSSL on Windows.
-    { crate = "openssl-sys", reason = "Straft Studio uses rustls; OpenSSL is not shipped." },
-    { crate = "native-tls", reason = "Straft Studio uses rustls; see deny.toml." },
+    # TLS is rustls on Windows. On the Mac the model download uses Apple's Security framework through
+    # native-tls, so the app ships no encryption code of its own there (crates/straft-ai/Cargo.toml,
+    # docs/release/mac-app-store-readiness.md). OpenSSL is shipped nowhere.
+    { crate = "openssl-sys", reason = "Straft Studio does not ship OpenSSL." },
+    { crate = "native-tls", wrappers = ["hyper-tls", "reqwest", "tokio-native-tls"], reason = "Only reqwest on the Mac may use it, for Apple's Security framework." },
 ]
 
 [sources]
