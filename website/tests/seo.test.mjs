@@ -293,3 +293,15 @@ test('fast pages: fonts preloaded with crossorigin and swapped, one stylesheet, 
   assert.ok(faces.length >= 3);
   for (const f of faces) assert.match(f, /font-display:swap/);
 });
+
+test('favicon for Google: every page declares icons that exist, and one is a square PNG larger than 48 px', { skip: SKIP }, () => {
+  for (const p of pages.filter((x) => !x.noindex)) {
+    const hrefs = [...p.s.matchAll(/<link rel="icon" href="([^"]+)"/g)].map((m) => m[1]);
+    assert.ok(hrefs.includes('/favicon.ico'), `${p.path} links /favicon.ico`);
+    for (const h of hrefs) assert.ok(fs.existsSync(path.join(DIST, h.slice(1))), `${p.path}: ${h} exists`);
+  }
+  const big = fs.readFileSync(path.join(DIST, 'icon-192.png'));
+  assert.equal(big.readUInt32BE(16), big.readUInt32BE(20), 'icon-192.png is square');
+  assert.ok(big.readUInt32BE(16) > 48);
+  assert.ok(pages.find((p) => p.path === '/').s.includes('<link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">'));
+});

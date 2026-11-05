@@ -14,9 +14,9 @@ Agents: **automation** (this file, IndexNow, monitor, tests), **crawl**, **metad
 | A1 | `sitemap.xml` live, lists indexable pages only, honest `lastmod`, image entries | done | Live fetch 2026-11-05: 200, XML. `scripts/seo-monitor.mjs` checks it. `tests/seo.test.mjs` checks content. |
 | A2 | `robots.txt` allows crawling, names the sitemap, blocks only `/search-index.json` and `/mockups/` | done | Live fetch 2026-11-05. `tests/seo-live-ready.test.mjs` checks no sitemap URL is blocked. |
 | A3 | IndexNow key file at the site root | done | `https://straftstudio.com/8dff8bfd7101028db60a502780c7c4c7.txt` answers 200 with the key (monitor, 2026-11-05). |
-| A4 | `scripts/indexnow.mjs`: changed URLs only, soft failure, dry run | done | Unit tests in `tests/seo-live-ready.test.mjs`. Dry run against the live sitemap: 0 changed URLs. |
-| A5 | First IndexNow submission of all URLs (no flag) | open | Lead, once, after the next deploy: `node scripts/indexnow.mjs`. Expect 200 or 202. |
-| A6 | IndexNow after every deploy, wired into the deploy workflow | open | Lead applies the workflow lines below. |
+| A4 | `scripts/indexnow.mjs`: changed URLs only, soft failure, dry run, host refusal, retries, cap | done | Unit tests in `tests/indexnow.test.mjs` and `tests/seo-live-ready.test.mjs`. A mode flag is required; `--since` and `--changed` refuse more than 100 URLs. |
+| A5 | First IndexNow submission of all URLs (`--all`) | done | 2026-11-05 05:03 UTC, from the live sitemap: 752 URLs, 1 request, HTTP 200. No earlier full submission was recorded (the 04:53 UTC deploy sent 3 URLs, answer 202). Do not repeat. |
+| A6 | IndexNow after every deploy, wired into the deploy workflow | done | Live since the 2026-11-05 04:53 UTC run: step runs after the deploy step succeeds, `--soft --since`. Suggested hardening below. |
 | A7 | Google Search Console Domain property, verified | owner | Pending user action 1. |
 | A8 | Sitemap submitted in Search Console | owner | Pending user action 1. |
 | A9 | Bing Webmaster Tools site added (import from Search Console) | owner | Pending user action 2. |
@@ -118,9 +118,13 @@ three steps, in this order. Nothing else changes.
 
 Notes. `--soft` and `continue-on-error` mean an IndexNow outage never fails the deploy. The monitor has no `continue-on-error`:
 the site is already live when it runs, so a red run is the alarm. It needs no secrets. A failed IndexNow run loses that
-deploy's list (the next diff starts from the new sitemap); repeat by hand with `node scripts/indexnow.mjs` (all URLs) at most
-once an hour, or wait for the next change. The checkout is sparse (`website` only), which is enough: both scripts read
+deploy's list (the next diff starts from the new sitemap); repeat by hand with `node scripts/indexnow.mjs --since <saved old sitemap>`, or wait for the next change. Never run `--all` again
+unless the owner asks. The checkout is sparse (`website` only), which is enough: both scripts read
 `dist/sitemap.xml` and `src/static/` from there.
+
+Suggested hardening (not applied; the lead edits the workflow): add `if: github.ref == 'refs/heads/main'` to the IndexNow step, so a
+manual run of the workflow from another branch can never submit URLs. The step already runs only when the deploy step succeeded
+(GitHub's default `success()`), and the workflow itself starts only from a push of `website/**` to `main` or a manual run.
 
 Optional weekly check, a new file `.github/workflows/website-seo-monitor.yml`:
 

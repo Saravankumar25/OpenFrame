@@ -378,7 +378,7 @@ canonical host, with no `pages.dev` address in it.
 2. Bing Webmaster Tools (https://www.bing.com/webmasters). My Sites, Import, sign in with the Google account, pick the
    verified domain and its sitemap. Bing re-checks ownership through Search Console from time to time, so keep that
    access, or verify by DNS as a second method.
-3. IndexNow. A script (`scripts/indexnow.mjs`) is being added by the SEO work. It needs a key file at the site root
+3. IndexNow. `scripts/indexnow.mjs` does this after each deploy (docs/SEO.md section 5). It needs a key file at the site root
    (`<key>.txt`, containing the key) and posts changed URLs to `https://api.indexnow.org/indexnow` or a participating
    engine. Run it after each deploy that changes pages. The IndexNow documentation does not mention Google, so treat it
    as a faster signal for Bing and the other participating engines; Google relies on the sitemap.

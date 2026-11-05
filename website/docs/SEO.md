@@ -73,16 +73,24 @@ company has its own public web presence to point to.
   so it is committed and is not a secret. IndexNow lists Bing, Yandex, Naver, Seznam, Yep and Amazon; a submission to one is
   shared with the others. Google does not take part. Specification: https://www.indexnow.org/documentation and
   https://www.indexnow.org/faq.
-* `scripts/indexnow.mjs` runs after a deploy and sends only what changed. Modes: `--since <old-sitemap.xml>` (pages new or
-  with a different lastmod, plus pages that left the sitemap, compared with the live sitemap saved before the deploy),
-  `--changed` (lastmod is today; the fallback when no old sitemap exists), no flag (every URL; the first run, or to repeat a
-  failed one), `--dry-run` (prints, sends nothing). `--soft` turns every failure into a warning with exit code 0, so a
-  search-engine outage never fails a deploy.
-* It refuses a `pages.dev` address, waits up to 15 seconds for the key file to be live, sends at most 10,000 URLs per request,
-  and accepts 200 and 202 as success (400 format, 403 key, 422 wrong host or repeated unchanged URLs, 429 too many).
-* IndexNow asks for a resubmission of the same URL only after a real change and not within minutes. Do not run the no-flag
-  mode after every deploy. Cloudflare Crawler Hints sends its own IndexNow signal from cache misses once the owner switches it
-  on (`docs/SEO-CHECKLIST.md`); the script covers the pages it misses.
+* `scripts/indexnow.mjs` runs after a production deploy and sends only what changed. Exactly one mode is required, so a plain
+  run does nothing by accident: `--since <old-sitemap.xml>` (pages new or with a different lastmod, plus pages that left the
+  sitemap, compared with the live sitemap saved before the deploy), `--changed` (lastmod is today; the fallback when no old
+  sitemap exists), `--all` (every URL; the one-time first submission, already done on 2026-11-05, never routine).
+  `--dry-run` prints and sends nothing. `--sitemap <file>` reads another sitemap than `dist/sitemap.xml`. `--soft` turns
+  every failure into a warning (an annotation in GitHub Actions) with exit code 0, so a search-engine outage never fails a deploy.
+* `--since` and `--changed` refuse to send more than 100 URLs and print why. A change that touches every lastmod therefore
+  cannot become a full resubmission; check with `--dry-run`, and use `--all` by hand only if the whole site really changed.
+* Removed pages are sent as well (IndexNow accepts deleted URLs). The site answers 404 for a missing path (checked 2026-11-05).
+* Safety in code: the endpoint is fixed to `https://api.indexnow.org/indexnow`; every URL must be https on the site host or
+  the call is refused before any request; a `pages.dev` address is refused; the key file must be live first (up to 15 seconds);
+  at most 10,000 URLs per request; 30 second timeout. 200 and 202 are success. 400 (format), 403 (key) and 422 (wrong host)
+  fail at once with a plain message. 429, 5xx and network errors are retried 3 times after 2, 4 and 8 seconds, or after
+  `Retry-After` when sent (capped at 60 seconds). The script never prints the key or the request body.
+  Tests: `tests/indexnow.test.mjs`, `tests/seo-live-ready.test.mjs`.
+* IndexNow asks for a resubmission of the same URL only after a real change and not within minutes. Cloudflare Crawler Hints
+  sends its own IndexNow signal from cache misses once the owner switches it on (`docs/SEO-CHECKLIST.md`); the script covers
+  the pages it misses.
 * The deploy workflow lines and the full checklist are in `docs/SEO-CHECKLIST.md`. Live check of what search engines see:
   `npm run seo:monitor` (`scripts/seo-monitor.mjs`). Tests without a browser: `tests/seo-live-ready.test.mjs`.
 
@@ -92,7 +100,7 @@ company has its own public web presence to point to.
    `security.txt` all follow it. Deploy.
 2. Search Console: add a Domain property (DNS TXT record), submit `/sitemap.xml`. Bing Webmaster Tools: import from Search
    Console. Check "Page indexing" after a week.
-3. Run IndexNow with no flag once (section 5), then let the deploy workflow send changes.
+3. Run IndexNow with `--all` once (section 5; done for straftstudio.com on 2026-11-05), then let the deploy workflow send changes.
 4. Keep the `pages.dev` address answering; the canonical tags point search engines to the real domain.
 5. If the privacy notice or footer changes in the same release, keep `llms.txt` and the FAQ in step.
 
