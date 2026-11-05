@@ -384,6 +384,11 @@ export default {
           explain: `The act menu lists Rename, Edit note…, Move Left, Move Right and Delete.`,
         },
         {
+          screen: `story-act-options-menu`,
+          do: `To add to the act, click Options in its header and choose Add Sequence, Add Scene or Add Beat.`,
+          explain: `The Options menu lists Rename, Edit note…, Add Sequence, Add Scene, Add Beat, Move Left, Move Right and Delete. Move Left is greyed out here because this is the first act.`,
+        },
+        {
           screen: `story-act-rename-inline`,
           do: `Choose Rename, type the new title in the Act title box and press Return.`,
           explain: `The title is edited in the act header.`,
@@ -536,8 +541,13 @@ export default {
         },
         {
           screen: `story-board-vertical`,
-          do: `Click Vertical to go back to columns. Use Zoom Out and Zoom In to resize.`,
-          explain: `Vertical puts each act in its own column. The zoom percentage between the buttons shows the current size.`,
+          do: `Click Vertical to go back to columns.`,
+          explain: `Vertical puts each act in its own column.`,
+        },
+        {
+          screen: `story-board-zoom-out`,
+          do: `Use Zoom Out and Zoom In in the toolbar to resize the board.`,
+          explain: `The percentage between the buttons shows the current size, here 100%.`,
         },
       ],
       result: `The board fits your screen the way you prefer.`,
@@ -973,6 +983,8 @@ export default {
     },
   ],
   screens: {
+    'story-act-options-menu': `The Options menu of the first act, with Rename, Edit note…, Add Sequence, Add Scene, Add Beat, Move Right and Delete, and Move Left greyed out. Used in story-act-options.`,
+    'story-board-zoom-out': `The Beat Board with Zoom Out, 100% and Zoom In in the toolbar and the first sequence outlined in orange. Used in story-collapse-and-layout.`,
     'story-page-empty': `The Story page before you write anything. The heading says Story, the line says this page is not linked to anything else, and the foot shows 0 words. Used in story-write-page.`,
     'story-page-first-words': `The Story page with one line typed and a count of 5 words. The formatting bar is in view. Used in story-write-page and story-format-page.`,
     'story-page-written': `The Story page with three paragraphs of the story, 67 words and Saved at the foot. Used in story-write-page and story-export-page.`,

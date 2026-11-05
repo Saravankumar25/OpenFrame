@@ -8,6 +8,8 @@ test-results/
 .tmp/
 research/WindowsHTML-old-809/
 research/MacHTML-old-694/
+research/MacHTML-old-760/
+research/WindowsHTML-old-819/
 .cache/
 .build-removed/
 research/MacHTML-new/

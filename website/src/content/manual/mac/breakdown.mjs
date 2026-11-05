@@ -131,6 +131,11 @@ export default {
           explain: `Only scenes that have an element in that category stay in the list. In the picture 1 of 10 scenes has Cast. You can combine a Show choice with a category.`,
         },
         {
+          screen: `breakdown-filter-complete`,
+          do: `Choose Complete to see the finished scenes.`,
+          explain: `The button reads Complete and the count reads 1 of 10 complete. The finished scene has a green Complete label in the list, and Complete shows at the top of its breakdown.`,
+        },
+        {
           screen: `breakdown-filter-none`,
           do: `If no scene matches, the list says No scenes match this filter.`,
           explain: `This picture shows the Complete filter before any scene is finished, so the count reads 0 of 10. Open Filter and choose All scenes and Any category to see every scene again.`,
@@ -319,9 +324,19 @@ export default {
       prerequisites: [`The scene has at least one element.`],
       steps: [
         {
+          screen: `breakdown-element-selected`,
+          do: `Click an element row to select it, for example Kiran.`,
+          explain: `The row is tinted. Each row in the panel has the Required label and an Actions button.`,
+        },
+        {
           screen: `breakdown-element-actions-menu`,
           do: `Click Actions on an element row.`,
           explain: `The menu has Show in script, Show all scenes with this item, Open in Catalog and Edit notes…. Below a divider is Remove from scene. Show in script points to where the item is tagged in the script. Open in Catalog opens the item in the production catalog.`,
+        },
+        {
+          screen: `breakdown-element-context-menu`,
+          do: `Or Control-click the row.`,
+          explain: `The same menu opens beside the row, with Show in script, Show all scenes with this item, Open in Catalog, Edit notes… and Remove from scene.`,
         },
         {
           screen: `breakdown-category-collapsed`,
@@ -522,26 +537,28 @@ export default {
     },
     {
       id: `breakdown-export-catalog`,
-      title: `Export the catalog`,
-      purpose: `Save the catalog as a PDF, a CSV file or an Excel workbook.`,
+      title: `Export the catalog with the breakdown`,
+      purpose: `Save the Catalog, with the scenes that use each item, as a PDF, a CSV file or a spreadsheet.`,
       level: `Beginner`,
-      prerequisites: [`The catalog has items.`],
+      prerequisites: [`A production source is set.`],
       steps: [
         {
-          screen: `ai-sim-catalog-export`,
-          do: `Click Export in the catalog, choose a format, then click Export….`,
-          explain: `Private notes are left out. The export is a snapshot and does not change your project.`,
+          screen: `breakdown-export-sheet`,
+          do: `Click Export in the bar above Breakdown, choose a format, then click Export….`,
+          explain: `The Export Breakdown sheet says it holds the breakdown by scene and the Catalog with the scenes that use each item. The formats are PDF, CSV and Spreadsheet (XLSX). Private notes are left out. The export is a snapshot and does not change the breakdown.`,
         },
       ],
-      result: `You have a file of the catalog.`,
+      result: `You have a file with the breakdown and the Catalog.`,
       cautions: [],
-      related: [],
+      related: [`breakdown-export`],
     },
   ],
   screens: {
     'ai-sim-breakdown-needs-review': `The dialog Scene 4 changed. Review breakdown differences., with the three choices. Used in breakdown-needs-review.`,
     'ai-sim-breakdown-removed-scenes': `The Removed scenes list with the note that the breakdown is kept for reference. Used in breakdown-removed-scenes.`,
-    'ai-sim-catalog-export': `The Export Catalog dialog with PDF, CSV file and Excel workbook. Used in breakdown-export-catalog.`,
+    'breakdown-element-selected': `Breakdown with the element Kiran selected, its row tinted in the panel at the right. A message confirms an accepted suggestion. Used in breakdown-element-actions.`,
+    'breakdown-element-context-menu': `The menu opened by Control-clicking the element Kiran, with Show in script, Show all scenes with this item, Open in Catalog, Edit notes… and Remove from scene. Used in breakdown-element-actions.`,
+    'breakdown-filter-complete': `The scene list filtered to Complete: 1 of 10, with the one finished scene and its green Complete label. Used in breakdown-filter-scenes.`,
     'breakdown-no-source': `Breakdown before a production source is set. It says Choose a screenplay source to begin the breakdown. and offers Select Source and Import Screenplay. A message confirms a screenplay import. Used in breakdown-choose-source.`,
     'breakdown-source-sheet': `The sheet Handing the script over to production., with the screenplay drafts, what Straft will create or initialise, and Cancel and Set as Production Source. Used in breakdown-choose-source.`,
     'breakdown-source-sheet-reason': `The same sheet with a reason typed in the box under the list. Variant, part of breakdown-choose-source.`,

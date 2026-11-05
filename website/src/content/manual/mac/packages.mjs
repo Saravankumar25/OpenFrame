@@ -398,6 +398,7 @@ export default {
     },
   ],
   screens: {
+    'package-print': `The Print Preview sheet opened with Print in the File menu. The title page of the screenplay is at the left. At the right are Preview settings, Print… and Export PDF. See the workflow screenplay-print-preview.`,
     'package-share-for-review-menu': `The File menu with Share for Review open, showing Export Review Package (script)… and Beat Board Package…. Used in packages-share-script and packages-share-beat-board.`,
     'package-import-export-history': `Import & Export History with nothing imported yet. It has the tabs Imports, Review records, My reviews and Package log. Used in packages-history.`,
     'package-review-queue': `The Review Queue with nothing waiting. It says No comment is ever silently discarded. Used in packages-review-queue.`,

@@ -10,7 +10,7 @@ export default {
   ],
   layout: [
     { name: `Sidebar`, text: `The project name, then Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets and Files. At the bottom, Project stored locally on this Mac and a Saved indicator.` },
-    { name: `Toolbar`, text: `Hide Sidebar, All Projects, Back and Forward, the Project menu, Search, the New menu, Assistant and Settings.` },
+    { name: `Toolbar`, text: `Hide Sidebar, All Projects, Back and Forward, the Project menu, Search, the New menu, Straft AI and Settings.` },
     { name: `Title area`, text: `The project title, then the type and when you last opened it, for example Feature Film · Last opened 5 seconds ago. At the right: the Status menu and Project settings.` },
     { name: `QUICK ACCESS`, text: `Buttons for Idea Vault, Beat Board, Screenplay, Breakdown, Production and Call Sheets, and links for Notes & Tasks, Activity, Recently Deleted and Templates.` },
     { name: `Project Files`, text: `A card at the right with Add File, the files you have added, and Open Files. With no files it says Keep project documents and attachments here.` },
@@ -27,7 +27,7 @@ export default {
         {
           screen: `project-home`,
           do: `Look at the left side and the top of the window.`,
-          explain: `The sidebar lists the main pages. The page you are on is highlighted, here Home. The toolbar has Hide Sidebar, All Projects, Back and Forward, Project, Search, New, Assistant and Settings. At the bottom of the sidebar, Project stored locally on this Mac tells you where your work is, and Saved shows that your latest changes are written to disk.`,
+          explain: `The sidebar lists the main pages. The page you are on is highlighted, here Home. The toolbar has Hide Sidebar, All Projects, Back and Forward, Project, Search, New, Straft AI and Settings. At the bottom of the sidebar, Project stored locally on this Mac tells you where your work is, and Saved shows that your latest changes are written to disk.`,
         },
         {
           screen: `project-home`,
@@ -248,7 +248,7 @@ export default {
   ],
   screens: {
     'ai-sim-trial-reminder': `The Trial reminder dialog: Your free trial ends in 3 days, with Continue trial and Buy full version. Used in project-home-trial-reminder.`,
-    'project-home': `Project Home of Night Bus. The sidebar lists Home to Files, the toolbar has Hide Sidebar, All Projects, Back, Forward, Project, Search, New, Assistant and Settings, and the page shows Status: Idea, Project settings, QUICK ACCESS, Project Files and RECENT. Used in project-home-tour, project-home-set-status and project-home-back-forward.`,
+    'project-home': `Project Home of Night Bus. The sidebar lists Home to Files, the toolbar has Hide Sidebar, All Projects, Back, Forward, Project, Search, New, Straft AI and Settings, and the page shows Status: Idea, Project settings, QUICK ACCESS, Project Files and RECENT. Used in project-home-tour, project-home-set-status and project-home-back-forward.`,
     'project-home-empty': `Project Home of a new, empty project. It says Start with your ideas, build your story, or open a screenplay and offers three cards: Open Idea Vault, Build Story and Write/Import Screenplay. Used in project-home-tour.`,
     'project-menu': `The Project menu from the toolbar: Status, Project Settings…, Settings…, Rename…, Duplicate Project, Show in Finder, Notes and Tasks, Activity, Recently Deleted, Archive Project, Search and Commands… and All Projects. Used in project-home-project-menu and project-home-rename.`,
     'project-new-menu': `The New menu in the toolbar, headed Create: New Idea, New Act, New Sequence, New Beat, New Scene Card, New Character, New Location, New Shot List, New Moodboard, Import Screenplay…, New Note, New Task and New Project…. Used in project-home-create-from-new.`,

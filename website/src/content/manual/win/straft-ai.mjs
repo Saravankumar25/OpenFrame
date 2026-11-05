@@ -4,18 +4,18 @@ export default {
   order: 23,
   part: `Assistant`,
   intro: [
-    `Straft AI is a panel that answers questions about your project and prepares changes for you to review. You ask in plain words, for example "How many scenes are in the script?", "Open Scene 12." or "Create a task to scout the railway station." Answers come from your project and say what they are based on. Straft AI never changes anything by itself: a change appears as a Proposed Changes card, and nothing happens until you click Apply Changes.`,
+    `Straft AI is a panel that answers questions about your project and prepares changes for you to review. You choose up to three sections of the project for it to read, then ask in plain words, for example "List the characters.", "Open Scene 12." or "Create a task to scout the railway station." Answers come from the sections you chose and say what they are based on. Straft AI never changes anything by itself: a change appears as a Proposed Changes card, and nothing happens until you click Apply Changes.`,
     `Straft AI is optional and runs on your computer. Straft AI is a one-time download that you start yourself. After that it works without the internet, and your project text, questions and answers are never sent to Straft or to an AI service. If you never download it, the rest of Straft works exactly the same.`,
-    `The panel opens on the right side of the window, beside the page you are on. The page narrows to make room, so the panel never covers a control. Open it with the Assistant button in the top bar or with Ctrl+J. The settings for Straft AI are in Project settings, on the Offline AI tab.`,
+    `The panel opens on the right side of the window, beside the page you are on. The page narrows to make room, so the panel never covers a control. Open it with the Straft AI button in the top bar or with Ctrl+J. The settings for Straft AI are in Project settings, on the Straft AI tab.`,
     `Because Straft AI is a small model that runs on your own computer, treat its answers as help, not as the final word. Open See sources to check what an answer used, and read every Proposed Changes card before you apply it.`,
   ],
   layout: [
-    { name: `Panel header`, text: `The sparkle icon and the title Straft AI, a status label (AI Ready when Straft AI can answer), the ... button (Offline AI settings) and the x button (Close Straft AI).` },
-    { name: `Scope row`, text: `The Scope list, the Save conversation for review button (a download arrow, greyed out until the first answer) and the New button. Under it, a line says what the next question will use, for example Using: Whole Project.` },
-    { name: `Conversation`, text: `Your questions sit on the right in dark bubbles. Answers sit on the left in light bubbles, with a See sources link under each one. A Proposed Changes card appears under an answer that prepares a change. Before your first question this area shows a short introduction with examples.` },
-    { name: `Ask box`, text: `At the bottom: the Ask or command box (placeholder Ask or command… e.g. "Open Scene 42.") and the Send button. Send stays greyed out until you type something.` },
+    { name: `Panel header`, text: `The sparkle icon and the title Straft AI, a status label (Ready when Straft AI can answer), the ... button (Straft AI settings) and the x button (Close Straft AI).` },
+    { name: `Sections to read`, text: `The words Sections to read, the Save conversation for review button (a download arrow, greyed out until the first answer) and the New button. Under them are the Choose sections button and a count, for example 0 of 3 chosen. Once a section is chosen the button reads Change sections, and each chosen section shows as a blue chip with an x, for example Screenplay > Scenes. The Screenplay > Scenes chip also has a Draft list and a Scene list under it.` },
+    { name: `Conversation`, text: `Your questions sit on the right in dark bubbles. Answers sit on the left in light bubbles, with a See sources link and a Using line under each one, for example Using: Characters. A Proposed Changes card appears under an answer that prepares a change. Before your first question this area shows a short introduction with examples.` },
+    { name: `Ask box`, text: `At the bottom: the Ask or command box (placeholder Ask or command… e.g. "Open Scene 42.") and the Send button. Send stays greyed out until a section is chosen and you have typed something. While no section is chosen, Pick a section shows under it.` },
     { name: `Resize edge`, text: `The thin edge on the left side of the panel. Drag it to make the panel wider or narrower, and double-click it to put it back to its normal width.` },
-    { name: `Offline AI tab`, text: `In Project settings: the status and the Stop Offline AI (free memory) and Remove Straft AI… buttons, the Graphics card choice, AI HEALTH with Export AI report, ASSISTANT MEMORY and TECHNICAL DETAILS. Before the download it also holds the Download Straft AI card.` },
+    { name: `Straft AI tab`, text: `In Project settings: the STRAFT AI card with its status, the Stop Straft AI (free memory) and Remove Straft AI… buttons and the Graphics card choice, STRAFT AI HEALTH with Export Straft AI report, STRAFT AI MEMORY and TECHNICAL DETAILS. Before the download it also holds the Download Straft AI card.` },
   ],
   workflows: [
     {
@@ -23,12 +23,12 @@ export default {
       title: `Open, close and resize Straft AI`,
       purpose: `Open the panel next to any page of your project, make it the width you like and close it again.`,
       level: `Beginner`,
-      prerequisites: [`A project is open.`, `Straft AI is downloaded and the panel says AI Ready. See Download Straft AI to get it.`],
+      prerequisites: [`A project is open.`, `Straft AI is downloaded and the panel says Ready. See Download Straft AI to get it.`],
       steps: [
         {
           screen: `ai-panel-ready`,
-          do: `Click the Assistant button in the top bar, or press Ctrl+J.`,
-          explain: `The Assistant button is the sparkle icon near the right end of the top bar, next to the Settings gear. The panel opens on the right. In the picture the Home page has narrowed to fit beside it. The header reads Straft AI with AI Ready on the right. Under it are Scope, the Save conversation for review button and New, then a short line explaining what to ask, and at the bottom the Ask or command box with Send.`,
+          do: `Click the Straft AI button in the top bar, or press Ctrl+J.`,
+          explain: `The Straft AI button is the sparkle icon near the right end of the top bar, next to the Settings gear. The panel opens on the right. In the picture the Home page has narrowed to fit beside it. The header reads Straft AI with Ready on the right. Under it are Sections to read, the Save conversation for review button and New, then Choose sections with 0 of 3 chosen and a short line explaining what to ask. At the bottom are the Ask or command box, Send and the hint Pick a section.`,
         },
         {
           screen: `ai-panel-empty-project`,
@@ -38,7 +38,7 @@ export default {
         {
           screen: `ai-panel-screenplay`,
           do: `Move to another page, for example Screenplay.`,
-          explain: `The panel stays docked on the right while you work on the page. The screenplay narrows instead of being covered. The Scope you chose stays in place while you move between pages.`,
+          explain: `The panel stays docked on the right while you work on the page. The screenplay narrows instead of being covered. Any sections you chose stay chosen while you move between pages. In the picture none is chosen yet.`,
         },
         {
           screen: `ai-panel-ready`,
@@ -48,13 +48,13 @@ export default {
         {
           screen: `ai-panel-ready`,
           do: `Click the x button (Close Straft AI), or press Ctrl+J again.`,
-          explain: `The panel closes and the page uses the full width again. The Assistant button in the top bar looks pressed while the panel is open.`,
+          explain: `The panel closes and the page uses the full width again. The Straft AI button in the top bar looks pressed while the panel is open.`,
         },
       ],
       result: `The panel opens beside your page at the width you chose, and closes when you are done.`,
       cautions: [
         `If you open the panel before any project is open, it says Open a project to ask about it. Straft AI answers from the project that is open.`,
-        `If the panel does not say AI Ready, it shows the download card or a message instead. See Download Straft AI and the troubleshooting list.`,
+        `If the panel does not say Ready, it shows the download card or a message instead. See Download Straft AI and the troubleshooting list.`,
       ],
       related: [`straft-ai-ask-question`, `straft-ai-download-models`],
     },
@@ -63,37 +63,37 @@ export default {
       title: `Ask a question about your project`,
       purpose: `Type a question, send it and read the answer.`,
       level: `Beginner`,
-      prerequisites: [`Straft AI panel is open and says AI Ready.`],
+      prerequisites: [`Straft AI panel is open and says Ready.`],
       steps: [
         {
           screen: `ai-panel-ready`,
-          do: `Click the Ask or command box at the bottom of the panel.`,
-          explain: `The box shows the example Ask or command… e.g. "Open Scene 42." Send is greyed out while the box is empty. You can type up to 2,000 characters.`,
+          do: `Choose at least one section, then click the Ask or command box at the bottom of the panel.`,
+          explain: `The picture shows the panel before a section is chosen: 0 of 3 chosen, Pick a section under Send, and Send greyed out. See Choose what Straft AI looks at. The box shows the example Ask or command… e.g. "Open Scene 42." You can type up to 2,000 characters.`,
         },
         {
           screen: `ai-question-typed`,
           do: `Type your question, for example List the characters.`,
-          explain: `Send turns orange as soon as there is text. Press Enter to send, or Shift+Enter to start a new line in a longer question. Scope decides which part of the project Straft AI uses. Here it is Whole Project. See Choose what Straft AI looks at.`,
+          explain: `Send turns orange as soon as there is text. Press Enter to send, or Shift+Enter to start a new line in a longer question. The section chosen here is Story > Characters, so Straft AI reads the characters of the story.`,
         },
         {
           screen: `ai-working`,
           do: `Click Send and wait.`,
-          explain: `Your question moves into a dark bubble and the answer bubble reads Writing the answer with a Cancel button. The first question after Straft AI has been idle also shows Getting Offline AI ready on this computer… above your question while it starts. While it works, the Ask box is switched off. A longer job may show a short line saying what step it is on.`,
+          explain: `Your question moves into a dark bubble and the answer bubble reads Writing the answer with a Cancel button. The first question after Straft AI has been idle can also show Getting Straft AI ready on this computer… while it starts. While it works, the Ask box is switched off. A longer job may show a short line saying what step it is on.`,
         },
         {
           screen: `ai-answer-characters`,
           do: `Read the answer.`,
-          explain: `The answer is plain text in a light bubble. Here it lists Lakshmi as the Lead character, Venkat Rao and Farooq as Supporting characters and Padma as a Minor character. Under the answer is the See sources link. The Save conversation for review button is now ready to use.`,
+          explain: `The answer is plain text in a light bubble. Here it says Lakshmi is the Lead character, Venkat Rao and Farooq are Supporting characters and Padma is a Minor character. Under the answer are the See sources link and the line Using: Characters. The Save conversation for review button is now ready to use.`,
         },
         {
           screen: `ai-answer-scene-count`,
-          do: `Ask a question about numbers, for example How many scenes are in the script?`,
-          explain: `Here the Scope is Current Screenplay and the answer says The project contains 36 scenes and names the screenplay it counted. Every answer follows the same layout: the text first, then See sources.`,
+          do: `Read what happens when the answer is not in the sections you chose. Here the question is How many scenes are in the script?`,
+          explain: `Only Screenplay > Scenes is chosen. The answer gives no number. It says That is in Notes & Tasks > Tasks. Add it to your selection and ask again. Under it are an Add Tasks button, which adds that section to the ones you chose, and the line Using: Screenplay (Second Draft, all scenes). Like any answer this can be wrong, so check that the section it names makes sense before you add it and ask again.`,
         },
       ],
-      result: `You have an answer in the panel, with a See sources link to check it.`,
+      result: `You have an answer in the panel with a See sources link to check it, or a line that names the section to add.`,
       cautions: [
-        `Straft AI answers only from your project. If something is not in the project, it says so instead of making up a fact.`,
+        `Straft AI answers only from the sections you chose. If the answer is in another section, it says which one. If something is not in the project, it says so instead of making up a fact.`,
         `If a question fails, your text is put back in the Ask box so you can send it again.`,
         `A very long first start can take a little time because the language model is loaded into memory.`,
       ],
@@ -114,22 +114,22 @@ export default {
         {
           screen: `ai-answer-characters-sources`,
           do: `Read the lines under See sources.`,
-          explain: `The first line says how the answer was made. Inferred · written by Offline AI means Straft AI wrote the sentence from what it found. Exact · from project data means the answer is a figure or list taken straight from the project. Not available in project data means the project does not hold it. Under Based on: are chips such as Character: LAKSHMI, Character: VENKAT RAO, Character: FAROOQ and Character: PADMA. Most chips are buttons: click one to open that item in your project.`,
+          explain: `The first line says how the answer was made. Inferred · written by Straft AI means Straft AI wrote the sentence from what it found. Exact · from project data means the answer is a figure or list taken straight from the project. Not available in project data means the project does not hold it. Under Based on: are chips such as Character: LAKSHMI, Character: VENKAT RAO, Character: FAROOQ and Character: PADMA. Most chips are buttons: click one to open that item in your project.`,
         },
         {
           screen: `ai-answer-locations`,
           do: `Ask a question that needs several places, for example Which locations are used in the screenplay?`,
-          explain: `The Scope here is Current Screenplay. Read the whole answer before you trust it. In the picture, the first lines name Rayapuram Bus Stand, Venkat Radio Works and Pedda Revu Tower, and the lines after them repeat the tower in different places.`,
+          explain: `The section chosen here is Production > Locations, so the line under the answer reads Using: Locations. Read the whole answer before you trust it. In the picture it has one line each for the Old cinema hall, the Pedda Revu tower, Rayapuram bus stand and Venkat Radio Works.`,
         },
         {
           screen: `ai-answer-locations-sources-open`,
           do: `Open See sources and compare the answer with the chips.`,
-          explain: `Based on lists Scene locations: THE TOWER AT PEDDA REVU, then Location: Pedda Revu tower, Location: Rayapuram bus stand and Location: Venkat Radio Works. Those are the real records. Click a chip to open it and check, and ignore sentences that the sources do not support. An answer that took several steps also lists the steps it ran here.`,
+          explain: `Based on lists Location: Old cinema hall, Location: Pedda Revu tower, Location: Rayapuram bus stand and Location: Venkat Radio Works. Those are the real records. Click a chip to open it and check, and ignore sentences that the sources do not support. An answer that took several steps also lists the steps it ran here.`,
         },
       ],
       result: `You know which records an answer came from, and you can open them to check.`,
       cautions: [
-        `Offline AI can write a sentence that sounds right and is not. The Based on chips are the part to trust. When a sentence does not match them, check the screenplay or ask again with a narrower Scope.`,
+        `Straft AI can write a sentence that sounds right and is not. The Based on chips are the part to trust. When a sentence does not match them, check the screenplay or ask again with the section that holds the answer.`,
         `A long list shows its first eight rows with a Show all button. Click it to see every row.`,
       ],
       related: [`straft-ai-choose-scope`, `straft-ai-ask-question`],
@@ -137,55 +137,70 @@ export default {
     {
       id: `straft-ai-choose-scope`,
       title: `Choose what Straft AI looks at`,
-      purpose: `Set the Scope so an answer uses only the part of the project you mean.`,
+      purpose: `Pick up to three sections so an answer reads only the parts of the project you mean.`,
       level: `Intermediate`,
       prerequisites: [`Straft AI panel is open.`],
       steps: [
         {
-          screen: `ai-panel-ready`,
-          do: `Click the Scope list at the top of the panel.`,
-          explain: `On the Home page the list offers Current Screenplay, Beat Board, Production Workspace and Whole Project. The line under it says what the next question will use, for example Using: Whole Project. Whole Project looks at everything in the project.`,
+          screen: `ai-sections-none-picked`,
+          do: `Look at Sections to read at the top of the panel.`,
+          explain: `Nothing is chosen for you. The button reads Choose sections, the count says 0 of 3 chosen, Pick a section shows under Send, and Send stays greyed out. Straft AI reads only what you choose.`,
         },
         {
-          screen: `ai-scope-current-screenplay`,
-          do: `Choose Current Screenplay.`,
-          explain: `The line changes to Using: Current Screenplay. Questions now use the screenplay draft you have open in the Screenplay page. A project with several screenplays uses the one that is open there.`,
+          screen: `ai-sections-none-picked`,
+          do: `Click Choose sections. Tick the sections you want, then click Done.`,
+          explain: `A list of tick boxes opens under the button, grouped as Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets, Files, Notes & Tasks and App Help & Settings. While it is open the button reads Done. Story Page is in the list with the note that it is your own free writing and is not offered to Straft AI.`,
         },
         {
-          screen: `ai-scope-beat-board`,
-          do: `Choose Beat Board.`,
-          explain: `The line reads Using: Beat Board. Use it for questions about acts, sequences, beats and scene cards.`,
+          screen: `ai-sections-screenplay`,
+          do: `Choose Scenes under Screenplay.`,
+          explain: `The chip reads Screenplay > Scenes, the count reads 1 of 3 chosen and the button now reads Change sections. Two lists appear under the chip: Draft, set to Current draft, and Scene, set to All scenes. Use them to read one draft or one scene only. Pick a section is gone, so Send turns on as soon as you type.`,
+        },
+        {
+          screen: `ai-sections-beat-board`,
+          do: `To read the Beat Board, choose Beat Board under Story. To remove a section, click the x on its chip.`,
+          explain: `The chip reads Story > Beat Board. Use it for questions about acts, sequences, beats and scene cards. This section has no extra lists under its chip.`,
+        },
+        {
+          screen: `ai-sections-three`,
+          do: `Choose more sections when a question needs them, up to three.`,
+          explain: `The picture has Screenplay > Scenes, Production > Cast & Crew and Production > Budget, and the count reads 3 of 3 chosen. A line says Three sections at most. Remove one to add another. Click the x on a chip to make room.`,
+        },
+        {
+          screen: `ai-answer-characters`,
+          do: `Ask your question and read the Using line under the answer.`,
+          explain: `It names what the answer read, here Using: Characters. If an answer seems to miss things, check this line first.`,
         },
         {
           screen: `ai-panel-screenplay`,
-          do: `Open the Screenplay page with the panel open.`,
-          explain: `On this page the list also offers narrower choices when something specific is open. Current Scene appears when a scene is selected and Specific Draft appears when a draft is open. If you have not chosen a Scope yourself, the panel starts with the one that fits the page. In the picture the Scope you chose earlier, Whole Project, is kept.`,
+          do: `Move to another page with the panel open.`,
+          explain: `The panel does not choose a section because of the page you are on. In the picture the Screenplay page is open and the count still reads 0 of 3 chosen. For questions about this page, choose Scenes under Screenplay.`,
         },
         {
           screen: `ai-panel-story`,
           do: `Open the Story page.`,
-          explain: `Beat Board is the Scope that fits Story. The Scope you picked stays in place while you move around, unless it does not apply to the new page.`,
+          explain: `For questions about this page, choose a section under Story: Beat Board, Outline, Characters or Timeline.`,
         },
         {
           screen: `ai-panel-breakdown`,
           do: `Open the Breakdown page.`,
-          explain: `Production Workspace is the Scope that fits Breakdown, Production and Call Sheets. It looks at the production side of the project: breakdown, catalog, locations, cast and crew, schedule and so on.`,
+          explain: `For questions about this page, choose Breakdown.`,
         },
         {
           screen: `ai-panel-production`,
           do: `Open the Production page.`,
-          explain: `The panel sits beside the Production overview. Shooting Day and Call Sheet appear in the Scope list when a shooting day or a call sheet is open.`,
+          explain: `The panel sits beside the Production overview. The sections under Production include Overview, Catalog, Locations, Cast & Crew, Shot Lists, Schedule, Reports and Budget.`,
         },
         {
           screen: `ai-panel-vault`,
-          do: `Open the Idea Vault, select one or more items and look at the Scope list.`,
-          explain: `Idea Vault Selection appears when items are selected, and Current Selection appears for selected cards on other pages. The Idea Vault in the picture is the project's own vault, This Project.`,
+          do: `Open the Idea Vault.`,
+          explain: `The sections under Idea Vault are This Project and Global. The Idea Vault in the picture is the project's own vault, This Project.`,
         },
       ],
-      result: `Each question uses the part of the project you chose, shown in the Using line.`,
+      result: `Each question reads only the sections you chose, and the Using line under the answer names them.`,
       cautions: [
-        `If an answer seems to miss things, check the Using line. A narrow Scope such as Current Screenplay does not look at the Beat Board or the Idea Vault.`,
-        `A Scope that needs a target is offered only when there is one. If Current Scene is missing, open a scene first.`,
+        `Screenplay > Scenes does not read the Beat Board or the Idea Vault. Choose those too if the question needs them.`,
+        `New starts a fresh conversation and also clears the sections you chose.`,
       ],
       related: [`straft-ai-ask-question`, `straft-ai-check-sources`],
     },
@@ -194,7 +209,7 @@ export default {
       title: `Ask Straft AI to take you somewhere`,
       purpose: `Use a request such as Open Scene 12. to jump to a scene, a page or an item without clicking through the app.`,
       level: `Beginner`,
-      prerequisites: [`Straft AI panel is open and says AI Ready.`],
+      prerequisites: [`Straft AI panel is open and says Ready, and at least one section is chosen.`],
       steps: [
         {
           screen: `ai-panel-ready`,
@@ -219,7 +234,7 @@ export default {
       title: `Ask for a change and read the Proposed Changes card`,
       purpose: `Ask Straft AI to prepare a change, read what it would do and reject it if it is not what you want.`,
       level: `Intermediate`,
-      prerequisites: [`Straft AI panel is open and says AI Ready.`],
+      prerequisites: [`Straft AI panel is open and says Ready, and Notes & Tasks > Tasks is chosen.`],
       steps: [
         {
           screen: `ai-proposed-changes`,
@@ -277,27 +292,27 @@ export default {
     {
       id: `straft-ai-review-deletion`,
       title: `Review a proposal that deletes something`,
-      purpose: `Read a deletion proposal carefully, confirm it only when it is exactly what you want and know how to get the items back.`,
+      purpose: `Know that a request to delete changes nothing by itself, and read a deletion card carefully before you confirm it.`,
       level: `Advanced`,
-      prerequisites: [`Straft AI panel is open.`],
+      prerequisites: [`Straft AI panel is open and Screenplay > Scenes is chosen.`],
       steps: [
         {
           screen: `ai-answer-delete-request`,
           do: `Ask for a deletion, for example Delete all the scenes in the screenplay.`,
-          explain: `Straft AI does not delete anything. It answers I prepared this change. Nothing has been changed yet. and shows a Proposed Changes card titled Proposed scene deletion.`,
+          explain: `Straft AI does not delete anything. In the picture it answers in words only: it calls this a complex operation that needs analysis of the project. No Proposed Changes card follows that answer, so there is nothing to apply and every scene is still there.`,
         },
         {
           screen: `ai-answer-delete-request`,
-          do: `Read the Delete row, Its text, Other drafts and Items.`,
-          explain: `Affected areas says Screenplay. Delete names what would go. Its text says how much text it holds, here 16 lines. Other drafts says Not changed. Items repeats the list of what is affected. Compare this list with what you asked for. In the picture you asked for every scene and the card lists only Scene 1: EXT. RAYAPURAM BUS STAND - DAY, so check the list before you apply.`,
+          do: `Look under the answer for a Proposed Changes card. Without a card, nothing can be deleted.`,
+          explain: `A deletion only happens through a card titled Proposed scene deletion. Its rows say what would go and what stays: Affected areas, Delete, Its text, Other drafts and Items. Compare them with what you asked for.`,
         },
         {
           screen: `ai-answer-delete-request`,
-          do: `Click Reject if the list is wrong. Click Apply Changes only if it is exactly right.`,
+          do: `If a card appears, click Reject if the list is wrong. Click Apply Changes only if it is exactly right.`,
           explain: `Because the change deletes items, Apply Changes first opens a confirmation titled Apply changes that delete items? It says that deleted items go to Recently Deleted and that you can use Undo to reverse the whole change. Confirm with Apply Changes, or cancel.`,
         },
       ],
-      result: `You know what a deletion would remove, and you can undo it or restore the items.`,
+      result: `You know a request alone deletes nothing, what a deletion card would remove, and how to get the items back.`,
       cautions: [
         `After a deletion is applied, open Recently Deleted to restore an item, or use Undo (Ctrl+Z) to reverse the whole change.`,
         `Never apply a deletion card you have not read. Straft AI can misunderstand a request, and the card is where you catch it.`,
@@ -333,7 +348,7 @@ export default {
       steps: [
         {
           screen: `ai-panel-ready`,
-          do: `Look at the download arrow beside the Scope list.`,
+          do: `Look at the download arrow on the Sections to read row.`,
           explain: `The Save conversation for review button is greyed out until the first answer, because there is nothing to save yet.`,
         },
         {
@@ -349,66 +364,66 @@ export default {
         {
           screen: `ai-panel-ready`,
           do: `Click New to start a new conversation.`,
-          explain: `The panel goes back to the short introduction with its examples, and the next question starts fresh. Save the conversation first if you want a file of it.`,
+          explain: `The panel goes back to the short introduction with its examples, the sections you chose are cleared, and the next question starts fresh. Save the conversation first if you want a file of it.`,
         },
       ],
       result: `You have a file of the conversation and a clean panel.`,
       cautions: [
         `The file holds your questions and the answers, so treat it like your project and share it only if you mean to.`,
-        `Saving a conversation is separate from the AI health report. See Read AI health and export a report.`,
+        `Saving a conversation is separate from the Straft AI health report. See Read Straft AI health and export a report.`,
       ],
       related: [`straft-ai-ai-health-report`],
     },
     {
       id: `straft-ai-panel-menu`,
       title: `Use the panel's ... menu`,
-      purpose: `Open the Offline AI settings from the panel or stop Straft AI to free memory.`,
+      purpose: `Open the Straft AI settings from the panel or stop Straft AI to free memory.`,
       level: `Beginner`,
       prerequisites: [`Straft AI panel is open.`],
       steps: [
         {
           screen: `ai-settings-menu`,
-          do: `Click the ... button in the panel header (Offline AI settings).`,
-          explain: `A menu opens under the heading OFFLINE AI with two items: Offline AI settings… and Stop Offline AI (free memory).`,
+          do: `Click the ... button in the panel header (Straft AI settings).`,
+          explain: `A menu opens under the heading Straft AI with two items: Straft AI settings… and Stop Straft AI (free memory).`,
         },
         {
           screen: `ai-offline-settings`,
-          do: `Choose Offline AI settings….`,
-          explain: `Project settings opens on the Offline AI tab. The panel stays open beside it, so you can read the settings and try a question in the same window.`,
+          do: `Choose Straft AI settings….`,
+          explain: `Project settings opens on the Straft AI tab. The panel stays open beside it, so you can read the settings and try a question in the same window.`,
         },
         {
           screen: `ai-settings-menu`,
-          do: `To free memory without leaving the panel, open the menu again and choose Stop Offline AI (free memory).`,
-          explain: `A message says Offline AI stopped. It starts again when you ask something. The first question afterwards takes a little longer while Straft AI starts again.`,
+          do: `To free memory without leaving the panel, open the menu again and choose Stop Straft AI (free memory).`,
+          explain: `A message says Straft AI stopped. It starts again when you ask something. The first question afterwards takes a little longer while Straft AI starts again.`,
         },
       ],
       result: `You can reach the settings and free the memory from the panel.`,
       cautions: [
-        `The menu shows Offline AI settings… only while a project is open, and Stop Offline AI (free memory) only while Straft AI is ready.`,
+        `The menu shows Straft AI settings… only while a project is open, and Stop Straft AI (free memory) only while Straft AI is ready.`,
       ],
       related: [`straft-ai-offline-settings-page`, `straft-ai-stop-or-remove`],
     },
     {
       id: `straft-ai-offline-settings-page`,
-      title: `Read the Offline AI settings`,
+      title: `Read the Straft AI settings`,
       purpose: `Find the status of Straft AI, what it is built from and where its privacy promise is written.`,
       level: `Intermediate`,
       prerequisites: [`A project is open.`],
       steps: [
         {
           screen: `ai-offline-settings`,
-          do: `Click Project settings, then the Offline AI tab. You can also use the ... menu in the panel.`,
-          explain: `The tabs are Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced, Appearance and Storage. The page is titled Offline AI with the line AI runs on this computer.`,
+          do: `Click Project settings, then the Straft AI tab. You can also use the ... menu in the panel.`,
+          explain: `The tabs are Project settings, Writing, Keyboard shortcuts, Templates, Straft AI, Advanced, Appearance and Storage. The page is titled Straft AI with the line Straft AI runs on this computer.`,
         },
         {
           screen: `ai-offline-settings`,
-          do: `Read the OFFLINE AI card.`,
-          explain: `It shows the status label, here AI Ready, and the promise: Straft AI runs on this computer after a one-time download. Your project data is not sent to Straft or to an AI cloud service. Below are Stop Offline AI (free memory), Remove Straft AI… and the Graphics card choice. A line at the bottom says Straft works normally without Straft AI.`,
+          do: `Read the STRAFT AI card.`,
+          explain: `It shows the status label, here Ready, and the promise: Straft AI runs on this computer after a one-time download. Your project data is not sent to Straft or to an AI cloud service. Below are Stop Straft AI (free memory), Remove Straft AI… and the Graphics card choice. A line at the bottom says Straft works normally without Straft AI.`,
         },
         {
           screen: `ai-offline-settings`,
-          do: `Look at the other cards on the page: AI HEALTH, ASSISTANT MEMORY and TECHNICAL DETAILS.`,
-          explain: `Each has its own workflow in this chapter. AI HEALTH holds counts and times. ASSISTANT MEMORY lists what Straft AI remembers. TECHNICAL DETAILS is closed until you click it.`,
+          do: `Look at the other cards on the page: STRAFT AI HEALTH, STRAFT AI MEMORY and TECHNICAL DETAILS.`,
+          explain: `Each has its own workflow in this chapter. STRAFT AI HEALTH holds counts and times. STRAFT AI MEMORY lists what Straft AI remembers. TECHNICAL DETAILS is closed until you click it.`,
         },
         {
           screen: `ai-offline-technical-details`,
@@ -418,7 +433,7 @@ export default {
       ],
       result: `You can see whether Straft AI is ready and what it is made of.`,
       cautions: [
-        `The status label changes with the situation. It can read Not downloaded, Checking its files…, Getting Offline AI ready on this computer…, Needs a new download, Needs a reinstall, Not available on this computer, or Stopped after a problem. It restarts when you ask something.`,
+        `The status label changes with the situation. It can read Not downloaded, Checking its files…, Getting Straft AI ready on this computer…, Needs a new download, Needs a reinstall, Not available on this computer, or Stopped after a problem. It restarts when you ask something.`,
       ],
       related: [`straft-ai-graphics-card`, `straft-ai-ai-health-report`, `straft-ai-memory`],
     },
@@ -427,11 +442,11 @@ export default {
       title: `Choose whether Straft AI may use the graphics card`,
       purpose: `Let Straft AI use a graphics card when it is safe, or keep it on the processor.`,
       level: `Advanced`,
-      prerequisites: [`Straft AI is downloaded, so the Graphics card choice is shown on the Offline AI tab.`],
+      prerequisites: [`Straft AI is downloaded, so the Graphics card choice is shown on the Straft AI tab.`],
       steps: [
         {
           screen: `ai-offline-settings`,
-          do: `On the Offline AI tab, find Graphics card under the two buttons.`,
+          do: `On the Straft AI tab, find Graphics card under the two buttons.`,
           explain: `It has two choices, Automatic and Off. Automatic is selected. The line under it says Decided before the first answer. Automatic uses a graphics card only after it passes a short check; the processor is always the fallback.`,
         },
         {
@@ -442,7 +457,7 @@ export default {
         {
           screen: `ai-offline-settings`,
           do: `Click Off to keep Straft AI on the processor, or Automatic to let it use a checked graphics card.`,
-          explain: `A message confirms: Straft AI will run on the processor, or Straft AI will use a checked graphics card when there is one. The choice is decided before the first answer, so it applies the next time Straft AI starts. Stop Offline AI (free memory) makes that happen sooner.`,
+          explain: `A message confirms: Straft AI will run on the processor, or Straft AI will use a checked graphics card when there is one. The choice is decided before the first answer, so it applies the next time Straft AI starts. Stop Straft AI (free memory) makes that happen sooner.`,
         },
       ],
       result: `Straft AI runs where you chose, and the line under the choice tells you where.`,
@@ -453,25 +468,25 @@ export default {
     },
     {
       id: `straft-ai-ai-health-report`,
-      title: `Read AI health and export a report`,
+      title: `Read Straft AI health and export a report`,
       purpose: `See how Straft AI is doing in numbers and save those numbers to a file.`,
       level: `Intermediate`,
       prerequisites: [`You have used Straft AI at least once.`],
       steps: [
         {
           screen: `ai-offline-settings`,
-          do: `Open the Offline AI tab and look at the AI HEALTH card.`,
-          explain: `Before you use Straft AI it says No requests yet. The figures appear after you use Straft AI. A note says only numbers are kept on this computer: no questions, answers or project text, and nothing is sent. Export AI report is under the note.`,
+          do: `Open the Straft AI tab and look at the STRAFT AI HEALTH card.`,
+          explain: `Before you use Straft AI it says No requests yet. The figures appear after you use Straft AI. A note says only numbers are kept on this computer: no questions, answers or project text, and nothing is sent. Export Straft AI report is under the note.`,
         },
         {
           screen: `ai-offline-health-filled`,
           do: `After some use, read the table.`,
-          explain: `REQUESTS COUNTED is how many requests were made. TYPICAL ANSWER TIME is the middle answer time in seconds. PROPOSALS APPLIED shows the share of proposals you applied, with how many were decided, for example 0% (0 of 3 decided). CHECKS PER ANSWER shows how many checks an answer needed, 1.0 being one. ERRORS is the number of failures. RUNS ON says processor or graphics card. WEAKEST TOOL names the kind of request that went wrong most often, or says none stands out.`,
+          explain: `REQUESTS COUNTED is how many requests were made. TYPICAL ANSWER TIME is the middle answer time in seconds. PROPOSALS APPLIED shows the share of proposals you applied, with how many were decided, for example 0% (0 of 2 decided). CHECKS PER ANSWER shows how many checks an answer needed, 1.0 being one. ERRORS is the number of failures. RUNS ON says processor or graphics card. WEAKEST TOOL names the kind of request that went wrong most often, or says none stands out.`,
         },
         {
           screen: `ai-offline-health-filled`,
-          do: `Click Export AI report and choose where to save the file.`,
-          explain: `A Windows Save window titled Export AI report opens with the name straft-ai-report.json. A message then says Saved with the file name and the number of requests. The file holds the same numbers, so you can send them to someone if you want to.`,
+          do: `Click Export Straft AI report and choose where to save the file.`,
+          explain: `A Windows Save window titled Export Straft AI report opens with the name straft-ai-report.json. A message then says Saved with the file name and the number of requests. The file holds the same numbers, so you can send them to someone if you want to.`,
         },
       ],
       result: `You can read Straft AI's numbers and have them in a file.`,
@@ -485,11 +500,11 @@ export default {
       title: `See and delete what Straft AI remembers`,
       purpose: `Read the facts and preferences Straft AI has kept for you, and make it forget any of them.`,
       level: `Intermediate`,
-      prerequisites: [`The Offline AI tab is open.`],
+      prerequisites: [`The Straft AI tab is open.`],
       steps: [
         {
           screen: `ai-offline-settings`,
-          do: `Find the ASSISTANT MEMORY card.`,
+          do: `Find the STRAFT AI MEMORY card.`,
           explain: `While nothing is kept it says Nothing is remembered yet. Straft AI keeps a fact or preference only when you state it outright, or confirm one of its answers. A note says the memory is saved on this computer, in this project, for you only.`,
         },
         {
@@ -513,8 +528,8 @@ export default {
       steps: [
         {
           screen: `ai-offline-settings`,
-          do: `To free memory only, click Stop Offline AI (free memory).`,
-          explain: `Straft AI stops and a message says Offline AI stopped. It starts again when you ask something. Your downloaded files stay where they are. Use this when another heavy program needs the memory.`,
+          do: `To free memory only, click Stop Straft AI (free memory).`,
+          explain: `Straft AI stops and a message says Straft AI stopped. It starts again when you ask something. Your downloaded files stay where they are. Use this when another heavy program needs the memory.`,
         },
         {
           screen: `ai-offline-settings`,
@@ -524,7 +539,7 @@ export default {
         {
           screen: `ai-offline-remove-confirm`,
           do: `Read Remove Straft AI? and click Remove.`,
-          explain: `It says: This frees the space the AI models use on this computer. AI stays off until you download it again. Your projects are not changed. Cancel keeps everything. The x closes the dialog. Remove is red because it deletes the downloaded files. A message then says Straft AI was removed and that you can download it again here.`,
+          explain: `It says: This frees the space the Straft AI models use on this computer. Straft AI stays off until you download it again. Your projects are not changed. Cancel keeps everything. The x closes the dialog. Remove is red because it deletes the downloaded files. A message then says Straft AI was removed and that you can download it again here.`,
         },
       ],
       result: `Either the memory is free, or the downloaded models are gone and the panel offers the download again.`,
@@ -543,8 +558,8 @@ export default {
       steps: [
         {
           screen: `ai-offline-settings`,
-          do: `Open Straft AI panel, or open Project settings and the Offline AI tab.`,
-          explain: `Until Straft AI is downloaded, the panel and the Offline AI tab show a card titled Download Straft AI in place of the conversation. This card is only there until the download is done, so it is not in the pictures here, which show a computer where Straft AI is already ready.`,
+          do: `Open Straft AI panel, or open Project settings and the Straft AI tab.`,
+          explain: `Until Straft AI is downloaded, the panel and the Straft AI tab show a card titled Download Straft AI in place of the conversation. This card is only there until the download is done, so it is not in the pictures here, which show a computer where Straft AI is already ready.`,
         },
         {
           screen: `ai-offline-settings`,
@@ -564,10 +579,10 @@ export default {
         {
           screen: `ai-panel-ready`,
           do: `When the download finishes, look at the panel header.`,
-          explain: `The status label reads AI Ready and the conversation, Scope and Ask box replace the download card.`,
+          explain: `The status label reads Ready, and Sections to read, the conversation and the Ask box replace the download card.`,
         },
       ],
-      result: `The panel says AI Ready and you can ask questions.`,
+      result: `The panel says Ready and you can ask questions.`,
       cautions: [
         `The files are checked after they arrive. A damaged or missing file shows Download Straft AI again with a message about it. Click Download again to replace it.`,
         `On a copy of Straft that cannot download, the card says so and offers Import a model file… only.`,
@@ -577,31 +592,33 @@ export default {
     },
   ],
   screens: {
-    'ai-panel-ready': `Straft AI panel open beside the Home page of a project, with AI Ready in the header. It shows the Scope list, the greyed out Save conversation for review button, New, the line Using: Whole Project, the short introduction with examples and the empty Ask box with a greyed out Send. Used in straft-ai-open-panel, straft-ai-ask-question, straft-ai-choose-scope, straft-ai-open-pages, straft-ai-save-conversation and straft-ai-download-models.`,
-    'ai-settings-menu': `The panel's ... menu open under the heading OFFLINE AI, with Offline AI settings… and Stop Offline AI (free memory). Used in straft-ai-panel-menu.`,
-    'ai-scope-current-screenplay': `The panel with the Scope set to Current Screenplay, so the line under it reads Using: Current Screenplay. Used in straft-ai-choose-scope.`,
-    'ai-scope-beat-board': `The panel with the Scope set to Beat Board, so the line reads Using: Beat Board. Used in straft-ai-choose-scope.`,
-    'ai-offline-settings': `Project settings on the Offline AI tab with the panel still open. The OFFLINE AI card shows AI Ready, Stop Offline AI (free memory), Remove Straft AI… and the Graphics card choice. AI HEALTH says No requests yet and offers Export AI report. ASSISTANT MEMORY says Nothing is remembered yet. TECHNICAL DETAILS is closed. Used in straft-ai-offline-settings-page, straft-ai-graphics-card, straft-ai-ai-health-report, straft-ai-memory, straft-ai-stop-or-remove, straft-ai-panel-menu and straft-ai-download-models.`,
+    'ai-panel-ready': `Straft AI panel open beside the Home page of a project, with Ready in the header. It shows Sections to read, the greyed out Save conversation for review button, New, Choose sections with 0 of 3 chosen, the short introduction with examples, the empty Ask box, a greyed out Send and the hint Pick a section. Used in straft-ai-open-panel, straft-ai-ask-question, straft-ai-open-pages, straft-ai-save-conversation and straft-ai-download-models.`,
+    'ai-settings-menu': `The panel's ... menu open under the heading Straft AI, with Straft AI settings… and Stop Straft AI (free memory). Used in straft-ai-panel-menu.`,
+    'ai-sections-none-picked': `The panel with no section chosen: Choose sections, 0 of 3 chosen, Pick a section under a greyed out Send. Used in straft-ai-choose-scope.`,
+    'ai-sections-screenplay': `The panel with Screenplay > Scenes chosen: Change sections, 1 of 3 chosen, the chip with its x, and the Draft and Scene lists set to Current draft and All scenes. Used in straft-ai-choose-scope.`,
+    'ai-sections-beat-board': `The panel with Story > Beat Board chosen: Change sections, 1 of 3 chosen and the chip with its x. Used in straft-ai-choose-scope.`,
+    'ai-sections-three': `The panel with three sections chosen: Screenplay > Scenes, Production > Cast & Crew and Production > Budget, 3 of 3 chosen, and the line Three sections at most. Remove one to add another. Used in straft-ai-choose-scope.`,
+    'ai-offline-settings': `Project settings on the Straft AI tab with the panel still open. The STRAFT AI card shows Ready, Stop Straft AI (free memory), Remove Straft AI… and the Graphics card choice. STRAFT AI HEALTH says No requests yet and offers Export Straft AI report. STRAFT AI MEMORY says Nothing is remembered yet. TECHNICAL DETAILS is closed. Used in straft-ai-offline-settings-page, straft-ai-graphics-card, straft-ai-ai-health-report, straft-ai-memory, straft-ai-stop-or-remove, straft-ai-panel-menu and straft-ai-download-models.`,
     'ai-offline-technical-details': `The same tab with TECHNICAL DETAILS open: a table of the engine and the three models with version, licence and size, the model licence note, the package check, this computer's memory and processor, and the line that everything runs on this computer. Used in straft-ai-offline-settings-page.`,
-    'ai-offline-remove-confirm': `The Remove Straft AI? dialog. It explains that this frees the space the models use, that AI stays off until you download it again and that your projects are not changed. It has an x, Cancel and a red Remove button. Used in straft-ai-stop-or-remove.`,
-    'ai-question-typed': `The panel with List the characters. typed in the Ask box and Send turned orange. Used in straft-ai-ask-question.`,
-    'ai-working': `The panel while a question runs. The question sits in a dark bubble, the line Getting Offline AI ready on this computer… shows above it, and the answer bubble reads Writing the answer with a Cancel button. Used in straft-ai-ask-question and straft-ai-stop-request.`,
-    'ai-answer-characters': `The panel after the question List the characters. The answer lists the characters and their roles, with a See sources link. The Save conversation for review button is now active. Used in straft-ai-ask-question, straft-ai-check-sources and straft-ai-save-conversation.`,
-    'ai-answer-characters-sources': `The same answer with See sources open: Inferred · written by Offline AI, and the Based on chips Character: LAKSHMI, Character: VENKAT RAO, Character: FAROOQ and Character: PADMA. Used in straft-ai-check-sources.`,
-    'ai-panel-screenplay': `The panel beside the Screenplay page, which has narrowed to make room. The Scope still reads Whole Project from before. Used in straft-ai-open-panel, straft-ai-choose-scope and straft-ai-open-pages.`,
-    'ai-answer-locations': `The panel on the Screenplay page with the Scope set to Current Screenplay. The question Which locations are used in the screenplay? has a long answer and a See sources link. Used in straft-ai-check-sources.`,
-    'ai-answer-locations-sources-open': `The same answer with See sources open. Based on lists Scene locations: THE TOWER AT PEDDA REVU, Location: Pedda Revu tower, Location: Rayapuram bus stand and Location: Venkat Radio Works. Used in straft-ai-check-sources.`,
-    'ai-answer-scene-count': `The panel after the question How many scenes are in the script? with the Scope on Current Screenplay. The answer says the project contains 36 scenes and names the screenplay. Used in straft-ai-ask-question.`,
+    'ai-offline-remove-confirm': `The Remove Straft AI? dialog. It explains that this frees the space the models use, that Straft AI stays off until you download it again and that your projects are not changed. It has an x, Cancel and a red Remove button. Used in straft-ai-stop-or-remove.`,
+    'ai-question-typed': `The panel with Story > Characters chosen, List the characters. typed in the Ask box and Send turned orange. Used in straft-ai-ask-question.`,
+    'ai-working': `The panel while a question runs. The question sits in a dark bubble, and the answer bubble reads Writing the answer with a Cancel button. Used in straft-ai-ask-question and straft-ai-stop-request.`,
+    'ai-answer-characters': `The panel after the question List the characters. The answer lists the characters and their roles, with a See sources link and the line Using: Characters. The Save conversation for review button is now active. Used in straft-ai-ask-question, straft-ai-check-sources and straft-ai-save-conversation.`,
+    'ai-answer-characters-sources': `The same answer with See sources open: Inferred · written by Straft AI, and the Based on chips Character: LAKSHMI, Character: VENKAT RAO, Character: FAROOQ and Character: PADMA. Used in straft-ai-check-sources.`,
+    'ai-panel-screenplay': `The panel beside the Screenplay page, which has narrowed to make room. No section is chosen yet. Used in straft-ai-open-panel, straft-ai-choose-scope and straft-ai-open-pages.`,
+    'ai-answer-locations': `The panel on the Screenplay page with Production > Locations chosen. The question Which locations are used in the screenplay? has an answer of four lines, a See sources link and the line Using: Locations. Used in straft-ai-check-sources.`,
+    'ai-answer-locations-sources-open': `The same answer with See sources open. Based on lists Location: Old cinema hall, Location: Pedda Revu tower, Location: Rayapuram bus stand and Location: Venkat Radio Works. Used in straft-ai-check-sources.`,
+    'ai-answer-scene-count': `The panel after the question How many scenes are in the script? with Screenplay > Scenes chosen. The answer gives no number. It says That is in Notes & Tasks > Tasks. Add it to your selection and ask again. Under it are an Add Tasks button and the line Using: Screenplay (Second Draft, all scenes). Used in straft-ai-ask-question.`,
     'ai-proposed-changes': `The panel after the request Create a task to scout the railway station. The answer says nothing has been added yet and a Proposed Changes card shows Proposed task, Affected areas Notes & Tasks, Task Scout the railway station, Impact 1 new object, and the Reject and Apply Changes buttons. Used in straft-ai-ask-for-a-change.`,
     'ai-proposal-rejected': `The same card after Reject. The buttons are gone and the panel says Rejected. Nothing was changed. Used in straft-ai-ask-for-a-change.`,
     'ai-proposed-changes-second': `A second Proposed Changes card for Create a task to book the bus for the night shoot, ready to apply. Used in straft-ai-apply-and-undo.`,
     'ai-proposal-applied': `The card after Apply Changes. The panel says Applied 1 change. Use Undo to reverse it. and a message at the bottom of the window offers Undo. Used in straft-ai-apply-and-undo.`,
-    'ai-answer-delete-request': `A Proposed scene deletion card for the request Delete all the scenes in the screenplay. It lists Affected areas Screenplay, the scene under Delete, Its text 16 lines, Other drafts Not changed and Items, with Reject and Apply Changes. Used in straft-ai-review-deletion.`,
-    'ai-panel-story': `The panel beside the Story page. Variant of the panel with another page open, part of straft-ai-choose-scope.`,
-    'ai-panel-breakdown': `The panel beside the Breakdown page. Variant of the panel with another page open, part of straft-ai-choose-scope.`,
-    'ai-panel-production': `The panel beside the Production overview. Variant of the panel with another page open, part of straft-ai-choose-scope.`,
-    'ai-panel-vault': `The panel beside the project's Idea Vault. Variant of the panel with another page open, part of straft-ai-choose-scope.`,
-    'ai-offline-health-filled': `The Offline AI tab after some use. AI HEALTH shows REQUESTS COUNTED, TYPICAL ANSWER TIME, PROPOSALS APPLIED, CHECKS PER ANSWER, ERRORS, RUNS ON and WEAKEST TOOL. The line under Graphics card says Straft AI runs on the processor. Used in straft-ai-ai-health-report and straft-ai-graphics-card.`,
+    'ai-answer-delete-request': `The panel after the request Delete all the scenes in the screenplay. Straft AI answers in words only, with See sources and the line Using: Screenplay (Second Draft, all scenes). No Proposed Changes card follows. Used in straft-ai-review-deletion.`,
+    'ai-panel-story': `The panel beside the Story page with no section chosen. Variant of the panel with another page open, part of straft-ai-choose-scope.`,
+    'ai-panel-breakdown': `The panel beside the Breakdown page with no section chosen. Variant of the panel with another page open, part of straft-ai-choose-scope.`,
+    'ai-panel-production': `The panel beside the Production overview with no section chosen. Variant of the panel with another page open, part of straft-ai-choose-scope.`,
+    'ai-panel-vault': `The panel beside the project's Idea Vault with no section chosen. Variant of the panel with another page open, part of straft-ai-choose-scope.`,
+    'ai-offline-health-filled': `The Straft AI tab after some use. STRAFT AI HEALTH shows REQUESTS COUNTED, TYPICAL ANSWER TIME, PROPOSALS APPLIED, CHECKS PER ANSWER, ERRORS, RUNS ON and WEAKEST TOOL. The line under Graphics card says Straft AI runs on the processor. Used in straft-ai-ai-health-report and straft-ai-graphics-card.`,
     'ai-panel-empty-project': `The panel open beside the Home page of a new, empty project, Empty Short. Used in straft-ai-open-panel.`,
   },
   shortcuts: [
@@ -611,7 +628,7 @@ export default {
     [`Ctrl+Z`, `Undo an applied change`],
   ],
   limits: [
-    `Straft AI answers only from the project that is open. It does not look anything up on the internet.`,
+    `Straft AI answers only from the project that is open, and reads only the sections you chose, up to three at a time. It does not look anything up on the internet.`,
     `It never changes your project by itself. Every change is a Proposed Changes card that waits for Apply Changes.`,
     `It never sends your project, your questions or its answers to Straft or to an AI service. The only network use is the one-time model download that you start.`,
     `It is a small model that runs on your computer. Answers can be wrong, and quality is best in English. Use See sources to check.`,
@@ -622,11 +639,19 @@ export default {
   troubleshooting: [
     {
       problem: `The panel shows a Download Straft AI card, not a conversation.`,
-      fix: `Straft AI is not downloaded yet, or a downloaded file is damaged. Click Download Straft AI (or Download again) and wait until the panel says AI Ready.`,
+      fix: `Straft AI is not downloaded yet, or a downloaded file is damaged. Click Download Straft AI (or Download again) and wait until the panel says Ready.`,
     },
     {
-      problem: `The panel says AI is not available right now.`,
-      fix: `Straft AI cannot run at the moment. The message says everything else in Straft works normally. Open Project settings and the Offline AI tab to read the status. If it says Needs a reinstall, reinstall Straft.`,
+      problem: `The panel says Straft AI is not available right now.`,
+      fix: `Straft AI cannot run at the moment. The message says everything else in Straft works normally. Open Project settings and the Straft AI tab to read the status. If it says Needs a reinstall, reinstall Straft.`,
+    },
+    {
+      problem: `Send is greyed out and the panel says Pick a section.`,
+      fix: `Straft AI reads only the sections you choose. Click Choose sections, tick at least one and click Done.`,
+    },
+    {
+      problem: `An answer says That is in another section. Add it to your selection and ask again.`,
+      fix: `The answer is not in the sections you chose. Click the Add button under the answer, or Change sections, then ask again. With three sections chosen, remove one first.`,
     },
     {
       problem: `The panel says Open a project to ask about it.`,
@@ -634,7 +659,7 @@ export default {
     },
     {
       problem: `The panel says Straft AI stopped after a problem.`,
-      fix: `Ask your question again. Straft AI restarts when you ask something. If it keeps stopping, choose Off under Graphics card on the Offline AI tab.`,
+      fix: `Ask your question again. Straft AI restarts when you ask something. If it keeps stopping, choose Off under Graphics card on the Straft AI tab.`,
     },
     {
       problem: `A notice says Preparing project context… and answers use fewer sources.`,
@@ -642,15 +667,15 @@ export default {
     },
     {
       problem: `The first answer takes a long time.`,
-      fix: `Straft AI loads into memory on the first question, and the panel says Getting Offline AI ready on this computer…. Later answers are quicker. Click Cancel if you do not want to wait.`,
+      fix: `Straft AI loads into memory on the first question, and the panel can say Getting Straft AI ready on this computer…. Later answers are quicker. Click Cancel if you do not want to wait.`,
     },
     {
       problem: `The computer feels slow while Straft AI works.`,
-      fix: `Close the panel and click Stop Offline AI (free memory). On the Offline AI tab you can also set Graphics card to Off.`,
+      fix: `Close the panel and click Stop Straft AI (free memory). On the Straft AI tab you can also set Graphics card to Off.`,
     },
     {
       problem: `An answer is wrong or does not match my script.`,
-      fix: `Open See sources and compare. Narrow the Scope, for example to Current Screenplay, and ask in a shorter way.`,
+      fix: `Open See sources and compare. Check the Using line, choose the section that holds the answer, and ask in a shorter way.`,
     },
     {
       problem: `A Proposed Changes card says it is out of date.`,
@@ -666,7 +691,7 @@ export default {
     },
     {
       problem: `I want the disk space back.`,
-      fix: `Open the Offline AI tab and click Remove Straft AI…. Your projects are not changed, and you can download it again later.`,
+      fix: `Open the Straft AI tab and click Remove Straft AI…. Your projects are not changed, and you can download it again later.`,
     },
   ],
 };

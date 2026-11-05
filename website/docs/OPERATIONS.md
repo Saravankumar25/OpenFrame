@@ -76,15 +76,17 @@ Pages commands (https://developers.cloudflare.com/workers/wrangler/commands/page
 
 ### Screen pictures
 
-`npm run screens` runs `scripts/extract-screens.mjs` and then `scripts/shots.mjs`. Together they read the captured app screens in `research/`, write the screen catalogs, and make the interactive screen pages and `manifest.json` in `.cache/shots` that the build copies to `/mockups/`. The comment at the top of `scripts/shots.mjs` lists its options. `node scripts/sim-mac.mjs` then adds the simulated Mac screens.
+`npm run screens` runs `scripts/extract-screens.mjs` and then `scripts/shots.mjs`. Together they read the captured app screens in `research/`, write the screen catalogs, and make the interactive screen pages and `manifest.json` in `.cache/shots` that the build copies to `/mockups/`. The comment at the top of `scripts/shots.mjs` lists its options. `node scripts/sim-mac.mjs` then adds the simulated Mac screens (28 on 2026-11-05: real Mac captures with the AI panel or a dialog drawn over them, for states the capture cannot reach because no AI model is installed there, with wording from the Mac app source). Run it after `extract-screens.mjs`, which drops them from the catalog.
 
-Capture sources: recapture WindowsHTML or MacHTML in the app project, copy them to `research/WindowsHTML-src` and
-`research/MacHTML-src`, then run the screens step. A screen name that disappears makes `npm run build` and
+Capture sources: `windows/WindowsHTML` and `mac/MacHTML` on `main`. Put them in `research/WindowsHTML-src` and
+`research/MacHTML-src`, then run the screens step. Start from an empty `.cache/shots`, so no page of an earlier capture stays. A screen name that disappears makes `npm run build` and
 `npm run check:content` fail and name it.
+
+Repairs that survive a new capture are recorded in code: `WIN_REPAIRS` in `scripts/shots.mjs` for Windows pages and `scripts/mac-repairs.mjs` for Mac pictures; `docs/screen-defects-2026-11-05.md` lists them and what is still wrong, for the app work. `scripts/screen-scan.mjs` and `pack-screens.mjs` refuse to pack a page with a script, a network or `file:` reference, a missing file, a private name, a secret, or a developer path.
 
 Pictures are optimised at build time. Do not turn on any paid image service in Cloudflare to compensate for large
 pictures; shrink them in the script instead. Watch the file count too: the Free plan allows 20,000 files per Pages
-site, and `dist/` held 8,621 files on 2026-10-31. Every new picture size or format adds files.
+site, and `dist/` held 9,001 files on 2026-11-05. Every new picture size or format adds files.
 
 ### Icons and the link preview picture
 
@@ -271,7 +273,7 @@ Limits that apply to this site on the Free plan (https://developers.cloudflare.c
 
 | Limit | Free plan | Where we stand |
 |---|---|---|
-| Files per Pages site | 20,000 | 8,621 on 2026-10-31. Watch it when screen pictures are added. |
+| Files per Pages site | 20,000 | 9,001 on 2026-11-05. Watch it when screen pictures are added. |
 | Size of one file | 25 MiB | No file is near it. Keep video out. |
 | `_headers` rules | 100 rules, 2,000 characters per header | About 10 rules. The CSP line is long, so watch its length. |
 | `_redirects` | 2,000 static and 100 dynamic | A few dozen. |
@@ -451,11 +453,11 @@ forks, never see the secrets. The repository secrets are `CLOUDFLARE_API_TOKEN` 
 Git builds are not used, because the Cloudflare GitHub app is not authorised on this account, and a project made for direct
 upload cannot switch to them later.
 
-The build needs the screen pages in `.cache/shots` (about 675 MB), which are made on this machine and are not in Git. They are
+The build needs the screen pages in `.cache/shots` (about 400 MB), which are made on this machine and are not in Git. They are
 kept as one file on a GitHub release, and `scripts/screens-bundle.json` names the tag, the file and its SHA-256. The workflow
 downloads that file and refuses it if the checksum differs. After the screens change:
 
-1. `npm run screens`, then `node scripts/sim-mac.mjs`.
+1. `npm run screens`, then `node scripts/sim-mac.mjs`, from an empty `.cache/shots`.
 2. `node scripts/pack-screens.mjs <next number>`. It replaces developer paths in the captured text, and refuses other file types, the
    old product name or a leftover developer path.
 3. `gh release create website-screens-<number> .cache/website-screens-<number>.tar.gz --latest=false --title "Website screens <number>" --notes "Screen pages for the website build."`

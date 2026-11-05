@@ -127,7 +127,12 @@ export default {
         {
           screen: `pages-files-context-menu`,
           do: `Right-click a file, or Control-click it. Choose Details.`,
-          explain: `The menu lists Details, Rename, Move to, Reveal in Finder, Export Copy… and Delete. The More actions button on the row opens the same menu.`,
+          explain: `The menu lists Details, Rename, Move to, Reveal in Finder, Export Copy… and Delete. The More actions button on the row opens a menu too.`,
+        },
+        {
+          screen: `pages-files-more-menu`,
+          do: `Or click the More actions button (the three dots) at the end of the row and choose Details.`,
+          explain: `This menu lists Open, Details, Rename, Move to, Reveal in Finder, Export Copy… and Delete.`,
         },
         {
           screen: `pages-files-selected`,
@@ -375,6 +380,7 @@ export default {
     },
   ],
   screens: {
+    'pages-files-more-menu': `The More actions menu of a file, with Open, Details, Rename, Move to, Reveal in Finder, Export Copy… and Delete. Used in files-open-details.`,
     'files-empty': `Project Files with nothing in it. The page says Keep project documents and attachments here and offers New Folder, Add File, a search box and the List and Grid switch. The folders panel shows All files and Top level with 0 files. Used in files-start and files-add-copy.`,
     'pages-files-add-menu': `The Add File menu with Copy into project… and Link to file…. Used in files-add-copy and files-add-link.`,
     'files-new-folder-sheet': `The New Folder sheet with an empty Folder name box, Cancel and Create. Used in files-folders-create.`,

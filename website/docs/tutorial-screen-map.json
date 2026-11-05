@@ -3722,9 +3722,12 @@
    "title": "Choose what Straft AI looks at",
    "url": "/windows/tutorials/straft-ai-choose-scope/",
    "screens": [
-    "ai-panel-ready",
-    "ai-scope-current-screenplay",
-    "ai-scope-beat-board",
+    "ai-sections-none-picked",
+    "ai-sections-none-picked",
+    "ai-sections-screenplay",
+    "ai-sections-beat-board",
+    "ai-sections-three",
+    "ai-answer-characters",
     "ai-panel-screenplay",
     "ai-panel-story",
     "ai-panel-breakdown",
@@ -3818,7 +3821,7 @@
    "id": "straft-ai-offline-settings-page",
    "platform": "win",
    "area": "Straft AI",
-   "title": "Read the Offline AI settings",
+   "title": "Read the Straft AI settings",
    "url": "/windows/tutorials/straft-ai-offline-settings-page/",
    "screens": [
     "ai-offline-settings",
@@ -3843,7 +3846,7 @@
    "id": "straft-ai-ai-health-report",
    "platform": "win",
    "area": "Straft AI",
-   "title": "Read AI health and export a report",
+   "title": "Read Straft AI health and export a report",
    "url": "/windows/tutorials/straft-ai-ai-health-report/",
    "screens": [
     "ai-offline-settings",
@@ -4757,7 +4760,7 @@
    "id": "settings-offline-ai-health",
    "platform": "win",
    "area": "Settings",
-   "title": "Read AI health and export an AI report",
+   "title": "Read Straft AI health and export a Straft AI report",
    "url": "/windows/tutorials/settings-offline-ai-health/",
    "screens": [
     "settings-offline-ai-ready",
@@ -4948,7 +4951,8 @@
    "url": "/mac/tutorials/library-setup-locate/",
    "screens": [
     "library-setup-locate",
-    "library-setup-locate"
+    "library-setup-locate",
+    "library-setup-locate-nothing-found"
    ]
   },
   {
@@ -5457,6 +5461,7 @@
    "url": "/mac/tutorials/idea-vault-sidebar-lists/",
    "screens": [
     "vault-recently-added",
+    "vault-recently-modified",
     "vault-pinned"
    ]
   },
@@ -5483,9 +5488,9 @@
    "screens": [
     "vault-item-selected",
     "vault-tag-sheet",
-    "vault-tag-sheet-filled",
+    "vault-tag-sheet",
     "vault-drawer-flag-and-tag",
-    "vault-tag-view"
+    "vault-drawer-flag-and-tag"
    ]
   },
   {
@@ -5610,10 +5615,11 @@
    "id": "idea-vault-sketch",
    "platform": "mac",
    "area": "Idea Vault",
-   "title": "Draw a sketch in the Idea Vault",
+   "title": "Sketch on a storyboard panel, or keep a drawing as an image",
    "url": "/mac/tutorials/idea-vault-sketch/",
    "screens": [
-    "ai-sim-vault-sketch"
+    "plan-storyboard-sketch-sheet",
+    "vault-add-menu"
    ]
   },
   {
@@ -5772,6 +5778,7 @@
    "url": "/mac/tutorials/story-act-options/",
    "screens": [
     "story-act-context-menu",
+    "story-act-options-menu",
     "story-act-rename-inline",
     "story-act-note-sheet",
     "story-act-context-menu"
@@ -5827,7 +5834,8 @@
     "story-sequence-collapsed",
     "story-act-collapsed",
     "story-board-horizontal",
-    "story-board-vertical"
+    "story-board-vertical",
+    "story-board-zoom-out"
    ]
   },
   {
@@ -6084,7 +6092,8 @@
     "screenplay-tools-menu",
     "screenplay-layout-focus",
     "screenplay-tools-writing-room-mode",
-    "screenplay-tools-dark-page"
+    "screenplay-tools-dark-page",
+    "screenplay-dark-page"
    ]
   },
   {
@@ -6441,10 +6450,11 @@
    "id": "screenplay-scene-number",
    "platform": "mac",
    "area": "Screenplay",
-   "title": "Set a scene number yourself",
+   "title": "Read the scene numbers",
    "url": "/mac/tutorials/screenplay-scene-number/",
    "screens": [
-    "ai-sim-scene-number"
+    "screenplay-editor",
+    "screenplay-tools-page-setup"
    ]
   },
   {
@@ -6504,6 +6514,7 @@
     "breakdown-filter-menu",
     "breakdown-filter-missing",
     "breakdown-filter-cast",
+    "breakdown-filter-complete",
     "breakdown-filter-none"
    ]
   },
@@ -6580,7 +6591,9 @@
    "title": "Use the Actions menu on an element",
    "url": "/mac/tutorials/breakdown-element-actions/",
    "screens": [
+    "breakdown-element-selected",
     "breakdown-element-actions-menu",
+    "breakdown-element-context-menu",
     "breakdown-category-collapsed"
    ]
   },
@@ -6677,10 +6690,10 @@
    "id": "breakdown-export-catalog",
    "platform": "mac",
    "area": "Breakdown",
-   "title": "Export the catalog",
+   "title": "Export the catalog with the breakdown",
    "url": "/mac/tutorials/breakdown-export-catalog/",
    "screens": [
-    "ai-sim-catalog-export"
+    "breakdown-export-sheet"
    ]
   },
   {
@@ -7088,7 +7101,8 @@
     "plan-shot-row-menu",
     "plan-shot-open",
     "plan-shot-technical",
-    "plan-shot-characters-menu"
+    "plan-shot-characters-menu",
+    "plan-shots-list-details"
    ]
   },
   {
@@ -7543,9 +7557,9 @@
    "title": "Open or delete saved sides",
    "url": "/mac/tutorials/sides-open-saved/",
    "screens": [
-    "schedule-sides-snapshot",
     "schedule-sides-saved",
-    "schedule-sides-snapshot"
+    "schedule-sides-saved",
+    "schedule-sides-saved"
    ]
   },
   {
@@ -7649,6 +7663,7 @@
    "screens": [
     "callsheets-list",
     "callsheet-row-menu",
+    "callsheet-row-context-menu",
     "callsheet-list-export"
    ]
   },
@@ -7908,7 +7923,7 @@
    "id": "straft-ai-read-unavailable",
    "platform": "mac",
    "area": "Straft AI",
-   "title": "Read the message when AI is not available",
+   "title": "Read the Download Straft AI card",
    "url": "/mac/tutorials/straft-ai-read-unavailable/",
    "screens": [
     "ai-panel",
@@ -7920,7 +7935,7 @@
    "id": "straft-ai-offline-settings",
    "platform": "mac",
    "area": "Straft AI",
-   "title": "Open Offline AI settings from Straft AI",
+   "title": "Open Straft AI settings from the panel",
    "url": "/mac/tutorials/straft-ai-offline-settings/",
    "screens": [
     "ai-panel",
@@ -7947,9 +7962,9 @@
    "title": "Check what Straft AI remembers",
    "url": "/mac/tutorials/straft-ai-memory/",
    "screens": [
-    "ai-offline-ai-settings",
-    "ai-offline-ai-settings",
-    "ai-offline-ai-settings"
+    "ai-offline-ai-settings-details",
+    "ai-offline-ai-settings-details",
+    "ai-offline-ai-settings-details"
    ]
   },
   {
@@ -7975,9 +7990,11 @@
    "id": "straft-ai-small-window",
    "platform": "mac",
    "area": "Straft AI",
-   "title": "Use Straft AI in a small window",
+   "title": "Resize Straft AI and use it in a small window",
    "url": "/mac/tutorials/straft-ai-small-window/",
    "screens": [
+    "ai-panel-wide",
+    "ai-panel-narrow",
     "ai-panel-sidebar-hidden",
     "ai-panel-narrow-window",
     "ai-panel-sidebar-hidden"
@@ -8016,7 +8033,9 @@
    "title": "Choose what Straft AI looks at",
    "url": "/mac/tutorials/straft-ai-scope/",
    "screens": [
-    "ai-sim-scope-menu"
+    "ai-sim-ready",
+    "ai-sim-scope-menu",
+    "ai-sim-question-typed"
    ]
   },
   {
@@ -8036,14 +8055,14 @@
    "id": "straft-ai-offline-details",
    "platform": "mac",
    "area": "Straft AI",
-   "title": "Manage Offline AI in Settings",
+   "title": "Manage Straft AI in Settings",
    "url": "/mac/tutorials/straft-ai-offline-details/",
    "screens": [
     "ai-sim-offline-ai-download",
     "ai-sim-offline-ai-ready",
     "ai-sim-offline-ai-technical-details",
     "ai-sim-offline-ai-graphics-off",
-    "ai-sim-offline-ai-health",
+    "ai-offline-ai-settings-details",
     "ai-sim-offline-ai-remove-confirm"
    ]
   },
@@ -8114,6 +8133,7 @@
    "url": "/mac/tutorials/files-open-details/",
    "screens": [
     "pages-files-context-menu",
+    "pages-files-more-menu",
     "pages-files-selected",
     "pages-files-selected"
    ]
@@ -8515,7 +8535,7 @@
    "id": "project-settings-appearance",
    "platform": "mac",
    "area": "Project Settings",
-   "title": "See Appearance, Keyboard shortcuts and Offline AI from a project",
+   "title": "See Appearance, Keyboard shortcuts and Straft AI from a project",
    "url": "/mac/tutorials/project-settings-appearance/",
    "screens": [
     "pages-settings-appearance",
@@ -8931,7 +8951,7 @@
    "id": "settings-offline-ai",
    "platform": "mac",
    "area": "Settings",
-   "title": "Check the offline AI and its health figures",
+   "title": "Check Straft AI and its health figures",
    "url": "/mac/tutorials/settings-offline-ai/",
    "screens": [
     "settings-offline-ai",
@@ -11089,7 +11109,6 @@
   "win/ai-panel-ready": [
    "straft-ai-open-panel",
    "straft-ai-ask-question",
-   "straft-ai-choose-scope",
    "straft-ai-open-pages",
    "straft-ai-save-conversation",
    "straft-ai-download-models"
@@ -11112,6 +11131,7 @@
   "win/ai-answer-characters": [
    "straft-ai-ask-question",
    "straft-ai-check-sources",
+   "straft-ai-choose-scope",
    "straft-ai-save-conversation"
   ],
   "win/ai-answer-scene-count": [
@@ -11126,10 +11146,16 @@
   "win/ai-answer-locations-sources-open": [
    "straft-ai-check-sources"
   ],
-  "win/ai-scope-current-screenplay": [
+  "win/ai-sections-none-picked": [
    "straft-ai-choose-scope"
   ],
-  "win/ai-scope-beat-board": [
+  "win/ai-sections-screenplay": [
+   "straft-ai-choose-scope"
+  ],
+  "win/ai-sections-beat-board": [
+   "straft-ai-choose-scope"
+  ],
+  "win/ai-sections-three": [
    "straft-ai-choose-scope"
   ],
   "win/ai-panel-story": [
@@ -11718,6 +11744,9 @@
   "mac/library-setup-locate": [
    "library-setup-locate"
   ],
+  "mac/library-setup-locate-nothing-found": [
+   "library-setup-locate"
+  ],
   "mac/home-welcome": [
    "home-enter-your-name"
   ],
@@ -11903,7 +11932,8 @@
    "idea-vault-add-link",
    "idea-vault-add-quote",
    "idea-vault-add-files",
-   "idea-vault-record-voice-note"
+   "idea-vault-record-voice-note",
+   "idea-vault-sketch"
   ],
   "mac/vault-add-quick-capture": [
    "idea-vault-quick-capture"
@@ -11973,6 +12003,9 @@
   "mac/vault-recently-added": [
    "idea-vault-sidebar-lists"
   ],
+  "mac/vault-recently-modified": [
+   "idea-vault-sidebar-lists"
+  ],
   "mac/vault-drawer-flag-menu": [
    "idea-vault-research-flag"
   ],
@@ -11989,12 +12022,6 @@
    "idea-vault-copy-to-global"
   ],
   "mac/vault-tag-sheet": [
-   "idea-vault-tags"
-  ],
-  "mac/vault-tag-sheet-filled": [
-   "idea-vault-tags"
-  ],
-  "mac/vault-tag-view": [
    "idea-vault-tags"
   ],
   "mac/vault-new-folder-sheet": [
@@ -12088,8 +12115,9 @@
   "mac/vault-copy-to-global-sheet": [
    "idea-vault-copy-to-global"
   ],
-  "mac/ai-sim-vault-sketch": [
-   "idea-vault-sketch"
+  "mac/plan-storyboard-sketch-sheet": [
+   "idea-vault-sketch",
+   "production-plan-add-storyboard-panels"
   ],
   "mac/ai-sim-vault-file-moved": [
    "idea-vault-file-moved"
@@ -12192,6 +12220,9 @@
    "story-act-options",
    "story-delete-items"
   ],
+  "mac/story-act-options-menu": [
+   "story-act-options"
+  ],
   "mac/story-act-rename-inline": [
    "story-act-options"
   ],
@@ -12232,6 +12263,9 @@
    "story-collapse-and-layout"
   ],
   "mac/story-board-vertical": [
+   "story-collapse-and-layout"
+  ],
+  "mac/story-board-zoom-out": [
    "story-collapse-and-layout"
   ],
   "mac/story-board-filtered": [
@@ -12431,6 +12465,9 @@
    "screenplay-layout-modes"
   ],
   "mac/screenplay-tools-dark-page": [
+   "screenplay-layout-modes"
+  ],
+  "mac/screenplay-dark-page": [
    "screenplay-layout-modes"
   ],
   "mac/screenplay-find-bar": [
@@ -12656,7 +12693,8 @@
    "screenplay-revision-marks"
   ],
   "mac/screenplay-tools-page-setup": [
-   "screenplay-page-setup"
+   "screenplay-page-setup",
+   "screenplay-scene-number"
   ],
   "mac/screenplay-page-setup-paper": [
    "screenplay-page-setup"
@@ -12751,7 +12789,7 @@
   "mac/screenplay-print-preview-no-title": [
    "screenplay-print-preview"
   ],
-  "mac/ai-sim-scene-number": [
+  "mac/screenplay-editor": [
    "screenplay-scene-number"
   ],
   "mac/ai-sim-import-failed": [
@@ -12795,6 +12833,9 @@
    "breakdown-filter-scenes"
   ],
   "mac/breakdown-filter-cast": [
+   "breakdown-filter-scenes"
+  ],
+  "mac/breakdown-filter-complete": [
    "breakdown-filter-scenes"
   ],
   "mac/breakdown-filter-none": [
@@ -12858,10 +12899,16 @@
   "mac/breakdown-reused": [
    "breakdown-reuse-items"
   ],
+  "mac/breakdown-element-selected": [
+   "breakdown-element-actions"
+  ],
   "mac/breakdown-element-actions-menu": [
    "breakdown-element-actions",
    "breakdown-remove-element",
    "breakdown-scenes-using-item"
+  ],
+  "mac/breakdown-element-context-menu": [
+   "breakdown-element-actions"
   ],
   "mac/breakdown-category-collapsed": [
    "breakdown-element-actions"
@@ -12891,7 +12938,8 @@
    "breakdown-change-source"
   ],
   "mac/breakdown-export-sheet": [
-   "breakdown-export"
+   "breakdown-export",
+   "breakdown-export-catalog"
   ],
   "mac/breakdown-export-csv": [
    "breakdown-export"
@@ -12907,9 +12955,6 @@
   ],
   "mac/ai-sim-breakdown-removed-scenes": [
    "breakdown-removed-scenes"
-  ],
-  "mac/ai-sim-catalog-export": [
-   "breakdown-export-catalog"
   ],
   "mac/plan-overview-empty": [
    "production-plan-open-production"
@@ -13170,9 +13215,6 @@
   "mac/plan-storyboard-add-menu": [
    "production-plan-add-storyboard-panels"
   ],
-  "mac/plan-storyboard-sketch-sheet": [
-   "production-plan-add-storyboard-panels"
-  ],
   "mac/plan-storyboard-panels": [
    "production-plan-add-storyboard-panels"
   ],
@@ -13234,6 +13276,9 @@
    "production-plan-shot-details"
   ],
   "mac/plan-shot-characters-menu": [
+   "production-plan-shot-details"
+  ],
+  "mac/plan-shots-list-details": [
    "production-plan-shot-details"
   ],
   "mac/plan-shot-move-sheet": [
@@ -13436,9 +13481,6 @@
    "sides-save",
    "sides-open-saved"
   ],
-  "mac/schedule-sides-snapshot": [
-   "sides-open-saved"
-  ],
   "mac/schedule-sides-export": [
    "sides-export"
   ],
@@ -13513,6 +13555,9 @@
    "call-sheets-new-revision"
   ],
   "mac/callsheet-row-menu": [
+   "call-sheets-row-menu"
+  ],
+  "mac/callsheet-row-context-menu": [
    "call-sheets-row-menu"
   ],
   "mac/callsheet-list-export": [
@@ -13645,8 +13690,11 @@
   ],
   "mac/ai-offline-ai-settings": [
    "straft-ai-offline-settings",
-   "straft-ai-ai-health",
-   "straft-ai-memory"
+   "straft-ai-ai-health"
+  ],
+  "mac/ai-offline-ai-settings-details": [
+   "straft-ai-memory",
+   "straft-ai-offline-details"
   ],
   "mac/ai-panel-idea-vault": [
    "straft-ai-beside-workspaces"
@@ -13678,6 +13726,12 @@
   "mac/ai-panel-files": [
    "straft-ai-beside-workspaces"
   ],
+  "mac/ai-panel-wide": [
+   "straft-ai-small-window"
+  ],
+  "mac/ai-panel-narrow": [
+   "straft-ai-small-window"
+  ],
   "mac/ai-panel-sidebar-hidden": [
    "straft-ai-small-window"
   ],
@@ -13688,10 +13742,12 @@
    "straft-ai-find-via-search"
   ],
   "mac/ai-sim-ready": [
-   "straft-ai-ask"
+   "straft-ai-ask",
+   "straft-ai-scope"
   ],
   "mac/ai-sim-question-typed": [
-   "straft-ai-ask"
+   "straft-ai-ask",
+   "straft-ai-scope"
   ],
   "mac/ai-sim-working": [
    "straft-ai-ask"
@@ -13730,9 +13786,6 @@
    "straft-ai-offline-details"
   ],
   "mac/ai-sim-offline-ai-graphics-off": [
-   "straft-ai-offline-details"
-  ],
-  "mac/ai-sim-offline-ai-health": [
    "straft-ai-offline-details"
   ],
   "mac/ai-sim-offline-ai-remove-confirm": [
@@ -13778,6 +13831,9 @@
    "files-open-details",
    "files-move",
    "files-delete-restore"
+  ],
+  "mac/pages-files-more-menu": [
+   "files-open-details"
   ],
   "mac/pages-files-selected": [
    "files-open-details",

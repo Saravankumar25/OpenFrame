@@ -4,9 +4,8 @@
 //   QA=0  skip the contact sheets
 // Output, in .cache/shots/pages/<win|mac>/:
 //   <light|dark>/<file>.html + <file>.css   the screen, same file names as the catalog "file"; no inline styles or scripts
-//   assets/                                 shared per platform: Windows app CSS, Mac window pictures (hard links to the 2x PNGs), Mac base CSS
+//   assets/                                 shared per platform: Windows app CSS, Mac window pictures (hard links to the PNGs), Mac base CSS
 // The product name in every page, stylesheet and text asset is the website's (src/lib/brand.mjs): the apps still show the old one.
-// Pixels cannot be renamed: the Mac window pictures still show the old name where the capture drew it.
 // .cache/shots/manifest.json, per catalog name:
 //   { file, page: [w, h]       CSS size to render the page iframe at
 //     card: [x, y, w, h]       the rectangle of the page a card shows: always the whole page (owner decision 2026-11-01)
@@ -20,6 +19,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
+import { macRepair } from './mac-repairs.mjs';
 import { BRAND_RULES, makeRebrand, rebrand, hasOldName } from '../src/lib/brand.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
@@ -48,7 +48,7 @@ const saveManifest = () => { // merge into whatever is on disk, so two runs (mac
 };
 const mtime = (f) => { try { return fs.statSync(f).mtimeMs; } catch { return 0; } };
 const BRAND_JS = path.join(ROOT, 'src', 'lib', 'brand.mjs');
-const stamp = Math.max(mtime(OVR), mtime(import.meta.filename), mtime(BRAND_JS));
+const stamp = Math.max(mtime(OVR), mtime(import.meta.filename), mtime(BRAND_JS), mtime(path.join(ROOT, 'scripts', 'mac-repairs.mjs')));
 const pagePath = (plat, theme, file) => path.join(PAGES, plat, theme, file);
 const isFresh = (plat, rec, srcTime) => !FORCE && !!manifest[plat][rec.name]?.page && THEMES.every((t) => mtime(pagePath(plat, t, rec.file)) >= Math.max(srcTime, stamp));
 const round = (r) => r.map((v) => Math.round(v));
@@ -69,8 +69,10 @@ function inPage(o) {
     .replace(/[A-Za-z]:\\(?:[^\\\r\n"<>]+\\)*?zz-capture\\home\\/gi, 'C:\\Users\\Maya\\')
     .replace(/[A-Za-z]:\\Users\\[^\\\r\n"<>]+/gi, 'C:\\Users\\Maya')
     .replace(/\/(?:var|private)\/folders\/[^\s"<>]*/g, '/Users/maya/Straft')
-    .replace(/\/Users\/(?!maya\b)[^\/\s"<>]+/g, '/Users/maya')
+    .replace(/\/Users\/(?!maya\b|Shared\b)[^\/\s"<>]+/g, '/Users/maya') // the Mac capture folder /Users/Shared/Straft Demo is drawn in its pictures
     .replace(/Saravan Kumar/g, 'Maya Iyer').replace(/Saravan/g, 'Maya'));
+  // the transparent text layer says what scripts/mac-repairs.mjs draws in the pictures
+  const macText = (t) => (o.mac ? t.replace(/Straft Demo 2(?=\/Files\/capture-packages)/g, 'Straft Demo').replace(/capture-packages/g, 'Packages').replace(/\*\*(Location|Cast):\*\*/g, '$1:') : t);
   const baseStyle = document.querySelector('head style')?.textContent || '';
   const cls = document.documentElement.className;
   // comments and capture links
@@ -95,15 +97,15 @@ function inPage(o) {
   }
   // text and attributes
   const tw = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const texts = []; while (tw.nextNode()) texts.push(tw.currentNode);
-  for (const t of texts) if (!/^(STYLE|SCRIPT)$/.test(t.parentNode.nodeName)) { const v = scrub(t.nodeValue); if (v !== t.nodeValue) t.nodeValue = v; }
+  for (const t of texts) if (!/^(STYLE|SCRIPT)$/.test(t.parentNode.nodeName)) { const v = macText(scrub(t.nodeValue)); if (v !== t.nodeValue) t.nodeValue = v; }
   const els = [root, ...root.querySelectorAll('*')];
   const SCRUBBED = ['value', 'aria-label', 'title', 'placeholder', 'alt', 'data-id'];
-  for (const e of els) for (const { name: a, value: v } of [...(e.attributes || [])]) { if (!v || a === 'style') continue; const n = SCRUBBED.includes(a) ? scrub(v) : rb(v); if (n !== v) e.setAttribute(a, n); }
+  for (const e of els) for (const { name: a, value: v } of [...(e.attributes || [])]) { if (!v || a === 'style') continue; const n = SCRUBBED.includes(a) ? macText(scrub(v)) : rb(v); if (n !== v) e.setAttribute(a, n); }
   if (document.title !== rb(document.title)) document.title = rb(document.title);
   // style elements and attributes become one stylesheet
   let css = '';
   document.querySelectorAll('style').forEach((s) => { if (!o.mac) css += s.textContent + '\n'; s.remove(); });
-  const map = new Map(); const tmp = document.createElement('div');
+  const map = new Map();
   for (const e of [root, ...root.querySelectorAll('*')]) {
     if (!e.hasAttribute('style')) continue;
     let st = e.getAttribute('style').trim(); e.removeAttribute('style');
@@ -113,8 +115,8 @@ function inPage(o) {
     let c = map.get(st);
     if (!c) {
       c = '_s' + map.size; map.set(st, c);
-      tmp.style.cssText = st; const decl = [];
-      for (let i = 0; i < tmp.style.length; i++) { const n = tmp.style[i]; decl.push(n + ':' + tmp.style.getPropertyValue(n) + ' !important'); }
+      // copied as written: a browser hands back nothing for a shorthand with var(), which lost the colour swatches and some borders
+      const decl = st.split(/;(?![^(]*\))/).map((d) => d.trim()).filter(Boolean).map((d) => (/!important$/i.test(d) ? d : d + ' !important'));
       css += '.' + c + '.' + c + '.' + c + '{' + decl.join(';') + '}\n';
     }
     e.classList.add(c);
@@ -127,72 +129,28 @@ function inPage(o) {
 }
 
 // ---------- MAC ----------
-// The Mac pages carry one 2x picture of the window plus the accessibility frames. Picture flaws handled here: capture strips on the
-// edges and OS rounded corners (trimmed: the page window is the clean rectangle of the picture), and blank sidebars (not drawn while a
-// sheet is up), which are painted in from the nearest screen of the same area with a drawn sidebar, shaded to match. Nothing else is cut.
+// The Mac pages carry one picture of the window plus the accessibility frames. The capture of 2026-11-05 is clean (nothing on the
+// window edges, sidebars and toolbars drawn under sheets), so every page shows the whole window as captured; the flaws it does hold are repaired by the rules in scripts/mac-repairs.mjs.
 const MAC_SRC = path.join(RES, 'MacHTML-src');
-let MAC_ALL = []; // the whole Mac catalog, for sidebar donors
-
-async function loadRaw(file) {
-  const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
-  const L = new Float32Array(info.width * info.height);
-  for (let i = 0, j = 0; i < L.length; i++, j += 4) L[i] = (data[j] + data[j + 1] + data[j + 2]) / 3;
-  return { L, W: info.width, H: info.height, data };
-}
-const median = (a) => { const s = Float32Array.from(a).sort(); return s[s.length >> 1]; };
-
-// Width in src px of the capture strip on one edge (desktop bleed, black or coloured noise): walk in from the edge while the
-// line is junk, that is strongly coloured or near black and unlike the interior. A line that only differs from the interior
-// (a toolbar, a banner, a panel) is window and stops the walk, so the window itself is never cut.
-// over: src px rectangles [x0, y0, x1, y1] (sheets, menus) left out of the samples, since they are not the window's interior.
-function stripDepth(p, side, over = [], dark = false) {
-  const { W, H, data } = p; const maxK = 220, tol = 12;
-  const lineAt = (k) => { // per-channel median of the line, so a dark strip next to a dark page is still told apart by its colour
-    const ch = [[], [], []]; let seen = 0;
-    const put = (x, y) => { if (over.some((o) => x >= o[0] && x < o[2] && y >= o[1] && y < o[3])) return; seen++; const i = (y * W + x) * 4; if (data[i + 3] < 200) return; ch[0].push(data[i]); ch[1].push(data[i + 1]); ch[2].push(data[i + 2]); }; // see-through pixels carry no colour
-    if (side === 'left' || side === 'right') { const x = side === 'left' ? k : W - 1 - k; for (let y = 160; y < H - 160; y += 3) put(x, y); }
-    else { const y = side === 'top' ? k : H - 1 - k; for (let x = 420; x < W - 420; x += 3) put(x, y); }
-    return ch[0].length * 2 < seen ? [NaN, NaN, NaN] : ch.map(median); // mostly see-through: not a line to judge
-  };
-  const ref = lineAt(maxK + 40);
-  const near = (k) => { const v = lineAt(k); return Math.max(Math.abs(v[0] - ref[0]), Math.abs(v[1] - ref[1]), Math.abs(v[2] - ref[2])) <= tol; };
-  const junk = (k) => { const v = lineAt(k); if (v.some(Number.isNaN)) return false; const mx = Math.max(...v), mn = Math.min(...v); return (mx > 60 && (mx - mn) / mx > 0.5) || (!dark && mx < 60); }; // a dark window is itself near black
-  // the junk can have thin clean lines between its bands, so up to 6 of them are stepped over
-  let last = 0;
-  for (let k = 0; k < maxK && !near(k); k++) { if (junk(k)) last = k + 1; else if (k - last >= 6) break; }
-  return last;
-}
-// Share of sampled pixels in a src px box with a sharp step to their neighbour: text and icons. A drawn sidebar scores about
-// 0.03 and a drawn toolbar row about 0.05; an undrawn one is near zero even when its fill is a gradient.
-// skip(x, y) leaves a pixel out (a sheet or menu over the box).
-function detail(p, x0, x1, y0, y1, skip) {
-  const { L, W } = p; let n = 0, hit = 0;
-  for (let y = Math.round(y0); y < y1; y += 2) for (let x = Math.max(2, Math.round(x0)); x < x1; x += 2) { if (skip?.(x, y)) continue; n++; if (Math.abs(L[y * W + x] - L[y * W + x - 2]) > 40) hit++; }
-  return n ? hit / n : 0;
-}
-const sideDetail = (p, w) => detail(p, 24, w - 24, 130, p.H - 60);
 
 async function macGeometry(page, file) {
   await page.goto(pathToFileURL(file).href);
   return page.evaluate(() => {
-    const w = document.querySelector('.win').getBoundingClientRect();
-    const rel = (e) => { const b = e.getBoundingClientRect(); return { x: b.x - w.x, y: b.y - w.y, w: b.width, h: b.height }; };
-    const tog = document.querySelector('[data-id=sidebar-toggle]');
-    const regs = {};
-    for (const e of document.querySelectorAll('.region')) { const c = ['sheet', 'menu', 'popover'].find((k) => e.classList.contains(k)); if (c) (regs[c] ||= []).push(rel(e)); }
-    const toast = [...document.querySelectorAll('[data-id=toast]')].map(rel).filter((r) => r.w > 20);
-    return { W: w.width, H: w.height, side: !!document.querySelector('[data-id=sidebar-project-title]'), tog: tog ? rel(tog).x : null, regs, toast: toast.length > 0 };
+    const has = (k) => !!document.querySelector('.region.' + k);
+    const toast = [...document.querySelectorAll('[data-id=toast]')].some((e) => e.getBoundingClientRect().width > 20);
+    return { side: !!document.querySelector('[data-id=sidebar-project-title]'), sheet: has('sheet'), menu: has('menu'), popover: has('popover'), toast };
   });
 }
 
 let macBaseName = null; // shared base stylesheet, one per platform, named by content
-async function macWritePage(page, theme, rec, fullR, patched) {
+async function macWritePage(page, theme, rec, fullR) {
   await page.goto(pathToFileURL(path.join(MAC_SRC, theme, rec.file)).href);
   const r = await page.evaluate(inPage, { ...BRAND, mac: { full: fullR }, urlTo: `../assets/${theme}/`, needles: ['line-height:16px'] });
-  const base = r.baseStyle.replace(/\[style\*="line-height:16px"\]/g, '.of-n0') + `
+  // the source pages shrink the window in a narrow browser; a frame is always the window's own size
+  const base = r.baseStyle.replace(/\[style\*="line-height:16px"\]/g, '.of-n0').replace(/@media \(max-width:\d+px\)\{\.win\{zoom:[\d.]+\}\}\s*/g, '') + `
 html,body{margin:0!important;padding:0!important;background:transparent!important}
 .of-clean{position:relative;overflow:hidden}
-.of-clean>.win{position:absolute!important;margin:0!important;border-radius:0!important;box-shadow:none!important}
+.of-clean>.win{position:absolute!important;margin:0!important;box-shadow:none!important}
 `;
   const name = 'mac-' + crypto.createHash('sha1').update(base).digest('hex').slice(0, 8) + '.css';
   if (name !== macBaseName) { writeFile(path.join(PAGES, 'mac', 'assets', name), base); macBaseName = name; }
@@ -202,85 +160,22 @@ html,body{margin:0!important;padding:0!important;background:transparent!importan
 <html lang="en" class="${r.cls}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(rebrand(rec.title))}</title><link rel="stylesheet" href="../assets/${name}"><link rel="stylesheet" href="${stem}.css"></head><body>${r.html}</body></html>
 `);
   writeFile(path.join(PAGES, 'mac', theme, stem + '.css'), r.css);
-  const pic = path.basename(rec.picture), dest = path.join(PAGES, 'mac', 'assets', theme, pic);
+  const dest = path.join(PAGES, 'mac', 'assets', theme, path.basename(rec.picture));
   fs.mkdirSync(path.dirname(dest), { recursive: true });
-  // the asset is a hard link to the source picture, or a repaired copy: remove the old one first so writing never reaches the source
-  if (patched) { fs.rmSync(dest, { force: true }); fs.writeFileSync(dest, patched); }
-  else if (!fs.existsSync(dest) || fs.statSync(dest).nlink < 2) { fs.rmSync(dest, { force: true }); try { fs.linkSync(path.join(MAC_SRC, theme, rec.picture), dest); } catch { fs.copyFileSync(path.join(MAC_SRC, theme, rec.picture), dest); } }
-}
-
-// Paint a drawn sidebar into a picture whose sidebar is blank. The donor is the nearest catalog screen (same area first) with the same
-// picture size and a cleanly drawn sidebar and toolbar; under a sheet its pixels are dimmed to match the window.
-async function fillSidebar(rec, theme, raw, sideW, overlays, dims) {
-  const w = Math.round(sideW * raw.W / rec.width);
-  const idx = MAC_ALL.findIndex((r) => r.name === rec.name);
-  const near = MAC_ALL.map((r, i) => ({ r, d: Math.abs(i - idx) + (r.area === rec.area ? 0 : 10000) + (i > idx ? 0.5 : 0) }))
-    .filter(({ r }) => r !== rec && r.width === rec.width && r.height === rec.height && (w === 0 ? r.area === rec.area && !r.texts?.includes('Sidebar') : r.texts?.includes('Sidebar'))).sort((a, b) => a.d - b.d);
-  const s = raw.W / rec.width, TB = Math.round(50 * s); // the first toolbar row ends about 50 CSS px down
-  const over = overlays.map((o) => [(o.x - 30) * s, (o.y - 30) * s, (o.x + o.w + 30) * s, (o.y + o.h + 30) * s]); // a sheet or menu, with its shadow
-  const isOver = (x, y) => over.some((o) => x >= o[0] && x < o[2] && y >= o[1] && y < o[3]);
-  // dominant colour of a region, in 4-step buckets
-  const mode = (p, x0, x1, y0, y1, skip) => { const h = new Map(); for (let y = y0; y < y1; y += 3) for (let x = x0; x < x1; x += 3) { if (skip && isOver(x, y)) continue; const i = (y * p.W + x) * 4, k = `${p.data[i] >> 2},${p.data[i + 1] >> 2},${p.data[i + 2] >> 2}`; h.set(k, (h.get(k) || 0) + 1); } return [...h].sort((a, b) => b[1] - a[1])[0][0].split(',').map((v) => +v * 4 + 2); };
-  const inSheet = (x, y) => overlays.some((o) => x >= o.x * s && x < (o.x + o.w) * s && y >= o.y * s && y < (o.y + o.h) * s);
-  const toolbar = (p) => detail(p, w + 2, raw.W - 60, 4, TB, inSheet);
-  for (const { r } of near) {
-    const d = await loadRaw(path.join(MAC_SRC, theme, r.picture));
-    if (d.W !== raw.W || d.H !== raw.H || (w > 0 && sideDetail(d, w) < 0.015) || toolbar(d) < (w === 0 ? 0.012 : 0.035)) continue; // the donor must be a clean capture
-    // shade: a sheet dims the window, so scale the donor by the ratio of the two windows' main colours (sheet excluded)
-    const box = [w + 40, raw.W - 40, Math.round(120 * s), raw.H - Math.round(60 * s)];
-    const m1 = mode(raw, ...box, true), m0 = mode(d, ...box, true), sum = (v) => v[0] + v[1] + v[2];
-    // one factor, so no colour cast; only a sheet dims the window, never below about half
-    const k = Array(3).fill(dims ? Math.min(1, Math.max(0.45, sum(m1) / Math.max(1, sum(m0)))) : 1);
-    const out = Buffer.from(raw.data);
-    const put = (x, y) => { const i = (y * raw.W + x) * 4; for (let c = 0; c < 3; c++) out[i + c] = Math.min(255, Math.round(d.data[i + c] * k[c])); };
-    // sidebar column: replaced whole, except under a sheet or menu drawn over it
-    for (let y = 0; y < raw.H; y++) for (let x = 0; x < w; x++) if (!inSheet(x, y)) put(x, y);
-    // toolbar: some captures also drew its buttons without labels; then the whole first toolbar row comes from the donor
-    if (toolbar(raw) < (w === 0 ? 0.006 : 0.025)) for (let y = 0; y < TB; y++) for (let x = w; x < raw.W - (w === 0 ? 4 : 30) * s; x++) if (!inSheet(x, y)) put(x, y);
-    return { png: await sharp(out, { raw: { width: raw.W, height: raw.H, channels: 4 } }).png({ compressionLevel: 9 }).toBuffer(), donor: r.name, changed: w > 0 || toolbar(raw) < 0.006 };
-  }
-  return null;
+  fs.rmSync(dest, { force: true }); // an older hard link would keep the picture of an earlier capture
+  const repaired = await macRepair(rec.name, theme, path.join(MAC_SRC, theme, rec.picture));
+  if (repaired) { fs.writeFileSync(dest, repaired); return; }
+  try { fs.linkSync(path.join(MAC_SRC, theme, rec.picture), dest); } catch { fs.copyFileSync(path.join(MAC_SRC, theme, rec.picture), dest); }
 }
 
 async function macOne(page, rec) {
   const name = rec.name, srcTime = Math.max(mtime(path.join(MAC_SRC, 'light', rec.file)), mtime(path.join(MAC_SRC, 'dark', rec.file)));
   if (isFresh('mac', rec, srcTime)) return false;
-  const ov = overrides[`mac/${name}`] || {};
   const g = await macGeometry(page, path.join(MAC_SRC, 'light', rec.file));
-  const pics = await Promise.all(THEMES.map(async (t) => ({ t, raw: await loadRaw(path.join(MAC_SRC, t, rec.picture)) })));
-  const lp = pics[0].raw, s = lp.W / g.W;
-  // 1. sidebar: a real one is kept; a blank one (not drawn in the capture) is painted in from a donor screen
-  const hasSide = g.side && g.tog > 150;
-  let sideW = 0, sidebar = hasSide ? 'kept' : 'collapsed';
-  const patched = {};
-  if (hasSide) {
-    const x0 = g.tog - 28, x1 = g.tog; let best = g.tog - 4, bestF = 0.5;
-    const ys = []; for (let y = 130; y < lp.H - 120; y += 2) ys.push(y);
-    for (let xc = Math.round(x0 * s); xc <= Math.round(x1 * s); xc++) { let hit = 0; for (const y of ys) if (Math.abs(lp.L[y * lp.W + xc + 1] - lp.L[y * lp.W + xc - 1]) > 3) hit++; const f = hit / ys.length; if (f > bestF) { bestF = f; best = xc / s; } }
-    sideW = best;
-    for (const p of pics) {
-      if (sideDetail(p.raw, sideW * s) >= 0.005) continue; // drawn: it has text
-      const f = await fillSidebar(rec, p.t, p.raw, sideW + 2, Object.values(g.regs).flat(), !!g.regs.sheet?.length);
-      if (!f) throw new Error(`blank sidebar and no donor screen: ${p.t}/${name}`);
-      patched[p.t] = f.png; p.raw = await loadRaw(f.png); sidebar = `filled from ${f.donor}`;
-    }
-  }
-  // a window without a sidebar (Application Home and its sheets) can also have a toolbar the capture drew as empty pills
-  const tbd = (p) => detail(p, Math.round(300 * s), p.W - Math.round(60 * s), Math.round(10 * s), Math.round(46 * s));
-  if (!hasSide && g.W >= 1200) for (const p of pics) {
-    if (tbd(p.raw) >= 0.005 || Math.max(...pics.map((q) => tbd(q.raw))) < 0.012) continue; // empty in this theme only: a screen with no toolbar by design is left alone
-    const f = await fillSidebar(rec, p.t, p.raw, 0, Object.values(g.regs).flat(), !!g.regs.sheet?.length);
-    if (f && f.changed) { patched[p.t] = f.png; p.raw = await loadRaw(f.png); sidebar = `collapsed, toolbar filled from ${f.donor}`; }
-  }
-  // 2. clean inner rectangle: a few px inside the window, past any capture strip
-  const e = { l: 6, t: 6, r: 6, b: 6 };
-  // a sheet or menu reaches from near the top, so it is left out of the samples (with its shadow, and in full height)
-  const over = Object.values(g.regs).flat().map((o) => [(o.x - 30) * s, 0, (o.x + o.w + 30) * s, lp.H]);
-  for (const p of pics) for (const [k, side] of [['l', 'left'], ['t', 'top'], ['r', 'right'], ['b', 'bottom']]) { const d = stripDepth(p.raw, side, side === 'top' || side === 'bottom' ? over : [], p.t === 'dark'); e[k] = Math.max(e[k], Math.ceil(d / s) + 2); }
-  const full = round([e.l, e.t, g.W - e.r - e.l, g.H - e.b - e.t]); // the clean window, whole
-  const focus = ov.focus || (g.regs.sheet ? 'sheet' : g.regs.menu ? 'menu' : g.regs.popover || g.toast ? 'panel' : 'window');
-  for (const t of THEMES) await macWritePage(page, t, rec, full, patched[t]);
-  setEntry('mac', name, { file: rec.file, page: [full[2], full[3]], card: [0, 0, full[2], full[3]], full: [0, 0, full[2], full[3]], focus, sidebar });
+  const full = [0, 0, rec.width, rec.height];
+  const focus = overrides[`mac/${name}`]?.focus || (g.sheet ? 'sheet' : g.menu ? 'menu' : g.popover || g.toast ? 'panel' : 'window');
+  for (const t of THEMES) await macWritePage(page, t, rec, full);
+  setEntry('mac', name, { file: rec.file, page: [full[2], full[3]], card: full, full, focus, sidebar: g.side ? 'kept' : 'collapsed' });
   return true;
 }
 
@@ -288,22 +183,40 @@ async function macOne(page, rec) {
 // The Windows pages are the app's own DOM, shown whole at the captured 1600x1000 with the app navigation as captured
 // (owner decision 2026-11-01: full windows, nothing cropped or collapsed). The one change: on screenplay writing screens the
 // Scenes list is hidden, as the app's own "Hide the scene list" button does, so the script page is the centre of the screen.
+// Breakdown keeps its list: it has its own "Hide scenes" button and its own screens with the list hidden.
 const WIN_SRC = path.join(RES, 'WindowsHTML-src');
 const SCENES_KEPT = /navigator|scene-context|scene-number|scene-hub|reorder|export-selected/; // screens about the scene list itself
 
-async function winPrepare(page, hideScenes) {
+// Flaws of the Windows capture, repaired on the website page so a new capture keeps the repair. List for the app work: docs/OPERATIONS.md section 3.
+const WIN_REPAIRS = [
+  [/^vault-(multiselect-bar|item-context-menu-multi)$/, { css: '.vcard:has(.selc.show) .vt{padding-left:24px}' }], // the selection tick covered the first letter of the title
+  [/^story-board-multiselect-bar$/, { css: '.mbar{top:6px!important;height:62px!important}' }], // the bar cut the line under the title in half
+  [/^notes-task-editor-related-results$/, { css: '[role=listbox] .li.clickable .grow{min-width:45%}[role=listbox] .li.clickable .xs.muted{flex:0 1 45%;min-width:0}' }], // a long result title was squeezed to one word per line
+  [/^prod-moodboard-new-filled$|^prod-shot-(menu|drawer|move-dialog|attach-dialog)$|^prod-shots-(scene-actions-menu|copy-planning-dialog|export-dialog)$/, { dropError: true }], // an error from the step before, still on screen
+];
+async function winRepair(page, name) {
+  const dropError = WIN_REPAIRS.some(([re, r]) => r.dropError && re.test(name));
+  await page.evaluate((dropError) => {
+    if (dropError) document.querySelectorAll('.errtxt').forEach((e) => { e.previousElementSibling?.removeAttribute('aria-invalid'); e.remove(); });
+    const tw = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    while (tw.nextNode()) { const t = tw.currentNode, v = t.nodeValue.replace(/\b1 (scene|comment|act|sequence|beat|command)s\b/g, '1 $1').replace(/\bCapture tour\b/g, 'Maya Iyer'); if (v !== t.nodeValue) t.nodeValue = v; } // the app has no singular here; the capture signed its sample themes
+  }, dropError);
+}
+const winRepairCss = (name) => WIN_REPAIRS.filter(([re, r]) => r.css && re.test(name)).map(([, r]) => r.css + '\n').join('');
+
+async function winPrepare(page, hideScenes, slide) {
   if (!hideScenes) return;
-  await page.evaluate(() => {
+  await page.evaluate((slide) => {
     const list = document.querySelector('nav.sp-nav');
-    if (!list) return;
+    if (!list || [...document.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Hide scenes')) return;
     // pop-ups keep their captured screen position; the script area widens to the left, so slide the ones over it (not dialogs, not the top bars)
     const w = list.getBoundingClientRect().width, x1 = list.getBoundingClientRect().right;
     const pops = [...document.querySelectorAll('.menu-pop,[role=menu],[role=listbox]')].filter((e) => !e.closest('[role=dialog]') && e.getBoundingClientRect().y > 92 && e.getBoundingClientRect().x >= x1);
     list.remove();
     const b = document.querySelector('button[title="Hide the scene list"]');
     if (b) { b.classList.remove('on'); b.setAttribute('aria-pressed', 'false'); b.setAttribute('title', 'Show the scene list'); }
-    for (const e of pops) e.style.translate = `${-w / 2}px 0`;
-  });
+    if (slide) for (const e of pops) e.style.translate = `${-w / 2}px 0`;
+  }, slide);
 }
 async function winGeometry(page) {
   return page.evaluate(() => {
@@ -327,21 +240,21 @@ async function winOne(ctx, rec) {
   const ov = overrides[`win/${name}`] || {};
   const page = await ctx.newPage();
   const url = (t) => pathToFileURL(path.join(WIN_SRC, t, rec.file)).href;
-  const hideScenes = !SCENES_KEPT.test(name);
+  const hideScenes = !SCENES_KEPT.test(name), slide = !/^sp-panel-/.test(name); // a menu in the right panel does not move with the script
   const size = [1600, 1000];
   try {
     await page.setViewportSize({ width: size[0], height: size[1] });
     await page.goto(url('light'));
-    await winPrepare(page, hideScenes);
+    await winPrepare(page, hideScenes, slide);
     const geo = await winGeometry(page);
     const focus = ov.focus || (geo.dialogs.length ? 'dialog' : geo.menus.length || geo.lists.length ? 'menu' : geo.toasts.length ? 'panel' : 'window');
     const sidebar = geo.nav && !geo.nav.collapsed ? 'kept' : 'collapsed'; // 'collapsed' also covers screens without a navigation
     const stem = rec.file.replace(/\.html$/, '');
     for (const theme of THEMES) {
-      await page.goto(url(theme)); await winPrepare(page, hideScenes);
+      await page.goto(url(theme)); await winPrepare(page, hideScenes, slide); await winRepair(page, name);
       const r = await page.evaluate(inPage, { ...BRAND, cssName: stem + '.css' });
       writeFile(pagePath('win', theme, rec.file), r.html);
-      writeFile(path.join(PAGES, 'win', theme, stem + '.css'), r.css);
+      writeFile(path.join(PAGES, 'win', theme, stem + '.css'), r.css + winRepairCss(name));
     }
     setEntry('win', name, { file: rec.file, page: size, card: [0, 0, size[0], size[1]], full: [0, 0, size[0], size[1]], focus, sidebar });
   } finally { await page.close(); }
@@ -399,10 +312,9 @@ const browser = await chromium.launch();
 try {
   if (ONLY !== 'win') {
     const all = readJson(path.join(RES, 'screens-mac.json'), []).filter((r) => !r.sim); // simulated screens come from sim-mac.mjs
-    MAC_ALL = all;
     const cat = all.filter((r) => !MATCH || MATCH.test(r.name));
     console.log(`mac: ${cat.length} screens`);
-    const pages = await Promise.all(Array.from({ length: 4 }, async () => (await browser.newContext({ viewport: { width: 1500, height: 900 } })).newPage()));
+    const pages = await Promise.all(Array.from({ length: 4 }, async () => (await browser.newContext({ viewport: { width: 1800, height: 1000 } })).newPage()));
     let made = 0;
     await pool(cat, 4, async (rec, w) => { if (await macOne(pages[w], rec)) made++; if (made % 25 === 0) saveManifest(); });
     saveManifest();

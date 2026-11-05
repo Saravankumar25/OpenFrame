@@ -261,6 +261,11 @@ export default {
           explain: `The menu has Open, Refresh, Finalize and Export PDF…, then a divider and Delete. Refresh is greyed out when the sheet already matches the schedule.`,
         },
         {
+          screen: `callsheet-row-context-menu`,
+          do: `Or Control-click the row.`,
+          explain: `The same menu opens beside the pointer, with Open, Refresh, Finalize, Export PDF… and Delete.`,
+        },
+        {
           screen: `callsheet-list-export`,
           do: `Choose Export PDF… or click Export on the row.`,
           explain: `The Export Call Sheet sheet opens for that sheet. It says Creates the PDF snapshot to send and names the source, for example Call Sheet: Day 1 · Draft. See Export a call sheet as a PDF for each control.`,
@@ -457,6 +462,7 @@ export default {
     },
   ],
   screens: {
+    'callsheet-row-context-menu': `The menu opened by Control-clicking the Shoot Day 1 row, with Open, Refresh greyed out, Finalize, Export PDF… and Delete. Used in call-sheets-row-menu.`,
     'ai-sim-callsheet-schedule-changed': `A final call sheet with the notice that the schedule changed, and Start New Revision. Used in call-sheets-schedule-changed.`,
     'ai-sim-callsheet-day-deleted': `A call sheet with the notice that its shooting day was deleted. Used in call-sheets-day-deleted.`,
     'callsheets-empty': `The Call Sheets page for a project with no call sheets. It says Create a call sheet from a shooting day, and that scenes, cast and locations are filled in from the schedule. Create Call Sheet is at the top right. Used in call-sheets-create.`,
