@@ -11,7 +11,7 @@ const thumb = (ctx, plat, name) => ctx.thumbView(plat, name);
 const web = (t) => String(t ?? '').replace(/\bthis chapter\b/gi, 'these tutorials').replace(/\bthe ([A-Z][\w ,&]*?) chapter\b/g, 'the $1 tutorials').replace(/\bchapters?\b/gi, 'tutorials').replace(/\b(this|the) manual\b/gi, 'the tutorials');
 
 export default function tutorials(ctx) {
-  const { html, mock, PARTS, manual, cat } = ctx;
+  const { html, mock, PARTS, manual } = ctx;
   const md = (t) => ctx.md(web(t));
   const pages = [];
   const all = {}, ordered = {};

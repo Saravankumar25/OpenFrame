@@ -4,7 +4,7 @@ import { html, raw, esc } from './html.mjs';
 import { ICON, MARK, BRANDLOGO, GRADIENT_DEFS } from './icons.mjs';
 import { FEATURE_GROUPS, WHY, OS, COMPANY, COMPANY_ADDRESS, SUPPORT_EMAIL } from '../content/nav.mjs';
 import { PRICES } from '../content/copy.mjs';
-import { SITE_URL, SITE_NAME, STORE } from '../../site.config.mjs';
+import { SITE_NAME, STORE } from '../../site.config.mjs';
 import { headMeta, jsonLd } from './seo.mjs';
 import { socialList } from '../content/social.mjs';
 
