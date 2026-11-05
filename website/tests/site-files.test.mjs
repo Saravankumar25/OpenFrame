@@ -48,3 +48,23 @@ test('_headers: the extensionless error pages are noindex, images cache for a we
   assert.ok(h.split('\n').filter((l) => /^\S/.test(l)).length <= 100, 'Cloudflare Pages allows 100 header rules');
   assert.ok(h.split('\n').every((l) => l.length <= 2000), 'a header line is over 2,000 characters');
 });
+
+test('/discord is a 302 redirect to the invite, with no page of its own and no sitemap entry; the old invite is gone', { skip: SKIP }, () => {
+  const rules = read(file('_redirects')).trim().split('\n').map((l) => l.trim().split(/\s+/));
+  for (const from of ['/discord', '/discord/']) assert.deepEqual(rules.find((r) => r[0] === from), [from, 'https://discord.gg/AuQRHDpzP4', '302'], from);
+  assert.equal(rules.filter((r) => r[0].startsWith('/discord')).length, 2, 'no other /discord rule');
+  assert.ok(!existsSync(file('discord')) && !existsSync(file('discord.html')), 'no HTML page for /discord');
+  assert.ok(!/\/discord/.test(read(file('sitemap.xml'))), 'not in the sitemap');
+  assert.ok(!/wPKGPf5mm/.test(read(file('index.html')) + read(file('_redirects'))), 'old invite is gone');
+});
+
+test('the eight official profiles show in the footer and on Contact, and Organization sameAs lists the seven public ones', { skip: SKIP }, () => {
+  const want = ['https://www.youtube.com/@StraftStudio', 'https://www.facebook.com/straftstudio/', 'https://www.instagram.com/straftstudio/', 'https://x.com/straftstudio/', 'https://www.threads.com/@straftstudio/', 'https://www.linkedin.com/company/straftstudio/', 'https://www.reddit.com/user/straftstudio/', 'https://straftstudio.com/discord'];
+  for (const f of ['index.html', 'contact/index.html', 'about/index.html']) {
+    const s = read(file(f));
+    for (const u of want) assert.ok(s.includes(`<a href="${u}" target="_blank" rel="noopener noreferrer" aria-label="Straft Studio on `), `${f} ${u}`);
+  }
+  const ld = [...read(file('about', 'index.html')).matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]).flat?.() ?? JSON.parse(m[1])).flat();
+  const org = ld.find((o) => o['@type'] === 'Organization');
+  assert.deepEqual(org.sameAs, want.slice(0, 7), 'Discord is an invite, not a profile');
+});

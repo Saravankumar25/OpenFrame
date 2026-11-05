@@ -6,6 +6,7 @@ import { FEATURE_GROUPS, WHY, OS, COMPANY, COMPANY_ADDRESS, SUPPORT_EMAIL } from
 import { PRICES } from '../content/copy.mjs';
 import { SITE_URL, SITE_NAME, STORE } from '../../site.config.mjs';
 import { headMeta, jsonLd } from './seo.mjs';
+import { socialList } from '../content/social.mjs';
 
 // Runs before first paint (its hash is allowed in the CSP). Platform: the page's own platform, then the saved
 // choice, then a guess. Website theme: saved choice, then the system setting. Screen theme: saved choice, else light.
@@ -130,6 +131,7 @@ function footer(page) {
   return html`<footer class="site-f"><div class="wrap"><div class="f-grid">
 <div><a class="brand" href="/">${BRANDLOGO}<span class="sr">Straft Studio, home</span></a>
 <p class="about">A film production software for all your needs. From film lovers, to film lovers across the world.</p>
+${socialList('f-soc')}
 <div class="f-company"><img src="/company/vighnajith-advisories-logo-192.webp" srcset="/company/vighnajith-advisories-logo-96.webp 96w, /company/vighnajith-advisories-logo-192.webp 192w, /company/vighnajith-advisories-logo-288.webp 288w" sizes="96px" width="96" height="48" alt="${COMPANY} logo" loading="lazy"><span>${SITE_NAME} is a product of ${COMPANY}.</span></div></div>
 ${col('Ideate & Write', all.slice(0, 7).map(([s, t]) => [t, `/features/${s}/`]))}
 ${col('Plan & Shoot', all.slice(7).map(([s, t]) => [t, `/features/${s}/`]).concat([['All features', '/features/']]))}

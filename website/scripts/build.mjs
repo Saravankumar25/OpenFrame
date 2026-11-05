@@ -15,6 +15,7 @@ import { renderPage, makeHelpers, BOOT } from '../src/lib/layout.mjs';
 import { loadManual } from './check-content.mjs';
 import { CATALOG } from '../src/content/catalog.mjs';
 import { writeSitemapAndRobots, writeLlms, headersFile } from './seo-files.mjs';
+import { DISCORD_INVITE } from '../src/content/social.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const SRC = path.join(ROOT, 'src'), DIST = process.env.OF_DIST ? path.resolve(process.env.OF_DIST) : path.join(ROOT, 'dist'); // OF_DIST: a private output folder for parallel work
@@ -158,6 +159,8 @@ for (const plat of ['win', 'mac']) for (const id of OLD_TUTORIALS) {
 }
 // The per-platform screen lists were folded into the tutorials (owner, 2026-10-31).
 redirects.push('/windows/screens/ /windows/tutorials/ 301', '/mac/screens/ /mac/tutorials/ 301');
+// The branded Discord link: a temporary (302) redirect, so the invite can change without a cached move. It is the only rule that leaves this site.
+redirects.push(`/discord ${DISCORD_INVITE} 302`, `/discord/ ${DISCORD_INVITE} 302`);
 fs.writeFileSync(path.join(DIST, '_redirects'), redirects.join('\n') + '\n');
 
 const files = fs.readdirSync(DIST, { recursive: true }).length;

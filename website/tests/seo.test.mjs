@@ -220,6 +220,7 @@ test('redirects cannot be used as open redirects and stay inside the host limits
   for (const l of lines) {
     const [from, to, code] = l.split(/\s+/);
     assert.match(from, /^\/[^:]*$/, `no placeholders in the source: ${l}`);
+    if (from === '/discord' || from === '/discord/') { assert.equal(to, 'https://discord.gg/AuQRHDpzP4', l); assert.equal(code, '302', l); continue; } // the one branded link that leaves the site
     assert.match(to, /^\/(?!\/)[^\s:]*$/, `target must be a path on this site: ${l}`);
     assert.doesNotMatch(to, /\/\*|:splat|\\/, l);
     assert.ok(['301', '302'].includes(code), l);
