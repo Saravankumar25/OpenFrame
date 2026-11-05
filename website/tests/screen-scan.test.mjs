@@ -7,7 +7,7 @@ const hits = (t) => pageProblems(t).join('|');
 test('a clean page has no problems', () => assert.equal(hits('<link href="a.css"><div class="x">Night Bus, Maya Rao, https://example.com in text</div>'), ''));
 for (const [name, text, want] of [
   ['script', '<script>1</script>', /script/], ['frame', '<iframe src="a.html">', /embedded/], ['handler', '<div onclick="a()">', /handler/],
-  ['javascript link', '<a href="javascript:x()">', /javascript/], ['OneDrive folder', 'C:\Users\Maya\OneDrive\a.txt', /private/],
+  ['javascript link', '<a href="javascript:x()">', /javascript/], ['OneDrive folder', 'C:\\Users\\Maya\\OneDrive\\a.txt', /private/],
   ['token', 'ghp_' + 'a'.repeat(36), /secret/], ['network image', '<img src="https://a.example/b.png">', /network/], ['network css', 'a{background:url(//a.example/b.png)}', /network/],
   ['app server', '<audio src="http://x.localhost/a">', /network/], ['file link', '<a href="file:///C:/a">', /file link/],
 ]) test(`finds: ${name}`, () => assert.match(hits(text), want));
