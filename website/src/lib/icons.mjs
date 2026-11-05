@@ -33,6 +33,19 @@ export const ICON = {
   ext: s('<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>'),
 };
 
+// Simple monochrome platform marks for the social links, filled with the text colour.
+const sm = (d) => raw(`<svg class="i logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor" fill-rule="evenodd"><path d="${d}"/></svg>`);
+export const SOC_ICON = {
+  youtube: sm('M21.6 7.2a2.5 2.5 0 0 0-1.76-1.77C18.3 5 12 5 12 5s-6.3 0-7.84.43A2.5 2.5 0 0 0 2.4 7.2C2 8.76 2 12 2 12s0 3.24.4 4.8a2.5 2.5 0 0 0 1.76 1.77C5.7 19 12 19 12 19s6.3 0 7.84-.43a2.5 2.5 0 0 0 1.76-1.77C22 15.24 22 12 22 12s0-3.24-.4-4.8zM10 15V9l5.2 3z'),
+  facebook: sm('M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zM13.2 21.9V14h2.4l.4-3h-2.8V9.2c0-.8.3-1.4 1.4-1.4H16V5.1c-.3 0-1.1-.1-2.1-.1-2.2 0-3.7 1.3-3.7 3.8V11H8v3h2.2v7.9z'),
+  instagram: sm('M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zM7 4a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zM12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6zM17.5 5.5a1 1 0 1 0 0 2 1 1 0 0 0 0-2z'),
+  x: sm('M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z'),
+  threads: raw('<svg class="i logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M15 8.5v5a2.2 2.2 0 0 0 4.4 0V12a7.4 7.4 0 1 0-2.9 5.9"/></svg>'),
+  linkedin: sm('M5 2h14a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zM6.5 4.8a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4zM4.9 9.6V19h3.2V9.6zM10 9.6V19h3.1v-5c0-1.3.5-2.2 1.6-2.2s1.5.8 1.5 2.1V19h3.2v-5.6c0-2.6-1.3-4-3.3-4-1.3 0-2.2.6-2.7 1.4V9.6z'),
+  reddit: sm('M12 7.2c-4.3 0-7.8 2.5-7.8 5.7 0 3.2 3.5 5.8 7.8 5.8s7.8-2.6 7.8-5.8c0-3.2-3.5-5.7-7.8-5.7zM8.7 11.2a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8zM15.3 11.2a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8zM8.6 15.3q3.4 2.3 6.8 0l.6.8q-4 2.9-8 0zM12.8 7.4l.9-3.6 3 .7a1.5 1.5 0 1 1-.2 1l-2.2-.5-.5 2.4zM3.4 10.2a1.7 1.7 0 1 1 2.2 2.6 5 5 0 0 1-2.2-2.6zM20.6 10.2a1.7 1.7 0 1 0-2.2 2.6 5 5 0 0 0 2.2-2.6z'),
+  discord: sm('M6.5 5.2c1.5-.7 3-1.1 4.3-1.3l.4.9c.6-.1 1.2-.1 1.8 0l.4-.9c1.3.2 2.8.6 4.3 1.3 2.2 3.3 2.9 6.7 2.5 10.3-1.5 1.1-3 1.8-4.5 2.2l-.9-1.5c.5-.2 1-.4 1.4-.7l-.3-.3c-2.8 1.3-5.7 1.3-8.5 0l-.3.3c.4.3.9.5 1.4.7l-.9 1.5c-1.5-.4-3-1.1-4.5-2.2C3.6 11.9 4.3 8.5 6.5 5.2zM9.2 10.9a1.6 1.7 0 1 0 0 3.4 1.6 1.7 0 0 0 0-3.4zM14.8 10.9a1.6 1.7 0 1 0 0 3.4 1.6 1.7 0 0 0 0-3.4z'),
+};
+
 // The Straft logo: the outlines of the supplied artwork, so it looks the same whatever fonts are installed. The mark keeps
 // its own gradient in every theme and is never stretched or recoloured. "Straft" follows the text colour; "Studio" is the brand orange.
 export const MARK_D = 'M179,51H844A128,128 0 0 1 972,179V844A128,128 0 0 1 844,972H179A128,128 0 0 1 51,844V179A128,128 0 0 1 179,51ZM179,119H264V264H119V179A60,60 0 0 1 179,119ZM759,119H844A60,60 0 0 1 904,179V264H759V119ZM119,332H264V478H119V332ZM759,332H904V478H759V332ZM119,546H264V691H119V546ZM759,546H904V691H759V546ZM119,759H264V904H179A60,60 0 0 1 119,844V759ZM759,759H904V844A60,60 0 0 1 844,904H759V759ZM332,119H691V478H332V119ZM332,546H691V904H332V546Z';

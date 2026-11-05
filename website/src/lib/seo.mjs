@@ -3,6 +3,7 @@
 import { esc } from './html.mjs';
 import { FOUNDERS } from '../content/founders.mjs';
 import { SUPPORT_EMAIL } from '../content/nav.mjs';
+import { SAME_AS } from '../content/social.mjs';
 import { SITE_URL, SITE_NAME, STORE } from '../../site.config.mjs';
 
 export const OG = { path: '/og.png', width: 1200, height: 630, type: 'image/png',
@@ -13,7 +14,7 @@ const DESC = 'A local-first desktop app for writers, screenwriters and film prod
 // ---------- structured data builders (info.mjs re-exports ORG and APP for the pages)
 export const ORG = (ctx = { SITE_URL }) => ({ '@context': 'https://schema.org', '@type': 'Organization', '@id': ID.org, name: SITE_NAME, url: ctx.SITE_URL + '/',
   logo: { '@type': 'ImageObject', url: ctx.SITE_URL + '/icon-512.png', width: 512, height: 512 },
-  slogan: 'From film lovers, to film lovers across the world.', email: SUPPORT_EMAIL,
+  slogan: 'From film lovers, to film lovers across the world.', email: SUPPORT_EMAIL, sameAs: SAME_AS,
   contactPoint: { '@type': 'ContactPoint', contactType: 'customer support', email: SUPPORT_EMAIL, availableLanguage: 'English' },
   founder: FOUNDERS.map((f) => ({ '@type': 'Person', name: f.name, jobTitle: f.role, description: f.text[0], ...(f.link ? { url: f.link, sameAs: [f.link] } : {}) })) });
 // Availability is stated only once a store listing exists (site.config.mjs STORE); until then no claim is made that it can be bought.
