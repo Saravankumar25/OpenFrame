@@ -76,7 +76,7 @@ cost the user data or privacy?* If neither, the model writes it.
 | Piece | Why it stays |
 |---|---|
 | Permission and visibility filters, private notes, role checks | Privacy and safety. Applied inside every fetch |
-| Refusals: change or bypass the licence, payment or team password; actions the user may not do | Safety. One fixed refusal sentence |
+| Refusals: change or bypass the licence or payment; actions the user may not do | Safety. One fixed refusal sentence |
 | Counts, sums, differences, date arithmetic, availability overlaps, budget variance | Exact. Code computes them and puts them in the dossier as facts. The model must not count or add |
 | Reading a record by id, or by a name that resolved to exactly one record | Exact lookup |
 | Entity and alias resolution against the index, with fuzzy match only above a high threshold | Exact. The answer states a fuzzy match ("I took Engvergis to mean Varghese") |
@@ -126,7 +126,7 @@ writes, code checks); the old question paths are gone, with their tests and stri
   (the old rewrite loop and the language-only verifier of the Agent lane), and each one's `tests.rs`.
 - **Trimmed**: `typo.rs` keeps only the edit distance and the list of ordinary words that entity resolution uses; the
   routing copy (`correct`) is gone. `commands.rs` keeps only the exact commands that start a change or open something
-  ("Create a task to ...", "Open scene 42") and the refusal for the licence, payment and team password; every route that
+  ("Create a task to ...", "Open scene 42") and the refusal for the licence and payment; every route that
   answered a question (counts, facts, descriptions, product help), `follow_up`, `just_the_number` and the greeting
   replies are gone. `sanitize.rs` keeps only the wash of our own tags and of sentences about the reply. `tools.rs` loses
   the tools `clarify`, `summarize_scope`, `character_profile` and `answer_product_question`, and `Generation` keeps only
@@ -946,14 +946,14 @@ Result of slice S2 (2026-10-26). The registry holds 156 queries. Before S2, 72 w
 looked at each one. **3 are now exposed, 69 stay hidden.** A query stays hidden only for a stated reason: security (S), a
 file path or a user-picked location (P), a dialog or editor helper whose facts the assistant already gets through a named
 tool (U), an exact duplicate of a tool the assistant already has (D), or no value to a user (N). Nothing marked for
-security, licence, team gate, private notes of other users or file paths was unhidden. The reasons in the registry
+security, licence, private notes of other users or file paths was unhidden. The reasons in the registry
 (`registry::hidden`) are the ones shown in the generated [ai-tool-coverage.md](../engineering/ai-tool-coverage.md).
 
 What else S2 changed:
 
 - Exposed queries and the two new read tools: `app_appearance` (mode, active theme, built-in themes, My Themes) and
   `app_settings` (spell checking on or off with its languages, and the keyboard shortcuts the person changed). Both read
-  app-level data through the new `ToolCtx.core` field. Neither returns a licence, a trial state, a team password, a token
+  app-level data through the new `ToolCtx.core` field. Neither returns a licence, a trial state, a token
   or a file path. The commands that change appearance and shortcuts stay hidden.
 - `cast_and_crew` now prints each person's contact as `contact: value`, only for an actor who may see it in the app
   (Owner and Editor, `production::privacy::may_see_contacts`). Other roles get `contact: hidden for your role`. Catalog
@@ -985,7 +985,6 @@ number N, and ask when the project has no such scene.
 | `diagnostics.preview` | kept (S) | Support diagnostics are user-started only (ADR-0021) |
 | `entitlement.notice` | kept (S) | Licence and trial notices |
 | `entitlement.status` | kept (S) | Licence and trial status |
-| `team_gate.status` | kept (S) | Team password gate of an internal build |
 | `app.info` | kept (P) | Returns local folders and file paths |
 | `app.save_state` | kept (N) | Save indicator of the status bar |
 | `files.asset` | kept (P) | Returns the path of a managed media file |

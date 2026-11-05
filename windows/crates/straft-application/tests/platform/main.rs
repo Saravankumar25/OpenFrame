@@ -21,7 +21,6 @@ mod rename_migration;
 mod security_review;
 mod soak;
 mod storage;
-mod team_gate;
 mod trial_first_run;
 mod update_from_release_baseline;
 mod vault_recover;

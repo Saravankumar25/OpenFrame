@@ -272,8 +272,6 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `entitlement.restore_purchase`: Ask the release channel to restore a purchase, then check the licence and trial again. | command | Mutate | app level | P | `RestorePurchaseArgs` → `EntitlementStatus` | hidden | none |
 | `entitlement.start_trial`: Start the free 7-day trial from the App Store on the Mac. Other channels start the trial by themselves. | command | Mutate | app level | P | `StartTrialArgs` → `BuyOutcome` | hidden | none |
 | `entitlement.status`: Licence and free-trial status for Settings: channel, days left and whether editing is allowed. | query | Read | app level |  | `EntitlementStatusArgs` → `EntitlementStatus` | hidden | none |
-| `team_gate.status`: Internal builds: whether the team password must still be entered, and how long the next try waits. | query | Read | app level |  | `TeamGateStatusArgs` → `TeamGateStatus` | hidden | none |
-| `team_gate.unlock`: Internal builds: check the team password typed at launch and open the app when it is right. | command | Mutate | app level | P | `TeamGateUnlockArgs` → `TeamGateAnswer` | hidden | none |
 
 ### Offline AI
 
@@ -588,6 +586,8 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `story.duplicate_episode`: Duplicate an episode (optionally with its Beat Board). | command | Mutate | Edit |  | `StoryDuplicateEpisodeArgs` → `StoryCreated` | tool | `propose_duplicate_episode` |
 | `story.duplicate_items`: Duplicate sequences, beats or Scene Cards. | command | Mutate | Edit |  | `StoryItemsArgs` → `StoryCreatedMany` | tool | `propose_duplicate_story_items` |
 | `story.link_character_card`: Link a character to a Scene Card. | command | Mutate | Edit |  | `StoryCardLinkArgs` → `()` | tool | `propose_link_character_card` |
+| `story.link_scene`: Link a Scene Card to an existing screenplay scene, or clear the link. | command | Mutate | Edit |  | `StoryLinkSceneArgs` → `()` | hidden | none |
+| `story.linkable_scenes`: Screenplay scenes a Scene Card can be linked to. | query | Read | View |  | `StoryScopeArgs` → `Vec<StoryLinkableScene>` | hidden | none |
 | `story.move_act`: Move an act to another position. | command | Mutate | Edit |  | `StoryMoveActArgs` → `()` | tool | `propose_update_act` |
 | `story.move_episode`: Move an episode to another season or position. | command | Mutate | Edit |  | `StoryMoveEpisodeArgs` → `()` | tool | `propose_update_episode` |
 | `story.move_items`: Move sequences, beats or Scene Cards to another act, sequence, Parking Lot or Unassigned. | command | Mutate | Edit |  | `StoryMoveArgs` → `()` | tool | `propose_move_story_items` |
@@ -706,7 +706,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Crosses the project boundary (Global Idea Vault or another project); the assistant is scoped to the open project.**
   `templates.copy`, `vault.copy_to_store`
 - **Data for an interactive dialog or editor preview; the assistant reads the same facts through its own bounded tools.**
-  `app.save_state`, `breakdown.quick_reuse`, `breakdown.source_anchor`, `history.info`, `interchange.draft_scenes`, `interchange.export_preview`, `interchange.sources`, `moodboard.suggestions`, `packages.backup_preview`, `packages.exchange_preview`, `packages.exchange_scenes`, `packages.exchange_sources`, `production.references`, `screenplay.page_view`, `screenplay.samples`, `screenplay.title_page_preview`, `tasks.relatable_types`, `vault.story_targets`, `visual.vault_images`, `writing.check_spelling`, `writing.navigator_columns`, `writing.spelling_suggestions`, `writing.suggestion_sources`
+  `app.save_state`, `breakdown.quick_reuse`, `breakdown.source_anchor`, `history.info`, `interchange.draft_scenes`, `interchange.export_preview`, `interchange.sources`, `moodboard.suggestions`, `packages.backup_preview`, `packages.exchange_preview`, `packages.exchange_scenes`, `packages.exchange_sources`, `production.references`, `screenplay.page_view`, `screenplay.samples`, `screenplay.title_page_preview`, `story.linkable_scenes`, `tasks.relatable_types`, `vault.story_targets`, `visual.vault_images`, `writing.check_spelling`, `writing.navigator_columns`, `writing.spelling_suggestions`, `writing.suggestion_sources`
 - **Deleting a whole screenplay (every draft, locked draft and production number in it) stays a deliberate human action (owner decision 2026-10-08); the assistant can propose deleting one draft or restoring a screenplay from Recently Deleted.**
   `screenplay.delete`
 - **Display appearance (category colours and icons) with no content meaning; the user customises it in Settings.**
@@ -727,6 +727,8 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
   `screenplay.apply_edits`, `screenplay.merge_scene`, `screenplay.move_element`, `screenplay.split_scene`
 - **Licence and free-trial status belong to the person at this computer and the release channel; the assistant never reads, restores or changes them.**
   `entitlement.buy`, `entitlement.lock_ready`, `entitlement.notice`, `entitlement.record_notice`, `entitlement.restore_purchase`, `entitlement.start_trial`, `entitlement.status`
+- **Linking a Scene Card to an existing screenplay scene is a direct choice in the card drawer; the assistant reads the link through the story card tools.**
+  `story.link_scene`
 - **Manual visual arrangement (drag position, size, stacking order) with no content meaning; the user arranges directly.**
   `locations.move_photo`, `moodboard.arrange_item`, `moodboard.move_items`, `moodboard.reorder`, `moodboard.resize_item`
 - **Offline AI status and engine control belong to the user in Settings, not to the assistant itself.**
@@ -751,8 +753,6 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
   `diagnostics.export_bundle`, `diagnostics.preview`
 - **The assistant's own entry point and conversation history; a tool calling it would recurse.**
   `ai.ask`, `ai.cancel`, `ai.history`, `ai.memory_delete`, `ai.memory_list`, `ai.sections`
-- **The team password of an internal build belongs to the person at this computer; the assistant never reads or types it.**
-  `team_gate.status`, `team_gate.unlock`
 - **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so the assistant neither reads nor changes it.**
   `story.page.get`, `story.page.save`
 - **Would move content across the private/shared boundary; the assistant only reads private notes of their owner.**

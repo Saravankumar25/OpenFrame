@@ -279,7 +279,9 @@ fn strip(env: &TestEnv, number: i64) -> String {
             }
         }
     }
-    all.iter().find(|s| s["number"] == number).expect("strip")["id"]
+    all.iter()
+        .find(|s| s["number"].as_str() == Some(number.to_string().as_str()))
+        .expect("strip")["id"]
         .as_str()
         .unwrap()
         .to_string()

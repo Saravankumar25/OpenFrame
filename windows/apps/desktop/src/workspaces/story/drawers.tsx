@@ -7,7 +7,6 @@ import { FileText, Paperclip, X } from "lucide-react";
 import { Button, Drawer, Field, TextArea, TextInput, cx } from "../../design-system";
 import { openAsset } from "../../ipc/client";
 import { reportError } from "../../ipc/query";
-import { useNav } from "../../app/stores";
 import { usePendingSave } from "../../app/pendingSaves";
 import { story, useCardDetail } from "../../api/story";
 import type { StoryAttachmentDto } from "../../ipc/generated/StoryAttachmentDto";
@@ -17,6 +16,7 @@ import { COLOR_NAMES, COLOR_VARS } from "./items";
 import { containerLabel, locate, refKey, sequences } from "./model";
 import { useStoryUi } from "./ui";
 import { requestDeleteSequence } from "./dialogs";
+import { SceneLink } from "./SceneLink";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -190,7 +190,6 @@ export function CardDrawer({ id, board, readOnly }: { id: string; board: StoryBo
   const detail = useCardDetail(id);
   const [state, setState] = useState<SaveState>("idle");
   const close = () => useStoryUi.getState().openDrawer(null);
-  const go = useNav((s) => s.go);
   const d = detail.data;
   if (detail.isError) {
     return (
@@ -274,23 +273,7 @@ export function CardDrawer({ id, board, readOnly }: { id: string; board: StoryBo
           Comments ({c.commentCount} open)
         </div>
       )}
-      {d.linkedScene ? (
-        <div className="banner info" role="status">
-          <div>
-            Used to create screenplay <b>Scene {d.linkedScene.number}: {d.linkedScene.heading}</b> in “{d.linkedScene.draftName}”. Changes here
-            don't change the screenplay.
-          </div>
-          <span className="sp" />
-          <Button
-            size="xs"
-            onClick={() =>
-              go({ workspace: "screenplay", params: { sceneId: d.linkedScene!.sceneId, draftId: d.linkedScene!.draftId, screenplayId: d.linkedScene!.screenplayId } })
-            }
-          >
-            Open Screenplay
-          </Button>
-        </div>
-      ) : null}
+      <SceneLink cardId={c.id} linked={d.linkedScene} readOnly={readOnly} />
     </Drawer>
   );
 }

@@ -200,20 +200,13 @@ fn day_row(c: &Connection, day_id: &str) -> AppResult<(ScheduleRow, DayRow)> {
 }
 
 fn scene_label_for(c: &Connection, s: &StripRow) -> AppResult<String> {
-    let row: Option<(String, i64)> = c
-        .query_row(
-            "SELECT s.heading, (SELECT count(*) FROM screenplay_scene o WHERE o.draft_id = s.draft_id AND o.deleted_at IS NULL
-                 AND (o.position < s.position OR (o.position = s.position AND o.id <= s.id)))
-             FROM screenplay_scene s WHERE s.id = ?1 AND s.deleted_at IS NULL",
-            [&s.scene_id],
-            |r| Ok((r.get(0)?, r.get(1)?)),
-        )
-        .optional()?;
-    Ok(match row {
-        Some((_, n)) => format!("Scene {n}"),
-        None if !s.source_heading.is_empty() => format!("Scene “{}”", s.source_heading),
-        None => "Scene".to_string(),
-    })
+    Ok(
+        match crate::modules::screenplay::numbering::scene_label(c, &s.scene_id)? {
+            Some(n) => format!("Scene {n}"),
+            None if !s.source_heading.is_empty() => format!("Scene “{}”", s.source_heading),
+            None => "Scene".to_string(),
+        },
+    )
 }
 
 // ------------------------------------------------------------------ view
@@ -223,8 +216,7 @@ fn scene_label_for(c: &Connection, s: &StripRow) -> AppResult<String> {
 #[serde(rename_all = "camelCase")]
 pub struct ScheduleScriptChangeRow {
     pub strip_id: String,
-    #[ts(type = "number | null")]
-    pub number: Option<i64>,
+    pub number: Option<String>,
     pub heading: String,
     pub kinds: Vec<String>,
     pub day_label: Option<String>,
@@ -442,7 +434,9 @@ fn script_changes(
     }
     let row = |s: &StripRow, kinds: Vec<String>, sc: Option<&SceneInfo>| ScheduleScriptChangeRow {
         strip_id: s.id.clone(),
-        number: sc.map(|x| x.number).or_else(|| board.scene_number(s)),
+        number: sc
+            .map(|x| x.label.clone())
+            .or_else(|| board.scene_number(s)),
         heading: sc
             .map(|x| x.heading.clone())
             .unwrap_or_else(|| s.source_heading.clone()),
@@ -2031,8 +2025,8 @@ pub struct ScheduleGroupingSuggestion {
     pub subject: String,
     pub advice: String,
     pub strip_ids: Vec<String>,
-    #[ts(type = "number[]")]
-    pub scene_numbers: Vec<i64>,
+    #[ts(type = "string[]")]
+    pub scene_numbers: Vec<String>,
     /// Strips that would move (those not already on the suggested day).
     pub strips_to_move: Vec<String>,
     pub suggested_day_id: Option<String>,
@@ -2048,8 +2042,8 @@ pub struct ScheduleGroupingSuggestions {
     pub message: Option<String>,
 }
 
-fn list_numbers(nums: &[i64]) -> String {
-    let s: Vec<String> = nums.iter().map(|n| n.to_string()).collect();
+fn list_numbers(nums: &[String]) -> String {
+    let s: Vec<String> = nums.to_vec();
     match s.as_slice() {
         [] => String::new(),
         [one] => one.clone(),
@@ -2141,8 +2135,8 @@ fn suggestions(
             if group.len() < 2 {
                 continue;
             }
-            group.sort_by_key(|s| board.scene_number(s).unwrap_or(i64::MAX));
-            let nums: Vec<i64> = group.iter().filter_map(|s| board.scene_number(s)).collect();
+            group.sort_by_key(|s| board.scene_order(s));
+            let nums: Vec<String> = group.iter().filter_map(|s| board.scene_number(s)).collect();
             let subject = match loc.status.as_deref() {
                 Some(st) => format!("{} · {}", loc.name, st.to_lowercase()),
                 None => loc.name.clone(),
@@ -2187,8 +2181,8 @@ fn suggestions(
             if seen_sets.contains(&ids) {
                 continue;
             }
-            group.sort_by_key(|s| board.scene_number(s).unwrap_or(i64::MAX));
-            let nums: Vec<i64> = group.iter().filter_map(|s| board.scene_number(s)).collect();
+            group.sort_by_key(|s| board.scene_order(s));
+            let nums: Vec<String> = group.iter().filter_map(|s| board.scene_number(s)).collect();
             let who: Vec<String> = cast
                 .iter()
                 .map(|c| c.actor.clone().unwrap_or_else(|| c.character.clone()))
@@ -2206,7 +2200,10 @@ fn suggestions(
         }
         out.sort_by_key(|s| {
             (
-                s.scene_numbers.first().copied().unwrap_or(i64::MAX),
+                s.strip_ids
+                    .first()
+                    .and_then(|id| board.strips.iter().find(|x| &x.id == id))
+                    .map_or(i64::MAX, |x| board.scene_order(x)),
                 s.kind.clone(),
             )
         });

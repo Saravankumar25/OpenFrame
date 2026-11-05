@@ -76,7 +76,7 @@ export function CreateScheduleDialog({ open, onOpenChange, source }: {
       }
     >
       <Field label="Screenplay source">
-        <div className="input" aria-readonly>
+        <div className="input">
           {source.screenplayTitle}, {source.label} · {source.sceneCount} scenes
         </div>
       </Field>

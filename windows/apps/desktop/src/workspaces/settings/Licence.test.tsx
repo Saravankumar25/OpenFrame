@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { openUrl } from "../../ipc/client";
 import { LicenceSection } from "./Licence";
 import { renderWithClient } from "../../app/home/testUtils";
 
@@ -42,6 +43,7 @@ vi.mock("../../ipc/client", async () => {
   return {
     OpError,
     inTauri: () => false,
+    openUrl: vi.fn(async () => undefined),
     onAppEvent: () => Promise.resolve(() => undefined),
     call: vi.fn(async (op: string) => {
       calls.push(op);
@@ -134,6 +136,18 @@ describe("Settings > Licence", () => {
     expect(await screen.findByText("Internal build, not for sale.")).toBeInTheDocument();
     expect(within(section()).getByText("Installed from: Internal build")).toBeInTheDocument();
     expect(within(section()).queryByRole("button", { name: "Restore purchase" })).toBeNull();
+    expect(within(section()).queryByRole("navigation", { name: "Legal" })).toBeNull();
+    expect(within(section()).queryByText(/handled by the store/)).toBeNull();
+  });
+
+  it("points a store build to the Refunds and Terms pages and says the store handles purchases", async () => {
+    renderWithClient(<LicenceSection />);
+    await screen.findByText("Free trial: 4 days left.");
+    expect(within(section()).getByText("Purchases and refunds are handled by the store you bought from.")).toBeInTheDocument();
+    await userEvent.click(within(section()).getByRole("button", { name: "Refunds (opens in your browser)" }));
+    expect(vi.mocked(openUrl)).toHaveBeenCalledWith("https://straftstudio.com/legal/refunds/");
+    expect(within(section()).getByRole("button", { name: "Terms (opens in your browser)" })).toBeInTheDocument();
+    expect(within(section()).queryByRole("button", { name: /Privacy Policy/ })).toBeNull();
   });
 
   it("uses no em dashes in what it shows", async () => {

@@ -36,10 +36,6 @@ export const PACKAGE_INFO: Record<PackageType, { label: string; extension: strin
 // item 9, 2026-10-19); only the script review and Beat Board packages remain.
 export const EXCHANGE_EXPORT_TYPES: PackageType[] = ["scriptReview", "story"];
 
-export function isExchangeType(t: PackageType): boolean {
-  return t !== "backup" && t !== "project";
-}
-
 /** Save/open dialog filters. */
 export function packageFilter(types: PackageType[], name: string): { name: string; extensions: string[] }[] {
   return [{ name, extensions: types.map((t) => PACKAGE_INFO[t].extension) }];

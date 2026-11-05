@@ -13,7 +13,7 @@ The routes come from `scripts/check-reachability.mjs`, which reads every feature
 - "shell": check the Workspaces navigation shows.
 - "search-overlay": press Ctrl+K, check a dialog shows, press Esc.
 - "ai-panel": press Ctrl+J, check the Straft AI opens, press Ctrl+J, check it closes.
-- "project-menu": click the project button (named "Project: ..."), check a menu shows, press Esc.
+- "project-menu": click the project switcher (the top bar button that shows the project title), check a menu shows, press Esc.
 - A project page (trash, activity, notes, settings): open the project menu and choose Recently Deleted, Activity, Notes & Tasks or Project settings.
 - A workspace (home, vault, story, screenplay, breakdown, production, callsheets, files): click Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets or Files in the Workspaces navigation.
 - A route with a sub-part ("workspace/sub"): first visit the workspace or page, then click the sub-part's button:

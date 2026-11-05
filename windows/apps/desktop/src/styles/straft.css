@@ -69,6 +69,7 @@ svg.i.s{width:13px;height:13px} svg.i.l{width:20px;height:20px} svg.i.xl{width:2
 .btn.pri{background:var(--accent);border-color:var(--accent-d);color:var(--accent-ink)}
 .btn.pri:hover{background:var(--accent-d)}
 .btn.dan{background:var(--red);border-color:color-mix(in oklab,var(--red) 75%,black);color:#fff} /* fixed colour: white text on the danger red */
+:root[data-mode="dark"] .btn.dan,:root[data-mode="dark"] .vcard .badge-un{color:#16181d} /* fixed colour: dark mode's light red and hover red need dark text for 4.5:1 (white reads 2.98:1 and 3.86:1) */
 .btn.ghost{border-color:transparent;background:transparent}
 .btn.ghost:hover{background:var(--surface3)}
 .btn.sm{padding:4px 9px;font-size:12px;border-radius:6px}

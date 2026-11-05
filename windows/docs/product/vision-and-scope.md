@@ -69,9 +69,8 @@ The internal `.exe` and `.dmg` are for evaluation by the owner and the invited t
 - They contain the app and the AI runtime. The AI models download once, after installation, when the user clicks the
   download button ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)).
 - They carry no trial, no purchase, no price and no store lock ([ADR-0023](../adr/ADR-0023-store-trial-and-internal-installer.md)).
-- They ask the team password on every launch ([ADR-0024](../adr/ADR-0024-internal-team-builds.md), minimum length 8 by
-  [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). The gate is a door lock for the pilot, not
-  encryption.
+- They open straight to the app: there is no password ([ADR-0043](../adr/ADR-0043-team-password-removed.md), which
+  removed the gate of ADR-0024).
 
 ## 5. Business model (target, not final)
 

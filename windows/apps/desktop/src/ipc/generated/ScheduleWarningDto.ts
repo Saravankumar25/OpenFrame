@@ -9,7 +9,7 @@ key: string,
  * actor_conflict / location_conflict / missing_location / duration_overflow /
  * call_sheet_stale / script_removed.
  */
-kind: string, dayId: string | null, dayLabel: string | null, message: string, detail: string | null, stripIds: Array<string>, sceneNumbers: number[], detailHash: string, 
+kind: string, dayId: string | null, dayLabel: string | null, message: string, detail: string | null, stripIds: Array<string>, sceneNumbers: string[], detailHash: string, 
 /**
  * "Kept" / "Dismissed" when the user already decided.
  */

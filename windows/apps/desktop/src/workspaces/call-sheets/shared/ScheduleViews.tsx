@@ -26,7 +26,8 @@ export function ScheduleList({ view, ui, matches }: { view: ScheduleView; ui: Sc
     const out: { s: ScheduleStripDto; day?: ScheduleShootDayDto }[] = [];
     for (const d of view.days) for (const i of d.items) if (i.strip) out.push({ s: i.strip, day: d });
     for (const s of view.unscheduled) out.push({ s });
-    out.sort((a, b) => (a.s.number ?? 1e9) - (b.s.number ?? 1e9));
+    // 12 < 12A < 13; a scene with no number goes last.
+    out.sort((a, b) => (a.s.number ?? "￿").localeCompare(b.s.number ?? "￿", undefined, { numeric: true }));
     return matches ? out.filter((r) => matches.has(r.s.id)) : out;
   }, [view, matches]);
   return (
@@ -104,6 +105,7 @@ export function ScheduleCalendar({ view, ui }: { view: ScheduleView; ui: Schedul
   }, [view.days]);
   const undated = view.days.filter((d) => !d.date);
   const cells = monthGrid(ym[0], ym[1]);
+  const weeks = Array.from({ length: Math.ceil(cells.length / 7) }, (_, w) => cells.slice(w * 7, w * 7 + 7));
   return (
     <div className="of-scroll" style={{ flex: 1 }}>
       <div className="row" style={{ marginBottom: 8 }}>
@@ -116,12 +118,16 @@ export function ScheduleCalendar({ view, ui }: { view: ScheduleView; ui: Schedul
         </IconButton>
       </div>
       <div className="calgrid" role="grid" aria-label={`Shooting calendar, ${monthLabel(ym[0], ym[1])}`}>
-        {WEEKDAYS.map((w) => (
-          <div key={w} className="of-calhead" role="columnheader">
-            {w}
-          </div>
-        ))}
-        {cells.map((c) => {
+        <div role="row" style={{ display: "contents" }}>
+          {WEEKDAYS.map((w) => (
+            <div key={w} className="of-calhead" role="columnheader">
+              {w}
+            </div>
+          ))}
+        </div>
+        {weeks.map((week) => (
+          <div key={week[0].iso} role="row" style={{ display: "contents" }}>
+            {week.map((c) => {
           const days = byDate.get(c.iso) ?? [];
           const off = days.length > 0 && days.every((d) => d.isOffDay);
           const shoot = days.some((d) => !d.isOffDay);
@@ -145,7 +151,9 @@ export function ScheduleCalendar({ view, ui }: { view: ScheduleView; ui: Schedul
               ))}
             </div>
           );
-        })}
+            })}
+          </div>
+        ))}
       </div>
       {undated.length > 0 && (
         <div className="card pad" style={{ marginTop: 10 }}>

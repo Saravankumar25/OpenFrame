@@ -27,7 +27,7 @@ see section 7).
 The library is one folder that holds `library.json`, `Projects\` and `Global Idea Vault\`. A projects folder or a
 vault elsewhere stays supported (the library file names them). **Nothing is created before the person confirms a
 choice**: no folder, no vault, no projects folder, no library file, and no saved profile. Until then the core runs
-only `library.*`, `team_gate.*`, `entitlement.*`, `appearance.*`, `app.info` and `app.save_state`; every other
+only `library.*`, `entitlement.*`, `appearance.*`, `app.info` and `app.save_state`; every other
 operation answers `library.setup_required`, the vault does not open, start maintenance does nothing, and the shell
 refuses to reveal the data folder.
 
@@ -43,7 +43,7 @@ one of the two is missing it is written again. The library is:
 - **Missing** when the remembered folder is not there (a drive that is not connected, a moved folder). It is never
   recreated empty; the screen says where it was expected and offers Try Again, Locate, Choose new and Use default.
 
-The screen "Set up your Straft library" shows after the team password and before Home whenever the state is not
+The screen "Set up your Straft library" shows before Home whenever the state is not
 Ready. It cannot be dismissed; closing the window closes the app. Three choices: **Use the default location** (shows
 `<home>\Straft Studio` and why it is outside OneDrive; Create Library Here makes it), **Choose a new location** (a folder
 picker; the library is `<picked>\Straft`, shown before Create Library, with a warning when the folder is synced),

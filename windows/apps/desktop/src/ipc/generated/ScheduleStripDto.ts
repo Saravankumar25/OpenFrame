@@ -2,7 +2,7 @@
 import type { ScheduleCastRef } from "./ScheduleCastRef";
 import type { ScheduleLocRef } from "./ScheduleLocRef";
 
-export type ScheduleStripDto = { id: string, sceneId: string, lineageId: string, number: number | null, heading: string, intExt: string, dayNight: string, 
+export type ScheduleStripDto = { id: string, sceneId: string, lineageId: string, number: string | null, heading: string, intExt: string, dayNight: string, 
 /**
  * e.g. "EXT·N".
  */

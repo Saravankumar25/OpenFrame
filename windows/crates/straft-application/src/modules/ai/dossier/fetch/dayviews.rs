@@ -161,7 +161,7 @@ fn daily_facts(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<V
             .map(|s| {
                 format!(
                     "{} {}",
-                    s.number.map(|n| n.to_string()).unwrap_or_default(),
+                    s.number.clone().unwrap_or_default(),
                     s.location_name
                         .clone()
                         .unwrap_or_else(|| clip(&s.heading, 40))
@@ -217,8 +217,8 @@ fn daily_facts(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<V
             f = f.f(&format!("needs {cat}"), clip(&names.join(", "), 260));
         }
         if named {
-            for n in day.scenes.iter().filter_map(|s| s.number) {
-                f = f.require(n.to_string());
+            for n in day.scenes.iter().filter_map(|s| s.number.clone()) {
+                f = f.require(n);
             }
         }
         out.push(f);

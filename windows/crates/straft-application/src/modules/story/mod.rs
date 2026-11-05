@@ -38,6 +38,7 @@ pub fn register(r: &mut Registry) {
     board::register(r);
     display::register(r);
     build::register(r);
+    links::register(r);
     characters::register(r);
     timeline::register(r);
     episodes::register(r);

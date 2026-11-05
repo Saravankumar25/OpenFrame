@@ -10,7 +10,7 @@
 //! |---|---|---|
 //! | Microsoft Store (`.msix`) | [`adapters::MicrosoftStoreAdapter`] | the Store owns the trial; the shell supplies the Store calls (ADR-0039) |
 //! | Mac App Store (`.pkg`) | [`mac::MacAppStoreAdapter`] | StoreKit 2 trial and lifetime unlock, built and tested with fakes; the Swift bridge and the licensing server are not connected yet |
-//! | Internal team builds (`.exe`, `.dmg`) | none | never sold: no trial, no purchase, no lock (ADR-0023, ADR-0024); the team password gate is [`team_gate`] |
+//! | Internal team builds (`.exe`, `.dmg`) | none | never sold: no trial, no purchase, no lock, no password (ADR-0023, ADR-0024, ADR-0043) |
 //!
 //! Rules that hold in every channel (see `docs/engineering/36-entitlement-and-trial.md`):
 //!
@@ -24,8 +24,8 @@
 //!   exporting (ADR-0018 decision 6).
 //! - **The internal builds are never sold.** The Windows installer and the Mac disk image are
 //!   builds for the owner's team: no trial, no purchase, no lock
-//!   ([`EntitlementState::InternalBuild`], ADR-0023 and ADR-0024), and a team password on every
-//!   launch ([`team_gate`]).
+//!   ([`EntitlementState::InternalBuild`], ADR-0023 and ADR-0024), and no password: the app opens
+//!   straight away (ADR-0043).
 //! - **The stores keep the trial clock.** Straft keeps no trial timer of its own, so a clock
 //!   turned back on this computer gives no days back.
 //! - **No project data in any check.** Adapters receive nothing but the channel's own proof of
@@ -34,7 +34,6 @@
 pub mod adapters;
 pub mod mac;
 pub mod notices;
-pub mod team_gate;
 
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;

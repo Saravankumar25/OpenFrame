@@ -116,9 +116,17 @@ describe("top bar (owner change list 2026-10-19)", () => {
     expect(await screen.findByRole("button", { name: "Back" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Forward" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Settings" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "All projects" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Straft Studio, all projects" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: /^Undo/ })).toBeNull();
     expect(screen.queryByRole("button", { name: "Help" })).toBeNull();
+  });
+
+  it("top bar buttons keep their visible text inside the accessible name (WCAG 2.5.3)", async () => {
+    renderWithClient(<Shell />);
+    expect(await screen.findByRole("button", { name: /^Straft Studio/ })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /^Project:\s*Night Bus.*Switch or manage projects/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: /^Search this project/ })).toBeTruthy();
+    expect(await screen.findByRole("button", { name: /Your name: .*Change/ })).toBeTruthy();
   });
 
   it("goes back and forward through the pages visited", () => {

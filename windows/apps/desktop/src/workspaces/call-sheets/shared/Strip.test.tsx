@@ -7,7 +7,7 @@ const strip: ScheduleStripDto = {
   id: "st1",
   sceneId: "s1",
   lineageId: "L1",
-  number: 12,
+  number: "12A",
   heading: "INT. POLICE STATION - NIGHT",
   intExt: "INT",
   dayNight: "N",
@@ -36,7 +36,7 @@ describe("StripRow", () => {
   it("shows colour class, missing location text and script flag (never colour-only)", () => {
     const onOpen = vi.fn();
     render(<StripRow strip={strip} onOpen={onOpen} />);
-    const el = screen.getByRole("button", { name: /Scene 12, INT·N, location missing/ });
+    const el = screen.getByRole("button", { name: /Scene 12A, INT·N, location missing/ });
     expect(el.className).toContain("strip in");
     expect(screen.getByText("No location")).toBeInTheDocument();
     expect(screen.getByText("Script changed")).toBeInTheDocument();

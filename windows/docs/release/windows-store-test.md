@@ -103,8 +103,7 @@ Use a spare account on the last day of its trial, or the test double route in th
   `Check purchase` clears it.
   Opening and exporting a project work; a change to the project (a new card, a typed line) is refused with `Straft could not
   check your purchase, so editing is paused.` (ADR-0039, enforced in Rust, not only on the screen).
-- [ ] Copy the installed `straft-desktop.exe` out of its package and start it: it still shows `Checking your purchase`, never a
-  team password screen and never an open editor.
+- [ ] Copy the installed `straft-desktop.exe` out of its package and start it: it still shows `Checking your purchase` and never an open editor.
 
 ### 9. Reinstall, update, uninstall
 

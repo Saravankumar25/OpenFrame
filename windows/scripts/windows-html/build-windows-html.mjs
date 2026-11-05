@@ -113,7 +113,9 @@ export function build({ commit = "unknown", from = RAW, to = OUT } = {}) {
         }
         links.push(`<link rel="stylesheet" href="../assets/${name}"${sheet.media ? ` media="${esc(sheet.media)}"` : ""}>`);
       }
-      let html = dom.html.replace(/<meta http-equiv[^>]*>/gi, "");
+      // A capture from a checkout under another folder name shows a folder of the same length, so no text moves.
+      let html = dom.html.replace(/<meta http-equiv[^>]*>/gi, "").replaceAll(REPO, "C:\\StraftApp").replaceAll(REPO.replaceAll("\\", "/"), "C:/StraftApp");
+      if (/open[ _-]?frame/i.test(html.replace(/open framework/gi, ""))) throw new Error(`${s.id}: a page holds the old product name`);
       if (dom.raster.length) {
         let png;
         dom.raster.forEach((r, i) => {

@@ -729,7 +729,7 @@ fn card_links_follow_the_scene_into_a_new_current_draft_and_drop_when_removed() 
     );
     let detail = env.ok("story.card", json!({ "id": c1 }));
     assert_eq!(detail["linkedScene"]["draftId"], d2.as_str());
-    assert_eq!(detail["linkedScene"]["number"], 1);
+    assert_eq!(detail["linkedScene"]["number"], "1");
     assert_eq!(detail["card"]["sceneStatus"]["draftName"], "Draft 2");
     // The stored record of what the card created is unchanged.
     assert_eq!(
@@ -778,6 +778,190 @@ fn card_links_follow_the_scene_into_a_new_current_draft_and_drop_when_removed() 
     // Survives restart.
     let env = restart(env);
     assert_eq!(card(&env, &c1)["screenplaySceneId"], scene1_d1.as_str());
+}
+
+// ------------------------------------------------- link to an existing scene
+
+const SAMPLE_FOUNTAIN: &[u8] =
+    include_bytes!("../../../straft-import-export/tests/fixtures/screenplay/sample.fountain");
+
+fn linkable(env: &TestEnv) -> Vec<Value> {
+    env.ok("story.linkable_scenes", json!({}))
+        .as_array()
+        .unwrap()
+        .clone()
+}
+
+#[test]
+fn a_card_links_to_an_imported_scene_and_to_a_scene_written_by_hand() {
+    let env = TestEnv::with_project("Film", "Feature Film");
+    let a = act(&env, "Act 1");
+    let c1 = card_in(&env, "act", Some(&a), "Bus stop");
+    let c2 = card_in(&env, "act", Some(&a), "Police station");
+
+    // The same path the app uses: preview, then apply as a new screenplay.
+    let path = env.write_file("blackrain.fountain", SAMPLE_FOUNTAIN);
+    let p = env.ok("screenplay.import_preview", json!({ "path": path }));
+    let imported = env.ok(
+        "screenplay.import_apply",
+        json!({ "previewId": p["previewId"], "mode": "new_screenplay" }),
+    );
+    let imp_draft = imported["draftId"].as_str().unwrap().to_string();
+    let numbered: Vec<Value> = env
+        .ok("interchange.draft_scenes", json!({ "draftId": imp_draft }))
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|r| !r["omitted"].as_bool().unwrap_or(false))
+        .cloned()
+        .collect();
+    assert!(numbered.len() >= 2, "the sample script has several scenes");
+
+    // A script written by hand.
+    let sp = env.ok(
+        "screenplay.create",
+        json!({ "title": "By hand", "draftName": "Draft 1" }),
+    );
+    let hand_draft = sp["draft"]["id"].as_str().unwrap().to_string();
+    let hand_scene = env.ok(
+        "screenplay.create_scene",
+        json!({ "draftId": hand_draft, "heading": "INT. KITCHEN - MORNING" }),
+    )["createdIds"][0]
+        .as_str()
+        .unwrap()
+        .to_string();
+
+    // Every scene of both scripts is offered, with the number the screenplay shows.
+    let list = linkable(&env);
+    let of_imported: Vec<&Value> = list
+        .iter()
+        .filter(|s| s["draftId"] == imp_draft.as_str())
+        .collect();
+    assert_eq!(of_imported.len(), numbered.len());
+    for (offered, expected) in of_imported.iter().zip(&numbered) {
+        assert_eq!(offered["sceneId"], expected["id"]);
+        assert_eq!(offered["label"], expected["number"]);
+        assert_eq!(offered["heading"], expected["heading"]);
+    }
+    assert!(
+        list.iter().any(
+            |s| s["sceneId"] == hand_scene.as_str() && s["heading"] == "INT. KITCHEN - MORNING"
+        )
+    );
+
+    // Link one card to an imported scene and one to the hand-written scene.
+    let imp_scene = numbered[1]["id"].as_str().unwrap().to_string();
+    env.ok(
+        "story.link_scene",
+        json!({ "cardId": c1, "sceneId": imp_scene }),
+    );
+    env.ok(
+        "story.link_scene",
+        json!({ "cardId": c2, "sceneId": hand_scene }),
+    );
+    let d1 = env.ok("story.card", json!({ "id": c1 }));
+    assert_eq!(d1["card"]["screenplaySceneId"], imp_scene.as_str());
+    assert_eq!(d1["linkedScene"]["number"], numbered[1]["number"]);
+    assert_eq!(d1["linkedScene"]["heading"], numbered[1]["heading"]);
+    assert_eq!(d1["linkedScene"]["draftId"], imp_draft.as_str());
+    assert_eq!(d1["linkedScene"]["screenplayId"], imported["screenplayId"]);
+    let d2 = env.ok("story.card", json!({ "id": c2 }));
+    let hand_label = env
+        .ok("interchange.draft_scenes", json!({ "draftId": hand_draft }))
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|r| r["id"] == hand_scene.as_str())
+        .unwrap()["number"]
+        .clone();
+    assert_eq!(d2["linkedScene"]["number"], hand_label);
+    assert_eq!(d2["linkedScene"]["heading"], "INT. KITCHEN - MORNING");
+    // Following the link opens the scene the card names: the board carries the same id.
+    let board = env.ok("story.board", json!({}));
+    assert_eq!(
+        board["acts"][0]["items"][0]["screenplaySceneId"],
+        imp_scene.as_str()
+    );
+
+    // Renamed in the screenplay: the card shows the new heading.
+    env.ok(
+        "screenplay.update_scene",
+        json!({ "sceneId": hand_scene, "heading": "INT. PANTRY - MORNING" }),
+    );
+    assert_eq!(
+        env.ok("story.card", json!({ "id": c2 }))["linkedScene"]["heading"],
+        "INT. PANTRY - MORNING"
+    );
+
+    // Survives a restart and a crash.
+    let env = restart(env);
+    assert_eq!(card(&env, &c1)["screenplaySceneId"], imp_scene.as_str());
+    let env = crash(env);
+    assert_eq!(card(&env, &c1)["screenplaySceneId"], imp_scene.as_str());
+
+    // Deleted in the screenplay: the card shows no link and nothing breaks; undo brings it back.
+    env.ok("screenplay.delete_scene", json!({ "sceneId": imp_scene }));
+    assert_eq!(card(&env, &c1)["screenplaySceneId"], Value::Null);
+    assert_eq!(
+        env.ok("story.card", json!({ "id": c1 }))["linkedScene"],
+        Value::Null
+    );
+    assert!(
+        !linkable(&env)
+            .iter()
+            .any(|s| s["sceneId"] == imp_scene.as_str())
+    );
+    env.undo();
+    assert_eq!(card(&env, &c1)["screenplaySceneId"], imp_scene.as_str());
+
+    // A link can be changed, cleared and undone.
+    env.ok("story.link_scene", json!({ "cardId": c1, "sceneId": null }));
+    assert_eq!(card(&env, &c1)["screenplaySceneId"], Value::Null);
+    env.undo();
+    assert_eq!(card(&env, &c1)["screenplaySceneId"], imp_scene.as_str());
+}
+
+#[test]
+fn linking_a_card_rejects_a_missing_scene_or_card_and_needs_edit_rights() {
+    let env = TestEnv::with_project("Film", "Feature Film");
+    let a = act(&env, "Act 1");
+    let c = card_in(&env, "act", Some(&a), "x");
+    let sp = env.ok(
+        "screenplay.create",
+        json!({ "title": "S", "draftName": "Draft 1" }),
+    );
+    let draft = sp["draft"]["id"].as_str().unwrap().to_string();
+    let scene = env.ok(
+        "screenplay.create_scene",
+        json!({ "draftId": draft, "heading": "INT. A - DAY" }),
+    )["createdIds"][0]
+        .as_str()
+        .unwrap()
+        .to_string();
+    assert_eq!(
+        env.err(
+            "story.link_scene",
+            json!({ "cardId": c, "sceneId": "nope" })
+        ),
+        "not_found.screenplay_scene"
+    );
+    assert_eq!(
+        env.err(
+            "story.link_scene",
+            json!({ "cardId": "nope", "sceneId": scene })
+        ),
+        "not_found.scene_card"
+    );
+    let who = env.actor_with_role(Role::Viewer);
+    let e = env
+        .call_as(
+            &who,
+            "story.link_scene",
+            json!({ "cardId": c, "sceneId": scene }),
+        )
+        .unwrap_err();
+    assert_eq!(e.code.0, "permission.denied");
+    assert_eq!(card(&env, &c)["screenplaySceneId"], Value::Null);
 }
 
 // ---------------------------------------------------- Build Screenplay decision

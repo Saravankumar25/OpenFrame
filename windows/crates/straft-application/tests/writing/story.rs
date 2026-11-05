@@ -554,7 +554,7 @@ fn deleting_linked_card_keeps_the_screenplay_scene() {
         json!({ "include": [{ "cardId": c }], "destination": "newScreenplay" }),
     );
     let d = env.ok("story.card", json!({ "id": c }));
-    assert_eq!(d["linkedScene"]["number"], 1);
+    assert_eq!(d["linkedScene"]["number"], "1");
     assert_eq!(d["linkedScene"]["heading"], "EXT. STREET — DAY");
     env.ok("story.delete_items", json!({ "items": [item("card", &c)] }));
     assert_eq!(

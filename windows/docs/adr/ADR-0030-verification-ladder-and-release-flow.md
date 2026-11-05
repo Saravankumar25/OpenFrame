@@ -1,5 +1,6 @@
 # ADR-0030: Verification ladder, release flow and the internal team gate
 
+- **SUPERSEDED in part 2026-11-05 by [ADR-0043](ADR-0043-team-password-removed.md):** decision 5 (the team password, its 8-character minimum and the build computer variable) and the matching consequence below are history. The password is removed; the rest of this record stands.
 - **Status:** Accepted 2026-10-15 (owner, in chat).
 - **Date:** 2026-10-15
 - **Amends:** [ADR-0024](ADR-0024-internal-team-builds.md) (minimum team password length), and the three-chapter order in
@@ -31,7 +32,7 @@ trust it. The owner wants each platform finished and tested end to end, built, a
    borrowed laptop, both with no developer tools. The borrowed laptops also give the graphics-card measurements.
 4. **Internal builds stay unsigned** and carry no trial or licence. SmartScreen and Gatekeeper warnings are documented
    installation restrictions.
-5. **Team password.** The internal `.exe` and `.dmg` keep the password gate of ADR-0024 (hash of the password, asked on every
+5. **SUPERSEDED (ADR-0043): Team password.** The internal `.exe` and `.dmg` keep the password gate of ADR-0024 (hash of the password, asked on every
    launch, waiting after wrong tries). The minimum password length the build accepts changes from 12 to **8 characters**.
    The password is held by the owner and the team, set only in the build computer's environment, and never written to the
    repository, a log or a document. The gate is a door lock for the pilot. Stronger protection (decrypting the app content
@@ -46,5 +47,5 @@ trust it. The owner wants each platform finished and tested end to end, built, a
 
 - The feature status file gains a column for the proof level; its checker script is extended in Windows phase 1.
 - The shared end-to-end scenario list ([ADR-0027](ADR-0027-rust-core-two-ui-shells.md)) is created in Windows phase 4.
-- Lowering the minimum to 8 lowers the cost of guessing the password from the program file. This is accepted for friendly
+- SUPERSEDED (ADR-0043): Lowering the minimum to 8 lowers the cost of guessing the password from the program file. This is accepted for friendly
   testers and is recorded as a known limit in the threat model.

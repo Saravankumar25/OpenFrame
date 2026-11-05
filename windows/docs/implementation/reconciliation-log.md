@@ -6,6 +6,26 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-11-05: legal links and accessibility fixes ported from claude/audit-legal-accessibility-c99194
+
+Ported by behaviour from commit 5849393a (the names and the website domain had changed). The Licence card of a store build now says purchases and refunds are handled by the store and links Refunds and Terms; `features/legal/` holds the three legal addresses on `https://straftstudio.com/legal/` (privacy, terms, refunds, checked live) and `scripts/app-addresses.json` lists exactly those three. The old `openframe-studio.pages.dev` address is not used. Accessibility: the top bar and Home buttons now carry their visible text in their accessible names, dark-mode danger buttons and the unlisted badge use dark text, the spell menu takes `--ink`, the screenplay element hint loses its fade, and the calendar grid, compare table, file card, read-only boxes, backup name field and three empty lists have valid ARIA. The end-to-end selectors for the renamed buttons follow (specs 01, 43, 90, 91, 95, `lib/flows.mjs`, the capture kit and sections); those specs were not run. The audit report `docs/audits/2026-10-31-legal-and-accessibility-audit.md` was missing and is added unchanged from the branch. Not ported: the About page links (that file is being changed by the licence-notices work) and the data-flow fact sheet.
+
+## 2026-11-05: security fixes ported from claude/audit-security-hardening-47cb69
+
+Ported by behaviour from commit 10ed0446 (the names had changed): AI report and conversation saves pass `check_output_file` (`modules/ai/trace.rs`, `conversation_export.rs`); a Change Set's destructive confirmation follows `toolbox::requires_confirmation` as well as the stored preview, and the review card shows the hidden deletion (`change_set.rs`); `release.yml` passes the tag as a validated environment variable in both validate steps (`ci.yml` has no such pattern); `package-lock.json` moves vite to 7.3.7 and undici to 7.30.2 (`npm audit` still lists webdriverio and typescript-eslint chains, left alone on purpose; `--omit=dev` is 0). Tests in `tests/ai/ai.rs`. Section 6 was added to `docs/engineering/20-security-threat-model.md`. Not ported: the audit report document and the commit's progress-log and handoff entries.
+
+## 2026-11-05: licence and attribution fixes ported from claude/audit-licences-16cdc6
+
+Ported by behaviour from commit ebe7c446 (the names had changed): the generator `scripts/license-inventory.mjs` now labels the engine as packaged, the Vulkan build under its own name and the models as downloaded after install, and writes the full licence texts of every shipped package, the AI notices and the fonts to the generated `apps/desktop/src/workspaces/settings/third-party-notices.json`; Settings > About > Third-party licences shows the Gemma notice and policy and opens those texts on request; the download card shows the Gemma notice and policy before the click; the llama.cpp notice has the current copyright line and the vendored library notices (checked against upstream b11259); `LICENSE-PENDING.md` lists the Gemma clauses and no longer says Straft redistributes the models (ADR-0032). The link and writing checks skip the generated file. The audit report was added as it was on that branch: `docs/audits/2026-10-31-licence-and-attribution-audit.md`. Not ported: the commit's progress-log and handoff entries.
+
+## 2026-11-05: community popup and social links
+
+Owner approved the eight real addresses. The welcome popup now reads "Welcome to the Straft Studio community", lists all eight accounts with icons, and opens them from `communityLinks.ts`; the placeholder handles, the release-build hiding and the old Discord invite are gone. Corrected in place: document 36, feature status, ADR-0039 item 12, package 07 (socials), and the licensing, trial first-run E2E and capture texts. Audits, history and the progress log were left as written.
+
+## 2026-11-05: the team password removed
+
+Owner decision, recorded in [ADR-0043](../adr/ADR-0043-team-password-removed.md). Documents that said the internal builds ask a team password were corrected in place (CLAUDE.md, DEVELOPMENT.md, vision, roadmap pages, feature status, owner decisions, masterplan, threat model, entitlement document 36, testing pilot kit); ADR-0024 decisions 3 to 6 and ADR-0030 decision 5 are marked superseded; audits, history, evidence and the progress log were left as written.
+
 ## 2026-11-04: the Windows work merged with the windows folder on GitHub
 
 Two sessions renamed the product on the same day. The local Windows work had newer features; the windows folder on GitHub had

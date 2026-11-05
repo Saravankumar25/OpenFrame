@@ -87,7 +87,7 @@ code had to change as well.
 11. **Contact.** One address, `https://straftstudio.com/contact/`, opened in the browser. No form and nothing sent. The
     domain and the official addresses were confirmed by the owner on 2026-11-04 ([ADR-0042](ADR-0042-product-renamed-to-straft-studio.md) decision 5).
     Shown in About, on the lock screen and on the check screen. Windows gets no Help menu.
-12. **Social rows.** The eight handles are placeholders. In a release build a row with no address is hidden, and if none
+12. **Social rows.** *Superseded 2026-11-05: the owner approved the eight real addresses and the welcome popup now shows all of them in every build (`apps/desktop/src/features/licensing/communityLinks.ts`).* The eight handles are placeholders. In a release build a row with no address is hidden, and if none
     has an address the welcome popup shows only the thank-you text and OK. Debug builds keep showing them, so mocks and
     tests still work. The core tells the page through `EntitlementNotice.debugBuild`.
 13. **No licence server anywhere.** `services/licence-server`, the Tauri Mac shell (`platform/mac_inputs.rs`,

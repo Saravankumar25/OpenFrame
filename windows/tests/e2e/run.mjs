@@ -30,11 +30,13 @@
 // (E2E_MODEL_HOST_CTL, E2E_MODEL_HOST_LOG).
 //
 // Options: --no-build (reuse the last build), --only=<substring>[,<substring>...] (filter specs),
-// --release=gated | --release=open (drive the release executable, with or without the team password
-// screen; see scripts/build-app.mjs. Specs marked `// @e2e-debug-only: <reason>` are listed and skipped).
-// --app=<installed straft-desktop.exe> (needs --release=gated): drive an installed build, never
-// build, take the team password from STRAFT_TEAM_PASSWORD or the Windows User scope, still
-// preinstall the models in each data root, and skip specs marked `// @e2e-needs-test-host: <reason>`.
+// --release=open (drive a release executable; no password screen exists, ADR-0043). A run that builds
+// makes the store-channel executable (see scripts/build-app.mjs), which starts on "Checking your
+// purchase" and is closed by lib/app.mjs. Specs marked `// @e2e-debug-only: <reason>` are listed and skipped.
+// --app=<installed straft-desktop.exe> (needs --release=open): drive an installed internal build as
+// it ships (opens straight to the app, no check screen), never build, still preinstall the models in
+// each data root, and skip specs marked `// @e2e-needs-test-host: <reason>`. Installed run:
+//   node tests/e2e/run.mjs --release=open --app=<installed straft-desktop.exe>
 // Failure screenshots and visual diffs go to tests/e2e/artifacts/ (gitignored).
 
 import { spawn, spawnSync } from "node:child_process";
@@ -42,23 +44,19 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { join, resolve } from "node:path";
 import net from "node:net";
 import { DRIVERS, E2E_ROOT, EDGE_DRIVER, TAURI_DRIVER, setupDrivers } from "./scripts/setup-drivers.mjs";
-import { randomBytes } from "node:crypto";
 import { appBinary, buildApp } from "./scripts/build-app.mjs";
-import { teamPassword } from "./lib/team-password.mjs";
 import { preinstallModels, startModelHost, testHost } from "./lib/model-host.mjs";
 
 const args = new Set(process.argv.slice(2));
-// --release=gated | --release=open: drive the release executable (build-app.mjs explains both).
+// --release=open: drive the release executable (build-app.mjs explains it).
 const RELEASE = [...args].find((a) => a.startsWith("--release="))?.slice("--release=".length) ?? false;
-if (RELEASE && !["gated", "open"].includes(RELEASE)) throw new Error(`Unknown --release=${RELEASE}; use gated or open.`);
-// --app=<path to an installed straft-desktop.exe>: gate G2, "tested as shipped". Never builds.
+if (RELEASE && RELEASE !== "open") throw new Error(`Unknown --release=${RELEASE}; use open.`);
+// --app=<path to an installed straft-desktop.exe>: gate G2, "tested as shipped". Never builds. The installed
+// internal build is not the store channel, so it shows no purchase check screen.
 const APP_ARG = [...args].find((a) => a.startsWith("--app="))?.slice("--app=".length);
-if (APP_ARG && RELEASE !== "gated") throw new Error("--app needs --release=gated (the installed build asks the team password).");
+if (APP_ARG && RELEASE !== "open") throw new Error("--app needs --release=open (the installed build is a release build).");
 if (APP_ARG && !existsSync(APP_ARG)) throw new Error(`--app: ${APP_ARG} does not exist.`);
 const APP_BINARY = APP_ARG ? resolve(APP_ARG) : appBinary(Boolean(RELEASE));
-// A gated run builds with a throwaway password made here; it lives only in this run's memory and
-// in the environment of its own spec processes, so a gated build is never reused.
-const GATE_PASSWORD = APP_ARG ? teamPassword() : RELEASE === "gated" ? randomBytes(18).toString("base64url") : undefined;
 // Specs whose header has `// @e2e-debug-only: <reason>` need a switch the release build refuses
 // (ADR-0031); a release run lists them with the reason and skips them.
 const DEBUG_ONLY = /^\/\/ @e2e-debug-only: (.+)$/m;
@@ -121,6 +119,29 @@ async function waitForPort(port, open, timeoutMs) {
   return true;
 }
 
+/** Process ids running the app under test. */
+function runningApp() {
+  const out = spawnSync(
+    "powershell.exe",
+    ["-NoProfile", "-NonInteractive", "-Command", "@(Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -eq $env:E2E_APP } | ForEach-Object { $_.ProcessId }) -join ','"],
+    { encoding: "utf8", windowsHide: true, env: { ...process.env, E2E_APP: APP_BINARY } },
+  ).stdout?.trim();
+  return out ? out.split(",").map(Number) : [];
+}
+
+/**
+ * A spec that starts the app itself leaves it outside the driver's process tree. The next group must
+ * not share the machine with it: spec 05 counts every WebView2 process of this executable as its own.
+ */
+function endLeftoverApp() {
+  // E2E_PORT_BASE means several runs share the machine on purpose; their apps are not leftovers.
+  if (process.env.E2E_PORT_BASE) return;
+  for (const pid of runningApp()) {
+    console.warn(`The app under test was still running after the group (pid ${pid}); ending it.`);
+    spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], { stdio: "ignore" });
+  }
+}
+
 /** Start tauri-driver for one data root, run the given spec files, stop the driver. */
 async function runGroup(files, dataRoot, fakeMedia = false, noModels = false, netLog = false) {
   mkdirSync(dataRoot, { recursive: true });
@@ -142,10 +163,10 @@ async function runGroup(files, dataRoot, fakeMedia = false, noModels = false, ne
     E2E_MODEL_HOST_LOG: HOST.log,
   };
   delete env.E2E_WEBVIEW_ARGS;
-  delete env.E2E_TEAM_PASSWORD;
-  delete env.STRAFT_TEAM_PASSWORD;
+  delete env.E2E_CHECK_SCREEN;
   if (RELEASE) env.E2E_RELEASE = RELEASE;
-  if (GATE_PASSWORD) env.E2E_TEAM_PASSWORD = GATE_PASSWORD;
+  // Only the store-channel executable this run builds starts on the purchase check screen.
+  if (RELEASE === "open" && !APP_ARG) env.E2E_CHECK_SCREEN = "1";
   delete env.E2E_NET_LOG;
   if (fakeMedia) env.E2E_WEBVIEW_ARGS = FAKE_MEDIA_ARGS;
   if (netLog) {
@@ -176,6 +197,7 @@ async function runGroup(files, dataRoot, fakeMedia = false, noModels = false, ne
     // until both ports are free for the next group.
     spawnSync("taskkill", ["/PID", String(driver.pid), "/T", "/F"], { stdio: "ignore" });
     driver.kill();
+    endLeftoverApp();
     if (!(await waitForPort(PORT, false, 10_000)) || !(await waitForPort(NATIVE_PORT, false, 10_000))) {
       console.warn(`Ports ${PORT}/${NATIVE_PORT} are still in use after the driver stopped.`);
     }
@@ -183,18 +205,10 @@ async function runGroup(files, dataRoot, fakeMedia = false, noModels = false, ne
 }
 
 async function main() {
+  // An installed app already open is a person's real library; a test run must never end it.
+  if (APP_ARG && runningApp().length > 0) throw new Error("Close the installed app before an --app run: it holds real data.");
   await setupDrivers();
-  if (RELEASE === "gated" && args.has("--no-build") && !APP_ARG) throw new Error("A gated release run always builds: its password exists only for that run.");
-  if (!APP_ARG && (!args.has("--no-build") || !existsSync(APP_BINARY))) buildApp({ release: RELEASE, gatePassword: GATE_PASSWORD });
-  if (RELEASE === "gated" && !APP_ARG) {
-    // The gated executable must embed only the hash of its password, never the password itself
-    // (ADR-0030 decision 6). The scan gets this run's throwaway password through its environment.
-    const scan = spawnSync(process.execPath, [join(E2E_ROOT, "..", "..", "scripts", "scan-installer.mjs"), APP_BINARY], {
-      stdio: "inherit",
-      env: { ...process.env, STRAFT_TEAM_PASSWORD: GATE_PASSWORD }, // secret-scan: allow (this run's random test password)
-    });
-    if (scan.status !== 0) throw new Error("The gated release executable failed the string scan.");
-  }
+  if (!APP_ARG && (!args.has("--no-build") || !existsSync(APP_BINARY))) buildApp({ release: RELEASE });
 
   // The local model host for the whole run; each group points it at its own control file and log.
   Object.assign(HOST, testHost());

@@ -45,8 +45,8 @@
 The diagram shows the Windows shell. On the Mac the top two boxes are replaced by a SwiftUI application ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)); everything below the single door is shared.
 
 Other crates: `straft-domain` (shared types, errors, roles), `straft-security` (path confinement, archive limits,
-redaction), `straft-platform` (everything that differs between Windows and macOS), `straft-entitlement` (trial,
-licence and team password), `straft-project-format` (folder layout and the single-writer lock),
+redaction), `straft-platform` (everything that differs between Windows and macOS), `straft-entitlement` (trial and
+licence), `straft-project-format` (folder layout and the single-writer lock),
 `straft-test-support` (test helpers). `services/licence-server` was removed on 2026-11-03: there is no licence server ([ADR-0039](../adr/ADR-0039-store-release-licensing.md)).
 
 ## 2. What happens when a person types a letter

@@ -376,9 +376,6 @@ impl Item<'_> {
             Item::Marker(m) => &m.id,
         }
     }
-    pub fn is_strip(&self) -> bool {
-        matches!(self, Item::Strip(_))
-    }
 }
 
 impl Board {
@@ -450,12 +447,7 @@ impl Board {
             .iter()
             .filter(|s| self.strip_day(s).is_none())
             .collect();
-        v.sort_by_key(|s| {
-            (
-                self.scene(s).map(|sc| sc.number).unwrap_or(i64::MAX),
-                s.id.clone(),
-            )
-        });
+        v.sort_by_key(|s| (self.scene_order(s), s.id.clone()));
         v
     }
 
@@ -490,8 +482,13 @@ impl Board {
             .unwrap_or(s.source_page_eighths)
     }
 
-    pub fn scene_number(&self, s: &StripRow) -> Option<i64> {
-        self.scene(s).map(|sc| sc.number)
+    pub fn scene_number(&self, s: &StripRow) -> Option<String> {
+        self.scene(s).map(|sc| sc.label.clone())
+    }
+
+    /// Place of the scene in the draft, for ordering only (12A sits between 12 and 13).
+    pub fn scene_order(&self, s: &StripRow) -> i64 {
+        self.scene(s).map(|sc| sc.order).unwrap_or(i64::MAX)
     }
 
     pub fn scene_label(&self, s: &StripRow) -> String {
@@ -648,7 +645,7 @@ impl Board {
             id: s.id.clone(),
             scene_id: s.scene_id.clone(),
             lineage_id: s.lineage_id.clone(),
-            number: sc.map(|x| x.number),
+            number: sc.map(|x| x.label.clone()),
             heading: sc
                 .map(|x| x.heading.clone())
                 .unwrap_or_else(|| s.source_heading.clone()),
@@ -1083,8 +1080,7 @@ pub struct ScheduleStripDto {
     pub id: String,
     pub scene_id: String,
     pub lineage_id: String,
-    #[ts(type = "number | null")]
-    pub number: Option<i64>,
+    pub number: Option<String>,
     pub heading: String,
     pub int_ext: String,
     pub day_night: String,
@@ -1252,8 +1248,8 @@ pub struct ScheduleWarningDto {
     pub message: String,
     pub detail: Option<String>,
     pub strip_ids: Vec<String>,
-    #[ts(type = "number[]")]
-    pub scene_numbers: Vec<i64>,
+    #[ts(type = "string[]")]
+    pub scene_numbers: Vec<String>,
     pub detail_hash: String,
     /// "Kept" / "Dismissed" when the user already decided.
     pub decision: Option<String>,

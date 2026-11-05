@@ -2,7 +2,7 @@
 
 > **Current decisions (2026-11-03).** [ADR-0039](../adr/ADR-0039-store-release-licensing.md) and [package file 02](../release/package-2026-11-03/02_TRIAL_AND_LICENSING_SPEC.md) win over this page where they differ: no licence server, the Store licence is read again while the app is open, new chip and lock wording, the lock flushes typed text first.
 
-> **Current decisions (2026-10-15).** Chapter 3 material. The Mac StoreKit bridge moves into the SwiftUI application when Chapter 3 starts ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). The team gate minimum is 8 characters ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)).
+> **Current decisions (2026-10-15).** Chapter 3 material. The Mac StoreKit bridge moves into the SwiftUI application when Chapter 3 starts ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). The team password was removed on 2026-11-05 ([ADR-0043](../adr/ADR-0043-team-password-removed.md)); section 11 records that.
 
 > Written 2026-10-06 from the code in `crates/straft-entitlement/src/` (then `lib.rs`, `trial.rs`, `licence.rs`, `adapters.rs`).
 > Decisions behind it: [ADR-0018](../adr/ADR-0018-distribution-licensing-commerce.md). Plan area: "Payment and free trial in all
@@ -16,7 +16,7 @@
 > SUPERSEDED and kept as history.
 > Updated 2026-10-07 a third time: `trial.rs`, `combine`, `licence.rs`, `DirectInstallerAdapter` and the `issuer` feature are
 > removed from the crate with their tests (clean as you go, ADR-0023). The internal builds are now the Windows installer and the
-> Mac disk image, behind a team password on every launch (ADR-0024, section 11). An About card in Settings shows the version and
+> Mac disk image, with no password since 2026-11-05 (ADR-0043, section 11). An About card in Settings shows the version and
 > "Internal build, not for sale." on the internal builds.
 
 ## 1. Purpose
@@ -67,8 +67,7 @@ single function that decides; `EntitlementState::locks_the_app(channel)` says wh
 operation takes (the interface, the assistant's change sets and package imports). While `locks_the_app` holds, every operation is
 refused with `permission.licence_required` ("Buy Straft Studio or restore your purchase to open your projects again. Nothing
 is deleted.") except `entitlement.*` and `ALLOWED_WHILE_LOCKED` (`app.info` and `appearance.get`, which the lock screen needs to
-draw, and `team_gate.status`, the first question the window asks on every launch; a store package answers that no
-team password is needed, so the lock screen shows; all three touch no project). Editing alone is not yet gated per operation in NeedsOnlineCheck and TrialNotStarted: that is
+draw; both touch no project). Editing alone is not yet gated per operation in NeedsOnlineCheck and TrialNotStarted: that is
 the open plan item "Enforce Permission::Edit in the Rust operation path" (section 8).
 
 ### 2.1 How the adapter answer and the trial record combine (SUPERSEDED by ADR-0023)
@@ -154,8 +153,8 @@ prevent (a different Apple Account gets a new trial; no device fingerprinting) i
 An internal build for the owner's team, never sold: no trial, no payment, no Buy, no reminder, no lock. The state is
 InternalBuild, Settings > Licence and Settings > About say "Internal build, not for sale." and nothing can be restored. The
 internal Mac disk image (ADR-0024) is the same channel (`Channel::DirectInstaller`, "Internal build" on screen): a Mac build made
-without `STRAFT_DISTRIBUTION=store` is an internal build, a Mac build with it is the Mac App Store build. Both internal builds
-ask the team password on every launch (section 11). The installer licence file code was removed on 2026-10-07.
+without `STRAFT_DISTRIBUTION=store` is an internal build, a Mac build with it is the Mac App Store build. Neither internal build
+asks a password (ADR-0043). The installer licence file code was removed on 2026-10-07.
 
 ### Not decided (owner decisions)
 
@@ -261,7 +260,7 @@ Limits that follow from the code:
 |---|---|---|
 | Microsoft Store (`.msix`) | `MicrosoftStoreAdapter` over `StoreLicenceSource` | **Mapping, lock and purchase path built and tested with a fake source; not connected to the Store.** `channel_state` and `restore_channel_state` read the Store licence and map it with `read_store` (section 3). `buy_full_version` runs the Store's purchase dialog. Without a source (`MicrosoftStoreAdapter::unavailable`, every build today) the state is NeedsOnlineCheck with the limitation "The Microsoft Store connection is not available in this build." and Buy returns that message. The real `GetAppLicenseAsync`, `RequestPurchaseAsync` and `OfflineLicensesChanged` calls in the Windows shell need the Partner Center product identity (owner task). |
 | Mac App Store (`.pkg`) | `mac::MacAppStoreAdapter` | (SUPERSEDED by ADR-0039 (no licence server); the licensing server and the Tauri StoreKit bridge are gone.) **Built and tested with fakes; not connected to Apple.** The policy and the adapter are in `crates/straft-entitlement/src/mac/`, tested against a fake StoreKit bridge and a fake licensing server; design and test list in [38-mac-app-store-trial.md](38-mac-app-store-trial.md). Without the shell's `MacInputs` (every build today) `for_channel` builds it over `UnavailableBridge` and `UnavailableServer`: NeedsOnlineCheck with "The App Store connection is not available in this build.", nothing granted, nothing cached. That is a gap in the build, not a user state. |
-| Internal builds (`.exe`, `.dmg`) | none | **Internal build** (ADR-0023, ADR-0024). `for_channel` returns no adapter and the core sets InternalBuild without asking anything. The team password gate is section 11. |
+| Internal builds (`.exe`, `.dmg`) | none | **Internal build** (ADR-0023, ADR-0024). `for_channel` returns no adapter and the core sets InternalBuild without asking anything. They have no password (ADR-0043). |
 
 `for_channel` builds the adapter from the channel, the app data folder, optional `MacInputs` and an optional
 `StoreLicenceSource`, and returns `None` for the internal builds. Every adapter implements `channel`, `purchase_status`,
@@ -288,10 +287,10 @@ and the screen operations (section 10), and refuses every operation during the s
 
 ## 9. Tests in the crate
 
-All 76 pass on Windows 11 with `cargo test -p straft-entitlement` (run 2026-10-07 after the clean-up): the tests below, 11 in
-`notices.rs` (section 10), 8 in `team_gate` (section 11) and the Mac module's, listed in
+The tests of this crate (`cargo test -p straft-entitlement`; 79 on 2026-11-05, after the team gate and its 9 tests were removed, ADR-0043): the tests below, those in
+`notices.rs` (section 10) and the Mac module's, listed in
 [38-mac-app-store-trial.md](38-mac-app-store-trial.md). The app's behaviour is tested in
-`crates/straft-application/tests/entitlement.rs`, `tests/trial_first_run.rs` and `tests/team_gate.rs`.
+`crates/straft-application/tests/entitlement.rs` and `tests/trial_first_run.rs`.
 
 | File | Test |
 |---|---|
@@ -336,7 +335,7 @@ due; the interface only shows it. Code: `crates/straft-entitlement/src/notices.r
 | 192 | "Checking your purchase" with **Not now**, **Buy full version** and **Try again**, naming the store; "Your projects stay open and can be exported. Nothing is deleted." | Either store, NeedsOnlineCheck | Yes (Not now, Escape or Close), ADR-0018 decision 6. Stays closed for the session while it is due |
 | 193 | "Your data, your responsibility": six points, the real root folder, **Show in File Explorer** or **Show in Finder**, a tick box, **OK, I understand** | Purchased and not yet acknowledged | No. The box enables only after the list is scrolled to its end; OK only after the box is ticked |
 | 194 to 197 | File safety tutorial, 4 steps; **Finish** needs all three boxes on step 4. Step 3 says how to install per channel: the App Store with the same Apple Account, the Microsoft Store with the same Microsoft account, or (internal build) just "Install Straft Studio on the new laptop." | Purchased, note acknowledged, tutorial not finished | No |
-| 198 | "Welcome to the Straft Studio family" with the eight community accounts and **OK** | Purchased, tutorial finished, welcome not shown | Yes |
+| 198 | "Welcome to the Straft Studio community" with the eight community accounts and **OK** | Purchased, tutorial finished, welcome not shown | Yes |
 
 **No price anywhere (ADR-0023).** No screen names a price, a currency, or a pricing model ("pay once", "subscription",
 "lifetime"). The button says "Buy full version" with no amount. The Vitest test
@@ -397,8 +396,9 @@ the person at this computer (`permission.denied` for the assistant and for packa
 
 "Show in File Explorer" and "Show in Finder" call the shell command `of_reveal_path` with the fixed kind `dataRoot`; the path never
 comes from the webview. The welcome links open only through `of_open_url` and only for fixed https addresses on the networks'
-own sites (`isFixedSocialUrl`). The owner has not sent the real handles yet, so every account has no address and none can be
-opened; the tiles show the placeholder handle `@straftstudio`.
+own sites (`isFixedSocialUrl`, hosts taken from the eight addresses in `features/licensing/communityLinks.ts`). Each tile is an
+icon and the network's name and opens its fixed address in the browser; the page makes no request until a tile is clicked. The
+Discord tile opens `https://straftstudio.com/discord`, the website's forwarding page, so the app holds no invite code.
 
 ### 10.5 Hand-set state for end-to-end tests
 
@@ -434,56 +434,14 @@ store behind it: Buy then says the store connection is not available. A hand-set
 - **About screen.** ADR-0023 asks for "Internal build, not for sale" in About and in Settings > Licence. There is no About screen
   yet; Settings > Licence shows it.
 
-## 11. Team password gate of the internal builds (ADR-0024)
+## 11. The team password is removed (ADR-0043)
 
-The internal Windows installer and the internal Mac disk image ask the team password on every launch, before anything opens.
-Store packages carry neither the check nor a hash.
+The internal Windows installer and the internal Mac disk image used to ask a team password on every launch (ADR-0024, ADR-0030).
+The owner removed it on 2026-11-05, and [ADR-0043](../adr/ADR-0043-team-password-removed.md) records the decision. Nothing of it
+is left: no password screen, no `team_gate.*` operations, no hash in the build, no `STRAFT_TEAM_PASSWORD` variable, no wait after
+wrong tries. The internal build opens straight to the app, and Settings > About still says "Internal build, not for sale."
+(`About.test.tsx`, `16-about.test.mjs`). Store packages never carried the gate, so the trial, the lock and paid activation
+(sections 1 to 10) are unchanged.
 
-**Build.** `apps/desktop/src-tauri/build.rs` reads `STRAFT_TEAM_PASSWORD` on the build machine for a `direct` build (the
-default `STRAFT_DISTRIBUTION`), hashes it with Argon2id (64 MiB, 3 passes, 1 lane, 16 random bytes of salt from the system's
-secure random generator) and writes only the PHC string to `OUT_DIR/team_gate_hash.txt`, which the shell embeds under
-`cfg(straft_team_gate)` and hands to the core as `AppConfig::team_password_hash`. The rules are one shared file,
-`crates/straft-entitlement/src/team_gate/build_hash.rs`, which the build script includes by path and the crate compiles, so
-the build and the check cannot disagree:
-
-| Build | Result |
-|---|---|
-| `store` (either store) | No gate and no hash, whatever the variable says. The variable is never read. |
-| `direct`, release profile, variable missing or empty | The build fails and names the variable, never a value. |
-| `direct`, password shorter than 8 characters (ADR-0030; 12 before phase W1) | The build fails. |
-| `direct`, password set | Gate and hash embedded. |
-| `direct`, debug profile, variable missing | No gate (development and the end-to-end suite; never shipped). |
-
-While the variable is set the build script reruns on every build instead of asking Cargo to watch the variable, because Cargo
-keeps the value of a watched variable in the target folder to compare later. The release workflow passes the
-`STRAFT_TEAM_PASSWORD` secret to the internal build step only. Changing the password means changing the secret and building
-again.
-
-**Check.** `team_gate::TeamGate` in the Rust core. `verify_team_password` accepts only an Argon2id hash, refuses passwords over
-1024 bytes without hashing them, recomputes the hash with the stored salt and costs and compares the outputs in constant time
-(the `phc` crate's `Output` equality). While the gate is shut, `EntitlementService::check_operation` (inside
-`Registry::dispatch`) refuses every operation with `permission.team_password_required` except `team_gate.status`,
-`team_gate.unlock` and `appearance.get`, so no project, vault or setting opens, and the app start clean-up of the Global Idea
-Vault waits until the gate opens. The shell's own commands follow the same rule: `of_open_asset` and `of_reveal_path` (even
-for the data folder and the logs) are refused before the password. `team_gate.unlock` takes the password from the person at the computer only (never the
-assistant or a package); its argument's `Debug` output never shows the password, and nothing logs it.
-
-**Wrong tries.** After 5 wrong passwords in a row the next try waits 1 minute; each further run of 5 doubles the wait: 2, 4, 8,
-16, then 30 minutes from then on. During a wait a try is refused without being checked and does not count. A right password
-resets the count. The count lives in `<app data>/entitlement/team-gate.json` (numbers only) and survives a restart. It is saved
-before the password is checked, so closing or killing the app during the check cannot undo a wrong try. A missing file means no
-wrong tries; a damaged, oversized or unreadable file starts at the first 1-minute wait, never at zero. A clock turned back to
-before a wait started restarts that wait from the earlier time (and saves it), so the wait still ends after its own length of real
-time instead of when the clock catches up. A clock turned forward ends a wait early; ADR-0024 accepts that the gate slows casual
-use and does not stop a person who holds the file and guesses the hash offline.
-
-**Screen.** `apps/desktop/src/features/team-gate/TeamGate.tsx` wraps the whole app: a dialog that cannot be closed, with a
-password field, the core's plain-words answer, and a countdown while a wait runs. Store builds pass straight through.
-
-**Tests.** `crates/straft-entitlement/src/team_gate/tests.rs` (9, test-only password and small costs, plus one hash with the
-build costs): right and wrong, the waits 1, 2, 4, 8, 16, 30, 30, 30 minutes, restart keeps the count and the wait, a try counted
-before the check, a damaged count file, a clock turned back (seen by the screen and seen by a try), the build hash shape, and the build rules (store build without a
-gate, missing variable, short password). `crates/straft-application/tests/team_gate.rs` (4): nothing opens before the
-password, the waits and a restart through the core, a store build without a gate, and only the person at the computer can unlock.
-`apps/desktop/src-tauri/src/lib.rs`: a store build embeds no hash. Vitest: `TeamGate.test.tsx` (4) and `About.test.tsx` (2). Not
-run: a signed internal build with a real secret, and the end-to-end suite (it runs debug builds without the variable).
+An old install may still hold `<app data>/entitlement/team-gate.json` (the count of wrong tries). Nothing reads it, it is left
+in place, and it does no harm.

@@ -61,7 +61,7 @@ Before: an empty data folder of its own. The app starts for the first time.
 9. Check: the picker reads "Screenplay: Two Rivers. Switch screenplay".
 10. Check: a line ends with "The feature opens on the river. At dawn."
 11. Check: the screenplay list is only "Two Rivers".
-12. Click the project button "Project: Two Rivers. Switch or manage projects", then choose Recently Deleted.
+12. Click the project switcher (top left, shows the project title), then choose Recently Deleted.
 13. Check: the screen shows "Two Rivers: The Short".
 14. Click Restore Two Rivers: The Short.
 15. Click Screenplay in the Workspaces navigation.

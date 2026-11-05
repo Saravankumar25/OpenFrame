@@ -1,6 +1,6 @@
 # Straft Studio — Security / Privacy / Data Ownership Specification
 
-> **Current decisions (2026-10-15).** The internal team gate accepts passwords of 8 or more characters and is a door lock, not encryption ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). The AI log holds numbers and ids only, learned memory is visible, editable and deletable, and nothing leaves the computer automatically ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md), [ADR-0021](../adr/ADR-0021-diagnostics-telemetry-analytics-policy.md)). The AI runtime ships in the package and the models download on a click ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)).
+> **Current decisions (2026-10-15).** The internal builds have no password since 2026-11-05 ([ADR-0043](../adr/ADR-0043-team-password-removed.md)); project files are not encrypted at rest. The AI log holds numbers and ids only, learned memory is visible, editable and deletable, and nothing leaves the computer automatically ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md), [ADR-0021](../adr/ADR-0021-diagnostics-telemetry-analytics-policy.md)). The AI runtime ships in the package and the models download on a click ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)).
 
 > **Current decision: [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (2026-10-15).** The app and the AI
 > runtime ship in every package; the chat and embedding models download after install on the user's click from a signed

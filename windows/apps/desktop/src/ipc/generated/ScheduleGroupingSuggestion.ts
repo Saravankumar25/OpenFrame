@@ -12,7 +12,7 @@ title: string,
 /**
  * e.g. "Old Railway Station · confirmed".
  */
-subject: string, advice: string, stripIds: Array<string>, sceneNumbers: number[], 
+subject: string, advice: string, stripIds: Array<string>, sceneNumbers: string[], 
 /**
  * Strips that would move (those not already on the suggested day).
  */

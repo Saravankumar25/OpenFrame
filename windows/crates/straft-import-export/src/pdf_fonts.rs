@@ -285,11 +285,6 @@ impl FontPack {
             .collect()
     }
 
-    /// Objects this pack writes (five per font).
-    pub fn object_count(&self) -> i32 {
-        5 * self.fonts.len() as i32
-    }
-
     /// Write every font (Type 0, CIDFont, descriptor, font file, ToUnicode)
     /// starting at object `first_ref`.
     pub fn write(&self, pdf: &mut Pdf, first_ref: i32) {

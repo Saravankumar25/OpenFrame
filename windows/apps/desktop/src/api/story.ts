@@ -23,6 +23,7 @@ import type { StoryCreateCharacterArgs } from "../ipc/generated/StoryCreateChara
 import type { StoryCreated } from "../ipc/generated/StoryCreated";
 import type { StoryCreatedMany } from "../ipc/generated/StoryCreatedMany";
 import type { StoryDeleteMode } from "../ipc/generated/StoryDeleteMode";
+import type { StoryLinkableScene } from "../ipc/generated/StoryLinkableScene";
 import type { StoryItemRef } from "../ipc/generated/StoryItemRef";
 import type { StoryOrderPreview } from "../ipc/generated/StoryOrderPreview";
 import type { StoryPageDto } from "../ipc/generated/StoryPageDto";
@@ -80,6 +81,9 @@ export const useStoryBoard = (episodeId: string | null) =>
 export const useCardDisplay = () => useOp<StoryCardDisplayState>("story.card_display", {}, ["project"]);
 export const useCardDetail = (id: string | null) =>
   useOp<StoryCardDetail>("story.card", { id }, [...BOARD_TABLES, ...SCREENPLAY_TABLES], { enabled: !!id });
+/** Scenes of the current draft of every screenplay, written or imported, that a card can link to. */
+export const useLinkableScenes = (enabled: boolean) =>
+  useOp<StoryLinkableScene[]>("story.linkable_scenes", {}, SCREENPLAY_TABLES, { enabled });
 export const useViewState = () => useOp<StoryViewState>("story.view_state", {}, ["project"]);
 export const useSeries = () => useOp<StorySeriesDto>("story.series", {}, SERIES_TABLES);
 export const useBuildPreview = (episodeId: string | null, enabled: boolean) =>
@@ -159,6 +163,8 @@ export const story = {
   convertBeat: (id: string) => call<StoryCreated>("story.convert_beat", { id }),
   createCard: (a: Partial<StoryCreateCardArgs>) => call<StoryCreated>("story.create_card", a),
   updateCard: (a: Partial<StoryUpdateCardArgs> & { id: string }) => call<void>("story.update_card", a),
+  /** Link a card to an existing screenplay scene; null clears the link. */
+  linkScene: (cardId: string, sceneId: string | null) => call<void>("story.link_scene", { cardId, sceneId }),
   cardToBeat: (id: string) => call<StoryCreated>("story.card_to_beat", { id }),
 
   // multi-select / drag & drop

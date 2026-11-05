@@ -8,7 +8,7 @@
 
 ## Dashboard (update every session from `npm run plan:status`)
 
-**Overall: 135 of 307 boxes (44%).** **Current goal** (boxes without the "Later: store publishing" tag): **131 of 224 (58.5%)**. Updated 2026-10-27 after the overnight session (one new box for storage, not ticked yet; see the first entry).
+**Overall: 135 of 306 boxes (44.1%).** **Current goal** (boxes without the "Later: store publishing" tag): **131 of 223 (58.7%)**. Updated 2026-11-05.
 
 | # | Area | Done |
 |---|---|---|
@@ -27,11 +27,11 @@
 | 13 | Breakdown, catalog, locations, cast and crew | 7 of 9 |
 | 14 | Shooting schedule and Day Out of Days | 9 of 9 |
 | 15 | Call sheets, budget, templates, samples and exports | 11 of 11 |
-| 16 | Packages and backup | 3 of 5 |
+| 16 | Packages and backup | 3 of 6 |
 | 17 | Product-wide quality, accessibility and beta | 0 of 15 |
 | 18 | Payment and free trial in all three channels | 6 of 10 |
 | 19 | Microsoft Store package | 0 of 15 |
-| 20 | Windows installer | 1 of 13 |
+| 20 | Windows installer | 1 of 12 |
 | 21 | Mac App Store package | 0 of 8 |
 | 22 | Legal, privacy, website and support | 0 of 11 |
 | 23 | Final review and submission | 0 of 12 |
@@ -57,6 +57,18 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ```
 
 ## Entries
+
+### 2026-11-05: sweep, known issues, audit ports, team password removed, website SEO and social links, Windows pushed (owner's overnight request and later messages)
+- **Areas and items worked:** Project controls, Data safety, Security hardening, Breakdown, Schedule, Call sheets, Beat Board, Legal, Windows installer.
+- **Done:** old name swept from both repositories; what remains is LEGACY code, its tests, old-format fixtures, "open framework" in font licences, and one note in the website operations guide. Real scene labels on Schedule, Breakdown, shots, call sheets and day views. Home counts the current draft, the active source and shoot days of the newest schedule. Call sheets read the location's nearest hospital. Scene Cards link to any scene (`story.link_scene`). Both line endings of a migration count as the same text. Team password removed (ADR-0043). Welcome popup with eight official links. Dead code and unused dependencies removed. Security, licence, legal and accessibility fixes ported from the four 2026-10-31 audit branches, which had never reached this tree. WindowsHTML regenerated.
+- **Website:** PRs 18, 19, 20 and 22 merged and deployed: honest offers, error pages noindex, IndexNow by change (one-time 752 URLs, HTTP 200), live monitor, eight social links, `/discord` 302. Live audit: 752 sitemap URLs 200, canonicals match, 16 crawler agents 200, Lighthouse mobile home Accessibility 100, SEO 100, Best Practices 92. Performance not measured (PageSpeed quota).
+- **Evidence:** Rust 2,946 passed, 0 failed, 34 ignored on the dead-code commit; after the ports, `straft-application` lib and ai 1,469 passed, 0 failed, 3 ignored, clippy clean. Web 804 of 804. Governance 103 of 103. Website 152 tests, 151 in the last full run, the frame timing test passing alone. Debug E2E 215 of 215 in one pass (before the password removal). Installed full run on Straft-3: 194 of 195, the failure being spec 04's own time measure, since fixed. Installed targeted run on Straft-4 by the owner's word: specs 01, 02, 04, 43, 72, 74, 90, 91, 95, 96, 98, 48 of 48. Debug specs 15, 16, 78: 16 of 16.
+- **Features moved:** none by status word; the two rows that changed name their new tests.
+- **Docs updated:** ADR-0043, ADR-0030, ADR register, owner decisions, threat model, manuals, feature status, reconciliation log, handoff, this log.
+- **Decisions made or needed:** owner: no team password; test only what changed. Needed: see the handoff.
+- **Blocked / risks:** no complete E2E on Straft-4. Spec 05's connection cause not proven. No by-eye check of the running app: screen control was declined, so the check was the window title, the file details and the log.
+- **Next:** the website session for the Windows and Mac screens.
+- **Checks run:** as under Evidence.
 
 ### 2026-11-04: local Windows work merged with the windows folder on GitHub (owner request outside the plan)
 - **Areas and items worked:** Project controls and baseline, Data safety and crash recovery (first-start migration), Security hardening.

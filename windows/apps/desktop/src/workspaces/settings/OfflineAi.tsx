@@ -12,7 +12,7 @@ import { Banner, Button, Chip, ConfirmDialog, PageHeader, Segmented, Skeleton } 
 import { toast } from "../../app/toast";
 import type { AiStatusDto } from "../../ipc/generated/AiStatusDto";
 import type { AiDiagnosticsDto } from "../../ipc/generated/AiDiagnosticsDto";
-import { damagedModels, formatBytes, offReason, panelMode, runtimeLabel } from "../../ai/model";
+import { GEMMA_NOTICE, damagedModels, formatBytes, offReason, panelMode, runtimeLabel } from "../../ai/model";
 import DownloadAi from "../../ai/DownloadAi";
 import "../../ai/ai.css";
 import { AiHealthCard } from "./AiHealth";
@@ -31,8 +31,6 @@ export function offlineAiStateText(s: AiStatusDto): string {
   if (s.runtimeState === "Failed") return "Stopped after a problem. It restarts when you ask something";
   return runtimeLabel(s.runtimeState) ?? "Ready";
 }
-
-const GEMMA_NOTICE = "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms.";
 
 export default function OfflineAiSettings() {
   const qc = useQueryClient();

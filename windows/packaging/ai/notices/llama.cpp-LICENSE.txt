@@ -3,7 +3,7 @@ https://github.com/ggml-org/llama.cpp
 
 MIT License
 
-Copyright (c) 2023-2024 The ggml authors
+Copyright (c) 2023-2026 The ggml authors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+Third-party code compiled into the llama.cpp engine (from its vendor folder):
+
+cpp-httplib (https://github.com/yhirose/cpp-httplib), MIT License,
+Copyright (c) 2017 yhirose.
+
+nlohmann/json (https://github.com/nlohmann/json), MIT License,
+Copyright (c) 2013-2025 Niels Lohmann.
+
+Both are under the MIT License: the permission notice and the disclaimer above
+apply to each of them with its own copyright line.
+
+stb_image (Sean Barrett) is offered under the MIT License or as public domain,
+miniaudio (David Reid) under public domain or MIT No Attribution, and
+subprocess.h (github.com/sheredom/subprocess.h) as public domain. Straft Studio uses all three under
+the public domain choice.
+
 The Windows build includes the LLVM OpenMP runtime (libomp.dll), licensed under
-the Apache License 2.0 with LLVM Exceptions. Its licence text is in
-runtimes/llama-cpp-b11259-win-x64-cpu/LICENSE-LLVM-OpenMP.
+the Apache License 2.0 with LLVM Exceptions. Its licence text ships next to it,
+as LICENSE-LLVM-OpenMP in the engine folder.

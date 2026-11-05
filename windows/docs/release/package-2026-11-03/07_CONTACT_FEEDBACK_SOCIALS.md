@@ -23,10 +23,11 @@ People reach the team through the website. The app has **no form, no mail compos
 - The contact page shows `support@straftstudio.com` (set `OF_CONTACT_EMAIL` for the build so the page stops saying the address is "being set up"), the company name and address, and where the refund help lives.
 - Keep "no form, collects nothing" true. If a form is ever added later, the privacy page must change first.
 
-## Socials (placeholders)
+## Socials
 
-- The welcome popup lists Instagram, YouTube, X, Facebook, LinkedIn, Reddit, Discord and Threads. In the code today each has handle `@straftstudio` and `url: null` (`SOCIAL_LINKS` in `rules.ts`).
-- Those handles are placeholders, not real accounts. Shipping eight fake handles to a store would be wrong.
-- Rule: in a release build, an entry whose `url` is `null` is not shown. If none has a URL, the welcome popup shows only the thank-you text and OK. In debug and test builds keep showing them so the mocks and tests still work.
-- When the owner sends the real accounts: each `url` becomes a fixed `https://` address on that network's own site, and `isFixedSocialUrl` already whitelists those hosts. Update the welcome test and the manual (`website/src/content/manual/win/trial-and-purchase.mjs` mentions the handles).
-- Add each real social address to `app-addresses.json` at that time.
+Superseded 2026-11-05: the owner approved the eight real addresses. They live in `apps/desktop/src/features/licensing/communityLinks.ts` and the welcome popup ("Welcome to the Straft Studio community") shows all eight in every build.
+
+- Instagram, YouTube, X, Facebook, LinkedIn, Reddit, Threads: the network's own page for Straft Studio.
+- Discord: `https://straftstudio.com/discord`, a forwarding page on the website. The app never holds the invite code.
+- `isFixedSocialUrl` accepts only https and only the hosts of these eight addresses. The app fetches nothing; an address opens only when the person clicks it.
+- Still to do: add each address to `app-addresses.json`, and update the manual (`website/src/content/manual/win/trial-and-purchase.mjs`) if it mentions the handles.

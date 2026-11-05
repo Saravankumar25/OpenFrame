@@ -52,7 +52,7 @@ async function quiet(label) {
 }
 
 async function projectMenu(item) {
-  const trigger = await browser.$('//button[starts-with(@aria-label,"Project: ")]');
+  const trigger = await browser.$('//header//button[contains(@class,"projsel")]');
   await trigger.waitForClickable({ timeout: 10_000 });
   await trigger.click();
   const el = await browser.$(`//*[@role="menuitem"][starts-with(normalize-space(.),"${item}")]`);
@@ -87,7 +87,7 @@ async function visit(route) {
     return;
   }
   if (route === "project-menu") {
-    const trigger = await browser.$('//button[starts-with(@aria-label,"Project: ")]');
+    const trigger = await browser.$('//header//button[contains(@class,"projsel")]');
     await trigger.click();
     await browser.$('//*[@role="menu"]').waitForDisplayed({ timeout: 10_000 });
     await browser.keys(["Escape"]);

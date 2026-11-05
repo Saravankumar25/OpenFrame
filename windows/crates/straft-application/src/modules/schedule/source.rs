@@ -32,8 +32,10 @@ pub struct ScheduleSourceInfo {
 pub struct SceneInfo {
     pub id: String,
     pub lineage_id: String,
-    /// Display number derived from order within the draft.
-    pub number: i64,
+    /// Place in the draft, 1-based. It orders scenes and is never shown as a scene number.
+    pub order: i64,
+    /// The scene number the Screenplay workspace shows (12, 120A).
+    pub label: String,
     pub heading: String,
     pub int_ext: String,
     pub day_night: String,
@@ -241,6 +243,9 @@ pub fn load_source(c: &Connection, source_id: &str) -> AppResult<Option<SourceDa
                 r.get::<_, i64>(4)? != 0,
             ))
         })?;
+        let mut labels = crate::modules::screenplay::numbering::draft_labels(c, &draft)?
+            .into_iter()
+            .map(|(_, l)| l);
         for (i, row) in rows.enumerate() {
             let (id, lineage_id, heading, synopsis, omitted) = row?;
             let els = elements.get(&id).map(|v| v.as_slice()).unwrap_or(&[]);
@@ -261,7 +266,8 @@ pub fn load_source(c: &Connection, source_id: &str) -> AppResult<Option<SourceDa
                 text_hash: text_hash(els),
                 id,
                 lineage_id,
-                number: i as i64 + 1,
+                order: i as i64 + 1,
+                label: labels.next().unwrap_or_else(|| (i + 1).to_string()),
                 heading: heading.trim().to_string(),
                 int_ext: parsed.int_ext,
                 day_night: parsed.day_night,

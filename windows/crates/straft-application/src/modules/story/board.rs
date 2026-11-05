@@ -271,9 +271,8 @@ pub struct StoryLinkedScene {
     pub screenplay_title: String,
     pub draft_id: String,
     pub draft_name: String,
-    /// Derived from screenplay order; never stored.
-    #[ts(type = "number")]
-    pub number: i64,
+    /// The scene number the Screenplay workspace shows, for example "12A".
+    pub number: String,
     pub heading: String,
 }
 
@@ -926,23 +925,21 @@ fn board(core: &AppCore, actor: &Actor, a: StoryScopeArgs) -> AppResult<StoryBoa
 }
 
 pub(crate) fn linked_scene(c: &Connection, scene_id: &str) -> AppResult<Option<StoryLinkedScene>> {
-    let row: Option<(String, String, String, String, String, i64)> = c
+    let row: Option<(String, String, String, String, String)> = c
         .query_row(
-            "SELECT s.draft_id, d.screenplay_id, p.title, d.name, s.heading, s.position
+            "SELECT s.draft_id, d.screenplay_id, p.title, d.name, s.heading
              FROM screenplay_scene s JOIN screenplay_draft d ON d.id = s.draft_id JOIN screenplay p ON p.id = d.screenplay_id
              WHERE s.id=?1 AND s.deleted_at IS NULL AND d.deleted_at IS NULL AND p.deleted_at IS NULL",
             [scene_id],
-            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?, r.get(5)?)),
+            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?)),
         )
         .optional()?;
-    let Some((draft_id, screenplay_id, screenplay_title, draft_name, heading, pos)) = row else {
+    let Some((draft_id, screenplay_id, screenplay_title, draft_name, heading)) = row else {
         return Ok(None);
     };
-    let number: i64 = c.query_row(
-        "SELECT count(*) FROM screenplay_scene WHERE draft_id=?1 AND deleted_at IS NULL AND (position < ?2 OR (position = ?2 AND id <= ?3))",
-        params![draft_id, pos, scene_id],
-        |r| r.get(0),
-    )?;
+    // The label the Screenplay workspace shows (a production number such as "12A", else script order).
+    let number =
+        crate::modules::screenplay::numbering::scene_label(c, scene_id)?.unwrap_or_default();
     Ok(Some(StoryLinkedScene {
         scene_id: scene_id.to_string(),
         screenplay_id,

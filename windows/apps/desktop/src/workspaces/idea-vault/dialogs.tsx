@@ -576,7 +576,7 @@ export function CopyDialog({ from, items, projectLabel, onClose, onDone }: {
         )}
       </div>
       <Field label="Copy into">
-        <div className="input" aria-readonly>{to === "project" ? projectLabel : "Global Idea Vault"}</div>
+        <div className="input">{to === "project" ? projectLabel : "Global Idea Vault"}</div>
       </Field>
       <Field label="Collection (optional)" htmlFor="vv-copy-coll">
         <select id="vv-copy-coll" className="select" value={collectionId} onChange={(e) => setCollectionId(e.target.value)}>

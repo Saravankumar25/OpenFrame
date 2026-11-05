@@ -27,7 +27,7 @@ no model decides where to look.
 | Navigate, change | `action.rs`, `catalog/`, `change_set.rs`, `sections/tools.rs` | Navigation runs only when the answer type is navigate and the scene or thing is inside the picked sections; otherwise the pointer. A change is always a Change Set proposal the person reviews and applies; nothing is changed by the model directly. The agent is offered only the tools homed in the picked sections, a tool outside them never runs even if the model names it, and "Suggest breakdown" needs Breakdown and Screenplay. |
 | Store | `trace.rs`, `records.rs` | The exchange with its sources (the records of the facts the answer used, behind the sources button), the pointer, the focus, long-term memory per the saving rules, and the trace: answer type and how it was read, the picked sections, tokens per section, whether a pointer fired and its target, hybrid or full-text retrieval, dossier size, passes, offenders, fallback, cached tokens, stage times. |
 
-Fixed text that stays code (spec section 4.1): refusals (licence, payment, team password, actions the person may not do), the pointer sentences,
+Fixed text that stays code (spec section 4.1): refusals (licence, payment, actions the person may not do), the pointer sentences,
 errors, "the model is not ready", progress and Cancel.
 
 ## 2. Engine

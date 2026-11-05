@@ -301,8 +301,8 @@ function ProjectsHome() {
           <button className="iconbtn" aria-label="Settings" title="Settings: appearance, keyboard shortcuts, about" onClick={() => setSettingsOpen(true)}>
             <Settings size={16} />
           </button>
-          <button className="avatar" style={{ border: 0 }} aria-label={`Your name: ${profileName}. Change`} title={`${profileName}: change your name`} onClick={() => setNameOpen(true)}>
-            {initials(profileName)}
+          <button className="avatar" style={{ border: 0 }} title={`${profileName}: change your name`} onClick={() => setNameOpen(true)}>
+            {initials(profileName)}<span className="sr-only">. Your name: {profileName}. Change</span>
           </button>
         </div>
       </header>

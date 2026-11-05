@@ -408,7 +408,7 @@ fn warnings(ctx: &FetchCtx<'_>, read: &TurnRead, days: &BTreeSet<u32>) -> AppRes
         let mut f = Fact::new("Schedule warning", &w.key)
             .said(&w.message)
             .f("detail", w.detail.clone().unwrap_or_default())
-            .f("scenes", numbers(w.scene_numbers.iter().map(|n| *n as u32)))
+            .f("scenes", w.scene_numbers.join(", "))
             .prio(if actors && actor { P_HIGH } else { P_MID });
         // The actor who cannot work the day the schedule needs them is the one who clashes.
         if actors

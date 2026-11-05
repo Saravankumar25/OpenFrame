@@ -291,9 +291,6 @@ pub const PROPOSALS: &[(&str, &[&str])] = &[
     ),
 ];
 
-/// A proposal that belongs to a page which is no section (Recently Deleted).
-pub const UNSECTIONED_PROPOSALS: &[&str] = &["propose_restore_deleted"];
-
 /// The leaf a proposal tool (`propose_...`) is homed in.
 fn proposal_home(tool: &str) -> Option<&'static Leaf> {
     let name = tool.strip_prefix("propose_")?;

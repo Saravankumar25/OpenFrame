@@ -402,6 +402,14 @@ fn lf_checksum(sql: &str) -> String {
     checksum(&sql.replace("\r\n", "\n"))
 }
 
+/// The recorded checksum belongs to this text in either line ending. A build compiled on Windows
+/// may hold a migration with CRLF while the build that ran it held LF, or the other way round.
+fn same_text(sql: &str, recorded: &str) -> bool {
+    checksum(sql) == recorded
+        || lf_checksum(sql) == recorded
+        || checksum(&sql.replace("\r\n", "\n").replace('\n', "\r\n")) == recorded
+}
+
 /// A recorded checksum the shipped text may differ from, because the rename touched its comments.
 fn renamed_from(m: &Migration, recorded: &str) -> bool {
     RENAMED_MIGRATIONS.iter().any(|r| {
@@ -428,7 +436,7 @@ pub fn checksum_mismatches(conn: &Connection, migrations: &[Migration]) -> AppRe
     for row in rows {
         let (version, sum) = row?;
         if let Some(m) = migrations.iter().find(|m| m.version == version)
-            && checksum(m.sql) != sum
+            && !same_text(m.sql, &sum)
             && !renamed_from(m, &sum)
         {
             wrong.push(version);
@@ -674,6 +682,22 @@ mod tests {
                 .unwrap()
                 .is_empty()
         );
+    }
+
+    #[test]
+    fn the_same_migration_in_other_line_endings_is_not_a_mismatch() {
+        const LF: &str = "CREATE TABLE a(x);\nCREATE TABLE b(x);\n";
+        const CRLF: &str = "CREATE TABLE a(x);\r\nCREATE TABLE b(x);\r\n";
+        let m = |sql| Migration {
+            version: 1,
+            name: "m",
+            sql,
+        };
+        for (ran, shipped) in [(LF, CRLF), (CRLF, LF)] {
+            let mut c = crate::open_in_memory().unwrap();
+            apply(&mut c, &[m(ran)]).unwrap();
+            assert!(checksum_mismatches(&c, &[m(shipped)]).unwrap().is_empty());
+        }
     }
 
     #[test]

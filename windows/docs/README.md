@@ -110,7 +110,7 @@ Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answer
 - **Platforms:** Windows 11 and Apple silicon only (ADR-0017). The Intel MacBook is for development.
 - **Business model (target, not final):** paid with a 7-day free trial; stores run the trial; internal builds have no trial,
   price or lock (ADR-0018, 0022, 0023, 0024).
-- **Internal builds:** unsigned `.exe` and `.dmg` behind a team password of at least 8 characters, tested by the team before
+- **Internal builds:** unsigned `.exe` and `.dmg` that open straight to the app (no password, ADR-0043), tested by the team before
   the next stage (ADR-0024, ADR-0030).
 - **Nothing sent automatically** (ADR-0021).
 

@@ -43,8 +43,6 @@ use crate::core::AppCore;
 use crate::registry::OpKind;
 use crate::store::{MutationMeta, Store, Tx};
 
-pub const STALE_MESSAGE: &str = "The project changed after this suggestion was prepared. Review is required before applying it.";
-
 /// Most parts one composite Change Set may combine.
 pub const MAX_PARTS: usize = 6;
 
@@ -255,14 +253,15 @@ fn load_row(c: &Connection, actor: &Actor, id: &str) -> AppResult<Row> {
             let base: String = r.get(6)?;
             let source: Option<String> = r.get(7)?;
             let preview: Vec<PreviewRow> = parse_json(r.get(8)?);
+            let operations: Vec<OpCall> = serde_json::from_str(&ops).unwrap_or_default();
             Ok(Row {
-                destructive: preview.iter().any(|x| x.tone == TONE_DESTRUCTIVE),
+                destructive: needs_confirmation(&preview, &operations),
                 id: r.get(0)?,
                 title: r.get(1)?,
                 state: r.get(2)?,
                 requesting_role: r.get(3)?,
                 ai_request_id: r.get(4)?,
-                operations: serde_json::from_str(&ops).unwrap_or_default(),
+                operations,
                 base: serde_json::from_str(&base).unwrap_or(Value::Null),
                 source: source.and_then(|s| serde_json::from_str(&s).ok()).unwrap_or(Value::Null),
             })
@@ -270,6 +269,13 @@ fn load_row(c: &Connection, actor: &Actor, id: &str) -> AppResult<Row> {
     )
     .optional()?
     .ok_or_else(|| AppError::not_found("proposal"))
+}
+
+/// The extra destructive confirmation is asked when the preview says so or when any operation's
+/// registry metadata asks for it. The stored preview alone is not trusted: a Change Set that
+/// arrives inside a received or edited project can carry a preview that hides a deletion.
+fn needs_confirmation(preview: &[PreviewRow], ops: &[OpCall]) -> bool {
+    preview.iter().any(|x| x.tone == TONE_DESTRUCTIVE) || toolbox::requires_confirmation(ops)
 }
 
 fn parse_json<T: serde::de::DeserializeOwned + Default>(s: String) -> T {
@@ -285,8 +291,16 @@ pub fn load_dto(c: &Connection, actor: &Actor, id: &str) -> AppResult<Option<Cha
         params![id, actor.user_id],
         |r| {
             let ops: Vec<OpCall> = parse_json(r.get(9)?);
-            let rows: Vec<PreviewRow> = parse_json(r.get(5)?);
+            let mut rows: Vec<PreviewRow> = parse_json(r.get(5)?);
             let source: Value = parse_json(r.get(16)?);
+            let requires_confirmation = needs_confirmation(&rows, &ops);
+            // The card must show what the person confirms: if the stored preview hides it, say so.
+            if requires_confirmation && !rows.iter().any(|x| x.tone == TONE_DESTRUCTIVE) {
+                rows.push(PreviewRow::destructive(
+                    "Deletes or permanently changes items",
+                    "Some of these changes delete items or cannot be undone from the preview.",
+                ));
+            }
             Ok(ChangeSetDto {
                 id: r.get(0)?,
                 title: r.get(1)?,
@@ -294,7 +308,7 @@ pub fn load_dto(c: &Connection, actor: &Actor, id: &str) -> AppResult<Option<Cha
                 state: r.get(3)?,
                 validation_state: r.get(4)?,
                 part_count: stored_sources(&source).len().max(1) as u32,
-                requires_confirmation: rows.iter().any(|x| x.tone == TONE_DESTRUCTIVE),
+                requires_confirmation,
                 rows,
                 exclusions: parse_json(r.get(6)?),
                 affected_modules: parse_json(r.get(7)?),

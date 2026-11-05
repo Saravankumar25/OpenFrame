@@ -107,7 +107,7 @@ fn marker_texts(d: &ScheduleDailyDay) -> Vec<String> {
 /// The sections in the order of the screen. The wording matches `daily.tsx`.
 fn sections(d: &ScheduleDailyDay) -> Vec<(&'static str, Vec<Part>)> {
     let s = &d.summary;
-    let number = |n: Option<i64>| n.map_or("Not numbered".to_string(), |n| n.to_string());
+    let number = |n: &Option<String>| n.clone().unwrap_or_else(|| "Not numbered".to_string());
 
     let scenes = if d.scenes.is_empty() {
         vec![Part::Line(NO_SCENES.into())]
@@ -119,7 +119,7 @@ fn sections(d: &ScheduleDailyDay) -> Vec<(&'static str, Vec<Part>)> {
         if s.missing_estimates > 0 {
             total.push_str(&format!(" · {} without estimate", s.missing_estimates));
         }
-        let numbers: Vec<String> = d.scenes.iter().map(|x| number(x.number)).collect();
+        let numbers: Vec<String> = d.scenes.iter().map(|x| number(&x.number)).collect();
         vec![facts(&[("Scenes", numbers.join(", ")), ("Total", total)])]
     };
 
@@ -211,7 +211,7 @@ fn sections(d: &ScheduleDailyDay) -> Vec<(&'static str, Vec<Part>)> {
                         .estimated_minutes
                         .map(|m| format!(" ({})", minutes(m)))
                         .unwrap_or_default();
-                    format!("{}: {}{est}", number(x.number), x.heading)
+                    format!("{}: {}{est}", number(&x.number), x.heading)
                 })
                 .collect(),
         )]
@@ -314,7 +314,7 @@ fn pill_rows(chips: Vec<Chip>, n: usize) -> Rows {
 /// short sections side by side and the lists as tables.
 fn day_blocks(d: &ScheduleDailyDay) -> Vec<Block> {
     let s = &d.summary;
-    let number = |n: Option<i64>| n.map_or("Not numbered".to_string(), |n| n.to_string());
+    let number = |n: &Option<String>| n.clone().unwrap_or_else(|| "Not numbered".to_string());
     let mut out: Vec<Block> = Vec::new();
 
     // Scenes
@@ -324,7 +324,7 @@ fn day_blocks(d: &ScheduleDailyDay) -> Vec<Block> {
         let tiles = d
             .scenes
             .iter()
-            .map(|x| Chip::pill(number(x.number), Tone::Info).bold())
+            .map(|x| Chip::pill(number(&x.number), Tone::Info).bold())
             .collect();
         let mut total = plural(s.scene_count as usize, "scene", "scenes");
         if s.estimated_minutes > 0 {
@@ -526,7 +526,7 @@ fn day_blocks(d: &ScheduleDailyDay) -> Vec<Block> {
             t.rows.push(Row::new(vec![
                 Cell::text(Txt::new((i + 1).to_string()).size(8.4).color(pal::SLATE))
                     .align(Align::Right),
-                Cell::new().item(CellItem::Tile(number(x.number))),
+                Cell::new().item(CellItem::Tile(number(&x.number))),
                 Cell::text(
                     Txt::new(x.heading.clone())
                         .size(8.6)

@@ -7,7 +7,6 @@ import type { ScreenplayDocument } from "../../ipc/generated/ScreenplayDocument"
 import type { CommentThread } from "../../ipc/generated/CommentThread";
 import type { PrivateNoteDto } from "../../ipc/generated/PrivateNoteDto";
 import type { ScreenplayHistoryPoint } from "../../ipc/generated/ScreenplayHistoryPoint";
-import type { ScreenplayReviewRoundDto } from "../../ipc/generated/ScreenplayReviewRoundDto";
 import type { ScreenplayCharacterReport } from "../../ipc/generated/ScreenplayCharacterReport";
 import type { ScreenplayLockSummary } from "../../ipc/generated/ScreenplayLockSummary";
 import type { ScreenplayCompareResult } from "../../ipc/generated/ScreenplayCompareResult";
@@ -60,12 +59,6 @@ export function usePrivateNotes(targetType: string | null, targetId: string | nu
 export function useHistoryPoints(draftId: string | null) {
   return useOp<ScreenplayHistoryPoint[]>("screenplay.history_points", { draftId }, ["screenplay_history_point", "screenplay_draft"], {
     enabled: !!draftId,
-  });
-}
-
-export function useReviewRounds(screenplayId: string | null) {
-  return useOp<ScreenplayReviewRoundDto[]>("screenplay.review_rounds", { screenplayId }, ["review_round", "comment", "screenplay_draft"], {
-    enabled: !!screenplayId,
   });
 }
 

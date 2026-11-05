@@ -37,7 +37,7 @@ Before: `01-journey` and `02-restart` have run on the shared journey data. The a
 17. Click the Schedule tab in the Production navigation. Capture 10-production-schedule.
 18. Click Call Sheets. Capture 11-call-sheets.
 19. Click Files. Capture 12-files.
-20. Click the project button "Project: Night Bus. Switch or manage projects", choose Notes & Tasks. Capture 13-notes-and-tasks.
+20. Click the project switcher (top left, shows the project title), choose Notes & Tasks. Capture 13-notes-and-tasks.
 21. Open the same menu and choose Recently Deleted. Capture 14-recently-deleted.
 22. Open the same menu and choose Project settings. Capture 15-project-settings.
 23. Check: 15 screens were compared (or updated), and none failed.

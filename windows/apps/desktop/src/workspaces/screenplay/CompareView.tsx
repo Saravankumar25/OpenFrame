@@ -37,7 +37,7 @@ function Line({ l, side }: { l: ScreenplayDiffLine | null; side: "left" | "right
   if (!l) return <div className="spx-dl empty" aria-hidden />;
   const cls = ELEMENT_META[l.elementType]?.cls ?? "sp-a";
   return (
-    <div className={`spx-dl sp-el ${cls}`}>
+    <div className={`spx-dl sp-el ${cls}`} role="cell">
       {l.segments.map((s, i) =>
         s.kind === "equal" ? (
           <span key={i}>{s.text}</span>
@@ -165,17 +165,14 @@ export function CompareView({ drafts, initialA, initialB, onBack }: {
                     <div role="columnheader">{cmp.data?.draftA.name} (before)</div>
                     <div role="columnheader">{cmp.data?.draftB.name} (after)</div>
                   </div>
-                  {selected.rows.length === 0 ? (
-                    <p className="muted sm">The text of this scene is identical; only its position changed.</p>
-                  ) : (
-                    selected.rows.map((r, i) => (
-                      <div key={i} className={`spx-diff-r ${r.kind}`} role="row">
-                        <Line l={r.left} side="left" />
-                        <Line l={r.right} side="right" />
-                      </div>
-                    ))
-                  )}
+                  {selected.rows.map((r, i) => (
+                    <div key={i} className={`spx-diff-r ${r.kind}`} role="row">
+                      <Line l={r.left} side="left" />
+                      <Line l={r.right} side="right" />
+                    </div>
+                  ))}
                 </div>
+                {selected.rows.length === 0 && <p className="muted sm">The text of this scene is identical; only its position changed.</p>}
               </>
             ) : null}
           </div>

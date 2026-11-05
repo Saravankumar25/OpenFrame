@@ -18,7 +18,7 @@ The owner has not yet finished the Microsoft Partner Center or Apple Developer e
 | `04_MAC_TASKS.md` | skip | read | Fully offline 7-day trial with StoreKit 2. No licence server. Clock guard. App Store pipeline. |
 | `05_UPDATE_SAFETY_AND_STANDARDS.md` | read | read | Will a Store update keep user data intact? Audit of the real code, gaps, and a standards checklist. |
 | `06_PLACEHOLDERS_AND_COMPANY_DETAILS.md` | read | read | Every placeholder, where it lives, who supplies it. Company details to use (and not to use). |
-| `07_CONTACT_FEEDBACK_SOCIALS.md` | read | read | In-app "Contact us" goes to the website contact page. Social handles stay placeholders. |
+| `07_CONTACT_FEEDBACK_SOCIALS.md` | read | read | In-app "Contact us" goes to the website contact page. The welcome popup opens the eight real social addresses. |
 | `08_CHANGES_FROM_PREVIOUS_ZIP.md` | read | read | What changed against the earlier mocks package and why. |
 | `ai-reharness.md` | read | read | Track B: section-scoped AI assistant. Its own gates and order inside the file. |
 | `Trial_Licensing_Mocks/` | read | read | HTML mocks 182 to 203 and screenshots, plus the UI copy and logo note. Open `index.html`. |

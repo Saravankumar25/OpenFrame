@@ -15,6 +15,12 @@ import { assertQuiet, closeProject, editorElements, firstLaunchProject, inDialog
 let browser;
 const step = stepper(() => browser, "several-screenplays");
 const typeKeys = (text) => browser.keys(text.split(""));
+// The switcher's name is built from sr-only spans, so find it by its class.
+const openProjectSwitcher = async () => {
+  const el = await browser.$("header button.projsel");
+  await el.scrollIntoView({ block: "center" }).catch(() => undefined);
+  await el.click();
+};
 const saved = () => browser.execute(() => document.querySelector(".sp-top [aria-live=polite]")?.textContent?.trim() ?? "");
 async function waitSaved() {
   await browser.waitUntil(async () => (await saved()) === "Saved", { timeout: 15_000, timeoutMsg: "the editor did not report Saved" });
@@ -142,7 +148,7 @@ describe("several screenplays per project", () => {
       assert.deepEqual(ov.screenplays.map((s) => s.title), ["Two Rivers"]);
 
       // Recently Deleted lists it and restores it.
-      await click(browser, "Project: Two Rivers. Switch or manage projects");
+      await openProjectSwitcher();
       await menuItem(browser, "Recently Deleted");
       await waitForText(browser, "Two Rivers: The Short");
       await click(browser, "Restore Two Rivers: The Short");

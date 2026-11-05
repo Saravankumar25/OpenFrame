@@ -39,7 +39,7 @@ import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
-import { click, launchApp, openBeatBoard, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
+import { launchApp, openBeatBoard, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
 import { comparePixels, decodePng, encodePng } from "../lib/png.mjs";
 
 const REPO = resolve(import.meta.dirname, "..", "..", "..");
@@ -209,8 +209,15 @@ async function shot(name) {
   results.push(res);
 }
 
+// The switcher's name is built from sr-only spans, so find it by its class.
+async function openProjectSwitcher() {
+  const el = await browser.$("header button.projsel");
+  await el.scrollIntoView({ block: "center" }).catch(() => undefined);
+  await el.click();
+}
+
 async function projectPage(label) {
-  await click(browser, "Project: Night Bus. Switch or manage projects");
+  await openProjectSwitcher();
   const el = await browser.$(`//*[@role="menuitem"][starts-with(normalize-space(.),"${label}")]`);
   await el.waitForClickable({ timeout: 10_000 });
   await el.click();

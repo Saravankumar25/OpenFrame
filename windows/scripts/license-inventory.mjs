@@ -18,10 +18,13 @@
 // `--check` fails on copyleft and unknown. The output is deterministic (no timestamps)
 // so the committed file only changes when dependencies change.
 //
-// NOTE: this is an inventory, not the full license texts. The release pipeline must
-// also bundle the full notices (see docs/engineering/25-ci-cd.md).
+// The same run (without --out) also writes the full licence texts that ship inside the app and that
+// Settings > About shows: apps/desktop/src/workspaces/settings/third-party-notices.json. The texts
+// are the licence, copying and notice files found in each package's own folder (the cargo registry
+// source and node_modules), so `cargo metadata` and `npm ci` must have run first.
 
 import { execFileSync } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -34,6 +37,8 @@ const args = process.argv.slice(2);
 const CHECK = args.includes("--check");
 const outIdx = args.indexOf("--out");
 const OUT = path.resolve(ROOT, outIdx >= 0 && args[outIdx + 1] ? args[outIdx + 1] : "THIRD_PARTY_LICENSES.md");
+// Only the default run rewrites the in-app notices, so a check with --out never touches tracked files.
+const NOTICES_OUT = outIdx >= 0 ? null : path.join(ROOT, "apps", "desktop", "src", "workspaces", "settings", "third-party-notices.json");
 
 // Crates that are part of the workspace but never shipped in the application.
 const NON_SHIPPED_WORKSPACE_CRATES = new Set(["straft-test-support"]);
@@ -182,6 +187,7 @@ function rustInventory() {
       license: license ?? "NOASSERTION",
       category: classifyExpression(p.license),
       source: p.repository ?? (p.source ? p.source.replace(/^registry\+/, "") : ""),
+      dir: path.dirname(p.manifest_path),
     });
   }
   return out;
@@ -236,6 +242,7 @@ function npmInventory() {
       category: classifyExpression(license),
       source: entry.resolved ?? (typeof repo === "string" ? repo : repo?.url) ?? "",
       optional: Boolean(entry.optional),
+      dir: path.join(ROOT, key),
     });
   }
   return out;
@@ -243,9 +250,12 @@ function npmInventory() {
 
 // ------------------------------------------------------------------ Straft AI components
 
-// Bundled in every package (ADR-0025), pinned with their hashes in packaging/ai/ai-assets.lock.json and
-// installed read-only next to the app. Listed so their notices ship with the product.
+// Pinned with their hashes in packaging/ai/ai-assets.lock.json. The engine ships in the package; the
+// models are downloaded after install from Hugging Face at the pinned revisions (ADR-0026, ADR-0032).
+// Listed so their notices ship with the product.
 const AI_LOCK = path.join(ROOT, "packaging", "ai", "ai-assets.lock.json");
+const AI_NOTICES_DIR = path.join(ROOT, "packaging", "ai", "notices");
+const BACKEND_LABEL = { cpu: "processor build", vulkan: "graphics card build, Vulkan", metal: "Apple silicon build, Metal" };
 
 function aiComponents() {
   if (!fs.existsSync(AI_LOCK)) return [];
@@ -253,7 +263,7 @@ function aiComponents() {
   const rows = [];
   for (const r of lock.runtimes ?? []) {
     rows.push({
-      component: `${r.engine} server (runtime, ${r.os} ${r.arch}, processor build)`,
+      component: `${r.engine} server (engine in the package, ${r.os} ${r.arch}, ${BACKEND_LABEL[r.backend] ?? r.backend})`,
       version: r.version,
       license: r.licenseId,
       source: r.source.url,
@@ -265,12 +275,12 @@ function aiComponents() {
   for (const md of lock.models ?? []) {
     const gemma = md.licenseId === "Gemma-Terms-of-Use";
     rows.push({
-      component: `${md.displayName} (${md.role === "chat" ? "language model" : "search/embedding model"}, ${md.quantization} GGUF, tokenizer embedded)`,
+      component: `${md.displayName} (${md.role === "chat" ? "language model" : "search/embedding model"}, ${md.quantization} GGUF, tokenizer embedded, downloaded after install)`,
       version: md.version,
       license: md.licenseId,
       source: md.source.url,
       notes: gemma
-        ? `Terms: ${md.licenseUrl}. Required notice: "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms." Use is subject to the Gemma Prohibited Use Policy; redistribution must pass these terms on.`
+        ? `Terms: ${md.licenseUrl}. Required notice: "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms." Use is subject to the Gemma Prohibited Use Policy (ai.google.dev/gemma/prohibited_use_policy). Distribution must pass the use restrictions on in the end-user agreement and give each recipient a copy of the Gemma Terms of Use.`
         : `Licence: ${md.licenseUrl}.`,
     });
   }
@@ -342,8 +352,8 @@ function render(rust, npm) {
   parts.push(
     "This is an inventory of the third-party packages that are compiled into, or shipped with, the Straft Studio " +
       `desktop application (Rust target \`${TARGET}\`, normal dependencies only; npm production dependencies only). ` +
-      "Build tools, test tooling and dev-only packages are excluded. This inventory is not a substitute for the full " +
-      "license texts, which the release pipeline must bundle with the installer.",
+      "Build tools, test tooling and dev-only packages are excluded. This list names each package; the full licence " +
+      "texts are in the app, under Settings > About > Third-party licences.",
   );
   parts.push("");
   parts.push("Straft Studio's own license has **not been selected yet**. See `LICENSE-PENDING.md`.");
@@ -357,13 +367,14 @@ function render(rust, npm) {
   parts.push("");
   const ai = aiComponents();
   if (ai.length) {
-    parts.push("## Straft AI components (bundled in every package)");
+    parts.push("## Straft AI components (engine in the package, models downloaded after install)");
     parts.push("");
     parts.push(
-      "Part of every package (ADR-0025). The build checks each file against the SHA-256 hashes pinned in " +
-        "`packaging/ai/ai-assets.lock.json`, and the app checks them again before it first starts the engine. They run " +
-        "only on the user's computer and never use the network. Their notices ship in the app's `ai/notices` folder " +
-        "and must also be shown in the product's About / third-party notices.",
+      "Every file is pinned by size and SHA-256 in `packaging/ai/ai-assets.lock.json`. The engine ships in the package " +
+        "and the build checks it against the lock (ADR-0026). The models are not packaged: the person downloads them " +
+        "once, after install, straight from the public Hugging Face repositories at the commit revisions the lock pins, " +
+        "and the app uses a file only when its size and SHA-256 match (ADR-0032). They run only on the user's computer. " +
+        "Their notices ship in the app's `ai/notices` folder and are shown in Settings > About > Third-party licences.",
     );
     parts.push("");
     parts.push(aiTable(ai));
@@ -376,8 +387,8 @@ function render(rust, npm) {
     parts.push(
       "Screenplay and document PDFs embed subsets of these fonts (ADR-0016) so text in Telugu, Hindi, Tamil, " +
         "Malayalam, Kannada and other scripts prints without depending on the computer's fonts. The files ship " +
-        "unmodified under the SIL Open Font License 1.1; the licence texts sit next to them and must be bundled " +
-        "with the installer.",
+        "unmodified under the SIL Open Font License 1.1; the licence texts sit next to them and are shown in " +
+        "Settings > About > Third-party licences.",
     );
     parts.push("");
     parts.push(fontTable(fontRows));
@@ -406,6 +417,63 @@ function render(rust, npm) {
   return { text: parts.join("\n"), flagged, review };
 }
 
+// ------------------------------------------------------------------ in-app notices (full texts)
+
+const LICENCE_FILE = /^(licen[cs]e|copying|notice|copyright|unlicense)([-._ ].*)?$/i;
+
+/** The licence, copying and notice files at the top of a package folder, sorted by name. */
+export function licenceFiles(dir) {
+  let names;
+  try {
+    names = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  return names
+    .filter((d) => d.isFile() && LICENCE_FILE.test(d.name))
+    .map((d) => d.name)
+    .sort()
+    .map((name) => ({ name, text: tidy(fs.readFileSync(path.join(dir, name), "utf8")) }))
+    .filter((f) => f.text);
+}
+
+/** Line endings, trailing spaces and runs of blank lines differ between copies of one licence. */
+const tidy = (s) =>
+  s
+    .replace(/\r\n?/g, "\n")
+    .split("\n")
+    .map((l) => l.trimEnd())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+/** Packages, AI notices and font licences with their texts; each distinct text is stored once. */
+function noticesData(rust, npm) {
+  const texts = {};
+  const ref = (text) => {
+    const id = crypto.createHash("sha256").update(text).digest("hex").slice(0, 12);
+    texts[id] = text;
+    return id;
+  };
+  const missing = [];
+  const packages = [...rust, ...npm].sort(byName).map((r) => {
+    const files = licenceFiles(r.dir);
+    if (!files.length) missing.push(`${r.ecosystem} ${r.name}@${r.version}`);
+    return { name: r.name, version: r.version, license: r.license, source: r.source.replace(/^git\+/, "").replace(/\.git$/, ""), texts: files.map((f) => ref(f.text)) };
+  });
+  const ai = fs.existsSync(AI_NOTICES_DIR)
+    ? fs.readdirSync(AI_NOTICES_DIR).sort().map((name) => ({ name, text: ref(tidy(fs.readFileSync(path.join(AI_NOTICES_DIR, name), "utf8"))) }))
+    : [];
+  const fonts = bundledFonts().map((f) => ({
+    file: f.file,
+    family: `${f.family} ${f.style}`,
+    license: f.license,
+    source: f.source,
+    text: ref(tidy(fs.readFileSync(path.join(path.dirname(FONT_MANIFEST), f.licenseFile), "utf8"))),
+  }));
+  return { data: { generatedBy: "scripts/license-inventory.mjs (do not edit by hand)", ai, fonts, packages, texts }, missing };
+}
+
 function main() {
   let rust;
   let npm;
@@ -421,6 +489,12 @@ function main() {
   console.log(
     `license-inventory: ${rust.length} Rust crates, ${npm.length} npm packages → ${path.relative(ROOT, OUT)}`,
   );
+  if (NOTICES_OUT) {
+    const { data, missing } = noticesData(rust, npm);
+    fs.writeFileSync(NOTICES_OUT, `${JSON.stringify(data, null, 1)}\n`, "utf8");
+    console.log(`license-inventory: notices for ${data.packages.length} packages, ${Object.keys(data.texts).length} distinct texts -> ${path.relative(ROOT, NOTICES_OUT)}`);
+    for (const m of missing) console.log(`  no licence file in the package folder: ${m}`);
+  }
   for (const r of review) console.log(`  review   ${r.ecosystem} ${r.name}@${r.version}: ${r.license}`);
   for (const r of flagged) console.log(`  FLAGGED  ${r.ecosystem} ${r.name}@${r.version}: ${r.license}`);
   if (CHECK && flagged.length) {

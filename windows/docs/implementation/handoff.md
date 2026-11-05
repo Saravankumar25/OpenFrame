@@ -1,78 +1,49 @@
 # Handoff: where we are right now
 
-> Rewritten (not appended) at the end of every session. One page. Last rewritten: 2026-11-04, after merging the local
-> Windows work with the windows folder on GitHub.
+> Rewritten (not appended) at the end of every session. One page. Last rewritten: 2026-11-05, after the sweep, the audit ports,
+> the team password removal and the Windows push.
 
 ## State
 
-1. **GitHub and local now hold the same Windows code.** The product is Straft Studio and the assistant is Straft AI
-   ([ADR-0042](../adr/ADR-0042-product-renamed-to-straft-studio.md); [ADR-0041](../adr/ADR-0041-product-renamed-straft.md) is a
-   pointer). The merge and its decisions are in the [reconciliation log](reconciliation-log.md). The local checkout still has
-   the app at its root; on GitHub it is under `windows/`.
-2. **Checks on the merged tree:** see the top entry of the [progress log](progress-log.md).
-3. **One migration.** `legacy_names`, `legacy_migration` and `legacy_rename` carry old data over at first start. The old app
-   data folder is copied once and left in place, the models are hard linked, and the library and project folders take the
-   new name. A failed copy uses the old folder for that run. It was tested on temporary folders; the real first start on the
-   owner's laptop has not been run.
-4. **Chapter 3 is started by the owner** ([ADR-0039](../adr/ADR-0039-store-release-licensing.md)). The package is in
-   [docs/release/package-2026-11-03/](../release/package-2026-11-03/00_README_START_HERE.md); it overrides older decisions.
-5. **Track A, Windows licensing and store readiness, is built.** Real `StoreContext` calls with a refresh worker, licence
-   memory, refund words, lock that stores typed text first, chip and reminders on Home, Contact us, placeholders that fail a
-   Store release, version and identity guards, update safety U1 to U11 (table in
-   [update-simulation.md](../release/update-simulation.md)), licence server and Tauri Mac shell removed.
-6. **Track B, section-scoped Straft AI, is built** ([ADR-0040](../adr/ADR-0040-section-scoped-assistant.md), slices R0 to
-   R7). The person picks one to three sections; only those are read.
-7. **Straft AI bars missed, not lowered:** invented names 39.7 percent (bar: no worse than 32.1), pointer recall 68.8 percent
-   (bar 90), long answers median 37 s (bar 30 s). Answer facts rose from 47.1 to 71.7 percent.
-   [Numbers](../release/evidence/ai-section-scoped-2026-11-03/r7-final/README.md). The rename did not rerun the evaluation.
-8. **The internal installer on the owner's laptop was built before the rename.** A new installer needs the owner's word.
-9. **`StraftMac/`** is untracked here and has its own migration port. It must take the Mac ids and this migration's behaviour.
-   No Swift was compiled and no Mac build was run.
+1. **GitHub and local hold the same Windows code and the same website.** `windows/` and `website/` on `main` equal the local
+   trees. The local checkout has the app at its root; `StraftWebsite` is its own repository on branch `website/straft-main`.
+2. **Installed on the owner's laptop:** `release-out/Straft-4.exe`, built from a clean tree at f701f926. Later commits touch only
+   WindowsHTML and documents.
+3. **No team password any more** ([ADR-0043](../adr/ADR-0043-team-password-removed.md)). The internal build opens straight to the app.
+4. **Fixed this session:** real scene numbers on Schedule, Breakdown, shots and call sheets; Home counts what is current; the
+   nearest hospital reaches call sheets; Scene Cards link to any scene; a migration in other line endings is no longer reported as
+   edited. The security, licence and accessibility fixes from the 2026-10-31 audit branches are ported; bypass 3 of the store audit
+   has no caller in this tree. The welcome popup reads "Welcome to the Straft Studio community" with the eight official links.
+5. **WindowsHTML:** 821 screens, 1,658 files, from the final app. 9 of 1,642 pages are 0.54 to 0.71 percent over the diff limit only
+   because the checkout path on them is replaced on purpose.
+6. **Website:** SEO and GEO pass, IndexNow by change, a live monitor after each deploy, the eight social links, `/discord` 302 to
+   the invite. All live. Evidence and the owner's steps: `website/docs/SEO-CHECKLIST.md` and `SEARCH-APPEARANCE.md`.
+7. **Test evidence:** see the top entry of the [progress log](progress-log.md). The final build had a targeted run by the owner's
+   word, not a full one.
 
 ## Next items, in order
 
-1. Owner: choose how the product reads in running text. The app, WindowsHTML and the manuals say "Straft could not..." and use
-   "Straft Studio" as the full name; the earlier GitHub text said "Straft Studio could not...". The short form stayed. Changing
-   it is a scripted edit, and WindowsHTML and the manuals would then be regenerated.
-2. Owner: decide on two review findings left as they are. A project folder opened from elsewhere is renamed when it is opened
-   (network paths excluded), and the library is renamed even if the old app is running, as long as no project in it is open.
-3. Owner: rename the checkout folder to `C:\Straft`, then reset `CARGO_TARGET_DIR`, remove the old team password variable, and
-   create the CI variable `STRAFT_AI_ASSETS_DIR` and secret `STRAFT_TEAM_PASSWORD`.
-4. Mac session: bring `StraftMac/` into line with this migration, then the Rust parity list below and package file 04.
-5. Earlier item, still open: Partner Center app record, identity values, publisher display name, 7-day trial, then the manual
-   walk in [windows-store-test.md](../release/windows-store-test.md). Only a Store package can prove the licence read, the
-   purchase window and `OfflineLicensesChanged`.
-
-Also waiting on the owner: may Straft AI read the contents of small text files? The Files section stays at 37.5 percent
-without it.
-
-## Website
-
-The live website comes from `website/` on GitHub `main`; a push there builds, tests and deploys it. The local folder `StraftWebsite` is
-behind GitHub, so start website work from a clean worktree of `origin/main`. The phone nav and pop-up work went live on 2026-11-05.
+1. **Fresh website session (started from this one):** publish the new Windows and Mac screens to straftstudio.com, every screen seen
+   in light and dark.
+2. Owner: first look at the app on real data, including opening Ananthapuram, which still has the old manifest and takes the new name
+   when opened. The old OpenFrame Studio install is still present beside it; uninstalling it is the owner's choice.
+3. Owner: Search Console steps, and the Cloudflare Web Analytics switch (the beacon the CSP blocks is the one console error).
+4. Mac session: bring `StraftMac/` in line. It has no edit lock and does not report refunds, per the audit check.
+5. Straft AI still resolves "scene N" by position. Changing it needs a measured evaluation first (ADR-0028).
 
 ## Open blockers
 
-- All store values are placeholders ([list](../release/package-2026-11-03/06_PLACEHOLDERS_AND_COMPANY_DETAILS.md)); a Store
-  release fails until they are filled. `LICENSE-PENDING.md` and the migration freeze also block `release-validate`.
-- Trademark and name clearance for "Straft" is the owner's task before brand spend.
-- Not run: release-mode E2E (`--release`), any MSIX or WACK run, the manual update simulation, ARM64 (not shipped,
-  ADR-0039 item 17), the live window title, About and icon check.
-
-## Mac parity (the Rust the `StraftMac/` tree must take)
-
-`crates/straft-entitlement` (`ClockChanged`, `Notice::ClockChanged`, `read_store` and `StoreMemory`, `NoticeRecord` fields,
-`.bad` copies, refusing saves after a failed load) and `crates/straft-application` (`modules/entitlement.rs` flush window
-and `entitlement.lock_ready`, `check_edit` in `registry.rs`, `modules/ai/sections/`, dossier by leaves, `migrations/app/0010`).
-The Windows tree still holds `crates/straft-entitlement/src/mac/` with the licence server design: package file 04 M1 and
-M2 belong to the Mac session.
+- All store values are placeholders; a Store release fails until they are filled.
+- The site says "on sale" in places while store listings are not live: `src/lib/layout.mjs` line 127, `src/pages/info.mjs` line 89,
+  `src/content/copy.mjs` line 81. Owner's wording call.
+- Spec 05's outside connection on port 443: seen on 2026-11-04 from the WebView2 browser process to a 2603:1046 address, not seen in any
+  later run, and the holder of the refused socket in the failed run was not recorded. The spec now records role and host. Not proven.
 
 ## Do not
 
-- Do not push without the owner's word. Never `git pull` origin/main here: GitHub `main` has `mac/`, `website/` and
-  `windows/`; sync `windows/` by the subtree commit method only.
-- Do not build an installer or a release app executable without the owner's word.
-- Do not tick "delete app data" when uninstalling the old app before Straft has started once. The first start copies that
-  data. Projects are not affected. Straft's own uninstaller never touches the old folder.
-- Do not edit the old-name spellings marked with a `LEGACY` comment (`git grep 'LEGACY:'`). Old data needs them.
-- When work is too slow, parallelize with a file ownership map; never drop a step.
+- Do not push without the owner's word. Never `git pull` origin/main here: sync `windows/` and `website/` by the subtree commit method.
+- Do not build an installer or a release executable without the owner's word.
+- Do not type or move focus on this computer during E2E: a stray `s` failed spec 04 on 2026-11-05.
+- Do not delete the four `claude/audit-*` branches or `website/local-checkpoint-2026-11-05`: the first are the source of the ports,
+  the second the only copy of old local website work.
+- Do not edit old-name spellings marked `LEGACY:`. Old data needs them.

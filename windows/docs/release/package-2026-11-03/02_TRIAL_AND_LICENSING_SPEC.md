@@ -15,7 +15,7 @@ Both sessions implement this file. Platform differences are in 03 (Windows) and 
 | D7 | Reminders only on trial days 5, 6 and 7 (3, 2, 1 days left), at most once per calendar day. |
 | D8 | After purchase, once and in order: data note, file safety tutorial, welcome popup. |
 | D9 | Contact: one in-app "Contact us" link to `https://straftstudio.com/contact/`. No form in the app. |
-| D10 | Social handles stay placeholders until the owner sends real ones. |
+| D10 | Social addresses: the owner sent the real ones on 2026-11-05 (file 07). |
 | D11 | Internal builds (`DirectInstaller`) never show any licence screen. Unchanged. |
 | D12 | The lock after trial end or refund stays a full lock that cannot be closed (existing `locks_the_app`). It must never lose unsaved work. |
 
@@ -65,7 +65,7 @@ Unchanged from the existing code and mocks 193 to 198, with these checks:
 
 - Trigger: `TrialEnded` or `Revoked`. Enforced in the Rust core (`check_operation` in `Registry::dispatch`): every project operation is refused underneath the lock, the screen cannot be closed, Escape does nothing, no route into projects. Keep.
 - **No data loss.** Before the lock screen appears, the app must finish any pending save (flush the project writer and checkpoint, the same path used when closing a project). Add a test: type text, expire the trial in the test double, assert the text is on disk after the lock. If the existing code already does this, add the test only and say so.
-- Allowed while locked (existing `ALLOWED_WHILE_LOCKED`): `app.info`, `appearance.get`, `team_gate.status`. Opening a link in the browser is a shell action, not a core operation, and must keep working so Contact us works.
+- Allowed while locked (existing `ALLOWED_WHILE_LOCKED`): `app.info`, `appearance.get` (`team_gate.status` was removed with the team password, ADR-0043). Opening a link in the browser is a shell action, not a core operation, and must keep working so Contact us works.
 - Buttons on the lock screen: `Buy full version`, `Restore purchase` (Windows: `Check again`), and a small text link `Need help? Contact us` (opens the contact page). This adds one link to the earlier design, which had none. Reason: a locked person with a store problem needs a way to reach support.
 - Copy (both platforms, use "this computer" on Windows and "this Mac" on the Mac):
   - Trial ended: title `Your free trial has ended`. Body: `Buy the full version to keep using Straft Studio. Your projects are safe on this computer. Buying unlocks them again exactly as you left them.`
@@ -83,7 +83,7 @@ Unchanged from the existing code and mocks 193 to 198, with these checks:
 
 ## 9. Contact, feedback and socials
 
-See file 07. In short: `Contact us` opens the website contact page. Socials stay placeholders and are hidden in release builds until real addresses exist.
+See file 07. In short: `Contact us` opens the website contact page. The welcome popup shows the eight real social addresses in every build.
 
 ## 10. Test matrix (automate in Rust and in the UI tests; the manual rest goes in `docs/release/`)
 

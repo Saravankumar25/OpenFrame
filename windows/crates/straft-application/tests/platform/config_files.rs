@@ -2,7 +2,7 @@
 //! `docs/release/update-simulation.md`).
 //!
 //! Files with their own tests elsewhere: `entitlement/notices.json` (`notices.rs`,
-//! `entitlement.rs`), `entitlement/team-gate.json` (`team_gate/tests.rs`), `library.json`
+//! `entitlement.rs`), `library.json`
 //! (`storage.rs`), the AI small records and `models/active.json` (`straft-ai`, `bundled.rs` and
 //! `install.rs`). This file covers `app.sqlite` (settings, appearance, recents) and the library
 //! pointer. A truncated copy and a garbage copy each: the app starts, the bad file is kept as
