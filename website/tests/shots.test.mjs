@@ -63,6 +63,7 @@ test('/mockups/ is out of search and the sitemap, and may be framed by this site
   assert.match(read(path.join(DIST, 'robots.txt')), /^Disallow: \/mockups\/$/m);
   const h = read(path.join(DIST, '_headers'));
   const block = h.match(/\n\/mockups\/\*\n((?:  .*\n)+)/)?.[1] ?? '';
+  assert.match(block, /Cache-Control: public, max-age=0, must-revalidate, no-transform/); // a new capture reuses page names, so a page may not be cached old
   assert.match(block, /! X-Frame-Options/); assert.match(block, /X-Robots-Tag: noindex/);
   assert.match(block, /frame-ancestors 'self'/); assert.match(block, /style-src 'self' 'unsafe-inline'/);
   assert.match(h.split('\n/mockups/*')[0], /frame-src 'self'/);
