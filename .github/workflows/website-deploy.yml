@@ -64,6 +64,7 @@ jobs:
         run: npm run deploy
 
       - name: Tell IndexNow engines which pages changed (not Google)
+        if: github.ref == 'refs/heads/main'
         continue-on-error: true
         run: node scripts/indexnow.mjs --soft --since "$RUNNER_TEMP/sitemap-before.xml"
 
